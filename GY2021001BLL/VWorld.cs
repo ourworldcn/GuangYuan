@@ -64,6 +64,7 @@ namespace GY2021001BLL
             _ServiceProvider.GetRequiredService<GameItemTemplateManager>();
             var result = new GameItem()
             {
+
                 TemplateId = template.Id,
                 PropertiesString = template.PropertiesString,
             };
