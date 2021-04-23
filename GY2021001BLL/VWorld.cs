@@ -64,12 +64,23 @@ namespace GY2021001BLL
             _ServiceProvider.GetRequiredService<GameItemTemplateManager>();
             var result = new GameItem()
             {
-
                 TemplateId = template.Id,
                 PropertiesString = template.PropertiesString,
             };
             if (parentId != null && parentId.HasValue)
                 result.UserId = parentId;
+            return result;
+        }
+
+        public GameChar CreateChar(Guid userId)
+        {
+            GameItemTemplateManager templateManager = _ServiceProvider.GetService<GameItemTemplateManager>();
+            var result = new GameChar()
+            {
+                GameUserId = userId,
+            };
+            result.GameItems.Add(CreateGameItem(templateManager.GetTemplateFromeId(Guid.Parse("{A06B7496-F631-4D51-9872-A2CC84A56EAB}"))));
+            result.GameItems.Add(CreateGameItem(templateManager.GetTemplateFromeId(Guid.Parse("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}"))));
             return result;
         }
     }
