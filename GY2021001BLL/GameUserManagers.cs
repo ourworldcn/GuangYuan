@@ -1,5 +1,6 @@
 ﻿using GY2021001DAL;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -422,12 +423,11 @@ namespace GY2021001BLL
                 {
                     LoginName = result.LoginName,
                     PwdHash = pwdHash,
+                    DbContext = db,
                 };
                 db.GameUsers.Add(gu);
-
-                var gc = new GameChar();
-                gc.InitialCreation();
-                gu.GameChars.Add(gc);
+                var vw = _ServiceProvider.GetService<VWorld>();
+                var gc = vw.CreateChar(gu);
                 db.SaveChanges();
             }
             return result;

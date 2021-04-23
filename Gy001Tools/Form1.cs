@@ -42,13 +42,19 @@ namespace Gy001Tools
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
+            var type = dic.GetType();
+            var b =typeof(IDictionary<string, byte[]>).IsAssignableFrom(type);
+            var t1 = type.GetGenericArguments();
+            var t2 = type.GetGenericTypeDefinition();
+
             var fullPath = @"d:\Users\光元\Downloads\Mount_body.xls";
             // var connStr = $"Provider = Microsoft.ACE.OLEDB.12.0; Data Source = {fullPath}; Extended Properties = 'Excel 12.0;HDR=Yes;IMEX=1'";
             var connStr = $"provider=Microsoft.jet.oledb.4.0;data source={fullPath};Extended Properties=\"\";Excel 8.0;HDR=YES;";
             OleDbConnection dbConnection = new OleDbConnection(connStr);
             try
             {
-                OleDbCommand dbCommand = new OleDbCommand("select * from [Sheet1$]",dbConnection);
+                OleDbCommand dbCommand = new OleDbCommand("select * from [Sheet1$]", dbConnection);
                 OleDbDataAdapter dbDataAdapter = new OleDbDataAdapter(dbCommand);
                 var dt = new DataTable();
                 dbDataAdapter.Fill(dt);

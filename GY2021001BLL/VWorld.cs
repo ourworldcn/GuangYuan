@@ -61,7 +61,6 @@ namespace GY2021001BLL
         /// <returns></returns>
         public GameItem CreateGameItem(GameItemTemplate template, Guid? parentId = null)
         {
-            _ServiceProvider.GetRequiredService<GameItemTemplateManager>();
             var result = new GameItem()
             {
                 TemplateId = template.Id,
@@ -72,15 +71,19 @@ namespace GY2021001BLL
             return result;
         }
 
-        public GameChar CreateChar(Guid userId)
+        public GameChar CreateChar(GameUser user)
         {
             GameItemTemplateManager templateManager = _ServiceProvider.GetService<GameItemTemplateManager>();
             var result = new GameChar()
             {
-                GameUserId = userId,
             };
-            result.GameItems.Add(CreateGameItem(templateManager.GetTemplateFromeId(Guid.Parse("{A06B7496-F631-4D51-9872-A2CC84A56EAB}"))));
-            result.GameItems.Add(CreateGameItem(templateManager.GetTemplateFromeId(Guid.Parse("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}"))));
+            var slot = CreateGameItem(templateManager.GetTemplateFromeId(Guid.Parse("{A06B7496-F631-4D51-9872-A2CC84A56EAB}")));
+            result.GameItems.Add(slot);
+            slot = CreateGameItem(templateManager.GetTemplateFromeId(Guid.Parse("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}")));
+            result.GameItems.Add(slot);
+            result.InitialCreation();
+            user.GameChars.Add(result);
+            user.DbContext.Set<GameItem>().AddRange(result.GameItems);
             return result;
         }
     }

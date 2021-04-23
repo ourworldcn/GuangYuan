@@ -23,6 +23,18 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember(Name = nameof(Pwd))]
         public string Pwd { get; set; }
+
+        /// <summary>
+        /// 实验
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, object> MyProperty { get; } = new Dictionary<string, object>()
+        {
+            {"string","string" },
+            { "nunmber",1.2},
+            { "bytearray",new float[]{9, 1,2,3} },
+        };
+
     }
 
     /// <summary>
@@ -94,6 +106,13 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string WorldServiceHost { get; set; }
+
+        /// <summary>
+        /// 该账号下所有角色信息的数组。目前仅有一个角色。
+        /// </summary>
+        [DataMember]
+        public List<GameCharDtoBase> GameChars { get; } = new List<GameCharDtoBase>();
+
     }
 
     /// <summary>
@@ -215,7 +234,7 @@ namespace GY2021001WebApi.Models
         /// 数量。
         /// </summary>
         [DataMember(Name = nameof(Count))]
-        public decimal Count { get; set; }
+        public decimal? Count { get; set; }
 
         /// <summary>
         /// 属性集合。"Properties":{"atk":102,"qult":500,"catalogId":"shfdkjshfkjskfh=="}
@@ -240,6 +259,18 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember(Name = nameof(StringProperties))]
         public Dictionary<string, string> StringProperties { get; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// 所属Id。
+        /// </summary>
+        [DataMember]
+        public string OwnerId { get; set; }
+
+        /// <summary>
+        /// 下属物品对象。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> Children { get; } = new List<GameItemDto>();
 
     }
 
