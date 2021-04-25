@@ -70,6 +70,7 @@ namespace GY2021001WebApi.Controllers
         /// </summary>
         /// <param name="loginParamsDto">登陆参数,参见<seealso cref="LoginParamsDto"/> </param>
         /// <returns>Token为空则是用户名或密码错误。</returns>
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
         public ActionResult<LoginReturnDto> Login(LoginParamsDto loginParamsDto)
         {

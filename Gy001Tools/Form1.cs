@@ -44,20 +44,36 @@ namespace Gy001Tools
         {
             Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
             var type = dic.GetType();
-            var b =typeof(IDictionary<string, byte[]>).IsAssignableFrom(type);
+            var b = typeof(IDictionary<string, byte[]>).IsAssignableFrom(type);
             var t1 = type.GetGenericArguments();
             var t2 = type.GetGenericTypeDefinition();
+            try
+            {
+                TestExcel();
+            }
+            catch (Exception err)
+            {
+                Debug.WriteLine(err.Message);
+            }
+        }
 
-            var fullPath = @"d:\Users\光元\Downloads\Mount_body.xls";
+        private void TestExcel()
+        {
+            var fullPath = @"d:\Users\zhangchong\Documents\DOL.xls";
             // var connStr = $"Provider = Microsoft.ACE.OLEDB.12.0; Data Source = {fullPath}; Extended Properties = 'Excel 12.0;HDR=Yes;IMEX=1'";
             var connStr = $"provider=Microsoft.jet.oledb.4.0;data source={fullPath};Extended Properties=\"\";Excel 8.0;HDR=YES;";
             OleDbConnection dbConnection = new OleDbConnection(connStr);
             try
             {
-                OleDbCommand dbCommand = new OleDbCommand("select * from [Sheet1$]", dbConnection);
+                OleDbCommand dbCommand = new OleDbCommand("select * from [路克索神殿地下城$]", dbConnection);
                 OleDbDataAdapter dbDataAdapter = new OleDbDataAdapter(dbCommand);
                 var dt = new DataTable();
                 dbDataAdapter.Fill(dt);
+                foreach (var item in dt.Rows.Cast<DataRow>())
+                {
+                    var f1 = item["f1"];
+                    var f2 = item["f2"];
+                }
             }
             catch (Exception err)
             {
