@@ -8,7 +8,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Gy2021001Template.GameItemTemplate">
-    <Position X="2" Y="8.75" Width="2" />
+    <Position X="2" Y="7.25" Width="2" />
     <TypeIdentifier>
       <HashCode>BAAAEAAACAAAIAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GameItemTemplate.cs</FileName>
@@ -28,7 +28,7 @@
   <Class Name="Gy2021001Template.GameThingTemplateBase">
     <Position X="2" Y="4" Width="2" />
     <TypeIdentifier>
-      <HashCode>AgAAAQgAAAEAAAAAAAAAABABQAABAAIgAAgIACAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAABAAAAAAABAAAAAAAAAAAAgAAAACAAA=</HashCode>
       <FileName>GameTemplateBase.cs</FileName>
     </TypeIdentifier>
   </Class>

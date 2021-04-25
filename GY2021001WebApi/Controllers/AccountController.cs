@@ -70,21 +70,23 @@ namespace GY2021001WebApi.Controllers
         /// </summary>
         /// <param name="loginParamsDto">登陆参数,参见<seealso cref="LoginParamsDto"/> </param>
         /// <returns>Token为空则是用户名或密码错误。</returns>
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        /// <response code="500">用户名或密码错误。</response>
         [HttpPost]
         public ActionResult<LoginReturnDto> Login(LoginParamsDto loginParamsDto)
         {
-            var worldServiceHost = $"{Request.Scheme}://{Request.Host}";
+            //[ProducesResponseType(StatusCodes.Status400BadRequest)]
 
             var gm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
             var gu = gm.Login(loginParamsDto.LoginName, loginParamsDto.Pwd, loginParamsDto.Region);
 
+            var worldServiceHost = $"{Request.Scheme}://{Request.Host}";
             var result = new LoginReturnDto()
             {
                 WorldServiceHost = worldServiceHost,
             };
             if (null != gu)
                 result.Token = gu.CurrentToken.ToBase64String();
+            result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
             return result;
         }
 

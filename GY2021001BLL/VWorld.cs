@@ -1,6 +1,7 @@
 ﻿using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.Extensions.DependencyInjection;
+using OwGame;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -57,17 +58,36 @@ namespace GY2021001BLL
         /// 按照指定模板创建一个对象。
         /// </summary>
         /// <param name="template"></param>
-        /// <param name="parentId">指定一个父Id,如果不指定或为null则忽略。</param>
+        /// <param name="ownerId">指定一个父Id,如果不指定或为null则忽略。</param>
         /// <returns></returns>
-        public GameItem CreateGameItem(GameItemTemplate template, Guid? parentId = null)
+        public GameItem CreateGameItem(GameItemTemplate template, Guid? ownerId = null)
         {
             var result = new GameItem()
             {
                 TemplateId = template.Id,
                 PropertiesString = template.PropertiesString,
+                OwnerId = ownerId,
             };
-            if (parentId != null && parentId.HasValue)
-                result.UserId = parentId;
+            //初始化级别
+            decimal lv;
+            if (!result.Properties.TryGetValue(ProjectConstant.LevelPropertyName, out object lvObj))
+            {
+                lv = 0;
+                result.Properties[ProjectConstant.LevelPropertyName] = lv;
+            }
+            else
+                lv = (decimal)lvObj;
+            foreach (var item in template.Properties)
+            {
+                var seq = item.Value as decimal[];
+                if (null != seq)   //若是属性序列
+                {
+                    result.Properties[item.Key] = seq[(int)lv];
+                }
+                else
+                    result.Properties[item.Key] = item.Value;
+            }
+            result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
             return result;
         }
 
@@ -77,14 +97,58 @@ namespace GY2021001BLL
             var result = new GameChar()
             {
             };
-            var slot = CreateGameItem(templateManager.GetTemplateFromeId(Guid.Parse("{A06B7496-F631-4D51-9872-A2CC84A56EAB}")));
+            //初始化槽
+            var slot = CreateGameItem(templateManager.GetTemplateFromeId(new Guid(ProjectConstant.ZuojiTou)), result.Id);    //创建当前坐骑头的容器
             result.GameItems.Add(slot);
-            slot = CreateGameItem(templateManager.GetTemplateFromeId(Guid.Parse("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}")));
-            result.GameItems.Add(slot);
-            result.InitialCreation();
-            user.GameChars.Add(result);
+            var slotBody = CreateGameItem(templateManager.GetTemplateFromeId(new Guid(ProjectConstant.ZuojiShen)), result.Id);    //创建当前坐骑身的容器
+            result.GameItems.Add(slotBody);
+
+            var ts = templateManager.Id2Template.Values.Where(c => c.Properties.ContainsKey("nm") && "羊" == c.Properties["nm"] as string).ToList();   //获取羊
+            var headTemplate = ts.FirstOrDefault(c => c.IsHead());
+            var bodyTemplate = ts.FirstOrDefault(c => c.IsBody());
+            if (null != headTemplate && null != bodyTemplate)    //若需要的数据完整
+            {
+                var head = CreateGameItem(headTemplate);
+                slot.Children.Add(head);
+                var body = CreateGameItem(bodyTemplate);
+                slotBody.Children.Add(body);
+            }
+
             user.DbContext.Set<GameItem>().AddRange(result.GameItems);
+            user.GameChars.Add(result);
+            result.InitialCreation();
+            //累计属性
+            var coll = from tmp in GetAllItems(result).SelectMany(c => c.Properties)
+                       where tmp.Value is decimal && tmp.Key != ProjectConstant.LevelPropertyName   //避免累加级别属性
+                       group (decimal)tmp.Value by tmp.Key into g
+                       select ValueTuple.Create(g.Key, g.Sum());
+            //select ValueTuple.Create(tmp.Key, (decimal)tmp.Value);
+
+            foreach (var item in coll)
+            {
+                result.Properties[item.Item1] = item.Item2;
+            }
+            result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
+
             return result;
+        }
+
+        /// <summary>
+        /// 枚举所有物品。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        private IEnumerable<GameItem> GetAllItems(GameChar gameChar)
+        {
+            Stack<GameItem> gameItems = new Stack<GameItem>(gameChar.GameItems);
+
+            while (gameItems.TryPop(out GameItem result))
+            {
+                foreach (var item in result.Children)
+                    gameItems.Push(item);
+                yield return result;
+            }
+            yield break;
         }
     }
 

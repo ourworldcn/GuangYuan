@@ -25,8 +25,6 @@ namespace GY2021001DAL
         /// </summary>
         public void InitialCreation()
         {
-            var headId = Guid.Parse("{A06B7496-F631-4D51-9872-A2CC84A56EAB}");
-            var bodyId = Guid.Parse("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}");
         }
 
         //[Key, ForeignKey(nameof(GameUser))]
@@ -49,6 +47,17 @@ namespace GY2021001DAL
         /// 所属用户的导航属性。
         /// </summary>
         public virtual GameUser GameUser { get; set; }
+
+        /// <summary>
+        /// 客户端要记录的一些属性，这个属性客户端可以随意更改，服务器不使用。
+        /// </summary>
+        public string ClientGutsString { get; set; }
+
+        /// <summary>
+        /// 角色显示用的名字。
+        /// </summary>
+        public string DisplayName { get; set; }
+
 
     }
 }

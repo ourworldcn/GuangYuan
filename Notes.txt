@@ -1,0 +1,2 @@
+Add-Migration 21042501 -Context GameTemplateContext
+ Add-Migration 21042501 -Context GY2021001DbContext

@@ -22,7 +22,7 @@ namespace GY2021001DAL
         {
             modelBuilder.Entity<GameUser>().HasIndex(c => c.CreateUtc);
             modelBuilder.Entity<GameUser>().HasIndex(c => c.LoginName).IsUnique();
-            modelBuilder.Entity<GameItem>().HasIndex(c => c.UserId);
+            modelBuilder.Entity<GameItem>().HasIndex(c => c.OwnerId);
             base.OnModelCreating(modelBuilder);
         }
 

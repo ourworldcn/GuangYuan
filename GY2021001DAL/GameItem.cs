@@ -53,7 +53,7 @@ namespace GY2021001DAL
         /// <summary>
         /// 所属角色Id或其他关联对象的Id。
         /// </summary>
-        public Guid? UserId { get; set; }
+        public Guid? OwnerId { get; set; }
 
     }
 }

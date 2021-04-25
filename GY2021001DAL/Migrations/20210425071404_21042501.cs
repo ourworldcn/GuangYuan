@@ -3,10 +3,33 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GY2021001DAL.Migrations
 {
-    public partial class Init : Migration
+    public partial class _21042501 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "GameItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    TemplateId = table.Column<Guid>(nullable: false),
+                    CreateUtc = table.Column<DateTime>(nullable: false),
+                    PropertiesString = table.Column<string>(nullable: true),
+                    Count = table.Column<decimal>(nullable: true),
+                    ParentId = table.Column<Guid>(nullable: true),
+                    OwnerId = table.Column<Guid>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GameItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GameItems_GameItems_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "GameItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateTable(
                 name: "GameSettings",
                 columns: table => new
@@ -43,7 +66,9 @@ namespace GY2021001DAL.Migrations
                     TemplateId = table.Column<Guid>(nullable: false),
                     CreateUtc = table.Column<DateTime>(nullable: false),
                     PropertiesString = table.Column<string>(nullable: true),
-                    GameUserId = table.Column<Guid>(nullable: false)
+                    GameUserId = table.Column<Guid>(nullable: false),
+                    ClientGutsString = table.Column<string>(nullable: true),
+                    DisplayName = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -56,49 +81,20 @@ namespace GY2021001DAL.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "GameItems",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    TemplateId = table.Column<Guid>(nullable: false),
-                    CreateUtc = table.Column<DateTime>(nullable: false),
-                    PropertiesString = table.Column<string>(nullable: true),
-                    Count = table.Column<decimal>(nullable: true),
-                    ParentId = table.Column<Guid>(nullable: true),
-                    UserId = table.Column<Guid>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_GameItems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_GameItems_GameItems_ParentId",
-                        column: x => x.ParentId,
-                        principalTable: "GameItems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_GameItems_GameChar_UserId",
-                        column: x => x.UserId,
-                        principalTable: "GameChar",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_GameChar_GameUserId",
                 table: "GameChar",
                 column: "GameUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_GameItems_OwnerId",
+                table: "GameItems",
+                column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GameItems_ParentId",
                 table: "GameItems",
                 column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_GameItems_UserId",
-                table: "GameItems",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameUsers_CreateUtc",
@@ -115,13 +111,13 @@ namespace GY2021001DAL.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "GameChar");
+
+            migrationBuilder.DropTable(
                 name: "GameItems");
 
             migrationBuilder.DropTable(
                 name: "GameSettings");
-
-            migrationBuilder.DropTable(
-                name: "GameChar");
 
             migrationBuilder.DropTable(
                 name: "GameUsers");

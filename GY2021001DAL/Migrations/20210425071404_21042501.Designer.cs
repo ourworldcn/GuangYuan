@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GY2021001DAL.Migrations
 {
     [DbContext(typeof(GY2021001DbContext))]
-    [Migration("20210423053231_21042301")]
-    partial class _21042301
+    [Migration("20210425071404_21042501")]
+    partial class _21042501
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,7 +26,11 @@ namespace GY2021001DAL.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("ClientGutsString");
+
                     b.Property<DateTime>("CreateUtc");
+
+                    b.Property<string>("DisplayName");
 
                     b.Property<Guid>("GameUserId");
 
@@ -50,15 +54,17 @@ namespace GY2021001DAL.Migrations
 
                     b.Property<DateTime>("CreateUtc");
 
+                    b.Property<Guid?>("OwnerId");
+
                     b.Property<Guid?>("ParentId");
 
                     b.Property<string>("PropertiesString");
 
                     b.Property<Guid>("TemplateId");
 
-                    b.Property<Guid?>("UserId");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
 
                     b.HasIndex("ParentId");
 

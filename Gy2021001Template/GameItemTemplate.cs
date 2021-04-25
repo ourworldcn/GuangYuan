@@ -15,15 +15,10 @@ namespace Gy2021001Template
 
         }
 
-        public GameItemTemplate(Guid id):base(id)
+        public GameItemTemplate(Guid id) : base(id)
         {
 
         }
-
-        /// <summary>
-        /// 显示名称。
-        /// </summary>
-        public string DisplayName { get; set; }
 
         /// <summary>
         /// 游戏内Id服务器不使用。
@@ -50,11 +45,15 @@ namespace Gy2021001Template
                     if (null == _GenusIds)
                     {
                         _GenusIds = GenusIdString.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
-                        ;
                     }
                 return _GenusIds;
             }
         }
+
+        /// <summary>
+        /// 显示名称。
+        /// </summary>
+        public string DisplayName { get; set; }
 
     }
 }

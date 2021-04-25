@@ -63,83 +63,27 @@ namespace GY2021001DAL
             set
             {
                 _PropertiesString = value;
-                ClearProperties();
+                _Properties = null;
             }
         }
 
+        Dictionary<string, object> _Properties;
         /// <summary>
-        /// 刷新属性字符串。
-        /// </summary>
-        /// <param name="value"></param>
-        protected void RefreshProperties(string value)
-        {
-            _StringProperties = new Dictionary<string, string>();
-            _NumberProperties = new Dictionary<string, float>();
-            _SequenceProperties = new Dictionary<string, float[]>();
-            OwHelper.AnalysePropertiesString(value, _StringProperties, _NumberProperties, _SequenceProperties);
-        }
-
-        /// <summary>
-        /// 清除动态属性。
-        /// </summary>
-        protected void ClearProperties()
-        {
-            _NumberProperties = null;
-            _SequenceProperties = null;
-            _StringProperties = null;
-        }
-
-        private Dictionary<string, float> _NumberProperties;
-        /// <summary>
-        /// 数字属性。
+        /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
+        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
         /// </summary>
         [NotMapped]
-        public Dictionary<string, float> NumberProperties
+        public Dictionary<string, object> Properties
         {
             get
             {
                 lock (this)
-                {
-                    if (null == _NumberProperties)
-                        RefreshProperties(PropertiesString);
-                }
-                return _NumberProperties;
-            }
-        }
-
-        private Dictionary<string, float[]> _SequenceProperties;
-        /// <summary>
-        /// 序列属性。
-        /// </summary>
-        [NotMapped]
-        public Dictionary<string, float[]> SequenceProperties
-        {
-            get
-            {
-                lock (this)
-                {
-                    if (null == _SequenceProperties)
-                        RefreshProperties(PropertiesString);
-                }
-                return _SequenceProperties;
-            }
-        }
-
-        private Dictionary<string, string> _StringProperties;
-        /// <summary>
-        /// 字符串属性。
-        /// </summary>
-        [NotMapped]
-        public Dictionary<string, string> StringProperties
-        {
-            get
-            {
-                lock (this)
-                {
-                    if (null == _StringProperties)
-                        RefreshProperties(PropertiesString);
-                }
-                return _StringProperties;
+                    if (null == _Properties)
+                    {
+                        _Properties = new Dictionary<string, object>();
+                        OwHelper.AnalysePropertiesString(PropertiesString, _Properties);
+                    }
+                return _Properties;
             }
         }
     }

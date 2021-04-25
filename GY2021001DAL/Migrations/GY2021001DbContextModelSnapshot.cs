@@ -24,7 +24,11 @@ namespace GY2021001DAL.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("ClientGutsString");
+
                     b.Property<DateTime>("CreateUtc");
+
+                    b.Property<string>("DisplayName");
 
                     b.Property<Guid>("GameUserId");
 
@@ -48,19 +52,19 @@ namespace GY2021001DAL.Migrations
 
                     b.Property<DateTime>("CreateUtc");
 
+                    b.Property<Guid?>("OwnerId");
+
                     b.Property<Guid?>("ParentId");
 
                     b.Property<string>("PropertiesString");
 
                     b.Property<Guid>("TemplateId");
 
-                    b.Property<Guid?>("UserId");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("OwnerId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ParentId");
 
                     b.ToTable("GameItems");
                 });

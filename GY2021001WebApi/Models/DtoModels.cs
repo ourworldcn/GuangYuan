@@ -24,17 +24,6 @@ namespace GY2021001WebApi.Models
         [DataMember(Name = nameof(Pwd))]
         public string Pwd { get; set; }
 
-        /// <summary>
-        /// 实验
-        /// </summary>
-        [DataMember]
-        public Dictionary<string, object> MyProperty { get; } = new Dictionary<string, object>()
-        {
-            {"string","string" },
-            { "nunmber",1.2},
-            { "bytearray",new float[]{9, 1,2,3} },
-        };
-
     }
 
     /// <summary>
@@ -108,10 +97,10 @@ namespace GY2021001WebApi.Models
         public string WorldServiceHost { get; set; }
 
         /// <summary>
-        /// 该账号下所有角色信息的数组。目前仅有一个角色。
+        /// 该账号下所有角色信息的数组。目前有且仅有一个角色。
         /// </summary>
         [DataMember]
-        public List<GameCharDtoBase> GameChars { get; } = new List<GameCharDtoBase>();
+        public List<GameCharDto> GameChars { get; } = new List<GameCharDto>();
 
     }
 
@@ -188,30 +177,18 @@ namespace GY2021001WebApi.Models
         public string Id { get; set; }
 
         /// <summary>
-        /// 数字属性。
+        /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
+        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
         /// </summary>
-        [DataMember(Name = nameof(NumberProperties))]
-        public Dictionary<string, float> NumberProperties { get; } = new Dictionary<string, float>();
-
-        /// <summary>
-        /// 序列属性。
-        /// </summary>
-        [DataMember(Name = nameof(SequencePosition))]
-        public Dictionary<string, float[]> SequenceProperties { get; } = new Dictionary<string, float[]>();
-
-        /// <summary>
-        /// 字符串属性。
-        /// </summary>
-        [DataMember(Name = nameof(StringProperties))]
-        public Dictionary<string, string> StringProperties { get; } = new Dictionary<string, string>();
-
+        [DataMember]
+        Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
     }
 
     /// <summary>
     /// 游戏物品，道具，金币，积分等等的对象。
     /// </summary>
     [DataContract]
-    public class GameItemDto
+    public partial class GameItemDto
     {
         public GameItemDto()
         {
@@ -231,34 +208,23 @@ namespace GY2021001WebApi.Models
         public string TemplateId { get; set; }
 
         /// <summary>
+        /// 创建该对象的通用协调时间。
+        /// </summary>
+        public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
         /// 数量。
         /// </summary>
         [DataMember(Name = nameof(Count))]
         public decimal? Count { get; set; }
 
         /// <summary>
+        /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
+        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
         /// 属性集合。"Properties":{"atk":102,"qult":500,"catalogId":"shfdkjshfkjskfh=="}
         /// </summary>
         [DataMember(Name = nameof(Properties))]
-        public Dictionary<string, float> Properties { get; } = new Dictionary<string, float>();
-
-        /// <summary>
-        /// 数字属性。
-        /// </summary>
-        [DataMember(Name = nameof(NumberProperties))]
-        public Dictionary<string, float> NumberProperties { get; } = new Dictionary<string, float>();
-
-        /// <summary>
-        /// 序列属性。
-        /// </summary>
-        [DataMember(Name = nameof(SequencePosition))]
-        public Dictionary<string, float[]> SequenceProperties { get; } = new Dictionary<string, float[]>();
-
-        /// <summary>
-        /// 字符串属性。
-        /// </summary>
-        [DataMember(Name = nameof(StringProperties))]
-        public Dictionary<string, string> StringProperties { get; } = new Dictionary<string, string>();
+        public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// 所属Id。
@@ -272,17 +238,23 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public List<GameItemDto> Children { get; } = new List<GameItemDto>();
 
+        /// <summary>
+        /// 所属父Id。
+        /// </summary>
+        [DataMember]
+        public string ParentId { get; set; }
+
     }
 
     /// <summary>
     /// 角色属性封装类。
     /// </summary>
     [DataContract]
-    public class GameCharDtoBase
+    public partial class GameCharDto
     {
-        public GameCharDtoBase()
+        public GameCharDto()
         {
-
+            
         }
 
         /// <summary>
@@ -295,7 +267,7 @@ namespace GY2021001WebApi.Models
         /// 角色自身属性。
         /// </summary>
         [DataMember(Name = nameof(Properties))]
-        public Dictionary<string, float> Properties { get; } = new Dictionary<string, float>();
+        public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// 角色显示用的名字。
@@ -308,6 +280,30 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember(Name = nameof(ClientGutsString))]
         public string ClientGutsString { get; set; }
+
+        /// <summary>
+        /// 模板Id。
+        /// </summary>
+        [DataMember]
+        public string TemplateId { get; set; }
+
+        /// <summary>
+        /// 创建该对象的通用协调时间。
+        /// </summary>
+        public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 所属用户Id。
+        /// </summary>
+        [DataMember]
+        public string GameUserId { get; set; }
+
+        /// <summary>
+        /// 用户的容器和物品集合。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> GameItems { get; } = new List<GameItemDto>();
+
     }
 
 }

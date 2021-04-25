@@ -22,9 +22,9 @@ namespace GY2021001WebApi.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult<GameCharDtoBase> GetChar(TokenDtoBase model)
+        public ActionResult<GameCharDto> GetChar(TokenDtoBase model)
         {
-            var result = new GameCharDtoBase()
+            var result = new GameCharDto()
             {
                 Id = Guid.NewGuid().ToBase64String(),
                 ClientGutsString = "{\"客户端记录属性键\":\"值示例\"}",

@@ -347,7 +347,7 @@ namespace GY2021001BLL
                         gu.DbContext = db;
                         foreach (var item in gu.GameChars)
                         {
-                            item.GameItems.AddRange(db.GameItems.Where(c => c.UserId == item.Id));
+                            item.GameItems.AddRange(db.GameItems.Where(c => c.OwnerId == item.Id));
                         }
                         _LoginName2Token.AddOrUpdate(loginName, token, (c1, c2) => token);
                         _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
