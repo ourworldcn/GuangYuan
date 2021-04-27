@@ -1,0 +1,466 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Gy001</name>
+    </assembly>
+    <members>
+        <member name="T:GY2021001WebApi.Controllers.AccountController">
+            <summary>
+            与账号相关的操作控制器。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AccountController.QuicklyRegister">
+            <summary>
+            快速注册。
+            </summary>
+            <returns>返回自动生成的用户名和密码。</returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AccountController.Login(GY2021001WebApi.Models.LoginParamsDto)">
+            <summary>
+            登录接口，调用此接口获取令牌，才可以和服务器进一步交互。
+            </summary>
+            <param name="loginParamsDto">登陆参数,参见<seealso cref="T:GY2021001WebApi.Models.LoginParamsDto"/> </param>
+            <returns>Token为空则是用户名或密码错误。</returns>
+            <response code="500">用户名或密码错误。</response>
+            <response code="429">登录人数过多。请稍后登录。目前按每颗CPU带1000在线计算，未来更具实际数据增减。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AccountController.Nop(GY2021001WebApi.Models.NopParamsDto)">
+            <summary>
+            发送一个空操作以保证闲置下线重新开始计时。
+            </summary>
+            <param name="model">令牌。</param>
+            <returns>true成功的延迟下线时间，false指定令牌无效。</returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AccountController.ChangePwd(GY2021001WebApi.Models.ChangePwdParamsDto)">
+            <summary>
+            更改密码。需要已经登录用户。
+            </summary>
+            <param name="model">参数</param>
+            <returns>true则更改成功，false没有更改成功。</returns>
+        </member>
+        <member name="T:GY2021001WebApi.Controllers.CombatController">
+            <summary>
+            战斗相关的操作。这里的功能以后可能依据需求改为Udp。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.CombatController.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.CombatController.Start(GY2021001WebApi.Models.CombatStartParamsDto)">
+            <summary>
+            通知服务器，客户端开始一场战斗。
+            </summary>
+            <param name="model">参见 CombatStartParamsDto</param>
+            <returns>参见 CombatStartReturnDto</returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.CombatController.End(GY2021001WebApi.Models.CombatEndParamsDto)">
+            <summary>
+            通知服务器客户端结束了一场战斗。
+            </summary>
+            <param name="model">参见 CombatEndParamsDto</param>
+            <returns>参见 CombatEndReturnDto</returns>
+        </member>
+        <member name="T:GY2021001WebApi.Controllers.GameCharController">
+            <summary>
+            角色相关操作。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.Rename(GY2021001WebApi.Models.RenameParamsDto)">
+            <summary>
+            更改角色的名字。当前只能更改一次。
+            </summary>
+            <param name="model">参数。</param>
+            <returns>true成功更改。false有重名。</returns>
+            <response code="401">令牌错误。</response>
+            <response code="402">没有必要的道具。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.ModifyClentString(GY2021001WebApi.Models.ModifyClentStringParamsDto)">
+            <summary>
+            修改客户端字符串。
+            </summary>
+            <param name="model">参见 ModifyClentStringParamsDto。</param>
+            <returns>总是返回成功</returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="T:GY2021001WebApi.Controllers.VWorldController">
+            <summary>
+            世界服务器的相关操作。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.VWorldController.GetStartTime">
+            <summary>
+            获取服务器实际运行的时间。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.VWorldController.NotifyShutdown(System.String,System.String)">
+            <summary>
+            通告服务器下线。
+            </summary>
+            <param name="admin"></param>
+            <param name="pwd"></param>
+            <returns></returns>
+            <response code="401">管理员账号或密码错误。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.VWorldController.GetTemplates">
+            <summary>
+            获取所有模板。
+            </summary>
+            <returns>所有模板的集合。</returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.VWorldController.GetResourceServerUrl">
+            <summary>
+            获取资源服务器地址。
+            </summary>
+            <returns></returns>
+            <response code="201">调用过于频繁。</response>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GameItemDto">
+            <summary>
+            游戏物品，道具，金币，积分等等的对象。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GameItemDto.op_Explicit(GY2021001WebApi.Models.GameItemDto)~GY2021001DAL.GameItem">
+            <summary>
+            从传输对象获取数据对象。
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GameItemDto.op_Explicit(GY2021001DAL.GameItem)~GY2021001WebApi.Models.GameItemDto">
+            <summary>
+            从数据对象获取传输对象。
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemDto.Id">
+            <summary>
+            唯一Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemDto.TemplateId">
+            <summary>
+            物品模板的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemDto.CreateUtc">
+            <summary>
+            创建该对象的通用协调时间。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemDto.Count">
+            <summary>
+            数量。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemDto.Properties">
+            <summary>
+            对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
+            特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
+            属性集合。"Properties":{"atk":102,"qult":500,"catalogId":"shfdkjshfkjskfh=="}
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemDto.OwnerId">
+            <summary>
+            所属Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemDto.Children">
+            <summary>
+            下属物品对象。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemDto.ParentId">
+            <summary>
+            所属父Id。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GameCharDto">
+            <summary>
+            角色属性封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GameCharDto.op_Explicit(GY2021001WebApi.Models.GameCharDto)~GY2021001DAL.GameChar">
+            <summary>
+            从传输对象获取数据对象。
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GameCharDto.op_Explicit(GY2021001DAL.GameChar)~GY2021001WebApi.Models.GameCharDto">
+            <summary>
+            从数据对象获取传输对象。
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCharDto.Id">
+            <summary>
+            该角色的唯一Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCharDto.Properties">
+            <summary>
+            角色自身属性。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCharDto.DisplayName">
+            <summary>
+            角色显示用的名字。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCharDto.ClientGutsString">
+            <summary>
+            客户端要记录的一些属性，这个属性客户端可以随意更改，服务器不使用。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCharDto.TemplateId">
+            <summary>
+            模板Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCharDto.CreateUtc">
+            <summary>
+            创建该对象的通用协调时间。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCharDto.GameUserId">
+            <summary>
+            所属用户Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCharDto.GameItems">
+            <summary>
+            用户的容器和物品集合。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GameItemTemplateDto">
+            <summary>
+            游戏物品，道具，金币，积分等等对象的模板。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemTemplateDto.Id">
+            <summary>
+            唯一Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemTemplateDto.Properties">
+            <summary>
+            对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
+            特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.TokenDtoBase">
+            <summary>
+            使用令牌的基类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.TokenDtoBase.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.TokenDtoBase.Token">
+            <summary>
+            令牌。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.QuicklyRegisterReturnDto">
+            <summary>
+            快速隐式注册接口的返回类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.QuicklyRegisterReturnDto.LoginName">
+            <summary>
+            登录名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.QuicklyRegisterReturnDto.Pwd">
+            <summary>
+            密码。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.PagingWithTokenParamsDtoBase">
+            <summary>
+            分页控制数据。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.PagingWithTokenParamsDtoBase.StartIndex">
+            <summary>
+            起始的索引号。从0开始表示第一个。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.PagingWithTokenParamsDtoBase.Count">
+            <summary>
+            获取的最多数量。注意返回的实际数量可能少于要求数量，因为可能末尾数据不够。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.PagingRetunDtoBase">
+            <summary>
+            返回的分页数据的基类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.PagingRetunDtoBase.MaxCount">
+            <summary>
+            最多有多少数据。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.LoginReturnDto">
+            <summary>
+            登录接口返回类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginReturnDto.WorldServiceHost">
+            <summary>
+            世界服务器的主机地址。使用此地址拼接后续的通讯地址。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginReturnDto.GameChars">
+            <summary>
+            该账号下所有角色信息的数组。目前有且仅有一个角色。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.LoginParamsDto">
+            <summary>
+            登录接口参数类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginParamsDto.LoginName">
+            <summary>
+            登录名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginParamsDto.Pwd">
+            <summary>
+            密码。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginParamsDto.Region">
+            <summary>
+            登录客户端类型。目前可能值是IOS或Android。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ChangePwdParamsDto">
+            <summary>
+            改变密码接口的参数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangePwdParamsDto.NewPwd">
+            <summary>
+            新密码。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.NopParamsDto">
+            <summary>
+            发送一个空操作的参数。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.RenameParamsDto">
+            <summary>
+            更改名字接口的参数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RenameParamsDto.DisplayName">
+            <summary>
+            要更改的名字。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ClientGameItemDto">
+            <summary>
+            客户端生成虚拟物品给服务器发送信息时，使用该类封装数据。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ClientGameItemDto.GId">
+            <summary>
+            简化模板Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ClientGameItemDto.Properties">
+            <summary>
+            属性集合。
+            atkne是攻击资质,nhpne是最大血量资质，qltne是质量资质。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ClientGameItemDto.Count">
+            <summary>
+            数量。对于堆叠物品是其一堆的数量，比如金币，堆叠且无堆叠上线(GId是指明为金币的)。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ModifyClentStringParamsDto">
+            <summary>
+            修改客户端字符串的接口参数类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyClentStringParamsDto.ClientString">
+            <summary>
+            新的客户端字符串。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatStartParamsDto">
+            <summary>
+            开始战斗的参数传输类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatStartParamsDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartParamsDto.DungeonId">
+            <summary>
+            关卡Id。如果是小关Id表示该小关，如果是大关Id则表示整个大关通关。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
+            <summary>
+            开始战斗的返回数据传输类
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatStartReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatEndParamsDto">
+            <summary>
+            结束战斗的参数传输类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatEndParamsDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.DungeonId">
+            <summary>
+            关卡Id。如果是小关Id表示该小关，如果是大关Id则表示整个大关通关。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
+            <summary>
+            结束战斗的返回数据传输类
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatEndReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="T:Gy001.Controllers.WeatherForecastController">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Gy001.Program.LoadCache(Microsoft.Extensions.Hosting.IHost)">
+            <summary>
+            加载缓存。
+            </summary>
+            <param name="host"></param>
+        </member>
+        <member name="M:Gy001.Program.CreateDb(Microsoft.Extensions.Hosting.IHost)">
+            <summary>
+            创建数据库。
+            </summary>
+            <param name="host"></param>
+        </member>
+    </members>
+</doc>

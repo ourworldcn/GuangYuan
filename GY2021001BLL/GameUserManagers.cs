@@ -65,13 +65,14 @@ namespace GY2021001BLL
             _ServiceProvider = serviceProvider; //GetRequiredService
             Initialize();
         }
+
         #endregion 构造函数
 
         #region 私有方法
 
         private void Initialize()
         {
-            VWorld world = _ServiceProvider.GetService(typeof(VWorld)) as VWorld;
+            VWorld world = _ServiceProvider.GetRequiredService<VWorld>();
             _LogoutTimer = new Timer(LogoutFunc, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             _SaveThread = new Thread(SaveFunc) { IsBackground = false, };
             _SaveThread.Start();
@@ -198,6 +199,15 @@ namespace GY2021001BLL
         /// 内部同步锁。
         /// </summary>
         public object ThisLocker { get; } = new object();
+
+        VWorld _World;
+        public VWorld World { get => _World ?? (_World = _ServiceProvider.GetRequiredService<VWorld>()); }
+
+        /// <summary>
+        /// 获取在线人数。
+        /// </summary>
+        public int OnlineCount { get => _Token2User.Count; }
+
         #endregion 公共属性
 
         #region 公共方法
@@ -385,7 +395,7 @@ namespace GY2021001BLL
         /// <returns>返回用户对象，当前版本，会默认生成唯一一个角色。指定了用户名且重名的情况将导致返回null。</returns>
         public GameUser QuicklyRegister(ref string pwd, string loginName = null)
         {
-            var result = new GameUser(); //gy210415123456 密码12位大小写
+            GameUser result = new GameUser(); //gy210415123456 密码12位大小写
             var db = _ServiceProvider.GetService(typeof(GY2021001DbContext)) as GY2021001DbContext;
             {
                 //生成返回值
@@ -425,9 +435,10 @@ namespace GY2021001BLL
                     PwdHash = pwdHash,
                     DbContext = db,
                 };
-                db.GameUsers.Add(gu);
                 var vw = _ServiceProvider.GetService<VWorld>();
+
                 var gc = vw.CreateChar(gu);
+                db.GameUsers.Add(gu);
                 db.SaveChanges();
             }
             return result;

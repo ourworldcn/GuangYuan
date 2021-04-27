@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.1500
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GY2021001WebApi", "GY2021001WebApi\GY2021001WebApi.csproj", "{3ED1BEC3-6CF0-4D9B-A57C-8FFA597B185C}"
 EndProject
@@ -28,6 +28,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "通讯层", "通讯层", "{260D5C05-2F1A-4BC2-852F-7E20AF1E30BF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "基础库", "基础库", "{0A0F3636-AD2E-4799-8B56-0B19DEFDDB4B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gy001", "Gy001\Gy001.csproj", "{57503988-52A1-486B-8B31-BC861D86C088}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +61,10 @@ Global
 		{C2D1831F-5FF5-41A0-91E6-88370A7DF2E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2D1831F-5FF5-41A0-91E6-88370A7DF2E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2D1831F-5FF5-41A0-91E6-88370A7DF2E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57503988-52A1-486B-8B31-BC861D86C088}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57503988-52A1-486B-8B31-BC861D86C088}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57503988-52A1-486B-8B31-BC861D86C088}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57503988-52A1-486B-8B31-BC861D86C088}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +75,7 @@ Global
 		{1B7DAC34-B117-4117-80CB-DCB353ACB852} = {E4A88252-9E88-4A7B-8F6F-322EBCC014D7}
 		{6DA599E3-3D98-461F-ABBF-E58C52F0FA7B} = {CA6CC6F6-6C68-4C3D-ACAC-C0604B899FB1}
 		{0767DE86-6BF0-4CA5-B199-B20E259A6EE0} = {0A0F3636-AD2E-4799-8B56-0B19DEFDDB4B}
+		{57503988-52A1-486B-8B31-BC861D86C088} = {260D5C05-2F1A-4BC2-852F-7E20AF1E30BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {91C02B99-9124-4A09-9C66-0C5F2514C0CE}

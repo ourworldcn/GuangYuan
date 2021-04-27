@@ -1,10 +1,3 @@
-ï»¿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 using GY2021001BLL;
 using GY2021001DAL;
 using Gy2021001Template;
@@ -15,12 +8,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Serialization;
-using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.OpenApi.Models;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
-namespace GY2021001WebApi
+namespace Gy001
 {
     public class Startup
     {
@@ -36,40 +35,46 @@ namespace GY2021001WebApi
         {
             var userDbConnectionString = Configuration.GetConnectionString("DefaultConnection");
             var templateDbConnectionString = Configuration.GetConnectionString("TemplateDbConnection");
-            #region é…ç½®é€šç”¨æœåŠ¡
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(options =>
+            #region ÅäÖÃÍ¨ÓÃ·şÎñ
+
+            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(options =>
+            //{
+            //    options.SerializerSettings.ContractResolver = new DefaultContractResolver()
+            //    {
+            //    };
+            //});
+            //services.AddDbContext<GY2021001DbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString));
+            //services.AddDbContext<GameTemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString));
+
+            services.AddControllers().AddJsonOptions(options=>
             {
-                options.SerializerSettings.ContractResolver = new DefaultContractResolver()
-                {
-                };
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
 
-            services.AddDbContext<GY2021001DbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString));
-            services.AddDbContext<GameTemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString));
+            #endregion ÅäÖÃÍ¨ÓÃ·şÎñ
 
-            #endregion é…ç½®é€šç”¨æœåŠ¡
-
-            #region é…ç½®Swagger
-            //æ³¨å†ŒSwaggerç”Ÿæˆå™¨ï¼Œå®šä¹‰ä¸€ä¸ªSwagger æ–‡æ¡£
+            #region ÅäÖÃSwagger
+            //×¢²áSwaggerÉú³ÉÆ÷£¬¶¨ÒåÒ»¸öSwagger ÎÄµµ
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info
+                c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "å…‰å…ƒ001",
-                    Description = "æ¥å£æ–‡æ¡£v1.1.2"
+                    Title = "¹âÔª001",
+                    Description = "½Ó¿ÚÎÄµµv1.1.2"
                 });
-                // ä¸º Swagger è®¾ç½®xmlæ–‡æ¡£æ³¨é‡Šè·¯å¾„
+                // Îª Swagger ÉèÖÃxmlÎÄµµ×¢ÊÍÂ·¾¶
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
             });
-            #endregion é…ç½®Swagger
+            #endregion ÅäÖÃSwagger
 
-            #region é…ç½®æ¸¸æˆä¸“ç”¨æœåŠ¡
+            #region ÅäÖÃÓÎÏ·×¨ÓÃ·şÎñ
 
             services.AddTransient<HashAlgorithm>(c => SHA256.Create());
+
             services.AddTransient(options => new GY2021001DbContext(new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
             services.AddSingleton(options => new GameTemplateContext(new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
 
@@ -77,42 +82,40 @@ namespace GY2021001WebApi
             services.AddSingleton<VWorld>();
             services.AddSingleton<GameCharManager>();
             services.AddSingleton<CombatManager>();
-            #endregion é…ç½®æ¸¸æˆä¸“ç”¨æœåŠ¡
-
+            #endregion ÅäÖÃÓÎÏ·×¨ÓÃ·şÎñ
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            #region å¯ç”¨é€šç”¨æœåŠ¡
-
+            #region ÆôÓÃÍ¨ÓÃ·şÎñ
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
 
-            //app.UseHttpsRedirection();
-            app.UseMvc();
-            #endregion å¯ç”¨é€šç”¨æœåŠ¡
+            #endregion ÆôÓÃÍ¨ÓÃ·şÎñ
 
-            #region å¯ç”¨ä¸­é—´ä»¶æœåŠ¡ç”ŸæˆSwagger
+            #region ÆôÓÃÖĞ¼ä¼ş·şÎñÉú³ÉSwagger
             app.UseSwagger();
-            //å¯ç”¨ä¸­é—´ä»¶æœåŠ¡ç”ŸæˆSwaggerUIï¼ŒæŒ‡å®šSwagger JSONç»ˆç»“ç‚¹
+            //ÆôÓÃÖĞ¼ä¼ş·şÎñÉú³ÉSwaggerUI£¬Ö¸¶¨Swagger JSONÖÕ½áµã
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", env.EnvironmentName + " V1");
-                c.RoutePrefix = string.Empty;//è®¾ç½®æ ¹èŠ‚ç‚¹è®¿é—®
+                c.RoutePrefix = string.Empty;//ÉèÖÃ¸ù½Úµã·ÃÎÊ
             });
-            #endregion å¯ç”¨ä¸­é—´ä»¶æœåŠ¡ç”ŸæˆSwagger
+            #endregion ÆôÓÃÖĞ¼ä¼ş·şÎñÉú³ÉSwagger
 
-            #region åˆå§‹åŒ–å¿…è¦ä¿¡æ¯
+            app.UseHttpsRedirection();
 
-            #endregion åˆå§‹åŒ–å¿…è¦ä¿¡æ¯
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

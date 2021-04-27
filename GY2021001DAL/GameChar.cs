@@ -9,6 +9,7 @@ namespace GY2021001DAL
     [Table(nameof(GameChar))]
     public class GameChar : GameThingBase
     {
+
         public GameChar()
         {
             Id = Guid.NewGuid();
@@ -20,11 +21,23 @@ namespace GY2021001DAL
         }
 
         /// <summary>
+        /// 构造函数。用于延迟加载。
+        /// </summary>
+        /// <param name="lazyLoader">延迟加载器。</param>
+        //private GameChar(Action<object, string> lazyLoader)
+        //{
+        //    LazyLoader = lazyLoader;
+        //}
+
+        //public Action<object,string> LazyLoader { get; set; }
+
+        /// <summary>
         /// 一个角色初始创建时被调用。
         /// 通常这里预制一些道具，装备。
         /// </summary>
         public void InitialCreation()
         {
+            
         }
 
         //[Key, ForeignKey(nameof(GameUser))]

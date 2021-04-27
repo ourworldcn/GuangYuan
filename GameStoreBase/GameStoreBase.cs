@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace OwGame
@@ -23,7 +24,23 @@ namespace OwGame
         public Guid Id { get; set; }
     }
 
-    public class OwHelper
+    public static class PocoLoadingExtensions
+    {
+        public static TRelated Load<TRelated>(
+            this Action<object, string> loader,
+            object entity,
+            ref TRelated navigationField,
+            [CallerMemberName] string navigationName = null)
+            where TRelated : class
+        {
+            loader?.Invoke(entity, navigationName);
+
+            return navigationField;
+        }
+
+    }
+
+    public static class OwHelper
     {
         /// <summary>
         /// 分割属性字符串。
@@ -127,6 +144,27 @@ namespace OwGame
                 result.Remove(result.Length - 1, 1);
             return result.ToString();
         }
+
+        /// <summary>
+        /// 遍历一个树结构的所有子项。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="roots">多个根的节点集合。</param>
+        /// <param name="children">从每个节点获取其所有子节点的委托。</param>
+        /// <returns>一个可枚举集合，包含所有根下的所有节点。</returns>
+        public static IEnumerable<T> GetAllSubItemsOfTree<T>(IEnumerable<T> roots, Func<T, IEnumerable<T>> children)
+        {
+            Stack<T> gameItems = new Stack<T>(roots);
+
+            while (gameItems.TryPop(out T result))
+            {
+                foreach (var item in children(result))
+                    gameItems.Push(item);
+                yield return result;
+            }
+            yield break;
+        }
+
     }
 
     public static class SpecialIds

@@ -91,6 +91,11 @@ namespace GY2021001BLL
             return result;
         }
 
+        /// <summary>
+        /// 创建角色。
+        /// </summary>
+        /// <param name="user">角色所属对象。</param>
+        /// <returns></returns>
         public GameChar CreateChar(GameUser user)
         {
             GameItemTemplateManager templateManager = _ServiceProvider.GetService<GameItemTemplateManager>();
@@ -115,10 +120,12 @@ namespace GY2021001BLL
             }
 
             user.DbContext.Set<GameItem>().AddRange(result.GameItems);
-            user.GameChars.Add(result);
+            //result.GameUserId = user.Id;
+            //user.DbContext.Set<GameChar>().Add(result);
             result.InitialCreation();
             //累计属性
-            var coll = from tmp in GetAllItems(result).SelectMany(c => c.Properties)
+            var allProps = OwHelper.GetAllSubItemsOfTree(result.GameItems, c => c.Children).SelectMany(c => c.Properties);
+            var coll = from tmp in allProps
                        where tmp.Value is decimal && tmp.Key != ProjectConstant.LevelPropertyName   //避免累加级别属性
                        group (decimal)tmp.Value by tmp.Key into g
                        select ValueTuple.Create(g.Key, g.Sum());
@@ -130,26 +137,11 @@ namespace GY2021001BLL
             }
             result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
 
+            user.GameChars.Add(result);
+
             return result;
         }
 
-        /// <summary>
-        /// 枚举所有物品。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        private IEnumerable<GameItem> GetAllItems(GameChar gameChar)
-        {
-            Stack<GameItem> gameItems = new Stack<GameItem>(gameChar.GameItems);
-
-            while (gameItems.TryPop(out GameItem result))
-            {
-                foreach (var item in result.Children)
-                    gameItems.Push(item);
-                yield return result;
-            }
-            yield break;
-        }
     }
 
 

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>84749311-3dcb-4fe7-b997-900da8e7f19c</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;1591</NoWarn>
+    <DocumentationFile>D:\Users\光元\source\repos\GY2021001\Gy001\Gy001.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="3.1.14" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GameStoreBase\GameStoreBase.csproj" />
+    <ProjectReference Include="..\GY2021001BLL\GY2021001BLL.csproj" />
+    <ProjectReference Include="..\GY2021001DAL\GY2021001DAL.csproj" />
+    <ProjectReference Include="..\Gy2021001Template\Gy2021001Template.csproj" />
+  </ItemGroup>
+
+
+</Project>

@@ -57,11 +57,7 @@ namespace GY2021001WebApi.Controllers
             }
             catch (Exception err)
             {
-                return new QuicklyRegisterReturnDto()
-                {
-                    LoginName = err.Message,
-                    Pwd = err.StackTrace,
-                };
+                return BadRequest(err.Message);
             }
         }
 

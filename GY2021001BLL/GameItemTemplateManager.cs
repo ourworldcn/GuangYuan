@@ -62,6 +62,9 @@ namespace GY2021001BLL
 
         private ConcurrentDictionary<Guid, GameItemTemplate> _Id2Template;
 
+        /// <summary>
+        /// 所有模板的字典。键是模板Id,值是模板对象。
+        /// </summary>
         public ConcurrentDictionary<Guid, GameItemTemplate> Id2Template
         {
             get
