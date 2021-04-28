@@ -44,10 +44,10 @@ namespace Gy001
             //    {
             //    };
             //});
-            //services.AddDbContext<GY2021001DbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString));
-            //services.AddDbContext<GameTemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString));
+            //services.AddDbContext<GY2021001DbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString),ServiceLifetime.Transient);
+            services.AddDbContext<GameTemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString), ServiceLifetime.Singleton);
 
-            services.AddControllers().AddJsonOptions(options=>
+            services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
@@ -76,12 +76,23 @@ namespace Gy001
             services.AddTransient<HashAlgorithm>(c => SHA256.Create());
 
             services.AddTransient(options => new GY2021001DbContext(new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
-            services.AddSingleton(options => new GameTemplateContext(new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
+            //services.AddSingleton(options => new GameTemplateContext(new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
 
-            services.AddSingleton<GameItemTemplateManager>();
+            services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
+            {
+                Loaded = SpecificProject.ItemTemplateLoaded,
+            }));
             services.AddSingleton<VWorld>();
-            services.AddSingleton<GameCharManager>();
+            services.AddSingleton(c => new GameItemManager(c, new GameItemManagerOptions()
+            {
+                ItemCreated = SpecificProject.GameItemCreated,
+            }));
+            services.AddSingleton(c => new GameCharManager(c, new GameCharManagerOptions()
+            {
+                CharCreated = SpecificProject.CharCreated,
+            }));
             services.AddSingleton<CombatManager>();
+
             #endregion 配置游戏专用服务
         }
 
@@ -106,7 +117,7 @@ namespace Gy001
             });
             #endregion 启用中间件服务生成Swagger
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 

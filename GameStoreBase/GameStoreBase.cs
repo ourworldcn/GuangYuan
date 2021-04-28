@@ -88,7 +88,7 @@ namespace OwGame
         {
             if (string.IsNullOrWhiteSpace(propStr))
                 return;
-            var coll = propStr.Trim(' ', '"').Replace(Environment.NewLine, " ").Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var coll = propStr.Trim(' ', '"').Replace(Environment.NewLine, " ").Split(new char[] { ',', '，' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var item in coll)
             {
                 var guts = item.Split('=', StringSplitOptions.RemoveEmptyEntries);
@@ -118,7 +118,7 @@ namespace OwGame
         /// <summary>
         /// 从游戏属性字典获取字符串表现形式。
         /// </summary>
-        /// <param name="dic"></param>
+        /// <param name="dic">可以是空字典，但不能是空引用。</param>
         /// <returns></returns>
         public static string ToPropertiesString(IDictionary<string, object> dic)
         {
@@ -140,7 +140,7 @@ namespace OwGame
                     result.Append(item.Value as string).Append(',');
                 }
             }
-            if (result[result.Length - 1] == ',')   //若尾部是逗号
+            if (result.Length > 0 && result[result.Length - 1] == ',')   //若尾部是逗号
                 result.Remove(result.Length - 1, 1);
             return result.ToString();
         }

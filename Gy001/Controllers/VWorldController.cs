@@ -56,7 +56,8 @@ namespace GY2021001WebApi.Controllers
         /// 获取所有模板。
         /// </summary>
         /// <returns>所有模板的集合。</returns>
-        [HttpGet][ResponseCache(Location =ResponseCacheLocation.Any,Duration =600)]
+        [HttpGet]
+        [ResponseCache(Location = ResponseCacheLocation.Any, Duration = 600)]
         public ActionResult<List<GameItemTemplateDto>> GetTemplates()
         {
             var gitm = HttpContext.RequestServices.GetRequiredService<GameItemTemplateManager>();

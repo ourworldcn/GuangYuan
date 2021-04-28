@@ -36,6 +36,8 @@ namespace Gy001Tools
             var guts = string.Join(Environment.NewLine, lst.Select(c => c.ToString("B")));
 
             tbGuts.Text = guts;
+
+            tbClientGuts.Text= string.Join(Environment.NewLine, lst.Select(c => Convert.ToBase64String(c.ToByteArray())));
             tbGuts.Focus();
             tbGuts.SelectAll();
         }

@@ -9,6 +9,81 @@ namespace GY2021001WebApi.Models
     #region 基础数据
 
     /// <summary>
+    /// 该项目使用的特定常量。
+    /// </summary>
+    public static class DtoConstant
+    {
+        #region 固定模板Id
+        #region 废弃模板Id
+
+        /// <summary>
+        /// 当前装备的坐骑头容器模板Id。已废弃。
+        /// </summary>
+        public static readonly Guid ZuojiTou = new Guid("{A06B7496-F631-4D51-9872-A2CC84A56EAB}");
+
+        /// <summary>
+        /// 当前装备的坐骑身体容器模板Id。已废弃
+        /// </summary>
+        public static readonly Guid ZuojiShen = new Guid("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}");
+        #endregion 废弃模板Id
+
+        #region 坐骑相关Id
+
+        /// <summary>
+        /// 坐骑头和身体需要一个容器组合起来。此类容器的模板Id就是这个。
+        /// </summary>
+        public static readonly Guid ZuojiZuheRongqi = new Guid("{6E179D54-5836-4E0B-B30D-756BD07FF196}");
+
+        /// <summary>
+        /// 坐骑组合中的头容器。
+        /// </summary>
+        public static readonly Guid ZuojiZuheTou = new Guid("{740FEBF3-7472-43CB-8A10-798F6C61335B}");
+
+        /// <summary>
+        /// 坐骑组合中的身体容器。
+        /// </summary>
+        public static readonly Guid ZuojiZuheShenti = new Guid("{F8B1987D-FDF3-4090-9E9B-EBAF1DB2DCCD}");
+        #endregion 坐骑相关Id
+
+        /// <summary>
+        /// 当前坐骑的容器Id。
+        /// </summary>
+        public static readonly Guid DangqianZuoqiCao = new Guid("{B19EE5AB-57E3-4513-8228-9F2A8364358E}");
+
+        /// <summary>
+        /// 角色模板Id。当前只有一个模板。
+        /// </summary>
+        public static readonly Guid CharTemplateId = new Guid("{0CF39269-6301-470B-8527-07AF29C5EEEC}");
+
+        #endregion 固定模板Id
+
+        public const string LevelPropertyName = "lv";
+    }
+
+    public static class DtoHelper
+    {
+        /// <summary>
+        /// 用Base64编码Guid类型。
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        public static string ToBase64String(Guid guid)
+        {
+            return Convert.ToBase64String(guid.ToByteArray());
+        }
+
+        /// <summary>
+        /// 从Base64编码转换获取Guid值。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static Guid FromBase64String(string str)
+        {
+            return new Guid(Convert.FromBase64String(str));
+        }
+    }
+
+    /// <summary>
     /// 使用令牌的基类。
     /// </summary>
     [DataContract]
@@ -193,6 +268,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// 该类的GId。
+        /// </summary>
+        [DataMember]
+        public int GId { get; set; }
     }
 
     /// <summary>
@@ -255,6 +336,33 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string ParentId { get; set; }
 
+        /// <summary>
+        /// 获取坐骑的头，如果该物品不是坐骑则这里返回null。
+        /// </summary>
+        [IgnoreDataMember]
+        public GameItemDto Head
+        {
+            get
+            {
+                var id = DtoHelper.ToBase64String(DtoConstant.ZuojiZuheTou);
+                var result = Children.FirstOrDefault(c => c.TemplateId == id)?.Children?.FirstOrDefault();
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// 获取坐骑的身体，如果该物品不是坐骑则这里返回null。
+        /// </summary>
+        [IgnoreDataMember]
+        public GameItemDto Body
+        {
+            get
+            {
+                var id = DtoHelper.ToBase64String(DtoConstant.ZuojiZuheShenti);
+                var result = Children.FirstOrDefault(c => c.TemplateId == id)?.Children?.FirstOrDefault();
+                return result;
+            }
+        }
     }
 
     /// <summary>
@@ -314,6 +422,20 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<GameItemDto> GameItems { get; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 快捷属性:角色当前骑乘的坐骑。如果没有则返回null
+        /// </summary>
+        [IgnoreDataMember]
+        public GameItemDto CurrentMounts
+        {
+            get
+            {
+                var id = DtoHelper.ToBase64String(DtoConstant.DangqianZuoqiCao);
+                var result = GameItems.FirstOrDefault(c => c.TemplateId == id)?.Children.FirstOrDefault();
+                return result;
+            }
+        }
 
     }
 

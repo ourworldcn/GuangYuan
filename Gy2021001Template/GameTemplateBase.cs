@@ -69,5 +69,38 @@ namespace Gy2021001Template
             }
         }
 
+        /// <summary>
+        /// 显示名称。
+        /// </summary>
+        public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 该模板创建对象应有的子模板Id字符串集合。用逗号分割。
+        /// </summary>
+        public string ChildrenTemplateIdString { get; set; }
+
+        private List<Guid> _ChildrenTemplateIds;
+
+        /// <summary>
+        /// 该模板创建对象应有的子模板Id集合。
+        /// </summary>
+        [NotMapped]
+        public List<Guid> ChildrenTemplateIds
+        {
+            get
+            {
+                lock (this)
+                    if (null == _ChildrenTemplateIds)
+                    {
+                        if (string.IsNullOrWhiteSpace(ChildrenTemplateIdString))
+                            _ChildrenTemplateIds = new List<Guid>();
+                        else
+                            _ChildrenTemplateIds = ChildrenTemplateIdString.Split(new char[] { ',', '，' }, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
+                    }
+                return _ChildrenTemplateIds;
+            }
+        }
+
+
     }
 }

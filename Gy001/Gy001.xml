@@ -176,6 +176,16 @@
             所属父Id。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GameItemDto.Head">
+            <summary>
+            获取坐骑的头，如果该物品不是坐骑则这里返回null。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemDto.Body">
+            <summary>
+            获取坐骑的身体，如果该物品不是坐骑则这里返回null。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GameCharDto">
             <summary>
             角色属性封装类。
@@ -233,6 +243,11 @@
             用户的容器和物品集合。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GameCharDto.CurrentMounts">
+            <summary>
+            快捷属性:角色当前骑乘的坐骑。如果没有则返回null
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GameItemTemplateDto">
             <summary>
             游戏物品，道具，金币，积分等等对象的模板。
@@ -248,6 +263,65 @@
             对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
             特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
             </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameItemTemplateDto.GId">
+            <summary>
+            该类的GId。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.DtoConstant">
+            <summary>
+            该项目使用的特定常量。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiTou">
+            <summary>
+            当前装备的坐骑头容器模板Id。已废弃。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiShen">
+            <summary>
+            当前装备的坐骑身体容器模板Id。已废弃
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiZuheRongqi">
+            <summary>
+            坐骑头和身体需要一个容器组合起来。此类容器的模板Id就是这个。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiZuheTou">
+            <summary>
+            坐骑组合中的头容器。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiZuheShenti">
+            <summary>
+            坐骑组合中的身体容器。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.DangqianZuoqiCao">
+            <summary>
+            当前坐骑的容器Id。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.CharTemplateId">
+            <summary>
+            角色模板Id。当前只有一个模板。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.DtoHelper.ToBase64String(System.Guid)">
+            <summary>
+            用Base64编码Guid类型。
+            </summary>
+            <param name="guid"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GY2021001WebApi.Models.DtoHelper.FromBase64String(System.String)">
+            <summary>
+            从Base64编码转换获取Guid值。
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
         </member>
         <member name="T:GY2021001WebApi.Models.TokenDtoBase">
             <summary>

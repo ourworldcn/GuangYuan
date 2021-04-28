@@ -1,6 +1,8 @@
 ﻿using GY2021001DAL;
+using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OwGame;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,10 +13,26 @@ using System.Threading;
 
 namespace GY2021001BLL
 {
+    /// <summary>
+    /// GameCharManager类的配置类。
+    /// </summary>
+    public class GameCharManagerOptions
+    {
+        public GameCharManagerOptions()
+        {
+
+        }
+
+        /// <summary>
+        /// 角色被创建后调用。
+        /// </summary>
+        public Func<IServiceProvider, GameChar, bool> CharCreated { get; set; }
+    }
+
     public class GameCharManager
     {
         #region 字段
-
+        private readonly GameCharManagerOptions _Options;
         private bool _QuicklyRegisterSuffixSeqInit = false;
         private int _QuicklyRegisterSuffixSeq;
 
@@ -66,6 +84,18 @@ namespace GY2021001BLL
             Initialize();
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        /// <param name="options"></param>
+        public GameCharManager(IServiceProvider serviceProvider, GameCharManagerOptions options)
+        {
+            _ServiceProvider = serviceProvider; //GetRequiredService
+            _Options = options;
+            Initialize();
+        }
+
         #endregion 构造函数
 
         #region 私有方法
@@ -74,7 +104,7 @@ namespace GY2021001BLL
         {
             VWorld world = _ServiceProvider.GetRequiredService<VWorld>();
             _LogoutTimer = new Timer(LogoutFunc, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-            _SaveThread = new Thread(SaveFunc) { IsBackground = false, };
+            _SaveThread = new Thread(SaveFunc) { IsBackground = false, Priority = ThreadPriority.BelowNormal };
             _SaveThread.Start();
             world.RequestShutdown.Register(() =>
             {
@@ -178,6 +208,7 @@ namespace GY2021001BLL
                 }
             }
             //服务终止
+            Thread.CurrentThread.Priority = ThreadPriority.Normal;
             while (_Token2User.Count > 0)   //把所有还在线的用户强制注销
                 foreach (var item in _Token2User.Values)
                 {
@@ -208,6 +239,12 @@ namespace GY2021001BLL
         /// </summary>
         public int OnlineCount { get => _Token2User.Count; }
 
+        private GameItemTemplateManager _ItemTemplateManager;
+
+        /// <summary>
+        /// 虚拟事物模板管理器。
+        /// </summary>
+        public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ?? (_ItemTemplateManager = _ServiceProvider.GetService<GameItemTemplateManager>()); }
         #endregion 公共属性
 
         #region 公共方法
@@ -436,8 +473,10 @@ namespace GY2021001BLL
                     DbContext = db,
                 };
                 var vw = _ServiceProvider.GetService<VWorld>();
-
-                var gc = vw.CreateChar(gu);
+                var charTemplate = ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
+                var gc = CreateChar(charTemplate);
+                gu.GameChars.Add(gc);
+                db.GameItems.AddRange(gc.GameItems);
                 db.GameUsers.Add(gu);
                 db.SaveChanges();
             }
@@ -533,6 +572,69 @@ namespace GY2021001BLL
             return true;
         }
 
+        /// <summary>
+        /// 创建一个角色对象。此对象没有加入上下文，调用者需要自己存储。
+        /// 特别地，GameChar.Children中的元素需要额外加入，这个属性当前不是自动导航属性。
+        /// </summary>
+        /// <param name="template"></param>
+        /// <returns></returns>
+        public GameChar CreateChar(GameItemTemplate template)
+        {
+            var result = new GameChar()
+            {
+                TemplateId = template.Id,
+            };
+            //初始化级别
+            decimal lv;
+            if (!result.Properties.TryGetValue(ProjectConstant.LevelPropertyName, out object lvObj))
+            {
+                lv = 0;
+                result.Properties[ProjectConstant.LevelPropertyName] = lv;
+            }
+            else
+                lv = (decimal)lvObj;
+            //初始化属性
+            foreach (var item in template.Properties)
+            {
+                var seq = item.Value as decimal[];
+                if (null != seq)   //若是属性序列
+                {
+                    result.Properties[item.Key] = seq[(int)lv];
+                }
+                else
+                    result.Properties[item.Key] = item.Value;
+            }
+            result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
+            //递归初始化容器
+            var gim = _ServiceProvider.GetService<GameItemManager>();
+            result.GameItems.AddRange(template.ChildrenTemplateIds.Select(c =>
+            {
+                var gi = gim.CreateGameItem(ItemTemplateManager.GetTemplateFromeId(c), result.Id);
+                return gi;
+            }));
+            //调用外部创建委托
+            try
+            {
+                result.InitialCreation();
+                var dirty = _Options?.CharCreated?.Invoke(_ServiceProvider, result);
+            }
+            catch (Exception)
+            {
+            }
+            //累计属性
+            var allProps = OwHelper.GetAllSubItemsOfTree(result.GameItems, c => c.Children).SelectMany(c => c.Properties);
+            var coll = from tmp in allProps
+                       where tmp.Value is decimal && tmp.Key != ProjectConstant.LevelPropertyName   //避免累加级别属性
+                       group (decimal)tmp.Value by tmp.Key into g
+                       select ValueTuple.Create(g.Key, g.Sum());
+            foreach (var item in coll)
+            {
+                result.Properties[item.Item1] = item.Item2;
+            }
+            result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
+
+            return result;
+        }
         #endregion 公共方法
     }
 }

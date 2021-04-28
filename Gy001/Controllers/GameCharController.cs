@@ -55,6 +55,7 @@ namespace GY2021001WebApi.Controllers
             if (null == gu) //若令牌无效
                 return Unauthorized();
             gu.GameChars[0].ClientGutsString = model.ClientString;
+            gitm.NotifyChange(gu);
             return Ok();
         }
     }

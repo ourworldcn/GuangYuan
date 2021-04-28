@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ClassDiagram MajorVersion="1" MinorVersion="1">
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
   <Class Name="Gy2021001Template.GameTemplateBase">
     <Position X="2" Y="2" Width="1.75" />
     <TypeIdentifier>
@@ -17,7 +17,7 @@
   <Class Name="Gy2021001Template.GameGenus" Collapsed="true">
     <Position X="5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAEAAEAAAAAAAAAIAAAAQAAAAAAIAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GameGenus.cs</FileName>
     </TypeIdentifier>
   </Class>
