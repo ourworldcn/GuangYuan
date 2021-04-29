@@ -45,7 +45,7 @@ namespace GY2021001BLL
         /// </summary>
         public CombatManager()
         {
-
+            Initialize();
         }
 
         /// <summary>
@@ -55,6 +55,7 @@ namespace GY2021001BLL
         public CombatManager(IServiceProvider serviceProvider)
         {
             _ServiceProvider = serviceProvider;
+            Initialize();
         }
 
         /// <summary>
@@ -66,30 +67,34 @@ namespace GY2021001BLL
         {
             _ServiceProvider = serviceProvider;
             _Options = options;
+            Initialize();
         }
 
         #endregion 构造函数
+        private void Initialize()
+        {
 
-        Dictionary<Guid, List<Guid>> _Dungeon = new Dictionary<Guid, List<Guid>>();
+        }
+
+        List<GameItemTemplate> _Dungeons = new List<GameItemTemplate>();
 
         /// <summary>
-        /// 副本信息。键是大关的模板Id,值是小关口模板Id的集合。
+        /// 所有副本信息。
         /// </summary>
-        public Dictionary<Guid, List<Guid>> Dungeon
+        public IReadOnlyList<GameItemTemplate> Dungeons
         {
             get
             {
                 lock (this)
-                    if (null != _Dungeon)
+                    if (null == _Dungeons)
                     {
                         var gitm = _ServiceProvider.GetService<GameItemTemplateManager>();
                         var coll = from tmp in gitm.Id2Template.Values
                                    where tmp.GId / 1000 == 7
-                                   group tmp by new { typ = (int)tmp.Properties["typ"], mis = (int)tmp.Properties["mis"] } into g
-                                   select new { mis = g.First(c => (int)c.Properties["sec"] == -1), sec = g.Where(c => (int)c.Properties["sec"] != -1).OrderBy(c => (int)c.Properties["sec"]) };
-                        _Dungeon = coll.ToDictionary(c => c.mis.Id, c => c.sec.Select(subc => subc.Id).ToList());
+                                   select tmp;
+                        _Dungeons = coll.ToList();
                     }
-                return _Dungeon;
+                return _Dungeons;
             }
         }
 
