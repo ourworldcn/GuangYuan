@@ -77,6 +77,8 @@ namespace GY2021001WebApi.Models
                 TemplateId = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : GameHelper.FromBase64String(obj.TemplateId),
                 CreateUtc = obj.CreateUtc,
                 GameUserId = string.IsNullOrEmpty(obj.GameUserId) ? Guid.Empty : GameHelper.FromBase64String(obj.GameUserId),
+                CurrentDungeonId = GameHelper.FromBase64String(obj.CurrentDungeonId),
+                CombatStartUtc = obj.CombatStartUtc,
             };
 
             result.GameItems.AddRange(obj.GameItems.Select(c => (GameItem)c));
@@ -101,6 +103,8 @@ namespace GY2021001WebApi.Models
                 DisplayName = obj.DisplayName,
                 GameUserId = obj.GameUserId.ToBase64String(),
                 TemplateId = obj.TemplateId.ToBase64String(),
+                CurrentDungeonId = obj.CurrentDungeonId?.ToBase64String(),
+                CombatStartUtc = obj.CombatStartUtc,
             };
             result.GameItems.AddRange(obj.GameItems.Select(c => (GameItemDto)c));
             foreach (var item in obj.Properties)

@@ -37,7 +37,7 @@ namespace GY2021001DAL
         /// </summary>
         public void InitialCreation()
         {
-            
+
         }
 
         //[Key, ForeignKey(nameof(GameUser))]
@@ -71,6 +71,14 @@ namespace GY2021001DAL
         /// </summary>
         public string DisplayName { get; set; }
 
+        /// <summary>
+        /// 用户所处地图区域的Id,这也可能是战斗关卡的Id。如果没有在战斗场景中，则可能是空。
+        /// </summary>
+        public Guid? CurrentDungeonId { get; set; }
 
+        /// <summary>
+        /// 进入战斗场景的时间。注意是Utc时间。如果没有在战斗场景中，则可能是空。
+        /// </summary>
+        public DateTime? CombatStartUtc { get; set; }
     }
 }

@@ -165,13 +165,6 @@ namespace OwGame
             yield break;
         }
 
-    }
-
-    public static class SpecialIds
-    {
-        static public Guid HeadId = Guid.Parse("{A06B7496-F631-4D51-9872-A2CC84A56EAB}");
-        public static Guid BodyId = Guid.Parse("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}");
-        public static Guid MountsId = Guid.Parse("{6E179D54-5836-4E0B-B30D-756BD07FF196}");
 
     }
 

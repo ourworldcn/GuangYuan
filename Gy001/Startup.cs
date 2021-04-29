@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
@@ -38,18 +40,20 @@ namespace Gy001
 
             #region 配置通用服务
 
-            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(options =>
+            services.AddResponseCompression();
+            services.AddDbContext<GY2021001DbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString),ServiceLifetime.Scoped);
+            services.AddDbContext<GameTemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString), ServiceLifetime.Singleton);
+
+            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(DbContextOptions =>
             //{
-            //    options.SerializerSettings.ContractResolver = new DefaultContractResolver()
+            //    DbContextOptions.SerializerSettings.ContractResolver = new DefaultContractResolver()
             //    {
             //    };
             //});
-            //services.AddDbContext<GY2021001DbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString),ServiceLifetime.Transient);
-            services.AddDbContext<GameTemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString), ServiceLifetime.Singleton);
-
             services.AddControllers().AddJsonOptions(options =>
             {
-                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;  //直接用属性名
+                options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;  //忽略只读属性。
             });
 
             #endregion 配置通用服务
@@ -72,17 +76,19 @@ namespace Gy001
             #endregion 配置Swagger
 
             #region 配置游戏专用服务
-
             services.AddTransient<HashAlgorithm>(c => SHA256.Create());
 
-            services.AddTransient(options => new GY2021001DbContext(new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
-            //services.AddSingleton(options => new GameTemplateContext(new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
+            //services.AddTransient(options => new GY2021001DbContext(new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
+            //services.AddSingleton(DbContextOptions => new GameTemplateContext(new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
 
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
             {
                 Loaded = SpecificProject.ItemTemplateLoaded,
             }));
-            services.AddSingleton<VWorld>();
+            services.AddSingleton(c => new VWorld(c, new VWorldOptions()
+            {
+                DbContextOptions = new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options,
+            }));
             services.AddSingleton(c => new GameItemManager(c, new GameItemManagerOptions()
             {
                 ItemCreated = SpecificProject.GameItemCreated,
@@ -91,7 +97,11 @@ namespace Gy001
             {
                 CharCreated = SpecificProject.CharCreated,
             }));
-            services.AddSingleton<CombatManager>();
+            services.AddSingleton(c => new CombatManager(c, new CombatManagerOptions()
+            {
+                CombatStart = SpecificProject.CombatStart,
+                CombatEnd = SpecificProject.CombatEnd,
+            }));
 
             #endregion 配置游戏专用服务
         }
@@ -100,11 +110,11 @@ namespace Gy001
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             #region 启用通用服务
+            app.UseResponseCompression();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
             #endregion 启用通用服务
 
             #region 启用中间件服务生成Swagger

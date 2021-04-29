@@ -24,20 +24,16 @@
   <Class Name="GY2021001DAL.GameChar">
     <Position X="3.25" Y="8" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>BAAAAAgAAAAAgCAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>BAAAEAgAAAAAgCAAAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
       <FileName>GameChar.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001DAL.GameItem">
     <Position X="0.75" Y="8" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAEQAwAAAAAAAAAAgAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAIAAAAAAAAAAAEQAQAAAAAAAAAAgAAAAAAAAA=</HashCode>
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
-  </Class>
-  <Class Name="OwGame.GuidKeyBase" Collapsed="true">
-    <Position X="3.25" Y="1" Width="1.5" />
-    <TypeIdentifier />
   </Class>
   <Class Name="GY2021001DAL.GameUser">
     <Position X="5.5" Y="4.75" Width="2" />

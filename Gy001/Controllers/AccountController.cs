@@ -40,20 +40,18 @@ namespace GY2021001WebApi.Controllers
         {
             try
             {
+                var db = HttpContext.RequestServices.GetService<GY2021001DbContext>();
                 var logger = HttpContext.RequestServices.GetService(typeof(ILogger<AccountController>)) as ILogger<AccountController>;
-                using (var db = HttpContext.RequestServices.GetService(typeof(GY2021001DbContext)) as GY2021001DbContext)
+                //生成返回值
+                var gcm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
+                string pwd = null;
+                var gu = gcm.QuicklyRegister(ref pwd);
+                var result = new QuicklyRegisterReturnDto() //gy210415123456 密码12位大小写
                 {
-                    //生成返回值
-                    var gcm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
-                    string pwd = null;
-                    var gu = gcm.QuicklyRegister(ref pwd);
-                    var result = new QuicklyRegisterReturnDto() //gy210415123456 密码12位大小写
-                    {
-                        LoginName = gu.LoginName,
-                        Pwd = pwd,
-                    };
-                    return result;
-                }
+                    LoginName = gu.LoginName,
+                    Pwd = pwd,
+                };
+                return result;
             }
             catch (Exception err)
             {

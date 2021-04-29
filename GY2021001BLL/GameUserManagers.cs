@@ -1,6 +1,7 @@
 ﻿using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
 using OwGame;
 using System;
@@ -379,7 +380,8 @@ namespace GY2021001BLL
                 }
                 else //未登录
                 {
-                    var db = _ServiceProvider.GetService(typeof(GY2021001DbContext)) as GY2021001DbContext;
+                    var db = World.CreateNewUserDbContext();
+                    //_ServiceProvider.GetService(typeof(GY2021001DbContext)) as GY2021001DbContext;
                     gu = db.GameUsers.FirstOrDefault(c => c.LoginName == loginName);
                     if (null == gu)    //若未发现指定登录名
                         return null;
@@ -414,7 +416,7 @@ namespace GY2021001BLL
             lock (ThisLocker)
                 if (!_QuicklyRegisterSuffixSeqInit)
                 {
-                    using (var db = _ServiceProvider.GetService(typeof(GY2021001DbContext)) as GY2021001DbContext)
+                    using (var db = World.CreateNewUserDbContext())
                     {
                         var maxSeqStr = db.GameUsers.OrderByDescending(c => c.CreateUtc).FirstOrDefault()?.LoginName ?? "000000";
                         _QuicklyRegisterSuffixSeq = int.Parse(maxSeqStr.Substring(maxSeqStr.Length - 6, 6));
@@ -433,7 +435,7 @@ namespace GY2021001BLL
         public GameUser QuicklyRegister(ref string pwd, string loginName = null)
         {
             GameUser result = new GameUser(); //gy210415123456 密码12位大小写
-            var db = _ServiceProvider.GetService(typeof(GY2021001DbContext)) as GY2021001DbContext;
+            using (var db = World.CreateNewUserDbContext())
             {
                 //生成返回值
                 var rnd = new Random();

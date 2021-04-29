@@ -36,12 +36,12 @@ namespace GY2021001BLL
         public static readonly Guid ZuojiZuheRongqi = new Guid("{6E179D54-5836-4E0B-B30D-756BD07FF196}");
 
         /// <summary>
-        /// 坐骑组合中的头容器。
+        /// 坐骑组合中的头容器Id。
         /// </summary>
         public static readonly Guid ZuojiZuheTou = new Guid("{740FEBF3-7472-43CB-8A10-798F6C61335B}");
 
         /// <summary>
-        /// 坐骑组合中的身体容器。
+        /// 坐骑组合中的身体容器Id。
         /// </summary>
         public static readonly Guid ZuojiZuheShenti = new Guid("{F8B1987D-FDF3-4090-9E9B-EBAF1DB2DCCD}");
         #endregion 坐骑相关Id
@@ -61,6 +61,20 @@ namespace GY2021001BLL
         /// </summary>
         public static readonly Guid ShenWenSlotId = new Guid("{88A4EED6-0AEB-4A70-8FDE-67F75E5E2C0A}");
 
+        /// <summary>
+        /// 战斗收益槽。如果处于战斗中，此槽内表示大关的的总收益，用于计算收益限制。若不在战斗中，此槽为空（其中物品移动到各种背包中）。
+        /// </summary>
+        public static readonly Guid ShouyiSlotId = new Guid("{FEA0B277-8CC6-462F-B0ED-85409ABE9C79}");
+
+        /// <summary>
+        /// 兽栏槽Id，抓捕的野兽存于此槽内。
+        /// </summary>
+        public static readonly Guid ShoulanSlotId = new Guid("{1630A0A1-3540-479A-B2C5-10B63E7A5774}");
+
+        /// <summary>
+        /// 金币Id，这个不是槽，它的Count属性直接记录了金币数，目前其子代为空。这个省事，但未来在金币袋上开脑洞，不能保证不变。
+        /// </summary>
+        public static readonly Guid JinbiId = new Guid("{2B83C942-1E9C-4B45-9816-AD2CBF0E473F}");
         #endregion 固定模板Id
 
         public const string LevelPropertyName = "lv";
@@ -87,7 +101,7 @@ namespace GY2021001BLL
         /// </summary>
         public static List<GameItemTemplate> StoreTemplates = new List<GameItemTemplate>()
         {
-#region 已废弃
+    #region 已废弃
 
             new GameItemTemplate(ProjectConstant.ZuojiTou)
             {
@@ -119,12 +133,28 @@ namespace GY2021001BLL
             new GameItemTemplate(ProjectConstant.CharTemplateId)
             {
                 DisplayName="角色的模板",
-                ChildrenTemplateIdString=$"{ProjectConstant.DangqianZuoqiCao},{ProjectConstant.ShenWenSlotId}",
+                ChildrenTemplateIdString=$"{ProjectConstant.DangqianZuoqiCao},{ProjectConstant.ShenWenSlotId},{ProjectConstant.ShouyiSlotId},{ProjectConstant.ShoulanSlotId},{ProjectConstant.JinbiId}",
+            },
+            new GameItemTemplate(ProjectConstant.ShenWenSlotId)
+            {
+                DisplayName="神纹槽Id",
+            },
+            new GameItemTemplate(ProjectConstant.ShouyiSlotId)
+            {
+                DisplayName="收益槽Id",
+            },
+            new  GameItemTemplate(ProjectConstant.ShoulanSlotId)
+            {
+                DisplayName="兽栏槽Id",
+            },
+            new GameItemTemplate(ProjectConstant.JinbiId)
+            {
+                DisplayName="金币Id",
             },
         };
 
         /// <summary>
-        /// 所有模板调赴后调用。此处追加模板。
+        /// 所有模板调赴后调用。此处可追加模板。
         /// </summary>
         /// <param name="itemTemplates"></param>
         /// <returns></returns>
@@ -173,9 +203,8 @@ namespace GY2021001BLL
 
             var mountsSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DangqianZuoqiCao);   //当前坐骑槽
 
-            var ts = gitm.Id2Template.Values.Where(c => c.Properties.ContainsKey("nm") && "羊" == c.Properties["nm"] as string).ToList();   //获取羊
-            var headTemplate = ts.FirstOrDefault(c => c.IsHead());
-            var bodyTemplate = ts.FirstOrDefault(c => c.IsBody());
+            var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId == 4001);
+            var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId == 3001);
             var mounts = CreateMounts(service, headTemplate, bodyTemplate);
             mountsSlot.Children.Add(mounts);
             result = true;
@@ -217,6 +246,89 @@ namespace GY2021001BLL
         {
             var result = false;
             return result;
+        }
+
+        public static bool CombatStart(IServiceProvider service, GameChar gameChar)
+        {
+            return true;
+        }
+
+        public static bool CombatEnd(IServiceProvider service, GameChar gameChar, IList<GameItem> gameItems)
+        {
+            if (null == gameChar.CurrentDungeonId || !gameChar.CurrentDungeonId.HasValue)
+                return false;
+            var gitm = service.GetService<GameItemTemplateManager>();
+            var cmbm = service.GetService<CombatManager>();
+
+            var tm = gitm.GetTemplateFromeId(gameChar.CurrentDungeonId.Value);    //关卡模板
+            if (!Verify(service, tm, gameItems, out string msg))
+                return false;
+            var totalItems = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShouyiSlotId).Children.Concat(gameItems);    //总计收益
+            var sec = (int)tm.Properties["sec"];    //关卡号
+            if (-1 != sec) //若不是大关
+            {
+                var coll = from tmp in gitm.Id2Template.Values
+                           where (tmp.GId ?? 0) / 1000 == 7 && tmp.Properties.GetValueOrDefault("typ", decimal.Zero) == tm.Properties.GetValueOrDefault("typ") &&
+                           tmp.Properties.GetValueOrDefault("mis", decimal.Zero) == tm.Properties.GetValueOrDefault("mis")
+                           select tmp;
+                tm = coll.First();
+            }
+            if (!Verify(service, tm, totalItems, out msg))
+                return false;
+            //记录收益
+            gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShouyiSlotId).Children.AddRange(gameItems);
+            return true;
+        }
+
+        private static bool Verify(IServiceProvider service, GameItemTemplate itemTemplate, IEnumerable<GameItem> gameItems, out string msg)
+        {
+            var gitm = service.GetService<GameItemTemplateManager>();
+
+            //typ关卡类别=1普通管卡 mis大关数 sec=小关gold=数金币掉落上限，aml=获得资质野怪的数量，mne=资质合上限，mt=神纹数量上限，
+            if (itemTemplate.Properties.TryGetValue("gold", out object gold)) //若要限制金币数量
+            {
+                if (gameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).Select(c => c.Count).Sum() > (decimal)gold)   //若金币超过上限
+                {
+                    msg = "金币超过上限";
+                    return false;
+                }
+            }
+            if (itemTemplate.Properties.TryGetValue("aml", out object monsterCount)) //若要限制怪数量
+            {
+                if (gameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi).Count() > (decimal)monsterCount)   //若怪数量超过上限
+                {
+                    msg = "怪数量超过上限";
+                    return false;
+                }
+            }
+            if (itemTemplate.Properties.TryGetValue("mne", out object mne)) //若要限制单个怪资质总和
+            {
+                var coll = from tmp in gameItems
+                           let mneatk = (float)tmp.Properties.GetValueOrDefault("mneatk", decimal.Zero)
+                           let mneqlt = (float)tmp.Properties.GetValueOrDefault("mneqlt", decimal.Zero)
+                           let mnemhp = (float)tmp.Properties.GetValueOrDefault("mnemhp", decimal.Zero)
+                           let mneTotal = mneatk + mneqlt + mnemhp
+                           where mneTotal > (float)mne
+                           select tmp;
+                var errItem = coll.FirstOrDefault();
+                if (null != errItem)   //若单个怪资质总和超过上限
+                {
+                    msg = $"单个怪资质总和超过上限,TemplateId={gitm.GetTemplateFromeId(errItem.TemplateId)?.GId}";
+                    return false;
+                }
+            }
+            if (itemTemplate.Properties.TryGetValue("mt", out object mt)) //若要限制神纹数量
+            {
+                var coll = gitm.Id2Template.Values.Where(c => c.GId != null && c.GId.HasValue && c.GId.Value / 1000 == 10); //获取所有神纹模板
+                var shenwen = gameItems.Join(coll, c => c.TemplateId, c => c.Id, (l, r) => l);    //获取神纹的集合
+                if (shenwen.Count() > (int)mt) //若神纹数量超过上限
+                {
+                    msg = "神纹数量超过上限";
+                    return false;
+                }
+            }
+            msg = null;
+            return true;
         }
     }
 }

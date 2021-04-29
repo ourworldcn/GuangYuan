@@ -36,6 +36,7 @@ namespace GY2021001WebApi.Controllers
 
         /// <summary>
         /// 通知服务器客户端结束了一场战斗。
+        /// 如果正常进入下一关，可以不必调用启动战斗的接口。
         /// </summary>
         /// <param name="model">参见 CombatEndParamsDto</param>
         /// <returns>参见 CombatEndReturnDto</returns>

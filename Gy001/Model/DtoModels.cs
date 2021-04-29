@@ -363,6 +363,24 @@ namespace GY2021001WebApi.Models
                 return result;
             }
         }
+
+        /// <summary>
+        /// 为该坐骑设置头。注意这将导致强制改写该对象的模板和Children以适应坐骑的结构。
+        /// </summary>
+        /// <param name="gameCharDto"></param>
+        public void SetHead(GameCharDto gameCharDto)
+        {
+
+        }
+
+        /// <summary>
+        /// 为该坐骑设置身体。注意这将导致强制改写该对象的模板和Children以适应坐骑的结构。
+        /// </summary>
+        /// <param name="gameCharDto"></param>
+        public void SetBody(GameCharDto gameCharDto)
+        {
+
+        }
     }
 
     /// <summary>
@@ -409,6 +427,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 创建该对象的通用协调时间。
         /// </summary>
+        [DataMember]
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
@@ -436,6 +455,18 @@ namespace GY2021001WebApi.Models
                 return result;
             }
         }
+
+        /// <summary>
+        /// 用户所处地图区域的Id,这也可能是战斗关卡的Id。如果没有在战斗场景中，则可能是空。
+        /// </summary>
+        [DataMember]
+        public string CurrentDungeonId { get; set; }
+
+        /// <summary>
+        /// 进入战斗场景的时间。注意是Utc时间。如果没有在战斗场景中，则可能是空。
+        /// </summary>
+        [DataMember]
+        public DateTime? CombatStartUtc { get; set; }
 
     }
 
@@ -554,7 +585,6 @@ namespace GY2021001WebApi.Models
         /// </summary>
         public CombatEndParamsDto()
         {
-
         }
 
         /// <summary>
@@ -562,6 +592,18 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string DungeonId { get; set; }
+
+        /// <summary>
+        /// 角色是否退出，true强制推出当前大关口，false试图继续(如果已经是最后一关则不起作用)。
+        /// </summary>
+        [DataMember]
+        public bool IsBreak { get; set; }
+
+        /// <summary>
+        /// 收益。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> Gameitems { get; set; }
     }
 
     /// <summary>
@@ -575,8 +617,15 @@ namespace GY2021001WebApi.Models
         /// </summary>
         public CombatEndReturnDto()
         {
-
         }
+
+        /// <summary>
+        /// 需要进入的下一关的Id。如果已经是最后一关结束或强制要求退出，则这里返回空引用或空字符串(string.IsNullOrEmpty测试为true)。
+        /// 如果正常进入下一关，可以不必调用启动战斗的接口。
+        /// </summary>
+        [DataMember]
+        public string NextDungeonId { get; set; }
+
     }
     #endregion 战斗相关数据
 }
