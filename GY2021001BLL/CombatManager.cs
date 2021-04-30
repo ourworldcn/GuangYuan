@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -27,23 +28,61 @@ namespace GY2021001BLL
         /// <summary>
         /// 战斗结束时被调用。返回true表示
         /// </summary>
-        public Func<IServiceProvider, GameChar, IList<GameItem>, bool> CombatEnd { get; set; }
+        public Func<IServiceProvider, EndCombatData, bool> CombatEnd { get; set; }
+    }
+
+    /// <summary>
+    /// 请求结束战斗的数据封装类。
+    /// </summary>
+    public class EndCombatData
+    {
+        public EndCombatData()
+        {
+        }
+
+        /// <summary>
+        /// 角色对象。
+        /// </summary>
+        public GameChar GameChar { get; set; }
+
+        /// <summary>
+        /// 要终止的关卡模板。
+        /// </summary>
+        public GameItemTemplate Template { get; set; }
+
+        /// <summary>
+        /// 此关卡的收益。
+        /// </summary>
+        public IEnumerable<GameItem> GameItems { get; set; }
+
+        /// <summary>
+        /// 终止后自动进入的下一关卡模板。null表示错误的请求或已经自然结束。返回时填写。
+        /// </summary>
+        public GameItemTemplate NextTemplate { get; set; }
+
+        /// <summary>
+        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
+        /// </summary>
+        public bool HasError { get; set; }
+
+        /// <summary>
+        /// 调试信息。调试状态下返回时填写。
+        /// </summary>
+        public string DebugMessage { get; set; }
     }
 
     /// <summary>
     /// 战斗管理器。
     /// </summary>
-    public class CombatManager
+    public class CombatManager : GameManagerBase<CombatManagerOptions>
     {
-        private readonly IServiceProvider _ServiceProvider;
-        private readonly CombatManagerOptions _Options;
 
         #region 构造函数
 
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public CombatManager()
+        public CombatManager() : base()
         {
             Initialize();
         }
@@ -52,9 +91,8 @@ namespace GY2021001BLL
         /// 构造函数。
         /// </summary>
         /// <param name="serviceProvider"></param>
-        public CombatManager(IServiceProvider serviceProvider)
+        public CombatManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            _ServiceProvider = serviceProvider;
             Initialize();
         }
 
@@ -63,10 +101,8 @@ namespace GY2021001BLL
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="options"></param>
-        public CombatManager(IServiceProvider serviceProvider, CombatManagerOptions options)
+        public CombatManager(IServiceProvider serviceProvider, CombatManagerOptions options) : base(serviceProvider, options)
         {
-            _ServiceProvider = serviceProvider;
-            _Options = options;
             Initialize();
         }
 
@@ -85,17 +121,79 @@ namespace GY2021001BLL
         {
             get
             {
-                lock (this)
+                lock (ThisLocker)
                     if (null == _Dungeons)
                     {
-                        var gitm = _ServiceProvider.GetService<GameItemTemplateManager>();
+                        var gitm = World.ItemTemplateManager;
                         var coll = from tmp in gitm.Id2Template.Values
-                                   where tmp.GId / 1000 == 7
+                                   where tmp.TypeCode == 7
                                    select tmp;
                         _Dungeons = coll.ToList();
                     }
                 return _Dungeons;
             }
+        }
+
+        Dictionary<GameItemTemplate, GameItemTemplate[]> _Parent2Children;
+        /// <summary>
+        /// 键是大关卡的模板，值所包含小关卡的模板数组。
+        /// </summary>
+        public IReadOnlyDictionary<GameItemTemplate, GameItemTemplate[]> Parent2Children
+        {
+            get
+            {
+                lock (ThisLocker)
+                    if (null == _Parent2Children)
+                    {
+                        var coll = from tmp in Dungeons
+                                   let typ = (int)tmp.Properties["typ"]
+                                   let mis = (int)tmp.Properties["mis"]
+                                   group tmp by new { typ, mis } into g
+                                   let key = Dungeons.First(c => (int)c.Properties["typ"] == g.Key.typ && (int)c.Properties["mis"] == g.Key.mis && -1 == (int)c.Properties.GetValueOrDefault("sec"))    //大关
+                                   let vals = g.Where(c => c != key).OrderBy(c => (int)c.Properties["sec"]).ToArray()
+                                   select new { key, vals };
+                        _Parent2Children = coll.ToDictionary(c => c.key, c => c.vals);
+                    }
+                return _Parent2Children;
+            }
+        }
+
+        Dictionary<GameItemTemplate, GameItemTemplate> _Child2Parent;
+
+        /// <summary>
+        /// 键是小关卡模板，值所属的大关卡模板。
+        /// </summary>
+        public IReadOnlyDictionary<GameItemTemplate, GameItemTemplate> Child2Parent
+        {
+            get
+            {
+                lock (ThisLocker)
+                    if (null == _Child2Parent)
+                    {
+                        var coll = from tmp in Parent2Children
+                                   from child in tmp.Value
+                                   select new { key = child, val = tmp.Key };
+                        _Child2Parent = coll.ToDictionary(c => c.key, c => c.val);
+                    }
+                return _Child2Parent;
+            }
+        }
+
+        /// <summary>
+        /// 取下一关的模板。
+        /// </summary>
+        /// <param name="template">关卡模板，如果是大关则立即返回null。</param>
+        /// <returns>下一关的模板，null则说明是最后一关(没有下一关了)。</returns>
+        public GameItemTemplate GetNext(GameItemTemplate template)
+        {
+            if (Parent2Children.ContainsKey(template))  //若是大关
+                return null;
+            var parent = Child2Parent[template];    //取大关模板
+            var children = Parent2Children[parent]; //取关卡模板序列
+            int index = Array.FindIndex(children, c => c == template);  //取索引
+            if (index >= children.Length - 1)    //若是最后一关
+                return null;
+            return children[index + 1];
         }
 
         /// <summary>
@@ -104,54 +202,63 @@ namespace GY2021001BLL
         /// <param name="gameChar"></param>
         /// <param name="dungeon">场景。</param>
         /// <returns>true正常启动，false没有找到指定的场景或角色当前正在战斗。</returns>
-        public bool StartCombat(GameChar gameChar, GameItemTemplate dungeon)
+        public bool StartCombat(GameChar gameChar, GameItemTemplate dungeon, out string msg)
         {
             if (null != gameChar.CurrentDungeonId && gameChar.CurrentDungeonId.HasValue)
                 if (gameChar.CurrentDungeonId.Value != dungeon.Id)
+                {
+                    msg = "错误的关卡Id";
                     return false;
+                }
             try
             {
-                if (!_Options?.CombatStart?.Invoke(_ServiceProvider, gameChar) ?? true)
+                if (!Options?.CombatStart?.Invoke(Service, gameChar) ?? true)
+                {
+                    msg = "收益错误";
                     return false;
+                }
             }
             catch (Exception)
             {
             }
             gameChar.CurrentDungeonId = dungeon.Id;
             gameChar.CombatStartUtc = DateTime.UtcNow;
+            msg = null;
             return true;
         }
+
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="dungeon">场景。</param>
-        /// <param name="gameItems">获取的收益。</param>
+        /// <param name="data">终止请求的数据封装对象。</param>
         /// <returns>true正常结束，false发生错误。</returns>
-        public bool EndCombat(GameChar gameChar, GameItemTemplate dungeon, List<GameItem> gameItems, out string msg)
+        public void EndCombat(EndCombatData data)
         {
-            var gcm = _ServiceProvider.GetService<GameCharManager>();
-            if (!gcm.Lock(gameChar.GameUser))
+            var gcm = World.CharManager;
+            if (!gcm.Lock(data.GameChar.GameUser))
             {
-                msg = "用户已经无效";
-                return false;
+                data.DebugMessage = "用户已经无效";
+                data.HasError = true;
+                return;
             }
             try
             {
-                if (null != gameChar.CurrentDungeonId && gameChar.CurrentDungeonId.HasValue)
-                    if (gameChar.CurrentDungeonId.Value != dungeon.Id)
+                if (null != data.GameChar.CurrentDungeonId && data.GameChar.CurrentDungeonId.HasValue)
+                    if (data.GameChar.CurrentDungeonId.Value != data.GameChar.Id)
                     {
-                        msg = "角色在另外一个场景中战斗。";
-                        return false;
+                        data.DebugMessage = "角色在另外一个场景中战斗。";
+                        data.HasError = true;
+                        return;
                     }
                 try
                 {
-                    bool succ = _Options?.CombatEnd?.Invoke(_ServiceProvider, gameChar, gameItems) ?? true;
+                    bool succ = Options?.CombatEnd?.Invoke(Service, data) ?? true;
                     if (!succ)
                     {
-                        msg = "收益错误。";
-                        return false;
+                        data.DebugMessage = "收益错误。";
+                        data.HasError = true;
+                        return;
                     }
                 }
                 catch (Exception)
@@ -160,10 +267,9 @@ namespace GY2021001BLL
             }
             finally
             {
-                gcm.Unlock(gameChar.GameUser);
+                gcm.Unlock(data.GameChar.GameUser);
             }
-            msg = string.Empty;
-            return true;
+            return;
         }
     }
 }

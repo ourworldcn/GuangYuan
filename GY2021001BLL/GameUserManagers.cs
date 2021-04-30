@@ -30,14 +30,12 @@ namespace GY2021001BLL
         public Func<IServiceProvider, GameChar, bool> CharCreated { get; set; }
     }
 
-    public class GameCharManager
+    public class GameCharManager : GameManagerBase<GameCharManagerOptions>
     {
         #region 字段
-        private readonly GameCharManagerOptions _Options;
         private bool _QuicklyRegisterSuffixSeqInit = false;
         private int _QuicklyRegisterSuffixSeq;
 
-        private readonly IServiceProvider _ServiceProvider;
         Timer _LogoutTimer;
         /// <summary>
         /// 登录、注销时刻锁定的登录名存储对象。
@@ -79,9 +77,8 @@ namespace GY2021001BLL
         /// 依赖注入使用的构造函数。
         /// </summary>
         /// <param name="serviceProvider"></param>
-        public GameCharManager(IServiceProvider serviceProvider)
+        public GameCharManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            _ServiceProvider = serviceProvider; //GetRequiredService
             Initialize();
         }
 
@@ -90,10 +87,8 @@ namespace GY2021001BLL
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="options"></param>
-        public GameCharManager(IServiceProvider serviceProvider, GameCharManagerOptions options)
+        public GameCharManager(IServiceProvider serviceProvider, GameCharManagerOptions options) : base(serviceProvider)
         {
-            _ServiceProvider = serviceProvider; //GetRequiredService
-            _Options = options;
             Initialize();
         }
 
@@ -103,7 +98,7 @@ namespace GY2021001BLL
 
         private void Initialize()
         {
-            VWorld world = _ServiceProvider.GetRequiredService<VWorld>();
+            VWorld world = World;
             _LogoutTimer = new Timer(LogoutFunc, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             _SaveThread = new Thread(SaveFunc) { IsBackground = false, Priority = ThreadPriority.BelowNormal };
             _SaveThread.Start();
@@ -118,7 +113,7 @@ namespace GY2021001BLL
         /// </summary>
         private void LogoutFunc(object state)
         {
-            VWorld world = _ServiceProvider.GetService(typeof(VWorld)) as VWorld;
+            VWorld world = World;
 
             foreach (var item in _Token2User.Values)
             {
@@ -159,7 +154,7 @@ namespace GY2021001BLL
         /// <param name="state"></param>
         private void SaveFunc(object state)
         {
-            VWorld world = _ServiceProvider.GetService(typeof(VWorld)) as VWorld;
+            VWorld world = World;
             List<GameUser> lst = new List<GameUser>();
             while (true)
             {
@@ -228,14 +223,6 @@ namespace GY2021001BLL
         #region 公共属性
 
         /// <summary>
-        /// 内部同步锁。
-        /// </summary>
-        public object ThisLocker { get; } = new object();
-
-        VWorld _World;
-        public VWorld World { get => _World ?? (_World = _ServiceProvider.GetRequiredService<VWorld>()); }
-
-        /// <summary>
         /// 获取在线人数。
         /// </summary>
         public int OnlineCount { get => _Token2User.Count; }
@@ -245,7 +232,7 @@ namespace GY2021001BLL
         /// <summary>
         /// 虚拟事物模板管理器。
         /// </summary>
-        public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ?? (_ItemTemplateManager = _ServiceProvider.GetService<GameItemTemplateManager>()); }
+        public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= World.ItemTemplateManager; }
         #endregion 公共属性
 
         #region 公共方法
@@ -340,7 +327,7 @@ namespace GY2021001BLL
         /// <returns>true是，false密码错误。</returns>
         public bool IsPwd(GameUser user, string pwd)
         {
-            var hashAlgorithm = _ServiceProvider.GetService(typeof(HashAlgorithm)) as HashAlgorithm;
+            var hashAlgorithm = Service.GetService<HashAlgorithm>();
             var hash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(pwd));
             return Enumerable.SequenceEqual(hash, user.PwdHash);
         }
@@ -381,7 +368,7 @@ namespace GY2021001BLL
                 else //未登录
                 {
                     var db = World.CreateNewUserDbContext();
-                    //_ServiceProvider.GetService(typeof(GY2021001DbContext)) as GY2021001DbContext;
+                    //_Service.GetService(typeof(GY2021001DbContext)) as GY2021001DbContext;
                     gu = db.GameUsers.FirstOrDefault(c => c.LoginName == loginName);
                     if (null == gu)    //若未发现指定登录名
                         return null;
@@ -466,7 +453,7 @@ namespace GY2021001BLL
                     pwd = sb.ToString();
                 }
                 //存储角色信息
-                var hash = _ServiceProvider.GetService(typeof(HashAlgorithm)) as HashAlgorithm;
+                var hash = Service.GetService<HashAlgorithm>();
                 var pwdHash = hash.ComputeHash(Encoding.UTF8.GetBytes(pwd));
                 var gu = new GameUser()
                 {
@@ -474,7 +461,7 @@ namespace GY2021001BLL
                     PwdHash = pwdHash,
                     DbContext = db,
                 };
-                var vw = _ServiceProvider.GetService<VWorld>();
+                var vw = World;
                 var charTemplate = ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
                 var gc = CreateChar(charTemplate);
                 gu.GameChars.Add(gc);
@@ -567,7 +554,7 @@ namespace GY2021001BLL
             {
                 if (gu.IsDisposed)   //若已经无效
                     return false;
-                var ha = _ServiceProvider.GetService(typeof(HashAlgorithm)) as HashAlgorithm;
+                var ha = Service.GetService<HashAlgorithm>();
                 gu.PwdHash = ha.ComputeHash(Encoding.UTF8.GetBytes(newPwd));
                 _DirtyUsers.Enqueue(gu);
             }
@@ -608,7 +595,7 @@ namespace GY2021001BLL
             }
             result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
             //递归初始化容器
-            var gim = _ServiceProvider.GetService<GameItemManager>();
+            var gim = Service.GetService<GameItemManager>();
             result.GameItems.AddRange(template.ChildrenTemplateIds.Select(c =>
             {
                 var gi = gim.CreateGameItem(ItemTemplateManager.GetTemplateFromeId(c), result.Id);
@@ -618,7 +605,7 @@ namespace GY2021001BLL
             try
             {
                 result.InitialCreation();
-                var dirty = _Options?.CharCreated?.Invoke(_ServiceProvider, result);
+                var dirty = Options?.CharCreated?.Invoke(Service, result);
             }
             catch (Exception)
             {

@@ -273,7 +273,14 @@ namespace GY2021001WebApi.Models
         /// 该类的GId。
         /// </summary>
         [DataMember]
-        public int GId { get; set; }
+        public int? GId { get; set; }
+
+        /// <summary>
+        /// 该模板创建对象应有的子模板Id字符串集合。用逗号分割。
+        /// </summary>
+        [DataMember]
+        public string ChildrenTemplateIdString { get; set; }
+
     }
 
     /// <summary>

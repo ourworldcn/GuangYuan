@@ -33,33 +33,6 @@ namespace GY2021001BLL
             return null;
         }
 
-        public static int GetTemplateTypeCode(this GameItemTemplate template)
-        {
-            if (null == template.GId || !template.GId.HasValue)
-                return -1;
-            var result = template.GId.Value / 1000;
-            return result;
-        }
-
-        /// <summary>
-        /// 模板是不是一个头类型的模板。
-        /// </summary>
-        /// <param name="template"></param>
-        /// <returns></returns>
-        public static bool IsHead(this GameItemTemplate template)
-        {
-            return GetTemplateTypeCode(template) == 3;
-        }
-
-        /// <summary>
-        /// 模板是不是一个身体类型的模板。
-        /// </summary>
-        /// <param name="template"></param>
-        /// <returns></returns>
-        public static bool IsBody(this GameItemTemplate template)
-        {
-            return GetTemplateTypeCode(template) == 4;
-        }
     }
 }
 

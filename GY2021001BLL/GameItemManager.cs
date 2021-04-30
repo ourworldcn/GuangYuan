@@ -9,38 +9,39 @@ using System.Text;
 
 namespace GY2021001BLL
 {
+    public class GameItemManagerOptions
+    {
+        public GameItemManagerOptions()
+        {
+
+        }
+
+        /// <summary>
+        /// 创建一个物品后调用此回调。
+        /// </summary>
+        public Func<IServiceProvider, GameItem, bool> ItemCreated { get; set; }
+    }
+
     /// <summary>
     /// 虚拟物品管理器。
     /// </summary>
-    public class GameItemManager
+    public class GameItemManager:GameManagerBase<GameItemManagerOptions>
     {
-        private readonly IServiceProvider _ServiceProvider;
-        private readonly GameItemManagerOptions _Options;
         #region 构造函数
 
-        public GameItemManager()
+        public GameItemManager():base()
         {
 
         }
 
-        public GameItemManager(IServiceProvider serviceProvider)
+        public GameItemManager(IServiceProvider serviceProvider):base(serviceProvider)
         {
-            _ServiceProvider = serviceProvider;
         }
-        public GameItemManager(IServiceProvider serviceProvider, GameItemManagerOptions options)
+        public GameItemManager(IServiceProvider serviceProvider, GameItemManagerOptions options):base(serviceProvider,options)
         {
-            _ServiceProvider = serviceProvider;
-            _Options = options;
 
         }
         #endregion 构造函数
-
-        GameItemTemplateManager _ItemTemplateManager;
-
-        /// <summary>
-        /// 物品模板管理器。
-        /// </summary>
-        public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ?? (_ItemTemplateManager = _ServiceProvider.GetService<GameItemTemplateManager>()); }
 
         /// <summary>
         /// 按照指定模板创建一个对象。
@@ -78,11 +79,11 @@ namespace GY2021001BLL
             if (result.Properties.Count > 0)    //若需要改写属性字符串。
                 result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
             //递归初始化容器
-            var gitm = ItemTemplateManager;
+            var gitm = World.ItemTemplateManager;
             result.Children.AddRange(template.ChildrenTemplateIds.Select(c => CreateGameItem(gitm.GetTemplateFromeId(c))));
             try
             {
-                var dirty = _Options?.ItemCreated?.Invoke(_ServiceProvider, result) ?? false;
+                var dirty = Options?.ItemCreated?.Invoke(Service, result) ?? false;
             }
             catch (Exception)
             {
@@ -92,16 +93,4 @@ namespace GY2021001BLL
 
     }
 
-    public class GameItemManagerOptions
-    {
-        public GameItemManagerOptions()
-        {
-
-        }
-
-        /// <summary>
-        /// 创建一个物品后调用此回调。
-        /// </summary>
-        public Func<IServiceProvider, GameItem, bool> ItemCreated { get; set; }
-    }
 }

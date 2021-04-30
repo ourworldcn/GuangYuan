@@ -30,7 +30,6 @@ namespace Gy2021001Template
         /// </summary>
         public string GenusIdString { get; set; }
 
-
         private List<Guid> _GenusIds;
 
         /// <summary>
@@ -50,6 +49,10 @@ namespace Gy2021001Template
             }
         }
 
-
+        /// <summary>
+        /// 类型码。没有指定则返回0。
+        /// </summary>
+        [NotMapped]
+        public int TypeCode { get => GId.GetValueOrDefault() / 1000; }
     }
 }

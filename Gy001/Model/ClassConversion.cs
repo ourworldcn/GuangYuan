@@ -123,7 +123,8 @@ namespace GY2021001WebApi.Models
             var result = new GameItemTemplateDto()
             {
                 Id = obj.Id.ToBase64String(),
-                GId = obj.GId ?? 0,
+                GId = obj.GId,
+                ChildrenTemplateIdString = obj.ChildrenTemplateIdString,
             };
             foreach (var item in obj.Properties)
             {
@@ -138,6 +139,7 @@ namespace GY2021001WebApi.Models
             {
                 Id = GameHelper.FromBase64String(obj.Id),
                 GId = obj.GId,
+                ChildrenTemplateIdString = obj.ChildrenTemplateIdString,
             };
             foreach (var item in obj.Properties)
             {

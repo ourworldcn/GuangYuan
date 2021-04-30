@@ -25,15 +25,48 @@ namespace GY2021001BLL
         public Func<DbContext, bool> Loaded { get; set; }
     }
 
-    public class GameItemTemplateManager
+    public class GameItemTemplateManager : GameManagerBase<GameItemTemplateManagerOptions>
     {
-        private readonly IServiceProvider _ServiceProvider;
+        #region 构造函数
 
-        private Task _InitializeTask;
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public GameItemTemplateManager()
+        {
+            Initialize();
+        }
+
+        public GameItemTemplateManager(IServiceProvider service) : base(service)
+        {
+            Initialize();
+        }
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="service">所使用的服务容器。</param>
+        public GameItemTemplateManager(IServiceProvider service, GameItemTemplateManagerOptions options) : base(service, options)
+        {
+            Initialize();
+        }
+        #endregion 构造函数
+
+        #region 属性及相关
+
+        private GameTemplateContext _TemplateContext;
+        protected GameTemplateContext TemplateContext
+        {
+            get
+            {
+                lock (ThisLocker)
+                    if (null == _TemplateContext)
+                        _TemplateContext = World.CreateNewTemplateDbContext();
+                return _TemplateContext;
+            }
+        }
 
         private ConcurrentDictionary<Guid, GameItemTemplate> _Id2Template;
-
-        private readonly GameItemTemplateManagerOptions _Options;
 
         /// <summary>
         /// 所有模板的字典。键是模板Id,值是模板对象。
@@ -47,42 +80,20 @@ namespace GY2021001BLL
             }
         }
 
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public GameItemTemplateManager()
-        {
-            Initialize();
-        }
+        #endregion 属性及相关
 
-        public GameItemTemplateManager(IServiceProvider service)
-        {
-            _ServiceProvider = service;
-            Initialize();
-        }
-
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        /// <param name="service">所使用的服务容器。</param>
-        public GameItemTemplateManager(IServiceProvider service, GameItemTemplateManagerOptions options)
-        {
-            _ServiceProvider = service;
-            _Options = options;
-            Initialize();
-        }
-
+        private Task _InitializeTask;
         private void Initialize()
         {
             _InitializeTask = Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    var db = _ServiceProvider.GetService(typeof(GameTemplateContext)) as GameTemplateContext;
+                    var db = TemplateContext;
                     //追加数据
                     #region 追加模板数据
                     db.ItemTemplates.Load();
-                    bool dbDirty = _Options?.Loaded?.Invoke(db) ?? false;
+                    bool dbDirty = Options?.Loaded?.Invoke(db) ?? false;
                     if (dbDirty)
                         db.SaveChanges();
                     _Id2Template = new ConcurrentDictionary<Guid, GameItemTemplate>(db.ItemTemplates.ToDictionary(c => c.Id));
@@ -94,17 +105,6 @@ namespace GY2021001BLL
                     Trace.WriteLine(err.Message);
                 }
             }, TaskCreationOptions.LongRunning);
-        }
-
-        public object ThisLocker { get; } = new object();
-        private VWorld _VWorld;
-        public VWorld VWorld
-        {
-            get
-            {
-                lock (ThisLocker)
-                    return _VWorld ?? (_VWorld = _ServiceProvider.GetService<VWorld>());
-            }
         }
 
         public GameItemTemplate GetTemplateFromeId(Guid id)

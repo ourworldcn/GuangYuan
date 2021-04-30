@@ -10,8 +10,10 @@ namespace GY2021001BLL
     /// </summary>
     public abstract class GameManagerBase<TOptions>
     {
-        private readonly IServiceProvider _ServiceProvider;
-        public IServiceProvider Service { get => _ServiceProvider; }
+        #region 属性及相关
+
+        private readonly IServiceProvider _Service;
+        public IServiceProvider Service { get => _Service; }
 
         private readonly TOptions _Options;
         public TOptions Options { get => _Options; }
@@ -20,7 +22,19 @@ namespace GY2021001BLL
         /// <summary>
         /// 获取游戏世界的服务对象。
         /// </summary>
-        public VWorld World { get => _VWorld ??= _ServiceProvider.GetService<VWorld>(); }
+        public VWorld World
+        {
+            get => _VWorld ??= _Service.GetService<VWorld>();   //一定是单例，所以无所谓并发
+        }
+
+        /// <summary>
+        /// 同步锁
+        /// </summary>
+        protected readonly object ThisLocker = new object();
+
+        #endregion 属性及相关
+
+        #region 构造函数
 
         /// <summary>
         /// 构造函数。
@@ -36,7 +50,7 @@ namespace GY2021001BLL
         /// <param name="service"></param>
         public GameManagerBase(IServiceProvider service)
         {
-            _ServiceProvider = service;
+            _Service = service;
         }
 
         /// <summary>
@@ -46,10 +60,11 @@ namespace GY2021001BLL
         /// <param name="options"></param>
         public GameManagerBase(IServiceProvider service, TOptions options)
         {
-            _ServiceProvider = service;
+            _Service = service;
             _Options = options;
         }
 
+        #endregion 构造函数
 
     }
 }

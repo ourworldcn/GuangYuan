@@ -41,12 +41,12 @@ namespace Gy001
             #region 配置通用服务
 
             services.AddResponseCompression();
-            services.AddDbContext<GY2021001DbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString),ServiceLifetime.Scoped);
+            services.AddDbContext<GY2021001DbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString), ServiceLifetime.Scoped);
             services.AddDbContext<GameTemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString), ServiceLifetime.Singleton);
 
-            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(DbContextOptions =>
+            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(UserDbOptions =>
             //{
-            //    DbContextOptions.SerializerSettings.ContractResolver = new DefaultContractResolver()
+            //    UserDbOptions.SerializerSettings.ContractResolver = new DefaultContractResolver()
             //    {
             //    };
             //});
@@ -79,7 +79,7 @@ namespace Gy001
             services.AddTransient<HashAlgorithm>(c => SHA256.Create());
 
             //services.AddTransient(options => new GY2021001DbContext(new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
-            //services.AddSingleton(DbContextOptions => new GameTemplateContext(new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
+            //services.AddSingleton(UserDbOptions => new GameTemplateContext(new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
 
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
             {
@@ -87,7 +87,8 @@ namespace Gy001
             }));
             services.AddSingleton(c => new VWorld(c, new VWorldOptions()
             {
-                DbContextOptions = new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options,
+                UserDbOptions = new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options,
+                TemplateDbOptions = new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
             }));
             services.AddSingleton(c => new GameItemManager(c, new GameItemManagerOptions()
             {

@@ -15,19 +15,16 @@ namespace GY2021001BLL
 {
     public class VWorldOptions
     {
-        public DbContextOptions<GY2021001DbContext> DbContextOptions { get; set; }
+        public DbContextOptions<GY2021001DbContext> UserDbOptions { get; set; }
+        public DbContextOptions<GameTemplateContext> TemplateDbOptions { get; set; }
     }
 
     /// <summary>
     /// 游戏世界的服务。
     /// </summary>
-    public class VWorld
+    public class VWorld : GameManagerBase<VWorldOptions>
     {
         public readonly DateTime StartDateTimeUtc = DateTime.UtcNow;
-
-        private readonly IServiceProvider _ServiceProvider;
-
-        private readonly VWorldOptions _VWorldOptions;
 
         CancellationTokenSource _CancellationTokenSource = new CancellationTokenSource();
 
@@ -36,17 +33,34 @@ namespace GY2021001BLL
         /// </summary>
         public CancellationToken RequestShutdown;
 
+        #region 构造函数
+
         public VWorld()
         {
             Initialize();
         }
 
-        public VWorld(IServiceProvider serviceProvider, VWorldOptions options)
+        public VWorld(IServiceProvider serviceProvider, VWorldOptions options) : base(serviceProvider, options)
         {
-            _ServiceProvider = serviceProvider;
-            _VWorldOptions = options;
             Initialize();
         }
+
+        #endregion 构造函数
+
+        #region 属性及相关
+        private GameItemTemplateManager _ItemTemplateManager;
+        public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= Service.GetRequiredService<GameItemTemplateManager>(); }
+
+        private GameCharManager _GameCharManager;
+        public GameCharManager CharManager { get => _GameCharManager ??= Service.GetRequiredService<GameCharManager>(); }
+
+        private CombatManager _CombatManager;
+        public CombatManager CombatManager { get => _CombatManager ??= Service.GetRequiredService<CombatManager>(); }
+
+        private GameItemManager _GameItemManager;
+
+        public GameItemManager ItemManager { get => _GameItemManager ??= Service.GetRequiredService<GameItemManager>(); }
+        #endregion 属性及相关
 
         private void Initialize()
         {
@@ -73,7 +87,17 @@ namespace GY2021001BLL
         /// <returns></returns>
         public GY2021001DbContext CreateNewUserDbContext()
         {
-            return new GY2021001DbContext(_VWorldOptions.DbContextOptions);
+            return new GY2021001DbContext(Options.UserDbOptions);
+        }
+
+        /// <summary>
+        /// 创建模板数据库上下文对象。
+        /// 调用者需要自行负责清理对象。
+        /// </summary>
+        /// <returns></returns>
+        public GameTemplateContext CreateNewTemplateDbContext()
+        {
+            return new GameTemplateContext(Options.TemplateDbOptions);
         }
     }
 

@@ -292,6 +292,11 @@
             该类的GId。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GameItemTemplateDto.ChildrenTemplateIdString">
+            <summary>
+            该模板创建对象应有的子模板Id字符串集合。用逗号分割。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。
