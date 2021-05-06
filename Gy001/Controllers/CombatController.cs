@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GY2021001BLL;
+using GY2021001DAL;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -31,7 +34,15 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<CombatStartReturnDto> Start(CombatStartParamsDto model)
         {
-            return Ok();
+            var world = HttpContext.RequestServices.GetService<VWorld>();
+            var cbm = world.CombatManager;
+            StartCombatData data = new StartCombatData()
+            {
+                GameChar = world.CharManager.GetUsreFromToken(GameHelper.FromBase64String(model.Token))?.GameChars[0],
+                Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
+            };
+            cbm.StartCombat(data);
+            return (CombatStartReturnDto)data;
         }
 
         /// <summary>
@@ -43,7 +54,14 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<CombatEndReturnDto> End(CombatEndParamsDto model)
         {
-            return Ok();
+            var world = HttpContext.RequestServices.GetService<VWorld>();
+            var result = new EndCombatData()
+            {
+                GameChar = world.CharManager.GetUsreFromToken(GameHelper.FromBase64String(model.Token))?.GameChars[0],
+                Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
+                GameItems = model.GameItems.Cast<GameItem>(),
+            };
+            return (CombatEndReturnDto)result;
         }
     }
 }

@@ -25,19 +25,19 @@ namespace GY2021001BLL
     /// <summary>
     /// 虚拟物品管理器。
     /// </summary>
-    public class GameItemManager:GameManagerBase<GameItemManagerOptions>
+    public class GameItemManager : GameManagerBase<GameItemManagerOptions>
     {
         #region 构造函数
 
-        public GameItemManager():base()
+        public GameItemManager() : base()
         {
 
         }
 
-        public GameItemManager(IServiceProvider serviceProvider):base(serviceProvider)
+        public GameItemManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
-        public GameItemManager(IServiceProvider serviceProvider, GameItemManagerOptions options):base(serviceProvider,options)
+        public GameItemManager(IServiceProvider serviceProvider, GameItemManagerOptions options) : base(serviceProvider, options)
         {
 
         }
@@ -91,6 +91,15 @@ namespace GY2021001BLL
             return result;
         }
 
+        public void AddItem(IList<GameItem> dest, IEnumerable<GameItem> gameItems)
+        {
+            var gitm = World.ItemTemplateManager;
+            var coll = from tmp in dest
+                       let template=gitm.GetTemplateFromeId(tmp.TemplateId)
+                       join r in gameItems on tmp.TemplateId equals r.TemplateId
+                       select r;    //需要添加的且模板Id重复
+            Dictionary<string, object> dic = new Dictionary<string, object>();
+        }
     }
 
 }

@@ -297,6 +297,67 @@
             该模板创建对象应有的子模板Id字符串集合。用逗号分割。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GameItemTemplateDto.DisplayName">
+            <summary>
+            一个说明性文字，服务器不使用该属性。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
+            <summary>
+            开始战斗的返回数据传输类
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatStartReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.TemplateId">
+            <summary>
+            要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.HasError">
+            <summary>
+            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.DebugMessage">
+            <summary>
+            调试信息。调试状态下返回时填写。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
+            <summary>
+            结束战斗的返回数据传输类
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatEndReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.NextDungeonId">
+            <summary>
+            需要进入的下一关的Id。如果已经是最后一关结束或强制要求退出，则这里返回空引用或空字符串(string.IsNullOrEmpty测试为true)。
+            如果正常进入下一关，可以不必调用启动战斗的接口。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.GameItems">
+            <summary>
+            此关卡的收益。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.HasError">
+            <summary>
+            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.DebugMessage">
+            <summary>
+            调试信息。调试状态下返回时填写。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。
@@ -319,15 +380,15 @@
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiZuheTou">
             <summary>
-            坐骑组合中的头容器。
+            坐骑组合中的头容器Id。
             </summary>
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiZuheShenti">
             <summary>
-            坐骑组合中的身体容器。
+            坐骑组合中的身体容器Id。
             </summary>
         </member>
-        <member name="F:GY2021001WebApi.Models.DtoConstant.DangqianZuoqiCao">
+        <member name="F:GY2021001WebApi.Models.DtoConstant.DangqianZuoqiSlotId">
             <summary>
             当前坐骑的容器Id。
             </summary>
@@ -335,6 +396,71 @@
         <member name="F:GY2021001WebApi.Models.DtoConstant.CharTemplateId">
             <summary>
             角色模板Id。当前只有一个模板。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenWenSlotId">
+            <summary>
+            神纹槽Id。放在此槽中是装备的神纹。当前每种身体对应一种神纹。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenWenBagSlotId">
+            <summary>
+            神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShouyiSlotId">
+            <summary>
+            战斗收益槽。如果处于战斗中，此槽内表示大关的的总收益，用于计算收益限制。若不在战斗中，此槽为空（其中物品移动到各种背包中）。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShoulanSlotId">
+            <summary>
+            兽栏槽Id，抓捕的野兽存于此槽内。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.JinbiId">
+            <summary>
+            金币Id，这个不是槽，它的Count属性直接记录了金币数，目前其子代为空。这个省事，但未来在金币袋上开脑洞，不能保证不变。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.RunesId">
+            <summary>
+            神纹碎片的模板Id。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.LevelPropertyName">
+            <summary>
+            级别属性的名字。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.StackUpperLimit">
+            <summary>
+            堆叠上限属性的名字。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ContainerCapacity">
+            <summary>
+            容器容量上限属性。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenwenHPTCode">
+            <summary>
+            血量神纹碎片的类别号。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenwenAtkTCode">
+            <summary>
+            攻击神纹碎片的类别号。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenwenQltTCode">
+            <summary>
+            质量神纹碎片的类别号。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenwenTCode">
+            <summary>
+            装备的神纹的类别号。
             </summary>
         </member>
         <member name="M:GY2021001WebApi.Models.DtoHelper.ToBase64String(System.Guid)">
@@ -366,21 +492,6 @@
             令牌。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.QuicklyRegisterReturnDto">
-            <summary>
-            快速隐式注册接口的返回类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.QuicklyRegisterReturnDto.LoginName">
-            <summary>
-            登录名。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.QuicklyRegisterReturnDto.Pwd">
-            <summary>
-            密码。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.PagingWithTokenParamsDtoBase">
             <summary>
             分页控制数据。
@@ -404,6 +515,21 @@
         <member name="P:GY2021001WebApi.Models.PagingRetunDtoBase.MaxCount">
             <summary>
             最多有多少数据。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.QuicklyRegisterReturnDto">
+            <summary>
+            快速隐式注册接口的返回类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.QuicklyRegisterReturnDto.LoginName">
+            <summary>
+            登录名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.QuicklyRegisterReturnDto.Pwd">
+            <summary>
+            密码。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.LoginReturnDto">
@@ -466,27 +592,6 @@
             要更改的名字。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.ClientGameItemDto">
-            <summary>
-            客户端生成虚拟物品给服务器发送信息时，使用该类封装数据。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ClientGameItemDto.GId">
-            <summary>
-            简化模板Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ClientGameItemDto.Properties">
-            <summary>
-            属性集合。
-            atkne是攻击资质,nhpne是最大血量资质，qltne是质量资质。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ClientGameItemDto.Count">
-            <summary>
-            数量。对于堆叠物品是其一堆的数量，比如金币，堆叠且无堆叠上线(GId是指明为金币的)。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.ModifyClentStringParamsDto">
             <summary>
             修改客户端字符串的接口参数类。
@@ -509,17 +614,7 @@
         </member>
         <member name="P:GY2021001WebApi.Models.CombatStartParamsDto.DungeonId">
             <summary>
-            关卡Id。如果是小关Id表示该小关，如果是大关Id则表示整个大关通关。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
-            <summary>
-            开始战斗的返回数据传输类
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.CombatStartReturnDto.#ctor">
-            <summary>
-            构造函数。
+            关卡Id。第一个小关卡Id或整个大关卡Id。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.CombatEndParamsDto">
@@ -542,25 +637,9 @@
             角色是否退出，true强制推出当前大关口，false试图继续(如果已经是最后一关则不起作用)。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.Gameitems">
+        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.GameItems">
             <summary>
             收益。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
-            <summary>
-            结束战斗的返回数据传输类
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.CombatEndReturnDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.NextDungeonId">
-            <summary>
-            需要进入的下一关的Id。如果已经是最后一关结束或强制要求退出，则这里返回空引用或空字符串(string.IsNullOrEmpty测试为true)。
-            如果正常进入下一关，可以不必调用启动战斗的接口。
             </summary>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">

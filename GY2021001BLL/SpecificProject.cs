@@ -80,9 +80,28 @@ namespace GY2021001BLL
         /// 金币Id，这个不是槽，它的Count属性直接记录了金币数，目前其子代为空。这个省事，但未来在金币袋上开脑洞，不能保证不变。
         /// </summary>
         public static readonly Guid JinbiId = new Guid("{2B83C942-1E9C-4B45-9816-AD2CBF0E473F}");
+
+        /// <summary>
+        /// 神纹碎片的模板Id。
+        /// </summary>
+        public static readonly Guid RunesId = new Guid("{2B86FF50-0257-4913-8BEC-F5CF3C84B6D5}");
+
         #endregion 固定模板Id
 
-        public const string LevelPropertyName = "lv";
+        /// <summary>
+        /// 级别属性的名字。
+        /// </summary>
+        public const string LevelPropertyName = "lv";   //Runes
+
+        /// <summary>
+        /// 堆叠上限属性的名字。
+        /// </summary>
+        public const string StackUpperLimit = "stc";
+
+        /// <summary>
+        /// 容器容量上限属性。
+        /// </summary>
+        public const string ContainerCapacity = "cap";
 
         #region 类别号
         /// <summary>
@@ -132,11 +151,11 @@ namespace GY2021001BLL
 
             new GameItemTemplate(ProjectConstant.ZuojiTou)
             {
-                DisplayName="当前坐骑头",
+                DisplayName="当前坐骑头(已废弃)",
             },
             new GameItemTemplate(ProjectConstant.ZuojiShen)
             {
-                DisplayName="当前坐骑身",
+                DisplayName="当前坐骑身(已废弃)",
 
             },
 	#endregion 已废弃
@@ -162,6 +181,7 @@ namespace GY2021001BLL
                 DisplayName="角色的模板",
                 ChildrenTemplateIdString=$"{ProjectConstant.DangqianZuoqiSlotId},{ProjectConstant.ShenWenSlotId},{ProjectConstant.ShenWenBagSlotId},{ProjectConstant.ShoulanSlotId}" +  //通过串联将长字符串文本拆分为较短的字符串，从而提高源代码的可读性。 编译时将这些部分连接到单个字符串中。 无论涉及到多少个字符串，均不产生运行时性能开销。
                     $",{ProjectConstant.JinbiId},{ProjectConstant.ShouyiSlotId}",
+                PropertiesString="mpp=20,dpp=300,ipp=1",    //最大体力
             },
             new GameItemTemplate(ProjectConstant.ShenWenSlotId)
             {
@@ -280,7 +300,7 @@ namespace GY2021001BLL
             return result;
         }
 
-        public static bool CombatStart(IServiceProvider service, GameChar gameChar)
+        public static bool CombatStart(IServiceProvider service, StartCombatData data)
         {
             return true;
         }

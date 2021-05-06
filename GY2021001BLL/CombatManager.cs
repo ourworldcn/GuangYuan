@@ -23,7 +23,7 @@ namespace GY2021001BLL
         /// <summary>
         /// 战斗开始时被调用。
         /// </summary>
-        public Func<IServiceProvider, GameChar, bool> CombatStart { get; set; }
+        public Func<IServiceProvider, StartCombatData, bool> CombatStart { get; set; }
 
         /// <summary>
         /// 战斗结束时被调用。返回true表示
@@ -59,6 +59,40 @@ namespace GY2021001BLL
         /// 终止后自动进入的下一关卡模板。null表示错误的请求或已经自然结束。返回时填写。
         /// </summary>
         public GameItemTemplate NextTemplate { get; set; }
+
+        /// <summary>
+        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
+        /// </summary>
+        public bool HasError { get; set; }
+
+        /// <summary>
+        /// 调试信息。调试状态下返回时填写。
+        /// </summary>
+        public string DebugMessage { get; set; }
+    }
+
+    /// <summary>
+    /// 请求开始战斗的数据封装类
+    /// </summary>
+    public class StartCombatData
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public StartCombatData()
+        {
+
+        }
+
+        /// <summary>
+        /// 角色对象。
+        /// </summary>
+        public GameChar GameChar { get; set; }
+
+        /// <summary>
+        /// 要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
+        /// </summary>
+        public GameItemTemplate Template { get; set; }
 
         /// <summary>
         /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
@@ -182,18 +216,32 @@ namespace GY2021001BLL
         /// <summary>
         /// 取下一关的模板。
         /// </summary>
-        /// <param name="template">关卡模板，如果是大关则立即返回null。</param>
+        /// <param name="template">关卡模板，如果是大关则立即返回第一个小关的模板。</param>
         /// <returns>下一关的模板，null则说明是最后一关(没有下一关了)。</returns>
         public GameItemTemplate GetNext(GameItemTemplate template)
         {
-            if (Parent2Children.ContainsKey(template))  //若是大关
-                return null;
+            if (Parent2Children.TryGetValue(template, out GameItemTemplate[] children))  //若是大关
+                return children[0];
             var parent = Child2Parent[template];    //取大关模板
-            var children = Parent2Children[parent]; //取关卡模板序列
+            children = Parent2Children[parent]; //取关卡模板序列
             int index = Array.FindIndex(children, c => c == template);  //取索引
             if (index >= children.Length - 1)    //若是最后一关
                 return null;
             return children[index + 1];
+        }
+
+        /// <summary>
+        /// 获取指定关卡的大关卡。
+        /// </summary>
+        /// <param name="template">如果本身就是大关卡，则立即返回自身。</param>
+        /// <returns>没有合适的关卡则返回null。</returns>
+        public GameItemTemplate GetParent(GameItemTemplate template)
+        {
+            if (Parent2Children.ContainsKey(template))  //若本身就是大关卡
+                return template;
+            if (Child2Parent.TryGetValue(template, out GameItemTemplate result))    //若找到大关卡
+                return result;
+            return null;
         }
 
         /// <summary>
@@ -202,29 +250,51 @@ namespace GY2021001BLL
         /// <param name="gameChar"></param>
         /// <param name="dungeon">场景。</param>
         /// <returns>true正常启动，false没有找到指定的场景或角色当前正在战斗。</returns>
-        public bool StartCombat(GameChar gameChar, GameItemTemplate dungeon, out string msg)
+        public void StartCombat(StartCombatData data)
         {
-            if (null != gameChar.CurrentDungeonId && gameChar.CurrentDungeonId.HasValue)
-                if (gameChar.CurrentDungeonId.Value != dungeon.Id)
-                {
-                    msg = "错误的关卡Id";
-                    return false;
-                }
+            var gcm = World.CharManager;
+            if (!gcm.Lock(data.GameChar.GameUser))
+            {
+                data.DebugMessage = "用户已经无效";
+                data.HasError = true;
+                return;
+            }
             try
             {
-                if (!Options?.CombatStart?.Invoke(Service, gameChar) ?? true)
+
+                var gameChar = data.GameChar;
+                var dungeon = data.Template;
+                var currentDungeonId = gameChar.CurrentDungeonId.GetValueOrDefault(Guid.Empty);
+                if (Guid.Empty != currentDungeonId && gameChar.CurrentDungeonId.Value != dungeon.Id)
                 {
-                    msg = "收益错误";
-                    return false;
+                    data.DebugMessage = "错误的关卡Id";
+                    data.HasError = true;
+                    return;
                 }
+                var cm = World.CombatManager;
+                try
+                {
+                    var template = cm.GetParent(dungeon);
+                    if (!Options?.CombatStart?.Invoke(Service, data) ?? true)
+                    {
+                        data.DebugMessage = "收益错误";
+                        data.HasError = true;
+                        return;
+                    }
+                }
+                catch (Exception)
+                {
+                }
+                gameChar.CurrentDungeonId = dungeon.Id;
+                gameChar.CombatStartUtc = DateTime.UtcNow;
+                data.DebugMessage = null;
+                data.HasError = false;
             }
-            catch (Exception)
+            finally
             {
+                gcm.Unlock(data.GameChar.GameUser);
             }
-            gameChar.CurrentDungeonId = dungeon.Id;
-            gameChar.CombatStartUtc = DateTime.UtcNow;
-            msg = null;
-            return true;
+            return;
         }
 
 

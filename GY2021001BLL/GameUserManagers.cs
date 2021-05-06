@@ -87,7 +87,7 @@ namespace GY2021001BLL
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="options"></param>
-        public GameCharManager(IServiceProvider serviceProvider, GameCharManagerOptions options) : base(serviceProvider)
+        public GameCharManager(IServiceProvider serviceProvider, GameCharManagerOptions options) : base(serviceProvider,options)
         {
             Initialize();
         }
@@ -177,6 +177,7 @@ namespace GY2021001BLL
                         {
                             if (item.IsDisposed)    //若已经无效
                                 continue;
+                            item.GameChars[0].InvokeSaving();
                             item.DbContext.SaveChanges();
                         }
                         finally
@@ -236,6 +237,19 @@ namespace GY2021001BLL
         #endregion 公共属性
 
         #region 公共方法
+
+        /// <summary>
+        /// 获取动态渐变属性。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public decimal GetGradientProperty(GameChar gameChar, string propertyName)
+        {
+            if (gameChar.GradientProperties.TryGetValue(propertyName, out GradientProperty gradientProperty))
+                return gradientProperty.GetCurrentValueWithUtc();
+            return decimal.Zero;
+        }
 
         /// <summary>
         /// 获取指定令牌的用户对象。
@@ -387,6 +401,7 @@ namespace GY2021001BLL
                         }
                         _LoginName2Token.AddOrUpdate(loginName, token, (c1, c2) => token);
                         _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
+                        gu.GameChars[0].InvokeLoaded();
                     }
                 }
             }
@@ -524,6 +539,7 @@ namespace GY2021001BLL
                     }
                     try
                     {
+                        gu.GameChars[0].InvokeSaving();
                         gu.DbContext.SaveChanges();
                         gu.DbContext.Dispose();
                     }

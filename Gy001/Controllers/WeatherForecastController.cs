@@ -11,7 +11,7 @@ namespace Gy001.Controllers
     /// 
     /// </summary>
     [ApiController]
-        [ApiExplorerSettings(IgnoreApi = true)]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace GY2021001WebApi.Models
 {
-    #region 基础数据
 
     /// <summary>
     /// 该项目使用的特定常量。
@@ -35,12 +34,12 @@ namespace GY2021001WebApi.Models
         public static readonly Guid ZuojiZuheRongqi = new Guid("{6E179D54-5836-4E0B-B30D-756BD07FF196}");
 
         /// <summary>
-        /// 坐骑组合中的头容器。
+        /// 坐骑组合中的头容器Id。
         /// </summary>
         public static readonly Guid ZuojiZuheTou = new Guid("{740FEBF3-7472-43CB-8A10-798F6C61335B}");
 
         /// <summary>
-        /// 坐骑组合中的身体容器。
+        /// 坐骑组合中的身体容器Id。
         /// </summary>
         public static readonly Guid ZuojiZuheShenti = new Guid("{F8B1987D-FDF3-4090-9E9B-EBAF1DB2DCCD}");
         #endregion 坐骑相关Id
@@ -48,16 +47,81 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 当前坐骑的容器Id。
         /// </summary>
-        public static readonly Guid DangqianZuoqiCao = new Guid("{B19EE5AB-57E3-4513-8228-9F2A8364358E}");
+        public static readonly Guid DangqianZuoqiSlotId = new Guid("{B19EE5AB-57E3-4513-8228-9F2A8364358E}");
 
         /// <summary>
         /// 角色模板Id。当前只有一个模板。
         /// </summary>
         public static readonly Guid CharTemplateId = new Guid("{0CF39269-6301-470B-8527-07AF29C5EEEC}");
 
+        /// <summary>
+        /// 神纹槽Id。放在此槽中是装备的神纹。当前每种身体对应一种神纹。
+        /// </summary>
+        public static readonly Guid ShenWenSlotId = new Guid("{88A4EED6-0AEB-4A70-8FDE-67F75E5E2C0A}");
+
+        /// <summary>
+        /// 神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
+        /// </summary>
+        public static readonly Guid ShenWenBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
+
+        /// <summary>
+        /// 战斗收益槽。如果处于战斗中，此槽内表示大关的的总收益，用于计算收益限制。若不在战斗中，此槽为空（其中物品移动到各种背包中）。
+        /// </summary>
+        public static readonly Guid ShouyiSlotId = new Guid("{FEA0B277-8CC6-462F-B0ED-85409ABE9C79}");
+
+        /// <summary>
+        /// 兽栏槽Id，抓捕的野兽存于此槽内。
+        /// </summary>
+        public static readonly Guid ShoulanSlotId = new Guid("{1630A0A1-3540-479A-B2C5-10B63E7A5774}");
+
+        /// <summary>
+        /// 金币Id，这个不是槽，它的Count属性直接记录了金币数，目前其子代为空。这个省事，但未来在金币袋上开脑洞，不能保证不变。
+        /// </summary>
+        public static readonly Guid JinbiId = new Guid("{2B83C942-1E9C-4B45-9816-AD2CBF0E473F}");
+
+        /// <summary>
+        /// 神纹碎片的模板Id。
+        /// </summary>
+        public static readonly Guid RunesId = new Guid("{2B86FF50-0257-4913-8BEC-F5CF3C84B6D5}");
+
         #endregion 固定模板Id
 
-        public const string LevelPropertyName = "lv";
+        /// <summary>
+        /// 级别属性的名字。
+        /// </summary>
+        public const string LevelPropertyName = "lv";   //Runes
+
+        /// <summary>
+        /// 堆叠上限属性的名字。
+        /// </summary>
+        public const string StackUpperLimit = "stc";
+
+        /// <summary>
+        /// 容器容量上限属性。
+        /// </summary>
+        public const string ContainerCapacity = "cap";
+
+        #region 类别号
+        /// <summary>
+        /// 血量神纹碎片的类别号。
+        /// </summary>
+        public const int ShenwenHPTCode = 15;
+
+        /// <summary>
+        /// 攻击神纹碎片的类别号。
+        /// </summary>
+        public const int ShenwenAtkTCode = 16;
+
+        /// <summary>
+        /// 质量神纹碎片的类别号。
+        /// </summary>
+        public const int ShenwenQltTCode = 17;
+
+        /// <summary>
+        /// 装备的神纹的类别号。
+        /// </summary>
+        public const int ShenwenTCode = 10;
+        #endregion 类别号
     }
 
     public static class DtoHelper
@@ -104,28 +168,7 @@ namespace GY2021001WebApi.Models
         public string Token { get; set; }
     }
 
-    #endregion 基础数据
-
-    /// <summary>
-    /// 快速隐式注册接口的返回类。
-    /// </summary>
-    [DataContract]
-    public class QuicklyRegisterReturnDto
-    {
-        /// <summary>
-        /// 登录名。
-        /// </summary>
-        [DataMember(Name = nameof(LoginName))]
-        public string LoginName { get; set; }
-
-        /// <summary>
-        /// 密码。
-        /// </summary>
-        [DataMember(Name = nameof(Pwd))]
-        public string Pwd { get; set; }
-
-    }
-
+    #region 基础数据封装类
     /// <summary>
     /// 分页控制数据。
     /// </summary>
@@ -167,85 +210,6 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// 登录接口返回类。
-    /// </summary>
-    [DataContract]
-    public class LoginReturnDto : TokenDtoBase
-    {
-        public LoginReturnDto()
-        {
-        }
-
-        /// <summary>
-        /// 世界服务器的主机地址。使用此地址拼接后续的通讯地址。
-        /// </summary>
-        [DataMember]
-        public string WorldServiceHost { get; set; }
-
-        /// <summary>
-        /// 该账号下所有角色信息的数组。目前有且仅有一个角色。
-        /// </summary>
-        [DataMember]
-        public List<GameCharDto> GameChars { get; } = new List<GameCharDto>();
-
-    }
-
-    /// <summary>
-    /// 登录接口参数类。
-    /// </summary>
-    public class LoginParamsDto
-    {
-        public LoginParamsDto()
-        {
-
-        }
-
-        /// <summary>
-        /// 登录名。
-        /// </summary>
-        public string LoginName { get; set; }
-
-        /// <summary>
-        /// 密码。
-        /// </summary>
-        public string Pwd { get; set; }
-
-        /// <summary>
-        /// 登录客户端类型。目前可能值是IOS或Android。
-        /// </summary>
-        public string Region { get; set; }
-    }
-
-    /// <summary>
-    /// 改变密码接口的参数。
-    /// </summary>
-    [DataContract]
-    public class ChangePwdParamsDto : TokenDtoBase
-    {
-        public ChangePwdParamsDto()
-        {
-
-        }
-
-        /// <summary>
-        /// 新密码。
-        /// </summary>
-        [DataMember]
-        public string NewPwd { get; set; }
-    }
-
-    /// <summary>
-    /// 发送一个空操作的参数。
-    /// </summary>
-    public class NopParamsDto : TokenDtoBase
-    {
-        public NopParamsDto()
-        {
-
-        }
-    }
-
-    /// <summary>
     /// 游戏物品，道具，金币，积分等等对象的模板。
     /// </summary>
     [DataContract]
@@ -281,6 +245,11 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string ChildrenTemplateIdString { get; set; }
 
+        /// <summary>
+        /// 一个说明性文字，服务器不使用该属性。
+        /// </summary>
+        [DataMember]
+        public string DisplayName { get; set; }
     }
 
     /// <summary>
@@ -309,6 +278,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 创建该对象的通用协调时间。
         /// </summary>
+        [DataMember]
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
@@ -404,25 +374,25 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 该角色的唯一Id。
         /// </summary>
-        [DataMember(Name = nameof(Id))]
+        [DataMember]
         public string Id { get; set; }
 
         /// <summary>
         /// 角色自身属性。
         /// </summary>
-        [DataMember(Name = nameof(Properties))]
+        [DataMember]
         public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// 角色显示用的名字。
         /// </summary>
-        [DataMember(Name = nameof(DisplayName))]
+        [DataMember]
         public string DisplayName { get; set; }
 
         /// <summary>
         /// 客户端要记录的一些属性，这个属性客户端可以随意更改，服务器不使用。
         /// </summary>
-        [DataMember(Name = nameof(ClientGutsString))]
+        [DataMember]
         public string ClientGutsString { get; set; }
 
         /// <summary>
@@ -457,7 +427,7 @@ namespace GY2021001WebApi.Models
         {
             get
             {
-                var id = DtoHelper.ToBase64String(DtoConstant.DangqianZuoqiCao);
+                var id = DtoHelper.ToBase64String(DtoConstant.DangqianZuoqiSlotId);
                 var result = GameItems.FirstOrDefault(c => c.TemplateId == id)?.Children.FirstOrDefault();
                 return result;
             }
@@ -477,6 +447,115 @@ namespace GY2021001WebApi.Models
 
     }
 
+    #endregion 基础数据封装类
+
+    #region 接口特定数据封装类
+
+    /// <summary>
+    /// 快速隐式注册接口的返回类。
+    /// </summary>
+    [DataContract]
+    public class QuicklyRegisterReturnDto
+    {
+        /// <summary>
+        /// 登录名。
+        /// </summary>
+        [DataMember(Name = nameof(LoginName))]
+        public string LoginName { get; set; }
+
+        /// <summary>
+        /// 密码。
+        /// </summary>
+        [DataMember(Name = nameof(Pwd))]
+        public string Pwd { get; set; }
+
+    }
+
+    /// <summary>
+    /// 登录接口返回类。
+    /// </summary>
+    [DataContract]
+    public class LoginReturnDto : TokenDtoBase
+    {
+        public LoginReturnDto()
+        {
+        }
+
+        /// <summary>
+        /// 世界服务器的主机地址。使用此地址拼接后续的通讯地址。
+        /// </summary>
+        [DataMember]
+        public string WorldServiceHost { get; set; }
+
+        /// <summary>
+        /// 该账号下所有角色信息的数组。目前有且仅有一个角色。
+        /// </summary>
+        [DataMember]
+        public List<GameCharDto> GameChars { get; set; } = new List<GameCharDto>();
+
+
+    }
+
+    /// <summary>
+    /// 登录接口参数类。
+    /// </summary>
+    [DataContract]
+    public class LoginParamsDto
+    {
+        public LoginParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 登录名。
+        /// </summary>
+        [DataMember]
+        public string LoginName { get; set; }
+
+        /// <summary>
+        /// 密码。
+        /// </summary>
+        [DataMember]
+        public string Pwd { get; set; }
+
+        /// <summary>
+        /// 登录客户端类型。目前可能值是IOS或Android。
+        /// </summary>
+        [DataMember]
+        public string Region { get; set; }
+    }
+
+    /// <summary>
+    /// 改变密码接口的参数。
+    /// </summary>
+    [DataContract]
+    public class ChangePwdParamsDto : TokenDtoBase
+    {
+        public ChangePwdParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 新密码。
+        /// </summary>
+        [DataMember]
+        public string NewPwd { get; set; }
+    }
+
+    /// <summary>
+    /// 发送一个空操作的参数。
+    /// </summary>
+    [DataContract]
+    public class NopParamsDto : TokenDtoBase
+    {
+        public NopParamsDto()
+        {
+
+        }
+    }
+
     /// <summary>
     /// 更改名字接口的参数。
     /// </summary>
@@ -493,37 +572,6 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string DisplayName { get; set; }
-    }
-
-    /// <summary>
-    /// 客户端生成虚拟物品给服务器发送信息时，使用该类封装数据。
-    /// </summary>
-    [DataContract]
-    public class ClientGameItemDto
-    {
-        public ClientGameItemDto()
-        {
-
-        }
-
-        /// <summary>
-        /// 简化模板Id。
-        /// </summary>
-        [DataMember]
-        public int GId { get; set; }
-
-        /// <summary>
-        /// 属性集合。
-        /// atkne是攻击资质,nhpne是最大血量资质，qltne是质量资质。
-        /// </summary>
-        [DataMember]
-        public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
-
-        /// <summary>
-        /// 数量。对于堆叠物品是其一堆的数量，比如金币，堆叠且无堆叠上线(GId是指明为金币的)。
-        /// </summary>
-        [DataMember]
-        public decimal? Count { get; set; }
     }
 
     /// <summary>
@@ -549,7 +597,7 @@ namespace GY2021001WebApi.Models
     /// 开始战斗的参数传输类。
     /// </summary>
     [DataContract]
-    public class CombatStartParamsDto : TokenDtoBase
+    public partial class CombatStartParamsDto : TokenDtoBase
     {
         /// <summary>
         /// 构造函数。
@@ -560,7 +608,7 @@ namespace GY2021001WebApi.Models
         }
 
         /// <summary>
-        /// 关卡Id。如果是小关Id表示该小关，如果是大关Id则表示整个大关通关。
+        /// 关卡Id。第一个小关卡Id或整个大关卡Id。
         /// </summary>
         [DataMember]
         public string DungeonId { get; set; }
@@ -570,7 +618,7 @@ namespace GY2021001WebApi.Models
     /// 开始战斗的返回数据传输类
     /// </summary>
     [DataContract]
-    public class CombatStartReturnDto : TokenDtoBase
+    public partial class CombatStartReturnDto
     {
         /// <summary>
         /// 构造函数。
@@ -579,6 +627,24 @@ namespace GY2021001WebApi.Models
         {
 
         }
+
+        /// <summary>
+        /// 要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
+        /// </summary>
+        [DataMember]
+        public string TemplateId { get; set; }
+
+        /// <summary>
+        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
+        /// </summary>
+        [DataMember]
+        public bool HasError { get; set; }
+
+        /// <summary>
+        /// 调试信息。调试状态下返回时填写。
+        /// </summary>
+        [DataMember]
+        public string DebugMessage { get; set; }
     }
 
     /// <summary>
@@ -610,14 +676,14 @@ namespace GY2021001WebApi.Models
         /// 收益。
         /// </summary>
         [DataMember]
-        public List<GameItemDto> Gameitems { get; set; }
+        public List<GameItemDto> GameItems { get; set; }
     }
 
     /// <summary>
     /// 结束战斗的返回数据传输类
     /// </summary>
     [DataContract]
-    public class CombatEndReturnDto : TokenDtoBase
+    public partial class CombatEndReturnDto
     {
         /// <summary>
         /// 构造函数。
@@ -633,6 +699,24 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string NextDungeonId { get; set; }
 
+        /// <summary>
+        /// 此关卡的收益。
+        /// </summary>
+        public IEnumerable<GameItemDto> GameItems { get; set; }
+
+        /// <summary>
+        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
+        /// </summary>
+        public bool HasError { get; set; }
+
+        /// <summary>
+        /// 调试信息。调试状态下返回时填写。
+        /// </summary>
+        public string DebugMessage { get; set; }
     }
+
     #endregion 战斗相关数据
+
+    #endregion 接口特定数据封装类
+
 }

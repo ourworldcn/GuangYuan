@@ -111,8 +111,13 @@ namespace GY2021001WebApi.Models
             {
                 result.Properties[item.Key] = item.Value;
             }
-            return result;
 
+            foreach (var item in obj.GradientProperties)    //将渐变属性合并到动态属性集合中
+            {
+                DateTime now = DateTime.UtcNow;
+                result.Properties[item.Key] = item.Value.GetCurrentValue(ref now);
+            }
+            return result;
         }
     }
 
@@ -125,6 +130,7 @@ namespace GY2021001WebApi.Models
                 Id = obj.Id.ToBase64String(),
                 GId = obj.GId,
                 ChildrenTemplateIdString = obj.ChildrenTemplateIdString,
+                DisplayName = obj.DisplayName,
             };
             foreach (var item in obj.Properties)
             {
@@ -140,6 +146,7 @@ namespace GY2021001WebApi.Models
                 Id = GameHelper.FromBase64String(obj.Id),
                 GId = obj.GId,
                 ChildrenTemplateIdString = obj.ChildrenTemplateIdString,
+                DisplayName = obj.DisplayName,
             };
             foreach (var item in obj.Properties)
             {
@@ -147,5 +154,35 @@ namespace GY2021001WebApi.Models
             }
             return result;
         }
+    }
+
+    public partial class CombatStartReturnDto
+    {
+        public static explicit operator CombatStartReturnDto(StartCombatData obj)
+        {
+            var result = new CombatStartReturnDto()
+            {
+                TemplateId = obj.Template.Id.ToBase64String(),
+                HasError = obj.HasError,
+                DebugMessage = obj.DebugMessage,
+            };
+            return result;
+        }
+    }
+
+    public partial class CombatEndReturnDto
+    {
+        public static explicit operator CombatEndReturnDto(EndCombatData obj)
+        {
+            var result = new CombatEndReturnDto()
+            {
+                NextDungeonId = obj.NextTemplate.Id.ToBase64String(),
+                HasError = obj.HasError,
+                DebugMessage = obj.DebugMessage,
+                GameItems = obj.GameItems.Cast<GameItemDto>().ToArray(),
+            };
+            return result;
+        }
+
     }
 }

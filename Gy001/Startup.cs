@@ -81,14 +81,14 @@ namespace Gy001
             //services.AddTransient(options => new GY2021001DbContext(new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
             //services.AddSingleton(UserDbOptions => new GameTemplateContext(new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
 
-            services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
-            {
-                Loaded = SpecificProject.ItemTemplateLoaded,
-            }));
             services.AddSingleton(c => new VWorld(c, new VWorldOptions()
             {
                 UserDbOptions = new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options,
                 TemplateDbOptions = new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
+            }));
+            services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
+            {
+                Loaded = SpecificProject.ItemTemplateLoaded,
             }));
             services.AddSingleton(c => new GameItemManager(c, new GameItemManagerOptions()
             {
