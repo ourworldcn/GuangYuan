@@ -26,6 +26,11 @@ namespace GY2021001BLL
         /// 当前装备的坐骑身体容器模板Id。已废弃
         /// </summary>
         public static readonly Guid ZuojiShen = new Guid("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}");
+        /// <summary>
+        /// 神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
+        /// </summary>
+        public static readonly Guid ShenWenBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
+
         #endregion 废弃模板Id
 
         #region 坐骑相关Id
@@ -46,25 +51,17 @@ namespace GY2021001BLL
         public static readonly Guid ZuojiZuheShenti = new Guid("{F8B1987D-FDF3-4090-9E9B-EBAF1DB2DCCD}");
         #endregion 坐骑相关Id
 
+        #region 角色直属槽及其相关
+
         /// <summary>
         /// 当前坐骑的容器Id。
         /// </summary>
         public static readonly Guid DangqianZuoqiSlotId = new Guid("{B19EE5AB-57E3-4513-8228-9F2A8364358E}");
 
         /// <summary>
-        /// 角色模板Id。当前只有一个模板。
-        /// </summary>
-        public static readonly Guid CharTemplateId = new Guid("{0CF39269-6301-470B-8527-07AF29C5EEEC}");
-
-        /// <summary>
-        /// 神纹槽Id。放在此槽中是装备的神纹。当前每种身体对应一种神纹。
+        /// 神纹槽Id。放在此槽中是装备的神纹。当前每种类型的野兽身体对应一种神纹。
         /// </summary>
         public static readonly Guid ShenWenSlotId = new Guid("{88A4EED6-0AEB-4A70-8FDE-67F75E5E2C0A}");
-
-        /// <summary>
-        /// 神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
-        /// </summary>
-        public static readonly Guid ShenWenBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
 
         /// <summary>
         /// 道具背包槽Id。这个就是初期规划的神纹碎片背包。
@@ -87,11 +84,30 @@ namespace GY2021001BLL
         public static readonly Guid JinbiId = new Guid("{2B83C942-1E9C-4B45-9816-AD2CBF0E473F}");
 
         /// <summary>
+        /// 木材Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
+        /// </summary>
+        public static readonly Guid MucaiId = new Guid("{01959584-E2C9-4E54-BBB7-FCC58A9484EC}");
+
+        /// <summary>
+        /// 钻石Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
+        /// </summary>
+        public static readonly Guid ZuanshiId = new Guid("{3E365BEC-F83D-467D-A58C-9EBA43458682}");
+        /// <summary>
+        /// 坐骑背包Id。
+        /// </summary>
+        public static readonly Guid ZuojiBagSlotId = new Guid("{BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5}");
+        #endregion  角色直属槽及其相关
+        /// <summary>
+        /// 角色模板Id。当前只有一个模板。
+        /// </summary>
+        public static readonly Guid CharTemplateId = new Guid("{0CF39269-6301-470B-8527-07AF29C5EEEC}");
+
+        #endregion 固定模板Id
+
+        /// <summary>
         /// 神纹碎片的模板Id。
         /// </summary>
         public static readonly Guid RunesId = new Guid("{2B86FF50-0257-4913-8BEC-F5CF3C84B6D5}");
-
-        #endregion 固定模板Id
 
         /// <summary>
         /// 级别属性的名字。
@@ -185,7 +201,7 @@ namespace GY2021001BLL
             {
                 DisplayName="角色的模板",
                 ChildrenTemplateIdString=$"{ProjectConstant.DangqianZuoqiSlotId},{ProjectConstant.ShenWenSlotId},{ProjectConstant.DaojuBagSlotId},{ProjectConstant.ShoulanSlotId}" +  //通过串联将长字符串文本拆分为较短的字符串，从而提高源代码的可读性。 编译时将这些部分连接到单个字符串中。 无论涉及到多少个字符串，均不产生运行时性能开销。
-                    $",{ProjectConstant.JinbiId},{ProjectConstant.ShouyiSlotId}",
+                    $",{ProjectConstant.JinbiId},{ProjectConstant.ShouyiSlotId},{ProjectConstant.ZuojiBagSlotId}",
                 PropertiesString="mpp=20,dpp=300,ipp=1",    //最大体力
             },
             new GameItemTemplate(ProjectConstant.ShenWenSlotId)
@@ -207,6 +223,18 @@ namespace GY2021001BLL
             new GameItemTemplate(ProjectConstant.JinbiId)
             {
                 DisplayName="金币Id",
+            },
+            new GameItemTemplate(ProjectConstant.MucaiId)
+            {
+                DisplayName="木材Id",
+            },
+            new GameItemTemplate(ProjectConstant.ZuanshiId)
+            {
+                DisplayName="钻石Id",
+            },
+            new GameItemTemplate(ProjectConstant.ZuojiBagSlotId)
+            {
+                DisplayName="坐骑背包",
             },
         };
 
@@ -256,14 +284,19 @@ namespace GY2021001BLL
         public static bool CharCreated(IServiceProvider service, GameChar gameChar)
         {
             var gitm = service.GetService<GameItemTemplateManager>();
+            var world = service.GetService<VWorld>();
             var result = false;
-
+            //增加坐骑
             var mountsSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DangqianZuoqiSlotId);   //当前坐骑槽
 
             var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 4001);
             var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 3001);
             var mounts = CreateMounts(service, headTemplate, bodyTemplate);
             mountsSlot.Children.Add(mounts);
+            //增加神纹
+            var runse = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShenWenSlotId);
+            var template = world.ItemTemplateManager.Id2Template.Values.First(c => 10001 == c.GId);
+            runse.Children.Add(world.ItemManager.CreateGameItem(template));
             result = true;
             return result;
         }
@@ -305,11 +338,36 @@ namespace GY2021001BLL
             return result;
         }
 
+        /// <summary>
+        /// 开始战斗的项目特定回调。
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static bool CombatStart(IServiceProvider service, StartCombatData data)
         {
+            var world = service.GetService<VWorld>();
+            var gc = data.GameChar;
+            var cm = world.CombatManager;
+            var parent = cm.GetParent(data.Template);   //大关
+            if (cm.GetNext(parent) == data.Template)  //若是第一关
+            {
+                //扣除体力
+                var pp = (decimal)parent.Properties.GetValueOrDefault("pp", 0m);
+                if (gc.GradientProperties.TryGetValue("pp", out GradientProperty gp))
+                {
+                    gp.LastValue = gp.GetCurrentValueWithUtc() - pp;
+                }
+            }
             return true;
         }
 
+        /// <summary>
+        /// 结束战斗的项目特定回调。
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static bool CombatEnd(IServiceProvider service, EndCombatData data)
         {
             GameChar gameChar = data.GameChar;
@@ -323,8 +381,10 @@ namespace GY2021001BLL
             //校验时间
             DateTime dt = gameChar.CombatStartUtc.GetValueOrDefault(DateTime.UtcNow);
             var dtNow = DateTime.UtcNow;
-            if (dtNow - dt < TimeSpan.FromSeconds((double)tm.Properties.GetValueOrDefault("tl", decimal.Zero))) //若时间过短
+            if (dtNow - dt < TimeSpan.FromSeconds(Convert.ToDouble(tm.Properties.GetValueOrDefault("tl", decimal.Zero)))) //若时间过短
             {
+                data.HasError = true;
+                data.DebugMessage = "时间过短";
                 return false;
             }
             if (!Verify(service, tm, gameItems, out string msg))
@@ -410,14 +470,15 @@ namespace GY2021001BLL
                     return false;
                 }
             }
-            if (itemTemplate.Properties.TryGetValue("mne", out object mne)) //若要限制单个怪资质总和
+            if (itemTemplate.Properties.TryGetValue("mne", out object mneObj)) //若要限制单个怪资质总和
             {
+                var mne = Convert.ToSingle(mneObj);
                 var coll = from tmp in gameItems
-                           let mneatk = (float)tmp.Properties.GetValueOrDefault("mneatk", decimal.Zero)
-                           let mneqlt = (float)tmp.Properties.GetValueOrDefault("mneqlt", decimal.Zero)
-                           let mnemhp = (float)tmp.Properties.GetValueOrDefault("mnemhp", decimal.Zero)
+                           let mneatk = Convert.ToSingle( tmp.Properties.GetValueOrDefault("mneatk", decimal.Zero))
+                           let mneqlt = Convert.ToSingle(tmp.Properties.GetValueOrDefault("mneqlt", decimal.Zero))
+                           let mnemhp = Convert.ToSingle(tmp.Properties.GetValueOrDefault("mnemhp", decimal.Zero))
                            let mneTotal = mneatk + mneqlt + mnemhp
-                           where mneTotal > (float)mne
+                           where mneTotal > mne
                            select tmp;
                 var errItem = coll.FirstOrDefault();
                 if (null != errItem)   //若单个怪资质总和超过上限

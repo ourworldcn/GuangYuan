@@ -95,7 +95,7 @@ namespace Gy2021001Template
                         if (string.IsNullOrWhiteSpace(ChildrenTemplateIdString))
                             _ChildrenTemplateIds = new List<Guid>();
                         else
-                            _ChildrenTemplateIds = ChildrenTemplateIdString.Split(new char[] { ',', '，' }, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
+                            _ChildrenTemplateIds = ChildrenTemplateIdString.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
                     }
                 return _ChildrenTemplateIds;
             }

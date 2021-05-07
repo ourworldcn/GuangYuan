@@ -43,7 +43,7 @@ namespace Gy2021001Template
                 lock (this)
                     if (null == _GenusIds)
                     {
-                        _GenusIds = GenusIdString.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
+                        _GenusIds = GenusIdString.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
                     }
                 return _GenusIds;
             }

@@ -265,16 +265,16 @@ namespace GY2021001BLL
                 var gameChar = data.GameChar;
                 var dungeon = data.Template;
                 var currentDungeonId = gameChar.CurrentDungeonId.GetValueOrDefault(Guid.Empty);
+                var cm = World.CombatManager;
+                var template = cm.GetParent(dungeon);
                 if (Guid.Empty != currentDungeonId && gameChar.CurrentDungeonId.Value != dungeon.Id)
                 {
                     data.DebugMessage = "错误的关卡Id";
                     data.HasError = true;
                     return;
                 }
-                var cm = World.CombatManager;
                 try
                 {
-                    var template = cm.GetParent(dungeon);
                     if (!Options?.CombatStart?.Invoke(Service, data) ?? true)
                     {
                         data.DebugMessage = "收益错误";
@@ -285,7 +285,8 @@ namespace GY2021001BLL
                 catch (Exception)
                 {
                 }
-                gameChar.CurrentDungeonId = dungeon.Id;
+                data.Template = cm.GetNext(dungeon);
+                gameChar.CurrentDungeonId = data.Template.Id;
                 gameChar.CombatStartUtc = DateTime.UtcNow;
                 data.DebugMessage = null;
                 data.HasError = false;
@@ -326,7 +327,7 @@ namespace GY2021001BLL
                     bool succ = Options?.CombatEnd?.Invoke(Service, data) ?? true;
                     if (!succ)
                     {
-                        data.DebugMessage = "收益错误。";
+                        data.DebugMessage = $"收益错误。{data.DebugMessage}";
                         data.HasError = true;
                         return;
                     }

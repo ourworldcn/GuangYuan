@@ -86,6 +86,21 @@ namespace GY2021001DAL
                 return _Properties;
             }
         }
+
+        /// <summary>
+        /// 获取属性值并强制转化类型。如果不存在指定属性或属性类型不兼容，则返回默认值。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public decimal GetDecimal(string name, decimal defaultValue = decimal.Zero)
+        {
+            if (!Properties.TryGetValue(name, out object obj))
+                return defaultValue;
+            if (obj is decimal result)
+                return result;
+            return defaultValue;
+        }
     }
 
     /// <summary>

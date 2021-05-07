@@ -99,7 +99,8 @@ namespace GY2021001DAL
                             "pp",
                             new GradientProperty((decimal)Properties.GetValueOrDefault("pp",20m),DateTime.Parse( Properties.GetValueOrDefault("cpp",DateTime.UtcNow.ToString()) as string),
                                 TimeSpan.FromSeconds(Convert.ToDouble( Properties.GetValueOrDefault("dpp",300m))),(decimal)Properties.GetValueOrDefault("ipp",1m),(decimal)Properties.GetValueOrDefault("mpp",20m))
-                        }
+                            { Tag="pp"}
+                        },
                     };
                 }
                 return _GradientProperties;
@@ -150,7 +151,7 @@ namespace GY2021001DAL
         {
             LastValue = oriVal;
             LastComputerDateTime = now;
-            TimeSpan = delay;
+            Delay = delay;
             Increment = increment;
             MaxValue = maxVal;
         }
@@ -170,7 +171,7 @@ namespace GY2021001DAL
         /// <summary>
         /// 多久计算一次。
         /// </summary>
-        public TimeSpan TimeSpan { get; set; }
+        public TimeSpan Delay { get; set; }
 
         /// <summary>
         /// 增量。
@@ -184,7 +185,7 @@ namespace GY2021001DAL
         /// <returns>当前值。</returns>
         public decimal GetCurrentValue(ref DateTime now)
         {
-            var count = Math.DivRem((now - LastComputerDateTime).Ticks, TimeSpan.Ticks, out long remainder);  //跳变次数 和 余数
+            var count = Math.DivRem((now - LastComputerDateTime).Ticks, Delay.Ticks, out long remainder);  //跳变次数 和 余数
             var val = Math.Min(count * Increment + LastValue, MaxValue);
             LastValue = val; //计算得到最后值
             now = now - TimeSpan.FromTicks(remainder);

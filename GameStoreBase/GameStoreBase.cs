@@ -43,6 +43,11 @@ namespace OwGame
     public static class OwHelper
     {
         /// <summary>
+        /// 中英文逗号数组。分割字符串常用此数组，避免生成新对象。
+        /// </summary>
+        public readonly static char[] CommaArrayWithCN = new char[] { ',', '，' };
+
+        /// <summary>
         /// 分割属性字符串。
         /// </summary>
         /// <param name="propStr">属性字符串。</param>
@@ -88,7 +93,7 @@ namespace OwGame
         {
             if (string.IsNullOrWhiteSpace(propStr))
                 return;
-            var coll = propStr.Trim(' ', '"').Replace(Environment.NewLine, " ").Split(new char[] { ',', '，' }, StringSplitOptions.RemoveEmptyEntries);
+            var coll = propStr.Trim(' ', '"').Replace(Environment.NewLine, " ").Split(CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
             foreach (var item in coll)
             {
                 var guts = item.Split('=', StringSplitOptions.RemoveEmptyEntries);

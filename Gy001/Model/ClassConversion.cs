@@ -185,4 +185,22 @@ namespace GY2021001WebApi.Models
         }
 
     }
+
+    public partial class GradientPropertyDto
+    {
+        public static explicit operator GradientPropertyDto(GradientProperty obj)
+        {
+            var result = new GradientPropertyDto()
+            {
+                Increment = obj.Increment,
+                LastComputerDateTime = obj.LastComputerDateTime,
+                LastValue = obj.LastValue,
+                MaxValue = obj.MaxValue,
+                Tag = obj.Tag,
+                Delay = (int)obj.Delay.TotalSeconds,
+            };
+            return result;
+        }
+
+    }
 }

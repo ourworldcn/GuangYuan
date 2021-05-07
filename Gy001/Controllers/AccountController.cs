@@ -111,5 +111,30 @@ namespace GY2021001WebApi.Controllers
             return gm.ChangePwd(token, model.NewPwd);
         }
 
+        /// <summary>
+        /// 刷新并返回所有缓慢变化属性。
+        /// </summary>
+        /// <param name="model">参见 TokenDtoBase</param>
+        /// <returns>返回缓慢变化属性的集合。</returns>
+        /// <response code="400">令牌无效。</response>
+        [HttpPost]
+        public ActionResult<List<GradientPropertyDto>> RefreshGradientProperty(TokenDtoBase model)
+        {
+            var world = HttpContext.RequestServices.GetService<VWorld>();
+
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return BadRequest("令牌无效");
+            try
+            {
+                foreach (var item in gu.GameChars[0].GradientProperties)
+                    item.Value.GetCurrentValueWithUtc();
+                return gu.GameChars[0].GradientProperties.Values.Select(c => (GradientPropertyDto)c).ToList();
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu, true);
+            }
+        }
     }
+
 }

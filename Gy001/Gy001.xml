@@ -38,6 +38,14 @@
             <param name="model">参数</param>
             <returns>true则更改成功，false没有更改成功。</returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AccountController.RefreshGradientProperty(GY2021001WebApi.Models.TokenDtoBase)">
+            <summary>
+            刷新并返回所有缓慢变化属性。
+            </summary>
+            <param name="model">参见 TokenDtoBase</param>
+            <returns>返回缓慢变化属性的集合。</returns>
+            <response code="400">令牌无效。</response>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
             战斗相关的操作。这里的功能以后可能依据需求改为Udp。
@@ -358,6 +366,49 @@
             调试信息。调试状态下返回时填写。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GradientPropertyDto">
+            <summary>
+            缓慢变化属性的数据传输封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GradientPropertyDto.LastComputerDateTime">
+            <summary>
+            获取或设置最后计算的时间。建议一律采用Utc时间。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GradientPropertyDto.LastValue">
+            <summary>
+            获取或设置最后计算的结果。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GradientPropertyDto.Delay">
+            <summary>
+            多久计算一次。单位：秒
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GradientPropertyDto.Increment">
+            <summary>
+            增量。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GradientPropertyDto.GetCurrentValue(System.DateTime@)">
+            <summary>
+            获取当前值。自动修改LastComputerDateTime和LastValue属性。
+            </summary>
+            <param name="now">当前时间。返回时可能更改，如果没有正好到跳变时间，则会略微提前到上一次跳变的时间点。</param>
+            <returns>当前值。</returns>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GradientPropertyDto.GetCurrentValueWithUtc">
+            <summary>
+            使用当前Utc时间获取当前值。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GradientPropertyDto.Tag">
+            <summary>
+            一个记录额外信息的属性。本类成员不使用该属性。这里记录的是属性的名字字符串如"pp"
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。
@@ -371,6 +422,11 @@
         <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiShen">
             <summary>
             当前装备的坐骑身体容器模板Id。已废弃
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenWenBagSlotId">
+            <summary>
+            神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
             </summary>
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiZuheRongqi">
@@ -393,19 +449,14 @@
             当前坐骑的容器Id。
             </summary>
         </member>
-        <member name="F:GY2021001WebApi.Models.DtoConstant.CharTemplateId">
-            <summary>
-            角色模板Id。当前只有一个模板。
-            </summary>
-        </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.ShenWenSlotId">
             <summary>
-            神纹槽Id。放在此槽中是装备的神纹。当前每种身体对应一种神纹。
+            神纹槽Id。放在此槽中是装备的神纹。当前每种类型的野兽身体对应一种神纹。
             </summary>
         </member>
-        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenWenBagSlotId">
+        <member name="F:GY2021001WebApi.Models.DtoConstant.DaojuBagSlotId">
             <summary>
-            神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
+            道具背包槽Id。这个就是初期规划的神纹碎片背包。
             </summary>
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.ShouyiSlotId">
@@ -421,6 +472,26 @@
         <member name="F:GY2021001WebApi.Models.DtoConstant.JinbiId">
             <summary>
             金币Id，这个不是槽，它的Count属性直接记录了金币数，目前其子代为空。这个省事，但未来在金币袋上开脑洞，不能保证不变。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.MucaiId">
+            <summary>
+            木材Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ZuanshiId">
+            <summary>
+            钻石Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiBagSlotId">
+            <summary>
+            坐骑背包Id。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.CharTemplateId">
+            <summary>
+            角色模板Id。当前只有一个模板。
             </summary>
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.RunesId">

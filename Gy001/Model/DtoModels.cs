@@ -24,6 +24,11 @@ namespace GY2021001WebApi.Models
         /// 当前装备的坐骑身体容器模板Id。已废弃
         /// </summary>
         public static readonly Guid ZuojiShen = new Guid("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}");
+        /// <summary>
+        /// 神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
+        /// </summary>
+        public static readonly Guid ShenWenBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
+
         #endregion 废弃模板Id
 
         #region 坐骑相关Id
@@ -44,25 +49,22 @@ namespace GY2021001WebApi.Models
         public static readonly Guid ZuojiZuheShenti = new Guid("{F8B1987D-FDF3-4090-9E9B-EBAF1DB2DCCD}");
         #endregion 坐骑相关Id
 
+        #region 角色直属槽及其相关
+
         /// <summary>
         /// 当前坐骑的容器Id。
         /// </summary>
         public static readonly Guid DangqianZuoqiSlotId = new Guid("{B19EE5AB-57E3-4513-8228-9F2A8364358E}");
 
         /// <summary>
-        /// 角色模板Id。当前只有一个模板。
-        /// </summary>
-        public static readonly Guid CharTemplateId = new Guid("{0CF39269-6301-470B-8527-07AF29C5EEEC}");
-
-        /// <summary>
-        /// 神纹槽Id。放在此槽中是装备的神纹。当前每种身体对应一种神纹。
+        /// 神纹槽Id。放在此槽中是装备的神纹。当前每种类型的野兽身体对应一种神纹。
         /// </summary>
         public static readonly Guid ShenWenSlotId = new Guid("{88A4EED6-0AEB-4A70-8FDE-67F75E5E2C0A}");
 
         /// <summary>
-        /// 神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
+        /// 道具背包槽Id。这个就是初期规划的神纹碎片背包。
         /// </summary>
-        public static readonly Guid ShenWenBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
+        public static readonly Guid DaojuBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
 
         /// <summary>
         /// 战斗收益槽。如果处于战斗中，此槽内表示大关的的总收益，用于计算收益限制。若不在战斗中，此槽为空（其中物品移动到各种背包中）。
@@ -80,11 +82,31 @@ namespace GY2021001WebApi.Models
         public static readonly Guid JinbiId = new Guid("{2B83C942-1E9C-4B45-9816-AD2CBF0E473F}");
 
         /// <summary>
+        /// 木材Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
+        /// </summary>
+        public static readonly Guid MucaiId = new Guid("{01959584-E2C9-4E54-BBB7-FCC58A9484EC}");
+
+        /// <summary>
+        /// 钻石Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
+        /// </summary>
+        public static readonly Guid ZuanshiId = new Guid("{3E365BEC-F83D-467D-A58C-9EBA43458682}");
+
+        /// <summary>
+        /// 坐骑背包Id。
+        /// </summary>
+        public static readonly Guid ZuojiBagSlotId = new Guid("{BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5}");
+        #endregion  角色直属槽及其相关
+        /// <summary>
+        /// 角色模板Id。当前只有一个模板。
+        /// </summary>
+        public static readonly Guid CharTemplateId = new Guid("{0CF39269-6301-470B-8527-07AF29C5EEEC}");
+
+        #endregion 固定模板Id
+
+        /// <summary>
         /// 神纹碎片的模板Id。
         /// </summary>
         public static readonly Guid RunesId = new Guid("{2B86FF50-0257-4913-8BEC-F5CF3C84B6D5}");
-
-        #endregion 固定模板Id
 
         /// <summary>
         /// 级别属性的名字。
@@ -447,6 +469,65 @@ namespace GY2021001WebApi.Models
 
     }
 
+    /// <summary>
+    /// 缓慢变化属性的数据传输封装类。
+    /// </summary>
+    public partial class GradientPropertyDto
+    {
+
+        public decimal MaxValue { get; set; }
+
+        /// <summary>
+        /// 获取或设置最后计算的时间。建议一律采用Utc时间。
+        /// </summary>
+        public DateTime LastComputerDateTime { get; set; }
+
+        /// <summary>
+        /// 获取或设置最后计算的结果。
+        /// </summary>
+        public decimal LastValue { get; set; }
+
+        /// <summary>
+        /// 多久计算一次。单位：秒
+        /// </summary>
+        public int Delay { get; set; }
+
+        /// <summary>
+        /// 增量。
+        /// </summary>
+        public decimal Increment { get; set; }
+
+        /// <summary>
+        /// 获取当前值。自动修改LastComputerDateTime和LastValue属性。
+        /// </summary>
+        /// <param name="now">当前时间。返回时可能更改，如果没有正好到跳变时间，则会略微提前到上一次跳变的时间点。</param>
+        /// <returns>当前值。</returns>
+        public decimal GetCurrentValue(ref DateTime now)
+        {
+            var count = Math.DivRem((now - LastComputerDateTime).Ticks, TimeSpan.FromSeconds(Delay).Ticks, out long remainder);  //跳变次数 和 余数
+            var val = Math.Min(count * Increment + LastValue, MaxValue);
+            LastValue = val; //计算得到最后值
+            now = now - TimeSpan.FromTicks(remainder);
+            LastComputerDateTime = now;
+            return LastValue;
+        }
+
+        /// <summary>
+        /// 使用当前Utc时间获取当前值。
+        /// </summary>
+        /// <returns></returns>
+        public decimal GetCurrentValueWithUtc()
+        {
+            DateTime now = DateTime.UtcNow;
+            return GetCurrentValue(ref now);
+        }
+
+        /// <summary>
+        /// 一个记录额外信息的属性。本类成员不使用该属性。这里记录的是属性的名字字符串如"pp"
+        /// </summary>
+        public object Tag { get; set; }
+    }
+
     #endregion 基础数据封装类
 
     #region 接口特定数据封装类
@@ -492,8 +573,6 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<GameCharDto> GameChars { get; set; } = new List<GameCharDto>();
-
-
     }
 
     /// <summary>

@@ -87,7 +87,7 @@ namespace GY2021001BLL
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="options"></param>
-        public GameCharManager(IServiceProvider serviceProvider, GameCharManagerOptions options) : base(serviceProvider,options)
+        public GameCharManager(IServiceProvider serviceProvider, GameCharManagerOptions options) : base(serviceProvider, options)
         {
             Initialize();
         }
@@ -304,11 +304,28 @@ namespace GY2021001BLL
         }
 
         /// <summary>
+        /// 用令牌锁定用户并返回。
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="gameUser">在返回成功时，这里个参数返回用户对象。</param>
+        /// <returns>true成功锁定，false没有找到令牌代表的用户。</returns>
+        public bool Lock(Guid token, out GameUser gameUser)
+        {
+            gameUser = GetUsreFromToken(token);
+            if (null == gameUser || !Lock(gameUser))
+                return false;
+            return true;
+        }
+
+        /// <summary>
         /// 解锁用户。与<seealso cref="GetUsreFromTokenAndLock(Guid)"/>配对使用。
         /// </summary>
         /// <param name="user">用户对象。</param>
-        public void Unlock(GameUser user)
+        /// <param name="pulse">是否通知等待队列中的线程锁定对象状态的更改。</param>
+        public void Unlock(GameUser user, bool pulse = false)
         {
+            if (pulse)
+                Monitor.Pulse(user);
             Monitor.Exit(user);
         }
 
@@ -491,16 +508,19 @@ namespace GY2021001BLL
         /// 发送一个空操作以保证闲置下线重新开始计时。
         /// </summary>
         /// <param name="token"></param>
-        /// <returns></returns>
+        /// <returns>true成功重置下线计时器，false未能找到有效对象。</returns>
         public bool Nope(Guid token)
         {
-            if (!_Token2User.TryGetValue(token, out GameUser gu))
+            var gu = GetUsreFromToken(token);
+            if (null == gu || !Lock(gu))
                 return false;
-            lock (gu)
+            try
             {
-                if (gu.IsDisposed) //若被并发处置
-                    return false;
                 gu.LastModifyDateTimeUtc = DateTime.UtcNow;
+            }
+            finally
+            {
+                Unlock(gu, true);
             }
             return true;
         }
