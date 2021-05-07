@@ -68,7 +68,7 @@ namespace GY2021001BLL
             //初始化属性
             foreach (var item in template.Properties)
             {
-                var seq = item.Value as decimal[];
+                decimal[] seq = item.Value as decimal[];
                 if (null != seq)   //若是属性序列
                 {
                     result.Properties[item.Key] = seq[(int)lv];
@@ -91,14 +91,53 @@ namespace GY2021001BLL
             return result;
         }
 
-        public void AddItem(IList<GameItem> dest, IEnumerable<GameItem> gameItems)
+        /// <summary>
+        /// 将一组物品加入一个容器下。
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="gameItems"></param>
+        public void AddItem(GameItem dest, IEnumerable<GameItem> gameItems)
         {
+            int cap = (int)dest.Properties.GetValueOrDefault(ProjectConstant.ContainerCapacity, -1m);   //容量限制，-1表示不限制
             var gitm = World.ItemTemplateManager;
-            var coll = from tmp in dest
-                       let template=gitm.GetTemplateFromeId(tmp.TemplateId)
-                       join r in gameItems on tmp.TemplateId equals r.TemplateId
-                       select r;    //需要添加的且模板Id重复
-            Dictionary<string, object> dic = new Dictionary<string, object>();
+            foreach (var item in gameItems) //逐一放入
+            {
+                var template = gitm.GetTemplateFromeId(item.TemplateId);
+                if (template.Properties.TryGetValue(ProjectConstant.StackUpperLimit, out object obj)) //若存在堆叠限制
+                {
+                    decimal stc = (decimal)obj; //堆叠上限
+                    var exists = (from tmp in dest.Children
+                                  where tmp.TemplateId == item.TemplateId
+                                  let sc = stc - tmp.Count.GetValueOrDefault(1) //剩余堆叠数量
+                                  where sc > 0  //可以加入物品
+                                  select (tmp, sc)).ToArray();
+                    if (exists.Length > 0)   //若存在同类可堆叠物品
+                    {
+                        foreach (var tmp in exists) //填满可堆叠物品
+                        {
+                            if (item.Count.GetValueOrDefault(1) > tmp.sc) //若需加入数量大于可以堆叠数量
+                            {
+                                item.Count -= tmp.sc;
+                                tmp.tmp.Count += tmp.sc;
+                            }
+                            else //若全能堆入此物品
+                            {
+                                tmp.tmp.Count += item.Count;
+                                item.Count = 0;
+                                break;
+                            }
+                        }
+                    }
+                    if (item.Count > 0)    //若还有物品没有放入
+                    {
+                        dest.Children.Add(item);
+                    }
+                }
+                else //若无堆叠限制
+                {
+                    dest.Children.Add(item);
+                }
+            }
         }
     }
 

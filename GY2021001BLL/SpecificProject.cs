@@ -67,6 +67,11 @@ namespace GY2021001BLL
         public static readonly Guid ShenWenBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
 
         /// <summary>
+        /// 道具背包槽Id。这个就是初期规划的神纹碎片背包。
+        /// </summary>
+        public static readonly Guid DaojuBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
+
+        /// <summary>
         /// 战斗收益槽。如果处于战斗中，此槽内表示大关的的总收益，用于计算收益限制。若不在战斗中，此槽为空（其中物品移动到各种背包中）。
         /// </summary>
         public static readonly Guid ShouyiSlotId = new Guid("{FEA0B277-8CC6-462F-B0ED-85409ABE9C79}");
@@ -179,7 +184,7 @@ namespace GY2021001BLL
             new GameItemTemplate(ProjectConstant.CharTemplateId)
             {
                 DisplayName="角色的模板",
-                ChildrenTemplateIdString=$"{ProjectConstant.DangqianZuoqiSlotId},{ProjectConstant.ShenWenSlotId},{ProjectConstant.ShenWenBagSlotId},{ProjectConstant.ShoulanSlotId}" +  //通过串联将长字符串文本拆分为较短的字符串，从而提高源代码的可读性。 编译时将这些部分连接到单个字符串中。 无论涉及到多少个字符串，均不产生运行时性能开销。
+                ChildrenTemplateIdString=$"{ProjectConstant.DangqianZuoqiSlotId},{ProjectConstant.ShenWenSlotId},{ProjectConstant.DaojuBagSlotId},{ProjectConstant.ShoulanSlotId}" +  //通过串联将长字符串文本拆分为较短的字符串，从而提高源代码的可读性。 编译时将这些部分连接到单个字符串中。 无论涉及到多少个字符串，均不产生运行时性能开销。
                     $",{ProjectConstant.JinbiId},{ProjectConstant.ShouyiSlotId}",
                 PropertiesString="mpp=20,dpp=300,ipp=1",    //最大体力
             },
@@ -187,9 +192,9 @@ namespace GY2021001BLL
             {
                 DisplayName="神纹装备槽",
             },
-            new GameItemTemplate(ProjectConstant.ShenWenBagSlotId)
+            new GameItemTemplate(ProjectConstant.DaojuBagSlotId)
             {
-                DisplayName="神纹背包槽",
+                DisplayName="道具背包槽",
             },
             new GameItemTemplate(ProjectConstant.ShouyiSlotId)
             {

@@ -61,6 +61,7 @@ namespace GY2021001WebApi.Controllers
                 Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
                 GameItems = model.GameItems.Cast<GameItem>(),
             };
+            world.CombatManager.EndCombat(result);
             return (CombatEndReturnDto)result;
         }
     }
