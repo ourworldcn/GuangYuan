@@ -106,6 +106,32 @@ namespace GY2021001BLL
     }
 
     /// <summary>
+    /// 用于存放关卡数据的类。
+    /// </summary>
+    public class DungeonsData
+    {
+        public DungeonsData()
+        {
+
+        }
+
+        public GameItemTemplate Template { get; set; }
+
+        public int Kind { get; set; }
+
+        /// <summary>
+        /// 关卡Id。
+        /// </summary>
+        public int DungeonsId { get; set; }
+
+        /// <summary>
+        /// 小关索引。
+        /// </summary>
+        public int GateIndex { get; set; }
+
+    }
+
+    /// <summary>
     /// 战斗管理器。
     /// </summary>
     public class CombatManager : GameManagerBase<CombatManagerOptions>
@@ -146,7 +172,7 @@ namespace GY2021001BLL
 
         }
 
-        List<GameItemTemplate> _Dungeons = new List<GameItemTemplate>();
+        List<GameItemTemplate> _Dungeons;
 
         /// <summary>
         /// 所有副本信息。
@@ -180,13 +206,13 @@ namespace GY2021001BLL
                     if (null == _Parent2Children)
                     {
                         var coll = from tmp in Dungeons
-                                   let typ = (int)tmp.Properties["typ"]
-                                   let mis = (int)tmp.Properties["mis"]
-                                   group tmp by new { typ, mis } into g
-                                   let key = Dungeons.First(c => (int)c.Properties["typ"] == g.Key.typ && (int)c.Properties["mis"] == g.Key.mis && -1 == (int)c.Properties.GetValueOrDefault("sec"))    //大关
-                                   let vals = g.Where(c => c != key).OrderBy(c => (int)c.Properties["sec"]).ToArray()
-                                   select new { key, vals };
-                        _Parent2Children = coll.ToDictionary(c => c.key, c => c.vals);
+                                   let typ = Convert.ToInt32(tmp.Properties["typ"])
+                                   let mis = Convert.ToInt32(tmp.Properties["mis"])
+                                   group tmp by (typ, mis) into g
+                                   let parent = g.First(c => Convert.ToInt32(c.Properties["sec"]) == -1)
+                                   let children = g.Where(c => Convert.ToInt32(c.Properties["sec"]) != -1).OrderBy(c => Convert.ToInt32(c.Properties["sec"]))
+                                   select new { key = parent, vals = children };
+                        _Parent2Children = coll.ToDictionary(c => c.key, c => c.vals.ToArray());
                     }
                 return _Parent2Children;
             }
@@ -261,13 +287,14 @@ namespace GY2021001BLL
             }
             try
             {
-
-                var gameChar = data.GameChar;
-                var dungeon = data.Template;
-                var currentDungeonId = gameChar.CurrentDungeonId.GetValueOrDefault(Guid.Empty);
                 var cm = World.CombatManager;
-                var template = cm.GetParent(dungeon);
-                if (Guid.Empty != currentDungeonId && gameChar.CurrentDungeonId.Value != dungeon.Id)
+                var gameChar = data.GameChar;
+                var parent = cm.GetParent(data.Template); //大关
+                if (data.Template == parent)    //若指定了大关则变为第一小关
+                {
+                    data.Template = Parent2Children[parent][0];
+                }
+                if (gameChar.CurrentDungeonId.HasValue && gameChar.CurrentDungeonId != data.Template.Id)
                 {
                     data.DebugMessage = "错误的关卡Id";
                     data.HasError = true;
@@ -277,7 +304,6 @@ namespace GY2021001BLL
                 {
                     if (!Options?.CombatStart?.Invoke(Service, data) ?? true)
                     {
-                        data.DebugMessage = "收益错误";
                         data.HasError = true;
                         return;
                     }
@@ -285,7 +311,6 @@ namespace GY2021001BLL
                 catch (Exception)
                 {
                 }
-                data.Template = cm.GetNext(dungeon);
                 gameChar.CurrentDungeonId = data.Template.Id;
                 gameChar.CombatStartUtc = DateTime.UtcNow;
                 data.DebugMessage = null;

@@ -169,7 +169,6 @@ namespace GY2021001BLL
         public static List<GameItemTemplate> StoreTemplates = new List<GameItemTemplate>()
         {
     #region 已废弃
-
             new GameItemTemplate(ProjectConstant.ZuojiTou)
             {
                 DisplayName="当前坐骑头(已废弃)",
@@ -180,6 +179,7 @@ namespace GY2021001BLL
 
             },
 	#endregion 已废弃
+
             new GameItemTemplate(ProjectConstant.ZuojiZuheRongqi)
             {
                 DisplayName="坐骑组合",
@@ -222,15 +222,15 @@ namespace GY2021001BLL
             },
             new GameItemTemplate(ProjectConstant.JinbiId)
             {
-                DisplayName="金币Id",
+                DisplayName="金币",
             },
             new GameItemTemplate(ProjectConstant.MucaiId)
             {
-                DisplayName="木材Id",
+                DisplayName="木材",
             },
             new GameItemTemplate(ProjectConstant.ZuanshiId)
             {
-                DisplayName="钻石Id",
+                DisplayName="钻石",
             },
             new GameItemTemplate(ProjectConstant.ZuojiBagSlotId)
             {
@@ -289,8 +289,8 @@ namespace GY2021001BLL
             //增加坐骑
             var mountsSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DangqianZuoqiSlotId);   //当前坐骑槽
 
-            var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 4001);
-            var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 3001);
+            var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 3001);
+            var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 4001);
             var mounts = CreateMounts(service, headTemplate, bodyTemplate);
             mountsSlot.Children.Add(mounts);
             //增加神纹
@@ -349,14 +349,20 @@ namespace GY2021001BLL
             var world = service.GetService<VWorld>();
             var gc = data.GameChar;
             var cm = world.CombatManager;
-            var parent = cm.GetParent(data.Template);   //大关
-            if (cm.GetNext(parent) == data.Template)  //若是第一关
+            var parent = cm.GetParent(data.Template);   //取大关
+            if (parent == data.Template || cm.GetNext(parent) == data.Template)  //若是第一关
             {
                 //扣除体力
                 var pp = (decimal)parent.Properties.GetValueOrDefault("pp", 0m);
                 if (gc.GradientProperties.TryGetValue("pp", out GradientProperty gp))
                 {
-                    gp.LastValue = gp.GetCurrentValueWithUtc() - pp;
+                    if (gp.GetCurrentValueWithUtc() < pp)
+                    {
+                        data.HasError = true;
+                        data.DebugMessage = $"体力只有{gp.LastValue},但是需要{pp}";
+                        return false;
+                    }
+                    gp.LastValue -= pp;
                 }
             }
             return true;
@@ -474,7 +480,7 @@ namespace GY2021001BLL
             {
                 var mne = Convert.ToSingle(mneObj);
                 var coll = from tmp in gameItems
-                           let mneatk = Convert.ToSingle( tmp.Properties.GetValueOrDefault("mneatk", decimal.Zero))
+                           let mneatk = Convert.ToSingle(tmp.Properties.GetValueOrDefault("mneatk", decimal.Zero))
                            let mneqlt = Convert.ToSingle(tmp.Properties.GetValueOrDefault("mneqlt", decimal.Zero))
                            let mnemhp = Convert.ToSingle(tmp.Properties.GetValueOrDefault("mnemhp", decimal.Zero))
                            let mneTotal = mneatk + mneqlt + mnemhp

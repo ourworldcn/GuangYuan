@@ -55,14 +55,16 @@ namespace GY2021001BLL
         #region 属性及相关
 
         private GameTemplateContext _TemplateContext;
+
+        /// <summary>
+        /// 使用该上下文加载所有模板对象，以保证其单例性。
+        /// </summary>
         protected GameTemplateContext TemplateContext
         {
             get
             {
                 lock (ThisLocker)
-                    if (null == _TemplateContext)
-                        _TemplateContext = World.CreateNewTemplateDbContext();
-                return _TemplateContext;
+                    return _TemplateContext ??= World.CreateNewTemplateDbContext();
             }
         }
 

@@ -310,6 +310,31 @@
             一个说明性文字，服务器不使用该属性。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.ChangesItemDto">
+            <summary>
+            增量变化数据传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesItemDto.ContainerId">
+            <summary>
+            容器的Id。如果是容器本身属性变化，这个成员是容器的上层容器Id,例如背包的容量变化了则这个成员就是角色Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesItemDto.Adds">
+            <summary>
+            增加的数据。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesItemDto.Removes">
+            <summary>
+            删除的对象的唯一Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesItemDto.Changes">
+            <summary>
+            变化的数据。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
             <summary>
             开始战斗的返回数据传输类

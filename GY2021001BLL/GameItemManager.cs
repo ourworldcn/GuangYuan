@@ -161,11 +161,6 @@ namespace GY2021001BLL
                 }
             }
         }
-
-        public void test()
-        {
-            
-        }
     }
 
 }

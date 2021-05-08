@@ -38,6 +38,7 @@ namespace GY2021001WebApi.Controllers
         [HttpGet]
         public ActionResult<QuicklyRegisterReturnDto> QuicklyRegister()
         {
+
             try
             {
                 var db = HttpContext.RequestServices.GetService<GY2021001DbContext>();

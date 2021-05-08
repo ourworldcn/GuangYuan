@@ -64,5 +64,21 @@ namespace GY2021001WebApi.Controllers
             world.CombatManager.EndCombat(result);
             return (CombatEndReturnDto)result;
         }
+
+        [HttpPost]
+        public ActionResult<bool> Test()
+        {
+            var world = HttpContext.RequestServices.GetService<VWorld>();
+            string pwd = "123456";
+            var loginName = world.CharManager.QuicklyRegister(ref pwd).LoginName;
+            var gu = world.CharManager.Login(loginName, pwd, "");
+            var sd = new StartCombatData()
+            {
+                GameChar = gu.GameChars[0],
+                Template = world.ItemTemplateManager.Id2Template.Values.First(c => Convert.ToInt32(c.Properties.GetValueOrDefault("sec", -2m)) == -1),
+            };
+            world.CombatManager.StartCombat(sd);
+            return true;
+        }
     }
 }

@@ -156,6 +156,22 @@ namespace GY2021001WebApi.Models
         }
     }
 
+    public partial class ChangesItemDto
+    {
+        public static explicit operator ChangesItemDto(ChangesItem obj)
+        {
+            var result = new ChangesItemDto()
+            {
+                ContainerId = obj.ContainerId.ToBase64String(),
+            };
+            result.Adds.AddRange(obj.Adds.Select(c => (GameItemDto)c));
+            result.Changes.AddRange(obj.Changes.Select(c => (GameItemDto)c));
+            result.Removes.AddRange(obj.Removes.Select(c => c.ToBase64String()));
+            return result;
+        }
+
+    }
+
     public partial class CombatStartReturnDto
     {
         public static explicit operator CombatStartReturnDto(StartCombatData obj)

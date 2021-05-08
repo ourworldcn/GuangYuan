@@ -369,7 +369,7 @@ namespace GY2021001WebApi.Models
         /// <param name="gameCharDto"></param>
         public void SetHead(GameCharDto gameCharDto)
         {
-
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -378,7 +378,7 @@ namespace GY2021001WebApi.Models
         /// <param name="gameCharDto"></param>
         public void SetBody(GameCharDto gameCharDto)
         {
-
+            throw new NotImplementedException();
         }
     }
 
@@ -526,6 +526,42 @@ namespace GY2021001WebApi.Models
         /// 一个记录额外信息的属性。本类成员不使用该属性。这里记录的是属性的名字字符串如"pp"
         /// </summary>
         public object Tag { get; set; }
+    }
+
+    /// <summary>
+    /// 增量变化数据传输类。
+    /// </summary>
+    [DataContract]
+    public partial class ChangesItemDto
+    {
+        public ChangesItemDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 容器的Id。如果是容器本身属性变化，这个成员是容器的上层容器Id,例如背包的容量变化了则这个成员就是角色Id。
+        /// </summary>
+        [DataMember]
+        public string ContainerId { get; set; }
+
+        /// <summary>
+        /// 增加的数据。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> Adds { get; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 删除的对象的唯一Id集合。
+        /// </summary>
+        [DataMember]
+        public List<string> Removes { get; } = new List<string>();
+
+        /// <summary>
+        /// 变化的数据。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> Changes { get; } = new List<GameItemDto>();
     }
 
     #endregion 基础数据封装类

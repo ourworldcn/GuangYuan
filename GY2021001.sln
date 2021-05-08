@@ -15,6 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameStoreBase", "GameStoreB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7304B3F1-2398-45D0-AE47-2A17681103A0}"
 	ProjectSection(SolutionItems) = preProject
+		Mount.xlsx = Mount.xlsx
 		Notes.txt = Notes.txt
 		纪要210420.txt = 纪要210420.txt
 	EndProjectSection
@@ -29,7 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "通讯层", "通讯层", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "基础库", "基础库", "{0A0F3636-AD2E-4799-8B56-0B19DEFDDB4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gy001", "Gy001\Gy001.csproj", "{57503988-52A1-486B-8B31-BC861D86C088}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gy001", "Gy001\Gy001.csproj", "{57503988-52A1-486B-8B31-BC861D86C088}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
