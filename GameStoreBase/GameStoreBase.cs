@@ -22,6 +22,19 @@ namespace OwGame
 
         [Key, Column(Order = 0)]
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// 如果Id是Guid.Empty则生成新Id,否则立即返回false。
+        /// </summary>
+        /// <returns>true生成了新Id，false已经有了非空Id。</returns>
+        public bool GenerateIdIfEmpty()
+        {
+            if (Guid.Empty != Id)
+                return false;
+            Id = Guid.NewGuid();
+            return true;
+        }
+
     }
 
     public static class PocoLoadingExtensions

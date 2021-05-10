@@ -71,7 +71,7 @@ namespace GY2021001DAL
         /// <summary>
         /// 容器的Id。如果是容器本身属性变化，这个成员是容器的上层容器Id,例如背包的容量变化了则这个成员就是角色Id。
         /// </summary>
-        public DateTime DateTimeUtc { get; set; }
+        public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
 
         public Guid ContainerId { get; set; }
 

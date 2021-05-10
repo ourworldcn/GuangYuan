@@ -467,6 +467,13 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public DateTime? CombatStartUtc { get; set; }
 
+        /// <summary>
+        /// 客户端使用的扩展属性集合，服务器不使用该属性，仅帮助保存和传回。
+        /// 键最长64字符，值最长8000字符。（一个中文算一个字符）
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, string> ClientExtendProperties { get; } = new Dictionary<string, string>();
+
     }
 
     /// <summary>
@@ -766,7 +773,7 @@ namespace GY2021001WebApi.Models
     /// 结束战斗的参数传输类。
     /// </summary>
     [DataContract]
-    public class CombatEndParamsDto : TokenDtoBase
+    public partial class CombatEndParamsDto : TokenDtoBase
     {
         /// <summary>
         /// 构造函数。
@@ -782,10 +789,10 @@ namespace GY2021001WebApi.Models
         public string DungeonId { get; set; }
 
         /// <summary>
-        /// 角色是否退出，true强制推出当前大关口，false试图继续(如果已经是最后一关则不起作用)。
+        /// 角色是否退出，true强制在结算后退出当前大关口，false试图继续(如果已经是最后一关则不起作用——必然退出)。
         /// </summary>
         [DataMember]
-        public bool IsBreak { get; set; }
+        public bool EndRequested { get; set; }
 
         /// <summary>
         /// 收益。
@@ -815,22 +822,51 @@ namespace GY2021001WebApi.Models
         public string NextDungeonId { get; set; }
 
         /// <summary>
-        /// 此关卡的收益。
-        /// </summary>
-        public IEnumerable<GameItemDto> GameItems { get; set; }
-
-        /// <summary>
         /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
         /// </summary>
+        [DataMember]
         public bool HasError { get; set; }
 
         /// <summary>
         /// 调试信息。调试状态下返回时填写。
         /// </summary>
+        [DataMember]
         public string DebugMessage { get; set; }
+
+        /// <summary>
+        /// 获取变化物品的数据。仅当结算大关卡时这里才有数据。
+        /// </summary>
+        [DataMember]
+        public List<ChangesItemDto> ChangesItems { get; set; } = new List<ChangesItemDto>();
+
     }
 
     #endregion 战斗相关数据
+
+    /// <summary>
+    /// 设置客户端扩展属性接口的参数封装类。
+    /// </summary>
+    [DataContract]
+    public class ModifyClientExtendPropertyParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 是否移除指定属性。true移除Name中指定的属性，false追加或修改属性。
+        /// </summary>
+        public bool IsRemove { get; set; }
+
+        /// <summary>
+        /// 键最长64字符。（一个中文算一个字符）
+        /// 没有指定键值则追加，有则修改其内容。
+        /// </summary>
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// 值最长8000字符。（一个中文算一个字符）
+        /// </summary>
+        [DataMember]
+        public string Value { get; set; }
+    }
 
     #endregion 接口特定数据封装类
 

@@ -53,10 +53,15 @@ namespace GY2021001BLL
         /// <summary>
         /// 此关卡的收益。
         /// </summary>
-        public IEnumerable<GameItem> GameItems { get; set; }
+        public List<GameItem> GameItems { get; } = new List<GameItem>();
 
         /// <summary>
-        /// 终止后自动进入的下一关卡模板。null表示错误的请求或已经自然结束。返回时填写。
+        /// 角色是否退出，true强制在结算后退出当前大关口，false试图继续(如果已经是最后一关则不起作用——必然退出)。
+        /// </summary>
+        public bool EndRequested { get; set; }
+
+        /// <summary>
+        /// 自动进入的下一关卡模板。null表示错误的请求或已经自然结束。返回时填写。
         /// </summary>
         public GameItemTemplate NextTemplate { get; set; }
 
@@ -69,6 +74,11 @@ namespace GY2021001BLL
         /// 调试信息。调试状态下返回时填写。
         /// </summary>
         public string DebugMessage { get; set; }
+
+        /// <summary>
+        /// 获取变化物品的数据。仅当结算大关卡时这里才有数据。
+        /// </summary>
+        public List<ChangesItem> ChangesItems { get; set; } = new List<ChangesItem>();
     }
 
     /// <summary>
@@ -186,7 +196,7 @@ namespace GY2021001BLL
                     {
                         var gitm = World.ItemTemplateManager;
                         var coll = from tmp in gitm.Id2Template.Values
-                                   where tmp.TypeCode == 7
+                                   where tmp.GenusCode == 7
                                    select tmp;
                         _Dungeons = coll.ToList();
                     }
@@ -340,19 +350,24 @@ namespace GY2021001BLL
             }
             try
             {
-                if (null != data.GameChar.CurrentDungeonId && data.GameChar.CurrentDungeonId.HasValue)
-                    if (data.GameChar.CurrentDungeonId.Value != data.GameChar.Id)
-                    {
-                        data.DebugMessage = "角色在另外一个场景中战斗。";
-                        data.HasError = true;
-                        return;
-                    }
+                if (!data.GameChar.CurrentDungeonId.HasValue)    //若不在战斗状态
+                {
+                    data.HasError = true;
+                    data.DebugMessage = "不在战斗状态";
+                    return;
+                }
+                else if (data.GameChar.CurrentDungeonId != data.Template.Id)    //若当前在战斗中且不是指定的战斗场景
+                {
+                    data.DebugMessage = "角色在另外一个场景中战斗。";
+                    data.HasError = true;
+                    return;
+                }
                 try
                 {
                     bool succ = Options?.CombatEnd?.Invoke(Service, data) ?? true;
                     if (!succ)
                     {
-                        data.DebugMessage = $"收益错误。{data.DebugMessage}";
+                        data.DebugMessage = $"发生错误——{data.DebugMessage}";
                         data.HasError = true;
                         return;
                     }
@@ -360,6 +375,8 @@ namespace GY2021001BLL
                 catch (Exception)
                 {
                 }
+                if (data.EndRequested)
+                    data.NextTemplate = null;
             }
             finally
             {

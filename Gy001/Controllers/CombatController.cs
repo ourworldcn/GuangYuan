@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using GY2021001BLL;
 using GY2021001DAL;
@@ -59,16 +61,19 @@ namespace GY2021001WebApi.Controllers
             {
                 GameChar = world.CharManager.GetUsreFromToken(GameHelper.FromBase64String(model.Token))?.GameChars[0],
                 Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
-                GameItems = model.GameItems.Cast<GameItem>(),
+                EndRequested = model.EndRequested,
             };
+            result.GameItems.AddRange(model.GameItems.Cast<GameItem>());
             world.CombatManager.EndCombat(result);
             return (CombatEndReturnDto)result;
         }
 
         [HttpPost]
-        public ActionResult<bool> Test()
+        public ActionResult<CombatEndReturnDto> Test()
         {
             var world = HttpContext.RequestServices.GetService<VWorld>();
+            var gitm = world.ItemTemplateManager;
+            var gim = world.ItemManager;
             string pwd = "123456";
             var loginName = world.CharManager.QuicklyRegister(ref pwd).LoginName;
             var gu = world.CharManager.Login(loginName, pwd, "");
@@ -78,7 +83,36 @@ namespace GY2021001WebApi.Controllers
                 Template = world.ItemTemplateManager.Id2Template.Values.First(c => Convert.ToInt32(c.Properties.GetValueOrDefault("sec", -2m)) == -1),
             };
             world.CombatManager.StartCombat(sd);
-            return true;
+
+            EndCombatData endCombatData = new EndCombatData()
+            {
+                GameChar = gu.GameChars[0],
+                EndRequested = true,
+                Template = sd.Template,
+            };
+            var rnd = new Random();
+            //生成金币
+            var gold = gim.CreateGameItem(gitm.GetTemplateFromeId(ProjectConstant.JinbiId));
+            gold.Count = rnd.Next(100);
+            endCombatData.GameItems.Add(gold);
+            //生成符文
+            var shenwen = gitm.Id2Template.Values.Where(c => c.GenusCode >= 15 && c.GenusCode <= 17).ToArray();
+            for (int i = rnd.Next(1, 2) - 1; i >= 0; i--)
+            {
+                var item = gim.CreateGameItem(shenwen[rnd.Next(shenwen.Length)]);
+                endCombatData.GameItems.Add(item);
+            }
+            //生成坐骑
+            var heads = gitm.Id2Template.Values.Where(c => c.GenusCode == 3).ToArray();
+            var bodys = gitm.Id2Template.Values.Where(c => c.GenusCode == 4).ToArray();
+            for (int i = rnd.Next(1, 2) - 1; i >= 0; i--)
+            {
+                var item = SpecificProject.CreateMounts(HttpContext.RequestServices, heads[rnd.Next(heads.Length)], bodys[rnd.Next(bodys.Length)]);
+                endCombatData.GameItems.Add(item);
+            }
+            Thread.Sleep(10001);
+            world.CombatManager.EndCombat(endCombatData);
+            return (CombatEndReturnDto)endCombatData;
         }
     }
 }

@@ -58,6 +58,52 @@ namespace GY2021001WebApi.Controllers
             gitm.NotifyChange(gu);
             return Ok();
         }
+
+        /// <summary>
+        /// 设置客户端扩展属性。
+        /// </summary>
+        /// <param name="model">参见 ModifyClientExtendPropertyParamsDto </param>
+        /// <returns>true成功设置,false,指定了删除属性标志，但没有找到指定名子的属性。</returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPut]
+        public ActionResult<bool> ModifyClientExtendProperty(ModifyClientExtendPropertyParamsDto model)
+        {
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("无效令牌。");
+            }
+            try
+            {
+                var gc = gu.GameChars[0];
+                if (model.IsRemove)
+                {
+                    if (!gc.ClientExtendProperties.Remove(model.Name, out GameExtendProperty val))
+                        return false;
+                    gu.DbContext.Set<GameExtendProperty>().Remove(val);
+                    return true;
+
+                }
+                else if (gc.ClientExtendProperties.TryGetValue(model.Name, out GameExtendProperty gep))
+                    gep.Value = model.Value;
+                else
+                {
+                    gep = new GameExtendProperty()
+                    {
+                        Name = model.Name,
+                        Value = model.Value,
+                        ParentId = gc.Id,
+                    };
+                    gu.DbContext.Set<GameExtendProperty>().Add(gep);
+                    gc.ClientExtendProperties[gep.Name] = gep;
+                }
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu);
+            }
+            return true;
+        }
     }
 }
 

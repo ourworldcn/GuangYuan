@@ -93,6 +93,14 @@
             <returns>总是返回成功</returns>
             <response code="401">令牌错误。</response>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.ModifyClientExtendProperty(GY2021001WebApi.Models.ModifyClientExtendPropertyParamsDto)">
+            <summary>
+            设置客户端扩展属性。
+            </summary>
+            <param name="model">参见 ModifyClientExtendPropertyParamsDto </param>
+            <returns>true成功设置,false,指定了删除属性标志，但没有找到指定名子的属性。</returns>
+            <response code="401">令牌错误。</response>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
             <summary>
             世界服务器的相关操作。
@@ -279,6 +287,12 @@
             进入战斗场景的时间。注意是Utc时间。如果没有在战斗场景中，则可能是空。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GameCharDto.ClientExtendProperties">
+            <summary>
+            客户端使用的扩展属性集合，服务器不使用该属性，仅帮助保存和传回。
+            键最长64字符，值最长8000字符。（一个中文算一个字符）
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GameItemTemplateDto">
             <summary>
             游戏物品，道具，金币，积分等等对象的模板。
@@ -376,11 +390,6 @@
             如果正常进入下一关，可以不必调用启动战斗的接口。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.GameItems">
-            <summary>
-            此关卡的收益。
-            </summary>
-        </member>
         <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.HasError">
             <summary>
             返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
@@ -389,6 +398,11 @@
         <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.DebugMessage">
             <summary>
             调试信息。调试状态下返回时填写。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.ChangesItems">
+            <summary>
+            获取变化物品的数据。仅当结算大关卡时这里才有数据。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GradientPropertyDto">
@@ -728,14 +742,35 @@
             关卡Id。如果是小关Id表示该小关，如果是大关Id则表示整个大关通关。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.IsBreak">
+        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.EndRequested">
             <summary>
-            角色是否退出，true强制推出当前大关口，false试图继续(如果已经是最后一关则不起作用)。
+            角色是否退出，true强制在结算后退出当前大关口，false试图继续(如果已经是最后一关则不起作用——必然退出)。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.GameItems">
             <summary>
             收益。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ModifyClientExtendPropertyParamsDto">
+            <summary>
+            设置客户端扩展属性接口的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyClientExtendPropertyParamsDto.IsRemove">
+            <summary>
+            是否移除指定属性。true移除Name中指定的属性，false追加或修改属性。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyClientExtendPropertyParamsDto.Name">
+            <summary>
+            键最长64字符。（一个中文算一个字符）
+            没有指定键值则追加，有则修改其内容。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyClientExtendPropertyParamsDto.Value">
+            <summary>
+            值最长8000字符。（一个中文算一个字符）
             </summary>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">

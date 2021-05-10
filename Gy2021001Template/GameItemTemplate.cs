@@ -53,6 +53,6 @@ namespace Gy2021001Template
         /// 类型码。没有指定则返回0。
         /// </summary>
         [NotMapped]
-        public int TypeCode { get => GId.GetValueOrDefault() / 1000; }
+        public int GenusCode { get => GId.GetValueOrDefault() / 1000; }
     }
 }

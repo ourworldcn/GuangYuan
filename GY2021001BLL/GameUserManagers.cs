@@ -7,6 +7,7 @@ using OwGame;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -418,6 +419,14 @@ namespace GY2021001BLL
                         }
                         _LoginName2Token.AddOrUpdate(loginName, token, (c1, c2) => token);
                         _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
+                        var gc = gu.GameChars[0];
+                        var gcId = gc.Id;
+
+                        var coll = gu.DbContext.Set<GameExtendProperty>().Where(c => c.ParentId == gcId);
+                        foreach (var item in coll)
+                        {
+                            gc.ClientExtendProperties[item.Name] = item;
+                        }
                         gu.GameChars[0].InvokeLoaded();
                     }
                 }

@@ -37,13 +37,17 @@ namespace Gy001Tools
 
             tbGuts.Text = guts;
 
-            tbClientGuts.Text= string.Join(Environment.NewLine, lst.Select(c => Convert.ToBase64String(c.ToByteArray())));
+            tbClientGuts.Text = string.Join(Environment.NewLine, lst.Select(c => Convert.ToBase64String(c.ToByteArray())));
             tbGuts.Focus();
             tbGuts.SelectAll();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            sw.Stop();
+
             Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
             var type = dic.GetType();
             var b = typeof(IDictionary<string, byte[]>).IsAssignableFrom(type);

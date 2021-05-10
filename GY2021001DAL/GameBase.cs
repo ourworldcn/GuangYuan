@@ -113,4 +113,31 @@ namespace GY2021001DAL
 
         public string Val { get; set; }
     }
+
+    /// <summary>
+    /// 通用扩展属性类。
+    /// </summary>
+    public class GameExtendProperty : GuidKeyBase
+    {
+        public GameExtendProperty()
+        {
+
+        }
+
+        /// <summary>
+        /// 获取或设置所属对象Id。
+        /// </summary>
+        public Guid ParentId { get; set; }
+
+        /// <summary>
+        /// 获取或设置键的名字，同一个所属对象下不能有多个同名设置，否则，行为未知。
+        /// </summary>
+        [StringLength(64)]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// 获取或设置值。
+        /// </summary>
+        public string Value { get; set; }
+    }
 }

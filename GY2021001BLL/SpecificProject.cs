@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace GY2021001BLL
 {
@@ -378,8 +379,6 @@ namespace GY2021001BLL
         {
             GameChar gameChar = data.GameChar;
             IEnumerable<GameItem> gameItems = data.GameItems;
-            if (null == gameChar.CurrentDungeonId || !gameChar.CurrentDungeonId.HasValue)
-                return false;
             var world = service.GetRequiredService<VWorld>();
             var gitm = world.ItemTemplateManager;
             var cmbm = world.CombatManager;
@@ -394,44 +393,87 @@ namespace GY2021001BLL
                 return false;
             }
             if (!Verify(service, tm, gameItems, out string msg))
-                return false;
-            var totalItems = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShouyiSlotId).Children.Concat(gameItems);    //总计收益
-            var sec = (int)tm.Properties["sec"];    //关卡号
-            if (-1 != sec) //若不是大关
             {
-                var coll = from tmp in gitm.Id2Template.Values
-                           where tmp.TypeCode == 7 && (int)tmp.Properties.GetValueOrDefault("typ", decimal.Zero) == (int)tm.Properties.GetValueOrDefault("typ") &&
-                           (int)tmp.Properties.GetValueOrDefault("mis", decimal.Zero) == (int)tm.Properties.GetValueOrDefault("mis")
-                           select tmp;
-                tm = coll.First();
+                data.DebugMessage = msg;
+                data.HasError = true;
+                return false;
             }
-            if (!Verify(service, tm, totalItems, out msg))
-                return false;
-            //记录收益
             var shouyiSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShouyiSlotId);
-            shouyiSlot.Children.AddRange(gameItems);
-            //下一关数据
-            data.Template = cmbm.GetNext(data.Template);
-            if (null == data.Template) //若已经结束
+            var totalItems = shouyiSlot.Children.Concat(gameItems);    //总计收益
+            if (!Verify(service, tm, totalItems, out msg))  //若总计收益超过限制
             {
-                //移动数据
+                data.DebugMessage = $"总计收益超过限制。{msg}";
+                data.HasError = true;
+                return false;
+            }
+            //记录收益——改写收益槽数据
+            //坐骑
+            var mounts = data.GameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi).Select(c =>
+            {
+                var head = c.Children.First(c => c.TemplateId == ProjectConstant.ZuojiZuheTou).Children.First();
+                var headTemplate = gitm.GetTemplateFromeId(head.TemplateId);
+                var body = c.Children.First(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti).Children.First();
+                var bodyTemplate = gitm.GetTemplateFromeId(body.TemplateId);
+                var result = CreateMounts(service, headTemplate, bodyTemplate);
+                if (c.Properties.TryGetValue("mneatk", out object valObj) && valObj is decimal)
+                    result.Properties["mneatk"] = valObj;
+                if (c.Properties.TryGetValue("mneqlt", out valObj) && valObj is decimal)
+                    result.Properties["mneqlt"] = valObj;
+                if (c.Properties.TryGetValue("mnemhp", out valObj) && valObj is decimal)
+                    result.Properties["mnemhp"] = valObj;
+                return result;
+            });
+            shouyiSlot.Children.AddRange(mounts);   //加入坐骑
+            //神纹
+            var shenwen = from tmp in data.GameItems
+                          let template = gitm.GetTemplateFromeId(tmp.TemplateId)
+                          where template.GenusCode >= 15 && template.GenusCode<=17  //神纹碎片
+                          select (template, tmp.Count ?? 1);
+            shouyiSlot.Children.AddRange(shenwen.Select(c =>
+            {
+                var sw = world.ItemManager.CreateGameItem(c.template);
+                sw.Count = c.Item2;
+                return sw;
+            }));
+            //金币,暂时不用创建新的金币对象。
+            var coll = data.GameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).ToList();
+            coll.ForEach(c => c.Count ??= 1);
+            shouyiSlot.Children.AddRange(coll);
+            //下一关数据
+            data.NextTemplate = cmbm.GetNext(data.Template);
+            if (null == data.NextTemplate || data.EndRequested) //若已经结束
+            {
+                //移动收益槽数据到各自背包。
                 //金币
-                var gold = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.JinbiId);
+                var gold = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.JinbiId).ToArray();
                 var goldCount = gold.Sum(c => c.Count);
                 foreach (var item in gold)
                     shouyiSlot.Children.Remove(item);
-                gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.JinbiId).Count += goldCount;
+                var goldSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.JinbiId);
+                goldSlot.Count += goldCount;
+                var changesItem = new ChangesItem()
+                {
+                    ContainerId = data.GameChar.Id,
+                };
+                changesItem.Changes.Add(goldSlot);
+                data.ChangesItems.Add(changesItem);
                 //野生怪物
-                var mounts = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi);
+                mounts = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi).ToArray();
                 var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
                 foreach (var item in mounts)
                 {
                     shouyiSlot.Children.Remove(item);
                 }
                 shoulan.Children.AddRange(mounts);
+                changesItem = new ChangesItem()
+                {
+                    ContainerId = ProjectConstant.ShoulanSlotId,
+                };
+                changesItem.Adds.AddRange(mounts);
+                data.ChangesItems.Add(changesItem);
                 //神纹
                 var shenwens = (from tmp in shouyiSlot.Children
-                                let typeCode = gitm.GetTemplateFromeId(tmp.TemplateId).TypeCode
+                                let typeCode = gitm.GetTemplateFromeId(tmp.TemplateId).GenusCode
                                 where typeCode == ProjectConstant.ShenwenAtkTCode || typeCode == ProjectConstant.ShenwenHPTCode || typeCode == ProjectConstant.ShenwenQltTCode
                                 select tmp).ToArray();  //得到所有神纹
                 var ary = (from tmp in shenwens
@@ -443,6 +485,14 @@ namespace GY2021001BLL
                 var modifies = ary.Join(shenwenBag.Children, c => c.Key, c => c.TemplateId, (l, r) => (l, r));   //修改数量的集合
                 foreach (var (l, r) in modifies)
                     r.Count += l.count;
+                //修改增量
+                changesItem = new ChangesItem()
+                {
+                    ContainerId = ProjectConstant.ShenWenBagSlotId,
+                };
+                changesItem.Changes.AddRange(shenwens);
+                data.ChangesItems.Add(changesItem);
+
             }
 
             return true;
@@ -452,31 +502,33 @@ namespace GY2021001BLL
         /// 校验收益是否超过上限。
         /// </summary>
         /// <param name="service"></param>
-        /// <param name="itemTemplate"></param>
+        /// <param name="itemTemplate">限定数据的模板</param>
         /// <param name="gameItems"></param>
         /// <param name="msg"></param>
         /// <returns></returns>
         private static bool Verify(IServiceProvider service, GameItemTemplate itemTemplate, IEnumerable<GameItem> gameItems, out string msg)
         {
             var gitm = service.GetService<GameItemTemplateManager>();
-            //typ关卡类别=1普通管卡 mis大关数 sec=小关gold=数金币掉落上限，aml=获得资质野怪的数量，mne=资质合上限，mt=神纹数量上限，
-            if (itemTemplate.Properties.TryGetValue("gold", out object gold)) //若要限制金币数量
+            //typ关卡类别=1普通管卡 mis大关数 sec=小关gold=数金币掉落上限，aml=获得资质野怪的数量，mne=资质合上限，mt=神纹数量上限，tl=最短通关时间
+            if (itemTemplate.Properties.TryGetValue("gold", out object goldObj)) //若要限制金币数量
             {
-                if (gameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).Select(c => c.Count).Sum() > (decimal)gold)   //若金币超过上限
-                {
-                    msg = "金币超过上限";
-                    return false;
-                }
+                if (goldObj is decimal gold)
+                    if (gameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).Select(c => c.Count).Sum() > gold)   //若金币超过上限
+                    {
+                        msg = "金币超过上限";
+                        return false;
+                    }
             }
-            if (itemTemplate.Properties.TryGetValue("aml", out object monsterCount)) //若要限制怪数量
+            if (itemTemplate.Properties.TryGetValue("aml", out object monsterCountObj)) //若要限制怪数量
             {
-                if (gameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi).Count() > (decimal)monsterCount)   //若怪数量超过上限
-                {
-                    msg = "怪数量超过上限";
-                    return false;
-                }
+                if (monsterCountObj is decimal monsterCount)
+                    if (gameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi).Count() > monsterCount)   //若怪数量超过上限
+                    {
+                        msg = "怪数量超过上限";
+                        return false;
+                    }
             }
-            if (itemTemplate.Properties.TryGetValue("mne", out object mneObj)) //若要限制单个怪资质总和
+            if (itemTemplate.Properties.TryGetValue("mne", out object mneObj) && mneObj is decimal) //若要限制单个怪资质总和
             {
                 var mne = Convert.ToSingle(mneObj);
                 var coll = from tmp in gameItems
@@ -493,9 +545,9 @@ namespace GY2021001BLL
                     return false;
                 }
             }
-            if (itemTemplate.Properties.TryGetValue("mt", out object mt)) //若要限制神纹数量
+            if (itemTemplate.Properties.TryGetValue("mt", out object mtObj) && mtObj is decimal mt) //若要限制神纹数量
             {
-                var coll = gitm.Id2Template.Values.Where(c => c.TypeCode == ProjectConstant.ShenwenTCode); //获取所有神纹模板
+                var coll = gitm.Id2Template.Values.Where(c => c.GenusCode == ProjectConstant.ShenwenTCode); //获取所有神纹模板
                 var shenwen = gameItems.Join(coll, c => c.TemplateId, c => c.Id, (l, r) => l);    //获取神纹的集合
                 if (shenwen.Count() > (int)mt) //若神纹数量超过上限
                 {
@@ -506,5 +558,7 @@ namespace GY2021001BLL
             msg = null;
             return true;
         }
+
+
     }
 }

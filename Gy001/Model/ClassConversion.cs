@@ -86,6 +86,18 @@ namespace GY2021001WebApi.Models
             {
                 result.Properties[item.Key] = item.Value;
             }
+            foreach (var item in obj.ClientExtendProperties)    //初始化客户端扩展属性
+            {
+                if (result.ClientExtendProperties.TryGetValue(item.Key, out GameExtendProperty gep))
+                    gep.Value = item.Value;
+                else
+                    result.ClientExtendProperties[item.Key] = new GameExtendProperty()
+                    {
+                        ParentId = result.Id,
+                        Name = item.Key,
+                        Value = item.Value,
+                    };
+            }
             return result;
         }
 
@@ -116,6 +128,10 @@ namespace GY2021001WebApi.Models
             {
                 DateTime now = DateTime.UtcNow;
                 result.Properties[item.Key] = item.Value.GetCurrentValue(ref now);
+            }
+            foreach (var item in obj.ClientExtendProperties)    //初始化客户端扩展属性
+            {
+                result.ClientExtendProperties[item.Key] = item.Value.Value;
             }
             return result;
         }
@@ -178,7 +194,7 @@ namespace GY2021001WebApi.Models
         {
             var result = new CombatStartReturnDto()
             {
-                TemplateId = obj.Template.Id.ToBase64String(),
+                TemplateId = obj.Template?.Id.ToBase64String(),
                 HasError = obj.HasError,
                 DebugMessage = obj.DebugMessage,
             };
@@ -192,11 +208,11 @@ namespace GY2021001WebApi.Models
         {
             var result = new CombatEndReturnDto()
             {
-                NextDungeonId = obj.NextTemplate.Id.ToBase64String(),
+                NextDungeonId = obj.NextTemplate?.Id.ToBase64String(),
                 HasError = obj.HasError,
                 DebugMessage = obj.DebugMessage,
-                GameItems = obj.GameItems.Cast<GameItemDto>().ToArray(),
             };
+            result.ChangesItems.AddRange(obj.ChangesItems.Select(c => (ChangesItemDto)c));
             return result;
         }
 

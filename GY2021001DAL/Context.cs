@@ -23,6 +23,7 @@ namespace GY2021001DAL
             modelBuilder.Entity<GameUser>().HasIndex(c => c.CreateUtc);
             modelBuilder.Entity<GameUser>().HasIndex(c => c.LoginName).IsUnique();
             modelBuilder.Entity<GameItem>().HasIndex(c => c.OwnerId);
+            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.ParentId);
             base.OnModelCreating(modelBuilder);
         }
 
@@ -45,7 +46,10 @@ namespace GY2021001DAL
         /// </summary>
         public DbSet<GameSetting> GameSettings { get; set; }
 
-
+        /// <summary>
+        /// 通用扩展属性记录的表。
+        /// </summary>
+        public DbSet<GameExtendProperty> ExtendProperties { get; set; }
     }
 
     public static class MigrateDbInitializer
