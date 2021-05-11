@@ -106,7 +106,7 @@ namespace OwGame
         {
             if (string.IsNullOrWhiteSpace(propStr))
                 return;
-            var coll = propStr.Trim(' ', '"').Replace(Environment.NewLine, " ").Split(CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
+            var coll = propStr.Replace(Environment.NewLine, " ").Trim(' ', '"').Split(CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
             foreach (var item in coll)
             {
                 var guts = item.Split('=', StringSplitOptions.RemoveEmptyEntries);

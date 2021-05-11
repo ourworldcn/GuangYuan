@@ -26,6 +26,10 @@ namespace Gy2021001Template
         /// </summary>
         public DbSet<GameItemTemplate> ItemTemplates { get; set; }
 
+        /// <summary>
+        /// 蓝图表
+        /// </summary>
+        public DbSet<BlueprintTemplate> BlueprintTemplates { get; set; }
     }
 
     public static class TemplateMigrateDbInitializer

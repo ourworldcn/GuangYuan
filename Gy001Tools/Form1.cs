@@ -48,11 +48,6 @@ namespace Gy001Tools
             sw.Start();
             sw.Stop();
 
-            Dictionary<string, byte[]> dic = new Dictionary<string, byte[]>();
-            var type = dic.GetType();
-            var b = typeof(IDictionary<string, byte[]>).IsAssignableFrom(type);
-            var t1 = type.GetGenericArguments();
-            var t2 = type.GetGenericTypeDefinition();
             try
             {
                 TestExcel();

@@ -60,6 +60,10 @@ namespace GY2021001BLL
         private GameItemManager _GameItemManager;
 
         public GameItemManager ItemManager { get => _GameItemManager ??= Service.GetRequiredService<GameItemManager>(); }
+
+        private BlueprintManager _BlueprintManager;
+
+        public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Service.GetRequiredService<BlueprintManager>(); }
         #endregion 属性及相关
 
         private void Initialize()

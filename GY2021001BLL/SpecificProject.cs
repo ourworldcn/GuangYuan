@@ -125,6 +125,21 @@ namespace GY2021001BLL
         /// </summary>
         public const string ContainerCapacity = "cap";
 
+        /// <summary>
+        /// 裝備的神纹已经突破攻击的次数的属性名。
+        /// </summary>
+        public const string ShenwenTupoAtkCountPropertyName = "sscatk";
+
+        /// <summary>
+        /// 裝備的神纹已经突破最大血量的次数的属性名。
+        /// </summary>
+        public const string ShenwenTupoMHpCountPropertyName = "sscmhp";
+
+        /// <summary>
+        /// 裝備的神纹已经突破质量的次数的属性名。
+        /// </summary>
+        public const string ShenwenTupoQltCountPropertyName = "sscqlt";
+
         #region 类别号
         /// <summary>
         /// 血量神纹碎片的类别号。
@@ -145,7 +160,21 @@ namespace GY2021001BLL
         /// 装备的神纹的类别号。
         /// </summary>
         public const int ShenwenTCode = 10;
+
         #endregion 类别号
+
+        #region 蓝图常量
+        /// <summary>
+        /// 突破蓝图Id。
+        /// </summary>
+        public static readonly Guid ShenWenTupoBlueprint = new Guid("{92f63905-a39f-4e1a-ad17-ea648a99be7a}");
+
+        /// <summary>
+        /// 神纹升级蓝图Id。
+        /// </summary>
+        public static readonly Guid ShenwenLvUpBlueprint = new Guid("{31E0945A-94E4-43D5-835F-6546D68349F1}");
+
+        #endregion 蓝图常量
     }
 
     /// <summary>
@@ -203,7 +232,7 @@ namespace GY2021001BLL
                 DisplayName="角色的模板",
                 ChildrenTemplateIdString=$"{ProjectConstant.DangqianZuoqiSlotId},{ProjectConstant.ShenWenSlotId},{ProjectConstant.DaojuBagSlotId},{ProjectConstant.ShoulanSlotId}" +  //通过串联将长字符串文本拆分为较短的字符串，从而提高源代码的可读性。 编译时将这些部分连接到单个字符串中。 无论涉及到多少个字符串，均不产生运行时性能开销。
                     $",{ProjectConstant.JinbiId},{ProjectConstant.ShouyiSlotId},{ProjectConstant.ZuojiBagSlotId}",
-                PropertiesString="mpp=20,dpp=300,ipp=1",    //最大体力
+                PropertiesString="mpp=20,dpp=1,ipp=1",    //最大体力，未测试临时更改 TO DO dpp=300
             },
             new GameItemTemplate(ProjectConstant.ShenWenSlotId)
             {
@@ -386,7 +415,9 @@ namespace GY2021001BLL
             //校验时间
             DateTime dt = gameChar.CombatStartUtc.GetValueOrDefault(DateTime.UtcNow);
             var dtNow = DateTime.UtcNow;
-            if (dtNow - dt < TimeSpan.FromSeconds(Convert.ToDouble(tm.Properties.GetValueOrDefault("tl", decimal.Zero)))) //若时间过短
+            var lt = TimeSpan.FromSeconds(Convert.ToDouble(tm.Properties.GetValueOrDefault("tl", decimal.Zero)));   //最短时间
+            lt = TimeSpan.FromSeconds(1);   //TO DO为测试临时更改
+            if (dtNow - dt < lt) //若时间过短
             {
                 data.HasError = true;
                 data.DebugMessage = "时间过短";
@@ -427,7 +458,7 @@ namespace GY2021001BLL
             //神纹
             var shenwen = from tmp in data.GameItems
                           let template = gitm.GetTemplateFromeId(tmp.TemplateId)
-                          where template.GenusCode >= 15 && template.GenusCode<=17  //神纹碎片
+                          where template.GenusCode >= 15 && template.GenusCode <= 17  //神纹碎片
                           select (template, tmp.Count ?? 1);
             shouyiSlot.Children.AddRange(shenwen.Select(c =>
             {

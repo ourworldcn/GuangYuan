@@ -92,6 +92,11 @@ namespace GY2021001BLL
             return result;
         }
 
+        public GameItemTemplate GetTemplate(GameObjectBase gameObject)
+        {
+            return World.ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
+        }
+
         /// <summary>
         /// 变换物品等级。会对比原等级的属性增减属性数值。如模板中原等级mhp=100,而物品mhp=120，则会用新等级mhp+20。
         /// </summary>
@@ -99,12 +104,11 @@ namespace GY2021001BLL
         /// <param name="newLevel"></param>
         public void ChangeLevel(GameItem gameItem, int newLevel)
         {
-            var template = World.ItemTemplateManager.GetTemplateFromeId(gameItem.TemplateId);
-            var lv = Convert.ToInt32(gameItem.Properties.GetValueOrDefault("lv", decimal.Zero));
+            var template = GetTemplate(gameItem);
+            var lv = Convert.ToInt32(gameItem.Properties.GetValueOrDefault(ProjectConstant.LevelPropertyName, decimal.Zero));   //当前等级
             foreach (var item in gameItem.Properties.Keys.ToArray())    //遍历属性
             {
-                var seq = template.Properties.GetValueOrDefault(item) as decimal[];
-                if (null != seq)   //若是一个序列属性
+                if (template.Properties.GetValueOrDefault(item) is decimal[] seq)   //若是一个序列属性
                 {
                     var oov = seq[lv];  //原级别模板值
                     var val = (decimal)gameItem.Properties.GetValueOrDefault(item, oov);  //物品的属性值
@@ -160,6 +164,11 @@ namespace GY2021001BLL
                     dest.Children.Add(item);
                 }
             }
+        }
+
+        public void GetItems(GameChar gameChar, Guid containerTId, IEnumerable<Guid> tids, ICollection<GameItem> gameItems)
+        {
+
         }
     }
 

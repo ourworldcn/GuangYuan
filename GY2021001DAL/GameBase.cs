@@ -31,7 +31,6 @@ namespace GY2021001DAL
     /// </summary>
     public abstract class GameThingBase : GameObjectBase
     {
-        private string _PropertiesString;
         /// <summary>
         /// 构造函数。
         /// </summary>
@@ -54,6 +53,7 @@ namespace GY2021001DAL
         /// </summary>
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
 
+        private string _PropertiesString;
         /// <summary>
         /// 属性字符串。
         /// </summary>
@@ -93,51 +93,51 @@ namespace GY2021001DAL
         /// <param name="name"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        public decimal GetDecimal(string name, decimal defaultValue = decimal.Zero)
+        public T GetDecimal<T>(string name, T defaultValue = default)
         {
             if (!Properties.TryGetValue(name, out object obj))
                 return defaultValue;
-            if (obj is decimal result)
-                return result;
+            if (obj is decimal decVal)
+                return default;
             return defaultValue;
         }
+}
+
+/// <summary>
+/// 存储设置的模型类。
+/// </summary>
+public class GameSetting
+{
+    [Key]
+    public string Name { get; set; }
+
+    public string Val { get; set; }
+}
+
+/// <summary>
+/// 通用扩展属性类。
+/// </summary>
+public class GameExtendProperty : GuidKeyBase
+{
+    public GameExtendProperty()
+    {
+
     }
 
     /// <summary>
-    /// 存储设置的模型类。
+    /// 获取或设置所属对象Id。
     /// </summary>
-    public class GameSetting
-    {
-        [Key]
-        public string Name { get; set; }
-
-        public string Val { get; set; }
-    }
+    public Guid ParentId { get; set; }
 
     /// <summary>
-    /// 通用扩展属性类。
+    /// 获取或设置键的名字，同一个所属对象下不能有多个同名设置，否则，行为未知。
     /// </summary>
-    public class GameExtendProperty : GuidKeyBase
-    {
-        public GameExtendProperty()
-        {
+    [StringLength(64)]
+    public string Name { get; set; }
 
-        }
-
-        /// <summary>
-        /// 获取或设置所属对象Id。
-        /// </summary>
-        public Guid ParentId { get; set; }
-
-        /// <summary>
-        /// 获取或设置键的名字，同一个所属对象下不能有多个同名设置，否则，行为未知。
-        /// </summary>
-        [StringLength(64)]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// 获取或设置值。
-        /// </summary>
-        public string Value { get; set; }
-    }
+    /// <summary>
+    /// 获取或设置值。
+    /// </summary>
+    public string Value { get; set; }
+}
 }

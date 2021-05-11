@@ -90,6 +90,9 @@ namespace Gy001
             {
                 Loaded = SpecificProject.ItemTemplateLoaded,
             }));
+            services.AddSingleton(c => new BlueprintManager(c, new BlueprintManagerOptions()
+            {
+            }));
             services.AddSingleton(c => new GameItemManager(c, new GameItemManagerOptions()
             {
                 ItemCreated = SpecificProject.GameItemCreated,
@@ -103,7 +106,6 @@ namespace Gy001
                 CombatStart = SpecificProject.CombatStart,
                 CombatEnd = SpecificProject.CombatEnd,
             }));
-
             #endregion 配置游戏专用服务
         }
 
