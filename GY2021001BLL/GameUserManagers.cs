@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -427,7 +428,7 @@ namespace GY2021001BLL
                         {
                             gc.ClientExtendProperties[item.Name] = item;
                         }
-                        gu.GameChars[0].InvokeLoaded();
+                        OnCharLoaded(new CharLoadedEventArgs(gu.GameChars[0]));
                     }
                 }
             }
@@ -639,13 +640,9 @@ namespace GY2021001BLL
                     result.Properties[item.Key] = item.Value;
             }
             result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
-            //递归初始化容器
-            var gim = Service.GetService<GameItemManager>();
-            result.GameItems.AddRange(template.ChildrenTemplateIds.Select(c =>
-            {
-                var gi = gim.CreateGameItem(ItemTemplateManager.GetTemplateFromeId(c), result.Id);
-                return gi;
-            }));
+            //初始化容器
+            var gim = World.ItemManager;
+            result.GameItems.AddRange(template.ChildrenTemplateIds.Select(c => gim.CreateGameItem(c, result.Id)));
             //调用外部创建委托
             try
             {
@@ -669,6 +666,68 @@ namespace GY2021001BLL
 
             return result;
         }
+
+        /// <summary>
+        /// 向指定角色追加一组直属的数据。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="gameItems"></param>
+        /// <param name="db">使用的数据库上下文。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddGameItems(GameChar gameChar, IEnumerable<GameItem> gameItems, DbContext db)
+        {
+            foreach (var item in gameItems)
+                item.OwnerId = gameChar.Id;
+            db.Set<GameItem>().AddRange(gameItems);
+            gameChar.GameItems.AddRange(gameItems);
+        }
+
         #endregion 公共方法
+
+        #region 事件及相关
+        public event EventHandler<CharLoadedEventArgs> CharLoaded;
+        protected virtual void OnCharLoaded(CharLoadedEventArgs e)
+        {
+            try
+            {
+                e.GameChar.InvokeLoaded();
+            }
+            catch (Exception)
+            {
+            }
+            try
+            {
+                var tt = World.ItemTemplateManager.GetTemplateFromeId(e.GameChar.TemplateId);
+                List<Guid> ids = new List<Guid>();
+                tt.ChildrenTemplateIds.ApartWithWithRepeated(e.GameChar.GameItems, c => c, c => c.TemplateId, ids, null, null);
+                foreach (var item in ids.Select(c => World.ItemTemplateManager.GetTemplateFromeId(c)))
+                {
+                    var gameItem = World.ItemManager.CreateGameItem(item, e.GameChar.Id);
+                    e.GameChar.GameUser.DbContext.Set<GameItem>().Add(gameItem);
+                    e.GameChar.GameItems.Add(gameItem);
+                }
+                World.ItemManager.Normalize(e.GameChar.GameItems);
+            }
+            catch (Exception)
+            {
+            }
+            CharLoaded?.Invoke(this, e);
+        }
+
+        #endregion 事件及相关
+    }
+
+    public class CharLoadedEventArgs : EventArgs
+    {
+        public CharLoadedEventArgs()
+        {
+        }
+
+
+        public CharLoadedEventArgs(GameChar gameChar)
+        {
+            GameChar = gameChar;
+        }
+        public GameChar GameChar { get; set; }
     }
 }

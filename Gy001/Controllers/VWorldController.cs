@@ -19,20 +19,28 @@ namespace GY2021001WebApi.Controllers
     [ApiController]
     public class VWorldController : ControllerBase
     {
-        public VWorldController()
-        {
+        //public VWorldController()
+        //{
 
+        //}
+        private readonly VWorld _World;
+        public VWorldController(VWorld world)
+        {
+            _World = world;
         }
 
         /// <summary>
-        /// 获取服务器实际运行的时间。
+        /// 获取服务器非敏感信息。
         /// </summary>
         /// <returns></returns>
+        /// <response code="401">管理员账号或密码错误。</response>
         [HttpGet]
-        public ActionResult<TimeSpan> GetStartTime()
+        public ActionResult<VWorldInfomationDto> GetVWorldInfo(string userName, string pwd)
         {
-            var world = HttpContext.RequestServices.GetService(typeof(VWorld)) as VWorld;
-            return world.GetServiceTime();
+            if (userName != "gy001" || pwd != "210115")
+                return Unauthorized("用户名或密码错误。");
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            return (VWorldInfomationDto)world.GetInfomation();
         }
 
         /// <summary>
@@ -47,7 +55,7 @@ namespace GY2021001WebApi.Controllers
         {
             if (admin != "gy001" || pwd != "guangyuan123")
                 return Unauthorized();
-            var world = HttpContext.RequestServices.GetService(typeof(VWorld)) as VWorld;
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             world.NotifyShutdown();
             return Ok();
         }

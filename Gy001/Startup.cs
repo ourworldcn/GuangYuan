@@ -92,6 +92,7 @@ namespace Gy001
             }));
             services.AddSingleton(c => new BlueprintManager(c, new BlueprintManagerOptions()
             {
+                DoApply = SpecificProject.ApplyBlueprint,
             }));
             services.AddSingleton(c => new GameItemManager(c, new GameItemManagerOptions()
             {

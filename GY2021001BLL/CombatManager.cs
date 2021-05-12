@@ -377,6 +377,8 @@ namespace GY2021001BLL
                 }
                 if (data.EndRequested)
                     data.NextTemplate = null;
+                data.GameChar.CurrentDungeonId = data.NextTemplate?.Id;
+                data.GameChar.CombatStartUtc = data.GameChar.CurrentDungeonId is null ? default(DateTime?) : DateTime.UtcNow;
             }
             finally
             {

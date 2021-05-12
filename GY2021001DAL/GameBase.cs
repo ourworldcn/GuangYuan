@@ -49,6 +49,11 @@ namespace GY2021001DAL
         }
 
         /// <summary>
+        /// 客户端要记录的一些属性，这个属性客户端可以随意更改，服务器不使用。
+        /// </summary>
+        public string ClientGutsString { get; set; }
+
+        /// <summary>
         /// 创建该对象的通用协调时间。
         /// </summary>
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;

@@ -299,6 +299,7 @@ namespace GY2021001BLL
                     //TO DO 应判断是否脏
                     template.DisplayName = item.DisplayName;
                     template.ChildrenTemplateIdString = item.ChildrenTemplateIdString;
+                    template.PropertiesString = item.PropertiesString;
                     dbDirty = true;
                 }
             }
@@ -590,6 +591,9 @@ namespace GY2021001BLL
             return true;
         }
 
-
+        public static bool ApplyBlueprint(IServiceProvider service, ApplyBluprintDatas datas)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

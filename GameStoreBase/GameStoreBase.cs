@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -59,6 +60,16 @@ namespace OwGame
         /// 中英文逗号数组。分割字符串常用此数组，避免生成新对象。
         /// </summary>
         public readonly static char[] CommaArrayWithCN = new char[] { ',', '，' };
+
+        /// <summary>
+        /// 中英文冒号数组。分割字符串常用此数组，避免生成新对象。
+        /// </summary>
+        public readonly static char[] ColonArrayWithCN = new char[] { ':', '：' };
+
+        /// <summary>
+        /// 路径分隔符。
+        /// </summary>
+        public readonly static char[] PathSeparatorChar = new char[] { '\\', '/' };
 
         /// <summary>
         /// 分割属性字符串。
@@ -164,26 +175,95 @@ namespace OwGame
         }
 
         /// <summary>
-        /// 遍历一个树结构的所有子项。
+        /// 遍历一个树结构的所有子项。深度优先算法遍历子树。
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="roots">多个根的节点集合。</param>
-        /// <param name="children">从每个节点获取其所有子节点的委托。</param>
+        /// <param name="getChildren">从每个节点获取其所有子节点的委托。</param>
         /// <returns>一个可枚举集合，包含所有根下的所有节点。</returns>
-        public static IEnumerable<T> GetAllSubItemsOfTree<T>(IEnumerable<T> roots, Func<T, IEnumerable<T>> children)
+        public static IEnumerable<T> GetAllSubItemsOfTree<T>(IEnumerable<T> roots, Func<T, IEnumerable<T>> getChildren)
         {
             Stack<T> gameItems = new Stack<T>(roots);
-
             while (gameItems.TryPop(out T result))
             {
-                foreach (var item in children(result))
+                foreach (var item in getChildren(result))
                     gameItems.Push(item);
                 yield return result;
             }
             yield break;
         }
 
+        /// <summary>
+        /// 分拣左右两个序列中的元素到三个集合中，三个集合的条件如下：仅左侧序列拥有的元素，两个序列都有的元素，仅右侧序列拥有的元素。
+        /// 如果序列中有重复元素则分别计数。结果集合中元素顺序不稳定。
+        /// </summary>
+        /// <typeparam name="TLeft"></typeparam>
+        /// <typeparam name="TRight"></typeparam>
+        /// <typeparam name="TKey"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="right"></param>
+        /// <param name="getLeftKey"></param>
+        /// <param name="getRightKey"></param>
+        /// <param name="leftOnly">追加仅包含在左侧序列元素的集合，可以是null,则忽略。</param>
+        /// <param name="boths">追加两个序列都包含的元素集合，可以是null,则忽略。</param>
+        /// <param name="rightOnly">追加仅包含在右侧序列元素的集合，可以是null,则忽略。</param>
+        public static void ApartWithWithRepeated<TLeft, TRight, TKey>(this IEnumerable<TLeft> source, IEnumerable<TRight> right, Func<TLeft, TKey> getLeftKey, Func<TRight, TKey> getRightKey,
+            ICollection<TLeft> leftOnly, ICollection<(TLeft, TRight)> boths, ICollection<TRight> rightOnly)
+        {
+            bool b = source.Count() > right.Count();
+            var leftDic = (from tmp in source
+                           group tmp by getLeftKey(tmp) into g
+                           select (g.Key, g.ToList())).ToDictionary(c => c.Key, c => c.Item2);
+            List<TLeft> leftLst;
+            foreach (var item in right)
+            {
+                var key = getRightKey(item);    //右序列元素的键
+                if (leftDic.TryGetValue(key, out leftLst))  //若两者皆有
+                {
+                    var tmp = leftLst[leftLst.Count - 1];
+                    leftLst.RemoveAt(leftLst.Count - 1);
+                    boths?.Add((tmp, item));
+                    if (leftLst.Count <= 0)
+                        leftDic.Remove(key);
+                }
+                else //仅右侧序列有
+                {
+                    rightOnly?.Add(item);
+                }
+            }
+            //追加左侧序列独有元素
+            if (null != leftOnly)
+                foreach (var item in leftDic.SelectMany(c => c.Value))
+                    leftOnly.Add(item);
 
+        }
+
+        /// <summary>
+        /// 分解|分开的数组，并放入decimal数组中。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public static bool AnalyseSequence(string str, out decimal[] result)
+        {
+            result = null;
+            var ary = str.Split('|', StringSplitOptions.RemoveEmptyEntries);
+            List<decimal> lst = new List<decimal>();
+            foreach (var item in ary)
+            {
+                if (!decimal.TryParse(item, out decimal tmp))
+                    return false;
+                lst.Add(tmp);
+            }
+            result = lst.ToArray();
+            return true;
+        }
     }
 
+    public interface IOrmNotify
+    {
+        void Loaded(DbContext db);
+
+        void Saving(DbContext db);
+    }
 }

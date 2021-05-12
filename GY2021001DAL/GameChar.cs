@@ -63,11 +63,6 @@ namespace GY2021001DAL
         public virtual GameUser GameUser { get; set; }
 
         /// <summary>
-        /// 客户端要记录的一些属性，这个属性客户端可以随意更改，服务器不使用。
-        /// </summary>
-        public string ClientGutsString { get; set; }
-
-        /// <summary>
         /// 角色显示用的名字。
         /// </summary>
         public string DisplayName { get; set; }

@@ -571,6 +571,22 @@ namespace GY2021001WebApi.Models
         public List<GameItemDto> Changes { get; } = new List<GameItemDto>();
     }
 
+    [DataContract]
+    public partial class VWorldInfomationDto
+    {
+        /// <summary>
+        /// 服务器的本次启动Utc时间。
+        /// </summary>
+        [DataMember]
+        public DateTime StartDateTime { get; set; }
+
+        /// <summary>
+        /// 服务器的当前时间。
+        /// </summary>
+        [DataMember]
+        public DateTime CurrentDateTime { get; set; }
+    }
+
     #endregion 基础数据封装类
 
     #region 接口特定数据封装类

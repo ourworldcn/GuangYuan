@@ -5,6 +5,7 @@ using OwGame;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace GY2021001BLL
@@ -44,6 +45,20 @@ namespace GY2021001BLL
         #endregion 构造函数
 
         /// <summary>
+        /// 按照指定模板Id创建一个对象
+        /// </summary>
+        /// <param name="templateId">创建事物所需模板Id。</param>
+        /// <param name="ownerId">指定一个父Id,如果不指定或为null则忽略。</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameItem CreateGameItem(Guid templateId, Guid? ownerId = null)
+        {
+            var template = World.ItemTemplateManager.GetTemplateFromeId(templateId);
+            var result = CreateGameItem(template, ownerId);
+            return result;
+        }
+
+        /// <summary>
         /// 按照指定模板创建一个对象。
         /// </summary>
         /// <param name="template">创建事物所需模板。</param>
@@ -81,7 +96,7 @@ namespace GY2021001BLL
                 result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
             //递归初始化容器
             var gitm = World.ItemTemplateManager;
-            result.Children.AddRange(template.ChildrenTemplateIds.Select(c => CreateGameItem(gitm.GetTemplateFromeId(c))));
+            result.Children.AddRange(template.ChildrenTemplateIds.Select(c => CreateGameItem(c)));
             try
             {
                 var dirty = Options?.ItemCreated?.Invoke(Service, result) ?? false;
@@ -170,6 +185,30 @@ namespace GY2021001BLL
         {
 
         }
+
+        /// <summary>
+        /// 标准化物品，避免有后增加的槽没有放置上去。
+        /// </summary>
+        public void Normalize(IEnumerable<GameItem> gameItems)
+        {
+            var gitm = World.ItemTemplateManager;
+            var coll = (from tmp in OwHelper.GetAllSubItemsOfTree(gameItems, c => c.Children)
+                        let tt = gitm.GetTemplateFromeId(tmp.TemplateId)
+                        select (tmp, tt)).ToArray();
+            var gim = World.ItemManager;
+            List<Guid> adds = new List<Guid>();
+            foreach (var item in coll)
+            {
+                adds.Clear();
+                item.tmp.Children.ApartWithWithRepeated(item.tt.ChildrenTemplateIds, c => c.TemplateId, c => c, null, null, adds);
+                foreach (var addItem in adds)
+                {
+                    var newItem = gim.CreateGameItem(gitm.GetTemplateFromeId(addItem));
+                    item.tmp.Children.Add(newItem);
+                }
+            }
+        }
+
     }
 
 }

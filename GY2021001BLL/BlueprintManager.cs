@@ -1,11 +1,14 @@
 ﻿using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
+using OwGame;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace GY2021001BLL
@@ -36,11 +39,6 @@ namespace GY2021001BLL
         public List<Guid> ObjectIds { get; set; }
 
         /// <summary>
-        /// 指定强化的属性，如攻击则这里给出atk,质量是qlt,最大血量是mhp
-        /// </summary>
-        public string PropertyName { get; set; }
-
-        /// <summary>
         /// 要执行的次数。
         /// </summary>
         public int Count { get; set; }
@@ -49,7 +47,6 @@ namespace GY2021001BLL
         /// 应用蓝图后，物品变化数据。
         /// </summary>
         public List<ChangesItem> ChangesItem { get; } = new List<ChangesItem>();
-
 
         /// <summary>
         /// 是否有错误。
@@ -62,6 +59,122 @@ namespace GY2021001BLL
         public string DebugMessage { get; set; }
     }
 
+    public class SequencePropertyData
+    {
+        public static bool TryParse(string str, out SequencePropertyData sequenceProperty)
+        {
+            sequenceProperty = null;
+            if (decimal.TryParse(str, out decimal resultDec))
+            {
+                sequenceProperty = new SequencePropertyData()
+                {
+                    Value = resultDec,
+                };
+                return true;
+            }
+            var ary = str.Split(OwHelper.ColonArrayWithCN);
+            if (2 != ary.Length)
+            {
+                return false;
+            }
+            if (!OwHelper.AnalyseSequence(ary[1], out decimal[] vals))  //若分析获得序列
+                return false;
+            var leftAry = ary[0].Split(OwHelper.PathSeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+            string pn;
+            Guid? keyId = null;
+            if (leftAry.Length == 1)   //若只有属性名
+                pn = leftAry[0];
+            else if (leftAry.Length == 2) //若存在指定的父属性
+            {
+                if (!Guid.TryParse(leftAry[0], out Guid key))
+                    return false;
+                pn = leftAry[1];
+                keyId = key;
+            }
+            else
+                return false;
+            sequenceProperty = new SequencePropertyData()
+            {
+                Values = vals,
+                PropertyName = pn,
+                KeyId = keyId,
+            };
+            return true;
+        }
+
+        public SequencePropertyData()
+        {
+
+        }
+
+        public decimal? Value { get; set; }
+
+        /// <summary>
+        /// 序列。
+        /// </summary>
+        public decimal[] Values { get; set; }
+
+        /// <summary>
+        /// 属性名。
+        /// </summary>
+        public string PropertyName { get; set; }
+
+        /// <summary>
+        /// 属性绑定的对象Id。
+        /// </summary>
+        public Guid? KeyId { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="things"></param>
+        /// <returns></returns>
+        public decimal GetValue(IEnumerable<(Guid, GameThingBase)> things)
+        {
+            if (Value.HasValue)
+                return Value.Value;
+            if (KeyId.HasValue)
+            {
+                var obj = things.First(c => c.Item1 == KeyId.Value);
+                return (decimal)obj.Item2.Properties.GetValueOrDefault(PropertyName, 0m);
+            }
+            return 0;
+        }
+    }
+
+    public class GameCondition
+    {
+        public string Left { get; set; }
+
+        public string Operator { get; set; }
+
+        public string Right { get; set; }
+    }
+
+    public class GameConditionCollection
+    {
+        private readonly string[] RelationshipArray = new string[] { "=", ">", "<" };
+
+        private readonly string[] MultRelationshipArray = new string[] { "==", ">=", "<=" };
+
+        readonly string pat = @"[^\=\<\>]";
+
+        private readonly string comparePattern = @"(?<left>[^\=\<\>]+)(?<op>[\=\<\>]{1,2})(?<right>[^\=\<\>]+)[\,，]?";
+
+        public static bool TryParse(string str, out GameConditionCollection sequenceProperty)
+        {
+            var ary = str.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
+            sequenceProperty = null;
+            
+            return true;
+        }
+
+        public GameConditionCollection()
+        {
+
+        }
+    }
+
     /// <summary>
     /// 蓝图管理器配置数据。
     /// </summary>
@@ -71,6 +184,8 @@ namespace GY2021001BLL
         {
 
         }
+
+        public Func<IServiceProvider, ApplyBluprintDatas, bool> DoApply { get; set; }
     }
 
     /// <summary>
@@ -158,7 +273,7 @@ namespace GY2021001BLL
                     var daojuSlot = datas.GameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);
                     //var suipian = from tmp in daojuSlot.Children
                     //              let gid=
-                    
+
                     var lv = Convert.ToInt32(obj.Properties[ProjectConstant.LevelPropertyName]);
 
                 }

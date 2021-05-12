@@ -106,11 +106,12 @@
             世界服务器的相关操作。
             </summary>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.VWorldController.GetStartTime">
+        <member name="M:GY2021001WebApi.Controllers.VWorldController.GetVWorldInfo(System.String,System.String)">
             <summary>
-            获取服务器实际运行的时间。
+            获取服务器非敏感信息。
             </summary>
             <returns></returns>
+            <response code="401">管理员账号或密码错误。</response>
         </member>
         <member name="M:GY2021001WebApi.Controllers.VWorldController.NotifyShutdown(System.String,System.String)">
             <summary>
@@ -448,6 +449,16 @@
             一个记录额外信息的属性。本类成员不使用该属性。这里记录的是属性的名字字符串如"pp"
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.VWorldInfomationDto.StartDateTime">
+            <summary>
+            服务器的本次启动Utc时间。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.VWorldInfomationDto.CurrentDateTime">
+            <summary>
+            服务器的当前时间。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。
@@ -772,6 +783,17 @@
             <summary>
             值最长8000字符。（一个中文算一个字符）
             </summary>
+        </member>
+        <member name="T:Gy001.Controllers.BlueprintController">
+            <summary>
+            外围系统。
+            </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">
             <summary>

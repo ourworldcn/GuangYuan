@@ -235,4 +235,17 @@ namespace GY2021001WebApi.Models
         }
 
     }
+
+    public partial class VWorldInfomationDto
+    {
+        public static implicit operator VWorldInfomationDto(VWorldInfomation obj)
+        {
+            var result = new VWorldInfomationDto()
+            {
+                CurrentDateTime = obj.CurrentDateTime,
+                StartDateTime = obj.StartDateTime,
+            };
+            return result;
+        }
+    }
 }

@@ -20,6 +20,22 @@ namespace GY2021001BLL
     }
 
     /// <summary>
+    /// 非敏感性服务器信息。
+    /// </summary>
+    public class VWorldInfomation
+    {
+        /// <summary>
+        /// 服务器的本次启动Utc时间。
+        /// </summary>
+        public DateTime StartDateTime { get; set; }
+
+        /// <summary>
+        /// 服务器的当前时间。
+        /// </summary>
+        public DateTime CurrentDateTime { get; set; }
+    }
+
+    /// <summary>
     /// 游戏世界的服务。
     /// </summary>
     public class VWorld : GameManagerBase<VWorldOptions>
@@ -102,6 +118,15 @@ namespace GY2021001BLL
         public GameTemplateContext CreateNewTemplateDbContext()
         {
             return new GameTemplateContext(Options.TemplateDbOptions);
+        }
+
+        public VWorldInfomation GetInfomation()
+        {
+            return new VWorldInfomation()
+            {
+                StartDateTime = StartDateTimeUtc,
+                CurrentDateTime = DateTime.UtcNow,
+            };
         }
     }
 
