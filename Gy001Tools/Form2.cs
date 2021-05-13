@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Linq.Expressions.Expression;
 
 namespace Gy001Tools
 {
@@ -29,6 +27,43 @@ namespace Gy001Tools
                 //sb.AppendLine(string.Join(",", );
             }
             textBox2.Text = sb.ToString();
+        }
+
+        private void Form2_Load(object sender, EventArgs e)
+        {
+            Dictionary<string, object> dic = new Dictionary<string, object>()
+            {
+                {"k1",2m},
+            };
+            var b = GetResult(dic);
+        }
+
+        string left = "k1";
+        string right = "2";
+        ExpressionType Operator = ExpressionType.GreaterThanOrEqual;
+
+        string key = "1";
+        bool GetResult(IDictionary<string, object> dic)
+        {
+            decimal left, right;
+            if (decimal.TryParse(this.left, out decimal dec))
+                left = dec;
+            else if (dic.TryGetValue(this.left, out object lObj) && lObj is decimal dec1)
+                left = dec1;
+            else
+                left = 0;
+            if (decimal.TryParse(this.right, out dec))
+                right = dec;
+            else if (dic.TryGetValue(this.right, out object rObj) && rObj is decimal dec1)
+                right = dec1;
+            else
+                right = 0;
+            var exp = Expression.MakeBinary(
+                Operator,
+                Constant(left),
+                Constant(right));
+            var func = Expression.Lambda<Func<bool>>(exp).Compile();
+            return func();
         }
     }
 }

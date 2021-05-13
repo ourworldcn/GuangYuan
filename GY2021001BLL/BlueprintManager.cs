@@ -3,10 +3,13 @@ using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using OwGame;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -144,36 +147,66 @@ namespace GY2021001BLL
 
     public class GameCondition
     {
+        static private readonly string comparePattern = @"(?<left>[^\=\<\>]+)(?<op>[\=\<\>]{1,2})(?<right>[^\=\<\>]+)[\,，]?";
+
+        public static void FillFromString(ICollection<GameCondition> conditions, string str)
+        {
+            var matchs = Regex.Matches(str, comparePattern);
+
+            foreach (var item in matchs.OfType<Match>())
+            {
+                if (!item.Success)
+                    continue;
+                conditions.Add(new GameCondition()
+                {
+                    Left = item.Groups["left"].Value,
+                    Operator = item.Groups["op"].Value,
+                    Right = item.Groups["right"].Value,
+                });
+
+            }
+            return;
+        }
+
+
         public string Left { get; set; }
 
         public string Operator { get; set; }
 
         public string Right { get; set; }
-    }
 
-    public class GameConditionCollection
-    {
-        private readonly string[] RelationshipArray = new string[] { "=", ">", "<" };
-
-        private readonly string[] MultRelationshipArray = new string[] { "==", ">=", "<=" };
-
-        readonly string pat = @"[^\=\<\>]";
-
-        private readonly string comparePattern = @"(?<left>[^\=\<\>]+)(?<op>[\=\<\>]{1,2})(?<right>[^\=\<\>]+)[\,，]?";
-
-        public static bool TryParse(string str, out GameConditionCollection sequenceProperty)
+        public bool GetResult(IDictionary<string, object> dic)
         {
-            var ary = str.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
-            sequenceProperty = null;
-            
-            return true;
-        }
+            decimal left, right;
+            if (decimal.TryParse(Left, out decimal dec))
+                left = dec;
+            else if (dic.TryGetValue(Left, out object lObj) && lObj is decimal dec1)
+                left = dec1;
+            else
+                left = 0;
+            if (decimal.TryParse(Right, out dec))
+                right = dec;
+            else if (dic.TryGetValue(Right, out object rObj) && rObj is decimal dec1)
+                right = dec1;
+            else
+                right = 0;
+            return Operator switch
+            {
+                ">" => left > right,
+                ">=" => left >= right,
 
-        public GameConditionCollection()
-        {
+                "<" => left < right,
+                "<=" => left <= right,
 
+                "==" => left == right,
+                "=" => left == right,
+
+                "!=" => left != right,
+                "<>" => left != right,
+                _ => throw new ArgumentOutOfRangeException(),
+            };
         }
-    }
+    };
 
     /// <summary>
     /// 蓝图管理器配置数据。
@@ -299,10 +332,10 @@ namespace GY2021001BLL
             if (!shenwen.Properties.TryGetValue(ProjectConstant.LevelPropertyName, out object lvObj) && lvObj is int lvVal)
                 lv = lvVal;
             int tp = 0; //突破次数
-            //if (!shenwen.Properties.TryGetValue(ProjectConstant.ShenwenTupoCountPropertyName, out object tpObj) && lvObj is int tpVal)
-            //    tp = tpVal;
-            //else
-            //    shenwen.Properties[ProjectConstant.ShenwenTupoCountPropertyName] = (decimal)tp; //加入属性
+                        //if (!shenwen.Properties.TryGetValue(ProjectConstant.ShenwenTupoCountPropertyName, out object tpObj) && lvObj is int tpVal)
+                        //    tp = tpVal;
+                        //else
+                        //    shenwen.Properties[ProjectConstant.ShenwenTupoCountPropertyName] = (decimal)tp; //加入属性
             int maxLv;  //当前突破次数下最大等级。
             BlueprintTemplate tbp = Id2BlueprintTemplate[ProjectConstant.ShenWenTupoBlueprint];
             var seq = (decimal[])tbp.Properties["ssl"];

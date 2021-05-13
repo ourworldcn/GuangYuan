@@ -814,7 +814,7 @@ namespace GY2021001WebApi.Models
         /// 收益。
         /// </summary>
         [DataMember]
-        public List<GameItemDto> GameItems { get; set; }
+        public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
     }
 
     /// <summary>
