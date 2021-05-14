@@ -38,6 +38,7 @@ namespace Gy001
         private static void LoadCache(IHost host)
         {
             var gitm = host.Services.GetService<GameItemTemplateManager>();
+            var bptm = host.Services.GetService<BlueprintManager>();
         }
 
         /// <summary>

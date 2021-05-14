@@ -15,7 +15,7 @@ namespace Gy001Tools
         {
             InitializeComponent();
         }
-        private readonly string comparePattern = @"(?<left>[^\=\<\>]+)(?<op>[\=\<\>]{1,2})(?<right>[^\=\<\>]+)[\,，]?";
+        private readonly string comparePattern = @"(?<left>[^\+\-\*\/\=]+)(?<op>[\+\-\*\/\=]+)(?<right>\d+)[\,，]?";
 
         private void button1_Click(object sender, EventArgs e)
         {

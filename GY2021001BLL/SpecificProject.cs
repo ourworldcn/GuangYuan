@@ -447,12 +447,12 @@ namespace GY2021001BLL
                 var body = c.Children.First(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti).Children.First();
                 var bodyTemplate = gitm.GetTemplateFromeId(body.TemplateId);
                 var result = CreateMounts(service, headTemplate, bodyTemplate);
-                if (c.Properties.TryGetValue("mneatk", out object valObj) && valObj is decimal)
-                    result.Properties["mneatk"] = valObj;
-                if (c.Properties.TryGetValue("mneqlt", out valObj) && valObj is decimal)
-                    result.Properties["mneqlt"] = valObj;
-                if (c.Properties.TryGetValue("mnemhp", out valObj) && valObj is decimal)
-                    result.Properties["mnemhp"] = valObj;
+                if (c.Properties.TryGetValue("neatk", out object valObj) && valObj is decimal)
+                    result.Properties["neatk"] = valObj;
+                if (c.Properties.TryGetValue("neqlt", out valObj) && valObj is decimal)
+                    result.Properties["neqlt"] = valObj;
+                if (c.Properties.TryGetValue("nemhp", out valObj) && valObj is decimal)
+                    result.Properties["nemhp"] = valObj;
                 return result;
             });
             shouyiSlot.Children.AddRange(mounts);   //加入坐骑
@@ -564,9 +564,9 @@ namespace GY2021001BLL
             {
                 var mne = Convert.ToSingle(mneObj);
                 var coll = from tmp in gameItems
-                           let mneatk = Convert.ToSingle(tmp.Properties.GetValueOrDefault("mneatk", decimal.Zero))
-                           let mneqlt = Convert.ToSingle(tmp.Properties.GetValueOrDefault("mneqlt", decimal.Zero))
-                           let mnemhp = Convert.ToSingle(tmp.Properties.GetValueOrDefault("mnemhp", decimal.Zero))
+                           let mneatk = Convert.ToSingle(tmp.Properties.GetValueOrDefault("neatk", decimal.Zero))
+                           let mneqlt = Convert.ToSingle(tmp.Properties.GetValueOrDefault("neqlt", decimal.Zero))
+                           let mnemhp = Convert.ToSingle(tmp.Properties.GetValueOrDefault("nemhp", decimal.Zero))
                            let mneTotal = mneatk + mneqlt + mnemhp
                            where mneTotal > mne
                            select tmp;

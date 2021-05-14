@@ -718,6 +718,11 @@
             修改客户端字符串的接口参数类。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.ModifyClentStringParamsDto.ObjectId">
+            <summary>
+            对象的Id,如果是null或空字符串则改写相应角色的ClientString属性。否则改写物品/槽的属性，该物品必须被令牌代表角色直接或间接拥有的。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.ModifyClentStringParamsDto.ClientString">
             <summary>
             新的客户端字符串。

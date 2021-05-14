@@ -183,7 +183,6 @@ namespace GY2021001BLL
 
         public void GetItems(GameChar gameChar, Guid containerTId, IEnumerable<Guid> tids, ICollection<GameItem> gameItems)
         {
-
         }
 
         /// <summary>

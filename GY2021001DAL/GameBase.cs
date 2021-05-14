@@ -24,6 +24,17 @@ namespace GY2021001DAL
         /// 模板Id。
         /// </summary>
         public Guid TemplateId { get; set; }
+
+        public virtual T GetProperyValue<T>(string name, T defaultValue = default)
+        {
+            return name switch
+            {
+                "Id" => Id is T id ? id : defaultValue,
+                "TId" => TemplateId is T id ? id : defaultValue,
+                nameof(TemplateId) => TemplateId is T id ? id : defaultValue,
+                _ => defaultValue,
+            };
+        }
     }
 
     /// <summary>
@@ -95,54 +106,56 @@ namespace GY2021001DAL
         /// <summary>
         /// 获取属性值并强制转化类型。如果不存在指定属性或属性类型不兼容，则返回默认值。
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="name"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        public T GetDecimal<T>(string name, T defaultValue = default)
+        public override T GetProperyValue<T>(string name, T defaultValue = default)
         {
-            if (!Properties.TryGetValue(name, out object obj))
-                return defaultValue;
-            if (obj is decimal decVal)
-                return default;
-            return defaultValue;
+            if (Properties.TryGetValue(name, out object obj))
+            {
+                return (T)Convert.ChangeType(obj, typeof(T));
+            }
+            return base.GetProperyValue(name, defaultValue);
         }
-}
-
-/// <summary>
-/// 存储设置的模型类。
-/// </summary>
-public class GameSetting
-{
-    [Key]
-    public string Name { get; set; }
-
-    public string Val { get; set; }
-}
-
-/// <summary>
-/// 通用扩展属性类。
-/// </summary>
-public class GameExtendProperty : GuidKeyBase
-{
-    public GameExtendProperty()
-    {
 
     }
 
     /// <summary>
-    /// 获取或设置所属对象Id。
+    /// 存储设置的模型类。
     /// </summary>
-    public Guid ParentId { get; set; }
+    public class GameSetting
+    {
+        [Key]
+        public string Name { get; set; }
+
+        public string Val { get; set; }
+    }
 
     /// <summary>
-    /// 获取或设置键的名字，同一个所属对象下不能有多个同名设置，否则，行为未知。
+    /// 通用扩展属性类。
     /// </summary>
-    [StringLength(64)]
-    public string Name { get; set; }
+    public class GameExtendProperty : GuidKeyBase
+    {
+        public GameExtendProperty()
+        {
 
-    /// <summary>
-    /// 获取或设置值。
-    /// </summary>
-    public string Value { get; set; }
-}
+        }
+
+        /// <summary>
+        /// 获取或设置所属对象Id。
+        /// </summary>
+        public Guid ParentId { get; set; }
+
+        /// <summary>
+        /// 获取或设置键的名字，同一个所属对象下不能有多个同名设置，否则，行为未知。
+        /// </summary>
+        [StringLength(64)]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// 获取或设置值。
+        /// </summary>
+        public string Value { get; set; }
+    }
 }

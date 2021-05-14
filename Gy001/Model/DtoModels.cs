@@ -723,6 +723,11 @@ namespace GY2021001WebApi.Models
         }
 
         /// <summary>
+        /// 对象的Id,如果是null或空字符串则改写相应角色的ClientString属性。否则改写物品/槽的属性，该物品必须被令牌代表角色直接或间接拥有的。
+        /// </summary>
+        public string ObjectId { get; set; }
+
+        /// <summary>
         /// 新的客户端字符串。
         /// </summary>
         [DataMember]

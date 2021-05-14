@@ -4,14 +4,16 @@ using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Gy2021001Template.Migrations
 {
     [DbContext(typeof(GameTemplateContext))]
-    partial class TemplateContextModelSnapshot : ModelSnapshot
+    [Migration("20210514025004_21051402")]
+    partial class _21051402
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -120,6 +122,9 @@ namespace Gy2021001Template.Migrations
                     b.Property<string>("DisplayName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("FormulaTemplateId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsCountRound")
                         .HasColumnName("增量取整")
                         .HasColumnType("bit");
@@ -137,7 +142,7 @@ namespace Gy2021001Template.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BlueprintTemplateId");
+                    b.HasIndex("FormulaTemplateId");
 
                     b.ToTable("BptfItemTemplates");
                 });
@@ -185,9 +190,7 @@ namespace Gy2021001Template.Migrations
                 {
                     b.HasOne("Gy2021001Template.BptFormulaTemplate", "FormulaTemplate")
                         .WithMany("BptfItemTemplates")
-                        .HasForeignKey("BlueprintTemplateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FormulaTemplateId");
                 });
 #pragma warning restore 612, 618
         }

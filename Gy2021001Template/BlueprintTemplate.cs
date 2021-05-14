@@ -6,87 +6,103 @@ using System.Text;
 
 namespace Gy2021001Template
 {
+    /// <summary>
+    /// 蓝图模板。
+    /// </summary>
     public class BlueprintTemplate : GameThingTemplateBase
     {
-        public virtual List<BpInputItemTemplate> InputItems { get; } = new List<BpInputItemTemplate>();
 
         public BlueprintTemplate()
         {
 
         }
 
+        #region 导航属性
+
+        public virtual List<BptFormulaTemplate> FormulaTemplates { get; } = new List<BptFormulaTemplate>();
+        #endregion 导航属性
+
         public int? GId { get; set; }
     }
 
-    public class BpInputItemTemplate : GameTemplateBase
+    /// <summary>
+    /// 公式模板。
+    /// </summary>
+    public class BptFormulaTemplate : GameThingTemplateBase
     {
-        public BpInputItemTemplate()
+        public BptFormulaTemplate()
         {
-
         }
 
+        #region 导航属性
+
         [ForeignKey(nameof(BlueprintTemplate))]
+        [Column("蓝图Id")]
         public Guid BlueprintTemplateId { get; set; }
 
         public virtual BlueprintTemplate BlueprintTemplate { get; set; }
+
+        public virtual List<BptfItemTemplate> BptfItemTemplates { get; set; }
+        #endregion 导航属性
+
+        /// <summary>
+        /// 序号。
+        /// </summary>
+        [Column("序号")]
+        public int OrderNumber { get; set; }
+
+        /// <summary>
+        /// 命中概率。
+        /// </summary>
+        [Column("命中概率")]
+        public string Prob { get; set; }
+
+        /// <summary>
+        /// 命中并继续。
+        /// </summary>
+        [Column("命中并继续")]
+        public bool IsContinue { get; set; }
     }
 
-    public class BpInputItem
+    /// <summary>
+    /// 在PropertiesString中 TemplateId 限定此物料的模板Id,ContainerId限定此物料的容器Id,SamePN=body表示同一个公式下，所有具有该属性的物料其body属性必须相同。
+    /// </summary>
+    public class BptfItemTemplate : GameThingTemplateBase
     {
-        public BpInputItem(decimal probability)
+        public BptfItemTemplate()
         {
-            Probability = probability;
         }
 
-        private string GetDebuggerDisplay()
-        {
-            return ToString();
-        }
+        #region 导航属性
 
-        public decimal LossCount { get; set; }
+        [ForeignKey(nameof(FormulaTemplate)), Column("公式Id")]
+        public Guid BlueprintTemplateId { get; set; }
 
-        public decimal Probability { get; set; }
+        public virtual BptFormulaTemplate FormulaTemplate { get; set; }
+        #endregion 导航属性
+
+        [Column("条件属性")]
+        public string Conditional { get; set; }
+
+        [Column("增量上限")]
+        public string CountUpperBound { get; set; }
+
+        [Column("增量下限")]
+        public string CountLowerBound { get; set; }
+
+        [Column("增量概率")]
+        public string CountProb { get; set; }
+
+        [Column("增量取整")]
+        public bool IsCountRound { get; set; }
+
+        [Column("属性更改")]
+        public string PropertiesChanges { get; set; }
 
         /// <summary>
-        /// 该原料必须属于哪种槽，即处于什么槽中。
+        /// 若是新建物品。
         /// </summary>
-        public string ContainerIdString { get; set; }
-
-        /// <summary>
-        /// 直接指定该原料的模板Id。
-        /// </summary>
-        public string TemplateIdString { get; set; }
-
-        /// <summary>
-        /// 属性条件。如mlv>lv,hp==mhp ,没有达到最大等级，且满血。
-        /// </summary>
-        public string Condition { get; set; }
-
-        /// <summary>
-        /// 该公式中原料的某个属性必须有相同值。
-        /// </summary>
-        public string SamePropertyName { get; set; }
-    }
-
-    public class BpOutItem
-    {
-
-    }
-
-    public class PropertyChanges
-    {
-        public PropertyChanges()
-        {
-            
-        }
-        public string Name { get; set; }
-
-        public decimal MinIncrement { get; set; }
-
-        public decimal MaxIncrement { get; set; }
-
-        public bool IsRound { get; set; }
-
-        public decimal DefaultValue { get; set; }
+        [Column("新建物品否")]
+        public bool IsNew { get; set; }
     }
 }

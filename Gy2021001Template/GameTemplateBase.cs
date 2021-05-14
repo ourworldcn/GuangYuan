@@ -18,6 +18,13 @@ namespace Gy2021001Template
         {
 
         }
+
+        /// <summary>
+        /// 服务器不是用该属性。仅用于人读备注。
+        /// </summary>
+        [Column("备注", Order = 990)]
+        public string Remark { get; set; }
+
     }
 
     /// <summary>
@@ -34,6 +41,11 @@ namespace Gy2021001Template
         {
 
         }
+
+        /// <summary>
+        /// 显示名称。
+        /// </summary>
+        public string DisplayName { get; set; }
 
         private string _PropertiesString;
 
@@ -70,11 +82,6 @@ namespace Gy2021001Template
         }
 
         /// <summary>
-        /// 显示名称。
-        /// </summary>
-        public string DisplayName { get; set; }
-
-        /// <summary>
         /// 该模板创建对象应有的子模板Id字符串集合。用逗号分割。
         /// </summary>
         public string ChildrenTemplateIdString { get; set; }
@@ -100,7 +107,6 @@ namespace Gy2021001Template
                 return _ChildrenTemplateIds;
             }
         }
-
 
     }
 }

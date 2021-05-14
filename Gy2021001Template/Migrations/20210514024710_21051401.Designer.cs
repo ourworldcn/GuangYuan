@@ -4,14 +4,16 @@ using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Gy2021001Template.Migrations
 {
     [DbContext(typeof(GameTemplateContext))]
-    partial class TemplateContextModelSnapshot : ModelSnapshot
+    [Migration("20210514024710_21051401")]
+    partial class _21051401
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,60 +90,6 @@ namespace Gy2021001Template.Migrations
                     b.ToTable("BptFormulaTemplate");
                 });
 
-            modelBuilder.Entity("Gy2021001Template.BptfItemTemplates", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BlueprintTemplateId")
-                        .HasColumnName("公式Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ChildrenTemplateIdString")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Conditional")
-                        .HasColumnName("条件属性")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CountLowerBound")
-                        .HasColumnName("增量下限")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CountProb")
-                        .HasColumnName("增量概率")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CountUpperBound")
-                        .HasColumnName("增量上限")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DisplayName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsCountRound")
-                        .HasColumnName("增量取整")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("PropertiesChanges")
-                        .HasColumnName("属性更改")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PropertiesString")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Remark")
-                        .HasColumnName("备注")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BlueprintTemplateId");
-
-                    b.ToTable("BptfItemTemplates");
-                });
-
             modelBuilder.Entity("Gy2021001Template.GameItemTemplate", b =>
                 {
                     b.Property<Guid>("Id")
@@ -176,15 +124,6 @@ namespace Gy2021001Template.Migrations
                 {
                     b.HasOne("Gy2021001Template.BlueprintTemplate", "BlueprintTemplate")
                         .WithMany("FormulaTemplates")
-                        .HasForeignKey("BlueprintTemplateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Gy2021001Template.BptfItemTemplates", b =>
-                {
-                    b.HasOne("Gy2021001Template.BptFormulaTemplate", "FormulaTemplate")
-                        .WithMany("BptfItemTemplates")
                         .HasForeignKey("BlueprintTemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
