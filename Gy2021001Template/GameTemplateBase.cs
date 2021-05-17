@@ -22,7 +22,7 @@ namespace Gy2021001Template
         /// <summary>
         /// 服务器不是用该属性。仅用于人读备注。
         /// </summary>
-        [Column("备注", Order = 990)]
+        [Column("备注", Order = 90)]
         public string Remark { get; set; }
 
     }

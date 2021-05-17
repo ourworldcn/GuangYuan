@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -19,6 +20,7 @@ namespace Gy001Tools
 
         private void button1_Click(object sender, EventArgs e)
         {
+
             var matches = Regex.Matches(textBox1.Text, comparePattern);
             StringBuilder sb = new StringBuilder();
             foreach (var item in matches.OfType<Match>())
@@ -28,9 +30,12 @@ namespace Gy001Tools
             }
             textBox2.Text = sb.ToString();
         }
-
         private void Form2_Load(object sender, EventArgs e)
         {
+            var id = Guid.NewGuid();
+            //“N”、“D”、“B”、“P”或“X”
+            Debug.WriteLine($"N:{id:N}\nD:{id:D};B:{id:B};P:{id:P};\nX:{id:X}");
+
             Dictionary<string, object> dic = new Dictionary<string, object>()
             {
                 {"k1",2m},

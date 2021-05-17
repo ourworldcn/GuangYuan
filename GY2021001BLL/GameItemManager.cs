@@ -107,9 +107,61 @@ namespace GY2021001BLL
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameItemTemplate GetTemplate(GameObjectBase gameObject)
         {
             return World.ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
+        }
+
+        /// <summary>
+        /// 获取指定事物的指定名称属性的值。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+        public object GetPropertyValue(GameItem gameItem, string propName)
+        {
+            if (propName.Equals("id", StringComparison.InvariantCultureIgnoreCase))
+                return gameItem.Id;
+            else if (propName.Equals("tid", StringComparison.InvariantCultureIgnoreCase))
+                return gameItem.TemplateId;
+            else if (propName.Equals("pid", StringComparison.InvariantCultureIgnoreCase))
+                return gameItem.ParentId ?? gameItem.OwnerId ?? null;
+            else if (propName.Equals("ptid", StringComparison.InvariantCultureIgnoreCase))
+            {
+                var container = gameItem.Parent;
+                if (null != container)  //若找到容器
+                    return container.TemplateId;
+                //找到依附物
+                //TO DO
+                throw new NotImplementedException();
+            }
+            return gameItem.Properties.GetValueOrDefault(propName);
+        }
+
+        public bool SetPropertyValue(GameItem gameItem, string propName, object val)
+        {
+            //TO DO
+            if (propName.Equals("tid", StringComparison.InvariantCultureIgnoreCase))
+            {
+                gameItem.TemplateId = (Guid)val;
+                return true;
+            }
+            else if (propName.Equals("pid", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+            else if (propName.Equals("ptid", StringComparison.InvariantCultureIgnoreCase))
+            {
+                //    var container = gameItem.Parent;
+                //    if (null != container)  //若找到容器
+                //        return container.TemplateId;
+                //找到依附物
+                //TO DO
+                throw new NotImplementedException();
+            }
+            gameItem.Properties[propName] = val;
+            return true;
         }
 
         /// <summary>

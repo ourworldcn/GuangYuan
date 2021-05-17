@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GY2021001DAL.Migrations
 {
     [DbContext(typeof(GY2021001DbContext))]
-    [Migration("20210510083322_21051001")]
-    partial class _21051001
+    [Migration("20210517011045_21051701")]
+    partial class _21051701
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -86,6 +86,9 @@ namespace GY2021001DAL.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ClientGutsString")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("Count")
                         .HasColumnType("decimal(18,2)");

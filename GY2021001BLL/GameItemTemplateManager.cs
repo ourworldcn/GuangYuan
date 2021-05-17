@@ -95,9 +95,9 @@ namespace GY2021001BLL
                     //追加数据
                     #region 追加模板数据
                     db.ItemTemplates.Load();
-                    bool dbDirty = Options?.Loaded?.Invoke(db) ?? false;
-                    if (dbDirty)
-                        db.SaveChanges();
+                    //bool dbDirty = Options?.Loaded?.Invoke(db) ?? false;
+                    //if (dbDirty)
+                    //    db.SaveChanges();
                     _Id2Template = new ConcurrentDictionary<Guid, GameItemTemplate>(db.ItemTemplates.ToDictionary(c => c.Id));
                     #endregion 追加模板数据
 

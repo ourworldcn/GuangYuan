@@ -9,6 +9,7 @@ namespace Gy2021001Template
     /// <summary>
     /// 蓝图模板。
     /// </summary>
+    [Table("蓝图")]
     public class BlueprintTemplate : GameThingTemplateBase
     {
 
@@ -19,7 +20,7 @@ namespace Gy2021001Template
 
         #region 导航属性
 
-        public virtual List<BptFormulaTemplate> FormulaTemplates { get; } = new List<BptFormulaTemplate>();
+        public virtual List<BpFormulaTemplate> FormulaTemplates { get; } = new List<BpFormulaTemplate>();
         #endregion 导航属性
 
         public int? GId { get; set; }
@@ -28,9 +29,10 @@ namespace Gy2021001Template
     /// <summary>
     /// 公式模板。
     /// </summary>
-    public class BptFormulaTemplate : GameThingTemplateBase
+    [Table("公式")]
+    public class BpFormulaTemplate : GameThingTemplateBase
     {
-        public BptFormulaTemplate()
+        public BpFormulaTemplate()
         {
         }
 
@@ -42,7 +44,7 @@ namespace Gy2021001Template
 
         public virtual BlueprintTemplate BlueprintTemplate { get; set; }
 
-        public virtual List<BptfItemTemplate> BptfItemTemplates { get; set; }
+        public virtual List<BpItemTemplate> BptfItemTemplates { get; set; }
         #endregion 导航属性
 
         /// <summary>
@@ -67,9 +69,10 @@ namespace Gy2021001Template
     /// <summary>
     /// 在PropertiesString中 TemplateId 限定此物料的模板Id,ContainerId限定此物料的容器Id,SamePN=body表示同一个公式下，所有具有该属性的物料其body属性必须相同。
     /// </summary>
-    public class BptfItemTemplate : GameThingTemplateBase
+    [Table("物料")]
+    public class BpItemTemplate : GameThingTemplateBase
     {
-        public BptfItemTemplate()
+        public BpItemTemplate()
         {
         }
 
@@ -78,7 +81,7 @@ namespace Gy2021001Template
         [ForeignKey(nameof(FormulaTemplate)), Column("公式Id")]
         public Guid BlueprintTemplateId { get; set; }
 
-        public virtual BptFormulaTemplate FormulaTemplate { get; set; }
+        public virtual BpFormulaTemplate FormulaTemplate { get; set; }
         #endregion 导航属性
 
         [Column("条件属性")]

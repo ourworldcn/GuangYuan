@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gy2021001Template.Migrations
 {
     [DbContext(typeof(GameTemplateContext))]
-    [Migration("20210514033732_21051403")]
-    partial class _21051403
+    [Migration("20210517011019_21051701")]
+    partial class _21051701
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -48,7 +48,7 @@ namespace Gy2021001Template.Migrations
                     b.ToTable("BlueprintTemplates");
                 });
 
-            modelBuilder.Entity("Gy2021001Template.BptFormulaTemplate", b =>
+            modelBuilder.Entity("Gy2021001Template.BpFormulaTemplate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -87,10 +87,10 @@ namespace Gy2021001Template.Migrations
 
                     b.HasIndex("BlueprintTemplateId");
 
-                    b.ToTable("BptFormulaTemplate");
+                    b.ToTable("BpFormulaTemplate");
                 });
 
-            modelBuilder.Entity("Gy2021001Template.BptfItemTemplates", b =>
+            modelBuilder.Entity("Gy2021001Template.BpItemTemplate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -126,6 +126,10 @@ namespace Gy2021001Template.Migrations
                         .HasColumnName("增量取整")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsNew")
+                        .HasColumnName("新建物品否")
+                        .HasColumnType("bit");
+
                     b.Property<string>("PropertiesChanges")
                         .HasColumnName("属性更改")
                         .HasColumnType("nvarchar(max)");
@@ -141,7 +145,7 @@ namespace Gy2021001Template.Migrations
 
                     b.HasIndex("BlueprintTemplateId");
 
-                    b.ToTable("BptfItemTemplates");
+                    b.ToTable("BpItemTemplate");
                 });
 
             modelBuilder.Entity("Gy2021001Template.GameItemTemplate", b =>
@@ -174,7 +178,7 @@ namespace Gy2021001Template.Migrations
                     b.ToTable("ItemTemplates");
                 });
 
-            modelBuilder.Entity("Gy2021001Template.BptFormulaTemplate", b =>
+            modelBuilder.Entity("Gy2021001Template.BpFormulaTemplate", b =>
                 {
                     b.HasOne("Gy2021001Template.BlueprintTemplate", "BlueprintTemplate")
                         .WithMany("FormulaTemplates")
@@ -183,9 +187,9 @@ namespace Gy2021001Template.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Gy2021001Template.BptfItemTemplates", b =>
+            modelBuilder.Entity("Gy2021001Template.BpItemTemplate", b =>
                 {
-                    b.HasOne("Gy2021001Template.BptFormulaTemplate", "FormulaTemplate")
+                    b.HasOne("Gy2021001Template.BpFormulaTemplate", "FormulaTemplate")
                         .WithMany("BptfItemTemplates")
                         .HasForeignKey("BlueprintTemplateId")
                         .OnDelete(DeleteBehavior.Cascade)

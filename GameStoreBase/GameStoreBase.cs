@@ -67,6 +67,11 @@ namespace OwGame
         public readonly static char[] ColonArrayWithCN = new char[] { ':', '：' };
 
         /// <summary>
+        /// 中英文双引号。
+        /// </summary>
+        public readonly static char[] DoubleQuotesWithCN = new char[] { '"', '“', '”' };
+
+        /// <summary>
         /// 路径分隔符。
         /// </summary>
         public readonly static char[] PathSeparatorChar = new char[] { '\\', '/' };
@@ -256,6 +261,25 @@ namespace OwGame
                 lst.Add(tmp);
             }
             result = lst.ToArray();
+            return true;
+        }
+
+        /// <summary>
+        /// 分析1|3|2类型序列添加到指定集合末尾。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="collection"></param>
+        /// <returns>true成功添加，false遇到了一个不能转换为数字的元素，此时<paramref name="collection"/>中有不确定个元素被追加到末尾。</returns>
+        public static bool AnalyseSequence(string str, ICollection<decimal> collection)
+        {
+            var ary = str.Split('|', StringSplitOptions.RemoveEmptyEntries);
+            List<decimal> lst = new List<decimal>();
+            foreach (var item in ary)
+            {
+                if (!decimal.TryParse(item, out decimal tmp))
+                    return false;
+                lst.Add(tmp);
+            }
             return true;
         }
     }

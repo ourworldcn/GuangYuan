@@ -3,16 +3,31 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GY2021001DAL.Migrations
 {
-    public partial class _21042501 : Migration
+    public partial class _21051701 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ExtendProperties",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    ParentId = table.Column<Guid>(nullable: false),
+                    Name = table.Column<string>(maxLength: 64, nullable: true),
+                    Value = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExtendProperties", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "GameItems",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
                     TemplateId = table.Column<Guid>(nullable: false),
+                    ClientGutsString = table.Column<string>(nullable: true),
                     CreateUtc = table.Column<DateTime>(nullable: false),
                     PropertiesString = table.Column<string>(nullable: true),
                     Count = table.Column<decimal>(nullable: true),
@@ -64,11 +79,13 @@ namespace GY2021001DAL.Migrations
                 {
                     Id = table.Column<Guid>(nullable: false),
                     TemplateId = table.Column<Guid>(nullable: false),
+                    ClientGutsString = table.Column<string>(nullable: true),
                     CreateUtc = table.Column<DateTime>(nullable: false),
                     PropertiesString = table.Column<string>(nullable: true),
                     GameUserId = table.Column<Guid>(nullable: false),
-                    ClientGutsString = table.Column<string>(nullable: true),
-                    DisplayName = table.Column<string>(nullable: true)
+                    DisplayName = table.Column<string>(nullable: true),
+                    CurrentDungeonId = table.Column<Guid>(nullable: true),
+                    CombatStartUtc = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -80,6 +97,11 @@ namespace GY2021001DAL.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExtendProperties_ParentId",
+                table: "ExtendProperties",
+                column: "ParentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameChar_GameUserId",
@@ -110,6 +132,9 @@ namespace GY2021001DAL.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ExtendProperties");
+
             migrationBuilder.DropTable(
                 name: "GameChar");
 
