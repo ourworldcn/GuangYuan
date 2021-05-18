@@ -105,14 +105,14 @@ namespace GY2021001BLL
         }
 
         /// <summary>
-        /// 获取物料与指定物品是否匹配，不考虑同名属性因素。
+        /// 获取物料与指定物品是否匹配。
         /// </summary>
         /// <param name="bpItem"></param>
         /// <param name="gameItem"></param>
         /// <returns></returns>
-        public static bool IsMatch(this BpItemTemplate bpItem, GameItem gameItem)
+        public static bool IsMatch(this BpItemTemplate bpItem, BpEnvironmentDatas datas)
         {
-            return true;
+            return GetBpItemDataObject(bpItem).Conditions.All(c => c.GetValue(datas));
         }
 
     }
@@ -143,7 +143,7 @@ namespace GY2021001BLL
         public List<GameItem> GameItems { get; } = new List<GameItem>();
 
         /// <summary>
-        /// 键是物料模板Id,值对应的物料对象。
+        /// 键是物料模板的Id,值对应的物料对象。
         /// </summary>
         public Dictionary<Guid, GameItem> Items { get; } = new Dictionary<Guid, GameItem>();
 
@@ -349,6 +349,12 @@ namespace GY2021001BLL
             return RightSequence[index];
         }
 
+        /// <summary>
+        /// 为指代的属性赋值。
+        /// </summary>
+        /// <param name="datas"></param>
+        /// <param name="val">新值。</param>
+        /// <returns></returns>
         public bool SetValue(BpEnvironmentDatas datas, object val)
         {
             if (IsConst) //若是常量
@@ -406,7 +412,7 @@ namespace GY2021001BLL
             object left = Left.GetValue(datas);
             object right = Left.GetValue(datas);
             int? cr = null;
-            if (left == right)
+            if (left == right)  //若引用相等
                 return Operator switch
                 {
                     "==" => true,
@@ -676,27 +682,53 @@ namespace GY2021001BLL
             return result;
         }
 
-        /// <summary>
-        /// 按物料项过滤匹配的虚拟物品。不考虑同名属性值要相同的问题。
-        /// </summary>
-        /// <param name="src"></param>
-        /// <param name="bptfItem"></param>
-        /// <returns></returns>
-        public IEnumerable<GameItem> filter(IEnumerable<GameItem> src, BpItemTemplate bptfItem)
-        {
-            var result = src;
-            if (bptfItem.Properties.TryGetValue("tid", out object tmpObject) && tmpObject is string tmpString && Guid.TryParse(tmpString, out Guid tid))   //若需要约束模板Id
-                result = result.Where(c => c.TemplateId == tid);
-            if (bptfItem.Properties.TryGetValue("ptid", out tmpObject) && tmpObject is string tmpString1 && Guid.TryParse(tmpString1, out Guid ptid))   //若需要约束模板Id
-                result = result.Where(c => (!c.ParentId.HasValue && ptid == c.OwnerId) || ptid == c.Parent?.TemplateId);
-            var item = GetBpftItemDatas(bptfItem.Id);
-            //result = result.Where(c => item.Conditions.All(c1 => c1.GetResult(c.Properties)));
-            return result;
-        }
-
         public void ApplyBluprint(ApplyBluprintDatas datas)
         {
-            _InitializeTask.Wait();
+            _InitializeTask.Wait(); //等待初始化结束
+            FillBpItems(datas); //填充物料表
+            foreach (var formu in datas.Blueprint.FormulaTemplates.OrderBy(c => c.OrderNumber))
+            {
+                var prop = Convert.ToDouble(formu.GetProbObject().GetValue(new BpEnvironmentDatas(Service, datas.GameChar, null, datas.Items)));
+                if (!World.IsHit(prop))   //若未命中
+                    continue;
+                //计算按该公式生成物品
+                foreach (var item in formu.BptfItemTemplates)   //遍历每个物料清单
+                {
+                    var data = item.GetBpItemDataObject();
+                    GameItem current;
+                    if (item.IsNew) //若是增加的物品
+                    {
+                        var tid = (Guid)data.PropertyChanges.Select(c => c.Left.LeftPath).FirstOrDefault(c => c.Contains("tid") && c.Count == 1 && c[0] is Guid)?.First(); //TO DO
+                        current = World.ItemManager.CreateGameItem(tid);
+                        datas.Items[item.Id] = current; //加入物料集合
+                    }
+                    else
+                        current = datas.Items[item.Id];
+                    var env = new BpEnvironmentDatas(Service, datas.GameChar, current, datas.Items);
+
+                    #region 更改数量
+
+                    var lower = Convert.ToDouble(data.LowerBound.GetValue(env));
+                    var upper = Convert.ToDouble(data.UpperBound.GetValue(env));
+                    var inc = lower + World.RandomForWorld.NextDouble() * (upper - lower);  //增量
+                    decimal count = item.IsCountRound ? Math.Round((decimal)inc + (current.Count ?? 1)) : (decimal)inc + (current.Count ?? 1);
+                    World.ItemManager.SetPropertyValue(current, "Count", count);
+                    #endregion  更改数量
+
+                    //应用属性
+                    if (count > 0) //若还存在
+                    {
+                        foreach (var pc in data.PropertyChanges)
+                        {
+                            pc.Apply(env);
+                        }
+                    }
+                }
+                if (!formu.IsContinue)   //若不需要继续
+                    break;
+            }
+            #region 旧代码
+
             //if (!World.CharManager.Lock(datas.GameChar.GameUser))    //若无法锁定用户
             //{
             //    datas.HasError = true;
@@ -750,6 +782,7 @@ namespace GY2021001BLL
             //{
             //    World.CharManager.Unlock(datas.GameChar.GameUser);
             //}
+            #endregion 旧代码
         }
 
         /// <summary>
@@ -758,17 +791,29 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         public void FillBpItems(ApplyBluprintDatas datas)
         {
-            var allItems = datas.GameItems.Concat(OwHelper.GetAllSubItemsOfTree(datas.GameItems, c => c.Children)); //保证优先选择指定的数据
-            foreach (var formu in datas.Blueprint.FormulaTemplates) //遍历所有公式
+            var envList = datas.GameItems.Concat(OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children)).Select(c =>   //构造环境数据,保证提示数据优先选定
             {
-                foreach (var item in formu.BptfItemTemplates)   //遍历每个物料
-                {
-                    if (item.IsNew)  //若是新建
-                        continue;
-                    filter(allItems, item).Join(datas.GameItems, c => c.Id, c => c.Id, (c1, c2) => c1); //符合条件的必用物品
+                return new BpEnvironmentDatas(Service, datas.GameChar, c, datas.Items);
+            });
+            Dictionary<Guid, BpEnvironmentDatas> allEnvDic = new Dictionary<Guid, BpEnvironmentDatas>();    //所有有效的环境数据的字典,键是当前物品的Id
+            var bpItems = datas.Blueprint.FormulaTemplates.SelectMany(c => c.BptfItemTemplates).Where(c => !c.IsNew).ToList();    //所有物料对象,排除新生物品
 
+            var matchesQuery = bpItems.Select(bpItem => (env: envList.FirstOrDefault(env => bpItem.IsMatch(env)), bpItem)).Where(c => c.env != null); //获取匹配的对象
+            while (0 < bpItems.Count)    //当仍有需要匹配的物料对象
+            {
+                var ary = matchesQuery.ToArray();
+                if (ary.Length == 0)   //若没有新的匹配对象
+                    break;
+                foreach (var item in ary)
+                {
+                    datas.Items[item.bpItem.Id] = item.env.Current; //增加物料对象映射
+                    allEnvDic[item.env.Current.Id] = item.env;
+                    bpItems.Remove(item.bpItem);
                 }
             }
+            if (bpItems.Count > 0)  //若物料填充不全
+                //TO DO
+                ;
         }
 
         public (int Level, int MaxLv, int TupoCount) GetShenwenInfo(GameChar gameChar, GameItem shenwen)

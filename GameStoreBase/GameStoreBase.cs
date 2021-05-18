@@ -9,6 +9,28 @@ using System.Text;
 
 namespace OwGame
 {
+    public abstract class OrmObjectBase<TKey>
+    {
+        private TKey _Id;
+
+        public OrmObjectBase()
+        {
+        }
+
+        public OrmObjectBase(TKey id)
+        {
+            _Id = id;
+        }
+
+        [Key, Column(Order = 0)]
+        public TKey Id
+        {
+            get { return _Id; }
+            set { _Id = value; }
+        }
+
+    }
+
     public abstract class GuidKeyBase
     {
         public GuidKeyBase()

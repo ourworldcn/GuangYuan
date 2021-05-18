@@ -318,12 +318,26 @@ namespace GY2021001BLL
             var world = service.GetService<VWorld>();
             var result = false;
             //增加坐骑
-            var mountsSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DangqianZuoqiSlotId);   //当前坐骑槽
+            for (int i = 3001; i < 3004; i++)   //向出战槽添加坐骑
+            {
 
-            var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 3001);
-            var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 4001);
-            var mounts = CreateMounts(service, headTemplate, bodyTemplate);
-            mountsSlot.Children.Add(mounts);
+                var mountsSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DangqianZuoqiSlotId);   //当前坐骑槽
+
+                var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == i);
+                var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 1000 + i);
+                var mounts = CreateMounts(service, headTemplate, bodyTemplate);
+                mountsSlot.Children.Add(mounts);
+            }
+            for (int i = 3004; i < 3008; i++)
+            {
+
+                var mountsSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);   //当前坐骑槽
+
+                var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == i);
+                var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 1000 + i);
+                var mounts = CreateMounts(service, headTemplate, bodyTemplate);
+                mountsSlot.Children.Add(mounts);
+            }
             //增加神纹
             var runse = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShenWenSlotId);
             var template = world.ItemTemplateManager.Id2Template.Values.First(c => 10001 == c.GId);

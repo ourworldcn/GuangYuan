@@ -30,7 +30,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<bool> Rename(RenameParamsDto model)
         {
             var gitm = HttpContext.RequestServices.GetRequiredService<GameCharManager>();
-            var gu = gitm.GetUsreFromToken(GameHelper.FromBase64String(model.Token));
+            var gu = gitm.GetUserFromToken(GameHelper.FromBase64String(model.Token));
             if (null == gu) //若令牌无效
                 return Unauthorized();
             var gc = gu.GameChars[0];
@@ -51,7 +51,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult ModifyClentString(ModifyClentStringParamsDto model)
         {
             var gitm = HttpContext.RequestServices.GetRequiredService<GameCharManager>();
-            var gu = gitm.GetUsreFromToken(GameHelper.FromBase64String(model.Token));
+            var gu = gitm.GetUserFromToken(GameHelper.FromBase64String(model.Token));
             if (null == gu) //若令牌无效
                 return Unauthorized();
             gu.GameChars[0].ClientGutsString = model.ClientString;

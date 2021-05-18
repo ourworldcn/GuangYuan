@@ -21,6 +21,11 @@ namespace Gy2021001Template
             base.OnModelCreating(modelBuilder);
         }
 
+        ///// <summary>
+        ///// 属性定义表。
+        ///// </summary>
+        //public DbSet<GamePropertyTemplate> PropertyTemplates { get; set; }
+
         /// <summary>
         /// 装备表。
         /// </summary>

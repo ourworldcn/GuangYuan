@@ -54,6 +54,8 @@ namespace GY2021001BLL
         public GameItem CreateGameItem(Guid templateId, Guid? ownerId = null)
         {
             var template = World.ItemTemplateManager.GetTemplateFromeId(templateId);
+            if (null == template)
+                throw new ArgumentException($"找不到指定Id的模板对象Id={templateId}", nameof(templateId));
             var result = CreateGameItem(template, ownerId);
             return result;
         }
@@ -72,22 +74,16 @@ namespace GY2021001BLL
                 OwnerId = ownerId,
                 Count = 1,
             };
-            //初始化级别
-            decimal lv;
-            if (!template.Properties.TryGetValue(ProjectConstant.LevelPropertyName, out object lvObj))  //若模板没有指定级别属性
-            {
-                lv = 0;
-                result.Properties[ProjectConstant.LevelPropertyName] = lv;
-            }
-            else
-                lv = (decimal)lvObj;
             //初始化属性
+            var gitm = World.ItemTemplateManager;
             foreach (var item in template.Properties)
             {
                 decimal[] seq = item.Value as decimal[];
                 if (null != seq)   //若是属性序列
                 {
-                    result.Properties[item.Key] = seq[(int)lv];
+                    var indexPn = gitm.GetIndexPropName(template, item.Key);
+                    var lv = Convert.ToInt32(template.Properties.GetValueOrDefault(indexPn, 0m));
+                    result.Properties[item.Key] = seq[Math.Clamp(lv, 0, seq.Length - 1)];
                 }
                 else
                     result.Properties[item.Key] = item.Value;
@@ -95,7 +91,6 @@ namespace GY2021001BLL
             if (result.Properties.Count > 0)    //若需要改写属性字符串。
                 result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
             //递归初始化容器
-            var gitm = World.ItemTemplateManager;
             result.Children.AddRange(template.ChildrenTemplateIds.Select(c => CreateGameItem(c)));
             try
             {
@@ -132,11 +127,14 @@ namespace GY2021001BLL
                 var container = gameItem.Parent;
                 if (null != container)  //若找到容器
                     return container.TemplateId;
-                //找到依附物
-                //TO DO
-                throw new NotImplementedException();
+                if (!gameItem.OwnerId.HasValue)  //若也没有附属Id
+                    return null;
+                return World.CharManager.GetCharFromId(gameItem.OwnerId.Value)?.TemplateId;
             }
-            return gameItem.Properties.GetValueOrDefault(propName);
+            else if (propName.Equals("Count", StringComparison.InvariantCultureIgnoreCase))
+                return gameItem.Count ?? 1;
+            else
+                return gameItem.Properties.GetValueOrDefault(propName, 0m);
         }
 
         public bool SetPropertyValue(GameItem gameItem, string propName, object val)
@@ -160,7 +158,18 @@ namespace GY2021001BLL
                 //TO DO
                 throw new NotImplementedException();
             }
-            gameItem.Properties[propName] = val;
+            else if (propName.Equals("Count", StringComparison.InvariantCultureIgnoreCase))
+            {
+                var count = Convert.ToDecimal(val);
+                if (count != 0)
+                {
+                    gameItem.Count = count;
+                }
+                else //TO DO
+                    gameItem.Parent.Children.Remove(gameItem);
+            }
+            else
+                gameItem.Properties[propName] = val;
             return true;
         }
 

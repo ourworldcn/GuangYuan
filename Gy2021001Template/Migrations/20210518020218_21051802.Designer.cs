@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gy2021001Template.Migrations
 {
     [DbContext(typeof(GameTemplateContext))]
-    [Migration("20210517011019_21051701")]
-    partial class _21051701
+    [Migration("20210518020218_21051802")]
+    partial class _21051802
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -45,7 +45,7 @@ namespace Gy2021001Template.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BlueprintTemplates");
+                    b.ToTable("蓝图");
                 });
 
             modelBuilder.Entity("Gy2021001Template.BpFormulaTemplate", b =>
@@ -87,7 +87,7 @@ namespace Gy2021001Template.Migrations
 
                     b.HasIndex("BlueprintTemplateId");
 
-                    b.ToTable("BpFormulaTemplate");
+                    b.ToTable("公式");
                 });
 
             modelBuilder.Entity("Gy2021001Template.BpItemTemplate", b =>
@@ -145,7 +145,7 @@ namespace Gy2021001Template.Migrations
 
                     b.HasIndex("BlueprintTemplateId");
 
-                    b.ToTable("BpItemTemplate");
+                    b.ToTable("物料");
                 });
 
             modelBuilder.Entity("Gy2021001Template.GameItemTemplate", b =>

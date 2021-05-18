@@ -311,14 +311,14 @@ namespace GY2021001WebApi.Models
 
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
-        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
+        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，仅频繁拆箱问题不大(相对于不太频繁的操作而言)。
         /// 属性集合。"Properties":{"atk":102,"qult":500,"catalogId":"shfdkjshfkjskfh=="}
         /// </summary>
         [DataMember(Name = nameof(Properties))]
         public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// 所属Id。
+        /// 所属Id。当前版本下，仅当此物直属于角色对象时，此属性才有值，且是所属角色的id。
         /// </summary>
         [DataMember]
         public string OwnerId { get; set; }

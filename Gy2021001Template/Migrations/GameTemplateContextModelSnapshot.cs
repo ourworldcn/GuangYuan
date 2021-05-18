@@ -43,7 +43,7 @@ namespace Gy2021001Template.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BlueprintTemplates");
+                    b.ToTable("蓝图");
                 });
 
             modelBuilder.Entity("Gy2021001Template.BpFormulaTemplate", b =>
@@ -85,7 +85,7 @@ namespace Gy2021001Template.Migrations
 
                     b.HasIndex("BlueprintTemplateId");
 
-                    b.ToTable("BpFormulaTemplate");
+                    b.ToTable("公式");
                 });
 
             modelBuilder.Entity("Gy2021001Template.BpItemTemplate", b =>
@@ -143,7 +143,7 @@ namespace Gy2021001Template.Migrations
 
                     b.HasIndex("BlueprintTemplateId");
 
-                    b.ToTable("BpItemTemplate");
+                    b.ToTable("物料");
                 });
 
             modelBuilder.Entity("Gy2021001Template.GameItemTemplate", b =>

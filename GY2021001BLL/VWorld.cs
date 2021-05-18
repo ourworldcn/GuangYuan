@@ -6,7 +6,9 @@ using OwGame;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -80,6 +82,13 @@ namespace GY2021001BLL
         private BlueprintManager _BlueprintManager;
 
         public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Service.GetRequiredService<BlueprintManager>(); }
+
+        Random _WorldRandom;
+        /// <summary>
+        /// 公用的随机数生成器。
+        /// </summary>
+        public Random RandomForWorld { get => _WorldRandom ??= new Random(); }
+
         #endregion 属性及相关
 
         private void Initialize()
@@ -127,6 +136,19 @@ namespace GY2021001BLL
                 StartDateTime = StartDateTimeUtc,
                 CurrentDateTime = DateTime.UtcNow,
             };
+        }
+
+        /// <summary>
+        /// 测试指定概率数值是否命中。
+        /// </summary>
+        /// <param name="val">概率，取值[0,1],大于1则视同1，小于0则视同0,1必定返回true,0必定返回false。</param>
+        /// <param name="random"></param>
+        /// <returns>true命中，false未命中。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsHit(double val, Random random = null)
+        {
+            var _ = random ?? RandomForWorld;
+            return val > _.NextDouble();
         }
     }
 

@@ -63,6 +63,12 @@ namespace GY2021001BLL
         /// 保存数据的线程。
         /// </summary>
         Thread _SaveThread;
+
+        /// <summary>
+        /// 角色Id到角色对象的字段。
+        /// </summary>
+        ConcurrentDictionary<Guid, GameChar> _Id2GameChar = new ConcurrentDictionary<Guid, GameChar>();
+
         #endregion 字段
 
         #region 构造函数
@@ -254,11 +260,23 @@ namespace GY2021001BLL
         }
 
         /// <summary>
+        /// 用指定的Id获取角色对象。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>如果没有找到则返回null</returns>
+        public GameChar GetCharFromId(Guid id)
+        {
+            if (_Id2GameChar.TryGetValue(id, out GameChar result))
+                return null;
+            return result;
+        }
+
+        /// <summary>
         /// 获取指定令牌的用户对象。
         /// </summary>
         /// <param name="token">令牌。</param>
         /// <returns>用户对象，如果无效则返回null。</returns>
-        public GameUser GetUsreFromToken(Guid token)
+        public GameUser GetUserFromToken(Guid token)
         {
             if (!_Token2User.TryGetValue(token, out GameUser result))
                 return null;
@@ -313,7 +331,7 @@ namespace GY2021001BLL
         /// <returns>true成功锁定，false没有找到令牌代表的用户。</returns>
         public bool Lock(Guid token, out GameUser gameUser)
         {
-            gameUser = GetUsreFromToken(token);
+            gameUser = GetUserFromToken(token);
             if (null == gameUser || !Lock(gameUser))
                 return false;
             return true;
@@ -428,6 +446,7 @@ namespace GY2021001BLL
                         {
                             gc.ClientExtendProperties[item.Name] = item;
                         }
+                        _Id2GameChar[gc.Id] = gc;
                         OnCharLoaded(new CharLoadedEventArgs(gu.GameChars[0]));
                     }
                 }
@@ -521,7 +540,7 @@ namespace GY2021001BLL
         /// <returns>true成功重置下线计时器，false未能找到有效对象。</returns>
         public bool Nope(Guid token)
         {
-            var gu = GetUsreFromToken(token);
+            var gu = GetUserFromToken(token);
             if (null == gu || !Lock(gu))
                 return false;
             try
@@ -578,9 +597,10 @@ namespace GY2021001BLL
                         //TO DO
                     }
                     gu.IsDisposed = true;
-                    _Token2User.TryRemove(token, out GameUser gu1);
-                    _LoginName2Token.TryRemove(loginName, out Guid token1);
-                    _LoginName.Remove(loginName, out string loginName1);    //去除登录名
+                    _Token2User.TryRemove(token, out _);
+                    _LoginName2Token.TryRemove(loginName, out _);
+                    _Id2GameChar.Remove(gu.GameChars[0].Id, out _); //去除角色Id
+                    _LoginName.Remove(loginName, out _);    //去除登录名
                 }
             }
             return true;

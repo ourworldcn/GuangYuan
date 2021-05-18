@@ -59,6 +59,7 @@ namespace GY2021001WebApi.Controllers
             world.NotifyShutdown();
             return Ok();
         }
+        
 
         /// <summary>
         /// 获取所有模板。

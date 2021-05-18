@@ -109,6 +109,11 @@ namespace GY2021001BLL
             }, TaskCreationOptions.LongRunning);
         }
 
+        /// <summary>
+        /// 按指定Id获取模板对象。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>没有找到则返回null</returns>
         public GameItemTemplate GetTemplateFromeId(Guid id)
         {
             _InitializeTask.Wait();
@@ -116,5 +121,22 @@ namespace GY2021001BLL
                 return null;
             return result;
         }
+
+        /// <summary>
+        /// 获取指定名字序列属性的索引属性名，如果没有找到则考虑使用lv。
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="seqPropName"></param>
+        /// <returns>null如果没有找到指定的<paramref name="seqPropName"/>名称的属性或，该属性不是序列属性。</returns>
+        public string GetIndexPropName(GameItemTemplate template, string seqPropName)
+        {
+            if (!template.Properties.TryGetValue(seqPropName, out object obj) || !(obj is decimal[] seq))
+                return null;
+            var pn = $"lv{seqPropName}";
+            if (template.Properties.ContainsKey(pn))
+                return pn;
+            return "lv";
+        }
+
     }
 }

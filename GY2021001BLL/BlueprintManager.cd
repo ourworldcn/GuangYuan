@@ -3,45 +3,66 @@
   <Comment CommentText="蓝图系统">
     <Position X="7.229" Y="0.5" Height="0.75" Width="1.7" />
   </Comment>
-  <Class Name="GY2021001BLL.ApplyBluprintDatas">
-    <Position X="0.75" Y="0.75" Width="1.5" />
+  <Class Name="GY2021001BLL.ApplyBluprintDatas" Collapsed="true">
+    <Position X="1.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>QIAAgAAAAAAAgAAAAAAAAAQAAAAAAAAIAAAAAAAAABA=</HashCode>
+      <HashCode>BIAAAAAAAAAAiAAAAAAAAAQAAAAEAAAIAAAAAAAAABA=</HashCode>
       <FileName>BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GY2021001BLL.BlueprintManagerOptions">
-    <Position X="4.25" Y="0.75" Width="1.5" />
+  <Class Name="GY2021001BLL.BlueprintManagerOptions" Collapsed="true">
+    <Position X="1.25" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GY2021001BLL.BlueprintManager">
-    <Position X="2.5" Y="0.75" Width="1.5" />
+  <Class Name="GY2021001BLL.BlueprintManager" Collapsed="true">
+    <Position X="4.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAgAAARAAAAACAAAACQAAQAAAACAAAAAAAAA=</HashCode>
+      <HashCode>AAABAAAAAgAAARAgAAACMAABCQAAQAAAACAQAAAAAQA=</HashCode>
       <FileName>BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GY2021001BLL.SequencePropertyData">
-    <Position X="6.25" Y="1.75" Width="1.5" />
+  <Class Name="GY2021001BLL.GameCondition" Collapsed="true">
+    <Position X="3" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AIAAAAAAIAAAAAAAIAAAAAAAAAAAAAAAAAAgAABAAAA=</HashCode>
+      <HashCode>ABAAAAAAIAAAAAAAAAAAAAAAAAAAAAAECACAAAAAIAA=</HashCode>
       <FileName>BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GY2021001BLL.GameCondition">
-    <Position X="4.25" Y="2.75" Width="1.5" />
+  <Class Name="GY2021001BLL.BpPropertyChanges" Collapsed="true">
+    <Position X="1.25" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>ABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAECECAAAAAIAA=</HashCode>
+      <HashCode>ABAAAAAAIBAAAAAAAAAAAAAAAAAAAAAACACAAABAAAA=</HashCode>
       <FileName>BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GY2021001BLL.BpPropertyChanges">
-    <Position X="0.75" Y="3.5" Width="1.5" />
+  <Class Name="GY2021001BLL.BpItemDataObject" Collapsed="true">
+    <Position X="4.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>ABAAAAAAIBAAAAAAAAAAAAAABAAAAAAAAAAAAAhAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAABABAAAAAAgAEAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BlueprintManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GY2021001BLL.BpEnvironmentDatas" Collapsed="true">
+    <Position X="3" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BIAAAAAAAAAAAAAAAACAAAAAAAAAQAAQQAAABAAAACA=</HashCode>
+      <FileName>BlueprintManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GY2021001BLL.BlueprintExtensions" Collapsed="true">
+    <Position X="3" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAACAACAABAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>BlueprintManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GY2021001BLL.GameStringProperty">
+    <Position X="4.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AKACoAAAIAACCgAAEAAAAAAAAAQAAAAAAABAAAAAAAA=</HashCode>
       <FileName>BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>

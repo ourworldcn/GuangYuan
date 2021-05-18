@@ -96,6 +96,9 @@ namespace Gy2021001Template
         [Column("增量概率")]
         public string CountProb { get; set; }
 
+        /// <summary>
+        /// 对数量进行取整运算。
+        /// </summary>
         [Column("增量取整")]
         public bool IsCountRound { get; set; }
 

@@ -40,7 +40,7 @@ namespace GY2021001WebApi.Controllers
             var cbm = world.CombatManager;
             StartCombatData data = new StartCombatData()
             {
-                GameChar = world.CharManager.GetUsreFromToken(GameHelper.FromBase64String(model.Token))?.GameChars[0],
+                GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.GameChars[0],
                 Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
             };
             cbm.StartCombat(data);
@@ -59,7 +59,7 @@ namespace GY2021001WebApi.Controllers
             var world = HttpContext.RequestServices.GetService<VWorld>();
             var result = new EndCombatData()
             {
-                GameChar = world.CharManager.GetUsreFromToken(GameHelper.FromBase64String(model.Token))?.GameChars[0],
+                GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.GameChars[0],
                 Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
                 EndRequested = model.EndRequested,
             };
