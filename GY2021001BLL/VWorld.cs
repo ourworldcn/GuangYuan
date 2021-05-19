@@ -2,6 +2,7 @@
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using OwGame;
 using System;
 using System.Collections.Concurrent;
@@ -89,6 +90,22 @@ namespace GY2021001BLL
         /// </summary>
         public Random RandomForWorld { get => _WorldRandom ??= new Random(); }
 
+        ObjectPool<List<GameItem>> _ObjectPoolListGameItem;
+
+        public ObjectPool<List<GameItem>> ObjectPoolListGameItem
+        {
+            get
+            {
+                if (null == _ObjectPoolListGameItem)
+                {
+                    lock (ThisLocker)
+                        _ObjectPoolListGameItem ??= Service.GetService<ObjectPool<List<GameItem>>>() ?? new DefaultObjectPool<List<GameItem>>(new ListGameItemPolicy());
+                }
+                return _ObjectPoolListGameItem;
+            }
+        }
+
+
         #endregion 属性及相关
 
         private void Initialize()
@@ -152,5 +169,22 @@ namespace GY2021001BLL
         }
     }
 
+    public class ListGameItemPolicy : PooledObjectPolicy<List<GameItem>>
+    {
+        public ListGameItemPolicy()
+        {
+        }
 
+        public override List<GameItem> Create()
+        {
+            return new List<GameItem>();
+        }
+
+        public override bool Return(List<GameItem> obj)
+        {
+            obj.Clear();
+            return true;
+        }
+
+    }
 }

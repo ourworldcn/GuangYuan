@@ -702,6 +702,25 @@ namespace GY2021001BLL
             gameChar.GameItems.AddRange(gameItems);
         }
 
+        public void SetGameCharEx(Guid token, string keyName, string val)
+        {
+
+        }
+
+        public void SetGameCharEx(GameChar gameChar, string keyName, string val)
+        {
+            if (!Lock(gameChar.GameUser))
+                return;
+            try
+            {
+
+            }
+            finally
+            {
+                Unlock(gameChar.GameUser);
+            }
+        }
+
         #endregion 公共方法
 
         #region 事件及相关
@@ -733,6 +752,7 @@ namespace GY2021001BLL
             }
             CharLoaded?.Invoke(this, e);
         }
+
 
         #endregion 事件及相关
     }

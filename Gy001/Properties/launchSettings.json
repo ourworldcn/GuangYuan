@@ -2,15 +2,19 @@
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "http://192.168.0.104:53251",
+      "sslPort": 0
+    },
     "iisExpress": {
-      "applicationUrl": "http://localhost:53251",
+      "applicationUrl": "http://192.168.0.104:53251",
       "sslPort": 44380
     }
   },
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
     "IIS Express": {
-      "commandName": "IISExpress",
+      "commandName": "IIS",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

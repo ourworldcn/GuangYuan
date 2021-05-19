@@ -32,8 +32,8 @@ namespace Gy001Tools
         }
         private void Form2_Load(object sender, EventArgs e)
         {
-            object obj = 3m;
-            int i = (int)obj;
+            var _ = 3m;
+            int i = (int)_;
            Guid id= new Guid(System.Convert.FromBase64String("2A2KP+db60q1PLvse6Cczg=="));
             //var id = Guid.NewGuid();
             //“N”、“D”、“B”、“P”或“X”

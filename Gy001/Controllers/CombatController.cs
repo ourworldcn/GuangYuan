@@ -64,7 +64,7 @@ namespace GY2021001WebApi.Controllers
                 EndRequested = model.EndRequested,
             };
             if (null != model.GameItems)
-                result.GameItems.AddRange(model.GameItems.OfType<GameItem>());
+                result.GameItems.AddRange(model.GameItems.Select(c=>(GameItem)c));
             world.CombatManager.EndCombat(result);
             return (CombatEndReturnDto)result;
         }
@@ -100,7 +100,7 @@ namespace GY2021001WebApi.Controllers
             var shenwen = gitm.Id2Template.Values.Where(c => c.GenusCode >= 15 && c.GenusCode <= 17).ToArray();
             for (int i = rnd.Next(1, 2) - 1; i >= 0; i--)
             {
-                var item = gim.CreateGameItem(shenwen[rnd.Next(shenwen.Length)]);
+                var item = gim.CreateGameItem(shenwen[rnd.Next(shenwen.Length)]); item.Count = 2;
                 endCombatData.GameItems.Add(item);
             }
             //生成坐骑
@@ -109,6 +109,7 @@ namespace GY2021001WebApi.Controllers
             for (int i = rnd.Next(1, 2) - 1; i >= 0; i--)
             {
                 var item = SpecificProject.CreateMounts(HttpContext.RequestServices, heads[rnd.Next(heads.Length)], bodys[rnd.Next(bodys.Length)]);
+                item.Count = 1;
                 endCombatData.GameItems.Add(item);
             }
             Thread.Sleep(10001);
