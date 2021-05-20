@@ -56,7 +56,7 @@ namespace Gy001
                 options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;  //忽略只读属性。
             });
 
-            services.AddSingleton<ObjectPool<List<GameItem>>>(c => new DefaultObjectPool<List<GameItem>>(new ListGameItemPolicy()));    //频繁使用的列表对象的对象池
+            services.AddSingleton<ObjectPool<List<GameItem>>>(c => new DefaultObjectPool<List<GameItem>>(new ListGameItemPolicy(), Environment.ProcessorCount * 8));    //频繁使用的列表对象的对象池
             #endregion 配置通用服务
 
             #region 配置Swagger
@@ -142,6 +142,7 @@ namespace Gy001
             {
                 endpoints.MapControllers();
             });
+
         }
     }
 }

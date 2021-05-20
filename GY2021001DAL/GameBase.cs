@@ -1,13 +1,14 @@
-﻿using OwGame;
+﻿using Gy2021001Template;
+using OwGame;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Text;
 
 namespace GY2021001DAL
 {
-
     public class GameObjectBase : GuidKeyBase
     {
         public GameObjectBase()
@@ -25,6 +26,9 @@ namespace GY2021001DAL
         /// </summary>
         public Guid TemplateId { get; set; }
 
+        [NotMapped]
+        GameTemplateBase Template { get; set; }
+
         public virtual T GetProperyValue<T>(string name, T defaultValue = default)
         {
             return name switch
@@ -35,6 +39,7 @@ namespace GY2021001DAL
                 _ => defaultValue,
             };
         }
+
     }
 
     /// <summary>

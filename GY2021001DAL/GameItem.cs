@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace GY2021001DAL
@@ -9,6 +11,7 @@ namespace GY2021001DAL
     /// <summary>
     /// 游戏中物品，装备，货币，积分的基类。
     /// </summary>
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class GameItem : GameThingBase
     {
         /// <summary>
@@ -55,6 +58,12 @@ namespace GY2021001DAL
         /// </summary>
         public Guid? OwnerId { get; set; }
 
+        private string GetDebuggerDisplay()
+        {
+            if (Properties.TryGetValue("tname", out object obj) && obj is string result)
+                return result;
+            return ToString();
+        }
     }
 
     /// <summary>
@@ -63,6 +72,29 @@ namespace GY2021001DAL
     [NotMapped]
     public class ChangesItem
     {
+        /// <summary>
+        /// 按容器Id化简集合。
+        /// </summary>
+        /// <param name="changes"></param>
+        public static void Reduce(List<ChangesItem> changes)
+        {
+            var _ = from tmp in changes
+                    group tmp by tmp.ContainerId into g
+                    where g.Count() > 1
+                    select (g.Key, g.First(), g.Skip(1).ToArray());
+            var lst = _.ToList();
+            foreach (var item in lst)
+            {
+                item.Item2.Adds.AddRange(item.Item3.SelectMany(c => c.Adds));
+                item.Item2.Changes.AddRange(item.Item3.SelectMany(c => c.Changes));
+                item.Item2.Removes.AddRange(item.Item3.SelectMany(c => c.Removes));
+            }
+            foreach (var item in lst.SelectMany(c => c.Item3))
+            {
+                changes.Remove(item);
+            }
+        }
+
         public ChangesItem()
         {
 
@@ -73,6 +105,9 @@ namespace GY2021001DAL
         /// </summary>
         public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// 容器的实例Id。
+        /// </summary>
         public Guid ContainerId { get; set; }
 
         /// <summary>

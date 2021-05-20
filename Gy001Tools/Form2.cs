@@ -34,7 +34,7 @@ namespace Gy001Tools
         {
             var _ = 3m;
             int i = (int)_;
-           Guid id= new Guid(System.Convert.FromBase64String("2A2KP+db60q1PLvse6Cczg=="));
+            Guid id = new Guid(System.Convert.FromBase64String("2A2KP+db60q1PLvse6Cczg=="));
             //var id = Guid.NewGuid();
             //“N”、“D”、“B”、“P”或“X”
             Debug.WriteLine($"N:{id:N}\nD:{id:D};B:{id:B};P:{id:P};\nX:{id:X}");

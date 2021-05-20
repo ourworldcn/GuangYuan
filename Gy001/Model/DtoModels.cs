@@ -327,7 +327,7 @@ namespace GY2021001WebApi.Models
         /// 下属物品对象。
         /// </summary>
         [DataMember]
-        public List<GameItemDto> Children { get; } = new List<GameItemDto>();
+        public List<GameItemDto> Children { get; set; } = new List<GameItemDto>();
 
         /// <summary>
         /// 所属父Id。
@@ -369,7 +369,7 @@ namespace GY2021001WebApi.Models
         /// <param name="gameCharDto"></param>
         public void SetHead(GameCharDto gameCharDto)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -378,7 +378,7 @@ namespace GY2021001WebApi.Models
         /// <param name="gameCharDto"></param>
         public void SetBody(GameCharDto gameCharDto)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 

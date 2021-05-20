@@ -505,61 +505,29 @@ namespace GY2021001BLL
             //金币,暂时不用创建新的金币对象。
             var coll = data.GameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).ToList();
             coll.ForEach(c => c.Count ??= 1);
-            shouyiSlot.Children.AddRange(coll);
+            shouyiSlot.Children.AddRange(coll); //收益槽
             //下一关数据
             data.NextTemplate = cmbm.GetNext(data.Template);
-            if (null == data.NextTemplate || data.EndRequested) //若已经结束
+            if (null == data.NextTemplate || data.EndRequested) //若大关卡已经结束
             {
+                var gim = world.ItemManager;
+                var changes = new List<ChangesItem>();
                 //移动收益槽数据到各自背包。
                 //金币
-                var gold = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.JinbiId).ToArray();
-                var goldCount = gold.Sum(c => c.Count);
-                foreach (var item in gold)
-                    shouyiSlot.Children.Remove(item);
-                var goldSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.JinbiId);
-                goldSlot.Count += goldCount;
-                var changesItem = new ChangesItem()
-                {
-                    ContainerId = gameChar.Id,
-                };
-                changesItem.Changes.Add(goldSlot);
-                data.ChangesItems.Add(changesItem);
+                gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar, changes);
                 //野生怪物
-                mounts = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi).ToArray();
                 var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
-                foreach (var item in mounts)
-                {
-                    shouyiSlot.Children.Remove(item);
-                }
-                shoulan.Children.AddRange(mounts);
-                changesItem = new ChangesItem()
-                {
-                    ContainerId = shoulan.Id,
-                };
-                changesItem.Adds.AddRange(mounts);
-                data.ChangesItems.Add(changesItem);
-                //神纹
-                var shenwens = (from tmp in shouyiSlot.Children
-                                let typeCode = gitm.GetTemplateFromeId(tmp.TemplateId).GenusCode
-                                where typeCode == ProjectConstant.ShenwenAtkTCode || typeCode == ProjectConstant.ShenwenHPTCode || typeCode == ProjectConstant.ShenwenQltTCode
-                                select tmp).ToArray();  //得到所有神纹
-                var ary = (from tmp in shenwens
-                           group tmp by tmp.TemplateId into g
-                           select new { g.Key, count = g.Count() }).ToArray();  //分类处理
-                foreach (var item in shenwens)  //清理收益槽
-                    shouyiSlot.Children.Remove(item);
+                gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi, shoulan, changes);
+                //神纹碎片
                 var shenwenBag = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShenWenBagSlotId);   //神纹背包
-                var modifies = ary.Join(shenwenBag.Children, c => c.Key, c => c.TemplateId, (l, r) => (l, r));   //修改数量的集合
-                foreach (var (l, r) in modifies)
-                    r.Count += l.count;
-                //修改增量
-                changesItem = new ChangesItem()
+                gim.MoveItems(shouyiSlot, c =>
                 {
-                    ContainerId = shenwenBag.Id,
-                };
-                changesItem.Changes.AddRange(shenwens);
-                data.ChangesItems.Add(changesItem);
-
+                    var _ = gitm.GetTemplateFromeId(c.TemplateId)?.GenusCode;
+                    return _ >= 15 && _ <= 17;
+                }, shenwenBag, changes);
+                //压缩变化数据
+                ChangesItem.Reduce(changes);
+                data.ChangesItems.AddRange(changes);
             }
 
             return true;

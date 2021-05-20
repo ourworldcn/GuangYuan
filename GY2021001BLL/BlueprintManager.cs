@@ -682,6 +682,10 @@ namespace GY2021001BLL
             return result;
         }
 
+        /// <summary>
+        /// 使用指定数据升级或制造物品。
+        /// </summary>
+        /// <param name="datas"></param>
         public void ApplyBluprint(ApplyBluprintDatas datas)
         {
             _InitializeTask.Wait(); //等待初始化结束

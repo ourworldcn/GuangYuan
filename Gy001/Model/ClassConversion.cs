@@ -21,7 +21,7 @@ namespace GY2021001WebApi.Models
             //explicit
             var result = new GameItem()
             {
-                Id = null == obj.Id ? Guid.Empty : GameHelper.FromBase64String(obj.Id),
+                Id = GameHelper.FromBase64String(obj.Id),
                 Count = obj.Count,
                 CreateUtc = obj.CreateUtc,
                 TemplateId = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : GameHelper.FromBase64String(obj.TemplateId),

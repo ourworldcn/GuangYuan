@@ -189,7 +189,7 @@ namespace OwGame
                 else if (item.Value is decimal[])
                 {
                     var ary = item.Value as decimal[];
-                    result.Append(string.Join('|', ary.Select(c => c.ToString()))).Append(',');
+                    result.AppendJoin('|', ary.Select(c => c.ToString())).Append(',');
                 }
                 else //字符串
                 {

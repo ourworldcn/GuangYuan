@@ -99,7 +99,7 @@ namespace GY2021001BLL
                 if (null == _ObjectPoolListGameItem)
                 {
                     lock (ThisLocker)
-                        _ObjectPoolListGameItem ??= Service.GetService<ObjectPool<List<GameItem>>>() ?? new DefaultObjectPool<List<GameItem>>(new ListGameItemPolicy());
+                        _ObjectPoolListGameItem ??= Service.GetService<ObjectPool<List<GameItem>>>() ?? new DefaultObjectPool<List<GameItem>>(new ListGameItemPolicy(), Environment.ProcessorCount * 8);
                 }
                 return _ObjectPoolListGameItem;
             }

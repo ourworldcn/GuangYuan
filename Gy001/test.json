@@ -1,0 +1,95 @@
+{
+  "DungeonId": "XpYgkwfI1UGC9BUXIn6rew==",
+  "EndRequested": false,
+  "Token": "IH9Wk8THBUCqKZQYM30I3w==",
+  "GameItems": [
+    {
+      "Id": null,
+      "TemplateId": "QsmDK5weRUuYFq0svw5HPw==",
+      "CreateUtc": "2021-05-20T07:51:50.162246Z",
+      "Count": 210.0,
+      "Properties": {},
+      "OwnerId": null,
+      "Children": [],
+      "ParentId": null
+    },
+    {
+      "Id": null,
+      "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
+      "CreateUtc": "2021-05-20T07:51:50.164112Z",
+      "Count": 1.0,
+      "Properties": {
+        "neatk": 58,
+        "nemhp": 12,
+        "neqlt": 9
+      },
+      "OwnerId": null,
+      "Children": [
+        {
+          "Id": null,
+          "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
+          "CreateUtc": "2021-05-20T07:51:50.164121Z",
+          "Count": 1.0,
+          "Properties": {},
+          "OwnerId": null,
+          "Children": [
+            {
+              "Id": null,
+              "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
+              "CreateUtc": "2021-05-20T07:51:50.164135Z",
+              "Count": 1.0,
+              "Properties": {},
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": null
+            }
+          ],
+          "ParentId": null
+        },
+        {
+          "Id": null,
+          "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
+          "CreateUtc": "2021-05-20T07:51:50.164127Z",
+          "Count": 1.0,
+          "Properties": {},
+          "OwnerId": null,
+          "Children": [
+            {
+              "Id": null,
+              "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
+              "CreateUtc": "2021-05-20T07:51:50.164153Z",
+              "Count": 1.0,
+              "Properties": {},
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": null
+            }
+          ],
+          "ParentId": null
+        }
+      ],
+      "ParentId": null
+    },
+    {
+      "Id": null,
+      "TemplateId": "Fm6pKP2RIEqm5WMc+KO1hA==",
+      "CreateUtc": "2021-05-20T07:51:50.16462Z",
+      "Count": 1.0,
+      "Properties": {},
+      "OwnerId": null,
+      "Children": [],
+      "ParentId": null
+    },
+    {
+      "Id": null,
+      "TemplateId": "QUmZCEShC0qeJFFrAhxKww==",
+      "CreateUtc": "2021-05-20T07:51:50.164886Z",
+      "Count": 1.0,
+      "Properties": {},
+      "OwnerId": null,
+      "Children": [],
+      "ParentId": null
+    }
+  ]
+
+}
