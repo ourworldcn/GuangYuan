@@ -113,7 +113,6 @@ namespace GY2021001BLL
             return result;
         }
 
-
         /// <summary>
         /// 获取对象的模板。
         /// </summary>
@@ -125,6 +124,7 @@ namespace GY2021001BLL
             return ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
         }
 
+        #region 动态属性相关
         /// <summary>
         /// 获取指定事物的指定名称属性的值。
         /// </summary>
@@ -219,289 +219,58 @@ namespace GY2021001BLL
         }
 
         /// <summary>
+        /// 将模板的属性与对象上的属性合并。添加没有的属性。
+        /// </summary>
+        /// <param name="gameItem"><see cref="GameObjectBase.TemplateId"/>属性必须正确设置。</param>
+        /// <returns>true成功设置，false,找不到指定的模板。</returns>
+        public bool MergeProperty(GameItem gameItem)
+        {
+            var template = ItemTemplateManager.GetTemplateFromeId(gameItem.TemplateId); //获取模板
+            if (null == template)   //若找不到模板
+                return false;
+            var keys = template.Properties.Where(c => !(c.Value is decimal[])).Select(c => c.Key).Except(gameItem.Properties.Keys).ToArray(); //需要增加的简单属性的名字
+            foreach (var item in keys)  //添加简单属性
+                gameItem.Properties[item] = template.Properties[item];
+            var seqKeys = template.Properties.Where(c => c.Value is decimal[]).Select(c => (SeqPn: c.Key, IndexPn: ItemTemplateManager.GetIndexPropName(template, c.Key))).ToArray();    //序列属性的名字
+            foreach (var item in seqKeys)   //设置序列属性
+            {
+                SetLevel(gameItem, item.SeqPn, Convert.ToInt32(gameItem.Properties.GetValueOrDefault(item.IndexPn, 0m)));
+            }
+            return true;
+        }
+
+        /// <summary>
         /// 变换物品等级。会对比原等级的属性增减属性数值。如模板中原等级mhp=100,而物品mhp=120，则会用新等级mhp+20。
         /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="newLevel"></param>
-        public void ChangeLevel(GameItem gameItem, int newLevel)
+        /// <param name="gameItem">要改变的对象。</param>
+        /// <param name="seqPName">序列属性的名字。如果对象中没有索引必须的属性，则视同初始化属性。若无序列属性的值，但找到索引属性的话，则视同此属性值是模板中指定的值。</param>
+        /// <param name="newLevel">新等级。</param>
+        /// <exception cref="ArgumentException">无法找到指定模板。</exception>
+        public void SetLevel(GameItem gameItem, string seqPName, int newLevel)
         {
             var template = GetTemplate(gameItem);
-            var lv = Convert.ToInt32(gameItem.Properties.GetValueOrDefault(ProjectConstant.LevelPropertyName, decimal.Zero));   //当前等级
-            foreach (var item in gameItem.Properties.Keys.ToArray())    //遍历属性
-            {
-                if (template.Properties.GetValueOrDefault(item) is decimal[] seq)   //若是一个序列属性
-                {
-                    var oov = seq[lv];  //原级别模板值
-                    var val = (decimal)gameItem.Properties.GetValueOrDefault(item, oov);  //物品的属性值
-                    gameItem.Properties[item] = seq[newLevel] + val - oov;
-                }
-            }
-        }
+            if (null == template)   //若无法找到模板
+                throw new ArgumentException($"无法找到指定模板(TemplateId={gameItem.TemplateId}),对象Id={gameItem.Id}", nameof(gameItem));
+            if (!template.Properties.TryGetValue(seqPName, out object objSeq) || !(objSeq is decimal[] seq))
+                throw new ArgumentOutOfRangeException($"模板{template.Id}({template.DisplayName})中没有指定 {seqPName} 属性，或其不是序列属性");
+            var indexPN = ItemTemplateManager.GetIndexPropName(template, seqPName); //索引属性的名字
 
-        /// <summary>
-        /// 将符合条件的物品对象及其子代从容器中移除并返回。
-        /// </summary>
-        /// <param name="parent"></param>
-        /// <param name="filter"></param>
-        /// <param name="removes"></param>
-        public void RemoveItemsWhere(GameThingBase parent, Func<GameItem, bool> filter, ICollection<GameItem> removes)
-        {
-            IList<GameItem> lst = (parent as GameItem)?.Children;
-            lst ??= (parent as GameChar)?.GameItems;
-            for (int i = lst.Count - 1; i >= 0; i--)    //倒序删除
+            if (!gameItem.Properties.TryGetValue(indexPN, out object objLv))  //若没有指定当前等级
             {
-                var item = lst[i];
-                if (!filter(item))
-                    continue;
-                removes.Add(item);
-                lst.RemoveAt(i);
-                item.Parent = null;
-                item.ParentId = null;
-                item.OwnerId = null;
-            }
-
-        }
-
-
-        /// <summary>
-        /// 将一组物品加入一个容器下。
-        /// 如果合并后数量为0，则会试图删除对象。
-        /// </summary>
-        /// <param name="gameItems">一组对象。</param>
-        /// <param name="parent">容器。</param>
-        /// <param name="adds">实际加入的对象。</param>
-        /// <param name="remainder"></param>
-        public void AddItems(IEnumerable<GameItem> gameItems, GameThingBase parent, ICollection<GameItem> adds, ICollection<GameItem> remainder)
-        {
-            foreach (var item in gameItems) //TO DO 性能优化未做
-            {
-                AddItem(item, parent, adds, remainder);
-            }
-        }
-
-        /// <summary>
-        /// 将符合条件的所有物品移入另一个容器。
-        /// </summary>
-        /// <param name="src"></param>
-        /// <param name="filter"></param>
-        /// <param name="dest"></param>
-        /// <param name="changes">变化的数据。</param>
-        public void MoveItems(GameThingBase src, Func<GameItem, bool> filter, GameThingBase dest, ICollection<ChangesItem> changes)
-        {
-            var tmp = World.ObjectPoolListGameItem.Get();
-            var adds = World.ObjectPoolListGameItem.Get();
-            var remainder = World.ObjectPoolListGameItem.Get();
-            var remainder2 = World.ObjectPoolListGameItem.Get();
-            try
-            {
-                //移动武平
-                RemoveItemsWhere(src, filter, tmp); //移除物品
-                var removeIds = tmp.Select(c => c.Id).ToArray();  //移除物品的Id集合
-                AddItems(tmp, dest, adds, remainder);
-                //已经增加的物品数据
-                var addChanges = (new ChangesItem()
-                {
-                    ContainerId = dest.Id,
-                });
-                addChanges.Adds.AddRange(adds);
-                changes.Add(addChanges);
-
-                if (remainder.Count > 0)    //若有一些物品不能加入
-                {
-                    tmp.Clear();
-                    AddItems(remainder, src, tmp, remainder2);
-                    Trace.Assert(remainder2.Count == 0);    //TO DO当前版本逻辑上不会出现此问题
-                    //变化物品
-                    adds.Clear();
-                    List<Guid> guids = new List<Guid>();
-                    List<(Guid, GameItem)> l_r = new List<(Guid, GameItem)>();
-                    removeIds.ApartWithWithRepeated(tmp, c => c, c => c.Id, guids, l_r, adds);
-
-                    var change = new ChangesItem()
-                    {
-                        ContainerId = src.Id,
-                    };
-                    change.Removes.AddRange(guids);
-                    change.Changes.AddRange(l_r.Select(c => c.Item2));
-                    change.Adds.AddRange(adds);
-                    changes.Add(change);
-                }
-                else //全部移动了
-                {
-                    var _ = new ChangesItem()
-                    {
-                        ContainerId = src.Id,
-                    };
-                    _.Removes.AddRange(removeIds);
-                    changes.Add(_);
-                }
-            }
-            finally
-            {
-                World.ObjectPoolListGameItem.Return(remainder2);
-                World.ObjectPoolListGameItem.Return(remainder);
-                World.ObjectPoolListGameItem.Return(adds);
-                World.ObjectPoolListGameItem.Return(tmp);
-            }
-        }
-
-        /// <summary>
-        /// 将一个物品放入容器。根据属性确定是否可以合并堆叠。
-        /// </summary>
-        /// <param name="gameItem">要放入的物品，返回时属性<see cref="GameItem.Count"/>可能被更改。</param>
-        /// <param name="parent">容器事物对象，或是一个角色对象。</param>
-        /// <param name="adds">返回时添加了实际加入的对象。因为依据堆叠要求进行拆分，所以这里添加的可能不止一个对象。</param>
-        /// <param name="remainder">
-        /// 基于堆叠限制和容量限制，无法放入的部分。实际是<paramref name="gameItem"/>对象或拆分后的对象集合，对于可堆叠对象可能修改了<see cref="GameItem.Count"/>属性。若没有剩余则返回null。
-        /// </param>
-        /// <returns>放入后的对象，如果是不可堆叠或堆叠后有剩余则是<paramref name="gameItem"/>和堆叠对象，否则是容器内原有对象。返回空集合，因容量限制没有放入任何物品。</returns>
-        public void AddItem(GameItem gameItem, GameThingBase parent, ICollection<GameItem> adds, ICollection<GameItem> remainder)
-        {
-            var gameChar = parent as GameChar;
-            var container = parent as GameItem;
-            Debug.Assert(null != gameChar || null != container);
-            var stc = GetStackUpper(gameItem);
-            IList<GameItem> chidren = (parent as GameItem)?.Children;
-            chidren ??= (parent as GameChar)?.GameItems;
-            if (stc is null) //若不可堆叠
-            {
-                gameItem.Count ??= 1;
-                var upper = GetCapacity(parent) ?? -1;    //TO DO 暂时未限制是否是容器
-
-                if (-1 != upper && ((gameChar?.GameItems?.Count) ?? container.Children.Count) >= upper)  //若超过容量
-                {
-                    remainder.Add(gameItem);
-                    return;
-                }
-                var succ = ForcedAdd(gameItem, parent);
-                adds.Add(gameItem);
-                return;
-            }
-            else //若可堆叠
-            {
-                gameItem.Count ??= 0;
-                var upper = GetCapacity(parent) ?? -1;    //TO DO 暂时未限制是否是容器
-                IList<GameItem> lst = (parent as GameItem)?.Children; //获取容器的接口
-                lst ??= (parent as GameChar).GameItems;
-                if (-1 != upper && lst.Count >= upper)  //若超过容量
-                {
-                    remainder.Add(gameItem);
-                    return;
-                }
-                //处理存在物品的堆叠问题
-                var result = new List<GameItem>();
-                var dest = lst.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && GetNumberOfStackRemainder(c, out _) > 0);    //找到已有的物品且尚可加入堆叠的
-                if (null != dest)  //若存在同类物品
-                {
-                    var redCount = Math.Min(GetNumberOfStackRemainder(dest, out _), gameItem.Count ?? 0);   //移动的数量
-                    dest.Count = dest.Count.Value + redCount;
-                    gameItem.Count -= redCount;
-                    result.Add(dest);
-                }
-                if (gameItem.Count <= 0)   //若已经全部堆叠进入
-                {
-                    result.ForEach(c => adds.Add(c));
-                    return;
-                }
-                else  //放入剩余物品,容错
-                {
-                    var tmp = new List<GameItem>();
-                    SplitItem(gameItem, tmp);
-                    for (int i = tmp.Count - 1; i >= 0; i--)
-                    {
-                        if (-1 != upper && chidren.Count >= upper)    //若已经满
-                            break;
-                        var item = tmp[i];
-                        if (ForcedAdd(item, parent))    //若成功加入
-                            result.Add(item);
-                        else //TO DO当前不会不成功
-                            ;
-                        tmp.RemoveAt(i);
-                    }
-                    foreach (var item in tmp)   //未能加入的
-                        remainder.Add(item);
-                }  //当有剩余物品
-                result.ForEach(c => adds.Add(c));
-                return;
-            }
-        }
-
-        /// <summary>
-        /// 按堆叠要求将物品拆分未多个。
-        /// </summary>
-        /// <param name="gameItem">要拆分的物品。返回时该物品<see cref="GameItem.Count"/>可能被改变。</param>
-        /// <param name="results">拆分后的物品。可能包含<paramref name="gameItem"/>，且其<see cref="GameItem.Count"/>属性被修正。</param>
-        public void SplitItem(GameItem gameItem, ICollection<GameItem> results)
-        {
-            var stc = GetStackUpper(gameItem);
-            if (stc is null) //若不可堆叠
-            {
-                gameItem.Count ??= 1;
-                if (gameItem.Count.Value <= 1)  //若不足1
-                {
-                    results.Add(gameItem);
-                    return;
-                }
-                var count = Math.Floor(gameItem.Count.Value) - 1; //拆分数量
-                var red = gameItem.Count.Value - count; //剩余部分
-                gameItem.Count = 1;
-                results.Add(gameItem);
-                for (int i = (int)count - 1; i >= 0; i--)   //分解出多余物品
-                {
-                    var item = CreateGameItem(gameItem.TemplateId);
-                    item.Count = 1;
-                    results.Add(item);
-                }
-                if (red > 0)   //若有剩余部分
-                {
-                    var item = gameItem;
-                    item.Count = red;
-                    results.Add(item);
-                }
-            }
-            else if (-1 == stc.Value)  //若无堆叠上限限制
-            {
-                results.Add(gameItem);
-            }
-            else //若可堆叠且有限制
-            {
-                gameItem.Count ??= 0;
-                while (gameItem.Count.Value > stc.Value) //当需要拆分
-                {
-                    var item = CreateGameItem(gameItem.TemplateId);
-                    item.Count = stc.Value;
-                    results.Add(item);
-                    gameItem.Count -= stc.Value;
-                }
-                if (gameItem.Count.Value > 0)   //若有剩余，目前必定有
-                    results.Add(gameItem);
-            }
-        }
-
-        /// <summary>
-        /// 无视容量限制堆叠规则。将物品加入指定容器。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="container"></param>
-        /// <returns>true成功加入.false <paramref name="container"/>不是可以容纳物品的类型。</returns>
-        public bool ForcedAdd(GameItem gameItem, GameThingBase container)
-        {
-            if (container is GameChar gameChar)  //若容器是角色
-            {
-                gameItem.GenerateIdIfEmpty();
-                gameChar.GameItems.Add(gameItem);
-                gameItem.OwnerId ??= gameChar.Id;
-            }
-            else if (container is GameItem item)
-            {
-                gameItem.GenerateIdIfEmpty();
-                item.Children.Add(gameItem);
-                gameItem.ParentId ??= item.Id;
-                gameItem.Parent ??= item;
+                //当前视同需要初始化属性
+                gameItem.Properties[seqPName] = seq[newLevel];
+                gameItem.Properties[indexPN] = newLevel;
             }
             else
-                return false;
-            return true;
+            {
+                var lv = Convert.ToInt32(objLv);   //当前等级
+                var oov = seq[lv];  //原级别模板值
+
+                var val = Convert.ToDecimal(gameItem.Properties.GetValueOrDefault(seqPName, oov));  //物品的属性值
+                gameItem.Properties[seqPName] = seq[newLevel] + val - oov;
+                gameItem.Properties[indexPN] = newLevel;
+            }
+            return;
         }
 
         /// <summary>
@@ -553,6 +322,275 @@ namespace GY2021001BLL
             return Math.Max(0, stc.Value - gameItem.Count.Value);
         }
 
+        #endregion 动态属性相关
+
+        #region 物品增减相关
+
+        /// <summary>
+        /// 将符合条件的物品对象及其子代从容器中移除并返回。
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="filter"></param>
+        /// <param name="removes">变化的数据。可以是null或省略，此时忽略。</param>
+        public void RemoveItemsWhere(GameThingBase parent, Func<GameItem, bool> filter, ICollection<GameItem> removes = null)
+        {
+            IList<GameItem> lst = (parent as GameItem)?.Children;
+            lst ??= (parent as GameChar)?.GameItems;
+            Debug.Assert(null != lst);
+            for (int i = lst.Count - 1; i >= 0; i--)    //倒序删除
+            {
+                var item = lst[i];
+                if (!filter(item))
+                    continue;
+                lst.RemoveAt(i);
+                removes?.Add(item);
+                item.Parent = null;
+                item.ParentId = null;
+                item.OwnerId = null;
+            }
+
+        }
+
+        /// <summary>
+        /// 将符合条件的所有物品移入另一个容器。
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="filter"></param>
+        /// <param name="dest"></param>
+        /// <param name="changes">变化的数据。可以是null或省略，此时忽略。</param>
+        public void MoveItems(GameThingBase src, Func<GameItem, bool> filter, GameThingBase dest, ICollection<ChangesItem> changes = null)
+        {
+            var tmp = World.ObjectPoolListGameItem.Get();
+            var adds = World.ObjectPoolListGameItem.Get();
+            var remainder = World.ObjectPoolListGameItem.Get();
+            var remainder2 = World.ObjectPoolListGameItem.Get();
+            try
+            {
+                //移动物品
+                RemoveItemsWhere(src, filter, tmp); //移除物品
+                var removeIds = tmp.Select(c => c.Id).ToArray();  //移除物品的Id集合
+                AddItems(tmp, dest, remainder, changes);
+                //已经增加的物品数据
+                var addChanges = (new ChangesItem()
+                {
+                    ContainerId = dest.Id,
+                });
+                addChanges.Adds.AddRange(adds);
+                changes.Add(addChanges);
+
+                if (remainder.Count > 0)    //若有一些物品不能加入
+                {
+                    tmp.Clear();
+                    AddItems(remainder, src, remainder2, changes);
+                    Trace.Assert(remainder2.Count == 0);    //TO DO当前版本逻辑上不会出现此问题
+                    //变化物品
+                    adds.Clear();
+                    List<Guid> guids = new List<Guid>();
+                    List<(Guid, GameItem)> l_r = new List<(Guid, GameItem)>();
+                    removeIds.ApartWithWithRepeated(tmp, c => c, c => c.Id, guids, l_r, adds);
+
+                    var change = new ChangesItem()
+                    {
+                        ContainerId = src.Id,
+                    };
+                    change.Removes.AddRange(guids);
+                    change.Changes.AddRange(l_r.Select(c => c.Item2));
+                    change.Adds.AddRange(adds);
+                    changes.Add(change);
+                }
+                else //全部移动了
+                {
+                    var _ = new ChangesItem()
+                    {
+                        ContainerId = src.Id,
+                    };
+                    _.Removes.AddRange(removeIds);
+                    changes.Add(_);
+                }
+            }
+            finally
+            {
+                World.ObjectPoolListGameItem.Return(remainder2);
+                World.ObjectPoolListGameItem.Return(remainder);
+                World.ObjectPoolListGameItem.Return(adds);
+                World.ObjectPoolListGameItem.Return(tmp);
+            }
+        }
+
+        /// <summary>
+        /// 将一组物品加入一个容器下。
+        /// 如果合并后数量为0，则会试图删除对象。
+        /// </summary>
+        /// <param name="gameItems">一组对象。</param>
+        /// <param name="parent">容器。</param>
+        /// <param name="remainder">追加不能放入的物品到此集合，可以是null或省略，此时忽略。</param>
+        /// <param name="changeItems">变化的数据。可以是null或省略，此时忽略。</param>
+        /// 
+        public void AddItems(IEnumerable<GameItem> gameItems, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangesItem> changeItems = null)
+        {
+            foreach (var item in gameItems) //TO DO 性能优化未做
+            {
+                AddItem(item, parent, remainder, changeItems);
+            }
+        }
+
+        /// <summary>
+        /// 将一个物品放入容器。根据属性确定是否可以合并堆叠。
+        /// </summary>
+        /// <param name="gameItem">要放入的物品，返回时属性<see cref="GameItem.Count"/>可能被更改。</param>
+        /// <param name="parent">容器事物对象，或是一个角色对象。</param>
+        /// <param name="remainder">追加不能放入的物品到此集合，可以是null或省略，此时忽略。</param>
+        /// <param name="changeItems">变化的数据。可以是null或省略，此时忽略。
+        /// 基于堆叠限制和容量限制，无法放入的部分。实际是<paramref name="gameItem"/>对象或拆分后的对象集合，对于可堆叠对象可能修改了<see cref="GameItem.Count"/>属性。若没有剩余则返回null。
+        /// </param>
+        /// <returns>放入后的对象，如果是不可堆叠或堆叠后有剩余则是 <paramref name="gameItem"/>和堆叠对象，否则是容器内原有对象。返回空集合，因容量限制没有放入任何物品。</returns>
+        public void AddItem(GameItem gameItem, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangesItem> changeItems = null)
+        {
+            IList<GameItem> children = (parent as GameItem)?.Children; //获取容器的接口
+            children ??= (parent as GameChar)?.GameItems;    //容器
+            Debug.Assert(null != children);
+            var stc = GetStackUpper(gameItem);
+            if (stc is null) //若不可堆叠
+            {
+                gameItem.Count ??= 1;
+                var upper = GetCapacity(parent) ?? -1;    //TO DO 暂时未限制是否是容器
+
+                if (-1 != upper && children.Count >= upper)  //若超过容量
+                {
+                    remainder?.Add(gameItem);
+                    return;
+                }
+                var succ = ForcedAdd(gameItem, parent);
+                var _ = new ChangesItem(parent.Id);
+                _.Adds.Add(gameItem);
+                changeItems?.Add(_);
+                return;
+            }
+            else //若可堆叠
+            {
+                gameItem.Count ??= 0;
+                var upper = GetCapacity(parent) ?? -1;    //TO DO 暂时未限制是否是容器
+                if (-1 != upper && children.Count >= upper)  //若超过容量
+                {
+                    remainder?.Add(gameItem);
+                    return;
+                }
+                //处理存在物品的堆叠问题
+                var result = new List<GameItem>();
+                var dest = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && GetNumberOfStackRemainder(c, out _) > 0);    //找到已有的物品且尚可加入堆叠的
+                if (null != dest)  //若存在同类物品
+                {
+                    var redCount = Math.Min(GetNumberOfStackRemainder(dest, out _), gameItem.Count ?? 0);   //移动的数量
+                    dest.Count = dest.Count.Value + redCount;
+                    gameItem.Count -= redCount;
+                    var changesItem = new ChangesItem(parent.Id);
+                    changesItem.Changes.Add(dest);
+                    changeItems?.Add(changesItem);
+                    result.Add(dest);
+                }
+                if (gameItem.Count <= 0)   //若已经全部堆叠进入
+                {
+                    return;
+                }
+                else  //放入剩余物品,容错
+                {
+                    var tmp = new List<GameItem>();
+                    SplitItem(gameItem, tmp);
+                    var _ = new ChangesItem(parent.Id);
+                    for (int i = tmp.Count - 1; i >= 0; i--)
+                    {
+                        if (-1 != upper && children.Count >= upper)    //若已经满
+                            break;
+                        var item = tmp[i];
+                        if (ForcedAdd(item, parent))    //若成功加入
+                        {
+                            result.Add(item);
+                            _.Adds.Add(item);
+                        }
+                        else //TO DO当前不会不成功
+                            ;
+                        tmp.RemoveAt(i);
+                    }
+                    if (_.Adds.Count > 0)
+                        changeItems?.Add(_);
+                    foreach (var item in tmp)   //未能加入的
+                        remainder?.Add(item);
+                }
+                //当有剩余物品
+                return;
+            }
+        }
+
+        /// <summary>
+        /// 按堆叠要求将物品拆分未多个。
+        /// </summary>
+        /// <param name="gameItem">要拆分的物品。返回时该物品<see cref="GameItem.Count"/>可能被改变。
+        /// 若未设置数量，则对不可堆叠物品视同0，可堆叠物品视同1。</param>
+        /// <param name="results">拆分后的物品。可能包含<paramref name="gameItem"/>，且其<see cref="GameItem.Count"/>属性被修正。
+        /// <paramref name="gameItem"/>总是被放在第一个位置上。</param>
+        public void SplitItem(GameItem gameItem, ICollection<GameItem> results)
+        {
+            var stc = GetStackUpper(gameItem);
+            if (stc is null) //若不可堆叠
+            {
+                gameItem.Count ??= 1;
+                var count = gameItem.Count.Value - 1;   //记录原始数量少1的值
+                gameItem.Count = Math.Min(gameItem.Count.Value, 1); //设置第一堆的数量
+                results.Add(gameItem);
+                for (; count >= 0; count--)   //分解出多余物品
+                {
+                    var item = CreateGameItem(gameItem.TemplateId);
+                    item.Count = Math.Min(1, count);
+                    results.Add(item);
+                }
+            }
+            else if (-1 == stc.Value)  //若无堆叠上限限制
+            {
+                results.Add(gameItem);
+            }
+            else //若可堆叠且有限制
+            {
+                gameItem.Count ??= 0;
+                var count = gameItem.Count.Value - stc.Value;   //记录当前数量减去第一堆以后的数量
+                gameItem.Count = Math.Min(gameItem.Count.Value, stc.Value);    //取当前数量，和允许最大堆叠数量中较小的值
+                results.Add(gameItem);  //加入第一个堆
+                while (count > 0) //当需要拆分
+                {
+                    var item = CreateGameItem(gameItem.TemplateId);
+                    item.Count = Math.Min(count, stc.Value); //取当前剩余数量，和允许最大堆叠数量中较小的值
+                    results.Add(item);
+                    count -= stc.Value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 无视容量限制堆叠规则。将物品加入指定容器。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="container"></param>
+        /// <returns>true成功加入.false <paramref name="container"/>不是可以容纳物品的类型。</returns>
+        public bool ForcedAdd(GameItem gameItem, GameThingBase container)
+        {
+            if (container is GameChar gameChar)  //若容器是角色
+            {
+                gameItem.GenerateIdIfEmpty();
+                gameChar.GameItems.Add(gameItem);
+                gameItem.OwnerId ??= gameChar.Id;
+            }
+            else if (container is GameItem item)
+            {
+                gameItem.GenerateIdIfEmpty();
+                item.Children.Add(gameItem);
+                gameItem.ParentId ??= item.Id;
+                gameItem.Parent ??= item;
+            }
+            else
+                return false;
+            return true;
+        }
+        #endregion 物品增减相关
+
         /// <summary>
         /// 标准化物品，避免有后增加的槽没有放置上去。
         /// </summary>
@@ -570,12 +608,11 @@ namespace GY2021001BLL
                 item.tmp.Children.ApartWithWithRepeated(item.tt.ChildrenTemplateIds, c => c.TemplateId, c => c, null, null, adds);
                 foreach (var addItem in adds)
                 {
-                    var newItem = gim.CreateGameItem(gitm.GetTemplateFromeId(addItem));
+                    var newItem = gim.CreateGameItem(addItem);
                     item.tmp.Children.Add(newItem);
                 }
             }
         }
-
     }
 
 }

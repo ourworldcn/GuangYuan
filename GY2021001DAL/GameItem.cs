@@ -100,6 +100,17 @@ namespace GY2021001DAL
 
         }
 
+        public ChangesItem(Guid containerId, IEnumerable<GameItem> adds = null, IEnumerable<Guid> removes = null, IEnumerable<GameItem> changes = null)
+        {
+            ContainerId = containerId;
+            if (null != adds)
+                Adds.AddRange(adds);
+            if (null != removes)
+                Removes.AddRange(removes);
+            if (null != changes)
+                Changes.AddRange(changes);
+        }
+
         /// <summary>
         /// 容器的Id。如果是容器本身属性变化，这个成员是容器的上层容器Id,例如背包的容量变化了则这个成员就是角色Id。
         /// </summary>
@@ -110,21 +121,24 @@ namespace GY2021001DAL
         /// </summary>
         public Guid ContainerId { get; set; }
 
+        List<GameItem> _Adds;
         /// <summary>
         /// 增加的数据。
         /// </summary>
-        public List<GameItem> Adds { get; } = new List<GameItem>();
+        public List<GameItem> Adds => _Adds ??= new List<GameItem>();
+
+        List<Guid> _Removes;
 
         /// <summary>
         /// 删除的对象的唯一Id集合。
         /// </summary>
-        public List<Guid> Removes { get; } = new List<Guid>();
+        public List<Guid> Removes => _Removes ??= new List<Guid>();
 
+        private List<GameItem> _Changes;
         /// <summary>
         /// 变化的数据。
         /// </summary>
-        public List<GameItem> Changes { get; } = new List<GameItem>();
-
+        public List<GameItem> Changes => _Changes ??= new List<GameItem>();
     }
 
 }

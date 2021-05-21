@@ -51,15 +51,27 @@ namespace GY2021001BLL
         }
 
         private IServiceProvider _Service;
+        /// <summary>
+        /// 当前使用的服务对象。
+        /// </summary>
         public IServiceProvider Service => _Service;
 
         private GameChar _GameChar;
+        /// <summary>
+        /// 当前的角色对象。
+        /// </summary>
         public GameChar GameChar => _GameChar;
 
         GameItem _Current;
+        /// <summary>
+        /// 当前物品对象。
+        /// </summary>
         public GameItem Current => _Current;
 
         IDictionary<Guid, GameItem> _GameItems;
+        /// <summary>
+        /// 键是物料对象Id,值是具体对象（用此对象当作物料）。
+        /// </summary>
         public IDictionary<Guid, GameItem> GameItems => _GameItems;
 
     }

@@ -1,5 +1,6 @@
-每个对象ClientGutString
 出战槽功能
+每个对象ClientGutString
+出战数值
 提供接口计算 换坐骑后 角色总成属性
 坐骑身体等级
 动态属性增加属码支持

@@ -81,8 +81,6 @@ namespace GY2021001WebApi.Controllers
                     if (!gc.ClientExtendProperties.Remove(model.Name, out GameExtendProperty val))
                         return false;
                     gu.DbContext.Set<GameExtendProperty>().Remove(val);
-                    return true;
-
                 }
                 else if (gc.ClientExtendProperties.TryGetValue(model.Name, out GameExtendProperty gep))
                     gep.Value = model.Value;
@@ -97,6 +95,7 @@ namespace GY2021001WebApi.Controllers
                     gu.DbContext.Set<GameExtendProperty>().Add(gep);
                     gc.ClientExtendProperties[gep.Name] = gep;
                 }
+                world.CharManager.Nope(gu);
             }
             finally
             {

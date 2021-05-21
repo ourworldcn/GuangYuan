@@ -362,6 +362,10 @@ namespace GY2021001BLL
                     data.HasError = true;
                     return;
                 }
+                //规范化数据
+                var gim = World.ItemManager;
+                gim.Normalize(data.GameItems);
+                data.GameItems.ForEach(c => gim.MergeProperty(c));
                 try
                 {
                     bool succ = Options?.CombatEnd?.Invoke(Service, data) ?? true;

@@ -98,7 +98,7 @@ namespace GY2021001WebApi.Controllers
             endCombatData.GameItems.Add(gold);
             //生成符文
             var shenwen = gitm.Id2Template.Values.Where(c => c.GenusCode >= 15 && c.GenusCode <= 17).ToArray();
-            for (int i = rnd.Next(1, 2) - 1; i >= 0; i--)
+            for (int i = rnd.Next(0, 2) - 1; i >= 0; i--)
             {
                 var item = gim.CreateGameItem(shenwen[rnd.Next(shenwen.Length)]); item.Count = 2;
                 endCombatData.GameItems.Add(item);
@@ -112,7 +112,7 @@ namespace GY2021001WebApi.Controllers
                 item.Count = 1;
                 endCombatData.GameItems.Add(item);
             }
-            Thread.Sleep(10001);
+            Thread.Sleep(1001);
             world.CombatManager.EndCombat(endCombatData);
             return (CombatEndReturnDto)endCombatData;
         }

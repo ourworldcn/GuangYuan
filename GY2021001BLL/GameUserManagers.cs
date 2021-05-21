@@ -234,14 +234,14 @@ namespace GY2021001BLL
         /// <summary>
         /// 获取在线人数。
         /// </summary>
-        public int OnlineCount { get => _Token2User.Count; }
+        public int OnlineCount => _Token2User.Count;
 
         private GameItemTemplateManager _ItemTemplateManager;
 
         /// <summary>
         /// 虚拟事物模板管理器。
         /// </summary>
-        public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= World.ItemTemplateManager; }
+        public GameItemTemplateManager ItemTemplateManager => _ItemTemplateManager ??= World.ItemTemplateManager;
         #endregion 公共属性
 
         #region 公共方法
@@ -264,10 +264,10 @@ namespace GY2021001BLL
         /// </summary>
         /// <param name="id"></param>
         /// <returns>如果没有找到则返回null</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameChar GetCharFromId(Guid id)
         {
-            if (_Id2GameChar.TryGetValue(id, out GameChar result))
-                return null;
+            _Id2GameChar.TryGetValue(id, out GameChar result);
             return result;
         }
 
@@ -276,10 +276,10 @@ namespace GY2021001BLL
         /// </summary>
         /// <param name="token">令牌。</param>
         /// <returns>用户对象，如果无效则返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameUser GetUserFromToken(Guid token)
         {
-            if (!_Token2User.TryGetValue(token, out GameUser result))
-                return null;
+            _Token2User.TryGetValue(token, out GameUser result);
             return result;
         }
 
@@ -289,18 +289,10 @@ namespace GY2021001BLL
         /// <param name="user"></param>
         /// <param name="timeout">超时时间,单位:毫秒。-1(默认值)表示一直等待。</param>
         /// <returns>true该用户已经锁定且有效。false锁定超时或用户已经无效。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Lock(GameUser user, int timeout = Timeout.Infinite)
         {
-            if (user.IsDisposed)    //若已经无效
-                return false;
-            if (!Monitor.TryEnter(user, timeout))   //若锁定超时
-                return false;
-            if (user.IsDisposed)    //若已经无效
-            {
-                Monitor.Exit(user);
-                return false;
-            }
-            return true;
+            return Lock(user, TimeSpan.FromMilliseconds(timeout));
         }
 
         /// <summary>
@@ -329,12 +321,11 @@ namespace GY2021001BLL
         /// <param name="token"></param>
         /// <param name="gameUser">在返回成功时，这里个参数返回用户对象。</param>
         /// <returns>true成功锁定，false没有找到令牌代表的用户。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Lock(Guid token, out GameUser gameUser)
         {
             gameUser = GetUserFromToken(token);
-            if (null == gameUser || !Lock(gameUser))
-                return false;
-            return true;
+            return null == gameUser ? false : Lock(gameUser);
         }
 
         /// <summary>
@@ -342,6 +333,7 @@ namespace GY2021001BLL
         /// </summary>
         /// <param name="user">用户对象。</param>
         /// <param name="pulse">是否通知等待队列中的线程锁定对象状态的更改。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unlock(GameUser user, bool pulse = false)
         {
             if (pulse)
@@ -538,18 +530,29 @@ namespace GY2021001BLL
         /// </summary>
         /// <param name="token"></param>
         /// <returns>true成功重置下线计时器，false未能找到有效对象。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Nope(Guid token)
         {
             var gu = GetUserFromToken(token);
-            if (null == gu || !Lock(gu))
+            return Nope(gu);
+        }
+
+        /// <summary>
+        /// 发送一个空操作以保证闲置下线重新开始计时。
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public bool Nope(GameUser user)
+        {
+            if (!Lock(user))
                 return false;
             try
             {
-                gu.LastModifyDateTimeUtc = DateTime.UtcNow;
+                user.LastModifyDateTimeUtc = DateTime.UtcNow;
             }
             finally
             {
-                Unlock(gu, true);
+                Unlock(user);
             }
             return true;
         }
@@ -736,6 +739,7 @@ namespace GY2021001BLL
             }
             try
             {
+                //补足角色的槽
                 var tt = World.ItemTemplateManager.GetTemplateFromeId(e.GameChar.TemplateId);
                 List<Guid> ids = new List<Guid>();
                 tt.ChildrenTemplateIds.ApartWithWithRepeated(e.GameChar.GameItems, c => c, c => c.TemplateId, ids, null, null);
@@ -745,6 +749,7 @@ namespace GY2021001BLL
                     e.GameChar.GameUser.DbContext.Set<GameItem>().Add(gameItem);
                     e.GameChar.GameItems.Add(gameItem);
                 }
+                //补足所属物品的槽
                 World.ItemManager.Normalize(e.GameChar.GameItems);
             }
             catch (Exception)
