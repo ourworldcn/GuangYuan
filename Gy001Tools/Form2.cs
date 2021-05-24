@@ -32,8 +32,9 @@ namespace Gy001Tools
         }
         private void Form2_Load(object sender, EventArgs e)
         {
-            var _ = 3m;
-            int i = (int)_;
+            object obj1 = 3m;
+            object obj2 = 2;
+            var b1 = (obj1 as IComparable).CompareTo(obj2);
             Guid id = new Guid(System.Convert.FromBase64String("2A2KP+db60q1PLvse6Cczg=="));
             //var id = Guid.NewGuid();
             //“N”、“D”、“B”、“P”或“X”

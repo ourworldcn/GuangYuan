@@ -48,15 +48,21 @@ namespace GY2021001WebApi.Controllers
         /// <returns>总是返回成功</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPut]
-        public ActionResult ModifyClentString(ModifyClentStringParamsDto model)
+        public ActionResult<bool> ModifyClentString(ModifyClentStringParamsDto model)
         {
             var gitm = HttpContext.RequestServices.GetRequiredService<GameCharManager>();
             var gu = gitm.GetUserFromToken(GameHelper.FromBase64String(model.Token));
             if (null == gu) //若令牌无效
                 return Unauthorized();
-            gu.GameChars[0].ClientGutsString = model.ClientString;
-            gitm.NotifyChange(gu);
-            return Ok();
+            var objectId = GameHelper.FromBase64String(model.ObjectId);
+            if (gu.GameChars[0].Id == objectId)
+            {
+                gu.GameChars[0].ClientGutsString = model.ClientString;
+                gitm.NotifyChange(gu);
+            }
+            else
+                return gitm.ModifyClientString(gu.GameChars[0], objectId, model.ClientString);
+            return true;
         }
 
         /// <summary>
@@ -103,6 +109,8 @@ namespace GY2021001WebApi.Controllers
             }
             return true;
         }
+
+
     }
 }
 

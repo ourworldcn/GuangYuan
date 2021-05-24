@@ -23,7 +23,7 @@ namespace GY2021001BLL
     public sealed class BpItemDataObject
     {
 
-        public BpItemDataObject(IEnumerable<GameCondition> conditions, GameStringProperty upperBound, GameStringProperty lowerBound, IEnumerable<BpPropertyChanges> propertyChanges)
+        public BpItemDataObject(IEnumerable<GameCondition> conditions, GameExpression upperBound, GameExpression lowerBound, IEnumerable<BpPropertyChanges> propertyChanges)
         {
             Conditions = conditions;
             UpperBound = upperBound;
@@ -32,8 +32,8 @@ namespace GY2021001BLL
         }
 
         public readonly IEnumerable<GameCondition> Conditions;
-        public readonly GameStringProperty UpperBound;
-        public readonly GameStringProperty LowerBound;
+        public readonly GameExpression UpperBound;
+        public readonly GameExpression LowerBound;
         public readonly IEnumerable<BpPropertyChanges> PropertyChanges;
     }
 
@@ -42,6 +42,18 @@ namespace GY2021001BLL
     /// </summary>
     public sealed class BpEnvironmentDatas
     {
+        public BpEnvironmentDatas()
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="gameChar"></param>
+        /// <param name="current"></param>
+        /// <param name="gameItems">直接引用该对象，对象后续更改将导致调用该对象成员的结果发生相应变化。</param>
         public BpEnvironmentDatas(IServiceProvider service, GameChar gameChar, GameItem current, IDictionary<Guid, GameItem> gameItems)
         {
             _Service = service;
@@ -66,7 +78,7 @@ namespace GY2021001BLL
         /// <summary>
         /// 当前物品对象。
         /// </summary>
-        public GameItem Current => _Current;
+        public GameItem Current { get => _Current; set => _Current = value; }
 
         IDictionary<Guid, GameItem> _GameItems;
         /// <summary>
@@ -78,12 +90,12 @@ namespace GY2021001BLL
 
     public static class BlueprintExtensions
     {
-        private readonly static ConcurrentDictionary<Guid, GameStringProperty> _FormulaId2ProbObject = new ConcurrentDictionary<Guid, GameStringProperty>();
-        public static GameStringProperty GetProbObject(this BpFormulaTemplate formulaTemplate)
+        private readonly static ConcurrentDictionary<Guid, GameExpression> _FormulaId2ProbObject = new ConcurrentDictionary<Guid, GameExpression>();
+        public static GameExpression GetProbObject(this BpFormulaTemplate formulaTemplate)
         {
             return _FormulaId2ProbObject.GetOrAdd(formulaTemplate.Id, c =>
             {
-                if (GameStringProperty.TryParse(formulaTemplate.Prob, out GameStringProperty result))
+                if (GameExpression.TryParse(formulaTemplate.Prob, out GameExpression result))
                     return result;
                 return null;
             });
@@ -101,15 +113,14 @@ namespace GY2021001BLL
         /// <returns></returns>
         public static BpItemDataObject GetBpItemDataObject(this BpItemTemplate bpItem)
         {
-            BpItemDataObject result;
-            if (_ItemId2Datas.TryGetValue(bpItem.Id, out result))  //若已经缓存
+            if (_ItemId2Datas.TryGetValue(bpItem.Id, out BpItemDataObject result))  //若已经缓存
                 return result;
             //条件
             var conditionals = new List<GameCondition>(); GameCondition.FillFromString(conditionals, bpItem.Conditional);
             //上限
-            GameStringProperty upperBound = null; GameStringProperty.TryParse(bpItem.CountUpperBound, out upperBound);
+            GameExpression upperBound = null; GameExpression.TryParse(bpItem.CountUpperBound, out upperBound);
             //下限
-            GameStringProperty lowerBound = null; GameStringProperty.TryParse(bpItem.CountLowerBound, out lowerBound);
+            GameExpression lowerBound = null; GameExpression.TryParse(bpItem.CountLowerBound, out lowerBound);
             //属性更改
             var changes = new List<BpPropertyChanges>(); BpPropertyChanges.FillFromString(changes, bpItem.PropertiesChanges);
             //
@@ -122,9 +133,32 @@ namespace GY2021001BLL
         /// <param name="bpItem"></param>
         /// <param name="gameItem"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsMatch(this BpItemTemplate bpItem, BpEnvironmentDatas datas)
         {
-            return GetBpItemDataObject(bpItem).Conditions.All(c => c.GetValue(datas));
+            var _ = GetBpItemDataObject(bpItem).Conditions;
+            return _.All(c => c.GetValue(datas));
+        }
+
+        /// <summary>
+        /// 在一组物品中寻找匹配的物品。
+        /// </summary>
+        /// <param name="bpItem"></param>
+        /// <param name="datas">除了<see cref="BpEnvironmentDatas.Current"/>属性外需要正确设置。返回时如果找到，则该属性是其对象，否则为null。</param>
+        /// <param name="gameItems"></param>
+        /// <returns>true成功找到匹配项，此时<paramref name="datas"/>的Current属性包含找到的数据，false没有找到</returns>
+        public static bool FindMatch(this BpItemTemplate bpItem, BpEnvironmentDatas datas, IEnumerable<GameItem> gameItems)
+        {
+            var conditions = bpItem.GetBpItemDataObject().Conditions as ICollection<GameCondition>;
+            conditions ??= bpItem.GetBpItemDataObject().Conditions.ToList();
+            foreach (var item in gameItems)
+            {
+                datas.Current = item;
+                if (conditions.All(c => c.GetValue(datas)))
+                    return true;
+            }
+            datas.Current = null;
+            return false;
         }
 
     }
@@ -180,7 +214,11 @@ namespace GY2021001BLL
         public string DebugMessage { get; set; }
     }
 
-    public class GameStringProperty
+    /// <summary>
+    /// 解析和计算表达式的类。
+    /// </summary>
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
+    public class GameExpression
     {
         #region 静态成员
 
@@ -224,14 +262,14 @@ namespace GY2021001BLL
         /// <param name="str"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public static bool TryParse(string str, out GameStringProperty result)
+        public static bool TryParse(string str, out GameExpression result)
         {
             str = str.Trim();  //忽略空白
             bool succ = false;
             result = null;
             if (TryGetConst(str, out object obj))   //若是常量
             {
-                result = new GameStringProperty()
+                result = new GameExpression()
                 {
                     IsConst = true,
                     ConstValue = obj,
@@ -243,7 +281,7 @@ namespace GY2021001BLL
                 var ary = str.Split(OwHelper.ColonArrayWithCN, StringSplitOptions.RemoveEmptyEntries); //以冒号分割
                 if (ary.Length < 1 || ary.Length > 2)    //若结构不正确
                     return succ;
-                result = new GameStringProperty()
+                result = new GameExpression()
                 {
                     IsConst = false,
                 };
@@ -260,6 +298,7 @@ namespace GY2021001BLL
                     if (!OwHelper.AnalyseSequence(ary[1], result.RightSequence))
                         return false;
                 }
+                succ = true;
                 result.Normalize();
             }
             return succ;
@@ -299,7 +338,7 @@ namespace GY2021001BLL
         }
 
         #endregion 静态成员
-        public GameStringProperty()
+        public GameExpression()
         {
 
         }
@@ -379,6 +418,16 @@ namespace GY2021001BLL
             gim.SetPropertyValue(gameItem, propName, val);
             return true;
         }
+
+        private string GetDebuggerDisplay()
+        {
+            if (IsConst)
+                return ConstValue.ToString();
+            else if (RightSequence.Count > 0)
+                return $"{string.Join('/', LeftPath)}:{string.Join('|', RightSequence)}";
+            else
+                return $"{string.Join('/', LeftPath)}";
+        }
     }
 
     /// <summary>
@@ -386,7 +435,7 @@ namespace GY2021001BLL
     /// </summary>
     public class GameCondition
     {
-        static private readonly string comparePattern = @"(?<left>[^\=\<\>]+)(?<op>[\=\<\>]{1,2})(?<right>[^\=\<\>]+)[\,，]?";
+        static private readonly string comparePattern = @"(?<left>[^\=\<\>]+)(?<op>[\=\<\>]{1,2})(?<right>[^\=\<\>\,，]+)[\,，]?";
 
         public static void FillFromString(ICollection<GameCondition> conditions, string str)
         {
@@ -400,9 +449,9 @@ namespace GY2021001BLL
                 {
                     Operator = item.Groups["op"].Value.Trim(),
                 };
-                if (GameStringProperty.TryParse(item.Groups["left"].Value, out GameStringProperty gameStringProperty))
+                if (GameExpression.TryParse(item.Groups["left"].Value, out GameExpression gameStringProperty))
                     tmp.Left = gameStringProperty;
-                if (GameStringProperty.TryParse(item.Groups["right"].Value, out gameStringProperty))
+                if (GameExpression.TryParse(item.Groups["right"].Value, out gameStringProperty))
                     tmp.Right = gameStringProperty;
                 conditions.Add(tmp);
             }
@@ -411,9 +460,9 @@ namespace GY2021001BLL
 
         #region 属性及相关
 
-        public GameStringProperty Left { get; set; }
+        public GameExpression Left { get; set; }
 
-        public GameStringProperty Right { get; set; }
+        public GameExpression Right { get; set; }
 
         public string Operator { get; set; }
 
@@ -422,7 +471,7 @@ namespace GY2021001BLL
         public bool GetValue(BpEnvironmentDatas datas)
         {
             object left = Left.GetValue(datas);
-            object right = Left.GetValue(datas);
+            object right = Right.GetValue(datas);
             int? cr = null;
             if (left == right)  //若引用相等
                 return Operator switch
@@ -431,6 +480,8 @@ namespace GY2021001BLL
                     "=" => true,
                     "!=" => false,
                     "<>" => false,
+                    "<=" => true,
+                    ">=" => true,
                     _ => throw new ArgumentOutOfRangeException(),
                 };
             else if (left == null)
@@ -450,6 +501,8 @@ namespace GY2021001BLL
                     _ => throw new ArgumentOutOfRangeException(),
                 };
             else if (!left.GetType().Equals(right.GetType()))   //类型不等
+            {
+               
                 return Operator switch
                 {
                     "==" => false,
@@ -459,6 +512,7 @@ namespace GY2021001BLL
                     "<>" => true,
                     _ => throw new ArgumentOutOfRangeException(),
                 };
+            }
             else if (left is IComparable comparable)
             {
                 cr = comparable.CompareTo(right);
@@ -478,7 +532,7 @@ namespace GY2021001BLL
                     _ => throw new ArgumentOutOfRangeException(),
                 };
             }
-            else
+            else //若不支持比较接口
             {
                 var b = Equals(left, right);
                 return Operator switch
@@ -511,13 +565,13 @@ namespace GY2021001BLL
                 {
                     OpertorStr = item.Groups["op"].Value,
                 };
-                if (GameStringProperty.TryParse(item.Groups["left"].Value, out GameStringProperty stringProperty))
+                if (GameExpression.TryParse(item.Groups["left"].Value, out GameExpression stringProperty))
                 {
                     tmp.Left = stringProperty;
                     if (tmp.Left.IsConst)
                         Debug.WriteLine("发现试图对常量赋值。");
                 }
-                if (GameStringProperty.TryParse(item.Groups["right"].Value, out stringProperty))
+                if (GameExpression.TryParse(item.Groups["right"].Value, out stringProperty))
                     tmp.Right = stringProperty;
                 changes.Add(tmp);
             }
@@ -529,9 +583,9 @@ namespace GY2021001BLL
         }
 
 
-        public GameStringProperty Left { get; set; }
+        public GameExpression Left { get; set; }
 
-        public GameStringProperty Right { get; set; }
+        public GameExpression Right { get; set; }
 
         public string OpertorStr { get; set; }
 
@@ -643,36 +697,36 @@ namespace GY2021001BLL
         private Dictionary<Guid, GameThingTemplateBase> _Id2Template;
         public Dictionary<Guid, GameThingTemplateBase> Id2Template { get => _Id2Template; }
 
-        private ConcurrentDictionary<Guid, GameStringProperty> _FormulaId2SequencePropertyData = new ConcurrentDictionary<Guid, GameStringProperty>();
+        private ConcurrentDictionary<Guid, GameExpression> _FormulaId2SequencePropertyData = new ConcurrentDictionary<Guid, GameExpression>();
         /// <summary>
         /// 获取公式的命中概率计算类。
         /// </summary>
         /// <param name="formulaId">公式的Id。</param>
         /// <returns></returns>
-        public GameStringProperty GetSequencePropertyData(Guid formulaId)
+        public GameExpression GetSequencePropertyData(Guid formulaId)
         {
             _InitializeTask?.Wait();
-            if (_FormulaId2SequencePropertyData.TryGetValue(formulaId, out GameStringProperty result))    //若已经缓存该公式的命中概率计算类
+            if (_FormulaId2SequencePropertyData.TryGetValue(formulaId, out GameExpression result))    //若已经缓存该公式的命中概率计算类
                 return result;
             if (!_Id2Template.TryGetValue(formulaId, out GameThingTemplateBase thingTemplateBase) || !(thingTemplateBase is BpFormulaTemplate formula))   //若没有指定Id的公式
                 return null;
-            GameStringProperty.TryParse(formula.Prob, out result);
+            GameExpression.TryParse(formula.Prob, out result);
             _FormulaId2SequencePropertyData[formulaId] = result;
             return result;
         }
 
-        private ConcurrentDictionary<Guid, (IEnumerable<GameCondition> Conditions, GameStringProperty UpperBound, GameStringProperty LowerBound, IEnumerable<BpPropertyChanges> PropertyChanges)>
-            _ItemId2Datas = new ConcurrentDictionary<Guid, (IEnumerable<GameCondition> Conditions, GameStringProperty UpperBound, GameStringProperty LowerBound, IEnumerable<BpPropertyChanges> PropertyChanges)>();
+        private ConcurrentDictionary<Guid, (IEnumerable<GameCondition> Conditions, GameExpression UpperBound, GameExpression LowerBound, IEnumerable<BpPropertyChanges> PropertyChanges)>
+            _ItemId2Datas = new ConcurrentDictionary<Guid, (IEnumerable<GameCondition> Conditions, GameExpression UpperBound, GameExpression LowerBound, IEnumerable<BpPropertyChanges> PropertyChanges)>();
 
         /// <summary>
         /// 获取物料项辅助计算对象。
         /// </summary>
         /// <param name="itemId"></param>
         /// <returns></returns>
-        public (IEnumerable<GameCondition> Conditions, GameStringProperty UpperBound, GameStringProperty LowerBound, IEnumerable<BpPropertyChanges> PropertyChanges)
+        public (IEnumerable<GameCondition> Conditions, GameExpression UpperBound, GameExpression LowerBound, IEnumerable<BpPropertyChanges> PropertyChanges)
             GetBpftItemDatas(Guid itemId)
         {
-            (IEnumerable<GameCondition> Conditions, GameStringProperty UpperBound, GameStringProperty LowerBound, IEnumerable<BpPropertyChanges> PropertyChanges) result;
+            (IEnumerable<GameCondition> Conditions, GameExpression UpperBound, GameExpression LowerBound, IEnumerable<BpPropertyChanges> PropertyChanges) result;
             if (_ItemId2Datas.TryGetValue(itemId, out result))
                 return result;
             if (!_Id2Template.TryGetValue(itemId, out GameThingTemplateBase tmp) || !(tmp is BpItemTemplate item))
@@ -682,10 +736,10 @@ namespace GY2021001BLL
             GameCondition.FillFromString(conditionals, item.Conditional);
             result.Conditions = conditionals;
             //上限
-            GameStringProperty upperBound = null; GameStringProperty.TryParse(item.CountUpperBound, out upperBound);
+            GameExpression upperBound = null; GameExpression.TryParse(item.CountUpperBound, out upperBound);
             result.UpperBound = upperBound;
             //下限
-            GameStringProperty lowerBound = null; GameStringProperty.TryParse(item.CountLowerBound, out lowerBound);
+            GameExpression lowerBound = null; GameExpression.TryParse(item.CountLowerBound, out lowerBound);
             result.LowerBound = lowerBound;
             //属性更改
             var changes = new List<BpPropertyChanges>();
@@ -701,6 +755,7 @@ namespace GY2021001BLL
         public void ApplyBluprint(ApplyBluprintDatas datas)
         {
             _InitializeTask.Wait(); //等待初始化结束
+            AdjGameItems(datas);
             FillBpItems(datas); //填充物料表
             foreach (var formu in datas.Blueprint.FormulaTemplates.OrderBy(c => c.OrderNumber))
             {
@@ -807,29 +862,38 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         public void FillBpItems(ApplyBluprintDatas datas)
         {
-            var envList = datas.GameItems.Concat(OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children)).Select(c =>   //构造环境数据,保证提示数据优先选定
+            var allItems = World.ObjectPoolListGameItem.Get();
+            try
             {
-                return new BpEnvironmentDatas(Service, datas.GameChar, c, datas.Items);
-            });
-            Dictionary<Guid, BpEnvironmentDatas> allEnvDic = new Dictionary<Guid, BpEnvironmentDatas>();    //所有有效的环境数据的字典,键是当前物品的Id
-            var bpItems = datas.Blueprint.FormulaTemplates.SelectMany(c => c.BptfItemTemplates).Where(c => !c.IsNew).ToList();    //所有物料对象,排除新生物品
-
-            var matchesQuery = bpItems.Select(bpItem => (env: envList.FirstOrDefault(env => bpItem.IsMatch(env)), bpItem)).Where(c => c.env != null); //获取匹配的对象
-            while (0 < bpItems.Count)    //当仍有需要匹配的物料对象
-            {
-                var ary = matchesQuery.ToArray();
-                if (ary.Length == 0)   //若没有新的匹配对象
-                    break;
-                foreach (var item in ary)
+                //保证提示数据优先选定
+                allItems.AddRange(datas.GameItems);
+                allItems.AddRange(OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children));
+                var bpItems = datas.Blueprint.FormulaTemplates.SelectMany(c => c.BptfItemTemplates).Where(c => !c.IsNew).ToList();    //所有物料对象,排除新生物品
+                var env = new BpEnvironmentDatas(Service, datas.GameChar, null, datas.Items);
+                while (0 < bpItems.Count)    //当仍有需要匹配的物料对象
                 {
-                    datas.Items[item.bpItem.Id] = item.env.Current; //增加物料对象映射
-                    allEnvDic[item.env.Current.Id] = item.env;
-                    bpItems.Remove(item.bpItem);
+                    bool succ = false;
+                    for (int i = bpItems.Count - 1; i >= 0; i--)
+                    {
+                        var item = bpItems[i];
+                        if (item.FindMatch(env, allItems))   //若找到匹配的物料
+                        {
+                            datas.Items[item.Id] = env.Current;
+                            bpItems.RemoveAt(i);
+                            succ = true;
+                        }
+                    }
+                    if (!succ)
+                        break;
                 }
+                if (bpItems.Count > 0)  //若物料填充不全
+                                        //TO DO
+                    ;
             }
-            if (bpItems.Count > 0)  //若物料填充不全
-                //TO DO
-                ;
+            finally
+            {
+                World.ObjectPoolListGameItem.Return(allItems);
+            }
         }
 
         public (int Level, int MaxLv, int TupoCount) GetShenwenInfo(GameChar gameChar, GameItem shenwen)
@@ -848,6 +912,17 @@ namespace GY2021001BLL
             var seq = (decimal[])tbp.Properties["ssl"];
             maxLv = (int)seq[lv];
             return (lv, maxLv, tp);
+        }
+
+        /// <summary>
+        /// 对物品对象格式化。
+        /// </summary>
+        /// <param name="datas"></param>
+        private void AdjGameItems(ApplyBluprintDatas datas)
+        {
+            var gameItems = OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children).Join(datas.GameItems, c => c.Id, c => c.Id, (l, r) => l).ToArray();
+            datas.GameItems.Clear();
+            datas.GameItems.AddRange(gameItems);
         }
     }
 }

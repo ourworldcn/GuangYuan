@@ -227,6 +227,7 @@ namespace GY2021001BLL
                 }
         }
 
+
         #endregion 私有方法
 
         #region 公共属性
@@ -724,6 +725,31 @@ namespace GY2021001BLL
             }
         }
 
+        /// <summary>
+        /// 修改客户端字符串。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="thingId"></param>
+        /// <param name="guts"></param>
+        /// <returns></returns>
+        public bool ModifyClientString(GameChar gameChar, Guid thingId, string guts)
+        {
+            if (!Lock(gameChar.GameUser))
+                return false;
+            try
+            {
+                var thing = OwHelper.GetAllSubItemsOfTree(gameChar.GameItems, c => c.Children).FirstOrDefault(c => c.Id == thingId);
+                if (null == thing)
+                    return false;
+                thing.ClientGutsString = guts;
+            }
+            finally
+            {
+                Unlock(gameChar.GameUser);
+            }
+            return true;
+        }
+
         #endregion 公共方法
 
         #region 事件及相关
@@ -756,6 +782,7 @@ namespace GY2021001BLL
             {
             }
             CharLoaded?.Invoke(this, e);
+
         }
 
 

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.ObjectModel;
 using Gy2021001Template;
+using Microsoft.AspNetCore.Http;
+using Gy001;
 
 namespace GY2021001WebApi.Models
 {

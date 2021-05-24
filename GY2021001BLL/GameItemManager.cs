@@ -150,6 +150,10 @@ namespace GY2021001BLL
             }
             else if (propName.Equals("Count", StringComparison.InvariantCultureIgnoreCase))
                 return gameItem.Count ?? 1;
+            else if (propName.Equals("tgenuscode", StringComparison.InvariantCultureIgnoreCase) || propName.Equals("tgcode", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return ItemTemplateManager.GetTemplateFromeId(gameItem.TemplateId)?.GenusCode;
+            }
             else
                 return gameItem.Properties.GetValueOrDefault(propName, 0m);
         }

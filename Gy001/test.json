@@ -1,65 +1,336 @@
 {
+  "WorldServiceHost": "http://192.168.0.104:53251",
   "GameChars": [
     {
-      "ClientExtendProperties": {},
-      "ClientGutsString": null,
-      "CombatStartUtc": null,
-      "CreateUtc": "2021-05-21T10:58:37.6379084",
-      "CurrentDungeonId": null,
+      "Id": "/GD7AT9/CEaHSmi7oDbmBg==",
+      "Properties": {
+        "lv": 0,
+        "mpp": 20,
+        "dpp": 1,
+        "ipp": 1,
+        "nemhp": 70,
+        "neatk": 70,
+        "neqlt": 70,
+        "alt": 35,
+        "ms": 56,
+        "eng": 210,
+        "crp": 0,
+        "crv": 14,
+        "aha": 420,
+        "at": 7,
+        "bt": 2.1,
+        "csr": 63,
+        "ssr": 49,
+        "rci": 3.5,
+        "SK": 7028,
+        "nm": 21056,
+        "hi": 21028,
+        "mhp": 9250,
+        "atk": 1065,
+        "qlt": 782,
+        "lug": 700,
+        "ps": 42028,
+        "js": 14028,
+        "stc": -1,
+        "cap": 20,
+        "body": 28028,
+        "lvatk": 0,
+        "lvmhp": 0,
+        "lvqlt": 0,
+        "mlvatk": 70,
+        "mlvmhp": 70,
+        "mlvqlt": 70,
+        "sscvatk": 0,
+        "sscmhp": 0,
+        "sscqlt": 0,
+        "pp": 20
+      },
       "DisplayName": null,
+      "ClientGutsString": null,
+      "TemplateId": "aZLzDAFjC0eFJwevKcXu7A==",
+      "CreateUtc": "2021-05-24T01:34:20.8848086",
+      "GameUserId": "0eHXDh1iW0GUjmPlHfdbPw==",
       "GameItems": [
         {
-          "Id": "RCoqCpegrUGCoUTeeFa9ew==",
-          "TemplateId": "q+WeseNXE0WCKJ8qg2Q1jg==",
-          "CreateUtc": "2021-05-21T10:58:37.6379165",
+          "Id": "nc6eMS1CCUKbezYRdojBdA==",
+          "TemplateId": "QsmDK5weRUuYFq0svw5HPw==",
+          "CreateUtc": "2021-05-24T01:34:20.885004",
+          "Count": 0,
+          "Properties": {
+            "stc": -1
+          },
+          "OwnerId": "/GD7AT9/CEaHSmi7oDbmBg==",
+          "Children": [],
+          "ParentId": null
+        },
+        {
+          "Id": "BhxMi2uiB02e5k2GzN6Jtw==",
+          "TemplateId": "oaAwFkA1mkeyxRC2PnpXdA==",
+          "CreateUtc": "2021-05-24T01:34:20.884951",
           "Count": 1,
           "Properties": {
-            "nemhp": 10,
-            "neatk": 10,
-            "neqlt": 10
+            "cap": 20
           },
-          "OwnerId": "Pd0fAE/pSEu4mUEPukHfYw==",
+          "OwnerId": "/GD7AT9/CEaHSmi7oDbmBg==",
+          "Children": [],
+          "ParentId": null
+        },
+        {
+          "Id": "MEpZ547Ib0WG41fnTHFmOA==",
+          "TemplateId": "d7Kg/saML0aw7YVAmr6ceQ==",
+          "CreateUtc": "2021-05-24T01:34:20.8850227",
+          "Count": 1,
+          "Properties": {},
+          "OwnerId": "/GD7AT9/CEaHSmi7oDbmBg==",
+          "Children": [],
+          "ParentId": null
+        },
+        {
+          "Id": "J6/KZbzs80KMJWDb4UpL4w==",
+          "TemplateId": "zT+qK+grlkCRav8tR+CE7w==",
+          "CreateUtc": "2021-05-24T01:34:20.8849482",
+          "Count": 1,
+          "Properties": {},
+          "OwnerId": "/GD7AT9/CEaHSmi7oDbmBg==",
+          "Children": [],
+          "ParentId": null
+        },
+        {
+          "Id": "OMCnmeSXw0uOxGIYRyQU+w==",
+          "TemplateId": "1u6kiOsKcEqP3mf3Xl4sCg==",
+          "CreateUtc": "2021-05-24T01:34:20.8849445",
+          "Count": 1,
+          "Properties": {},
+          "OwnerId": "/GD7AT9/CEaHSmi7oDbmBg==",
           "Children": [
             {
+              "Id": "Fwca/CJ6D0m4l0nhneBFog==",
+              "TemplateId": "wSmGLVe+/k6ngcguaZu/IQ==",
+              "CreateUtc": "2021-05-24T01:34:20.8855958",
+              "Count": 1,
+              "Properties": {
+                "body": 4006,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscvatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "OMCnmeSXw0uOxGIYRyQU+w=="
+            },
+            {
+              "Id": "FWibmJV2SUyeqHRw9cabGQ==",
+              "TemplateId": "zoAln9dGFE26S5fvL2BTXg==",
+              "CreateUtc": "2021-05-24T01:34:20.8855628",
+              "Count": 1,
+              "Properties": {
+                "body": 4003,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscvatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "OMCnmeSXw0uOxGIYRyQU+w=="
+            },
+            {
+              "Id": "IdGGJ2iZa0GfSqLwCrWAqg==",
+              "TemplateId": "k1fIQQ34FE+jy+sM2DRQPg==",
+              "CreateUtc": "2021-05-24T01:34:20.8855774",
+              "Count": 1,
+              "Properties": {
+                "body": 4002,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 1,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscvatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "OMCnmeSXw0uOxGIYRyQU+w=="
+            },
+            {
+              "Id": "0RltoOKCAk2LVaeBVXi+hw==",
+              "TemplateId": "FyBUaZgMxEGmbVdYcz9Ffg==",
+              "CreateUtc": "2021-05-24T01:34:20.8855331",
+              "Count": 1,
+              "Properties": {
+                "body": 4001,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscvatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "OMCnmeSXw0uOxGIYRyQU+w=="
+            },
+            {
+              "Id": "zxcwKPK3BEW4OMX6lyz0cg==",
+              "TemplateId": "kqIErFNN/UmBOnXiDzi1oA==",
+              "CreateUtc": "2021-05-24T01:34:20.8856081",
+              "Count": 1,
+              "Properties": {
+                "body": 4004,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscvatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "OMCnmeSXw0uOxGIYRyQU+w=="
+            },
+            {
+              "Id": "Q333cBtrB0qnCPN7RcETAQ==",
+              "TemplateId": "j90G3HrMLUa05ct62igxmA==",
+              "CreateUtc": "2021-05-24T01:34:20.8855171",
+              "Count": 1,
+              "Properties": {
+                "body": 4007,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscvatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "OMCnmeSXw0uOxGIYRyQU+w=="
+            },
+            {
+              "Id": "ThNz4EKqOkaCIv/PM6T3XQ==",
+              "TemplateId": "tXew/6XOT0aKRNefPBkrQw==",
+              "CreateUtc": "2021-05-24T01:34:20.8855481",
+              "Count": 1,
+              "Properties": {
+                "body": 4005,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 1,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscvatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "OMCnmeSXw0uOxGIYRyQU+w=="
+            }
+          ],
+          "ParentId": null
+        },
+        {
+          "Id": "6roThn0gHkmfsLZyX8yRXg==",
+          "TemplateId": "q+WeseNXE0WCKJ8qg2Q1jg==",
+          "CreateUtc": "2021-05-24T01:34:20.8849102",
+          "Count": 1,
+          "Properties": {},
+          "OwnerId": "/GD7AT9/CEaHSmi7oDbmBg==",
+          "Children": [
+            {
+              "Id": "PxAFhz5IrUeKWIfrpm7yIw==",
+              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
+              "CreateUtc": "2021-05-24T01:34:20.8850809",
+              "Count": 1,
+              "Properties": {
+                "nemhp": 10,
+                "neatk": 10,
+                "neqlt": 10
+              },
+              "OwnerId": null,
               "Children": [
                 {
-                  "Id": "7YKdzCy2uEqauhfyODsPUg==",
+                  "Id": "DhCOIM2elU+s+U4CLOerow==",
                   "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
-                  "CreateUtc": "2021-05-21T10:58:37.6379766",
+                  "CreateUtc": "2021-05-24T01:34:20.8850851",
                   "Count": 1,
                   "Properties": {},
                   "OwnerId": null,
                   "Children": [
                     {
-                      "Id": "LNIirRc/+kuvjvxdXnOxoA==",
+                      "Id": "wSJNbjnvKkGvRrl2Rwcc2A==",
                       "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                      "CreateUtc": "2021-05-21T10:58:37.6379779",
+                      "CreateUtc": "2021-05-24T01:34:20.8850961",
                       "Count": 1,
                       "Properties": {
                         "nm": 1501,
-                        "pt": 1,
                         "ps": 6001,
                         "js": 2001
                       },
                       "OwnerId": null,
                       "Children": [],
-                      "ParentId": "7YKdzCy2uEqauhfyODsPUg=="
+                      "ParentId": "DhCOIM2elU+s+U4CLOerow=="
                     }
                   ],
-                  "ParentId": "TSCJuKJOB0aY5zC+TrqV7A=="
+                  "ParentId": "PxAFhz5IrUeKWIfrpm7yIw=="
                 },
                 {
-                  "Id": "sBmRJuW4iEyprD7GMrlJFg==",
+                  "Id": "d1PsnluuPU6q1J3FEnkSxA==",
                   "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
-                  "CreateUtc": "2021-05-21T10:58:37.6379773",
+                  "CreateUtc": "2021-05-24T01:34:20.8850915",
                   "Count": 1,
                   "Properties": {},
                   "OwnerId": null,
                   "Children": [
                     {
-                      "Id": "b0s96yPvDkOozh8G6umq5g==",
+                      "Id": "bwcONUGeCEeOKQBgQwDaKw==",
                       "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
-                      "CreateUtc": "2021-05-21T10:58:37.6379993",
+                      "CreateUtc": "2021-05-24T01:34:20.8851023",
                       "Count": 1,
                       "Properties": {
                         "alt": 5,
@@ -83,143 +354,38 @@
                       },
                       "OwnerId": null,
                       "Children": [],
-                      "ParentId": "sBmRJuW4iEyprD7GMrlJFg=="
+                      "ParentId": "d1PsnluuPU6q1J3FEnkSxA=="
                     }
                   ],
-                  "ParentId": "TSCJuKJOB0aY5zC+TrqV7A=="
+                  "ParentId": "PxAFhz5IrUeKWIfrpm7yIw=="
                 }
               ],
-              "Count": 1,
-              "CreateUtc": "2021-05-21T10:58:37.6379752",
-              "Id": "TSCJuKJOB0aY5zC+TrqV7A==",
-              "OwnerId": null,
-              "ParentId": "RCoqCpegrUGCoUTeeFa9ew==",
-              "Properties": {},
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg=="
+              "ParentId": "6roThn0gHkmfsLZyX8yRXg=="
             },
             {
-              "Id": "ZdVZA3tEX02haocBy1Dblw==",
+              "Id": "gyAtm39y0UyJRt2J3PVvfg==",
               "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-05-21T10:58:37.638022",
+              "CreateUtc": "2021-05-24T01:34:20.8851884",
               "Count": 1,
-              "Properties": {},
+              "Properties": {
+                "nemhp": 10,
+                "neatk": 10,
+                "neqlt": 10
+              },
               "OwnerId": null,
               "Children": [
                 {
-                  "Id": "5Ilva9dF8EOvVQFNdVyVkg==",
+                  "Id": "1p7PTq6nLEmPLRuWDOjtvg==",
                   "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
-                  "CreateUtc": "2021-05-21T10:58:37.6380233",
+                  "CreateUtc": "2021-05-24T01:34:20.885199",
                   "Count": 1,
                   "Properties": {},
                   "OwnerId": null,
                   "Children": [
                     {
-                      "Id": "p2Xf3A9fqUSDA+fXMwFZaw==",
-                      "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                      "CreateUtc": "2021-05-21T10:58:37.6380401",
-                      "Count": 1,
-                      "Properties": {
-                        "alt": 5,
-                        "ms": 8,
-                        "eng": 30,
-                        "crp": 0,
-                        "crv": 2,
-                        "aha": 60,
-                        "at": 1,
-                        "bt": 0.3,
-                        "csr": 9,
-                        "ssr": 7,
-                        "rci": 0.5,
-                        "SK": 1002,
-                        "nm": 1502,
-                        "hi": 3002,
-                        "mhp": 1100,
-                        "atk": 180,
-                        "qlt": 80,
-                        "lug": 100
-                      },
-                      "OwnerId": null,
-                      "Children": [],
-                      "ParentId": "5Ilva9dF8EOvVQFNdVyVkg=="
-                    }
-                  ],
-                  "ParentId": "ZdVZA3tEX02haocBy1Dblw=="
-                },
-                {
-                  "Id": "z8HXhF7gsEaOC2/gMJQZLg==",
-                  "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
-                  "CreateUtc": "2021-05-21T10:58:37.6380227",
-                  "Count": 1,
-                  "Properties": {},
-                  "OwnerId": null,
-                  "Children": [
-                    {
-                      "Id": "NA9Yl0LHz0iYWT2OS8qr7A==",
-                      "TemplateId": "yFRXDDQOakOBqVzq/RJqtQ==",
-                      "CreateUtc": "2021-05-21T10:58:37.6380238",
-                      "Count": 1,
-                      "Properties": {
-                        "nm": 1502,
-                        "pt": 2,
-                        "ps": 6002,
-                        "js": 2002
-                      },
-                      "OwnerId": null,
-                      "Children": [],
-                      "ParentId": "z8HXhF7gsEaOC2/gMJQZLg=="
-                    }
-                  ],
-                  "ParentId": "ZdVZA3tEX02haocBy1Dblw=="
-                }
-              ],
-              "ParentId": "RCoqCpegrUGCoUTeeFa9ew=="
-            },
-            {
-              "Id": "PFQnZqa7l0ix0dT/E0aqBw==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-05-21T10:58:37.6380585",
-              "Count": 1,
-              "Properties": {},
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "8R37ya7aVEySDo7wG+ejVw==",
-                  "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
-                  "CreateUtc": "2021-05-21T10:58:37.638059",
-                  "Count": 1,
-                  "Properties": {},
-                  "OwnerId": null,
-                  "Children": [
-                    {
-                      "Id": "TD+Sz9vwjEmjmIhN85hEvA==",
-                      "TemplateId": "1a0YHQp870izLLHoNliyIQ==",
-                      "CreateUtc": "2021-05-21T10:58:37.63806",
-                      "Count": 1,
-                      "Properties": {
-                        "nm": 1503,
-                        "pt": 3,
-                        "ps": 6003,
-                        "js": 2003
-                      },
-                      "OwnerId": null,
-                      "Children": [],
-                      "ParentId": "8R37ya7aVEySDo7wG+ejVw=="
-                    }
-                  ],
-                  "ParentId": "PFQnZqa7l0ix0dT/E0aqBw=="
-                },
-                {
-                  "Id": "C8i+OCfGlk+wzpyY+X/AFg==",
-                  "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
-                  "CreateUtc": "2021-05-21T10:58:37.6380595",
-                  "Count": 1,
-                  "Properties": {},
-                  "OwnerId": null,
-                  "Children": [
-                    {
-                      "Id": "26pj7nvep0qnxG+pKuAJLg==",
+                      "Id": "5dFxvLX1DEq/O18gZk5kfA==",
                       "TemplateId": "Q22ffbPVCUu7a5wcgFRC7w==",
-                      "CreateUtc": "2021-05-21T10:58:37.6380625",
+                      "CreateUtc": "2021-05-24T01:34:20.8852068",
                       "Count": 1,
                       "Properties": {
                         "alt": 5,
@@ -243,335 +409,88 @@
                       },
                       "OwnerId": null,
                       "Children": [],
-                      "ParentId": "C8i+OCfGlk+wzpyY+X/AFg=="
+                      "ParentId": "1p7PTq6nLEmPLRuWDOjtvg=="
                     }
                   ],
-                  "ParentId": "PFQnZqa7l0ix0dT/E0aqBw=="
-                }
-              ],
-              "ParentId": "RCoqCpegrUGCoUTeeFa9ew=="
-            }
-          ],
-          "ParentId": null
-        },
-        {
-          "Id": "mgwhpUfIJk+UYm0NLzzrLA==",
-          "TemplateId": "QsmDK5weRUuYFq0svw5HPw==",
-          "CreateUtc": "2021-05-21T10:58:37.6379245",
-          "Count": 0,
-          "Properties": {
-            "stc": -1
-          },
-          "OwnerId": "Pd0fAE/pSEu4mUEPukHfYw==",
-          "Children": [],
-          "ParentId": null
-        },
-        {
-          "Id": "TXBgLDtrVki3PH+RZMXMXA==",
-          "TemplateId": "d7Kg/saML0aw7YVAmr6ceQ==",
-          "CreateUtc": "2021-05-21T10:58:37.6379292",
-          "Count": 1,
-          "Properties": {},
-          "OwnerId": "Pd0fAE/pSEu4mUEPukHfYw==",
-          "Children": [],
-          "ParentId": null
-        },
-        {
-          "Id": "RDF3oMSs30a5iZcMCdccTw==",
-          "TemplateId": "oaAwFkA1mkeyxRC2PnpXdA==",
-          "CreateUtc": "2021-05-21T10:58:37.6379219",
-          "Count": 1,
-          "Properties": {
-            "cap": 20
-          },
-          "OwnerId": "Pd0fAE/pSEu4mUEPukHfYw==",
-          "Children": [],
-          "ParentId": null
-        },
-        {
-          "Id": "59uiHkxGikC/3d/hfhjabQ==",
-          "TemplateId": "1u6kiOsKcEqP3mf3Xl4sCg==",
-          "CreateUtc": "2021-05-21T10:58:37.6379194",
-          "Count": 1,
-          "Properties": {},
-          "OwnerId": "Pd0fAE/pSEu4mUEPukHfYw==",
-          "Children": [
-            {
-              "Id": "pUEfjHe/3k6MXwpKNOe6dg==",
-              "TemplateId": "j90G3HrMLUa05ct62igxmA==",
-              "CreateUtc": "2021-05-21T10:58:37.6382202",
-              "Count": 1,
-              "Properties": {
-                "body": 4007,
-                "mhp": 0,
-                "atk": 0,
-                "qlt": 0,
-                "lvatk": 0,
-                "lvmhp": 0,
-                "lvqlt": 0,
-                "mlvatk": 10,
-                "mlvmhp": 10,
-                "mlvqlt": 10,
-                "sscvatk": 0,
-                "sscmhp": 0,
-                "sscqlt": 0
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "59uiHkxGikC/3d/hfhjabQ=="
-            },
-            {
-              "Id": "Ns4Vw02q10WeNxI3LnRqdg==",
-              "TemplateId": "zoAln9dGFE26S5fvL2BTXg==",
-              "CreateUtc": "2021-05-21T10:58:37.6382419",
-              "Count": 1,
-              "Properties": {
-                "body": 4003,
-                "mhp": 0,
-                "atk": 0,
-                "qlt": 0,
-                "lvatk": 0,
-                "lvmhp": 0,
-                "lvqlt": 0,
-                "mlvatk": 10,
-                "mlvmhp": 10,
-                "mlvqlt": 10,
-                "sscvatk": 0,
-                "sscmhp": 0,
-                "sscqlt": 0
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "59uiHkxGikC/3d/hfhjabQ=="
-            },
-            {
-              "Id": "fVVApZMLBUynWip6e+jHKA==",
-              "TemplateId": "wSmGLVe+/k6ngcguaZu/IQ==",
-              "CreateUtc": "2021-05-21T10:58:37.6382513",
-              "Count": 1,
-              "Properties": {
-                "body": 4006,
-                "mhp": 0,
-                "atk": 0,
-                "qlt": 0,
-                "lvatk": 0,
-                "lvmhp": 0,
-                "lvqlt": 0,
-                "mlvatk": 10,
-                "mlvmhp": 10,
-                "mlvqlt": 10,
-                "sscvatk": 0,
-                "sscmhp": 0,
-                "sscqlt": 0
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "59uiHkxGikC/3d/hfhjabQ=="
-            },
-            {
-              "Id": "krXcIUED9UuS2EFzAqdZoA==",
-              "TemplateId": "FyBUaZgMxEGmbVdYcz9Ffg==",
-              "CreateUtc": "2021-05-21T10:58:37.63823",
-              "Count": 1,
-              "Properties": {
-                "body": 4001,
-                "mhp": 0,
-                "atk": 0,
-                "qlt": 0,
-                "lvatk": 0,
-                "lvmhp": 0,
-                "lvqlt": 0,
-                "mlvatk": 10,
-                "mlvmhp": 10,
-                "mlvqlt": 10,
-                "sscvatk": 0,
-                "sscmhp": 0,
-                "sscqlt": 0
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "59uiHkxGikC/3d/hfhjabQ=="
-            },
-            {
-              "Id": "t9ITSHnyh0OyWYPYR/zMIw==",
-              "TemplateId": "kqIErFNN/UmBOnXiDzi1oA==",
-              "CreateUtc": "2021-05-21T10:58:37.638259",
-              "Count": 1,
-              "Properties": {
-                "body": 4004,
-                "mhp": 0,
-                "atk": 0,
-                "qlt": 0,
-                "lvatk": 0,
-                "lvmhp": 0,
-                "lvqlt": 0,
-                "mlvatk": 10,
-                "mlvmhp": 10,
-                "mlvqlt": 10,
-                "sscvatk": 0,
-                "sscmhp": 0,
-                "sscqlt": 0
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "59uiHkxGikC/3d/hfhjabQ=="
-            },
-            {
-              "Id": "pWdQwLSUTEWkV7PAZtZdLg==",
-              "TemplateId": "k1fIQQ34FE+jy+sM2DRQPg==",
-              "CreateUtc": "2021-05-21T10:58:37.6382465",
-              "Count": 1,
-              "Properties": {
-                "body": 4002,
-                "mhp": 0,
-                "atk": 0,
-                "qlt": 1,
-                "lvatk": 0,
-                "lvmhp": 0,
-                "lvqlt": 0,
-                "mlvatk": 10,
-                "mlvmhp": 10,
-                "mlvqlt": 10,
-                "sscvatk": 0,
-                "sscmhp": 0,
-                "sscqlt": 0
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "59uiHkxGikC/3d/hfhjabQ=="
-            },
-            {
-              "Id": "TTfg791JRUuTXOYGC4zpEw==",
-              "TemplateId": "tXew/6XOT0aKRNefPBkrQw==",
-              "CreateUtc": "2021-05-21T10:58:37.6382348",
-              "Count": 1,
-              "Properties": {
-                "body": 4005,
-                "mhp": 0,
-                "atk": 0,
-                "qlt": 1,
-                "lvatk": 0,
-                "lvmhp": 0,
-                "lvqlt": 0,
-                "mlvatk": 10,
-                "mlvmhp": 10,
-                "mlvqlt": 10,
-                "sscvatk": 0,
-                "sscmhp": 0,
-                "sscqlt": 0
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "59uiHkxGikC/3d/hfhjabQ=="
-            }
-          ],
-          "ParentId": null
-        },
-        {
-          "Id": "DDkHVbTlIESWuOqSqpHzeA==",
-          "TemplateId": "ie4qusMLEka2/13f74XJ5Q==",
-          "CreateUtc": "2021-05-21T10:58:37.637931",
-          "Count": 1,
-          "Properties": {},
-          "OwnerId": "Pd0fAE/pSEu4mUEPukHfYw==",
-          "Children": [
-            {
-              "Id": "2r8sufnNzUihNBBsokjQ7A==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-05-21T10:58:37.6381846",
-              "Count": 1,
-              "Properties": {},
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "QvXnoqwESE+fnZs4XcIb1Q==",
-                  "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
-                  "CreateUtc": "2021-05-21T10:58:37.6381853",
-                  "Count": 1,
-                  "Properties": {},
-                  "OwnerId": null,
-                  "Children": [
-                    {
-                      "Id": "cScyDKRqSUSwAgkldOOiHA==",
-                      "TemplateId": "PGKZeGbqe0qR7fWomH1IWA==",
-                      "CreateUtc": "2021-05-21T10:58:37.6381888",
-                      "Count": 1,
-                      "Properties": {
-                        "nm": 1507,
-                        "pt": 1,
-                        "ps": 6007,
-                        "js": 2007
-                      },
-                      "OwnerId": null,
-                      "Children": [],
-                      "ParentId": "QvXnoqwESE+fnZs4XcIb1Q=="
-                    }
-                  ],
-                  "ParentId": "2r8sufnNzUihNBBsokjQ7A=="
+                  "ParentId": "gyAtm39y0UyJRt2J3PVvfg=="
                 },
                 {
-                  "Id": "VsPbxI2GTki+N7bYJoZcuQ==",
-                  "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
-                  "CreateUtc": "2021-05-21T10:58:37.6381881",
+                  "Id": "da1VTiTYcEuBhWlwHRVfxA==",
+                  "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
+                  "CreateUtc": "2021-05-24T01:34:20.8851974",
                   "Count": 1,
                   "Properties": {},
                   "OwnerId": null,
                   "Children": [
                     {
-                      "Id": "wHZPDd6RqkOV7RDkYaU6vQ==",
-                      "TemplateId": "Fn+lABimDE6EnziaBSOmMQ==",
-                      "CreateUtc": "2021-05-21T10:58:37.6381908",
+                      "Id": "M6BWTZFdrkWU5g+GcZjrEg==",
+                      "TemplateId": "1a0YHQp870izLLHoNliyIQ==",
+                      "CreateUtc": "2021-05-24T01:34:20.885202",
                       "Count": 1,
                       "Properties": {
-                        "alt": 5,
-                        "ms": 8,
-                        "eng": 30,
-                        "crp": 0,
-                        "crv": 2,
-                        "aha": 60,
-                        "at": 1,
-                        "bt": 0.3,
-                        "csr": 9,
-                        "ssr": 7,
-                        "rci": 0.5,
-                        "SK": 1007,
-                        "nm": 1507,
-                        "hi": 3007,
-                        "mhp": 1800,
-                        "atk": 120,
-                        "qlt": 150,
-                        "lug": 100
+                        "nm": 1503,
+                        "ps": 6003,
+                        "js": 2003
                       },
                       "OwnerId": null,
                       "Children": [],
-                      "ParentId": "VsPbxI2GTki+N7bYJoZcuQ=="
+                      "ParentId": "da1VTiTYcEuBhWlwHRVfxA=="
                     }
                   ],
-                  "ParentId": "2r8sufnNzUihNBBsokjQ7A=="
+                  "ParentId": "gyAtm39y0UyJRt2J3PVvfg=="
                 }
               ],
-              "ParentId": "DDkHVbTlIESWuOqSqpHzeA=="
+              "ParentId": "6roThn0gHkmfsLZyX8yRXg=="
             },
             {
-              "Id": "HTR/xHZ090G28hH9Qallrg==",
+              "Id": "pbsHp1F9kkSC9vVVT84bDQ==",
               "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-05-21T10:58:37.6381341",
+              "CreateUtc": "2021-05-24T01:34:20.8851415",
               "Count": 1,
-              "Properties": {},
+              "Properties": {
+                "nemhp": 10,
+                "neatk": 10,
+                "neqlt": 10
+              },
               "OwnerId": null,
               "Children": [
                 {
-                  "Id": "JTqiPN26pku5RvK9HmkoIw==",
-                  "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
-                  "CreateUtc": "2021-05-21T10:58:37.6381352",
+                  "Id": "KUbBVOfupEKEmGo4ZnHK3w==",
+                  "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
+                  "CreateUtc": "2021-05-24T01:34:20.8851445",
                   "Count": 1,
                   "Properties": {},
                   "OwnerId": null,
                   "Children": [
                     {
-                      "Id": "zAk8H1mnP0Of3IycIa+K1g==",
-                      "TemplateId": "snxc/VedNESzkjM0131zSw==",
-                      "CreateUtc": "2021-05-21T10:58:37.6381461",
+                      "Id": "jnQctkyufUuVZpijNuBdog==",
+                      "TemplateId": "yFRXDDQOakOBqVzq/RJqtQ==",
+                      "CreateUtc": "2021-05-24T01:34:20.8851527",
+                      "Count": 1,
+                      "Properties": {
+                        "nm": 1502,
+                        "ps": 6002,
+                        "js": 2002
+                      },
+                      "OwnerId": null,
+                      "Children": [],
+                      "ParentId": "KUbBVOfupEKEmGo4ZnHK3w=="
+                    }
+                  ],
+                  "ParentId": "pbsHp1F9kkSC9vVVT84bDQ=="
+                },
+                {
+                  "Id": "xt9tmz3gpU6SHeT6//q/4w==",
+                  "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
+                  "CreateUtc": "2021-05-24T01:34:20.8851494",
+                  "Count": 1,
+                  "Properties": {},
+                  "OwnerId": null,
+                  "Children": [
+                    {
+                      "Id": "KbSoB585sEuWfhNdNrYwDw==",
+                      "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
+                      "CreateUtc": "2021-05-24T01:34:20.8851574",
                       "Count": 1,
                       "Properties": {
                         "alt": 5,
@@ -585,70 +504,59 @@
                         "csr": 9,
                         "ssr": 7,
                         "rci": 0.5,
-                        "SK": 1005,
-                        "nm": 1505,
-                        "hi": 3005,
-                        "mhp": 1150,
-                        "atk": 170,
+                        "SK": 1002,
+                        "nm": 1502,
+                        "hi": 3002,
+                        "mhp": 1100,
+                        "atk": 180,
                         "qlt": 80,
                         "lug": 100
                       },
                       "OwnerId": null,
                       "Children": [],
-                      "ParentId": "JTqiPN26pku5RvK9HmkoIw=="
+                      "ParentId": "xt9tmz3gpU6SHeT6//q/4w=="
                     }
                   ],
-                  "ParentId": "HTR/xHZ090G28hH9Qallrg=="
-                },
-                {
-                  "Id": "XfGtHrqCN0mW+v+neOrdtw==",
-                  "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
-                  "CreateUtc": "2021-05-21T10:58:37.6381347",
-                  "Count": 1,
-                  "Properties": {},
-                  "OwnerId": null,
-                  "Children": [
-                    {
-                      "Id": "I3CzYfJndEyTSQ2xqM15sg==",
-                      "TemplateId": "+/RJL7UYVkaKsNcBYJCR6w==",
-                      "CreateUtc": "2021-05-21T10:58:37.6381357",
-                      "Count": 1,
-                      "Properties": {
-                        "nm": 1505,
-                        "pt": 2,
-                        "ps": 6005,
-                        "js": 2005
-                      },
-                      "OwnerId": null,
-                      "Children": [],
-                      "ParentId": "XfGtHrqCN0mW+v+neOrdtw=="
-                    }
-                  ],
-                  "ParentId": "HTR/xHZ090G28hH9Qallrg=="
+                  "ParentId": "pbsHp1F9kkSC9vVVT84bDQ=="
                 }
               ],
-              "ParentId": "DDkHVbTlIESWuOqSqpHzeA=="
-            },
+              "ParentId": "6roThn0gHkmfsLZyX8yRXg=="
+            }
+          ],
+          "ParentId": null
+        },
+        {
+          "Id": "V8SsQsjbSUm+Hc8FifgLjA==",
+          "TemplateId": "ie4qusMLEka2/13f74XJ5Q==",
+          "CreateUtc": "2021-05-24T01:34:20.8850244",
+          "Count": 1,
+          "Properties": {},
+          "OwnerId": "/GD7AT9/CEaHSmi7oDbmBg==",
+          "Children": [
             {
-              "Id": "WiDd/ND3OUCmFhJC9tcAoA==",
+              "Id": "5ExDwCj7I0KSSCkH0MZ7gg==",
               "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-05-21T10:58:37.6381631",
+              "CreateUtc": "2021-05-24T01:34:20.8854275",
               "Count": 1,
-              "Properties": {},
+              "Properties": {
+                "nemhp": 10,
+                "neatk": 10,
+                "neqlt": 10
+              },
               "OwnerId": null,
               "Children": [
                 {
-                  "Id": "qcyAMrDxLkyU5gBpZ7+MWw==",
+                  "Id": "hbEIJQvtikeFhaavgjTBIA==",
                   "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
-                  "CreateUtc": "2021-05-21T10:58:37.6381642",
+                  "CreateUtc": "2021-05-24T01:34:20.8854325",
                   "Count": 1,
                   "Properties": {},
                   "OwnerId": null,
                   "Children": [
                     {
-                      "Id": "OblrBAJDzUu92CVqfkOGUg==",
+                      "Id": "tcZq3/qin0+qlf8lXdLrQg==",
                       "TemplateId": "FlNF5fu330ybHAkF5ytnQg==",
-                      "CreateUtc": "2021-05-21T10:58:37.6381691",
+                      "CreateUtc": "2021-05-24T01:34:20.8854397",
                       "Count": 1,
                       "Properties": {
                         "alt": 5,
@@ -672,86 +580,168 @@
                       },
                       "OwnerId": null,
                       "Children": [],
-                      "ParentId": "qcyAMrDxLkyU5gBpZ7+MWw=="
+                      "ParentId": "hbEIJQvtikeFhaavgjTBIA=="
                     }
                   ],
-                  "ParentId": "WiDd/ND3OUCmFhJC9tcAoA=="
+                  "ParentId": "5ExDwCj7I0KSSCkH0MZ7gg=="
                 },
                 {
-                  "Id": "F8PDVKUTZkKgdOZOJciNIg==",
+                  "Id": "/6g/otRTm0Cqka1lNsWcSQ==",
                   "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
-                  "CreateUtc": "2021-05-21T10:58:37.6381637",
+                  "CreateUtc": "2021-05-24T01:34:20.885431",
                   "Count": 1,
                   "Properties": {},
                   "OwnerId": null,
                   "Children": [
                     {
-                      "Id": "zmX5cA2NpkOC8kFc+Z16LQ==",
+                      "Id": "ETHPKkaumUerY0itIBiAmA==",
                       "TemplateId": "qToBAf85t0GdQxWoGN+gVw==",
-                      "CreateUtc": "2021-05-21T10:58:37.6381671",
+                      "CreateUtc": "2021-05-24T01:34:20.8854356",
                       "Count": 1,
                       "Properties": {
                         "nm": 1506,
-                        "pt": 3,
                         "ps": 6006,
                         "js": 2006
                       },
                       "OwnerId": null,
                       "Children": [],
-                      "ParentId": "F8PDVKUTZkKgdOZOJciNIg=="
+                      "ParentId": "/6g/otRTm0Cqka1lNsWcSQ=="
                     }
                   ],
-                  "ParentId": "WiDd/ND3OUCmFhJC9tcAoA=="
+                  "ParentId": "5ExDwCj7I0KSSCkH0MZ7gg=="
                 }
               ],
-              "ParentId": "DDkHVbTlIESWuOqSqpHzeA=="
+              "ParentId": "V8SsQsjbSUm+Hc8FifgLjA=="
             },
             {
-              "Id": "zIA9a+/sck2nSSbZxCj1lA==",
+              "Id": "mFrR1rvPD0CJRTWtSrJrOQ==",
               "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-05-21T10:58:37.638108",
+              "CreateUtc": "2021-05-24T01:34:20.8854714",
               "Count": 1,
-              "Properties": {},
+              "Properties": {
+                "nemhp": 10,
+                "neatk": 10,
+                "neqlt": 10
+              },
               "OwnerId": null,
               "Children": [
                 {
-                  "Id": "piOzMwLBCkCS+DU0+r+jwQ==",
-                  "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
-                  "CreateUtc": "2021-05-21T10:58:37.6381087",
+                  "Id": "l+R4ONyuaUCl1b1//ROPhg==",
+                  "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
+                  "CreateUtc": "2021-05-24T01:34:20.8854755",
                   "Count": 1,
                   "Properties": {},
                   "OwnerId": null,
                   "Children": [
                     {
-                      "Id": "2PkOwHRwPUqrgbYvmUZYxQ==",
+                      "Id": "ahYpO9aAZEmwkEg74sKMsw==",
+                      "TemplateId": "Fn+lABimDE6EnziaBSOmMQ==",
+                      "CreateUtc": "2021-05-24T01:34:20.8854828",
+                      "Count": 1,
+                      "Properties": {
+                        "alt": 5,
+                        "ms": 8,
+                        "eng": 30,
+                        "crp": 0,
+                        "crv": 2,
+                        "aha": 60,
+                        "at": 1,
+                        "bt": 0.3,
+                        "csr": 9,
+                        "ssr": 7,
+                        "rci": 0.5,
+                        "SK": 1007,
+                        "nm": 1507,
+                        "hi": 3007,
+                        "mhp": 1800,
+                        "atk": 120,
+                        "qlt": 150,
+                        "lug": 100
+                      },
+                      "OwnerId": null,
+                      "Children": [],
+                      "ParentId": "l+R4ONyuaUCl1b1//ROPhg=="
+                    }
+                  ],
+                  "ParentId": "mFrR1rvPD0CJRTWtSrJrOQ=="
+                },
+                {
+                  "Id": "ukDawS8W7UGXW88LhYdsaA==",
+                  "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
+                  "CreateUtc": "2021-05-24T01:34:20.8854741",
+                  "Count": 1,
+                  "Properties": {},
+                  "OwnerId": null,
+                  "Children": [
+                    {
+                      "Id": "aOoCmrBm40WBCUyGTar/1Q==",
+                      "TemplateId": "PGKZeGbqe0qR7fWomH1IWA==",
+                      "CreateUtc": "2021-05-24T01:34:20.8854784",
+                      "Count": 1,
+                      "Properties": {
+                        "nm": 1507,
+                        "ps": 6007,
+                        "js": 2007
+                      },
+                      "OwnerId": null,
+                      "Children": [],
+                      "ParentId": "ukDawS8W7UGXW88LhYdsaA=="
+                    }
+                  ],
+                  "ParentId": "mFrR1rvPD0CJRTWtSrJrOQ=="
+                }
+              ],
+              "ParentId": "V8SsQsjbSUm+Hc8FifgLjA=="
+            },
+            {
+              "Id": "LaEg9IFXwU6V3nEpBLG39A==",
+              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
+              "CreateUtc": "2021-05-24T01:34:20.8852838",
+              "Count": 1,
+              "Properties": {
+                "nemhp": 10,
+                "neatk": 10,
+                "neqlt": 10
+              },
+              "OwnerId": null,
+              "Children": [
+                {
+                  "Id": "7ilez3KTRkeT9Xr3D8eCyQ==",
+                  "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
+                  "CreateUtc": "2021-05-24T01:34:20.8852871",
+                  "Count": 1,
+                  "Properties": {},
+                  "OwnerId": null,
+                  "Children": [
+                    {
+                      "Id": "vvewy4EezUy1lPAMM1wV9Q==",
                       "TemplateId": "dGTLEdYE8kazYdxXOmp8wg==",
-                      "CreateUtc": "2021-05-21T10:58:37.63811",
+                      "CreateUtc": "2021-05-24T01:34:20.8853061",
                       "Count": 1,
                       "Properties": {
                         "nm": 1504,
-                        "pt": 3,
                         "ps": 6004,
                         "js": 2004
                       },
                       "OwnerId": null,
                       "Children": [],
-                      "ParentId": "piOzMwLBCkCS+DU0+r+jwQ=="
+                      "ParentId": "7ilez3KTRkeT9Xr3D8eCyQ=="
                     }
                   ],
-                  "ParentId": "zIA9a+/sck2nSSbZxCj1lA=="
+                  "ParentId": "LaEg9IFXwU6V3nEpBLG39A=="
                 },
                 {
-                  "Id": "wDV15x2oqUGKio7PFM/Fbg==",
+                  "Id": "2rYVx3H9yEqFcIr4XOkDsg==",
                   "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
-                  "CreateUtc": "2021-05-21T10:58:37.6381095",
+                  "CreateUtc": "2021-05-24T01:34:20.8852886",
                   "Count": 1,
                   "Properties": {},
                   "OwnerId": null,
                   "Children": [
                     {
-                      "Id": "XV0F1383h0yVaiDU5wAUXA==",
+                      "Id": "jg931RQAa0m6p9MBBL/LtQ==",
                       "TemplateId": "GOb20b73gUqnThIQR9JqRQ==",
-                      "CreateUtc": "2021-05-21T10:58:37.6381174",
+                      "CreateUtc": "2021-05-24T01:34:20.8853108",
                       "Count": 1,
                       "Properties": {
                         "alt": 5,
@@ -775,76 +765,102 @@
                       },
                       "OwnerId": null,
                       "Children": [],
-                      "ParentId": "wDV15x2oqUGKio7PFM/Fbg=="
+                      "ParentId": "2rYVx3H9yEqFcIr4XOkDsg=="
                     }
                   ],
-                  "ParentId": "zIA9a+/sck2nSSbZxCj1lA=="
+                  "ParentId": "LaEg9IFXwU6V3nEpBLG39A=="
                 }
               ],
-              "ParentId": "DDkHVbTlIESWuOqSqpHzeA=="
+              "ParentId": "V8SsQsjbSUm+Hc8FifgLjA=="
+            },
+            {
+              "Id": "Odtcxefp/EaeBcARr1b0dA==",
+              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
+              "CreateUtc": "2021-05-24T01:34:20.8853766",
+              "Count": 1,
+              "Properties": {
+                "nemhp": 10,
+                "neatk": 10,
+                "neqlt": 10
+              },
+              "OwnerId": null,
+              "Children": [
+                {
+                  "Id": "0ARCOsZ/CUCI+ifKmkXlbg==",
+                  "TemplateId": "fZix+PP9kECem+uvHbLczQ==",
+                  "CreateUtc": "2021-05-24T01:34:20.8853806",
+                  "Count": 1,
+                  "Properties": {},
+                  "OwnerId": null,
+                  "Children": [
+                    {
+                      "Id": "u3jbhl7VtUefnPHyonn7rw==",
+                      "TemplateId": "snxc/VedNESzkjM0131zSw==",
+                      "CreateUtc": "2021-05-24T01:34:20.8853876",
+                      "Count": 1,
+                      "Properties": {
+                        "alt": 5,
+                        "ms": 8,
+                        "eng": 30,
+                        "crp": 0,
+                        "crv": 2,
+                        "aha": 60,
+                        "at": 1,
+                        "bt": 0.3,
+                        "csr": 9,
+                        "ssr": 7,
+                        "rci": 0.5,
+                        "SK": 1005,
+                        "nm": 1505,
+                        "hi": 3005,
+                        "mhp": 1150,
+                        "atk": 170,
+                        "qlt": 80,
+                        "lug": 100
+                      },
+                      "OwnerId": null,
+                      "Children": [],
+                      "ParentId": "0ARCOsZ/CUCI+ifKmkXlbg=="
+                    }
+                  ],
+                  "ParentId": "Odtcxefp/EaeBcARr1b0dA=="
+                },
+                {
+                  "Id": "g6bj9B9c2UWl/NZYlPOU9g==",
+                  "TemplateId": "8+sPdHJ0y0OKEHmPbGEzWw==",
+                  "CreateUtc": "2021-05-24T01:34:20.8853793",
+                  "Count": 1,
+                  "Properties": {},
+                  "OwnerId": null,
+                  "Children": [
+                    {
+                      "Id": "FqqUA4jgDkO0ODBlbb+gtQ==",
+                      "TemplateId": "+/RJL7UYVkaKsNcBYJCR6w==",
+                      "CreateUtc": "2021-05-24T01:34:20.8853835",
+                      "Count": 1,
+                      "Properties": {
+                        "nm": 1505,
+                        "ps": 6005,
+                        "js": 2005
+                      },
+                      "OwnerId": null,
+                      "Children": [],
+                      "ParentId": "g6bj9B9c2UWl/NZYlPOU9g=="
+                    }
+                  ],
+                  "ParentId": "Odtcxefp/EaeBcARr1b0dA=="
+                }
+              ],
+              "ParentId": "V8SsQsjbSUm+Hc8FifgLjA=="
             }
           ],
           "ParentId": null
-        },
-        {
-          "Children": [],
-          "Count": 1,
-          "CreateUtc": "2021-05-21T10:58:37.6379204",
-          "Id": "1sQ4Qcnfk02PzP+HhoXXdw==",
-          "OwnerId": "Pd0fAE/pSEu4mUEPukHfYw==",
-          "ParentId": null,
-          "Properties": {},
-          "TemplateId": "zT+qK+grlkCRav8tR+CE7w=="
         }
       ],
-      "GameUserId": "oeNlZLd8zkOTVu+Zgn8yJw==",
-      "Id": "Pd0fAE/pSEu4mUEPukHfYw==",
-      "Properties": {
-        "lv": 0,
-        "mpp": 20,
-        "dpp": 1,
-        "ipp": 1,
-        "alt": 35,
-        "ms": 56,
-        "eng": 210,
-        "crp": 0,
-        "crv": 14,
-        "aha": 420,
-        "at": 7,
-        "bt": 2.1,
-        "csr": 63,
-        "ssr": 49,
-        "rci": 3.5,
-        "SK": 7028,
-        "nm": 21056,
-        "hi": 21028,
-        "mhp": 9250,
-        "atk": 1065,
-        "qlt": 782,
-        "lug": 700,
-        "pt": 15,
-        "ps": 42028,
-        "js": 14028,
-        "stc": -1,
-        "cap": 20,
-        "body": 28028,
-        "lvatk": 0,
-        "lvmhp": 0,
-        "lvqlt": 0,
-        "mlvatk": 70,
-        "mlvmhp": 70,
-        "mlvqlt": 70,
-        "sscvatk": 0,
-        "sscmhp": 0,
-        "sscqlt": 0,
-        "nemhp": 10,
-        "neatk": 10,
-        "neqlt": 10,
-        "pp": 20
-      },
-      "TemplateId": "aZLzDAFjC0eFJwevKcXu7A=="
+      "CurrentDungeonId": null,
+      "CombatStartUtc": null,
+      "ClientExtendProperties": {}
     }
   ],
-  "Token": "VIfTWbKYh0GEbspFNzO9cQ==",
-  "WorldServiceHost": "http://localhost:10080"
+  "Token": "aDiKjkWiL0q8YDVgp7Pa4w=="
 }

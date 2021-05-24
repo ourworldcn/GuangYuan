@@ -15,13 +15,18 @@ namespace Gy001
 {
     public class Program
     {
+        static private IHost _Host;
+
+        public IHost DefaultHost => _Host;
+
+
         public static void Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
-            CreateDb(host);
-            LoadCache(host);
-
-            host.Run();
+            _Host = host;
+            CreateDb(_Host);
+            LoadCache(_Host);
+            _Host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

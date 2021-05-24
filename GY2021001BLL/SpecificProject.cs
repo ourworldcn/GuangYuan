@@ -348,6 +348,12 @@ namespace GY2021001BLL
                 var templates = world.ItemTemplateManager.Id2Template.Values.Where(c => c.GenusCode == 10);
                 var shenwens = templates.Select(c => world.ItemManager.CreateGameItem(c));
                 world.ItemManager.AddItems(shenwens, runseSlot, rem, null);
+                //增加神纹道具
+                var id = new Guid("08994941-A144-4A0B-9E24-516B021C4AC3");  //羊神纹道具tId
+                var item = world.ItemManager.CreateGameItem(id);    //羊神纹道具
+                item.Count = 100;
+                var itemBag = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);
+                world.ItemManager.AddItem(item, itemBag);
                 result = true;
                 return result;
 
