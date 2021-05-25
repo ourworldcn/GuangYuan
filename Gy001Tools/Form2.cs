@@ -20,7 +20,7 @@ namespace Gy001Tools
 
         private void button1_Click(object sender, EventArgs e)
         {
-
+            var id = new Guid("06AC47A4A0F046E0AE0DD7D8D55BEB2A");
             var matches = Regex.Matches(textBox1.Text, comparePattern);
             StringBuilder sb = new StringBuilder();
             foreach (var item in matches.OfType<Match>())
@@ -34,7 +34,6 @@ namespace Gy001Tools
         {
             object obj1 = 3m;
             object obj2 = 2;
-            var b1 = (obj1 as IComparable).CompareTo(obj2);
             Guid id = new Guid(System.Convert.FromBase64String("2A2KP+db60q1PLvse6Cczg=="));
             //var id = Guid.NewGuid();
             //“N”、“D”、“B”、“P”或“X”

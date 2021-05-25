@@ -890,6 +890,78 @@ namespace GY2021001WebApi.Models
         public string Value { get; set; }
     }
 
+    /// <summary>
+    /// SetCombatMounts接口的数据模型传输类。
+    /// </summary>
+    [DataContract]
+    public class SetCombatMountsParamsDto : TokenDtoBase
+    {
+        public SetCombatMountsParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 元素中仅需Id有效即可。
+        /// </summary>
+        public List<GameItemDto> GameItemDtos { get; set; } = new List<GameItemDto>();
+    }
+
+    /// <summary>
+    /// 使用蓝图的数据传输对象。
+    /// </summary>
+    [DataContract]
+    public partial class ApplyBlueprintParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 蓝图的模板Id。这个见另行说明文档。
+        /// </summary>
+        [DataMember]
+        public string BlueprintId { get; set; }
+
+        /// <summary>
+        /// 要执行蓝图制造的对象集合。元素仅需要Id属性正确，当前版本忽略其他属性。
+        /// 可以仅给出关键物品，在制造过成中会补足其他所需物品。如神纹升级与突破，给出神纹对象即可。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 执行蓝图的次数，当前版本未实现该功能，保留为1(默认)。
+        /// </summary>
+        [DataMember]
+        public int Count { get; set; } = 1;
+    }
+
+    /// <summary>
+    /// ApplyBluprint接口返回时数据。
+    /// </summary>
+    [DataContract]
+    public partial class ApplyBlueprintReturnDto
+    {
+        public ApplyBlueprintReturnDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
+        /// </summary>
+        [DataMember]
+        public bool HasError { get; set; }
+
+        /// <summary>
+        /// 调试信息。调试状态下返回时填写。
+        /// </summary>
+        [DataMember]
+        public string DebugMessage { get; set; }
+
+        /// <summary>
+        /// 获取变化物品的数据。仅当成功返回时有意义。
+        /// </summary>
+        [DataMember]
+        public List<ChangesItemDto> ChangesItems { get; set; } = new List<ChangesItemDto>();
+    }
     #endregion 接口特定数据封装类
 
 }

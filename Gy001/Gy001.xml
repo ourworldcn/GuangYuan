@@ -101,6 +101,13 @@
             <returns>true成功设置,false,指定了删除属性标志，但没有找到指定名子的属性。</returns>
             <response code="401">令牌错误。</response>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.SetCombatMounts(GY2021001WebApi.Models.SetCombatMountsParamsDto)">
+            <summary>
+            设置出战坐骑列表。
+            </summary>
+            <param name="model">GameItemDto 中元素仅需Id有效填写。</param>
+            <returns>true成功设置，false可能是设置数量超过限制。</returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
             <summary>
             世界服务器的相关操作。
@@ -789,6 +796,57 @@
             值最长8000字符。（一个中文算一个字符）
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.SetCombatMountsParamsDto">
+            <summary>
+            SetCombatMounts接口的数据模型传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetCombatMountsParamsDto.GameItemDtos">
+            <summary>
+            元素中仅需Id有效即可。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ApplyBlueprintParamsDto">
+            <summary>
+            使用蓝图的数据传输对象。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintParamsDto.BlueprintId">
+            <summary>
+            蓝图的模板Id。这个见另行说明文档。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintParamsDto.GameItems">
+            <summary>
+            要执行蓝图制造的对象集合。元素仅需要Id属性正确，当前版本忽略其他属性。
+            可以仅给出关键物品，在制造过成中会补足其他所需物品。如神纹升级与突破，给出神纹对象即可。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintParamsDto.Count">
+            <summary>
+            执行蓝图的次数，当前版本未实现该功能，保留为1(默认)。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ApplyBlueprintReturnDto">
+            <summary>
+            ApplyBluprint接口返回时数据。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.HasError">
+            <summary>
+            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.DebugMessage">
+            <summary>
+            调试信息。调试状态下返回时填写。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.ChangesItems">
+            <summary>
+            获取变化物品的数据。仅当成功返回时有意义。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -799,6 +857,15 @@
             测试。
             </summary>
             <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
+            <summary>
+            使用蓝图制造或升级物品。
+            </summary>
+            <param name="model">参见 ApplyBlueprintParamsDto 的说明。</param>
+            <returns>物品变化数据。</returns>
+            <response code="401">令牌错误。</response>
+            <response code="400">参数错误。</response>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">
             <summary>

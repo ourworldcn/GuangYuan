@@ -11,7 +11,7 @@ namespace GY2021001DAL
     /// <summary>
     /// 游戏中物品，装备，货币，积分的基类。
     /// </summary>
-    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
+    [DebuggerDisplay("TName = {" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class GameItem : GameThingBase
     {
         /// <summary>
@@ -78,6 +78,9 @@ namespace GY2021001DAL
         /// <param name="changes"></param>
         public static void Reduce(List<ChangesItem> changes)
         {
+            if (changes is null)
+                throw new ArgumentNullException(nameof(changes));
+
             var _ = from tmp in changes
                     group tmp by tmp.ContainerId into g
                     where g.Count() > 1

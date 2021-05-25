@@ -605,7 +605,7 @@ namespace GY2021001BLL
             return true;
         }
 
-        public static bool ApplyBlueprint(IServiceProvider service, ApplyBluprintDatas datas)
+        public static bool ApplyBlueprint(IServiceProvider service, ApplyBlueprintDatas datas)
         {
             throw new NotImplementedException();
         }

@@ -617,6 +617,80 @@ namespace GY2021001BLL
                 }
             }
         }
+
+        /// <summary>
+        /// 按Id获取物品/容器对象集合。
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <param name="items">找到的物品或容器。</param>
+        /// <param name="parent">仅在这个对象的直接或间接子代中搜索，如果指定一个角色对象可以搜寻角色下所有物品。</param>
+        /// <returns>true所有指定Id均被获取，false,至少有一个物品没有找到，</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool GetItems(IEnumerable<Guid> ids, ICollection<GameItem> items, GameThingBase parent)
+        {
+            return GetItems(ids, items, GetAllChildren(parent).Join(ids, c => c.Id, c => c, (l, r) => l));
+        }
+
+        /// <summary>
+        /// 按Id获取物品/容器对象集合。
+        /// </summary>
+        /// <param name="ids">id的集合。</param>
+        /// <param name="items">得到的结果集追加到此集合内，即便没有获取到所有对象，也会追加找到的对象。</param>
+        /// <param name="gameItems">仅在该集合中搜索。</param>
+        /// <returns></returns>
+        public bool GetItems(IEnumerable<Guid> ids, ICollection<GameItem> items, IEnumerable<GameItem> gameItems)
+        {
+            var coll = gameItems.Join(ids, c => c.Id, c => c, (l, r) => l);
+            var lst = World.ObjectPoolListGameItem.Get();
+            try
+            {
+                lst.AddRange(coll);
+                var count = ids.Count();
+                lst.ForEach(c => items.Add(c));
+                return lst.Count == count;
+            }
+            finally
+            {
+                World.ObjectPoolListGameItem.Return(lst);
+            }
+        }
+
+        /// <summary>
+        /// 获取指定物品所属的角色对象。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>物品所属的角色，如果没有找到则返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameChar GetChar(GameItem gameItem)
+        {
+            GameItem tmp;
+            for (tmp = gameItem; tmp.Parent != null; tmp = tmp.Parent) ;
+            return tmp.OwnerId is null ? null : World.CharManager.GetCharFromId(tmp.OwnerId.Value);
+        }
+
+        /// <summary>
+        /// 获取容器的子对象的集合接口。
+        /// </summary>
+        /// <param name="gameThing">容器对象。</param>
+        /// <returns>子代容器的接口，null表示没有找到。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IList<GameItem> GetChildren(GameThingBase gameThing)
+        {
+            var children = (gameThing as GameItem)?.Children;
+            return children ?? (gameThing as GameChar)?.GameItems;
+        }
+
+        /// <summary>
+        /// 获取指定容器所有子代的可枚举对象。这是延迟执行的对象。枚举过程中更改对象可能导致异常。
+        /// </summary>
+        /// <param name="gameThing"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerable<GameItem> GetAllChildren(GameThingBase gameThing)
+        {
+            var _ = GetChildren(gameThing);
+            return OwHelper.GetAllSubItemsOfTree(_, c => c.Children);
+        }
     }
 
 }

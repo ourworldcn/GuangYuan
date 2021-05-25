@@ -1,6 +1,7 @@
 ﻿using GY2021001BLL;
 using GY2021001DAL;
 using Gy2021001Template;
+using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,7 +43,7 @@ namespace Gy001.Controllers
             if (!world.BlueprintManager.Id2BlueprintTemplate.TryGetValue(new Guid("d40c1818-06cf-4d19-9f6e-5ba54472b6fc"), out BlueprintTemplate blueprint))
                 return false;
             var gc = gu.GameChars[0];
-            ApplyBluprintDatas applyBluprintDatas = new ApplyBluprintDatas()
+            ApplyBlueprintDatas applyBluprintDatas = new ApplyBlueprintDatas()
             {
                 Count = 1,
                 Blueprint = blueprint,
@@ -52,11 +53,53 @@ namespace Gy001.Controllers
             var shenwenBag = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShenWenSlotId);
             applyBluprintDatas.GameItems.Add(new GameItem()
             {
-                Id = shenwenBag.Children.First(c=>c.TemplateId==new Guid("69542017-0C98-41C4-A66D-5758733F457E")).Id,
+                Id = shenwenBag.Children.First(c => c.TemplateId == new Guid("69542017-0C98-41C4-A66D-5758733F457E")).Id,
             });
             var bpm = world.BlueprintManager;
             bpm.ApplyBluprint(applyBluprintDatas);
             return Ok();
+        }
+
+        /// <summary>
+        /// 使用蓝图制造或升级物品。
+        /// </summary>
+        /// <param name="model">参见 ApplyBlueprintParamsDto 的说明。</param>
+        /// <returns>物品变化数据。</returns>
+        /// <response code="401">令牌错误。</response>
+        /// <response code="400">参数错误。</response>
+        [HttpPost]
+        public ActionResult<ApplyBlueprintReturnDto> ApplyBlueprint(ApplyBlueprintParamsDto model)
+        {
+            var result = new ApplyBlueprintReturnDto()
+            {
+                HasError = false,
+            };
+            var world = HttpContext.RequestServices.GetService<VWorld>();
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("令牌无效");
+            }
+            try
+            {
+                ApplyBlueprintDatas datas = new ApplyBlueprintDatas()
+                {
+                    Blueprint = world.BlueprintManager.GetTemplateFromId(GameHelper.FromBase64String(model.BlueprintId)) as BlueprintTemplate,  //这里不处理是空的情况
+                    GameChar = gu.GameChars[0],
+                };
+                datas.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
+                world.BlueprintManager.ApplyBluprint(datas);
+                result.ChangesItems.AddRange(datas.ChangesItem.Select(c => (ChangesItemDto)c));
+            }
+            catch (Exception err)
+            {
+                result.HasError = true;
+                result.DebugMessage = err.Message;
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu);
+            }
+            return result;
         }
     }
 }

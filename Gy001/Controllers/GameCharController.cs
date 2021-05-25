@@ -9,6 +9,7 @@ using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using OwGame;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -110,7 +111,40 @@ namespace GY2021001WebApi.Controllers
             return true;
         }
 
+        /// <summary>
+        /// 设置出战坐骑列表。
+        /// </summary>
+        /// <param name="model">GameItemDto 中元素仅需Id有效填写。</param>
+        /// <returns>true成功设置，false可能是设置数量超过限制。</returns>
+        [HttpPut]
+        public ActionResult<bool> SetCombatMounts(SetCombatMountsParamsDto model)
+        {
+            var world = HttpContext.RequestServices.GetService<VWorld>();
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return Unauthorized("令牌无效");
+            List<GameItem> lst = null;
+            try
+            {
+                lst = world.ObjectPoolListGameItem.Get();   //获取列表
+                var gc = gu.GameChars[0];
 
+                var zuoqiBag = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId); //背包容器
+                var combatSlot = gc.GameItems.First(c => c.TemplateId == ProjectConstant.DangqianZuoqiSlotId);  //出战容器
+                if (!world.ItemManager.GetItems(model.GameItemDtos.Select(c => GameHelper.FromBase64String(c.Id)), lst, zuoqiBag.Children.Concat(combatSlot.Children)))    //获取所有坐骑对象
+                    return false;
+                world.ItemManager.MoveItems(combatSlot, c => true, zuoqiBag);   //卸下所有出战坐骑
+                world.ItemManager.AddItems(lst, combatSlot);    //装上坐骑
+                //TO DO
+                world.CharManager.NotifyChange(gu);
+            }
+            finally
+            {
+                if (null != lst)
+                    world.ObjectPoolListGameItem.Return(lst);
+                world.CharManager.Unlock(gu, true);
+            }
+            return true;
+        }
     }
 }
 

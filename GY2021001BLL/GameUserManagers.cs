@@ -264,7 +264,7 @@ namespace GY2021001BLL
         /// 用指定的Id获取角色对象。
         /// </summary>
         /// <param name="id"></param>
-        /// <returns>如果没有找到则返回null</returns>
+        /// <returns>如果没有找到则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameChar GetCharFromId(Guid id)
         {
