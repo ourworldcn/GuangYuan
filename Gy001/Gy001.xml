@@ -108,6 +108,11 @@
             <param name="model">GameItemDto 中元素仅需Id有效填写。</param>
             <returns>true成功设置，false可能是设置数量超过限制。</returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.Sell(GY2021001WebApi.Models.SellParamsDto)">
+            <summary>
+            出售物品。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
             <summary>
             世界服务器的相关操作。
@@ -466,6 +471,26 @@
             服务器的当前时间。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.ApplyBlueprintReturnDto">
+            <summary>
+            ApplyBluprint接口返回时数据。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.HasError">
+            <summary>
+            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.DebugMessage">
+            <summary>
+            调试信息。调试状态下返回时填写。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.ChangesItems">
+            <summary>
+            获取变化物品的数据。仅当成功返回时有意义。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。
@@ -643,6 +668,26 @@
         <member name="P:GY2021001WebApi.Models.PagingRetunDtoBase.MaxCount">
             <summary>
             最多有多少数据。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ChangesReturnDtoBase">
+            <summary>
+            带变化物品集合的返回数据对象基类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesReturnDtoBase.HasError">
+            <summary>
+            返回时指示是否有错误。false表示正常完成，true表示有错误发生。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesReturnDtoBase.DebugMessage">
+            <summary>
+            调试信息。调试状态下返回时填写。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesReturnDtoBase.ChangesItems">
+            <summary>
+            获取变化物品的数据。仅当成功返回时有意义。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.QuicklyRegisterReturnDto">
@@ -827,24 +872,19 @@
             执行蓝图的次数，当前版本未实现该功能，保留为1(默认)。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.ApplyBlueprintReturnDto">
+        <member name="T:GY2021001WebApi.Models.SellParamsDto">
             <summary>
-            ApplyBluprint接口返回时数据。
+            Sell接口使用的参数封装类。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.HasError">
+        <member name="P:GY2021001WebApi.Models.SellParamsDto.Ids">
             <summary>
-            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
+            要出售物品的Id。这是一个事物操作，任何一个Id指定的物品无法成功卖出，将导致没有一个物品卖出。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.DebugMessage">
+        <member name="T:GY2021001WebApi.Models.SellReturnDto">
             <summary>
-            调试信息。调试状态下返回时填写。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.ChangesItems">
-            <summary>
-            获取变化物品的数据。仅当成功返回时有意义。
+            Sell接口返回的数据封装类。
             </summary>
         </member>
         <member name="T:Gy001.Controllers.BlueprintController">

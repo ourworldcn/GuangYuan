@@ -145,6 +145,76 @@ namespace GY2021001WebApi.Controllers
             }
             return true;
         }
+
+        /// <summary>
+        /// 出售物品。
+        /// </summary>
+        [HttpPost]
+        public ActionResult<SellReturnDto> Sell(SellParamsDto model)
+        {
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            var result = new SellReturnDto();
+            if (0 == model.Ids.Count)
+                return result;
+            List<GameItem> removes = null;
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return Unauthorized("令牌无效");
+            try
+            {
+                var gc = gu.GameChars[0];
+                var shoulan = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId); //兽栏
+                HashSet<Guid> ids = new HashSet<Guid>(model.Ids.Select(c => GameHelper.FromBase64String(c)));
+                var errItem = shoulan.Children.FirstOrDefault(c => !ids.Contains(c.Id));
+                if (null != errItem)   //若找不到某个Id
+                {
+                    result.HasError = true;
+                    result.DebugMessage = $"至少有一个对象无法找到，Id={errItem.Id}";
+                }
+                else
+                {
+                    removes = world.ObjectPoolListGameItem.Get();
+                    var golden = gc.GameItems.First(c => c.TemplateId == ProjectConstant.JinbiId);  //金币
+                    world.ItemManager.RemoveItemsWhere(shoulan, c => ids.Contains(c.Id), removes);  //移除所有野兽
+                    foreach (var item in removes)   //计算出售所得金币
+                    {
+                        var totalNe = Convert.ToDecimal(item.Properties.GetValueOrDefault("neatk", 0m)) +   //总资质值
+                         Convert.ToDecimal(item.Properties.GetValueOrDefault("nemhp", 0m)) +
+                         Convert.ToDecimal(item.Properties.GetValueOrDefault("neqlt", 0m));
+                        totalNe = Math.Round(totalNe);  //取整，容错
+                        decimal mul;
+
+                        if (totalNe >= 0 && totalNe <= 60) mul = 1;
+                        else if (totalNe >= 61 && totalNe <= 120) mul = 1.5m;
+                        else if (totalNe >= 121 && totalNe <= 180) mul = 2;
+                        else if (totalNe >= 181 && totalNe <= 240) mul = 3;
+                        else if (totalNe >= 241 && totalNe <= 300) mul = 4;
+                        else throw new InvalidOperationException("资质总和过大。");
+                        golden.Count += mul * totalNe;
+                    }
+                    //移除的对象
+                    var chn = new ChangesItemDto()
+                    {
+                        ContainerId = shoulan.Id.ToBase64String(),
+                    };
+                    chn.Removes.AddRange(removes.Select(c => c.Id.ToBase64String()));
+                    result.ChangesItems.Add(chn);
+                    //变化的对象
+                    chn = new ChangesItemDto()
+                    {
+                        ContainerId = gc.Id.ToBase64String(),
+                    };
+                    chn.Changes.Add((GameItemDto)golden);
+                    result.ChangesItems.Add(chn);
+                }
+            }
+            finally
+            {
+                if (null != removes)
+                    world.ObjectPoolListGameItem.Return(removes);
+                world.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
     }
 }
 

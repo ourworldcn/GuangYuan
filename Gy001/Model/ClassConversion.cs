@@ -251,4 +251,18 @@ namespace GY2021001WebApi.Models
         }
     }
 
+    public partial class ApplyBlueprintReturnDto
+    {
+        public static implicit operator ApplyBlueprintReturnDto(ApplyBlueprintDatas obj)
+        {
+            var result = new ApplyBlueprintReturnDto()
+            {
+                HasError = obj.HasError,
+                DebugMessage = obj.DebugMessage,
+            };
+            result.ChangesItems.AddRange(obj.ChangesItem.Select(c => (ChangesItemDto)c));
+            return result;
+        }
+
+    }
 }

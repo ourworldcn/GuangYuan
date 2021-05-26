@@ -217,6 +217,16 @@ namespace GY2021001BLL
                 }
 
             }
+            else if (propName.StartsWith("lv"))  //若是一个级别属性
+            {
+                var olv = Convert.ToDecimal(gameItem.GetProperyValue(propName, 0m));    //当前等级
+                var nlv = Convert.ToDecimal(val);   //新等级
+                if (olv != nlv)    //若需要改变等级
+                {
+                    var seqPName = propName.Substring(2);
+                    SetLevel(gameItem, seqPName, (int)nlv);
+                }
+            }
             else
                 gameItem.Properties[propName] = val;
             return true;

@@ -383,6 +383,7 @@ namespace GY2021001BLL
                     data.NextTemplate = null;
                 data.GameChar.CurrentDungeonId = data.NextTemplate?.Id;
                 data.GameChar.CombatStartUtc = data.GameChar.CurrentDungeonId is null ? default(DateTime?) : DateTime.UtcNow;
+                World.CharManager.NotifyChange(data.GameChar.GameUser);
             }
             finally
             {

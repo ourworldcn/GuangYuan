@@ -587,6 +587,37 @@ namespace GY2021001WebApi.Models
         public DateTime CurrentDateTime { get; set; }
     }
 
+    /// <summary>
+    /// 带变化物品集合的返回数据对象基类。
+    /// </summary>
+    [DataContract]
+    public partial class ChangesReturnDtoBase
+    {
+        public ChangesReturnDtoBase()
+        {
+
+        }
+        /// <summary>
+        /// 返回时指示是否有错误。false表示正常完成，true表示有错误发生。
+        /// </summary>
+        [DataMember]
+        public bool HasError { get; set; }
+
+        /// <summary>
+        /// 调试信息。调试状态下返回时填写。
+        /// </summary>
+        [DataMember]
+        public string DebugMessage { get; set; }
+
+        [IgnoreDataMember]
+        private List<ChangesItemDto> _ChangesItems;
+        /// <summary>
+        /// 获取变化物品的数据。仅当成功返回时有意义。
+        /// </summary>
+        [DataMember]
+        public List<ChangesItemDto> ChangesItems { get => _ChangesItems ??= new List<ChangesItemDto>(); set => _ChangesItems = value; }
+    }
+
     #endregion 基础数据封装类
 
     #region 接口特定数据封装类
@@ -962,6 +993,37 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public List<ChangesItemDto> ChangesItems { get; set; } = new List<ChangesItemDto>();
     }
+
+    /// <summary>
+    /// Sell接口使用的参数封装类。
+    /// </summary>
+    [DataContract]
+    public partial class SellParamsDto : TokenDtoBase
+    {
+        public SellParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 要出售物品的Id。这是一个事物操作，任何一个Id指定的物品无法成功卖出，将导致没有一个物品卖出。
+        /// </summary>
+        [DataMember]
+        public List<string> Ids { get; set; } = new List<string>();
+    }
+
+    /// <summary>
+    /// Sell接口返回的数据封装类。
+    /// </summary>
+    [DataContract]
+    public partial class SellReturnDto : ChangesReturnDtoBase
+    {
+        public SellReturnDto()
+        {
+
+        }
+    }
     #endregion 接口特定数据封装类
+
 
 }

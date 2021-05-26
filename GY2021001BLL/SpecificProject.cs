@@ -351,7 +351,7 @@ namespace GY2021001BLL
                 //增加神纹道具
                 var id = new Guid("08994941-A144-4A0B-9E24-516B021C4AC3");  //羊神纹道具tId
                 var item = world.ItemManager.CreateGameItem(id);    //羊神纹道具
-                item.Count = 100;
+                item.Count = 5;
                 var itemBag = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);
                 world.ItemManager.AddItem(item, itemBag);
                 result = true;
@@ -488,12 +488,12 @@ namespace GY2021001BLL
                 var body = c.Children.First(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti).Children.First();
                 var bodyTemplate = gitm.GetTemplateFromeId(body.TemplateId);
                 var result = CreateMounts(service, headTemplate, bodyTemplate);
-                if (c.Properties.TryGetValue("neatk", out object valObj) && valObj is decimal)
-                    result.Properties["neatk"] = valObj;
-                if (c.Properties.TryGetValue("neqlt", out valObj) && valObj is decimal)
-                    result.Properties["neqlt"] = valObj;
-                if (c.Properties.TryGetValue("nemhp", out valObj) && valObj is decimal)
-                    result.Properties["nemhp"] = valObj;
+                if (c.Properties.TryGetValue("neatk", out object valObj))
+                    result.Properties["neatk"] = Convert.ToDecimal(valObj);
+                if (c.Properties.TryGetValue("neqlt", out valObj))
+                    result.Properties["neqlt"] = Convert.ToDecimal(valObj);
+                if (c.Properties.TryGetValue("nemhp", out valObj))
+                    result.Properties["nemhp"] = Convert.ToDecimal(valObj);
                 return result;
             });
             shouyiSlot.Children.AddRange(mounts);   //加入坐骑

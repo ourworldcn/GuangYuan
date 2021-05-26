@@ -194,6 +194,12 @@ namespace GY2021001BLL
         public Dictionary<Guid, GameItem> Items { get; } = new Dictionary<Guid, GameItem>();
 
         /// <summary>
+        /// 提前计算好每种原料的增量。
+        /// 键是原料对象Id,值（最低增量,最高增量,用随机数计算得到的增量）的值元组。
+        /// </summary>
+        internal Dictionary<Guid, (decimal, decimal, decimal)> Incrementes { get; } = new Dictionary<Guid, (decimal, decimal, decimal)>();
+
+        /// <summary>
         /// 要执行的次数。
         /// </summary>
         public int Count { get; set; }
@@ -509,7 +515,7 @@ namespace GY2021001BLL
                         ">" => d1 > d2,
                         ">=" => d1 >= d2,
 
-                        "<" => d1 > d2,
+                        "<" => d1 < d2,
                         "<=" => d1 <= d2,
 
                         "==" => d1 == d2,
@@ -640,23 +646,23 @@ namespace GY2021001BLL
             switch (OpertorStr)
             {
                 case "+":
-                    ov = (decimal)Left.GetValue(datas);
-                    nv = (decimal)Right.GetValue(datas);
+                    ov = Convert.ToDecimal(Left.GetValue(datas));
+                    nv = Convert.ToDecimal(Right.GetValue(datas));
                     Left.SetValue(datas, ov + nv);
                     break;
                 case "-":
-                    ov = (decimal)Left.GetValue(datas);
-                    nv = (decimal)Right.GetValue(datas);
+                    ov = Convert.ToDecimal(Left.GetValue(datas));
+                    nv = Convert.ToDecimal(Right.GetValue(datas));
                     Left.SetValue(datas, ov - nv);
                     break;
                 case "*":
-                    ov = (decimal)Left.GetValue(datas);
-                    nv = (decimal)Right.GetValue(datas);
+                    ov = Convert.ToDecimal(Left.GetValue(datas));
+                    nv = Convert.ToDecimal(Right.GetValue(datas));
                     Left.SetValue(datas, ov * nv);
                     break;
                 case "/":
-                    ov = (decimal)Left.GetValue(datas);
-                    nv = (decimal)Right.GetValue(datas);
+                    ov = Convert.ToDecimal(Left.GetValue(datas));
+                    nv = Convert.ToDecimal(Right.GetValue(datas));
                     Left.SetValue(datas, ov / nv);
                     break;
                 case "=":
@@ -791,66 +797,75 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         public void ApplyBluprint(ApplyBlueprintDatas datas)
         {
-            _InitializeTask.Wait(); //等待初始化结束
+            var gu = datas.GameChar.GameUser;
             var tmpList = World.ObjectPoolListGameItem.Get();
+            if (!World.CharManager.Lock(gu))
+            {
+                datas.HasError = true;
+                datas.DebugMessage = $"无法锁定用户{gu.Id}";
+                return;
+            }
             try
             {
+                _InitializeTask.Wait(); //等待初始化结束
                 //获取有效的参与制造物品对象
                 if (!World.ItemManager.GetItems(datas.GameItems.Select(c => c.Id), tmpList, datas.GameChar))
                     return;
                 datas.GameItems.Clear();
                 datas.GameItems.AddRange(tmpList);
-                FillBpItems(datas); //填充物料表
-                //计算公式转化
-                foreach (var formu in datas.Blueprint.FormulaTemplates.OrderBy(c => c.OrderNumber))
+
+                for (int i = 0; i < datas.Count; i++)
                 {
-                    //检验公式所需物料是否齐全
-                    if (!formu.BptfItemTemplates.All(c => c.IsNew || datas.Items.ContainsKey(c.Id)))   //若公式物料不齐全
-                        continue;
-                    var prop = Convert.ToDouble(formu.GetProbObject().GetValue(new BpEnvironmentDatas(Service, datas.GameChar, null, datas.Items)));
-                    if (!World.IsHit(prop))   //若未命中
-                        continue;
-                    //计算按该公式生成物品
-                    foreach (var item in formu.BptfItemTemplates)   //遍历每个物料清单
+                    datas.Items.Clear();    //清除原料选择
+                    datas.Incrementes.Clear();  //清楚数量计算
+                    FillBpItems(datas); //填充物料表
+                    ComputeIncrement(datas);    //计算原料是否够用
+                    var formus = new List<BpFormulaTemplate>();
+                    //过滤掉原料不足的公式
+                    foreach (var formu in datas.Blueprint.FormulaTemplates)
                     {
-                        var data = item.GetBpItemDataObject();
-                        GameItem current;
-                        if (item.IsNew) //若是增加的物品
+                        bool succ = true;
+                        foreach (var bpItem in formu.BptfItemTemplates)
                         {
-                            var tid = (Guid)data.PropertyChanges.Select(c => c.Left.LeftPath).FirstOrDefault(c => c.Contains("tid") && c.Count == 1 && c[0] is Guid)?.First(); //TO DO
-                            current = World.ItemManager.CreateGameItem(tid);
-                            datas.Items[item.Id] = current; //加入物料集合
+                            if (!datas.Incrementes.TryGetValue(bpItem.Id, out var incs)) { succ = false; break; }   //找不到数量标注
+                            var item = datas.Items.GetValueOrDefault(bpItem.Id);
+                            if (null == item) { succ = false; break; }  //找不到对应原料
+                            if (item.Count + incs.Item1 < 0) { succ = false; break; }  //数量不足
                         }
-                        else
-                            current = datas.Items[item.Id];
-                        var env = new BpEnvironmentDatas(Service, datas.GameChar, current, datas.Items);
-
-                        #region 更改数量
-
-                        var lower = Convert.ToDouble(data.LowerBound.GetValue(env));
-                        var upper = Convert.ToDouble(data.UpperBound.GetValue(env));
-                        var inc = lower + World.RandomForWorld.NextDouble() * (upper - lower);  //增量
-                        decimal count = item.IsCountRound ? Math.Round((decimal)inc + (current.Count ?? 1)) : (decimal)inc + (current.Count ?? 1);
-                        World.ItemManager.SetPropertyValue(current, "Count", count);
-                        #endregion  更改数量
-
-                        //应用属性
-                        if (count > 0) //若还存在
-                        {
-                            foreach (var pc in data.PropertyChanges)
-                            {
-                                pc.Apply(env);
-                            }
-                        }
+                        if (succ)    //若成功
+                            formus.Add(formu);
                     }
-                    if (!formu.IsContinue)   //若不需要继续
+                    if (0 == formus.Count)  //若已经没有符合条件的公式。
+                    {
+                        datas.DebugMessage = $"计划制造{datas.Count}次,实际成功{i}次后，原料不足";
                         break;
+                    }
+                    //计算公式转化
+                    foreach (var formu in formus.OrderBy(c => c.OrderNumber))
+                    {
+                        //检验公式所需物料是否齐全
+                        if (!formu.BptfItemTemplates.All(c => c.IsNew || datas.Items.ContainsKey(c.Id)))   //若公式物料不齐全
+                            continue;
+                        var prop = Convert.ToDouble(formu.GetProbObject().GetValue(new BpEnvironmentDatas(Service, datas.GameChar, null, datas.Items)));
+                        if (!World.IsHit(prop))   //若未命中
+                            continue;
+                        //计算按该公式生成物品
+                        if (!ApplyFormula(datas, formu))
+                            return;
+                        if (!formu.IsContinue)   //若不需要继续
+                            break;
+                    }
                 }
+
+                ChangesItem.Reduce(datas.ChangesItem);    //压缩变化数据
+
+                World.CharManager.NotifyChange(gu);
             }
             finally
             {
                 if (null != tmpList)
                     World.ObjectPoolListGameItem.Return(tmpList);
+                World.CharManager.Unlock(gu, true);
             }
         }
 
@@ -860,7 +875,7 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         /// <param name="formula"></param>
         /// <returns>true成功反应，false,至少一项原料不足。</returns>
-        public bool ComputeFormula(ApplyBlueprintDatas datas, BpFormulaTemplate formula, ICollection<GameItem> gameItems)
+        protected bool ApplyFormula(ApplyBlueprintDatas datas, BpFormulaTemplate formula)
         {
             //检验公式所需物料是否齐全
             if (!formula.BptfItemTemplates.All(c => c.IsNew || datas.Items.ContainsKey(c.Id)))   //若公式物料不齐全
@@ -877,30 +892,83 @@ namespace GY2021001BLL
                                where leftPath.Count == 1 && leftPath[0] is string str && str.Equals("tid", StringComparison.InvariantCultureIgnoreCase)
                                let id = tmp.Right.GetValue(env)
                                where id is Guid
-                               select tmp;
-                    var tid = (Guid)coll.FirstOrDefault()?.Right.GetValue(env); //TO DO
+                               select new { tmp, id = (Guid)id };
+                    var first = coll.FirstOrDefault();
+                    if (null == first)
+                    {
+                        datas.DebugMessage = $"新生成物品必须指定TemplateId,但物料{item.Id}({item.DisplayName})中没有指定。";
+                        datas.HasError = true;
+                        return false;
+                    }
+                    var tid = (Guid)first.tmp.Right.GetValue(env);
                     current = World.ItemManager.CreateGameItem(tid);
                     datas.Items[item.Id] = current; //加入物料集合
+                    env.Current = current;
                 }
                 else
-                    current = datas.Items[item.Id];
+                {
+                    if (!datas.Items.TryGetValue(item.Id, out GameItem gameItem)) //若未找到原料对应物品
+                    {
+                        datas.DebugMessage = $"没有找到原料{item.Id}({item.DisplayName})对应的物品。";
+                        datas.HasError = true;
+                        return false;
+                    }
+                    env.Current = current = gameItem;
+                }
 
                 #region 更改数量
+                if (!datas.Incrementes.TryGetValue(item.Id, out var incs))
+                    ComputeIncrement(datas);
+                incs = datas.Incrementes[item.Id];
 
-                var lower = Convert.ToDouble(data.LowerBound.GetValue(env));
-                var upper = Convert.ToDouble(data.UpperBound.GetValue(env));
-                var inc = lower + World.RandomForWorld.NextDouble() * (upper - lower);  //增量
-                decimal count = item.IsCountRound ? Math.Round((decimal)inc + (current.Count ?? 1)) : (decimal)inc + (current.Count ?? 1);
+                var inc = incs.Item3;  //增量
+                decimal count = item.IsCountRound ? Math.Round(inc + (current.Count ?? 1)) : inc + (current.Count ?? 1);
+                if (count < 0)
+                {
+                    datas.HasError = true;
+                    datas.DebugMessage = "原料不足";
+                    return false;
+                }
                 World.ItemManager.SetPropertyValue(current, "Count", count);
                 #endregion  更改数量
-
+                bool bChange = item.IsNew || inc != 0;   //是否有变化
                 //应用属性
                 if (count > 0) //若还存在
                 {
                     foreach (var pc in data.PropertyChanges)
                     {
                         pc.Apply(env);
+                        bChange = true;
                     }
+                    var chn = new ChangesItem()
+                    {
+                        ContainerId = current.ParentId ?? current.OwnerId.Value,
+                    };
+                    chn.Changes.Add(current);
+                }
+                else //已经消失
+                {
+                    var chn = new ChangesItem()
+                    {
+                        ContainerId = current.ParentId ?? current.OwnerId.Value,
+                    };
+                    chn.Removes.Add(current.Id);
+                    var gim = World.ItemManager;
+                    var parent = current.Parent ?? (datas.GameChar as GameThingBase);
+                    World.ItemManager.RemoveItemsWhere(parent, c => c.Id == current.Id);
+                }
+                if (bChange)    //若有了变化
+                {
+                    //记录变化物品
+                    var chn = new ChangesItem()
+                    {
+                        ContainerId = current.ParentId ?? current.OwnerId.Value,
+                    };
+                    if (item.IsNew)  //若是新建物品
+                        chn.Adds.Add(current);
+                    else //若是变化物品
+                        chn.Changes.Add(current);
+                    datas.ChangesItem.Add(chn);
                 }
             }
             return true;
@@ -946,5 +1014,37 @@ namespace GY2021001BLL
                 World.ObjectPoolListGameItem.Return(allItems);
             }
         }
+
+        /// <summary>
+        /// 计算每个物料损耗增量。物料要填写完整，否则找不到则认为不足。此时忽略个别原料。
+        /// </summary>
+        /// <param name="datas">此时<see cref="ApplyBlueprintDatas.Items"/>要填写完毕。</param>
+        public void ComputeIncrement(ApplyBlueprintDatas datas)
+        {
+            foreach (var item in datas.Blueprint.FormulaTemplates.SelectMany(c => c.BptfItemTemplates))
+            {
+                var current = datas.Items.GetValueOrDefault(item.Id);
+                if (null == current)    //若找不到原料
+                    continue;
+                var data = item.GetBpItemDataObject();
+                var env = new BpEnvironmentDatas(Service, datas.GameChar, current, datas.Items);
+
+                #region 更改数量
+                var lower = Convert.ToDouble(data.LowerBound.GetValue(env));
+                var upper = Convert.ToDouble(data.UpperBound.GetValue(env));
+                var inc = (decimal)(lower + World.RandomForWorld.NextDouble() * Math.Abs(upper - lower));  //增量
+                if (item.IsCountRound)   //若需要取整
+                    datas.Incrementes[item.Id] = ((decimal)Math.Round(lower), (decimal)Math.Round(upper), Math.Round(inc));
+                else
+                    datas.Incrementes[item.Id] = ((decimal)lower, (decimal)upper, inc);
+                if (current.Count + (decimal)Math.Min(lower, upper) < 0)    //若原料数量不足
+                {
+                    datas.HasError = true;
+                    datas.DebugMessage += $"原料{item.Id}({item.DisplayName})数量不足。{Environment.NewLine}";
+                }
+                #endregion  更改数量
+            }
+        }
+
     }
 }

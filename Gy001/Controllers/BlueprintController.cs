@@ -31,7 +31,7 @@ namespace Gy001.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public ActionResult<bool> Test()
+        public ActionResult<ApplyBlueprintReturnDto> Test()
         {
             var world = HttpContext.RequestServices.GetService<VWorld>();
             var gitm = world.ItemTemplateManager;
@@ -41,14 +41,13 @@ namespace Gy001.Controllers
             var gu = world.CharManager.Login(loginName, pwd, "");
             //执行蓝图制造
             if (!world.BlueprintManager.Id2BlueprintTemplate.TryGetValue(new Guid("d40c1818-06cf-4d19-9f6e-5ba54472b6fc"), out BlueprintTemplate blueprint))
-                return false;
+                return Unauthorized();
             var gc = gu.GameChars[0];
             ApplyBlueprintDatas applyBluprintDatas = new ApplyBlueprintDatas()
             {
-                Count = 1,
+                Count = 9,
                 Blueprint = blueprint,
                 GameChar = gu.GameChars[0],
-
             };
             var shenwenBag = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShenWenSlotId);
             applyBluprintDatas.GameItems.Add(new GameItem()
@@ -57,7 +56,7 @@ namespace Gy001.Controllers
             });
             var bpm = world.BlueprintManager;
             bpm.ApplyBluprint(applyBluprintDatas);
-            return Ok();
+            return(ApplyBlueprintReturnDto)applyBluprintDatas;
         }
 
         /// <summary>

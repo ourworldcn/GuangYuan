@@ -80,7 +80,7 @@ namespace GY2021001DAL
         {
             if (changes is null)
                 throw new ArgumentNullException(nameof(changes));
-
+            //合并容器
             var _ = from tmp in changes
                     group tmp by tmp.ContainerId into g
                     where g.Count() > 1
@@ -95,6 +95,36 @@ namespace GY2021001DAL
             foreach (var item in lst.SelectMany(c => c.Item3))
             {
                 changes.Remove(item);
+            }
+            //对容器内数据合并
+            var tmpList = new List<GameItem>();
+            var ids = new List<Guid>();
+            foreach (var item in changes)
+            {
+                //合并追加数据
+                tmpList.Clear();
+                tmpList.AddRange(item.Adds.Distinct());
+                if (tmpList.Count != item.Adds.Count)
+                {
+                    item.Adds.Clear();
+                    item.Adds.AddRange(tmpList);
+                }
+                //合并删除数据
+                ids.Clear();
+                ids.AddRange(item.Removes.Distinct());
+                if (ids.Count != item.Removes.Count)
+                {
+                    item.Removes.Clear();
+                    item.Removes.AddRange(ids);
+                }
+                //合并改变数据
+                tmpList.Clear();
+                tmpList.AddRange(item.Changes.Distinct());
+                if (tmpList.Count != item.Changes.Count)
+                {
+                    item.Changes.Clear();
+                    item.Changes.AddRange(tmpList);
+                }
             }
         }
 
