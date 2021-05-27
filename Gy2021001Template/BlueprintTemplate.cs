@@ -84,6 +84,9 @@ namespace Gy2021001Template
         public virtual BpFormulaTemplate FormulaTemplate { get; set; }
         #endregion 导航属性
 
+        [Column("变量声明")]
+        public string VariableDeclaration { get; set; }
+
         [Column("条件属性")]
         public string Conditional { get; set; }
 

@@ -315,7 +315,7 @@ namespace GY2021001WebApi.Models
         /// 属性集合。"Properties":{"atk":102,"qult":500,"catalogId":"shfdkjshfkjskfh=="}
         /// </summary>
         [DataMember(Name = nameof(Properties))]
-        public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// 所属Id。当前版本下，仅当此物直属于角色对象时，此属性才有值，且是所属角色的id。
@@ -615,7 +615,7 @@ namespace GY2021001WebApi.Models
         /// 获取变化物品的数据。仅当成功返回时有意义。
         /// </summary>
         [DataMember]
-        public List<ChangesItemDto> ChangesItems { get => _ChangesItems ??= new List<ChangesItemDto>(); set => _ChangesItems = value; }
+        public List<ChangesItemDto> ChangesItems { get => _ChangesItems ?? (_ChangesItems = new List<ChangesItemDto>()); set => _ChangesItems = value; }
     }
 
     #endregion 基础数据封装类

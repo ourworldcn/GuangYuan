@@ -86,6 +86,10 @@ namespace GY2021001BLL
         /// </summary>
         public IDictionary<Guid, GameItem> GameItems => _GameItems;
 
+        /// <summary>
+        /// 局部变量。
+        /// </summary>
+        internal GameVariable Variables { get; } = new GameVariable();
     }
 
     public static class BlueprintExtensions
@@ -271,7 +275,9 @@ namespace GY2021001BLL
         /// <returns></returns>
         public static bool TryParse(string str, out GameOperand result)
         {
+            //"F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4"
             str = str.Trim();  //忽略空白
+            StringBuilder sb = new StringBuilder();
             bool succ = false;
             result = null;
             if (TryGetConst(str, out object obj))   //若是常量
@@ -426,7 +432,7 @@ namespace GY2021001BLL
             return true;
         }
 
-        private string GetDebuggerDisplay()
+        protected string GetDebuggerDisplay()
         {
             if (IsConst)
                 return ConstValue.ToString();
@@ -434,6 +440,56 @@ namespace GY2021001BLL
                 return $"{string.Join('/', LeftPath)}:{string.Join('|', RightSequence)}";
             else
                 return $"{string.Join('/', LeftPath)}";
+        }
+    }
+
+    /// <summary>
+    /// 提取的局部变量类。
+    /// </summary>
+    public class GameVariable
+    {
+        public static bool TryParse(string str, out GameVariable result)
+        {
+            bool returnVal = true;
+            var items = str.Split(OwHelper.CommaArrayWithCN);
+            result = new GameVariable()
+            {
+            };
+            foreach (var item in items)
+            {
+                var ary = item.Split('=');
+                if (ary.Length != 2 || !GameOperand.TryParse(ary[1], out var operand))
+                {
+                    returnVal = false;
+                    break;
+                }
+                result.Properties[ary[0]] = operand;
+            }
+            return returnVal;
+        }
+
+        public GameVariable()
+        {
+
+        }
+
+        /// <summary>
+        /// 记录所有局部变量。
+        /// </summary>
+        public Dictionary<string, GameOperand> Properties { get; } = new Dictionary<string, GameOperand>();
+
+        /// <summary>
+        /// 获取值。
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <param name="environmentDatas"></param>
+        /// <returns>没有找到指定属性则返回null。此时无法区分是出错还是属性本身就是null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object GetValue(string propName, BpEnvironmentDatas environmentDatas)
+        {
+            if (!Properties.TryGetValue(propName, out var operand))
+                return null;
+            return operand.GetValue(environmentDatas);
         }
     }
 

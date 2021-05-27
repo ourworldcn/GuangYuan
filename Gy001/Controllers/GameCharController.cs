@@ -163,18 +163,19 @@ namespace GY2021001WebApi.Controllers
             {
                 var gc = gu.GameChars[0];
                 var shoulan = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId); //兽栏
-                HashSet<Guid> ids = new HashSet<Guid>(model.Ids.Select(c => GameHelper.FromBase64String(c)));
-                var errItem = shoulan.Children.FirstOrDefault(c => !ids.Contains(c.Id));
-                if (null != errItem)   //若找不到某个Id
+                HashSet<Guid> ids = new HashSet<Guid>(shoulan.Children.Select(c => c.Id));  //所有兽栏动物Id
+                var sellIds = new HashSet<Guid>(model.Ids.Select(c => GameHelper.FromBase64String(c)));    //要卖的物品Id
+                var errItem = sellIds.FirstOrDefault(c => !ids.Contains(c));
+                if (Guid.Empty != errItem)   //若找不到某个Id
                 {
                     result.HasError = true;
-                    result.DebugMessage = $"至少有一个对象无法找到，Id={errItem.Id}";
+                    result.DebugMessage = $"至少有一个对象无法找到，Id={errItem}";
                 }
                 else
                 {
                     removes = world.ObjectPoolListGameItem.Get();
                     var golden = gc.GameItems.First(c => c.TemplateId == ProjectConstant.JinbiId);  //金币
-                    world.ItemManager.RemoveItemsWhere(shoulan, c => ids.Contains(c.Id), removes);  //移除所有野兽
+                    world.ItemManager.RemoveItemsWhere(shoulan, c => sellIds.Contains(c.Id), removes);  //移除所有野兽
                     foreach (var item in removes)   //计算出售所得金币
                     {
                         var totalNe = Convert.ToDecimal(item.Properties.GetValueOrDefault("neatk", 0m)) +   //总资质值

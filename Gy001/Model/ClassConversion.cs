@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using Gy2021001Template;
 using Microsoft.AspNetCore.Http;
 using Gy001;
+using System.Text.Json;
 
 namespace GY2021001WebApi.Models
 {
@@ -32,7 +33,7 @@ namespace GY2021001WebApi.Models
             };
             foreach (var item in obj.Properties)
             {
-                result.Properties[item.Key] = item.Value;
+                result.Properties[item.Key] = item.Value is JsonElement je ? (je.ValueKind switch { JsonValueKind.Number => je.GetDecimal(), _ => throw new InvalidOperationException(), }) : item.Value;
             }
             result.Children.AddRange(obj.Children.Select(c => (GameItem)c));
             return result;
