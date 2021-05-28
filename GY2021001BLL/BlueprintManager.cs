@@ -656,7 +656,7 @@ namespace GY2021001BLL
             GameItem oldCurrent = environmentDatas.Current;
             try
             {
-                if (!environmentDatas.GameItems.TryGetValue(_MaterialId, out var newCurrent))
+                if (!environmentDatas.GameItems.TryGetValue(_MaterialId, out var newCurrent))   //若找不到指定的原料
                 {
                     result = null;
                     return false;
