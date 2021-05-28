@@ -93,6 +93,8 @@ namespace GY2021001BLL
                     var lv = Convert.ToInt32(template.Properties.GetValueOrDefault(indexPn, 0m));
                     result.Properties[item.Key] = seq[Math.Clamp(lv, 0, seq.Length - 1)];
                 }
+                else if (item.Key.Equals("count", StringComparison.InvariantCultureIgnoreCase)) //若是指定初始数量
+                    result.Count = Convert.ToDecimal(item.Value);
                 else
                     result.Properties[item.Key] = item.Value;
             }

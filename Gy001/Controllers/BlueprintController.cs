@@ -33,9 +33,10 @@ namespace Gy001.Controllers
         [HttpGet]
         public ActionResult<ApplyBlueprintReturnDto> Test()
         {
-            var world = HttpContext.RequestServices.GetService<VWorld>();
+            var world = HttpContext.RequestServices.GetService<VWorld>();   //获取总服务
             var gitm = world.ItemTemplateManager;
             var gim = world.ItemManager;
+            //注册并登录新账号
             string pwd = "123456";
             var loginName = world.CharManager.QuicklyRegister(ref pwd).LoginName;
             var gu = world.CharManager.Login(loginName, pwd, "");
@@ -56,7 +57,7 @@ namespace Gy001.Controllers
             });
             var bpm = world.BlueprintManager;
             bpm.ApplyBluprint(applyBluprintDatas);
-            return(ApplyBlueprintReturnDto)applyBluprintDatas;
+            return (ApplyBlueprintReturnDto)applyBluprintDatas;
         }
 
         /// <summary>

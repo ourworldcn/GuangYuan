@@ -19,22 +19,90 @@ using System.Threading.Tasks;
 
 namespace GY2021001BLL
 {
+    public class BlueprintData
+    {
+        IServiceProvider _Service;
+        private readonly BlueprintTemplate _Template;
+        private List<FormulaData> _Formulas;
+
+        public IServiceProvider Service { get => _Service; set => _Service = value; }
+
+        public BlueprintTemplate Template => _Template;
+
+        public BlueprintData(IServiceProvider service, BlueprintTemplate template)
+        {
+            _Service = service;
+            _Template = template;
+            _Formulas = template.FormulaTemplates.Select(c => new FormulaData(c, this)).ToList();
+        }
+    }
+
+    public class FormulaData
+    {
+        private readonly BpFormulaTemplate _Template;
+        private List<MaterialData> _Materials;
+        private readonly BlueprintData _Parent;
+
+        public FormulaData(BpFormulaTemplate template, BlueprintData parent)
+        {
+            _Parent = parent;
+            _Template = template;
+            _Materials = template.BptfItemTemplates.Select(c => new MaterialData(c, this)).ToList();
+        }
+
+        public BpFormulaTemplate Template => _Template;
+
+        public BlueprintData Parent => _Parent;
+    }
+
+    public class MaterialData
+    {
+        private readonly FormulaData _Parent;
+        private readonly BpItemTemplate _Template;
+        private readonly GameVariable _Variable;
+
+        public MaterialData(BpItemTemplate template, FormulaData parent)
+        {
+            _Parent = parent;
+            _Template = template;
+            if (!GameVariable.TryParse(template.VariableDeclaration, out _Variable))
+            {
+                throw new NotImplementedException();    //TO DO
+            }
+        }
+
+        public BpItemTemplate Template => _Template;
+
+        public FormulaData Parent => _Parent;
+
+        public GameVariable Variable => _Variable;
+
+        public bool Match(ApplyBlueprintDatas datas)
+        {
+            bool returnVal = true;
+            var coll = datas.GameItems.Concat(OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children));    //要遍历的所有物品，确保指定物品最先被匹配
+            BpEnvironmentDatas env = new BpEnvironmentDatas();
+            return returnVal;
+        }
+    }
 
     public sealed class BpItemDataObject
     {
 
-        public BpItemDataObject(IEnumerable<GameCondition> conditions, GameOperand upperBound, GameOperand lowerBound, IEnumerable<BpPropertyChanges> propertyChanges)
+        public BpItemDataObject(IEnumerable<GameCondition> conditions, GameOperand upperBound, GameOperand lowerBound, IEnumerable<BpPropertyChanges> propertyChanges, GameVariable variable)
         {
             Conditions = conditions;
             UpperBound = upperBound;
             LowerBound = lowerBound;
             PropertyChanges = propertyChanges;
+            Variable = variable;
         }
 
         public readonly IEnumerable<GameCondition> Conditions;
         public readonly GameOperand UpperBound;
         public readonly GameOperand LowerBound;
         public readonly IEnumerable<BpPropertyChanges> PropertyChanges;
+        public GameVariable Variable;
     }
 
     /// <summary>
@@ -127,8 +195,9 @@ namespace GY2021001BLL
             GameOperand lowerBound = null; GameOperand.TryParse(bpItem.CountLowerBound, out lowerBound);
             //属性更改
             var changes = new List<BpPropertyChanges>(); BpPropertyChanges.FillFromString(changes, bpItem.PropertiesChanges);
-            //
-            return _ItemId2Datas.GetOrAdd(bpItem.Id, new BpItemDataObject(conditionals, upperBound, lowerBound, changes));
+            //获取变量对象
+            var gameVarSucc = GameVariable.TryParse(bpItem.VariableDeclaration, out var gameVar);
+            return _ItemId2Datas.GetOrAdd(bpItem.Id, new BpItemDataObject(conditionals, upperBound, lowerBound, changes, gameVar));
         }
 
         /// <summary>
@@ -165,6 +234,39 @@ namespace GY2021001BLL
             return false;
         }
 
+        static ConcurrentDictionary<Guid, GameVariable> _Id2Variable = new ConcurrentDictionary<Guid, GameVariable>();
+
+        /// <summary>
+        /// 获取该公式的蓝图脚本变量。
+        /// </summary>
+        /// <param name="formula"></param>
+        /// <returns></returns>
+        public static GameVariable GetGameVariable(this BpFormulaTemplate formula)
+        {
+            if (_Id2Variable.TryGetValue(formula.Id, out var result))   //若已经分析了本地变量
+                return result;
+            result = new GameVariable();
+            foreach (var item in formula.BptfItemTemplates)
+            {
+                if (!GameVariable.TryParse(item.VariableDeclaration, out var tmp))    //若语法错误
+                {
+                    Debug.WriteLine($"无法分析公式对象(Id={formula.Id})的变量声明\"{item.VariableDeclaration}\"");
+                    return _Id2Variable.GetOrAdd(formula.Id, null as GameVariable);
+                }
+                tmp.AddPrefix(item.Id);
+                foreach (var kvp in tmp.Properties)
+                {
+                    result.Properties[kvp.Key] = kvp.Value;
+                }
+            }
+            var str = string.Join(',', formula.BptfItemTemplates.Select(c => c.VariableDeclaration));
+            if (!GameVariable.TryParse(str, out result))    //若语法错误
+            {
+                Debug.WriteLine($"无法分析公式对象(Id={formula.Id})的变量声明\"{str}\"");
+                return _Id2Variable.GetOrAdd(formula.Id, null as GameVariable);
+            }
+            return _Id2Variable.GetOrAdd(formula.Id, result);
+        }
     }
 
     /// <summary>
@@ -227,6 +329,7 @@ namespace GY2021001BLL
     /// <summary>
     /// 解析和计算字符表达式的类。
     /// 支持如:{0A396457-FA17-419E-BBB1-20C2588BC2EB}\sscatk:-1|-3|-5|-8|-11|-15|-19|-24|-30
+    /// rndi整数取[0,整数)的整数(定点型)，rnd取[0，1)的定点数。
     /// </summary>
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class GameOperand
@@ -401,14 +504,38 @@ namespace GY2021001BLL
                 return null;
             if (!TryGetLeft(LeftPath, datas.Current, datas.GameItems, out GameItem gameItem, out string propName)) //若找不到指代对象
                 return null;
-            var gim = datas.Service.GetRequiredService<GameItemManager>();
-            var leftVal = gim.GetPropertyValue(gameItem, propName);
-            if (RightSequence.Count == 0)   //若没有序列
+            var world = datas.Service?.GetRequiredService<VWorld>();
+            var gim = world.ItemManager;
+            //获取属性值
+            if (!datas.Variables.TryGetValue(propName, datas, out var leftVal)) //若没有本地变量
+            {
+                var _ = VWorld.WorldRandom;
+                //处理取随机数的问题
+                if (propName.StartsWith("rndi"))  //若取随机值
+                {
+                    //rndi101
+                    var maxRndStr = propName.Substring(4);
+                    if (int.TryParse(maxRndStr, out var maxRnd))
+                        leftVal = (decimal)_.Next(maxRnd);
+                    else
+                        leftVal = (decimal)_.Next(100);
+                }
+                else if (propName.StartsWith("rnd"))  //若取随机值
+                {
+                    leftVal = (decimal)_.NextDouble();
+                }
+                else
+                    leftVal = propName switch
+                    {
+                        _ => gim.GetPropertyValue(gameItem, propName)
+                    };
+            }
+            if (_RightSequence == null || RightSequence.Count == 0)   //若没有序列
                 return leftVal;
             if (!(leftVal is decimal dec))
                 return null;
             var index = (int)Math.Round(dec);
-            if (index >= RightSequence.Count)
+            if (index >= RightSequence.Count || index < 0)  //索引超界
                 return null;
             return RightSequence[index];
         }
@@ -441,6 +568,23 @@ namespace GY2021001BLL
             else
                 return $"{string.Join('/', LeftPath)}";
         }
+
+        /// <summary>
+        /// 为左侧表达式添加限定前缀。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>true成功添加了前缀，false没有必要添加。</returns>
+        public bool AddPrefix(Guid id)
+        {
+            if (IsConst) //若是常量
+                return false;
+            if (_LeftPath == null || LeftPath.Count == 0)    //左侧无表达式
+                return false;
+            if (LeftPath[0] is Guid tmp && tmp == id)   //若已经添加了前缀
+                return false;
+            LeftPath.Insert(0, id);
+            return true;
+        }
     }
 
     /// <summary>
@@ -448,13 +592,22 @@ namespace GY2021001BLL
     /// </summary>
     public class GameVariable
     {
+        /// <summary>
+        /// 分析字符串。试图得到一个对象。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="result"></param>
+        /// <returns>true成功得到一个对象，false至少有一个表达式语法错误。
+        /// 字符串是空引用，空字符串或空白会立即返回成功，此时<paramref name="result"/>是一个对象，但没有内容。</returns>
         public static bool TryParse(string str, out GameVariable result)
         {
             bool returnVal = true;
-            var items = str.Split(OwHelper.CommaArrayWithCN);
             result = new GameVariable()
             {
             };
+            if (string.IsNullOrWhiteSpace(str))
+                return returnVal;
+            var items = str.Split(OwHelper.CommaArrayWithCN);
             foreach (var item in items)
             {
                 var ary = item.Split('=');
@@ -465,8 +618,14 @@ namespace GY2021001BLL
                 }
                 result.Properties[ary[0]] = operand;
             }
+            if (!returnVal) result = null;
             return returnVal;
         }
+
+        /// <summary>
+        /// 所绑定的原料Id。
+        /// </summary>
+        Guid _MaterialId;
 
         public GameVariable()
         {
@@ -477,19 +636,52 @@ namespace GY2021001BLL
         /// 记录所有局部变量。
         /// </summary>
         public Dictionary<string, GameOperand> Properties { get; } = new Dictionary<string, GameOperand>();
+        public Guid MaterialId { get => _MaterialId; set => _MaterialId = value; }
 
         /// <summary>
         /// 获取值。
         /// </summary>
         /// <param name="propName"></param>
         /// <param name="environmentDatas"></param>
-        /// <returns>没有找到指定属性则返回null。此时无法区分是出错还是属性本身就是null。</returns>
+        /// <param name="result">返回属性的值。</param>
+        /// <returns>true返回了属性值，false没有找到指定属性。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object GetValue(string propName, BpEnvironmentDatas environmentDatas)
+        public bool TryGetValue(string propName, BpEnvironmentDatas environmentDatas, out object result)
         {
             if (!Properties.TryGetValue(propName, out var operand))
-                return null;
-            return operand.GetValue(environmentDatas);
+            {
+                result = null;
+                return false;
+            }
+            GameItem oldCurrent = environmentDatas.Current;
+            try
+            {
+                if (!environmentDatas.GameItems.TryGetValue(_MaterialId, out var newCurrent))
+                {
+                    result = null;
+                    return false;
+                }
+                environmentDatas.Current = newCurrent;
+                result = operand.GetValue(environmentDatas);
+            }
+            finally
+            {
+                environmentDatas.Current = oldCurrent;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 为所有变量右侧操作数对象内左侧引用，增加原料Id限定。
+        /// </summary>
+        /// <param name="id"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddPrefix(Guid id)
+        {
+            foreach (var item in Properties)
+            {
+                item.Value.AddPrefix(id);
+            }
         }
     }
 
@@ -1088,7 +1280,7 @@ namespace GY2021001BLL
                 #region 更改数量
                 var lower = Convert.ToDouble(data.LowerBound.GetValue(env));
                 var upper = Convert.ToDouble(data.UpperBound.GetValue(env));
-                var inc = (decimal)(lower + World.RandomForWorld.NextDouble() * Math.Abs(upper - lower));  //增量
+                var inc = (decimal)(lower + VWorld.WorldRandom.NextDouble() * Math.Abs(upper - lower));  //增量
                 if (item.IsCountRound)   //若需要取整
                     datas.Incrementes[item.Id] = ((decimal)Math.Round(lower), (decimal)Math.Round(upper), Math.Round(inc));
                 else

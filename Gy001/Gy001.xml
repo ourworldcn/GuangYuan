@@ -137,6 +137,7 @@
         <member name="M:GY2021001WebApi.Controllers.VWorldController.GetTemplates">
             <summary>
             获取所有模板。
+            缓存120s。
             </summary>
             <returns>所有模板的集合。</returns>
         </member>

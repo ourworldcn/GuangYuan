@@ -84,11 +84,11 @@ namespace GY2021001BLL
 
         public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Service.GetRequiredService<BlueprintManager>(); }
 
-        Random _WorldRandom;
         /// <summary>
-        /// 公用的随机数生成器。
+        /// 公用随机数生成器。
         /// </summary>
-        public Random RandomForWorld { get => _WorldRandom ??= new Random(); }
+        [ThreadStatic]
+        public static readonly Random WorldRandom = new Random();
 
         ObjectPool<List<GameItem>> _ObjectPoolListGameItem;
 
@@ -164,8 +164,7 @@ namespace GY2021001BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsHit(double val, Random random = null)
         {
-            var _ = random ?? RandomForWorld;
-            return val > _.NextDouble();
+            return (random ?? WorldRandom).NextDouble() < val;
         }
     }
 

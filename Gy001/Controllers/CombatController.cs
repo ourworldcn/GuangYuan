@@ -110,9 +110,9 @@ namespace GY2021001WebApi.Controllers
             {
                 var item = SpecificProject.CreateMounts(HttpContext.RequestServices, heads[rnd.Next(heads.Length)], bodys[rnd.Next(bodys.Length)]);
                 item.Count = 1;
-                item.Properties["neatk"] = world.RandomForWorld.Next(20);
-                item.Properties["neqlt"] = world.RandomForWorld.Next(20);
-                item.Properties["nemhp"] = world.RandomForWorld.Next(20);
+                item.Properties["neatk"] = VWorld.WorldRandom.Next(20);
+                item.Properties["neqlt"] = VWorld.WorldRandom.Next(20);
+                item.Properties["nemhp"] = VWorld.WorldRandom.Next(20);
                 endCombatData.GameItems.Add(item);
             }
             Thread.Sleep(1001);
