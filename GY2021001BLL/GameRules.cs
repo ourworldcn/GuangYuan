@@ -45,8 +45,8 @@ namespace GY2021001BLL
     {
         public LoginNameAttribute()
         {
-            ValidationAttribute validationAttribute;
-            IValidatableObject validatableObject;
+            //ValidationAttribute validationAttribute;
+            //IValidatableObject validatableObject;
 
         }
 

@@ -98,6 +98,43 @@ namespace OwGame
         /// </summary>
         public readonly static char[] PathSeparatorChar = new char[] { '\\', '/' };
 
+        static public bool TryGetDecimal(object obj, out decimal result)
+        {
+            bool succ = true;
+            switch (Type.GetTypeCode(obj.GetType()))
+            {
+                case TypeCode.SByte:
+                case TypeCode.Byte:
+                case TypeCode.Int16:
+                case TypeCode.UInt16:
+                case TypeCode.Int32:
+                case TypeCode.UInt32:
+                case TypeCode.Int64:
+                case TypeCode.UInt64:
+                case TypeCode.Single:
+                case TypeCode.Double:
+                    result = Convert.ToDecimal(obj);
+                    break;
+                case TypeCode.Decimal:
+                    result = (decimal)obj;
+                    break;
+                case TypeCode.String:
+                    succ = decimal.TryParse(obj as string, out result);
+                    break;
+                case TypeCode.Char:
+                case TypeCode.DateTime:
+                case TypeCode.Empty:
+                case TypeCode.Object:
+                case TypeCode.DBNull:
+                case TypeCode.Boolean:
+                default:
+                    result = decimal.Zero;
+                    succ = false;
+                    break;
+            }
+            return succ;
+        }
+
         /// <summary>
         /// 分割属性字符串。
         /// </summary>

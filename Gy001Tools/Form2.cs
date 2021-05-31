@@ -32,17 +32,20 @@ namespace Gy001Tools
         }
         private void Form2_Load(object sender, EventArgs e)
         {
+            Dictionary<string, object> dic = new Dictionary<string, object>()
+            {
+                {"k1",(SByte)1},
+            };
             object obj1 = 3m;
-            object obj2 = 2;
+            object obj2 = dic["k1"];
+            var tp = obj2.GetType();
+            var tc = Type.GetTypeCode(tp);
+            var obj3 = System.Convert.ToDecimal(obj2);
             Guid id = new Guid(System.Convert.FromBase64String("2A2KP+db60q1PLvse6Cczg=="));
             //var id = Guid.NewGuid();
             //“N”、“D”、“B”、“P”或“X”
             Debug.WriteLine($"N:{id:N}\nD:{id:D};B:{id:B};P:{id:P};\nX:{id:X}");
 
-            Dictionary<string, object> dic = new Dictionary<string, object>()
-            {
-                {"k1",2m},
-            };
             var b = GetResult(dic);
         }
 
@@ -50,7 +53,6 @@ namespace Gy001Tools
         string right = "2";
         ExpressionType Operator = ExpressionType.GreaterThanOrEqual;
 
-        string key = "1";
         bool GetResult(IDictionary<string, object> dic)
         {
             decimal left, right;
