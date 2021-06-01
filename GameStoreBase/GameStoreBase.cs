@@ -343,10 +343,13 @@ namespace OwGame
         }
     }
 
-    public interface IOrmNotify
+    public struct MyStruct
     {
-        void Loaded(DbContext db);
+        long _Data;
 
-        void Saving(DbContext db);
+        public MyStruct(decimal dec)
+        {
+            _Data = (long)dec;
+        }
     }
 }

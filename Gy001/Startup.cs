@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.OpenApi.Models;
+using OwGame;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -78,7 +79,7 @@ namespace Gy001
 
             #region 配置游戏专用服务
             services.AddTransient<HashAlgorithm>(c => SHA256.Create());
-
+            services.AddSingleton<GamePropertyHelper>();
             //services.AddTransient(options => new GY2021001DbContext(new DbContextOptionsBuilder<GY2021001DbContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
             //services.AddSingleton(UserDbOptions => new GameTemplateContext(new DbContextOptionsBuilder<GameTemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
 
