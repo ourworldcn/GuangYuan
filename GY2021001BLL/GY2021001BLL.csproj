@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GY2021001DAL\GY2021001DAL.csproj" />
+    <ProjectReference Include="..\OwGame\OwGame.csproj" />
   </ItemGroup>
 
 </Project>

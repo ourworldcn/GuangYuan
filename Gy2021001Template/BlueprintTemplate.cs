@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OwGame.Expression;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
@@ -64,6 +65,44 @@ namespace Gy2021001Template
         /// </summary>
         [Column("命中并继续")]
         public bool IsContinue { get; set; }
+
+        private GameExpressionBase _ProbExpression;
+        /// <summary>
+        /// 命中概率的表达式。
+        /// </summary>
+        [NotMapped]
+        public GameExpressionBase ProbExpression
+        {
+            get
+            {
+                lock (this)
+                    if (null == _ProbExpression)
+                    {
+                        _ProbExpression = GameExpressionBase.CompileExpression(CompileEnvironment, Prob);
+                    }
+                return _ProbExpression;
+            }
+        }
+
+        private GameExpressionCompileEnvironment _CompileEnvironment;
+        [NotMapped]
+        public GameExpressionCompileEnvironment CompileEnvironment
+        {
+            get
+            {
+                lock (this)
+                    if (null == _CompileEnvironment)
+                    {
+                        var result = new GameExpressionCompileEnvironment() { Services = Service ?? BlueprintTemplate?.Service, };
+                        foreach (var item in BptfItemTemplates) //将变量声明编译
+                        {
+                            GameExpressionBase.CompileVariableDeclare(result, item.VariableDeclaration);
+                        }
+                        _CompileEnvironment = result;
+                    }
+                return _CompileEnvironment;
+            }
+        }
     }
 
     /// <summary>
@@ -113,5 +152,114 @@ namespace Gy2021001Template
         /// </summary>
         [Column("新建物品否")]
         public bool IsNew { get; set; }
+
+        private GameExpressionBase _ConditionalExpression;
+        /// <summary>
+        /// 获取条件表达式。
+        /// </summary>
+        [NotMapped]
+        public GameExpressionBase ConditionalExpression
+        {
+            get
+            {
+                lock (this)
+                    if (null == _ConditionalExpression)
+                    {
+                        _ConditionalExpression = GameExpressionBase.CompileExpression(FormulaTemplate.CompileEnvironment, Conditional);
+                    }
+                return _ConditionalExpression;
+            }
+        }
+
+        private GameExpressionBase _CountUpperBoundExpression;
+
+        /// <summary>
+        /// 获取增量上限表达式。
+        /// </summary>
+        [NotMapped]
+        public GameExpressionBase CountUpperBoundExpression
+        {
+            get
+            {
+
+                lock (this)
+                    if (null == _CountUpperBoundExpression)
+                    {
+                        var result = GameExpressionBase.CompileExpression(FormulaTemplate.CompileEnvironment, CountUpperBound);
+                        //if (IsCountRound)    //若需要取整
+                        //{
+                        //    result = new FunctionCallGExpression("round", result);
+                        //}
+                        _CountUpperBoundExpression = result;
+                    }
+                return _ConditionalExpression;
+            }
+        }
+
+
+        private GameExpressionBase _CountLowerBoundExpression;
+
+        /// <summary>
+        /// 获取增量下限表达式。
+        /// </summary>
+        [NotMapped]
+        public GameExpressionBase CountLowerBoundExpression
+        {
+            get
+            {
+
+                lock (this)
+                    if (null == _CountLowerBoundExpression)
+                    {
+                        var result = GameExpressionBase.CompileExpression(FormulaTemplate.CompileEnvironment, CountLowerBound);
+                        //if (IsCountRound)    //若需要取整
+                        //{
+                        //    result = new FunctionCallGExpression("round", result);
+                        //}
+                        _CountLowerBoundExpression = result;
+                    }
+                return _ConditionalExpression;
+            }
+        }
+
+        private GameExpressionBase _CountProbExpression;
+
+        /// <summary>
+        /// 获取增量发生概率表达式。
+        /// </summary>
+        [NotMapped]
+        public GameExpressionBase CountProbExpression
+        {
+            get
+            {
+
+                lock (this)
+                    if (null == _CountProbExpression)
+                    {
+                        _CountProbExpression = GameExpressionBase.CompileExpression(FormulaTemplate.CompileEnvironment, CountProb);
+                    }
+                return _ConditionalExpression;
+            }
+        }
+
+        private GameExpressionBase _PropertiesChangesExpression;
+
+        /// <summary>
+        /// 获取属性变化表达式。
+        /// </summary>
+        [NotMapped]
+        public GameExpressionBase PropertiesChangesExpression
+        {
+            get
+            {
+
+                lock (this)
+                    if (null == _PropertiesChangesExpression)
+                    {
+                        _PropertiesChangesExpression = GameExpressionBase.CompileExpression(FormulaTemplate.CompileEnvironment, PropertiesChanges);
+                    }
+                return _ConditionalExpression;
+            }
+        }
     }
 }

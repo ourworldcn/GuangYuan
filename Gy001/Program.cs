@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OwGame;
+using OwGame.Expression;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +28,24 @@ namespace Gy001
             _Host = host;
             CreateDb(_Host);
             LoadCache(_Host);
+            Test();
             _Host.Run();
+        }
+
+        /// <summary>
+        /// ≤‚ ‘µ„°£
+        /// </summary>
+        private static void Test()
+        {
+            var env = new GameExpressionCompileEnvironment();
+            GameExpressionBase.CompileVariableDeclare(env, "a1=1,a2= BB040B31-6D00-427F-B158-3D6D7CE92B18,a3=\"str\", a4=5.5, a5 = rnd()");
+            var exp = GameExpressionBase.CompileExpression(env, "a1=a4>=5");
+            var envr = new GameExpressionRuntimeEnvironment();
+            env.Variables.All(c =>
+            {
+                envr.Variables[c.Key] = c.Value; return true;
+            });
+            var result = exp.GetValueOrDefault(envr);
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -44,6 +63,7 @@ namespace Gy001
         {
             var gitm = host.Services.GetService<GameItemTemplateManager>();
             var bptm = host.Services.GetService<BlueprintManager>();
+            var test = host.Services.GetService<GamePropertyHelper>();
         }
 
         /// <summary>

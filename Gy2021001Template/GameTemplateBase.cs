@@ -25,6 +25,15 @@ namespace Gy2021001Template
         [Column("备注", Order = 90)]
         public string Remark { get; set; }
 
+        private IServiceProvider _Service;
+
+        internal protected IServiceProvider Service => _Service;
+
+        public void SetService(IServiceProvider service)
+        {
+            _Service = service;
+        }
+
     }
 
     /// <summary>

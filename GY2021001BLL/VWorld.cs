@@ -88,7 +88,7 @@ namespace GY2021001BLL
         /// 公用随机数生成器。
         /// </summary>
         [ThreadStatic]
-        public static readonly Random WorldRandom = new Random();
+        private static Random _WorldRandom;
 
         ObjectPool<List<GameItem>> _ObjectPoolListGameItem;
 
@@ -104,6 +104,8 @@ namespace GY2021001BLL
                 return _ObjectPoolListGameItem;
             }
         }
+
+        public static Random WorldRandom => _WorldRandom ??= new Random();
 
 
         #endregion 属性及相关

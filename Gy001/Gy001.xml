@@ -913,6 +913,11 @@
             
             </summary>
         </member>
+        <member name="M:Gy001.Program.Test">
+            <summary>
+            测试点。
+            </summary>
+        </member>
         <member name="M:Gy001.Program.LoadCache(Microsoft.Extensions.Hosting.IHost)">
             <summary>
             加载缓存。

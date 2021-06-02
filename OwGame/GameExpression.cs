@@ -1,24 +1,20 @@
-﻿
-using GY2021001DAL;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace OwGame
+namespace OwGame.Expression
 {
+
     /// <summary>
     /// 给对象设置属性的帮助器。
     /// 因该作为全局的服务之一。
     /// </summary>
-    public class GamePropertyHelper
+    public abstract class GamePropertyHelper
     {
         /// <summary>
         /// 获取对象的属性、
@@ -28,11 +24,10 @@ namespace OwGame
         /// <param name="defaultValue"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object GetValue(object obj, string propertyName, object defaultValue = default)
+        public virtual object GetValue(object obj, string propertyName, object defaultValue = default)
         {
-            var _ = obj as GameThingBase;
-            var dic = _?.Properties;
-            return dic == null ? defaultValue : dic.GetValueOrDefault(propertyName, defaultValue);
+            var pd = TypeDescriptor.GetProperties(obj).OfType<PropertyDescriptor>().FirstOrDefault(c => c.Name == propertyName);
+            return null == pd ? defaultValue : pd.GetValue(obj) ?? defaultValue;
         }
 
         /// <summary>
@@ -42,26 +37,38 @@ namespace OwGame
         /// <param name="propertyName"></param>
         /// <param name="val"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool SetValue(object obj, string propertyName, object val)
-        {
-            var _ = obj as GameThingBase;
-            var dic = _?.Properties;
-            dic[propertyName] = val;
-            return true;
-        }
+        public abstract bool SetValue(object obj, string propertyName, object val);
+        //{
+        //    var _ = obj as GameThingBase;
+        //    var dic = _?.Properties;
+        //    dic[propertyName] = val;
+        //    return true;
+        //}
     }
 
+    /// <summary>
+    /// 运行时环境。
+    /// </summary>
     public class GameExpressionRuntimeEnvironment
     {
         public GameExpressionRuntimeEnvironment()
         {
         }
 
+        public GameExpressionRuntimeEnvironment(GameExpressionCompileEnvironment env)
+        {
+            var dic = Variables;
+            foreach (var item in env.Variables)
+                dic[item.Key] = item.Value;
+            Services = env.Services;
+        }
+
+        private Dictionary<string, GameExpressionBase> _Variables = new Dictionary<string, GameExpressionBase>();
         /// <summary>
         /// 变量。
         /// </summary>
-        public Dictionary<string, GameExpressionBase> Variables { get; } = new Dictionary<string, GameExpressionBase>();
+        public Dictionary<string, GameExpressionBase> Variables => _Variables;
+        private readonly Stack<Dictionary<string, GameExpressionBase>> StackVariables = new Stack<Dictionary<string, GameExpressionBase>>();
 
         ///// <summary>
         ///// 参数。
@@ -72,18 +79,86 @@ namespace OwGame
         /// 服务。
         /// </summary>
         public IServiceProvider Services { get; set; }
+
+        /// <summary>
+        /// 开始一个范围，复制原有范围内所有变量。
+        /// </summary>
+        public void StartScope()
+        {
+            var dic = new Dictionary<string, GameExpressionBase>(Variables);
+            StackVariables.Push(_Variables);
+            _Variables = dic;
+        }
+
+        /// <summary>
+        /// 退出范围，可选是否将此范围的变量合并到新范围中。
+        /// </summary>
+        /// <param name="merge"></param>
+        /// <returns></returns>
+        public bool EndScope(bool merge = false)
+        {
+            if (!StackVariables.TryPop(out var dic))
+                return false;
+            if (merge)   //若需要合并
+            {
+                foreach (var item in Variables)
+                    dic[item.Key] = item.Value;
+            }
+            _Variables = dic;
+            return true;
+        }
     }
 
+    /// <summary>
+    /// 编译环境类。
+    /// </summary>
     public class GameExpressionCompileEnvironment
     {
-        public string CurrentObjectId { get; set; }
+        public GameExpressionCompileEnvironment()
+        {
+
+        }
 
         public IServiceProvider Services { get; set; }
 
+        private string _CurrentObjectId;
+        public string CurrentObjectId { get => _CurrentObjectId; set => _CurrentObjectId = value; }
+
+
+        private readonly Dictionary<string, GameExpressionBase> _Variables = new Dictionary<string, GameExpressionBase>();
         /// <summary>
         /// 变量声明。
         /// </summary>
-        public Dictionary<string, GameExpressionBase> Variables { get; } = new Dictionary<string, GameExpressionBase>();
+        public Dictionary<string, GameExpressionBase> Variables => _Variables;
+
+
+        private Stack<string> _CurrentObjectIds = new Stack<string>();
+
+        /// <summary>
+        /// 设置一个新的当前对象Id。并保存旧Id,在以后可以用<see cref="RestoreCurrentObject(out string)"/>恢复。
+        /// </summary>
+        /// <param name="newObjectId"></param>
+        public void StartCurrentObject(string newObjectId)
+        {
+            _CurrentObjectIds.Push(_CurrentObjectId);
+            _CurrentObjectId = newObjectId;
+        }
+
+        /// <summary>
+        /// 返回上一个当前对象Id。
+        /// </summary>
+        /// <param name="oldObjectId">返回true时,这里是原有对象Id,返回false时，这个出参的状态未知。</param>
+        /// <returns></returns>
+        public bool RestoreCurrentObject(out string oldObjectId)
+        {
+            oldObjectId = _CurrentObjectId;
+            return _CurrentObjectIds.TryPop(out _CurrentObjectId);
+        }
+
+        /// <summary>
+        /// 用于同步锁定的对象。
+        /// </summary>
+        public object ThisLocker => _CurrentObjectIds;
     }
 
     public abstract class GameExpressionBase
@@ -170,7 +245,7 @@ namespace OwGame
         static public void CompileVariableDeclare(GameExpressionCompileEnvironment env, string inputs)
         {
             Dictionary<string, GameExpressionBase> result = env.Variables;
-            var alls = inputs.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => c.Split('=', StringSplitOptions.None));
+            var alls = inputs.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => c.Split('=', StringSplitOptions.None).Select(exp => exp.Trim()).ToArray());
             foreach (var expStr in alls.Where(c => c.Length != 2))
             {
                 Debug.WriteLine($"检测到不合规的变量声明——{string.Join('=', expStr)}");
@@ -189,11 +264,24 @@ namespace OwGame
         /// </summary>
         /// <param name="env"></param>
         /// <param name="inputs"></param>
-        static public void CompileBody(GameExpressionCompileEnvironment env, string inputs)
+        static public StatementGExpression CompileBody(GameExpressionCompileEnvironment env, string inputs)
         {
-
+            var alls = inputs.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => c.Split('=', StringSplitOptions.None));
+            foreach (var expStr in alls.Where(c => c.Length != 2))
+            {
+                Debug.WriteLine($"检测到不合规的语句——{string.Join('=', expStr)}");
+            }
+            List<StatementGExpression> stes = new List<StatementGExpression>();
+            foreach (var item in alls.Where(c => c.Length == 2))
+            {
+                var left = MakeOperand(env, item[0]);
+                var right = MakeOperand(env, item[1]);
+                AssignGExpression assi = new AssignGExpression(left, right);
+                stes.Add(assi);
+            }
+            var result = new BodyGExpression(stes);
+            return result;
         }
-
 
         /// <summary>
         /// 编译变量初始化。
@@ -208,9 +296,9 @@ namespace OwGame
             if (string.IsNullOrEmpty(inputs))
                 return ConstGExpression.Null;
             if (inputs.Contains('|'))    //若可能是数组
-                result = CompileArray(env, inputs);
+                result = MakeArray(env, inputs);
             else //若是其他简单操作数
-                result = CompileOperand(env, inputs);
+                result = MakeOperand(env, inputs);
             return result;
         }
 
@@ -220,7 +308,7 @@ namespace OwGame
         /// <param name="env"></param>
         /// <param name="inputs"></param>
         /// <returns></returns>
-        static public ArrayGExpression CompileArray(GameExpressionCompileEnvironment env, string inputs)
+        static public ArrayGExpression MakeArray(GameExpressionCompileEnvironment env, string inputs)
         {
             var elements = inputs.Split('|', StringSplitOptions.None).Select(c => ConstOrReference(env, c));
             ArrayGExpression result = new ArrayGExpression(elements);
@@ -239,7 +327,7 @@ namespace OwGame
             return ConstGExpression.TryParse(str, out var result) ? (GameExpressionBase)result : new ReferenceGExpression(str.Trim()/*这里要考虑空白是否有意义 TO DO*/, env.CurrentObjectId);
         }
 
-        const string comparePattern = @"(?<or>[^{}]+)\s*(?<op>[{}]{0,2})";
+        const string comparePattern = @"\s*(?<or>[^{}]+)\s*(?<op>[{}]{0,2})";
 
         private static string _Pattern;
 
@@ -263,7 +351,7 @@ namespace OwGame
         /// <param name="env"></param>
         /// <param name="str"></param>
         /// <returns></returns>
-        static public GameExpressionBase CompileOperand(GameExpressionCompileEnvironment env, string inputs)
+        static public GameExpressionBase MakeOperand(GameExpressionCompileEnvironment env, string inputs)
         {
             inputs = inputs.Trim();
             if (string.IsNullOrEmpty(inputs))
@@ -274,8 +362,14 @@ namespace OwGame
                 var items = inputs.Split('(');
                 if (items.Length == 2) //若是函数调用
                 {
-                    var _ = items[1].TrimEnd(')').Split(OwHelper.CommaArrayWithCN).Select(c => ConstOrReference(env, c));
-                    result = new FunctionCallGExpression(items[0], _);
+                    var paras = items[1].TrimEnd(')').Trim();   //参数列表
+                    if (string.IsNullOrEmpty(paras)) //若是空列表
+                        result = new FunctionCallGExpression(items[0], Array.Empty<GameExpressionBase>() as IEnumerable<GameExpressionBase>);
+                    else
+                    {
+                        var _ = paras.Split(OwHelper.CommaArrayWithCN).Select(c => ConstOrReference(env, c));
+                        result = new FunctionCallGExpression(items[0], _);
+                    }
                 }
                 else
                     result = null;
@@ -304,6 +398,8 @@ namespace OwGame
         /// <returns></returns>
         static public GameExpressionBase CompileExpression(GameExpressionCompileEnvironment env, string str)
         {
+            if (string.IsNullOrWhiteSpace(str))
+                return ConstGExpression.Null;
             var matchs = Regex.Matches(str, PatternString);
             List<string> operandList = new List<string>(); //操作数
             List<string> operatorList = new List<string>();    //操作符
@@ -332,20 +428,26 @@ namespace OwGame
         /// <param name="opt">操作符</param>
         static public GameExpressionBase CompileExpression(GameExpressionCompileEnvironment env, Stack<string> operands, Stack<string> operators)
         {
-            var left = CompileOperand(env, operands.Pop());
+            var left = MakeOperand(env, operands.Pop());
             if (operators.Count <= 0)   //若没有操作符
                 return left;
             var opt = operators.Pop();
             while (true)
             {
                 if (!operators.TryPeek(out var optNext))    //若已经没有操作符
-                    return new BinaryGExpression(left, opt, CompileOperand(env, operands.Pop()));
+                    return new BinaryGExpression(left, opt, MakeOperand(env, operands.Pop()));
                 else //若还有操作符
                 {
                     if (OperatorCompareTo(opt, optNext) >= 0)   //若当前操作符优先级大于或等于下一个操作符
-                        left = new BinaryGExpression(left, opt, CompileOperand(env, operands.Pop()));
+                    {
+                        left = new BinaryGExpression(left, opt, MakeOperand(env, operands.Pop()));
+                        opt = operators.Pop();
+                    }
                     else
+                    {
                         left = new BinaryGExpression(left, opt, CompileExpression(env, operands, operators));
+                        break;
+                    }
                 }
             }
             return left;
@@ -376,18 +478,29 @@ namespace OwGame
     #region 基础类型
 
     /// <summary>
-    /// 函数调用的
+    /// 函数调用的。
     /// </summary>
     public class FunctionCallGExpression : GameExpressionBase
     {
-        private string name;
+        private string _Name;
 
         public FunctionCallGExpression()
         {
 
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="name">函数名。</param>
+        /// <param name="parameters">参数列表。</param>
         public FunctionCallGExpression(string name, IEnumerable<GameExpressionBase> parameters)
+        {
+            Name = name;
+            _Parameters.AddRange(parameters);
+        }
+
+        public FunctionCallGExpression(string name, params GameExpressionBase[] parameters)
         {
             Name = name;
             _Parameters.AddRange(parameters);
@@ -397,7 +510,7 @@ namespace OwGame
         /// <summary>
         /// 函数名，不区分大小写，一律视同全小写。设置的值中有大写字母，也会自动转换为小写。且忽略空白。
         /// </summary>
-        public string Name { get => name; set => name = value.Trim().ToLower(); }
+        public string Name { get => _Name; set => _Name = value.Trim().ToLower(); }
 
         public List<GameExpressionBase> _Parameters { get; } = new List<GameExpressionBase>();
 
@@ -412,11 +525,11 @@ namespace OwGame
             bool succ = false;
             switch (Name)
             {
-                case "rnd":
+                case "rnd": //生成[0,1)之间的随机数
                     result = NextDouble();
                     succ = true;
                     break;
-                case "rndi":
+                case "rndi":    //生成[0,max)区间内的随机整数。
                     var maxObj = _Parameters.SingleOrDefault()?.GetValueOrDefault(env);
                     if (maxObj == null || !OwHelper.TryGetDecimal(maxObj, out var dec))
                         result = default;
@@ -425,6 +538,13 @@ namespace OwGame
                         result = Next(Convert.ToInt32(Math.Round(dec)));
                         succ = true;
                     }
+                    break;
+                case "round":   //取整
+                    var paraExpr = _Parameters.SingleOrDefault();
+                    if (null != paraExpr)
+                        succ = paraExpr.TryGetValue(env, out result);
+                    else
+                        result = default;
                     break;
                 default:
                     result = default;
@@ -437,6 +557,7 @@ namespace OwGame
     /// <summary>
     /// 常量。
     /// </summary>
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class ConstGExpression : GameExpressionBase
     {
         /// <summary>
@@ -489,8 +610,14 @@ namespace OwGame
             result = _Value;
             return true;
         }
+
+        private string GetDebuggerDisplay()
+        {
+            return $"{_Value}";
+        }
     }
 
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class ReferenceGExpression : GameExpressionBase
     {
         public ReferenceGExpression()
@@ -514,8 +641,11 @@ namespace OwGame
 
         public override bool SetValue(GameExpressionRuntimeEnvironment env, object val)
         {
-            if (env.Variables.TryGetValue(Name, out var exp))
-                return exp.SetValue(env, val);
+            if (env.Variables.TryGetValue(Name, out _))   //若此引用是一个常量
+            {
+                env.Variables[Name] = new ConstGExpression(val);
+                return true;
+            }
             var srv = env.Services.GetService(typeof(GamePropertyHelper)) as GamePropertyHelper;
             if (!env.Variables.TryGetValue(Name, out var objExp))
                 return false;
@@ -562,6 +692,11 @@ namespace OwGame
                 }
             }
             return succ;
+        }
+
+        private string GetDebuggerDisplay()
+        {
+            return $"{{{ObjectId}.{Name}}}";
         }
     }
 
@@ -660,6 +795,8 @@ namespace OwGame
         }
     }
 
+    //[DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
+    [DebuggerDisplay("{" + nameof(Left) + "} {" + nameof(Operator) + ",nq} {" + nameof(Right) + "}")]
     public class BinaryGExpression : GameExpressionBase
     {
         static public readonly Dictionary<string, int> Operators = new Dictionary<string, int>()
@@ -799,6 +936,14 @@ namespace OwGame
                     break;
 
                 #endregion 逻辑运算符
+
+                #region 赋值运算符
+                case "=":
+                    if (!Left.SetValue(env, rightObj))
+                        goto errLable;
+                    result = rightObj;
+                    break;
+                #endregion 赋值运算符
                 default:
                     goto errLable;
             }
@@ -806,6 +951,11 @@ namespace OwGame
         errLable:
             result = default;
             return false;
+        }
+
+        private string GetDebuggerDisplay()
+        {
+            return $"{{{Left} {Operator} {Right}}}";
         }
     }
 
@@ -853,14 +1003,35 @@ namespace OwGame
 
         public override bool Run(GameExpressionRuntimeEnvironment env)
         {
-            return true;
+            if (!Right.TryGetValue(env, out var val))
+                return false;
+            return Left.SetValue(env, val);
         }
     }
 
+    /// <summary>
+    /// 一组语句。
+    /// </summary>
     public class BodyGExpression : StatementGExpression
     {
+        public BodyGExpression()
+        {
+
+        }
+        public List<StatementGExpression> Statements { get; } = new List<StatementGExpression>();
+
+        public BodyGExpression(IEnumerable<StatementGExpression> statements)
+        {
+            Statements.AddRange(statements);
+        }
+
         public override bool Run(GameExpressionRuntimeEnvironment env)
         {
+            bool succ = true;
+            foreach (var item in Statements)
+            {
+                succ = succ && item.Run(env);
+            }
             return true;
         }
     }

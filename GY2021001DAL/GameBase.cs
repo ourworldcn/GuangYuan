@@ -1,10 +1,12 @@
 ﻿using Gy2021001Template;
 using OwGame;
+using OwGame.Expression;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace GY2021001DAL
@@ -163,4 +165,39 @@ namespace GY2021001DAL
         /// </summary>
         public string Value { get; set; }
     }
+
+    public class GameThingPropertyHelper : GamePropertyHelper
+    {
+        /// <summary>
+        /// 获取对象的属性、
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override object GetValue(object obj, string propertyName, object defaultValue = default)
+        {
+            var _ = obj as GameThingBase;
+            var dic = _?.Properties;
+            return dic == null ? defaultValue : dic.GetValueOrDefault(propertyName, defaultValue);
+        }
+
+        /// <summary>
+        /// 设置对象的属性。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override bool SetValue(object obj, string propertyName, object val)
+        {
+            var _ = obj as GameThingBase;
+            var dic = _?.Properties;
+            dic[propertyName] = val;
+            return true;
+        }
+    }
+
 }

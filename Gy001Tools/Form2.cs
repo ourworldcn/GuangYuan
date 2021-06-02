@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Linq.Expressions.Expression;
 
@@ -17,6 +18,8 @@ namespace Gy001Tools
             InitializeComponent();
         }
         private readonly string comparePattern = @"(?<left>[^\+\-\*\/\=]+)(?<op>[\+\-\*\/\=]+)(?<right>\d+)[\,，]?";
+        [ThreadStatic]
+        public static readonly Random WorldRandom = new Random();
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -32,6 +35,18 @@ namespace Gy001Tools
         }
         private void Form2_Load(object sender, EventArgs e)
         {
+            string str = "中文3.5中文";
+            string patt = @"([\d\.]+)";
+            var result = Regex.Replace(str, patt, @"\<color=red\>$+ \<\>");
+            double db = 0;
+            var sw = Stopwatch.StartNew();
+            for (int i = 1000000 - 1; i >= 0; i--)
+            {
+                db = WorldRandom.NextDouble();
+            }
+            sw.Stop();
+            var db1 = db;
+            MessageBox.Show(db1.ToString() + ">" + sw.ElapsedMilliseconds.ToString());
             object obj1 = 4;
             object obj2 = 4m;
             var b = object.Equals(obj1, 4m);
