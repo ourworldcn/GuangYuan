@@ -260,30 +260,6 @@ namespace OwGame.Expression
         }
 
         /// <summary>
-        /// 编译一组赋值语句。
-        /// </summary>
-        /// <param name="env"></param>
-        /// <param name="inputs"></param>
-        static public StatementGExpression CompileBody(GameExpressionCompileEnvironment env, string inputs)
-        {
-            var alls = inputs.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => c.Split('=', StringSplitOptions.None));
-            foreach (var expStr in alls.Where(c => c.Length != 2))
-            {
-                Debug.WriteLine($"检测到不合规的语句——{string.Join('=', expStr)}");
-            }
-            List<StatementGExpression> stes = new List<StatementGExpression>();
-            foreach (var item in alls.Where(c => c.Length == 2))
-            {
-                var left = MakeOperand(env, item[0]);
-                var right = MakeOperand(env, item[1]);
-                AssignGExpression assi = new AssignGExpression(left, right);
-                stes.Add(assi);
-            }
-            var result = new BodyGExpression(stes);
-            return result;
-        }
-
-        /// <summary>
         /// 编译变量初始化。
         /// </summary>
         /// <param name="env"></param>
@@ -388,6 +364,19 @@ namespace OwGame.Expression
             else
                 result = ConstOrReference(env, inputs);
             return result;
+        }
+
+        /// <summary>
+        /// 编译表达式组。
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        static public BlockGExpression CompileBlockExpression(GameExpressionCompileEnvironment env, string str)
+        {
+            var coll = str.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
+            var para = coll.Select(c => CompileExpression(env, c));
+            return new BlockGExpression(para);
         }
 
         /// <summary>
@@ -563,7 +552,7 @@ namespace OwGame.Expression
         /// <summary>
         /// 空引用。
         /// </summary>
-        static public ConstGExpression Null = new ConstGExpression(null);
+        static readonly public ConstGExpression Null = new ConstGExpression(null);
 
         static public bool TryParse(string str, out ConstGExpression result)
         {
@@ -591,11 +580,16 @@ namespace OwGame.Expression
 
         }
 
-        private readonly object _Value;
+        private object _Value;
+        public object Value { get => _Value; set => _Value = value; }
 
         public ConstGExpression(object value)
         {
-            _Value = value;
+            Value = value;
+        }
+
+        public ConstGExpression()
+        {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -607,13 +601,13 @@ namespace OwGame.Expression
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool TryGetValue(GameExpressionRuntimeEnvironment env, out object result)
         {
-            result = _Value;
+            result = Value;
             return true;
         }
 
         private string GetDebuggerDisplay()
         {
-            return $"{_Value}";
+            return $"{Value}";
         }
     }
 
@@ -959,11 +953,27 @@ namespace OwGame.Expression
         }
     }
 
+    #endregion 基础类型
+
     /// <summary>
-    /// 语句的基类。
+    /// 表示包含一个表达式序列的块，表达式中可定义变量。
     /// </summary>
-    public abstract class StatementGExpression : GameExpressionBase
+    public class BlockGExpression : GameExpressionBase
     {
+        public BlockGExpression()
+        {
+
+        }
+
+        public BlockGExpression(IEnumerable<GameExpressionBase> expressions)
+        {
+            Expressions.AddRange(expressions);
+        }
+
+        List<GameExpressionBase> _Expressions = new List<GameExpressionBase>();
+
+        public List<GameExpressionBase> Expressions { get => _Expressions; }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool SetValue(GameExpressionRuntimeEnvironment env, object val)
         {
@@ -974,67 +984,12 @@ namespace OwGame.Expression
         public override bool TryGetValue(GameExpressionRuntimeEnvironment env, out object result)
         {
             result = default;
-            return false;
-        }
-
-        public abstract bool Run(GameExpressionRuntimeEnvironment env);
-
-    }
-
-    /// <summary>
-    /// 赋值语句。
-    /// </summary>
-    public class AssignGExpression : StatementGExpression
-    {
-        public AssignGExpression()
-        {
-
-        }
-
-        public AssignGExpression(GameExpressionBase left, GameExpressionBase right)
-        {
-            Left = left;
-            Right = right;
-        }
-
-        public GameExpressionBase Left { get; set; }
-
-        public GameExpressionBase Right { get; set; }
-
-        public override bool Run(GameExpressionRuntimeEnvironment env)
-        {
-            if (!Right.TryGetValue(env, out var val))
+            object tmp = default;
+            var returnVal = Expressions.All(c => c.TryGetValue(env, out tmp));
+            if (!returnVal)
                 return false;
-            return Left.SetValue(env, val);
-        }
-    }
-
-    /// <summary>
-    /// 一组语句。
-    /// </summary>
-    public class BodyGExpression : StatementGExpression
-    {
-        public BodyGExpression()
-        {
-
-        }
-        public List<StatementGExpression> Statements { get; } = new List<StatementGExpression>();
-
-        public BodyGExpression(IEnumerable<StatementGExpression> statements)
-        {
-            Statements.AddRange(statements);
-        }
-
-        public override bool Run(GameExpressionRuntimeEnvironment env)
-        {
-            bool succ = true;
-            foreach (var item in Statements)
-            {
-                succ = succ && item.Run(env);
-            }
+            result = tmp;
             return true;
         }
     }
-    #endregion 基础类型
-
 }

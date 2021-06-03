@@ -3,6 +3,7 @@ using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OwGame;
+using OwGame.Expression;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -24,11 +25,13 @@ namespace GY2021001BLL
     {
         IServiceProvider _Service;
         private readonly BlueprintTemplate _Template;
-        private List<FormulaData> _Formulas;
 
         public IServiceProvider Service { get => _Service; set => _Service = value; }
 
         public BlueprintTemplate Template => _Template;
+
+        private List<FormulaData> _Formulas;
+        public List<FormulaData> Formulas { get => _Formulas; }
 
         public BlueprintData(IServiceProvider service, BlueprintTemplate template)
         {
@@ -36,12 +39,34 @@ namespace GY2021001BLL
             _Template = template;
             _Formulas = template.FormulaTemplates.Select(c => new FormulaData(c, this)).ToList();
         }
+
+        public void Apply(ApplyBlueprintDatas datas)
+        {
+            var world = Service.GetRequiredService<VWorld>();
+            var formus = Formulas.OrderBy(c => c.Template.OrderNumber).ToArray();
+
+            foreach (var item in formus)    //执行所有公式
+            {
+                if (item.IsMatched) //若不可用
+                    continue;
+                if (!item.Template.ProbExpression.TryGetValue(null, out var probObj) || !OwHelper.TryGetDecimal(probObj, out var prob))  //若无法得到命中概率
+                    continue;
+                if (!world.IsHit((double)prob)) //若未命中
+                    continue;
+                if (item.Apply(datas))   //若执行蓝图成功
+                {
+                    if (!item.Template.IsContinue)  //若无需继续
+                        break;
+                }
+            }
+            ChangesItem.Reduce(datas.ChangesItem);
+            return;
+        }
     }
 
     public class FormulaData
     {
         private readonly BpFormulaTemplate _Template;
-        private List<MaterialData> _Materials;
         private readonly BlueprintData _Parent;
 
         public FormulaData(BpFormulaTemplate template, BlueprintData parent)
@@ -49,42 +74,225 @@ namespace GY2021001BLL
             _Parent = parent;
             _Template = template;
             _Materials = template.BptfItemTemplates.Select(c => new MaterialData(c, this)).ToList();
+            template.SetService(parent.Service);
         }
 
         public BpFormulaTemplate Template => _Template;
 
         public BlueprintData Parent => _Parent;
+
+        /// <summary>
+        /// 脚本的运行时环境。
+        /// </summary>
+        GameExpressionRuntimeEnvironment _RuntimeEnvironment;
+        public GameExpressionRuntimeEnvironment RuntimeEnvironment => _RuntimeEnvironment ??= new GameExpressionRuntimeEnvironment(Template?.CompileEnvironment);
+
+        private List<MaterialData> _Materials;
+        public List<MaterialData> Materials { get => _Materials; }
+
+        public bool IsMatched { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="datas"></param>
+        /// <returns></returns>
+        public bool Match(ApplyBlueprintDatas datas)
+        {
+            var tmpList = Materials.ToList();
+            var coll = datas.GameItems.Concat(OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children)).ToList();    //要遍历的所有物品，确保指定物品最先被匹配
+            RuntimeEnvironment.StartScope();
+            try
+            {
+                while (tmpList.Count > 0)   //当还有未匹配的原料时
+                {
+                    var succ = false;
+                    for (int i = tmpList.Count - 1; i >= 0; i--)
+                    {
+                        var item = tmpList[i];
+                        if (item.Match(coll, out GameItem gameItem))
+                        {
+                            tmpList.RemoveAt(i);
+                            while (coll.Remove(gameItem)) ;
+                            succ = true;
+                        }
+                    }
+                    if (!succ)   //若没有任何一个原料匹配
+                        break;
+                }
+            }
+            finally
+            {
+                IsMatched = tmpList.Count == 0;  //所有原料项都匹配了则说明成功
+                RuntimeEnvironment.EndScope(IsMatched);
+            }
+            return IsMatched;
+        }
+
+        public bool Apply(ApplyBlueprintDatas datas)
+        {
+            bool succ = false;
+            try
+            {
+                succ = Materials.All(c => c.Apply(datas));
+            }
+            catch (Exception)
+            {
+                //TO DO
+            }
+            return succ;
+        }
     }
 
     public class MaterialData
     {
         private readonly FormulaData _Parent;
         private readonly BpItemTemplate _Template;
-        private readonly GameVariable _Variable;
 
         public MaterialData(BpItemTemplate template, FormulaData parent)
         {
             _Parent = parent;
             _Template = template;
-            if (!GameVariable.TryParse(template.VariableDeclaration, out _Variable))
-            {
-                throw new NotImplementedException();    //TO DO
-            }
         }
 
         public BpItemTemplate Template => _Template;
 
         public FormulaData Parent => _Parent;
 
-        public GameVariable Variable => _Variable;
+        private decimal? _CountIncrement;
 
-        public bool Match(ApplyBlueprintDatas datas)
+        /// <summary>
+        /// 增量,仅计算一次，避免反复计算随机数。
+        /// </summary>
+        public decimal CountIncrement
         {
-            bool returnVal = true;
-            var coll = datas.GameItems.Concat(OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children));    //要遍历的所有物品，确保指定物品最先被匹配
-            BpEnvironmentDatas env = new BpEnvironmentDatas();
-            return returnVal;
+            get
+            {
+                if (_CountIncrement is null)    //若尚未计算
+                {
+                    GetIncrement(out var min, out var max);
+                    _CountIncrement = (decimal)VWorld.WorldRandom.NextDouble() * (max - min) + min;
+                }
+                return _CountIncrement.Value;
+            }
         }
+
+        /// <summary>
+        /// 数量变化的概率。
+        /// </summary>
+        public decimal CountIncrementProb
+        {
+            get
+            {
+                decimal result = decimal.Zero;
+                if (!Template.CountProbExpression.TryGetValue(Parent.RuntimeEnvironment, out var resultObj) || !OwHelper.TryGetDecimal(resultObj, out result))
+                    Debug.Fail($"无法获取增量发生的概率。原料Id={Template.Id}({Template.Remark})");
+                return result;
+            }
+        }
+
+        decimal? _Min, _Max;
+        /// <summary>
+        /// 最小和最大的增量值。仅计算一次，后续调用返回缓存，避免多次计算随机数。
+        /// </summary>
+        public bool GetIncrement(out decimal min, out decimal max)
+        {
+            if (_Min is null)
+            {
+                Debug.Assert(_Max is null);
+                var env = Parent.RuntimeEnvironment;
+                bool succ = Template.TryGetLowerBound(env, out var lower);
+                Debug.Assert(succ);
+                succ = Template.TryGetUpperBound(env, out var upper);
+                Debug.Assert(succ);
+                _Min = Math.Min(upper, lower);
+                _Max = Math.Max(upper, lower);
+            }
+            min = _Min.Value;
+            max = _Max.Value;
+            return true;
+        }
+
+        /// <summary>
+        /// 找到匹配的原料。
+        /// </summary>
+        /// <param name="gameItems">搜索的物品集合。</param>
+        /// <param name="matchItem">返回true时，这个出参包含匹配的物品对象。</param>
+        /// <returns></returns>
+        public bool Match(IEnumerable<GameItem> gameItems, out GameItem matchItem)
+        {
+            bool result = false;
+            matchItem = null;
+            var coll = gameItems;
+            var env = Parent.RuntimeEnvironment;
+            env.StartScope();
+            try
+            {
+                var constExpr = new ConstGExpression();
+                env.Variables[Template.Id.ToString()] = constExpr;
+                foreach (var item in coll)
+                {
+                    constExpr.Value = item;   //设置对象
+                    if (!Template.ConditionalExpression.TryGetValue(env, out var matchObj) || !(matchObj is bool isMatth)) //若不符合条件
+                        continue;
+                    if (OwHelper.TryGetDecimal(Template.CountProbExpression.GetValueOrDefault(env, 0), out var countProp) && countProp > 0) //若概率可能大于0 TO DO
+                    {
+                        //校验数量
+                        if (OwHelper.TryGetDecimal(Template.CountLowerBoundExpression.GetValueOrDefault(env, 0), out var lower))
+                            ;
+                        if (OwHelper.TryGetDecimal(Template.CountUpperBoundExpression.GetValueOrDefault(env, 0), out var upper))
+                            ;
+                        if (Math.Min(lower, upper) + (item.Count ?? 0) < 0) //若数量不够
+                            continue;
+                    }
+                    matchItem = item;
+                    result = true;
+                    break;
+                }
+            }
+            finally
+            {
+                env.EndScope(result);
+            }
+            return result;
+        }
+
+        public bool Apply(ApplyBlueprintDatas datas)
+        {
+            var env = Parent.RuntimeEnvironment;
+            //获取该原料对象
+            if (!env.Variables.TryGetValue(Template.Id.ToString(), out var expr) || !expr.TryGetValue(env, out var obj) || !(obj is GameItem gameItem))
+                return false;
+            //修改数量
+            if (!Template.CountProbExpression.TryGetValue(env, out var countPropObj) || OwHelper.TryGetDecimal(countPropObj, out var prob)) //若无法获取概率
+                return false;
+            var world = Parent.Parent.Service.GetRequiredService<VWorld>();
+            if (world.IsHit((double)CountIncrementProb)) //若需要增量
+            {
+                var gim = Parent.Parent.Service.GetService<GameItemManager>();
+                var inc = CountIncrement;
+                if (gameItem.Count + inc < 0)
+                    return false;
+                var count = inc + gameItem.Count;
+                var ci = new ChangesItem()
+                {
+                    ContainerId = gameItem.ParentId ?? gameItem.OwnerId.Value,
+                };
+                if (gim.SetPropertyValue(gameItem, "count", count))  //若设置数量成功
+                {
+                    if (count > 0) //若有剩余
+                        ci.Changes.Add(gameItem);
+                    else //若没有剩余
+                        ci.Removes.Add(gameItem.Id);
+                }
+                datas.ChangesItem.Add(ci);
+            }
+            if (!Template.PropertiesChangesExpression.TryGetValue(env, out _))
+                return false;
+            return true;
+        }
+
+
     }
 
     public sealed class BpItemDataObject
@@ -310,6 +518,11 @@ namespace GY2021001BLL
         /// 要执行的次数。
         /// </summary>
         public int Count { get; set; }
+
+        /// <summary>
+        /// 获取或设置成功执行的次数。
+        /// </summary>
+        public int SuccCount { get; set; }
 
         /// <summary>
         /// 应用蓝图后，物品变化数据。

@@ -84,12 +84,6 @@ namespace GY2021001BLL
 
         public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Service.GetRequiredService<BlueprintManager>(); }
 
-        /// <summary>
-        /// 公用随机数生成器。
-        /// </summary>
-        [ThreadStatic]
-        private static Random _WorldRandom;
-
         ObjectPool<List<GameItem>> _ObjectPoolListGameItem;
 
         public ObjectPool<List<GameItem>> ObjectPoolListGameItem
@@ -104,8 +98,28 @@ namespace GY2021001BLL
                 return _ObjectPoolListGameItem;
             }
         }
+        #region 随机数相关
+        /// <summary>
+        /// 公用随机数生成器。
+        /// </summary>
+        [ThreadStatic]
+        private static Random _WorldRandom;
 
         public static Random WorldRandom => _WorldRandom ??= new Random();
+
+        /// <summary>
+        /// 获取两个数之间的一个随机数。
+        /// </summary>
+        /// <param name="from">返回值大于或等于此参数。</param>
+        /// <param name="to">返回值小于此参数。</param>
+        /// <returns>随机数属于区间 [ <paramref name="from"/>, <paramref name="to"/> )</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double GetRandomNumber(double from, double to)
+        {
+            return WorldRandom.NextDouble() * (to - from) + from;
+        }
+
+        #endregion 随机数相关
 
 
         #endregion 属性及相关
