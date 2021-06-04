@@ -216,6 +216,7 @@ namespace GY2021001BLL
                             return false;
                         tmp.Children.Remove(gameItem);
                     }
+                    gameItem.Count = count;
                 }
 
             }

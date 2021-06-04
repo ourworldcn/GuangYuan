@@ -492,6 +492,11 @@
             获取变化物品的数据。仅当成功返回时有意义。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.SuccCount">
+            <summary>
+            获取或设置成功执行的次数。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。

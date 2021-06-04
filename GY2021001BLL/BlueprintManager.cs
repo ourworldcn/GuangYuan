@@ -21,6 +21,34 @@ using System.Threading.Tasks;
 
 namespace GY2021001BLL
 {
+    public class GameManagerPropertyHelper : GameThingPropertyHelper
+    {
+        private readonly GameItemManager _Manager;
+
+        public GameManagerPropertyHelper(GameItemManager manager)
+        {
+            _Manager = manager;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override object GetValue(object obj, string propertyName, object defaultValue = null)
+        {
+            var gameItem = obj as GameItem;
+            if (null == gameItem)
+                return defaultValue;
+            return _Manager.GetPropertyValue(gameItem, propertyName);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override bool SetValue(object obj, string propertyName, object val)
+        {
+            var gameItem = obj as GameItem;
+            if (null == gameItem)
+                return false;
+            return _Manager.SetPropertyValue(gameItem, propertyName, val);
+        }
+    }
+
     public class BlueprintData
     {
         IServiceProvider _Service;
@@ -47,7 +75,7 @@ namespace GY2021001BLL
 
             foreach (var item in formus)    //执行所有公式
             {
-                if (item.IsMatched) //若不可用
+                if (!item.IsMatched) //若不可用
                     continue;
                 if (!item.Template.ProbExpression.TryGetValue(null, out var probObj) || !OwHelper.TryGetDecimal(probObj, out var prob))  //若无法得到命中概率
                     continue;
@@ -237,12 +265,20 @@ namespace GY2021001BLL
             env.StartScope();
             try
             {
-                var constExpr = new ConstGExpression();
-                env.Variables[Template.Id.ToString()] = constExpr;
+                ConstGExpression constExpr;
+                var id = Template.Id.ToString();
+                if (env.Variables.TryGetValue(id, out var oRxpr))
+                {
+                    Debug.Assert(oRxpr is ConstGExpression);
+                    constExpr = oRxpr as ConstGExpression;
+                }
+                else
+                    env.Variables[id] = constExpr = new ConstGExpression();
                 foreach (var item in coll)
                 {
-                    constExpr.Value = item;   //设置对象
-                    if (!Template.ConditionalExpression.TryGetValue(env, out var matchObj) || !(matchObj is bool isMatth)) //若不符合条件
+                    var _ = constExpr.SetValue(env, item);   //设置对象
+                    Debug.Assert(_);
+                    if (!Template.ConditionalExpression.TryGetValue(env, out var matchObj) || !(matchObj is bool isMatth) || !isMatth) //若不符合条件
                         continue;
                     if (OwHelper.TryGetDecimal(Template.CountProbExpression.GetValueOrDefault(env, 0), out var countProp) && countProp > 0) //若概率可能大于0 TO DO
                     {
@@ -273,31 +309,31 @@ namespace GY2021001BLL
             if (!env.Variables.TryGetValue(Template.Id.ToString(), out var expr) || !expr.TryGetValue(env, out var obj) || !(obj is GameItem gameItem))
                 return false;
             //修改数量
-            if (!Template.CountProbExpression.TryGetValue(env, out var countPropObj) || OwHelper.TryGetDecimal(countPropObj, out var prob)) //若无法获取概率
+            if (!Template.CountProbExpression.TryGetValue(env, out var countPropObj) || !OwHelper.TryGetDecimal(countPropObj, out var prob)) //若无法获取概率
                 return false;
             var world = Parent.Parent.Service.GetRequiredService<VWorld>();
+            var gim = Parent.Parent.Service.GetService<GameItemManager>();
+            var ci = new ChangesItem()
+            {
+                ContainerId = gameItem.ParentId ?? gameItem.OwnerId.Value,
+            };
+            decimal count = gameItem.Count.Value;
             if (world.IsHit((double)CountIncrementProb)) //若需要增量
             {
-                var gim = Parent.Parent.Service.GetService<GameItemManager>();
                 var inc = CountIncrement;
                 if (gameItem.Count + inc < 0)
                     return false;
-                var count = inc + gameItem.Count;
-                var ci = new ChangesItem()
-                {
-                    ContainerId = gameItem.ParentId ?? gameItem.OwnerId.Value,
-                };
-                if (gim.SetPropertyValue(gameItem, "count", count))  //若设置数量成功
-                {
-                    if (count > 0) //若有剩余
-                        ci.Changes.Add(gameItem);
-                    else //若没有剩余
-                        ci.Removes.Add(gameItem.Id);
-                }
-                datas.ChangesItem.Add(ci);
+                count = inc + gameItem.Count.Value;
+                var _ = gim.SetPropertyValue(gameItem, "count", count);
+                Debug.Assert(_);
             }
             if (!Template.PropertiesChangesExpression.TryGetValue(env, out _))
                 return false;
+            if (gameItem.Count.Value > 0) //若有剩余
+                ci.Changes.Add(gameItem);
+            else //若没有剩余
+                ci.Removes.Add(gameItem.Id);
+            datas.ChangesItem.Add(ci);
             return true;
         }
 
@@ -483,6 +519,7 @@ namespace GY2021001BLL
                         break;
                     }
                     data.Apply(datas);
+                    datas.SuccCount++;
                 }
 
                 ChangesItem.Reduce(datas.ChangesItem);    //压缩变化数据

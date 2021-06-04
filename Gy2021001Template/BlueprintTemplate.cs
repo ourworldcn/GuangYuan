@@ -80,7 +80,8 @@ namespace Gy2021001Template
                 lock (this)
                     if (null == _ProbExpression)
                     {
-                        _ProbExpression = GameExpressionBase.CompileExpression(CompileEnvironment, Prob);
+                        var env = CompileEnvironment;
+                        _ProbExpression = GameExpressionBase.CompileExpression(env, Prob);
                     }
                 return _ProbExpression;
             }
@@ -98,7 +99,15 @@ namespace Gy2021001Template
                         var result = new GameExpressionCompileEnvironment() { Services = Service ?? BlueprintTemplate?.Service, };
                         foreach (var item in BptfItemTemplates) //将变量声明编译
                         {
-                            GameExpressionBase.CompileVariableDeclare(result, item.VariableDeclaration);
+                            result.StartCurrentObject(item.Id.ToString());
+                            try
+                            {
+                                GameExpressionBase.CompileVariableDeclare(result, item.VariableDeclaration);
+                            }
+                            finally
+                            {
+                                result.RestoreCurrentObject(out _);
+                            }
                         }
                         _CompileEnvironment = result;
                     }
@@ -155,6 +164,22 @@ namespace Gy2021001Template
         [Column("新建物品否")]
         public bool IsNew { get; set; }
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private GameExpressionCompileEnvironment StartCurrentObject()
+        {
+            var _ = FormulaTemplate.CompileEnvironment;
+            _.StartCurrentObject(Id.ToString());
+            return _;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool EndCurrentObject(out string result)
+        {
+            var _ = FormulaTemplate.CompileEnvironment;
+            return _.RestoreCurrentObject(out result);
+        }
+
         private GameExpressionBase _ConditionalExpression;
         /// <summary>
         /// 获取条件表达式。
@@ -167,21 +192,19 @@ namespace Gy2021001Template
                 lock (this)
                     if (null == _ConditionalExpression)
                     {
-                        var env = FormulaTemplate.CompileEnvironment;
-                        env.StartCurrentObject(Id.ToString());
+                        var env = StartCurrentObject();
                         try
                         {
                             _ConditionalExpression = GameExpressionBase.CompileExpression(FormulaTemplate.CompileEnvironment, Conditional);
                         }
                         finally
                         {
-                            env.RestoreCurrentObject(out _);
+                            EndCurrentObject(out _);
                         }
                     }
                 return _ConditionalExpression;
             }
         }
-
 
         private GameExpressionBase _CountUpperBoundExpression;
         /// <summary>
@@ -196,8 +219,7 @@ namespace Gy2021001Template
                 lock (this)
                     if (null == _CountUpperBoundExpression)
                     {
-                        var env = FormulaTemplate.CompileEnvironment;
-                        env.StartCurrentObject(Id.ToString());
+                        var env = StartCurrentObject();
                         GameExpressionBase result;
                         try
                         {
@@ -205,7 +227,7 @@ namespace Gy2021001Template
                         }
                         finally
                         {
-                            env.RestoreCurrentObject(out _);
+                            EndCurrentObject(out _);
                         }
                         _CountUpperBoundExpression = result;
                         //if (IsCountRound)    //若需要取整
@@ -213,7 +235,7 @@ namespace Gy2021001Template
                         //    result = new FunctionCallGExpression("round", result);
                         //}
                     }
-                return _ConditionalExpression;
+                return _CountUpperBoundExpression;
             }
         }
 
@@ -253,16 +275,15 @@ namespace Gy2021001Template
                 lock (this)
                     if (null == _CountLowerBoundExpression)
                     {
-                        var env = FormulaTemplate.CompileEnvironment;
-                        env.StartCurrentObject(Id.ToString());
+                        var env = StartCurrentObject();
                         GameExpressionBase result;
                         try
                         {
-                            result = GameExpressionBase.CompileExpression(FormulaTemplate.CompileEnvironment, CountLowerBound);
+                            result = GameExpressionBase.CompileExpression(env, CountLowerBound);
                         }
                         finally
                         {
-                            env.RestoreCurrentObject(out _);
+                            EndCurrentObject(out _);
                         }
                         //if (IsCountRound)    //若需要取整
                         //{
@@ -270,7 +291,7 @@ namespace Gy2021001Template
                         //}
                         _CountLowerBoundExpression = result;
                     }
-                return _ConditionalExpression;
+                return _CountLowerBoundExpression;
             }
         }
 
@@ -288,18 +309,17 @@ namespace Gy2021001Template
                 lock (this)
                     if (null == _CountProbExpression)
                     {
-                        var env = FormulaTemplate.CompileEnvironment;
-                        env.StartCurrentObject(Id.ToString());
+                        var env = StartCurrentObject();
                         try
                         {
-                            _CountProbExpression = GameExpressionBase.CompileExpression(FormulaTemplate.CompileEnvironment, CountProb);
+                            _CountProbExpression = GameExpressionBase.CompileExpression(env, CountProb);
                         }
                         finally
                         {
-                            env.RestoreCurrentObject(out _);
+                            EndCurrentObject(out _);
                         }
                     }
-                return _ConditionalExpression;
+                return _CountProbExpression;
             }
         }
 
@@ -316,18 +336,17 @@ namespace Gy2021001Template
                 lock (this)
                     if (null == _PropertiesChangesExpression)
                     {
-                        var env = FormulaTemplate.CompileEnvironment;
-                        env.StartCurrentObject(Id.ToString());
+                        var env = StartCurrentObject();
                         try
                         {
-                            _PropertiesChangesExpression = GameExpressionBase.CompileBlockExpression(FormulaTemplate.CompileEnvironment, PropertiesChanges);
+                            _PropertiesChangesExpression = GameExpressionBase.CompileBlockExpression(env, PropertiesChanges);
                         }
                         finally
                         {
-                            env.RestoreCurrentObject(out _);
+                            EndCurrentObject(out _);
                         }
                     }
-                return _ConditionalExpression;
+                return _PropertiesChangesExpression;
             }
         }
     }

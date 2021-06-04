@@ -260,6 +260,7 @@ namespace GY2021001WebApi.Models
             {
                 HasError = obj.HasError,
                 DebugMessage = obj.DebugMessage,
+                SuccCount = obj.SuccCount,
             };
             result.ChangesItems.AddRange(obj.ChangesItem.Select(c => (ChangesItemDto)c));
             return result;

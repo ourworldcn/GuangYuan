@@ -26,6 +26,8 @@ namespace Gy001.Controllers
             _World = world;
         }
 
+#if DEBUG
+
         /// <summary>
         /// 测试。
         /// </summary>
@@ -60,6 +62,8 @@ namespace Gy001.Controllers
             return (ApplyBlueprintReturnDto)applyBluprintDatas;
         }
 
+#endif
+
         /// <summary>
         /// 使用蓝图制造或升级物品。
         /// </summary>
@@ -85,10 +89,13 @@ namespace Gy001.Controllers
                 {
                     Blueprint = world.BlueprintManager.GetTemplateFromId(GameHelper.FromBase64String(model.BlueprintId)) as BlueprintTemplate,  //这里不处理是空的情况
                     GameChar = gu.GameChars[0],
+                    
                 };
                 datas.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
                 world.BlueprintManager.ApplyBluprint(datas);
+
                 result.ChangesItems.AddRange(datas.ChangesItem.Select(c => (ChangesItemDto)c));
+                result.SuccCount = datas.SuccCount;
             }
             catch (Exception err)
             {

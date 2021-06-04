@@ -28,7 +28,7 @@ namespace Gy001
             _Host = host;
             CreateDb(_Host);
             LoadCache(_Host);
-            Test();
+            //Test();
             _Host.Run();
         }
 

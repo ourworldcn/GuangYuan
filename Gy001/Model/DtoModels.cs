@@ -992,6 +992,13 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<ChangesItemDto> ChangesItems { get; set; } = new List<ChangesItemDto>();
+
+        /// <summary>
+        /// 获取或设置成功执行的次数。
+        /// </summary>
+        [DataMember]
+        public int SuccCount { get; set; }
+
     }
 
     /// <summary>

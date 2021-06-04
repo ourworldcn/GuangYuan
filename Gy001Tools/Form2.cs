@@ -36,14 +36,32 @@ namespace Gy001Tools
         }
         private void Form2_Load(object sender, EventArgs e)
         {
-            decimal? dec=default;
-            if (dec is  null)
-                ;
-            var rnd2 = WorldRandom;
-            Task.Run(() =>
-            {
-                var rnd = WorldRandom;
-            });
+            test();
+        }
+
+        private void test()
+        {
+            BlockExpression blockExpr = Expression.Block(
+                Expression.Call(
+                    null,
+                    typeof(Console).GetMethod("Write", new Type[] { typeof(String) }),
+                    Expression.Constant("Hello ")
+                   ),
+                Expression.Call(
+                    null,
+                    typeof(Console).GetMethod("WriteLine", new Type[] { typeof(String) }),
+                    Expression.Constant("World!")
+                    ),
+                Expression.Constant(42)
+            );
+            
+            var expr = Expression.Add(
+                Constant(5),
+                Constant(6));
+            Console.WriteLine("The result of executing the expression tree:");
+            // The following statement first creates an expression tree,
+            // then compiles it, and then executes it.
+            var result = Expression.Lambda<Func<int>>(expr).Compile()();
         }
 
         string left = "k1";

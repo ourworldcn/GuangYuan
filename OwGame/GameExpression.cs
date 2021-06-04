@@ -138,6 +138,7 @@ namespace OwGame.Expression
         /// 设置一个新的当前对象Id。并保存旧Id,在以后可以用<see cref="RestoreCurrentObject(out string)"/>恢复。
         /// </summary>
         /// <param name="newObjectId"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void StartCurrentObject(string newObjectId)
         {
             _CurrentObjectIds.Push(_CurrentObjectId);
@@ -149,6 +150,7 @@ namespace OwGame.Expression
         /// </summary>
         /// <param name="oldObjectId">返回true时,这里是原有对象Id,返回false时，这个出参的状态未知。</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool RestoreCurrentObject(out string oldObjectId)
         {
             oldObjectId = _CurrentObjectId;
@@ -244,6 +246,8 @@ namespace OwGame.Expression
         /// <returns></returns>
         static public void CompileVariableDeclare(GameExpressionCompileEnvironment env, string inputs)
         {
+            if (string.IsNullOrEmpty(inputs))
+                return;
             Dictionary<string, GameExpressionBase> result = env.Variables;
             var alls = inputs.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => c.Split('=', StringSplitOptions.None).Select(exp => exp.Trim()).ToArray());
             foreach (var expStr in alls.Where(c => c.Length != 2))
@@ -303,8 +307,8 @@ namespace OwGame.Expression
             return ConstGExpression.TryParse(str, out var result) ? (GameExpressionBase)result : new ReferenceGExpression(str.Trim()/*这里要考虑空白是否有意义 TO DO*/, env.CurrentObjectId);
         }
 
-        const string comparePattern = @"\s*(?<or>[^{}]+)\s*(?<op>[{}]{0,2})";
-
+        const string comparePattern = @"\s*(?<or>{dec}|[^{}]+)\s*(?<op>[{}]{0,2})";
+        const string decPattern = @"\-?[\d\.]+";
         private static string _Pattern;
 
         static protected string PatternString
@@ -314,7 +318,7 @@ namespace OwGame.Expression
                 if (null == _Pattern)
                 {
                     var tmp = string.Concat(BinaryGExpression.Operators.Keys.SelectMany(c => c).Distinct().Select(c => @"\" + char.ToString(c)));
-                    _Pattern = comparePattern.Replace(@"{}", tmp);
+                    _Pattern = comparePattern.Replace(@"{}", tmp).Replace("{dec}", decPattern);
                 }
                 return _Pattern;
             }
@@ -581,11 +585,11 @@ namespace OwGame.Expression
         }
 
         private object _Value;
-        public object Value { get => _Value; set => _Value = value; }
+        public object Value { get => _Value; }
 
         public ConstGExpression(object value)
         {
-            Value = value;
+            _Value = value;
         }
 
         public ConstGExpression()
@@ -595,7 +599,9 @@ namespace OwGame.Expression
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool SetValue(GameExpressionRuntimeEnvironment env, object val)
         {
-            return false;
+            Debug.WriteLineIf(val is GameExpressionBase, $"不应在常量对象中引用另一个常量对象。");
+            _Value = val;
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -607,6 +613,11 @@ namespace OwGame.Expression
 
         private string GetDebuggerDisplay()
         {
+            if (_Value is Guid)
+            {
+                var str = _Value.ToString();
+                return $"{{{str.Substring(0, 4)}...{str.Substring(str.Length - 4, 4)}}}";
+            }
             return $"{Value}";
         }
     }
@@ -635,16 +646,14 @@ namespace OwGame.Expression
 
         public override bool SetValue(GameExpressionRuntimeEnvironment env, object val)
         {
-            if (env.Variables.TryGetValue(Name, out _))   //若此引用是一个常量
+            if (env.Variables.TryGetValue(Name, out var expr))   //若此引用是一个常量
             {
-                env.Variables[Name] = new ConstGExpression(val);
-                return true;
+                return expr.SetValue(env, val);
             }
-            var srv = env.Services.GetService(typeof(GamePropertyHelper)) as GamePropertyHelper;
-            if (!env.Variables.TryGetValue(Name, out var objExp))
+            if (!env.Variables.TryGetValue(ObjectId, out var objExp) || !objExp.TryGetValue(env,out var obj))   //若没有找到对象
                 return false;
-            var obj = objExp.GetValueOrDefault(env);
-            return null == obj ? false : srv.SetValue(obj, Name, val);
+            var srv = env.Services.GetService(typeof(GamePropertyHelper)) as GamePropertyHelper;
+            return srv.SetValue(obj, Name, val);
         }
 
         /// <summary>
@@ -892,10 +901,16 @@ namespace OwGame.Expression
                         goto errLable;
                     break;
                 case "==":
-                    result = Equals(leftObj, rightObj);
+                    if (OwHelper.TryGetDecimal(leftObj, out left) && OwHelper.TryGetDecimal(rightObj, out right))
+                        result = left == right;
+                    else
+                        result = Equals(leftObj, rightObj);
                     break;
                 case "!=":
-                    result = !Equals(leftObj, rightObj);
+                    if (OwHelper.TryGetDecimal(leftObj, out left) && OwHelper.TryGetDecimal(rightObj, out right))
+                        result = left != right;
+                    else
+                        result = !Equals(leftObj, rightObj);
                     break;
                 case "<":
                     if (OwHelper.TryGetDecimal(leftObj, out left) && OwHelper.TryGetDecimal(rightObj, out right))
