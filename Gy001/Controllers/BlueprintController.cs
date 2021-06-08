@@ -89,13 +89,14 @@ namespace Gy001.Controllers
                 {
                     Blueprint = world.BlueprintManager.GetTemplateFromId(GameHelper.FromBase64String(model.BlueprintId)) as BlueprintTemplate,  //这里不处理是空的情况
                     GameChar = gu.GameChars[0],
-                    
+                    Count=model.Count,
                 };
                 datas.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
                 world.BlueprintManager.ApplyBluprint(datas);
 
                 result.ChangesItems.AddRange(datas.ChangesItem.Select(c => (ChangesItemDto)c));
                 result.SuccCount = datas.SuccCount;
+                world.CharManager.NotifyChange(gu);
             }
             catch (Exception err)
             {
@@ -104,7 +105,7 @@ namespace Gy001.Controllers
             }
             finally
             {
-                world.CharManager.Unlock(gu);
+                world.CharManager.Unlock(gu, true);
             }
             return result;
         }

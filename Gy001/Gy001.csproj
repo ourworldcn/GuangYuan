@@ -17,6 +17,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="web.Debug.config" />
+    <Content Remove="web.Release.config" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="3.1.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.14">
       <PrivateAssets>all</PrivateAssets>

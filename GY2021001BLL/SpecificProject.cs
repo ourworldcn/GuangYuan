@@ -140,6 +140,11 @@ namespace GY2021001BLL
         /// </summary>
         public const string ShenwenTupoQltCountPropertyName = "sscqlt";
 
+        /// <summary>
+        /// 阵容属性前缀
+        /// </summary>
+        public const string ZhenrongPropertyName = "for";
+
         #region 类别号
         /// <summary>
         /// 血量神纹碎片的类别号。

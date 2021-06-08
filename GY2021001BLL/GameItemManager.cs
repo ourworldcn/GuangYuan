@@ -166,6 +166,7 @@ namespace GY2021001BLL
         /// <param name="gameItem"></param>
         /// <param name="propName"></param>
         /// <param name="val"></param>
+        /// <param name="gameChar"></param>
         /// <returns>true成功设置,false未能成功设置属性。</returns>
         public bool SetPropertyValue(GameItem gameItem, string propName, object val, GameChar gameChar = null)
         {
@@ -179,14 +180,20 @@ namespace GY2021001BLL
             {
                 return true;
             }
-            else if (propName.Equals("ptid", StringComparison.InvariantCultureIgnoreCase))
+            else if (propName.Equals("ptid", StringComparison.InvariantCultureIgnoreCase))  //移动到新的父容器
             {
-                //    var container = gameItem.Parent;
-                //    if (null != container)  //若找到容器
-                //        return container.TemplateId;
-                //找到依附物
-                //TO DO
-                throw new NotImplementedException();
+                var coll = OwHelper.GetAllSubItemsOfTree(new GameItem[] { gameItem }, c => c.Children);
+                var tid = (Guid)val;
+                var parent = coll.FirstOrDefault(c => c.TemplateId == tid); //获取目标容器
+                var oldParent = GetParent(gameItem); //现有容器
+                if (null == oldParent) //若不是属于其他物品
+                {
+                    AddItem(gameItem, parent);
+                }
+                else
+                {
+                    MoveItems(oldParent, c => c.Id == gameItem.Id, parent);
+                }
             }
             else if (propName.Equals("Count", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -288,6 +295,75 @@ namespace GY2021001BLL
                 gameItem.Properties[indexPN] = newLevel;
             }
             return;
+        }
+
+        /// <summary>
+        /// 获取指定角色所有物品的字典，键是物品Id,值是物品对象。
+        /// </summary>
+        /// <param name="gc"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IReadOnlyDictionary<Guid, GameItem> GetAllChildrenDictionary(GameChar gc)
+        {
+            //TO DO未来是否需要缓存机制？
+            return GetAllChildren(gc).ToDictionary(c => c.Id);
+        }
+
+        /// <summary>
+        /// 移动一个物品的一部分到另一个容器。
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="count"></param>
+        /// <param name="destContainer"></param>
+        /// <param name="changesItems">物品变化信息，null或省略则不生成具体的变化信息。</param>
+        /// <returns>true成功移动了物品，false是以下情况的一种或多种：物品现存数量小于要求移动的数量，没有可以移动的物品,目标背包已经满,。</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/>应该大于0</exception>
+        public bool MoveItem(GameItem item, decimal count, GameItem destContainer, ICollection<ChangesItem> changesItems = null)
+        {
+            //TO DO 不会堆叠
+            if (count <= 0)
+                throw new ArgumentOutOfRangeException(nameof(count), "应大于0");
+            var result = false;
+            var cap = GetCapacity(destContainer);
+            if (cap is null || (cap != -1 && cap >= destContainer.Children.Count))   //若目标背包已经满
+                return false;
+            if (item.Count < count)
+                return false;
+
+            var stc = GetStackUpper(item);
+            if (stc is null || count == item.Count)  //若不可堆叠或全部移动
+            {
+                var parent = GetParent(item);   //获取父容器
+                MoveItems(parent, c => c.Id == item.Id, destContainer, changesItems);
+                result = true;
+            }
+            else //若可能堆叠且不是全部移动
+            {
+                stc = stc == -1 ? decimal.MaxValue : stc;
+                var moveItem = CreateGameItem(item.TemplateId);
+                moveItem.Count = count;
+                item.Count = item.Count - count;
+                var parent = GetParent(item);   //获取父容器
+                AddItem(moveItem, parent);  //TO DO 需要处理无法完整放入问题
+                if (null != changesItems)
+                {
+                    //增加变化 
+                    var changes = new ChangesItem()
+                    {
+                        ContainerId = parent.Id,
+                    };
+                    changes.Changes.Add(item);
+                    changesItems.Add(changes);
+                    //增加新增
+                    var adds = new ChangesItem()
+                    {
+                        ContainerId = destContainer.Id,
+                    };
+                    adds.Adds.Add(moveItem);
+                    changesItems.Add(adds);
+                }
+            }
+            return result;
         }
 
         /// <summary>
@@ -400,7 +476,7 @@ namespace GY2021001BLL
                     tmp.Clear();
                     AddItems(remainder, src, remainder2, changes);
                     Trace.Assert(remainder2.Count == 0);    //TO DO当前版本逻辑上不会出现此问题
-                    //变化物品
+                                                            //变化物品
                     adds.Clear();
                     List<Guid> guids = new List<Guid>();
                     List<(Guid, GameItem)> l_r = new List<(Guid, GameItem)>();
@@ -433,6 +509,7 @@ namespace GY2021001BLL
                 World.ObjectPoolListGameItem.Return(tmp);
             }
         }
+
 
         /// <summary>
         /// 将一组物品加入一个容器下。
@@ -645,6 +722,18 @@ namespace GY2021001BLL
         }
 
         /// <summary>
+        /// 返回指定Id的对象。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="gameChar">指定所属的角色对象。</param>
+        /// <returns>没有找到则返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameItem GetItemFromId(Guid id, GameChar gameChar)
+        {
+            return OwHelper.GetAllSubItemsOfTree(gameChar.GameItems, c => c.Children).FirstOrDefault(c => c.Id == id);
+        }
+
+        /// <summary>
         /// 按Id获取物品/容器对象集合。
         /// </summary>
         /// <param name="ids">id的集合。</param>
@@ -682,6 +771,17 @@ namespace GY2021001BLL
         }
 
         /// <summary>
+        /// 获取父容器。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>返回父容器，没有找到则返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameThingBase GetParent(GameItem gameItem)
+        {
+            return gameItem.Parent ?? GetChar(gameItem) as GameThingBase;
+        }
+
+        /// <summary>
         /// 获取容器的子对象的集合接口。
         /// </summary>
         /// <param name="gameThing">容器对象。</param>
@@ -704,6 +804,7 @@ namespace GY2021001BLL
             var _ = GetChildren(gameThing);
             return OwHelper.GetAllSubItemsOfTree(_, c => c.Children);
         }
+
     }
 
 }

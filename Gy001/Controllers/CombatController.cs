@@ -69,6 +69,7 @@ namespace GY2021001WebApi.Controllers
             return (CombatEndReturnDto)result;
         }
 
+#if DEBUG
         [HttpPost]
         public ActionResult<CombatEndReturnDto> Test()
         {
@@ -119,5 +120,6 @@ namespace GY2021001WebApi.Controllers
             world.CombatManager.EndCombat(endCombatData);
             return (CombatEndReturnDto)endCombatData;
         }
+#endif
     }
 }

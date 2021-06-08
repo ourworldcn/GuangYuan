@@ -116,6 +116,7 @@ namespace GY2021001WebApi.Controllers
         /// </summary>
         /// <param name="model">GameItemDto 中元素仅需Id有效填写。</param>
         /// <returns>true成功设置，false可能是设置数量超过限制。</returns>
+        /// <response code="401">令牌错误。</response>
         [HttpPut]
         public ActionResult<bool> SetCombatMounts(SetCombatMountsParamsDto model)
         {
@@ -216,6 +217,155 @@ namespace GY2021001WebApi.Controllers
             }
             return result;
         }
+
+        /// <summary>
+        /// 设置阵容。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPost]
+        public ActionResult<SetLineupReturnDto> SetSetLineup(SetLineupParamsDto model)
+        {
+            SetLineupReturnDto result = new SetLineupReturnDto();
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return Unauthorized("令牌无效");
+            try
+            {
+                var gc = gu.GameChars[0];
+                var gim = world.ItemManager;
+                var allDic = gim.GetAllChildrenDictionary(gc);
+                var coll = from tmp in model.Settings
+                           select new { Id = tmp.Id, GItem = allDic.GetValueOrDefault(GameHelper.FromBase64String(tmp.Id), null), tmp.Position, Index = tmp.ForIndex };
+                var tmpGi = coll.FirstOrDefault(c => c.GItem == null);
+                if (tmpGi != null)  //若有无效Id
+                {
+                    result.HasError = true;
+                    result.DebugMessage = $"至少有一个坐骑Id无效:Id={tmpGi.Id}";
+                }
+                else
+                {
+                    var ci = new ChangesItem() { ContainerId = ProjectConstant.ZuojiBagSlotId };
+                    foreach (var item in coll)
+                    {
+                        if (item.Position == -1)    //若去除该阵营出阵位置编号
+                        {
+                            item.GItem.Properties.Remove($"{ProjectConstant.ZhenrongPropertyName}{item.Index}");
+                        }
+                        else //设置出阵
+                        {
+                            item.GItem.Properties[$"{ProjectConstant.ZhenrongPropertyName}{item.Index}"] = (decimal)item.Position;
+                        }
+                        ci.Changes.Add(item.GItem);
+                    }
+                    var changes = new List<ChangesItem>();
+                    changes.Add(ci);
+                    ChangesItem.Reduce(changes);
+                    result.ChangesItems.AddRange(changes.Select(c => (ChangesItemDto)c));
+                    world.CharManager.NotifyChange(gu);
+                }
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 移动物品接口。如将锁定合成锁定石头放入特定槽。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPost]
+        public ActionResult<MoveItemsReturnDto> MoveItems(MoveItemsParamsDto model)
+        {
+            var result = new MoveItemsReturnDto();
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            var gim = world.ItemManager;
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return Unauthorized("令牌无效");
+            try
+            {
+                if (model.Items.Count == 0)
+                {
+                    result.DebugMessage = "空的参数";
+                    return result;
+                }
+                var gc = gu.GameChars[0];
+                var lst = new List<GameItem>();
+                var coll = from tmp in model.Items
+                           select (Id: GameHelper.FromBase64String(tmp.ItemId), Count: tmp.Count, PId: GameHelper.FromBase64String(tmp.DestContainerId));
+                var allGi = gim.GetAllChildrenDictionary(gc);
+                var tmpGi = coll.FirstOrDefault(c => !allGi.ContainsKey(c.Id) || !allGi.ContainsKey(c.PId));
+                if (tmpGi.Id != Guid.Empty)
+                {
+                    result.HasError = true;
+                    result.DebugMessage = $"至少有一个物品没有找到。Id={tmpGi.Id},PId={tmpGi.PId}";
+                    return result;
+                }
+                try
+                {
+                    foreach (var item in coll)
+                    {
+                        ICollection<ChangesItem> changesItems = null;
+                        world.ItemManager.MoveItem(allGi[item.Id], item.Count, allGi[item.PId], changesItems);
+                    }
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu, true);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 给角色强行增加物品。调试用接口，正式版本将删除。
+        /// </summary>
+        /// <param name="model">要增加的物品对象数组，需要设置Count,TemplateId,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPost]
+        public ActionResult<List<GameItemDto>> AddItems(AddItemsParamsDto model)
+        {
+            var result = new List<GameItemDto>();
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return Unauthorized("令牌无效");
+            try
+            {
+                var gc = gu.GameChars[0];
+                var gim = world.ItemManager;
+                var coll = model.Items.Select(c => gim.CreateGameItem(GameHelper.FromBase64String(c.TemplateId))).Zip(model.Items, (l, r) =>
+                     {
+                         var parentId = GameHelper.FromBase64String(r.ParentId ?? r.OwnerId);
+                         l.Count = r.Count;
+                         return (parentId, GameItem: l);
+                     }).GroupBy(c => c.parentId);
+                List<ChangesItem> lst = new List<ChangesItem>();
+                foreach (var item in coll)
+                {
+                    var parent = gim.GetItemFromId(item.Key, gc);
+                    gim.AddItems(item.Select(c => c.GameItem), parent, null, lst);
+                }
+                result.AddRange(lst.SelectMany(c => c.Changes).Select(c => (GameItemDto)c));
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
+
     }
 }
 

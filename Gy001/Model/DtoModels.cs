@@ -184,10 +184,20 @@ namespace GY2021001WebApi.Models
         }
 
         /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="token"></param>
+        public TokenDtoBase(string token)
+        {
+            Token = token;
+        }
+
+        /// <summary>
         /// 令牌。
         /// </summary>
         [DataMember]
         public string Token { get; set; }
+
     }
 
     #region 基础数据封装类
@@ -315,7 +325,7 @@ namespace GY2021001WebApi.Models
         /// 属性集合。"Properties":{"atk":102,"qult":500,"catalogId":"shfdkjshfkjskfh=="}
         /// </summary>
         [DataMember(Name = nameof(Properties))]
-        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>(); //"for0=101001"
 
         /// <summary>
         /// 所属Id。当前版本下，仅当此物直属于角色对象时，此属性才有值，且是所属角色的id。
@@ -1030,6 +1040,108 @@ namespace GY2021001WebApi.Models
 
         }
     }
+
+    /// <summary>
+    /// SetLineup接口返回的数据封装类。
+    /// </summary>
+    [DataContract]
+    public class SetLineupReturnDto : ChangesReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 针对某个坐骑的阵容设置
+    /// </summary>
+    [DataContract]
+    public class SetLineupItem
+    {
+        /// <summary>
+        /// 坐骑的Id。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 阵容号，从0开始。
+        /// </summary>
+        [DataMember]
+        public int ForIndex { get; set; }
+
+        /// <summary>
+        /// -1表示下阵，相应的会删除 forXXX 动态属性键值。其他值会记录在 forXXX=Position。
+        /// </summary>
+        [DataMember]
+        public int Position { get; set; }
+
+    }
+
+    /// <summary>
+    /// SetLineup接口参数使用的数据传输类。
+    /// </summary>
+    [DataContract]
+    public class SetLineupParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 阵容设置集合，参见 SetLineupItem 说明。
+        /// </summary>
+        [DataMember]
+        public List<SetLineupItem> Settings { get; set; }
+    }
+
+    /// <summary>
+    /// 移动物品的详细信息。
+    /// </summary>
+    [DataContract]
+    public class MoveItemsItemDto
+    {
+        /// <summary>
+        /// 要移动到的容器的Id。
+        /// </summary>
+        public string DestContainerId { get; set; }
+
+        /// <summary>
+        /// 要移动物品的Id。
+        /// </summary>
+        public string ItemId { get; set; }
+
+        /// <summary>
+        /// 要移动的数量。大于物品的数量将导致调用出错。
+        /// </summary>
+        public decimal Count { get; set; }
+    }
+
+    /// <summary>
+    /// MoveItems接口使用的参数类。
+    /// </summary>
+    [DataContract]
+    public class MoveItemsParamsDto : TokenDtoBase
+    {
+        List<MoveItemsItemDto> _Items;
+
+        /// <summary>
+        /// 要移动的物品的详细数据。
+        /// </summary>
+        public List<MoveItemsItemDto> Items { get => _Items ?? (_Items = new List<MoveItemsItemDto>()); set => _Items = value; }
+
+    }
+
+    /// <summary>
+    /// MoveItems接口使用的返回类。
+    /// </summary>
+    [DataContract]
+    public class MoveItemsReturnDto : ChangesReturnDtoBase
+    {
+        public MoveItemsReturnDto()
+        {
+
+        }
+    }
+
+    public class AddItemsParamsDto : TokenDtoBase
+    {
+        public List<GameItemDto> Items { get; set; } = new List<GameItemDto>();
+    }
+
     #endregion 接口特定数据封装类
 
 

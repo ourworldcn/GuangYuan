@@ -107,11 +107,36 @@
             </summary>
             <param name="model">GameItemDto 中元素仅需Id有效填写。</param>
             <returns>true成功设置，false可能是设置数量超过限制。</returns>
+            <response code="401">令牌错误。</response>
         </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.Sell(GY2021001WebApi.Models.SellParamsDto)">
             <summary>
             出售物品。
             </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.SetSetLineup(GY2021001WebApi.Models.SetLineupParamsDto)">
+            <summary>
+            设置阵容。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.MoveItems(GY2021001WebApi.Models.MoveItemsParamsDto)">
+            <summary>
+            移动物品接口。如将锁定合成锁定石头放入特定槽。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.AddItems(GY2021001WebApi.Models.AddItemsParamsDto)">
+            <summary>
+            给角色强行增加物品。调试用接口，正式版本将删除。
+            </summary>
+            <param name="model">要增加的物品对象数组，需要设置Count,TemplateId,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
+            <returns></returns>
+            <response code="401">令牌错误。</response>
         </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
             <summary>
@@ -646,6 +671,12 @@
             构造函数。
             </summary>
         </member>
+        <member name="M:GY2021001WebApi.Models.TokenDtoBase.#ctor(System.String)">
+            <summary>
+            构造函数。
+            </summary>
+            <param name="token"></param>
+        </member>
         <member name="P:GY2021001WebApi.Models.TokenDtoBase.Token">
             <summary>
             令牌。
@@ -891,6 +922,76 @@
         <member name="T:GY2021001WebApi.Models.SellReturnDto">
             <summary>
             Sell接口返回的数据封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SetLineupReturnDto">
+            <summary>
+            SetLineup接口返回的数据封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SetLineupItem">
+            <summary>
+            针对某个坐骑的阵容设置
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetLineupItem.Id">
+            <summary>
+            坐骑的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetLineupItem.ForIndex">
+            <summary>
+            阵容号，从0开始。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetLineupItem.Position">
+            <summary>
+            -1表示下阵，相应的会删除 forXXX 动态属性键值。其他值会记录在 forXXX=Position。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SetLineupParamsDto">
+            <summary>
+            SetLineup接口参数使用的数据传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetLineupParamsDto.Settings">
+            <summary>
+            阵容设置集合，参见 SetLineupItem 说明。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.MoveItemsItemDto">
+            <summary>
+            移动物品的详细信息。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.MoveItemsItemDto.DestContainerId">
+            <summary>
+            要移动到的容器的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.MoveItemsItemDto.ItemId">
+            <summary>
+            要移动物品的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.MoveItemsItemDto.Count">
+            <summary>
+            要移动的数量。大于物品的数量将导致调用出错。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.MoveItemsParamsDto">
+            <summary>
+            MoveItems接口使用的参数类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.MoveItemsParamsDto.Items">
+            <summary>
+            要移动的物品的详细数据。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.MoveItemsReturnDto">
+            <summary>
+            MoveItems接口使用的返回类。
             </summary>
         </member>
         <member name="T:Gy001.Controllers.BlueprintController">

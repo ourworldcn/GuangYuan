@@ -41,6 +41,8 @@ namespace Gy001Tools
 
         private void test()
         {
+            var succ = decimal.TryParse("4001;4002;4003;4004;4005;15001;15002;15003;15004;15005", out var dec1);
+
             BlockExpression blockExpr = Expression.Block(
                 Expression.Call(
                     null,

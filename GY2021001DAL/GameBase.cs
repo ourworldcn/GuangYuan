@@ -111,6 +111,14 @@ namespace GY2021001DAL
         }
 
         /// <summary>
+        /// 把<see cref="Properties"/>属性中的内容填写到<see cref="PropertiesString"/>属性中。
+        /// </summary>
+        public void FillPropertiesString()
+        {
+            PropertiesString = OwHelper.ToPropertiesString(Properties);
+        }
+
+        /// <summary>
         /// 获取属性值并强制转化类型。如果不存在指定属性或属性类型不兼容，则返回默认值。
         /// </summary>
         /// <typeparam name="T"></typeparam>

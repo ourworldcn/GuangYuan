@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Text;
 
 namespace GY2021001DAL
@@ -135,6 +136,8 @@ namespace GY2021001DAL
                 }
             }
             PropertiesString = OwHelper.ToPropertiesString(Properties);
+            foreach (var item in OwHelper.GetAllSubItemsOfTree(GameItems, c => c.Children).ToArray())
+                item.FillPropertiesString();
         }
     }
 

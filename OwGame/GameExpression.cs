@@ -36,7 +36,7 @@ namespace OwGame.Expression
         /// <param name="obj"></param>
         /// <param name="propertyName"></param>
         /// <param name="val"></param>
-        /// <returns></returns>
+        /// <returns>true成功设置，false未能成功设置。</returns>
         public abstract bool SetValue(object obj, string propertyName, object val);
         //{
         //    var _ = obj as GameThingBase;
@@ -53,22 +53,59 @@ namespace OwGame.Expression
     {
         public GameExpressionRuntimeEnvironment()
         {
+            _Variables = new Dictionary<string, GameExpressionBase>();
         }
 
         public GameExpressionRuntimeEnvironment(GameExpressionCompileEnvironment env)
         {
-            var dic = Variables;
-            foreach (var item in env.Variables)
-                dic[item.Key] = item.Value;
             Services = env.Services;
+            var dic = Variables;
+            _Variables = new Dictionary<string, GameExpressionBase>(env.Variables);
         }
 
-        private Dictionary<string, GameExpressionBase> _Variables = new Dictionary<string, GameExpressionBase>();
+        private Dictionary<string, GameExpressionBase> _Variables;
         /// <summary>
         /// 变量。
         /// </summary>
         public Dictionary<string, GameExpressionBase> Variables => _Variables;
         private readonly Stack<Dictionary<string, GameExpressionBase>> StackVariables = new Stack<Dictionary<string, GameExpressionBase>>();
+
+        /// <summary>
+        /// 获取指定名称变量的运行时值。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns>true成功获取，此时<paramref name="result"/>中有该值，false未能找到变量。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetVariableValue(string name, out object result)
+        {
+            if (!Variables.TryGetValue(name, out var varExpr) || null == varExpr)
+            {
+                result = default;
+                return false;
+            }
+            return varExpr.TryGetValue(this, out result);
+        }
+
+        /// <summary>
+        /// 获取指定名称变量的运行时值，且试图转换未一个decimal值。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetVariableDecimal(string name, out decimal result)
+        {
+            if (!TryGetVariableValue(name, out var obj) || !OwHelper.TryGetDecimal(obj, out result))
+            {
+                result = default; return false;
+            }
+            return true;
+        }
+
+        //public bool SettVariableValue(string name ,GameExpressionBase val)
+        //{
+        //}
 
         ///// <summary>
         ///// 参数。
@@ -198,11 +235,16 @@ namespace OwGame.Expression
         /// <summary>
         /// 公用<see cref="Random"/>种子的互斥锁。
         /// </summary>
-        static private SpinLock sl = new SpinLock();
+        static private SpinLock _RandomLocker = new SpinLock();
+
+        /// <summary>
+        /// 返回一个[0,1)区间内的双精度浮点数。支持多线程并发调用。
+        /// </summary>
+        /// <returns></returns>
         static public double NextDouble()
         {
             bool gotLock = false;
-            sl.Enter(ref gotLock);
+            _RandomLocker.Enter(ref gotLock);
             try
             {
                 return Random.NextDouble();
@@ -210,7 +252,7 @@ namespace OwGame.Expression
             }
             finally
             {
-                if (gotLock) sl.Exit();
+                if (gotLock) _RandomLocker.Exit();
             }
         }
 
@@ -222,7 +264,7 @@ namespace OwGame.Expression
         static public int Next(int max)
         {
             bool gotLock = false;
-            sl.Enter(ref gotLock);
+            _RandomLocker.Enter(ref gotLock);
             try
             {
                 return Random.Next(max);
@@ -230,7 +272,7 @@ namespace OwGame.Expression
             }
             finally
             {
-                if (gotLock) sl.Exit();
+                if (gotLock) _RandomLocker.Exit();
             }
         }
 
@@ -490,13 +532,13 @@ namespace OwGame.Expression
         public FunctionCallGExpression(string name, IEnumerable<GameExpressionBase> parameters)
         {
             Name = name;
-            _Parameters.AddRange(parameters);
+            Parameters.AddRange(parameters);
         }
 
         public FunctionCallGExpression(string name, params GameExpressionBase[] parameters)
         {
             Name = name;
-            _Parameters.AddRange(parameters);
+            Parameters.AddRange(parameters);
         }
 
 
@@ -505,7 +547,7 @@ namespace OwGame.Expression
         /// </summary>
         public string Name { get => _Name; set => _Name = value.Trim().ToLower(); }
 
-        public List<GameExpressionBase> _Parameters { get; } = new List<GameExpressionBase>();
+        public List<GameExpressionBase> Parameters { get; } = new List<GameExpressionBase>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool SetValue(GameExpressionRuntimeEnvironment env, object val)
@@ -513,31 +555,97 @@ namespace OwGame.Expression
             return false;
         }
 
+        /// <summary>
+        /// 缓存随机数计算，避免多次计算。
+        /// </summary>
+        private decimal? _CacheRandom = null;
+
         public override bool TryGetValue(GameExpressionRuntimeEnvironment env, out object result)
         {
             bool succ = false;
             switch (Name)
             {
                 case "rnd": //生成[0,1)之间的随机数
-                    result = NextDouble();
+                    Debug.Assert(Parameters.Count == 0, "rnd函数不需要参数");
+                    _CacheRandom ??= Convert.ToDecimal(NextDouble());
+                    result = _CacheRandom.Value;
                     succ = true;
                     break;
                 case "rndi":    //生成[0,max)区间内的随机整数。
-                    var maxObj = _Parameters.SingleOrDefault()?.GetValueOrDefault(env);
-                    if (maxObj == null || !OwHelper.TryGetDecimal(maxObj, out var dec))
-                        result = default;
-                    else
+                    if (_CacheRandom is null)
                     {
-                        result = Next(Convert.ToInt32(Math.Round(dec)));
-                        succ = true;
+                        var maxObj = Parameters.SingleOrDefault()?.GetValueOrDefault(env);
+                        if (maxObj == null || !OwHelper.TryGetDecimal(maxObj, out var dec))
+                            result = default;
+                        else
+                        {
+                            result = Next(Convert.ToInt32(Math.Round(dec)));
+                            succ = true;
+                        }
                     }
+                    result = _CacheRandom.Value;
                     break;
                 case "round":   //取整
-                    var paraExpr = _Parameters.SingleOrDefault();
-                    if (null != paraExpr)
-                        succ = paraExpr.TryGetValue(env, out result);
+                    var paraExpr = Parameters.SingleOrDefault();
+                    if (null != paraExpr && paraExpr.TryGetValue(env, out result) && OwHelper.TryGetDecimal(result, out var decVal))
+                    {
+                        result = Math.Round(decVal);
+                        succ = true;
+                    }
                     else
                         result = default;
+                    break;
+                case "rnds":
+                    if (_CacheRandom is null)
+                    {
+                        if (Parameters.Count % 3 != 0 || Parameters.Count <= 0)   //若参数个数不是3的倍数，或没有参数
+                        {
+                            result = default;
+                        }
+                        else //若参数正确
+                        {
+                            List<ValueTuple<decimal, decimal, decimal>> lst = new List<(decimal, decimal, decimal)>();
+                            var probNum = 0m;    //概率数
+                            for (int i = 0; i < Parameters.Count / 3; i++)
+                            {
+                                var succ1 = OwHelper.TryGetDecimal(Parameters[i]?.GetValueOrDefault(env), out var d1);
+                                var succ2 = OwHelper.TryGetDecimal(Parameters[i + 1]?.GetValueOrDefault(env), out var d2);
+                                var succ3 = OwHelper.TryGetDecimal(Parameters[i + 2]?.GetValueOrDefault(env), out var d3);
+                                if (!(succ1 && succ2 && succ3))
+                                {
+                                    result = default;
+                                    succ = false;
+                                    break;
+                                }
+                                probNum += d1;
+                                lst.Add((probNum, d2, d3));
+                                succ = true;
+                            }
+                            if (!succ)  //若参数有错误
+                            {
+                                result = default;
+                                break;
+                            }
+                            var fac = lst.Sum(c => c.Item1) * (decimal)NextDouble();  //缩放后的因子
+                            var item = lst.First(c => c.Item1 > fac);   //命中项
+                            _CacheRandom = item.Item2 + (item.Item3 - item.Item2) * (decimal)NextDouble();
+                            succ = true;
+                        }
+                    }
+                    result = _CacheRandom.Value;
+                    break;
+                case "lerp":
+                    if (Parameters.Count != 3 || !OwHelper.TryGetDecimal(Parameters[0], out var value1) || !OwHelper.TryGetDecimal(Parameters[1], out var value2) ||
+                        !OwHelper.TryGetDecimal(Parameters[0], out var amount) || amount < 0 || amount > 1)   //若参数个数不是3个数值或比重不在[0,1]区间内
+                    {
+                        result = default;
+                    }
+                    else
+                    {
+                        result = value1 + amount * (value2 - value1);
+                        //result = value1 * (1 - amount) + amount * value2;
+                        succ = true;
+                    }
                     break;
                 default:
                     result = default;
@@ -650,7 +758,7 @@ namespace OwGame.Expression
             {
                 return expr.SetValue(env, val);
             }
-            if (!env.Variables.TryGetValue(ObjectId, out var objExp) || !objExp.TryGetValue(env,out var obj))   //若没有找到对象
+            if (!env.Variables.TryGetValue(ObjectId, out var objExp) || !objExp.TryGetValue(env, out var obj))   //若没有找到对象
                 return false;
             var srv = env.Services.GetService(typeof(GamePropertyHelper)) as GamePropertyHelper;
             return srv.SetValue(obj, Name, val);
@@ -665,12 +773,7 @@ namespace OwGame.Expression
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetVariablesValue(GameExpressionRuntimeEnvironment env, out object result)
         {
-            if (!env.Variables.TryGetValue(Name, out var expr))
-            {
-                result = null;
-                return false;
-            }
-            return expr.TryGetValue(env, out result);
+            return env.TryGetVariableValue(Name, out result);
         }
 
         public override bool TryGetValue(GameExpressionRuntimeEnvironment env, out object result)

@@ -23,7 +23,7 @@ namespace GY2021001DAL
 
         }
 
-        public GameUser(Guid id):base(id)
+        public GameUser(Guid id) : base(id)
         {
 
         }

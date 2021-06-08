@@ -97,8 +97,19 @@ namespace OwGame
         /// </summary>
         public readonly static char[] PathSeparatorChar = new char[] { '\\', '/' };
 
+        /// <summary>
+        /// 试图把对象转换为数值。
+        /// </summary>
+        /// <param name="obj">null导致立即返回false。</param>
+        /// <param name="result"></param>
+        /// <returns></returns>
         static public bool TryGetDecimal(object obj, out decimal result)
         {
+            if (null == obj)
+            {
+                result = default;
+                return false;
+            }
             bool succ = true;
             switch (Type.GetTypeCode(obj.GetType()))
             {

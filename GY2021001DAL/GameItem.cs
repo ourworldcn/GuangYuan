@@ -49,7 +49,7 @@ namespace GY2021001DAL
         public Guid? ParentId { get; set; }
 
         /// <summary>
-        /// 拥有的槽。
+        /// 拥有的子物品或槽。
         /// </summary>
         public virtual List<GameItem> Children { get; } = new List<GameItem>();
 
