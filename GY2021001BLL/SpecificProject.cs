@@ -16,22 +16,37 @@ namespace GY2021001BLL
     public static class ProjectConstant
     {
         #region 固定模板Id
+
         #region 废弃模板Id
 
         /// <summary>
         /// 当前装备的坐骑头容器模板Id。已废弃。
         /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
         public static readonly Guid ZuojiTou = new Guid("{A06B7496-F631-4D51-9872-A2CC84A56EAB}");
 
         /// <summary>
         /// 当前装备的坐骑身体容器模板Id。已废弃
         /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
         public static readonly Guid ZuojiShen = new Guid("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}");
         /// <summary>
-        /// 神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
+        /// 神纹碎片背包槽Id。放在此槽中是未装备的神纹(碎片)。
         /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
         public static readonly Guid ShenWenBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
 
+        /// <summary>
+        /// 当前坐骑的容器Id。出战坐骑包。
+        /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
+        public static readonly Guid DangqianZuoqiSlotId = new Guid("{B19EE5AB-57E3-4513-8228-9F2A8364358E}");
+
+        /// <summary>
+        /// 坐骑组合中的身体容器Id。
+        /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
+        public static readonly Guid ZuojiZuheShenti = new Guid("{F8B1987D-FDF3-4090-9E9B-EBAF1DB2DCCD}");
         #endregion 废弃模板Id
 
         #region 坐骑相关Id
@@ -46,18 +61,9 @@ namespace GY2021001BLL
         /// </summary>
         public static readonly Guid ZuojiZuheTou = new Guid("{740FEBF3-7472-43CB-8A10-798F6C61335B}");
 
-        /// <summary>
-        /// 坐骑组合中的身体容器Id。
-        /// </summary>
-        public static readonly Guid ZuojiZuheShenti = new Guid("{F8B1987D-FDF3-4090-9E9B-EBAF1DB2DCCD}");
         #endregion 坐骑相关Id
 
         #region 角色直属槽及其相关
-
-        /// <summary>
-        /// 当前坐骑的容器Id。
-        /// </summary>
-        public static readonly Guid DangqianZuoqiSlotId = new Guid("{B19EE5AB-57E3-4513-8228-9F2A8364358E}");
 
         /// <summary>
         /// 神纹槽Id。放在此槽中是装备的神纹。当前每种类型的野兽身体对应一种神纹。
@@ -141,7 +147,7 @@ namespace GY2021001BLL
         public const string ShenwenTupoQltCountPropertyName = "sscqlt";
 
         /// <summary>
-        /// 阵容属性前缀
+        /// 阵容属性前缀。
         /// </summary>
         public const string ZhenrongPropertyName = "for";
 
@@ -530,7 +536,7 @@ namespace GY2021001BLL
                 var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
                 gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi, shoulan, changes);
                 //神纹碎片
-                var shenwenBag = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShenWenBagSlotId);   //神纹背包
+                var shenwenBag = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);   //神纹背包
                 gim.MoveItems(shouyiSlot, c =>
                 {
                     var _ = gitm.GetTemplateFromeId(c.TemplateId)?.GenusCode;

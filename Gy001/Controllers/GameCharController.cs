@@ -112,7 +112,7 @@ namespace GY2021001WebApi.Controllers
         }
 
         /// <summary>
-        /// 设置出战坐骑列表。
+        /// 设置出战坐骑列表。过期。
         /// </summary>
         /// <param name="model">GameItemDto 中元素仅需Id有效填写。</param>
         /// <returns>true成功设置，false可能是设置数量超过限制。</returns>
