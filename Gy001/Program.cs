@@ -28,24 +28,17 @@ namespace Gy001
             _Host = host;
             CreateDb(_Host);
             LoadCache(_Host);
-            //Test();
+            Test(_Host);
             _Host.Run();
         }
 
         /// <summary>
         /// ≤‚ ‘µ„°£
         /// </summary>
-        private static void Test()
+        private static void Test(IHost host)
         {
-            var env = new GameExpressionCompileEnvironment();
-            GameExpressionBase.CompileVariableDeclare(env, "a1=1,a2= BB040B31-6D00-427F-B158-3D6D7CE92B18,a3=\"str\", a4=5.5, a5 = rnd()");
-            var exp = GameExpressionBase.CompileExpression(env, "a1=a4>=5");
-            var envr = new GameExpressionRuntimeEnvironment();
-            env.Variables.All(c =>
-            {
-                envr.Variables[c.Key] = c.Value; return true;
-            });
-            var result = exp.GetValueOrDefault(envr);
+            var world = host.Services.GetRequiredService<VWorld>();
+            var dic = world.CombatManager.Id2DungeonLimites;
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

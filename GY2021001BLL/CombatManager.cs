@@ -2,10 +2,12 @@
 using Gy2021001Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
+using OwGame;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace GY2021001BLL
@@ -181,6 +183,25 @@ namespace GY2021001BLL
         {
 
         }
+
+        Dictionary<Guid, DungeonLimit[]> _DungeonLimites;
+
+        public Dictionary<Guid, DungeonLimit[]> Id2DungeonLimites
+        {
+            get
+            {
+                lock (ThisLocker)
+                    if (null == _DungeonLimites)
+                    {
+                        using (var db = World.CreateNewTemplateDbContext())
+                        {
+                            _DungeonLimites = db.DungeonLimites.ToArray().GroupBy(c => c.DungeonId).ToDictionary(c => c.Key, c => c.ToArray());
+                        }
+                    }
+                return _DungeonLimites;
+            }
+        }
+
 
         List<GameItemTemplate> _Dungeons;
 
@@ -390,6 +411,144 @@ namespace GY2021001BLL
                 gcm.Unlock(data.GameChar.GameUser);
             }
             return;
+        }
+
+        /// <summary>
+        /// 验证一组数据是否符合要求。
+        /// </summary>
+        /// <param name="limit"></param>
+        /// <param name="gameItems"></param>
+        /// <returns></returns>
+        public bool Verify(Guid dungeonId, IEnumerable<GameItem> gameItems, out string errorString)
+        {
+            var gitm = World.ItemTemplateManager;
+            var giTemplate = gitm.GetTemplateFromeId(dungeonId);  //对应的物品表模板数据
+            var collMount = from tmp in gameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi)
+                            select tmp; //野兽集合
+            if (!Id2DungeonLimites.TryGetValue(dungeonId, out var limits))  //若找不到限定数据
+            {
+                errorString = $"找不到指定关卡Id的数据，Id={dungeonId}";
+                Debug.Fail(errorString);
+                return false;
+            }
+            var group = from tmp in limits
+                        group tmp by tmp.GroupNumber into g
+                        select new { GroupNumber = g.Key, MaxCount = g.First().MaxCountOfGroup };   //每组最大数量
+            var id2Limit = limits.ToDictionary(c => c.ItemTemplateId);   //每种物品的约束
+
+            //限定资质
+            if (giTemplate.Properties.TryGetValue("mne", out var mneObj) && OwHelper.TryGetDecimal(mneObj, out var mne))  //若需限定总资质
+            {
+                var first = collMount.FirstOrDefault(c => GetTotalNe(c.Properties) > mne);
+                if (first != null) //若超过资质限制
+                {
+                    errorString = $"至少有一个野兽资质超过限制。TemplateId={first.TemplateId}";
+                    return false;
+                }
+            }
+            //限定坐骑数量
+            var items = gameItems.Select(c => (GetBody(c)?.TemplateId ?? c.TemplateId, 1m)); //坐骑身体的模板Id替换坐骑Id
+            var tmplimits = limits.ToDictionary(c => c.ItemTemplateId, c => c.MaxCount);
+            if (!Verify(tmplimits, items, out var errItem))
+            {
+                errorString = $"至少有一个虚拟物品数量超过限制。{errItem.Item1}";
+                return false;
+            }
+            //限定组数量
+            if (!VerifyGroup(limits, items, out var errGroupItem))
+            {
+                errorString = $"至少有一个虚拟物品组数量超过限制。{errGroupItem.Item1}";
+                return false;
+            }
+            errorString = null;
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="limits"></param>
+        /// <param name="items"></param>
+        /// <param name="errItem"></param>
+        /// <returns></returns>
+        private bool VerifyGroup(IEnumerable<DungeonLimit> limits, IEnumerable<(Guid, decimal)> items, out (int, decimal) errItem)
+        {
+            var coll = from limit in limits
+                       join tmp in items
+                       on limit.ItemTemplateId equals tmp.Item1
+                       group (limit, tmp) by limit.GroupNumber into g
+                       let count = g.Sum(c => c.tmp.Item2)
+                       let limitCount = g.First().limit.MaxCountOfGroup
+                       where count > limitCount
+                       select (g.Key, count, limitCount);
+            if (coll.Any())
+            {
+                var tmpErr = coll.FirstOrDefault();
+                errItem = (tmpErr.Key, tmpErr.count);
+                return false;
+            }
+            errItem = (default, default);
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="limits"></param>
+        /// <param name="items"></param>
+        /// <param name="errItem"></param>
+        /// <returns></returns>
+        private bool Verify<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> limits, IEnumerable<(TKey, TValue)> items, out (TKey, TValue) errItem) where TValue : IComparable<TValue>
+        {
+            foreach (var item in items) //遍历每一项
+            {
+                if (!limits.TryGetValue(item.Item1, out var count)) //若没有找到限定项
+                {
+                    errItem = item;
+                    return false;
+                }
+                else if (count.CompareTo(item.Item2) < 0)  //若数量超限
+                {
+                    errItem = item;
+                    return false;
+                }
+            }
+            errItem = (default, default);
+            return true;
+        }
+
+        /// <summary>
+        /// 获取总资质，没找到的视同0。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private decimal GetTotalNe(IReadOnlyDictionary<string, object> dic)
+        {
+            var neatk = Convert.ToDecimal(dic.GetValueOrDefault("neatk", 0));
+            var nemhp = Convert.ToDecimal(dic.GetValueOrDefault("nemhp", 0));
+            var neqlt = Convert.ToDecimal(dic.GetValueOrDefault("neqlt", 0));
+            return neatk + nemhp + neqlt;
+        }
+
+        /// <summary>
+        /// 获取坐骑或野兽的身体对象。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>身体对象或null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private GameItem GetBody(GameItem gameItem)
+        {
+            if (gameItem.TemplateId != ProjectConstant.ZuojiZuheRongqi) //若不是组合容器
+                return null;
+            var bodySlot = gameItem.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti);
+            if (null == bodySlot)   //若没有找到身体槽
+                return null;
+            if (bodySlot.Children.Count != 1)
+                return null;
+            return bodySlot.Children[0];
         }
     }
 }

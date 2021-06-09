@@ -103,9 +103,21 @@ namespace OwGame.Expression
             return true;
         }
 
-        //public bool SettVariableValue(string name ,GameExpressionBase val)
-        //{
-        //}
+        /// <summary>
+        /// 如果变量存在，则调用其表达式设置值。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool SetVariableValue(string name, object val)
+        {
+            if (!Variables.TryGetValue(name, out var expr))
+            {
+                return false;
+            }
+            return expr.SetValue(this, val);
+        }
 
         ///// <summary>
         ///// 参数。
@@ -752,6 +764,12 @@ namespace OwGame.Expression
             ObjectId = objectId;
         }
 
+        /// <summary>
+        /// 设置值。
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="val"></param>
+        /// <returns>true成功设置，false未能设置值。</returns>
         public override bool SetValue(GameExpressionRuntimeEnvironment env, object val)
         {
             if (env.Variables.TryGetValue(Name, out var expr))   //若此引用是一个常量

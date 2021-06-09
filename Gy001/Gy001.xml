@@ -103,7 +103,7 @@
         </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.SetCombatMounts(GY2021001WebApi.Models.SetCombatMountsParamsDto)">
             <summary>
-            设置出战坐骑列表。
+            设置出战坐骑列表。过期。
             </summary>
             <param name="model">GameItemDto 中元素仅需Id有效填写。</param>
             <returns>true成功设置，false可能是设置数量超过限制。</returns>
@@ -1019,7 +1019,7 @@
             
             </summary>
         </member>
-        <member name="M:Gy001.Program.Test">
+        <member name="M:Gy001.Program.Test(Microsoft.Extensions.Hosting.IHost)">
             <summary>
             测试点。
             </summary>

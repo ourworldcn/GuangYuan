@@ -246,7 +246,8 @@ namespace GY2021001WebApi.Controllers
                 }
                 else
                 {
-                    var ci = new ChangesItem() { ContainerId = ProjectConstant.ZuojiBagSlotId };
+                    var slot = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);
+                    var ci = new ChangesItem() { ContainerId = slot.Id };
                     foreach (var item in coll)
                     {
                         if (item.Position == -1)    //若去除该阵营出阵位置编号
