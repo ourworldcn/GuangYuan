@@ -66,6 +66,7 @@ namespace GY2021001WebApi.Controllers
             if (null != model.GameItems)
                 result.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
             world.CombatManager.EndCombat(result);
+
             return (CombatEndReturnDto)result;
         }
 

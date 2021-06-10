@@ -118,6 +118,7 @@ namespace GY2021001WebApi.Controllers
         /// <returns>true成功设置，false可能是设置数量超过限制。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPut]
+        [Obsolete]
         public ActionResult<bool> SetCombatMounts(SetCombatMountsParamsDto model)
         {
             var world = HttpContext.RequestServices.GetService<VWorld>();
@@ -319,6 +320,7 @@ namespace GY2021001WebApi.Controllers
                 {
                     throw;
                 }
+                world.CharManager.NotifyChange(gu);
             }
             finally
             {
@@ -346,19 +348,35 @@ namespace GY2021001WebApi.Controllers
             {
                 var gc = gu.GameChars[0];
                 var gim = world.ItemManager;
-                var coll = model.Items.Select(c => gim.CreateGameItem(GameHelper.FromBase64String(c.TemplateId))).Zip(model.Items, (l, r) =>
-                     {
-                         var parentId = GameHelper.FromBase64String(r.ParentId ?? r.OwnerId);
-                         l.Count = r.Count;
-                         return (parentId, GameItem: l);
-                     }).GroupBy(c => c.parentId);
-                List<ChangesItem> lst = new List<ChangesItem>();
-                foreach (var item in coll)
+                List<GameItem> lst = new List<GameItem>();
+                foreach (var item in model.Items)
                 {
-                    var parent = gim.GetItemFromId(item.Key, gc);
-                    gim.AddItems(item.Select(c => c.GameItem), parent, null, lst);
+                    GameItem gi = (GameItem)item;
+                    if (gim.IsMounts(gi))  //若要创建坐骑
+                    {
+                        var mounts = gim.CreateMounts(gi);
+                        mounts.ParentId = gi.ParentId;
+                        lst.Add(mounts);
+                    }
+                    else
+                    {
+                        var tmp = gim.CreateGameItem(gi.TemplateId);
+                        tmp.Count = gi.Count;
+                        tmp.ParentId = gi.ParentId;
+                        lst.Add(tmp);
+                    }
                 }
-                result.AddRange(lst.SelectMany(c => c.Changes).Select(c => (GameItemDto)c));
+                var dic = OwHelper.GetAllSubItemsOfTree(gc.GameItems, c => c.Children).ToDictionary(c => c.Id);
+                foreach (var item in lst)   //加入
+                {
+                    if (item.ParentId.Value == gc.Id)
+                        gim.AddItems(new GameItem[] { item }, gc);
+                    else
+                        gim.AddItems(new GameItem[] { item }, dic[item.ParentId.Value]);
+
+                }
+                result.AddRange(lst.Select(c => (GameItemDto)c));
+                world.CharManager.NotifyChange(gu);
             }
             finally
             {

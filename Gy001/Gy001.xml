@@ -539,7 +539,17 @@
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.ShenWenBagSlotId">
             <summary>
-            神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
+            神纹碎片背包槽Id。放在此槽中是未装备的神纹(碎片)。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.DangqianZuoqiSlotId">
+            <summary>
+            当前坐骑的容器Id。出战坐骑包。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiZuheShenti">
+            <summary>
+            坐骑组合中的身体容器Id。
             </summary>
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiZuheRongqi">
@@ -550,16 +560,6 @@
         <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiZuheTou">
             <summary>
             坐骑组合中的头容器Id。
-            </summary>
-        </member>
-        <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiZuheShenti">
-            <summary>
-            坐骑组合中的身体容器Id。
-            </summary>
-        </member>
-        <member name="F:GY2021001WebApi.Models.DtoConstant.DangqianZuoqiSlotId">
-            <summary>
-            当前坐骑的容器Id。
             </summary>
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.ShenWenSlotId">
@@ -619,12 +619,32 @@
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.StackUpperLimit">
             <summary>
-            堆叠上限属性的名字。
+            堆叠上限属性的名字。没有该属性的不可堆叠，无上限限制用-1表示。
             </summary>
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.ContainerCapacity">
             <summary>
             容器容量上限属性。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenwenTupoAtkCountPropertyName">
+            <summary>
+            裝備的神纹已经突破攻击的次数的属性名。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenwenTupoMHpCountPropertyName">
+            <summary>
+            裝備的神纹已经突破最大血量的次数的属性名。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenwenTupoQltCountPropertyName">
+            <summary>
+            裝備的神纹已经突破质量的次数的属性名。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ZhenrongPropertyName">
+            <summary>
+            阵容属性前缀。
             </summary>
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.ShenwenHPTCode">
@@ -645,6 +665,16 @@
         <member name="F:GY2021001WebApi.Models.DtoConstant.ShenwenTCode">
             <summary>
             装备的神纹的类别号。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenWenTupoBlueprint">
+            <summary>
+            突破蓝图Id。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.ShenwenLvUpBlueprint">
+            <summary>
+            神纹升级蓝图Id。
             </summary>
         </member>
         <member name="M:GY2021001WebApi.Models.DtoHelper.ToBase64String(System.Guid)">

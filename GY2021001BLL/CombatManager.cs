@@ -371,6 +371,9 @@ namespace GY2021001BLL
             }
             try
             {
+                var gameChar = data.GameChar;
+
+                //校验战斗状态
                 if (!data.GameChar.CurrentDungeonId.HasValue)    //若不在战斗状态
                 {
                     data.HasError = true;
@@ -387,18 +390,53 @@ namespace GY2021001BLL
                 var gim = World.ItemManager;
                 gim.Normalize(data.GameItems);
                 data.GameItems.ForEach(c => gim.MergeProperty(c));
-                try
+                if (!VerifyTime(data))  //若时间过短
+                    return;
+
+                //核准本次收益
+                var succ = Verify(data.Template.Id, data.GameItems, out var errMsg);
+                if (!succ)   //若本次收益不合法
                 {
-                    bool succ = Options?.CombatEnd?.Invoke(Service, data) ?? true;
-                    if (!succ)
-                    {
-                        data.DebugMessage = $"发生错误——{data.DebugMessage}";
-                        data.HasError = true;
-                        return;
-                    }
+                    data.HasError = true;
+                    data.DebugMessage = errMsg;
+                    return;
                 }
-                catch (Exception)
+                //核准总收益
+                var shouyiSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShouyiSlotId);   //收益槽
+                var totalItems = shouyiSlot.Children.Concat(data.GameItems);    //总计收益
+                succ = Verify(GetParent(data.Template).Id, totalItems, out errMsg);
+                if (!succ)   //若总收益不合法
                 {
+                    data.HasError = true;
+                    data.DebugMessage = errMsg;
+                    return;
+                }
+                //记录收益——改写收益槽数据
+                List<GameItem> lst = new List<GameItem>();
+                World.ItemManager.AddItems(data.GameItems, shouyiSlot, lst);
+                Trace.WriteLineIf(lst.Count > 0, "老爷老爷，大事不好东西没放进去。");   //目前是不可能地
+
+                //判断大关卡是否要结束
+                //下一关数据
+                data.NextTemplate = GetNext(data.Template);
+                if (null == data.NextTemplate || data.EndRequested) //若大关卡已经结束
+                {
+                    var changes = new List<ChangesItem>();
+                    //移动收益槽数据到各自背包。
+                    //金币
+                    gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar, changes);
+                    //野生怪物
+                    var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
+                    gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi, shoulan, changes);
+                    //其他道具
+                    var daojuBag = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);   //道具背包
+                    gim.MoveItems(shouyiSlot, c =>
+                    {
+                        return c.TemplateId != ProjectConstant.JinbiId && c.TemplateId != ProjectConstant.ZuojiZuheRongqi;
+                    }, daojuBag, changes);
+                    //压缩变化数据
+                    ChangesItem.Reduce(changes);
+                    data.ChangesItems.AddRange(changes);
                 }
                 if (data.EndRequested)
                     data.NextTemplate = null;
@@ -411,6 +449,28 @@ namespace GY2021001BLL
                 gcm.Unlock(data.GameChar.GameUser);
             }
             return;
+        }
+
+        /// <summary>
+        /// 校验时间
+        /// </summary>
+        /// <returns></returns>
+        bool VerifyTime(EndCombatData data)
+        {
+            var gameChar = data.GameChar;
+            var tm = World.ItemTemplateManager.GetTemplateFromeId(gameChar.CurrentDungeonId.Value);    //关卡模板
+            //校验时间
+            DateTime dt = gameChar.CombatStartUtc.GetValueOrDefault(DateTime.UtcNow);
+            var dtNow = DateTime.UtcNow;
+            var lt = TimeSpan.FromSeconds(Convert.ToDouble(tm.Properties.GetValueOrDefault("tl", decimal.Zero)));   //最短时间
+            lt = TimeSpan.FromSeconds(1);   //TO DO为测试临时更改
+            if (dtNow - dt < lt) //若时间过短
+            {
+                data.HasError = true;
+                data.DebugMessage = "时间过短";
+                return false;
+            }
+            return true;
         }
 
         /// <summary>

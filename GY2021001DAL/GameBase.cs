@@ -28,8 +28,11 @@ namespace GY2021001DAL
         /// </summary>
         public Guid TemplateId { get; set; }
 
+        /// <summary>
+        /// 模板对象。
+        /// </summary>
         [NotMapped]
-        GameTemplateBase Template { get; set; }
+        public GameTemplateBase Template { get; set; }
 
         public virtual T GetProperyValue<T>(string name, T defaultValue = default)
         {
@@ -42,6 +45,10 @@ namespace GY2021001DAL
             };
         }
 
+        public override string ToString()
+        {
+            return Template?.Remark ?? base.ToString();
+        }
     }
 
     /// <summary>

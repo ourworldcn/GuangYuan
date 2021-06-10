@@ -13,22 +13,37 @@ namespace GY2021001WebApi.Models
     public static class DtoConstant
     {
         #region 固定模板Id
+
         #region 废弃模板Id
 
         /// <summary>
         /// 当前装备的坐骑头容器模板Id。已废弃。
         /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
         public static readonly Guid ZuojiTou = new Guid("{A06B7496-F631-4D51-9872-A2CC84A56EAB}");
 
         /// <summary>
         /// 当前装备的坐骑身体容器模板Id。已废弃
         /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
         public static readonly Guid ZuojiShen = new Guid("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}");
         /// <summary>
-        /// 神纹背包槽Id。放在此槽中是未装备的神纹(碎片)。
+        /// 神纹碎片背包槽Id。放在此槽中是未装备的神纹(碎片)。
         /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
         public static readonly Guid ShenWenBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
 
+        /// <summary>
+        /// 当前坐骑的容器Id。出战坐骑包。
+        /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
+        public static readonly Guid DangqianZuoqiSlotId = new Guid("{B19EE5AB-57E3-4513-8228-9F2A8364358E}");
+
+        /// <summary>
+        /// 坐骑组合中的身体容器Id。
+        /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
+        public static readonly Guid ZuojiZuheShenti = new Guid("{F8B1987D-FDF3-4090-9E9B-EBAF1DB2DCCD}");
         #endregion 废弃模板Id
 
         #region 坐骑相关Id
@@ -43,18 +58,9 @@ namespace GY2021001WebApi.Models
         /// </summary>
         public static readonly Guid ZuojiZuheTou = new Guid("{740FEBF3-7472-43CB-8A10-798F6C61335B}");
 
-        /// <summary>
-        /// 坐骑组合中的身体容器Id。
-        /// </summary>
-        public static readonly Guid ZuojiZuheShenti = new Guid("{F8B1987D-FDF3-4090-9E9B-EBAF1DB2DCCD}");
         #endregion 坐骑相关Id
 
         #region 角色直属槽及其相关
-
-        /// <summary>
-        /// 当前坐骑的容器Id。
-        /// </summary>
-        public static readonly Guid DangqianZuoqiSlotId = new Guid("{B19EE5AB-57E3-4513-8228-9F2A8364358E}");
 
         /// <summary>
         /// 神纹槽Id。放在此槽中是装备的神纹。当前每种类型的野兽身体对应一种神纹。
@@ -90,7 +96,6 @@ namespace GY2021001WebApi.Models
         /// 钻石Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
         /// </summary>
         public static readonly Guid ZuanshiId = new Guid("{3E365BEC-F83D-467D-A58C-9EBA43458682}");
-
         /// <summary>
         /// 坐骑背包Id。
         /// </summary>
@@ -114,7 +119,7 @@ namespace GY2021001WebApi.Models
         public const string LevelPropertyName = "lv";   //Runes
 
         /// <summary>
-        /// 堆叠上限属性的名字。
+        /// 堆叠上限属性的名字。没有该属性的不可堆叠，无上限限制用-1表示。
         /// </summary>
         public const string StackUpperLimit = "stc";
 
@@ -122,6 +127,26 @@ namespace GY2021001WebApi.Models
         /// 容器容量上限属性。
         /// </summary>
         public const string ContainerCapacity = "cap";
+
+        /// <summary>
+        /// 裝備的神纹已经突破攻击的次数的属性名。
+        /// </summary>
+        public const string ShenwenTupoAtkCountPropertyName = "sscatk";
+
+        /// <summary>
+        /// 裝備的神纹已经突破最大血量的次数的属性名。
+        /// </summary>
+        public const string ShenwenTupoMHpCountPropertyName = "sscmhp";
+
+        /// <summary>
+        /// 裝備的神纹已经突破质量的次数的属性名。
+        /// </summary>
+        public const string ShenwenTupoQltCountPropertyName = "sscqlt";
+
+        /// <summary>
+        /// 阵容属性前缀。
+        /// </summary>
+        public const string ZhenrongPropertyName = "for";
 
         #region 类别号
         /// <summary>
@@ -143,7 +168,21 @@ namespace GY2021001WebApi.Models
         /// 装备的神纹的类别号。
         /// </summary>
         public const int ShenwenTCode = 10;
+
         #endregion 类别号
+
+        #region 蓝图常量
+        /// <summary>
+        /// 突破蓝图Id。
+        /// </summary>
+        public static readonly Guid ShenWenTupoBlueprint = new Guid("{92f63905-a39f-4e1a-ad17-ea648a99be7a}");
+
+        /// <summary>
+        /// 神纹升级蓝图Id。
+        /// </summary>
+        public static readonly Guid ShenwenLvUpBlueprint = new Guid("{31E0945A-94E4-43D5-835F-6546D68349F1}");
+
+        #endregion 蓝图常量
     }
 
     public static class DtoHelper
@@ -454,6 +493,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 快捷属性:角色当前骑乘的坐骑。如果没有则返回null
         /// </summary>
+        [Obsolete("下个版本可能会被删除。")]
         [IgnoreDataMember]
         public GameItemDto CurrentMounts
         {
@@ -1137,8 +1177,10 @@ namespace GY2021001WebApi.Models
         }
     }
 
+    [DataContract]
     public class AddItemsParamsDto : TokenDtoBase
     {
+        [DataMember]
         public List<GameItemDto> Items { get; set; } = new List<GameItemDto>();
     }
 

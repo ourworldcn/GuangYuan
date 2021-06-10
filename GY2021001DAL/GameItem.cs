@@ -1,4 +1,5 @@
-﻿using OwGame;
+﻿using Gy2021001Template;
+using OwGame;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -38,6 +39,12 @@ namespace GY2021001DAL
         public decimal? Count { get; set; }
 
         /// <summary>
+        /// 如果物品处于某个容器中，则这个成员指示其所处位置号，从0开始，但未必连续。
+        /// </summary>
+        [NotMapped] //TO DO
+        public int? OrderNumber { get; set; }
+
+        /// <summary>
         /// 所属槽导航属性。
         /// </summary>
         public virtual GameItem Parent { get; set; }
@@ -63,6 +70,14 @@ namespace GY2021001DAL
             if (Properties.TryGetValue("tname", out object obj) && obj is string result)
                 return $"TName = {result}";
             return ToString();
+        }
+
+        public override string ToString()
+        {
+            var result = (Template as GameItemTemplate)?.DisplayName ?? (Template as GameItemTemplate)?.Remark;
+            if (null == result)
+                return base.ToString();
+            return $"{{{result},{Count}}}";
         }
     }
 
@@ -126,6 +141,12 @@ namespace GY2021001DAL
                     item.Changes.AddRange(tmpList);
                 }
             }
+            for (int i = changes.Count - 1; i >= 0; i--)    //去除空的项
+            {
+                var item = changes[i];
+                if (item.IsEmpty)
+                    changes.RemoveAt(i);
+            }
         }
 
         public ChangesItem()
@@ -172,6 +193,11 @@ namespace GY2021001DAL
         /// 变化的数据。
         /// </summary>
         public List<GameItem> Changes => _Changes ??= new List<GameItem>();
+
+        /// <summary>
+        /// 获取一个指示，这个对象内变化数据是空的。
+        /// </summary>
+        public bool IsEmpty => (_Adds?.Count ?? 0) + (_Removes?.Count ?? 0) + (_Changes?.Count ?? 0) == 0;
     }
 
 }

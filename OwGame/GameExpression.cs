@@ -361,7 +361,7 @@ namespace OwGame.Expression
             return ConstGExpression.TryParse(str, out var result) ? (GameExpressionBase)result : new ReferenceGExpression(str.Trim()/*这里要考虑空白是否有意义 TO DO*/, env.CurrentObjectId);
         }
 
-        const string comparePattern = @"\s*(?<or>{dec}|[^{}]+)\s*(?<op>[{}]{0,2})";
+        const string comparePattern = @"\s*(?<or>{dec}|[^{}]+)\s*(?<op>[{}]{0,2})"; //TO DO 有问题会把Id也拆开
         const string decPattern = @"\-?[\d\.]+";
         private static string _Pattern;
 

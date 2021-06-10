@@ -268,8 +268,7 @@ namespace GY2021001BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameChar GetCharFromId(Guid id)
         {
-            _Id2GameChar.TryGetValue(id, out GameChar result);
-            return result;
+            return _Id2GameChar.GetValueOrDefault(id, null);
         }
 
         /// <summary>

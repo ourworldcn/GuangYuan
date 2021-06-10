@@ -78,6 +78,7 @@ namespace GY2021001BLL
             var result = new GameItem()
             {
                 TemplateId = template.Id,
+                Template = template,
                 OwnerId = ownerId,
                 Count = 1,
             };
@@ -114,6 +115,104 @@ namespace GY2021001BLL
 #endif
             return result;
         }
+
+        #region 坐骑相关
+
+        /// <summary>
+        /// 创建一个坐骑或野生动物。
+        /// </summary>
+        /// <param name="head"></param>
+        /// <param name="body"></param>
+        /// <returns></returns>
+        public GameItem CreateMounts(GameItemTemplate headTemplate, GameItemTemplate bodyTemplate)
+        {
+            var result = CreateGameItem(ProjectConstant.ZuojiZuheRongqi);
+            result.Count = 1;
+            var head = CreateGameItem(headTemplate);
+            head.Count = 1;
+            SetHead(result, head);
+            var body = CreateGameItem(bodyTemplate);
+            body.Count = 1;
+            SetBody(result, body);
+            return result;
+        }
+
+        /// <summary>
+        /// 按现有对象的信息创建一个坐骑。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>要创建的坐骑。</returns>
+        public GameItem CreateMounts(GameItem gameItem)
+        {
+            var result = CreateGameItem(ProjectConstant.ZuojiZuheRongqi);
+            var head = CreateGameItem(GetHead(gameItem).TemplateId); head.Count = 1;
+            SetHead(result, head);
+            var body = CreateGameItem(GetBody(gameItem).TemplateId); body.Count = 1;
+            SetBody(result, body);
+            foreach (var item in gameItem.Properties)   //复制属性
+            {
+                result.Properties[item.Key] = item.Value;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 物品是否是一个坐骑。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsMounts(GameItem gameItem)
+        {
+            return gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi;
+        }
+
+        /// <summary>
+        /// 获取头对象。
+        /// </summary>
+        /// <param name="mounts"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameItem GetHead(GameItem mounts)
+        {
+            var result = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheTou)?.Children?.FirstOrDefault();
+            return result ?? mounts.Children.FirstOrDefault(c => World.ItemTemplateManager.GetTemplateFromeId(c.TemplateId).GenusCode == 3);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetHead(GameItem mounts, GameItem head)
+        {
+            var slot = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheTou)?.Children;
+            if (null != slot)
+                slot.Add(head);
+            else
+                mounts.Children.Add(head);
+        }
+
+        /// <summary>
+        /// 获取身体对象。
+        /// </summary>
+        /// <param name="mounts"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameItem GetBody(GameItem mounts)
+        {
+            var result = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti)?.Children?.FirstOrDefault();
+            return result ?? mounts.Children.FirstOrDefault(c => World.ItemTemplateManager.GetTemplateFromeId(c.TemplateId).GenusCode == 4);
+
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetBody(GameItem mounts, GameItem body)
+        {
+            var slot = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti)?.Children;
+            if (null != slot)
+                slot.Add(body);
+            else
+                mounts.Children.Add(body);
+        }
+        #endregion 坐骑相关
+
 
         /// <summary>
         /// 获取对象的模板。
@@ -185,7 +284,7 @@ namespace GY2021001BLL
                 var coll = OwHelper.GetAllSubItemsOfTree(new GameItem[] { gameItem }, c => c.Children);
                 var tid = (Guid)val;
                 var parent = coll.FirstOrDefault(c => c.TemplateId == tid); //获取目标容器
-                var oldParent = GetParent(gameItem); //现有容器
+                var oldParent = GetContainer(gameItem); //现有容器
                 if (null == oldParent) //若不是属于其他物品
                 {
                     AddItem(gameItem, parent);
@@ -333,7 +432,7 @@ namespace GY2021001BLL
             var stc = GetStackUpper(item);
             if (stc is null || count == item.Count)  //若不可堆叠或全部移动
             {
-                var parent = GetParent(item);   //获取父容器
+                var parent = GetContainer(item);   //获取父容器
                 MoveItems(parent, c => c.Id == item.Id, destContainer, changesItems);
                 result = true;
             }
@@ -343,7 +442,7 @@ namespace GY2021001BLL
                 var moveItem = CreateGameItem(item.TemplateId);
                 moveItem.Count = count;
                 item.Count = item.Count - count;
-                var parent = GetParent(item);   //获取父容器
+                var parent = GetContainer(item);   //获取父容器
                 AddItem(moveItem, parent);  //TO DO 需要处理无法完整放入问题
                 if (null != changesItems)
                 {
@@ -661,8 +760,8 @@ namespace GY2021001BLL
         /// <summary>
         /// 无视容量限制堆叠规则。将物品加入指定容器。
         /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="container"></param>
+        /// <param name="gameItem">无视容量限制堆叠规则，不考虑原有容器。</param>
+        /// <param name="container">无视容量限制堆叠规则。</param>
         /// <returns>true成功加入.false <paramref name="container"/>不是可以容纳物品的类型。</returns>
         public bool ForcedAdd(GameItem gameItem, GameThingBase container)
         {
@@ -683,6 +782,33 @@ namespace GY2021001BLL
                 return false;
             return true;
         }
+
+        /// <summary>
+        /// 强制移动物品。无视容量限制堆叠规则。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="container"></param>
+        /// <returns>true成功移动，false未知原因没有移动成功。当前不可能失败。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool ForceMove(GameItem gameItem, GameThingBase container)
+        {
+            return ForceRemove(gameItem) && ForcedAdd(gameItem, container);
+        }
+
+        /// <summary>
+        /// 强制将一个物品从它现有容器中移除。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>true成功移除，false物品当前没有容器。</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="gameItem"/>是null。</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool ForceRemove(GameItem gameItem)
+        {
+            var result = GetChildrenCollection(GetContainer(gameItem))?.Remove(gameItem) ?? false;
+            gameItem.Parent = null; gameItem.ParentId = gameItem.OwnerId = null;
+            return result;
+        }
+
         #endregion 物品增减相关
 
         /// <summary>
@@ -698,6 +824,7 @@ namespace GY2021001BLL
             List<Guid> adds = new List<Guid>();
             foreach (var item in coll)
             {
+                item.tmp.Template = item.tt;
                 adds.Clear();
                 item.tmp.Children.ApartWithWithRepeated(item.tt.ChildrenTemplateIds, c => c.TemplateId, c => c, null, null, adds);
                 foreach (var addItem in adds)
@@ -771,23 +898,24 @@ namespace GY2021001BLL
         }
 
         /// <summary>
-        /// 获取父容器。
+        /// 获取指定物品的直接父容器。
         /// </summary>
         /// <param name="gameItem"></param>
-        /// <returns>返回父容器，没有找到则返回null。</returns>
+        /// <returns>返回父容器可能是另一个物品或角色对象，没有找到则返回null。</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="gameItem"/>是null。</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameThingBase GetParent(GameItem gameItem)
+        public GameThingBase GetContainer(GameItem gameItem)
         {
-            return gameItem.Parent ?? GetChar(gameItem) as GameThingBase;
+            return gameItem.Parent as GameThingBase ?? (gameItem.OwnerId is null ? null : World.CharManager.GetCharFromId(gameItem.OwnerId.Value));
         }
 
         /// <summary>
         /// 获取容器的子对象的集合接口。
         /// </summary>
         /// <param name="gameThing">容器对象。</param>
-        /// <returns>子代容器的接口，null表示没有找到。</returns>
+        /// <returns>子代容器的接口，null表示没有找到。特别地，当参数是null时也会返回null而不引发异常。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IList<GameItem> GetChildren(GameThingBase gameThing)
+        public IList<GameItem> GetChildrenCollection(GameThingBase gameThing)
         {
             var children = (gameThing as GameItem)?.Children;
             return children ?? (gameThing as GameChar)?.GameItems;
@@ -801,7 +929,7 @@ namespace GY2021001BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<GameItem> GetAllChildren(GameThingBase gameThing)
         {
-            var _ = GetChildren(gameThing);
+            var _ = GetChildrenCollection(gameThing);
             return OwHelper.GetAllSubItemsOfTree(_, c => c.Children);
         }
 
