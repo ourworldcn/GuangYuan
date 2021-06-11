@@ -776,6 +776,15 @@ namespace GY2021001BLL
                 }
                 //补足所属物品的槽
                 World.ItemManager.Normalize(e.GameChar.GameItems);
+                //清楚锁定属性槽内物品，放回道具背包中
+                var gim = World.ItemManager;
+                var daojuBag = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包
+                var slot = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockAtkSlotId); //锁定槽
+                gim.MoveItems(slot, c => true, daojuBag);
+                slot = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockMhpSlotId); //锁定槽
+                gim.MoveItems(slot, c => true, daojuBag);
+                slot = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockQltSlotId); //锁定槽
+                gim.MoveItems(slot, c => true, daojuBag);
             }
             catch (Exception)
             {

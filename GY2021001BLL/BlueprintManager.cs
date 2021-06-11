@@ -181,6 +181,7 @@ namespace GY2021001BLL
         }
     }
 
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class MaterialData
     {
         private readonly FormulaData _Parent;
@@ -337,7 +338,25 @@ namespace GY2021001BLL
             return true;
         }
 
+        private string GetDebuggerDisplay()
+        {
+            var str1 = string.IsNullOrWhiteSpace(Template?.DisplayName) ? Template?.Remark : Template?.DisplayName;
+            return $"{{{str1},Matched={GetMatched()}}}";
+        }
 
+        /// <summary>
+        /// 获取改原料对象当前匹配的对象。
+        /// </summary>
+        /// <returns></returns>
+        public object GetMatched()
+        {
+            if (null == Template)
+                return null;
+            var env = Parent.RuntimeEnvironment;
+            if (!env.TryGetVariableValue(Template.Id.ToString(), out var result))
+                return null;
+            return result;
+        }
     }
 
     /// <summary>

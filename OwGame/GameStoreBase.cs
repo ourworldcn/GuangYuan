@@ -229,7 +229,7 @@ namespace OwGame
             foreach (var item in dic)
             {
                 result.Append(item.Key).Append('=');
-                if (item.Value is decimal)
+                if (TryGetDecimal(item.Value, out _))   //如果可以转换为数字
                 {
                     result.Append(item.Value.ToString()).Append(',');
                 }

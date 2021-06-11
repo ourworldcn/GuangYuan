@@ -326,14 +326,19 @@ namespace GY2021001BLL
                 }
 
             }
-            else if (propName.StartsWith("lv"))  //若是一个级别属性
+            else if (propName.StartsWith(ProjectConstant.LevelPropertyName))  //若是一个级别属性
             {
                 var olv = Convert.ToDecimal(gameItem.GetProperyValue(propName, 0m));    //当前等级
                 var nlv = Convert.ToDecimal(val);   //新等级
                 if (olv != nlv)    //若需要改变等级
                 {
-                    var seqPName = propName.Substring(2);
-                    SetLevel(gameItem, seqPName, (int)nlv);
+                    string seqPName;
+                    seqPName = propName.Length > 2 ? propName.Substring(2) : ProjectConstant.LevelPropertyName;
+                    if (seqPName == ProjectConstant.LevelPropertyName)
+                        SetLevel(gameItem, (int)nlv);
+                    else
+                        SetLevel(gameItem, seqPName, (int)nlv);
+                    gameItem.Properties[seqPName] = nlv;
                 }
             }
             else
@@ -351,19 +356,36 @@ namespace GY2021001BLL
             var template = ItemTemplateManager.GetTemplateFromeId(gameItem.TemplateId); //获取模板
             if (null == template)   //若找不到模板
                 return false;
-            var keys = template.Properties.Where(c => !(c.Value is decimal[])).Select(c => c.Key).Except(gameItem.Properties.Keys).ToArray(); //需要增加的简单属性的名字
-            foreach (var item in keys)  //添加简单属性
-                gameItem.Properties[item] = template.Properties[item];
             var seqKeys = template.Properties.Where(c => c.Value is decimal[]).Select(c => (SeqPn: c.Key, IndexPn: ItemTemplateManager.GetIndexPropName(template, c.Key))).ToArray();    //序列属性的名字
             foreach (var item in seqKeys)   //设置序列属性
             {
                 SetLevel(gameItem, item.SeqPn, Convert.ToInt32(gameItem.Properties.GetValueOrDefault(item.IndexPn, 0m)));
             }
+            var keys = template.Properties.Where(c => !(c.Value is decimal[])).Select(c => c.Key).Except(gameItem.Properties.Keys).ToArray(); //需要增加的简单属性的名字
+            foreach (var item in keys)  //添加简单属性
+                gameItem.Properties[item] = template.Properties[item];
             return true;
         }
 
         /// <summary>
+        /// 仅设置由lv控制的序列属性。
+        /// 特别地，并不更改级别属性，调用者要自己更改。如lv并没有变化
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="newLevel"></param>
+        public void SetLevel(GameItem gameItem, int newLevel)
+        {
+            var template = GetTemplate(gameItem);
+            var coll = template.Properties.Where(c => c.Value is decimal[] && World.ItemTemplateManager.GetIndexPropName(template, c.Key) == ProjectConstant.LevelPropertyName);    //取得序列属性且其索引属性是通用序列的
+            foreach (var item in coll.ToArray())
+            {
+                SetLevel(gameItem, item.Key, newLevel);
+            }
+        }
+
+        /// <summary>
         /// 变换物品等级。会对比原等级的属性增减属性数值。如模板中原等级mhp=100,而物品mhp=120，则会用新等级mhp+20。
+        /// 特别地，并不更改级别属性，调用者要自己更改。如lv并没有变化
         /// </summary>
         /// <param name="gameItem">要改变的对象。</param>
         /// <param name="seqPName">序列属性的名字。如果对象中没有索引必须的属性，则视同初始化属性。若无序列属性的值，但找到索引属性的话，则视同此属性值是模板中指定的值。</param>
@@ -382,7 +404,6 @@ namespace GY2021001BLL
             {
                 //当前视同需要初始化属性
                 gameItem.Properties[seqPName] = seq[newLevel];
-                gameItem.Properties[indexPN] = newLevel;
             }
             else
             {
@@ -391,7 +412,6 @@ namespace GY2021001BLL
 
                 var val = Convert.ToDecimal(gameItem.Properties.GetValueOrDefault(seqPName, oov));  //物品的属性值
                 gameItem.Properties[seqPName] = seq[newLevel] + val - oov;
-                gameItem.Properties[indexPN] = newLevel;
             }
             return;
         }

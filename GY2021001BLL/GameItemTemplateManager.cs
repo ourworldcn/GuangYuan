@@ -126,16 +126,16 @@ namespace GY2021001BLL
         /// 获取指定名字序列属性的索引属性名，如果没有找到则考虑使用lv。
         /// </summary>
         /// <param name="template"></param>
-        /// <param name="seqPropName"></param>
+        /// <param name="seqPropName">序列属性的名称。</param>
         /// <returns>null如果没有找到指定的<paramref name="seqPropName"/>名称的属性或，该属性不是序列属性。</returns>
         public string GetIndexPropName(GameItemTemplate template, string seqPropName)
         {
             if (!template.Properties.TryGetValue(seqPropName, out object obj) || !(obj is decimal[] seq))
                 return null;
-            var pn = $"lv{seqPropName}";
+            var pn = $"{ProjectConstant.LevelPropertyName}{seqPropName}";
             if (template.Properties.ContainsKey(pn))
                 return pn;
-            return "lv";
+            return ProjectConstant.LevelPropertyName;
         }
 
     }

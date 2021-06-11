@@ -1,5 +1,20 @@
 [
   {
+    "Id": "i6mYjOXq2EOBc3IYZea9wg==",
+    "Properties": {
+      "perfabs": "Wolf_Skin_shandian",
+      "nm": 4003,
+      "mhp": 60,
+      "akt": 30,
+      "qlt": 2,
+      "body": 4002,
+      "bd": 100
+    },
+    "GId": 26004,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "狼时装-闪电1"
+  },
+  {
     "Id": "tONd3nj16UeuroZirCM/QA==",
     "Properties": {
       "body": 4002,
@@ -10,6 +25,34 @@
     "GId": 16002,
     "ChildrenTemplateIdString": "",
     "DisplayName": "攻击狼神纹道具"
+  },
+  {
+    "Id": "aCSd2csbB06epw2pHzf4Ow==",
+    "Properties": {
+      "perfabs": "Giraffe_Skin_yangtuo",
+      "nm": 4005,
+      "mhp": 80,
+      "akt": 30,
+      "qlt": 15,
+      "body": 4003,
+      "bd": 100
+    },
+    "GId": 26006,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "长颈鹿时装-羊驼（临时）"
+  },
+  {
+    "Id": "zc/WVyBK00Wm8LX6kLr6xw==",
+    "Properties": {
+      "typ": 1,
+      "mis": 3,
+      "sec": 1,
+      "mne": 181,
+      "tl": 10
+    },
+    "GId": 7030,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "关卡3-1"
   },
   {
     "Id": "/4MJhmXX3E61BbWuEit+vw==",
@@ -109,10 +152,7 @@
       "typ": 1,
       "mis": 1,
       "sec": 5,
-      "gold": 5000,
-      "aml": 1,
       "mne": 211,
-      "mt": 1,
       "tl": 10
     },
     "GId": 7005,
@@ -129,6 +169,28 @@
     "GId": null,
     "ChildrenTemplateIdString": "740febf3-7472-43cb-8a10-798f6c61335b,f8b1987d-fdf3-4090-9e9b-ebaf1db2dccd",
     "DisplayName": "坐骑组合"
+  },
+  {
+    "Id": "CeLHo1Bd30mKeCH/P6ohOg==",
+    "Properties": {},
+    "GId": null,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "时装背包"
+  },
+  {
+    "Id": "K0Mu5pyi3E2z4MhXd2ms4g==",
+    "Properties": {
+      "perfabs": "Sheep_Skin_fatiao",
+      "nm": 4001,
+      "mhp": 10,
+      "akt": 100,
+      "qlt": 20,
+      "body": 4001,
+      "bd": 200
+    },
+    "GId": 26002,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "羊时装-发条2"
   },
   {
     "Id": "Fn+lABimDE6EnziaBSOmMQ==",
@@ -577,15 +639,25 @@
     "DisplayName": "合成时候锁住质量天赋"
   },
   {
+    "Id": "4RdYKBNVmUmWbDmGXnFCdw==",
+    "Properties": {
+      "typ": 1,
+      "mis": 3,
+      "sec": 4,
+      "mne": 181,
+      "tl": 10
+    },
+    "GId": 7033,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "关卡3-4"
+  },
+  {
     "Id": "YENeY4zfRUyMjfbKBsLDqw==",
     "Properties": {
       "typ": 1,
       "mis": 1,
       "sec": 3,
-      "gold": 5000,
-      "aml": 1,
       "mne": 181,
-      "mt": 1,
       "tl": 10
     },
     "GId": 7003,
@@ -794,10 +866,7 @@
       "typ": 1,
       "mis": 1,
       "sec": 1,
-      "gold": 5000,
-      "aml": 1,
       "mne": 181,
-      "mt": 1,
       "tl": 10
     },
     "GId": 7001,
@@ -1156,6 +1225,19 @@
     "DisplayName": "羊神纹"
   },
   {
+    "Id": "IOk6JClpCEyzPUEwuF3LIA==",
+    "Properties": {
+      "typ": 1,
+      "mis": 3,
+      "sec": 3,
+      "mne": 181,
+      "tl": 10
+    },
+    "GId": 7032,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "关卡3-3"
+  },
+  {
     "Id": "fZix+PP9kECem+uvHbLczQ==",
     "Properties": {},
     "GId": null,
@@ -1170,6 +1252,19 @@
     "GId": 99001,
     "ChildrenTemplateIdString": null,
     "DisplayName": "金币"
+  },
+  {
+    "Id": "rseO8cxmvUSpnSULBP9/6A==",
+    "Properties": {
+      "typ": 1,
+      "mis": 3,
+      "sec": 2,
+      "mne": 211,
+      "tl": 10
+    },
+    "GId": 7031,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "关卡3-2"
   },
   {
     "Id": "lnRroDH2UU2YcqLMhKVuqw==",
@@ -1726,6 +1821,21 @@
     "DisplayName": "柯基身体"
   },
   {
+    "Id": "BvRgmwngLUOIip+NSXPyyQ==",
+    "Properties": {
+      "perfabs": "Wolf_Skin_shandian",
+      "nm": 4008,
+      "mhp": 220,
+      "akt": 250,
+      "qlt": 19,
+      "body": 4006,
+      "bd": 100
+    },
+    "GId": 26009,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "龙时装-忍龙"
+  },
+  {
     "Id": "Fm6pKP2RIEqm5WMc+KO1hA==",
     "Properties": {
       "body": 4001,
@@ -1770,11 +1880,26 @@
     "DisplayName": "牛头"
   },
   {
+    "Id": "mU37zLhU+0egDEk/w6rKuw==",
+    "Properties": {
+      "perfabs": "Tiger_Skin_nangua",
+      "nm": 4006,
+      "mhp": 90,
+      "akt": 60,
+      "qlt": 130,
+      "body": 4004,
+      "bd": 100
+    },
+    "GId": 26007,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "老虎时装-南瓜"
+  },
+  {
     "Id": "IVAjjKl53UuB4S3Yil1FDw==",
     "Properties": {
       "hbab": 4001,
       "hbbb": 4002,
-      "hbsr": 70,
+      "hbsr": 0.7,
       "hbcb": 4005
     },
     "GId": 30001,
@@ -2229,6 +2354,19 @@
     "DisplayName": "长颈鹿神纹"
   },
   {
+    "Id": "ggz+OJ+S/025/DFQPK/ToA==",
+    "Properties": {
+      "typ": 1,
+      "mis": 2,
+      "sec": 1,
+      "mne": 181,
+      "tl": 10
+    },
+    "GId": 7020,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "关卡2-1"
+  },
+  {
     "Id": "AhN1W0bQ7k+zlMV4HN1eTA==",
     "Properties": {
       "body": 4007,
@@ -2239,6 +2377,18 @@
     "GId": 15007,
     "ChildrenTemplateIdString": "",
     "DisplayName": "血量牛神纹道具"
+  },
+  {
+    "Id": "r4XpJiNMjE2fDNoo0+tkQg==",
+    "Properties": {
+      "body": 4002,
+      "stc": 999,
+      "sg": 1000,
+      "it": 3
+    },
+    "GId": 15002,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "血量狼神纹道具"
   },
   {
     "Id": "FlpiHbs4rk65qqAfT6r5lQ==",
@@ -2354,16 +2504,19 @@
     "DisplayName": "敌人火龙"
   },
   {
-    "Id": "r4XpJiNMjE2fDNoo0+tkQg==",
+    "Id": "6dSxD+P+CEm3vV6+g6rHEw==",
     "Properties": {
-      "body": 4002,
-      "stc": 999,
-      "sg": 1000,
-      "it": 3
+      "perfabs": "Corgi_Skin_piaochong",
+      "nm": 4007,
+      "mhp": 200,
+      "akt": 321,
+      "qlt": 11,
+      "body": 4005,
+      "bd": 100
     },
-    "GId": 15002,
+    "GId": 26008,
     "ChildrenTemplateIdString": "",
-    "DisplayName": "血量狼神纹道具"
+    "DisplayName": "柯基时装-瓢虫"
   },
   {
     "Id": "GOb20b73gUqnThIQR9JqRQ==",
@@ -2684,10 +2837,7 @@
       "typ": 1,
       "mis": 1,
       "sec": 9,
-      "gold": 5000,
-      "aml": 1,
       "mne": 211,
-      "mt": 1,
       "tl": 10
     },
     "GId": 7009,
@@ -3262,13 +3412,6 @@
     "DisplayName": "羊身体"
   },
   {
-    "Id": "q+WeseNXE0WCKJ8qg2Q1jg==",
-    "Properties": {},
-    "GId": null,
-    "ChildrenTemplateIdString": null,
-    "DisplayName": "出战坐骑槽"
-  },
-  {
     "Id": "hJWVAcniVE67t/zFipSE7A==",
     "Properties": {
       "stc": -1
@@ -3276,6 +3419,20 @@
     "GId": 99003,
     "ChildrenTemplateIdString": null,
     "DisplayName": "木材"
+  },
+  {
+    "Id": "uU0HAiXTf0qPDjtc6wMUUg==",
+    "Properties": {
+      "typ": 1,
+      "mis": 2,
+      "sec": -1,
+      "mne": 211,
+      "pp": 5,
+      "pre": "4001;180;4002;180;4003;180;4004;120;4005;60;15001;15002;15003;15004;15005"
+    },
+    "GId": 7902,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "大关2"
   },
   {
     "Id": "dGTLEdYE8kazYdxXOmp8wg==",
@@ -3319,6 +3476,19 @@
     "DisplayName": "长颈鹿头"
   },
   {
+    "Id": "mktndFGf5kyOMb8/2uQoXA==",
+    "Properties": {
+      "typ": 1,
+      "mis": 2,
+      "sec": 3,
+      "mne": 181,
+      "tl": 10
+    },
+    "GId": 7022,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "关卡2-3"
+  },
+  {
     "Id": "1u6kiOsKcEqP3mf3Xl4sCg==",
     "Properties": {},
     "GId": null,
@@ -3345,7 +3515,7 @@
       "ipp": 1
     },
     "GId": null,
-    "ChildrenTemplateIdString": "b19ee5ab-57e3-4513-8228-9f2a8364358e,88a4eed6-0aeb-4a70-8fde-67f75e5e2c0a,2baa3fcd-2be8-4096-916a-ff2d47e084ef,1630a0a1-3540-479a-b2c5-10b63e7a5774,2b83c942-1e9c-4b45-9816-ad2cbf0e473f,fea0b277-8cc6-462f-b0ed-85409abe9c79,ba2aee89-0bc3-4612-b6ff-5ddfef85c9e5,3E365BEC-F83D-467D-A58C-9EBA43458682",
+    "ChildrenTemplateIdString": "88a4eed6-0aeb-4a70-8fde-67f75e5e2c0a,2baa3fcd-2be8-4096-916a-ff2d47e084ef,1630a0a1-3540-479a-b2c5-10b63e7a5774,2b83c942-1e9c-4b45-9816-ad2cbf0e473f,fea0b277-8cc6-462f-b0ed-85409abe9c79,ba2aee89-0bc3-4612-b6ff-5ddfef85c9e5,3E365BEC-F83D-467D-A58C-9EBA43458682,a3c7e209-5d50-49df-8a78-21ff3faa213a",
     "DisplayName": "角色的模板"
   },
   {
@@ -3601,10 +3771,7 @@
       "typ": 1,
       "mis": 1,
       "sec": 8,
-      "gold": 5000,
-      "aml": 1,
       "mne": 211,
-      "mt": 1,
       "tl": 10
     },
     "GId": 7008,
@@ -3704,13 +3871,19 @@
     "DisplayName": "精英羊"
   },
   {
-    "Id": "GSSpsKptyEGQdJVxdf2cOw==",
+    "Id": "RQj7dSepfkukXQl50hpiIg==",
     "Properties": {
-      "cap": 1
+      "perfabs": "Wolf_Skin_shandian",
+      "nm": 4004,
+      "mhp": 70,
+      "akt": 40,
+      "qlt": 13,
+      "body": 4002,
+      "bd": 100
     },
-    "GId": 25001,
+    "GId": 26005,
     "ChildrenTemplateIdString": "",
-    "DisplayName": "合成时候锁住血量天赋"
+    "DisplayName": "狼时装-闪电2"
   },
   {
     "Id": "wSmGLVe+/k6ngcguaZu/IQ==",
@@ -4040,6 +4213,15 @@
     "DisplayName": "火龙神纹"
   },
   {
+    "Id": "GSSpsKptyEGQdJVxdf2cOw==",
+    "Properties": {
+      "cap": 1
+    },
+    "GId": 25001,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "合成时候锁住血量天赋"
+  },
+  {
     "Id": "iQ69qQURUkqYKpfm7krVdw==",
     "Properties": {
       "dia": 10,
@@ -4052,21 +4234,46 @@
     "DisplayName": "突破石道具"
   },
   {
+    "Id": "OZPDj313xU2XotU517LUew==",
+    "Properties": {
+      "perfabs": "Sheep_Skin_fatiao",
+      "nm": 4000,
+      "mhp": 100,
+      "akt": 50,
+      "qlt": 10,
+      "body": 4001,
+      "bd": 100
+    },
+    "GId": 26001,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "羊时装-发条1"
+  },
+  {
     "Id": "niNHcv9OFECXgIfh6cJT7g==",
     "Properties": {
       "typ": 1,
       "mis": 1,
       "sec": -1,
-      "gold": 50000,
-      "aml": 50,
       "mne": 211,
-      "mt": 100,
       "pp": 5,
-      "pre": "4001;4002;4003;4004;4005;15001;15002;15003;15004;15005"
+      "pre": "4001;180;4002;180;4003;180;4004;120;4005;60;15001;15002;15003;15004;15005"
     },
     "GId": 7901,
     "ChildrenTemplateIdString": "",
     "DisplayName": "大关1"
+  },
+  {
+    "Id": "VVnVuE1u5k2YJcBLl93miw==",
+    "Properties": {
+      "typ": 1,
+      "mis": 2,
+      "sec": 4,
+      "mne": 181,
+      "tl": 10
+    },
+    "GId": 7023,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "关卡2-4"
   },
   {
     "Id": "dd96OraakU6yq2/79V0iEA==",
@@ -4074,10 +4281,7 @@
       "typ": 1,
       "mis": 1,
       "sec": 2,
-      "gold": 5000,
-      "aml": 1,
       "mne": 181,
-      "mt": 1,
       "tl": 10
     },
     "GId": 7002,
@@ -4175,6 +4379,19 @@
     "GId": 9502,
     "ChildrenTemplateIdString": "",
     "DisplayName": "精英狼"
+  },
+  {
+    "Id": "wwCsrsNdd0appBS+vp4Y2w==",
+    "Properties": {
+      "typ": 1,
+      "mis": 2,
+      "sec": 2,
+      "mne": 211,
+      "tl": 10
+    },
+    "GId": 7021,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "关卡2-2"
   },
   {
     "Id": "pe1AJAT+A0WQ9oUwqJwmKw==",
@@ -4377,10 +4594,7 @@
       "typ": 1,
       "mis": 1,
       "sec": 7,
-      "gold": 5000,
-      "aml": 1,
       "mne": 211,
-      "mt": 1,
       "tl": 10
     },
     "GId": 7007,
@@ -4642,10 +4856,7 @@
       "typ": 1,
       "mis": 1,
       "sec": 4,
-      "gold": 5000,
-      "aml": 1,
       "mne": 211,
-      "mt": 1,
       "tl": 10
     },
     "GId": 7004,
@@ -5072,15 +5283,27 @@
     "DisplayName": "老虎神纹"
   },
   {
+    "Id": "DJwSf8Lc90ORnb6hdXkvFA==",
+    "Properties": {
+      "perfabs": "Sheep_Skin_fatiao",
+      "nm": 4002,
+      "mhp": 500,
+      "akt": 150,
+      "qlt": 20,
+      "body": 4001,
+      "bd": 300
+    },
+    "GId": 26003,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "羊时装-发条3"
+  },
+  {
     "Id": "1gbjNLwlwEGemFkBAMebPQ==",
     "Properties": {
       "typ": 1,
       "mis": 1,
       "sec": 6,
-      "gold": 5000,
-      "aml": 1,
       "mne": 211,
-      "mt": 1,
       "tl": 10
     },
     "GId": 7006,
@@ -5164,5 +5387,19 @@
     "GId": 16003,
     "ChildrenTemplateIdString": "",
     "DisplayName": "攻击长颈鹿神纹道具"
+  },
+  {
+    "Id": "5HE13BYNoUyvKZx8MowQ8g==",
+    "Properties": {
+      "typ": 1,
+      "mis": 3,
+      "sec": -1,
+      "mne": 211,
+      "pp": 5,
+      "pre": "4001;180;4002;180;4003;180;4004;120;4005;60;15001;15002;15003;15004;15005"
+    },
+    "GId": 7903,
+    "ChildrenTemplateIdString": "",
+    "DisplayName": "大关3"
   }
 ]

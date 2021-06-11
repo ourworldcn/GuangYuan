@@ -367,15 +367,17 @@ namespace GY2021001WebApi.Controllers
                     }
                 }
                 var dic = OwHelper.GetAllSubItemsOfTree(gc.GameItems, c => c.Children).ToDictionary(c => c.Id);
+                List<ChangesItem> changes = new List<ChangesItem>();
                 foreach (var item in lst)   //加入
                 {
                     if (item.ParentId.Value == gc.Id)
-                        gim.AddItems(new GameItem[] { item }, gc);
+                        gim.AddItems(new GameItem[] { item }, gc, null, changes);
                     else
-                        gim.AddItems(new GameItem[] { item }, dic[item.ParentId.Value]);
+                        gim.AddItems(new GameItem[] { item }, dic[item.ParentId.Value], null, changes);
 
                 }
-                result.AddRange(lst.Select(c => (GameItemDto)c));
+                var coll = changes.SelectMany(c => c.Adds.Concat(c.Changes)).Distinct();
+                result.AddRange(coll.Select(c => (GameItemDto)c));
                 world.CharManager.NotifyChange(gu);
             }
             finally
