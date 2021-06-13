@@ -171,7 +171,7 @@ namespace GY2021001DAL
         public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// 容器的实例Id。
+        /// 容器的实例Id:<see cref="GuidKeyBase.Id"/>。
         /// </summary>
         public Guid ContainerId { get; set; }
 
