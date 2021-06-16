@@ -30,6 +30,7 @@ namespace GY2021001WebApi.Models
                 TemplateId = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : GameHelper.FromBase64String(obj.TemplateId),
                 OwnerId = string.IsNullOrEmpty(obj.OwnerId) ? Guid.Empty : GameHelper.FromBase64String(obj.OwnerId),
                 ParentId = string.IsNullOrEmpty(obj.ParentId) ? Guid.Empty : GameHelper.FromBase64String(obj.ParentId),
+                ClientGutsString=obj.ClientString,
             };
             foreach (var item in obj.Properties)
             {
@@ -53,6 +54,7 @@ namespace GY2021001WebApi.Models
                 CreateUtc = obj.CreateUtc,
                 OwnerId = obj.OwnerId?.ToBase64String(),
                 ParentId = obj.ParentId?.ToBase64String(),
+                ClientString=obj.ClientGutsString,
             };
 
             foreach (var item in obj.Properties)

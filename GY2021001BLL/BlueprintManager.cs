@@ -77,7 +77,7 @@ namespace GY2021001BLL
             {
                 if (!item.IsMatched) //若不可用
                     continue;
-                if (!item.Template.ProbExpression.TryGetValue(null, out var probObj) || !OwHelper.TryGetDecimal(probObj, out var prob))  //若无法得到命中概率
+                if (!item.Template.ProbExpression.TryGetValue(item.RuntimeEnvironment, out var probObj) || !OwHelper.TryGetDecimal(probObj, out var prob))  //若无法得到命中概率
                     continue;
                 if (!world.IsHit((double)prob)) //若未命中
                     continue;
@@ -121,6 +121,10 @@ namespace GY2021001BLL
         /// 脚本的运行时环境。
         /// </summary>
         GameExpressionRuntimeEnvironment _RuntimeEnvironment;
+
+        /// <summary>
+        /// 脚本的运行时环境。每个公式独立。
+        /// </summary>
         public GameExpressionRuntimeEnvironment RuntimeEnvironment => _RuntimeEnvironment ??= new GameExpressionRuntimeEnvironment(Template?.CompileEnvironment);
 
         private List<MaterialData> _Materials;
@@ -154,13 +158,13 @@ namespace GY2021001BLL
                             succ = true;
                         }
                     }
-                    if (!succ)   //若没有任何一个原料匹配
+                    if (!succ)   //若本轮没有任何一个原料匹配上
                         break;
                 }
             }
             finally
             {
-                IsMatched = tmpList.Count == 0;  //所有原料项都匹配了则说明成功
+                IsMatched = tmpList.All(c => c.Template.IsNew || c.Template.AllowEmpty);  //所有非必要或已存在原料项都匹配了则说明成功
                 RuntimeEnvironment.EndScope(IsMatched);
             }
             return IsMatched;
@@ -171,7 +175,8 @@ namespace GY2021001BLL
             bool succ = false;
             try
             {
-                succ = Materials.All(c => c.Apply(datas));
+                succ = Materials.OrderBy(c => c.Template.PropertiesChanges)   //TO DO
+                    .All(c => c.Apply(datas));
             }
             catch (Exception)
             {
@@ -308,7 +313,7 @@ namespace GY2021001BLL
             var env = Parent.RuntimeEnvironment;
             //获取该原料对象
             if (!env.Variables.TryGetValue(Template.Id.ToString(), out var expr) || !expr.TryGetValue(env, out var obj) || !(obj is GameItem gameItem))
-                return false;
+                return false || Template.AllowEmpty;
             //修改数量
             if (!Template.CountProbExpression.TryGetValue(env, out var countPropObj) || !OwHelper.TryGetDecimal(countPropObj, out var prob)) //若无法获取概率
                 return false;
@@ -536,6 +541,15 @@ namespace GY2021001BLL
                     {
                         datas.DebugMessage = $"计划制造{datas.Count}次,实际成功{i}次后，原料不足";
                         break;
+                    }
+                    foreach (var item in data.Formulas)
+                    {
+                        if (!item.IsMatched)
+                            continue;
+                        foreach (var meter in item.Materials)
+                        {
+                            meter.Template.VariableDeclaration.OfType<ReferenceGExpression>().All(c => c.Cache(item.RuntimeEnvironment));
+                        }
                     }
                     data.Apply(datas);
                     datas.SuccCount++;

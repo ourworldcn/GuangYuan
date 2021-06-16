@@ -338,7 +338,7 @@ namespace GY2021001BLL
                         SetLevel(gameItem, (int)nlv);
                     else
                         SetLevel(gameItem, seqPName, (int)nlv);
-                    gameItem.Properties[seqPName] = nlv;
+                    gameItem.Properties[propName] = nlv;    //设置等级
                 }
             }
             else
@@ -444,7 +444,7 @@ namespace GY2021001BLL
                 throw new ArgumentOutOfRangeException(nameof(count), "应大于0");
             var result = false;
             var cap = GetCapacity(destContainer);
-            if (cap is null || (cap != -1 && cap >= destContainer.Children.Count))   //若目标背包已经满
+            if (cap is null || (cap != -1 && cap <= destContainer.Children.Count))   //若目标背包已经满
                 return false;
             if (item.Count < count)
                 return false;
@@ -462,8 +462,8 @@ namespace GY2021001BLL
                 var moveItem = CreateGameItem(item.TemplateId);
                 moveItem.Count = count;
                 item.Count = item.Count - count;
-                var parent = GetContainer(item);   //获取父容器
-                AddItem(moveItem, parent);  //TO DO 需要处理无法完整放入问题
+                var parent = GetContainer(item);   //获取源父容器
+                AddItem(moveItem, destContainer);  //TO DO 需要处理无法完整放入问题
                 if (null != changesItems)
                 {
                     //增加变化 
@@ -548,18 +548,18 @@ namespace GY2021001BLL
         {
             IList<GameItem> lst = (parent as GameItem)?.Children;
             lst ??= (parent as GameChar)?.GameItems;
-            Debug.Assert(null != lst);
-            for (int i = lst.Count - 1; i >= 0; i--)    //倒序删除
-            {
-                var item = lst[i];
-                if (!filter(item))
-                    continue;
-                lst.RemoveAt(i);
-                removes?.Add(item);
-                item.Parent = null;
-                item.ParentId = null;
-                item.OwnerId = null;
-            }
+            if (null != lst)
+                for (int i = lst.Count - 1; i >= 0; i--)    //倒序删除
+                {
+                    var item = lst[i];
+                    if (!filter(item))
+                        continue;
+                    lst.RemoveAt(i);
+                    removes?.Add(item);
+                    item.Parent = null;
+                    item.ParentId = null;
+                    item.OwnerId = null;
+                }
 
         }
 
@@ -588,7 +588,7 @@ namespace GY2021001BLL
                     ContainerId = dest.Id,
                 });
                 addChanges.Adds.AddRange(adds);
-                changes.Add(addChanges);
+                changes?.Add(addChanges);
 
                 if (remainder.Count > 0)    //若有一些物品不能加入
                 {
@@ -608,7 +608,7 @@ namespace GY2021001BLL
                     change.Removes.AddRange(guids);
                     change.Changes.AddRange(l_r.Select(c => c.Item2));
                     change.Adds.AddRange(adds);
-                    changes.Add(change);
+                    changes?.Add(change);
                 }
                 else //全部移动了
                 {
@@ -617,7 +617,7 @@ namespace GY2021001BLL
                         ContainerId = src.Id,
                     };
                     _.Removes.AddRange(removeIds);
-                    changes.Add(_);
+                    changes?.Add(_);
                 }
             }
             finally

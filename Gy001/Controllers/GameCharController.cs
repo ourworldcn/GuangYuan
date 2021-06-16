@@ -46,11 +46,16 @@ namespace GY2021001WebApi.Controllers
         /// 修改客户端字符串。
         /// </summary>
         /// <param name="model">参见 ModifyClentStringParamsDto。</param>
-        /// <returns>总是返回成功</returns>
+        /// <returns></returns>
         /// <response code="401">令牌错误。</response>
         [HttpPut]
-        public ActionResult<bool> ModifyClentString(ModifyClentStringParamsDto model)
+        public ActionResult<ModifyClentReturnDto> ModifyClentString(ModifyClentStringParamsDto model)
         {
+            var result = new ModifyClentReturnDto()
+            {
+                Result = model.ClientString,
+                ObjectId = model.ObjectId,
+            };
             var gitm = HttpContext.RequestServices.GetRequiredService<GameCharManager>();
             var gu = gitm.GetUserFromToken(GameHelper.FromBase64String(model.Token));
             if (null == gu) //若令牌无效
@@ -62,8 +67,12 @@ namespace GY2021001WebApi.Controllers
                 gitm.NotifyChange(gu);
             }
             else
-                return gitm.ModifyClientString(gu.GameChars[0], objectId, model.ClientString);
-            return true;
+            {
+                var succ = gitm.ModifyClientString(gu.GameChars[0], objectId, model.ClientString);
+                if (!succ)
+                    result.HasError = true;
+            }
+            return result;
         }
 
         /// <summary>
@@ -310,11 +319,13 @@ namespace GY2021001WebApi.Controllers
                 }
                 try
                 {
+                    List<ChangesItem> changesItems = new List<ChangesItem>();
                     foreach (var item in coll)
                     {
-                        ICollection<ChangesItem> changesItems = null;
                         world.ItemManager.MoveItem(allGi[item.Id], item.Count, allGi[item.PId], changesItems);
                     }
+                    ChangesItem.Reduce(changesItems);
+                    result.ChangesItems.AddRange(changesItems.Select(c => (ChangesItemDto)c));
                 }
                 catch (Exception)
                 {

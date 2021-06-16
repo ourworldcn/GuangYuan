@@ -90,7 +90,7 @@
             修改客户端字符串。
             </summary>
             <param name="model">参见 ModifyClentStringParamsDto。</param>
-            <returns>总是返回成功</returns>
+            <returns></returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.ModifyClientExtendProperty(GY2021001WebApi.Models.ModifyClientExtendPropertyParamsDto)">
@@ -737,19 +737,24 @@
             最多有多少数据。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.ChangesReturnDtoBase">
+        <member name="T:GY2021001WebApi.Models.ReturnDtoBase">
             <summary>
-            带变化物品集合的返回数据对象基类。
+            返回数据对象的基类。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.ChangesReturnDtoBase.HasError">
+        <member name="P:GY2021001WebApi.Models.ReturnDtoBase.HasError">
             <summary>
             返回时指示是否有错误。false表示正常完成，true表示有错误发生。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.ChangesReturnDtoBase.DebugMessage">
+        <member name="P:GY2021001WebApi.Models.ReturnDtoBase.DebugMessage">
             <summary>
             调试信息。调试状态下返回时填写。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ChangesReturnDtoBase">
+            <summary>
+            带变化物品集合的返回数据对象基类。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.ChangesReturnDtoBase.ChangesItems">
@@ -845,6 +850,23 @@
         <member name="P:GY2021001WebApi.Models.ModifyClentStringParamsDto.ClientString">
             <summary>
             新的客户端字符串。null表示删除该字符串。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ModifyClentReturnDto">
+            <summary>
+            ModifyClentString接口返回数据的类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyClentReturnDto.Result">
+            <summary>
+            这里返回修改后的字符串。如果删除了则返回null。
+            仅当成功返回时，此成员才有用。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyClentReturnDto.ObjectId">
+            <summary>
+            更改对象的Id。
+            仅当成功返回时，此成员才有用。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.CombatStartParamsDto">

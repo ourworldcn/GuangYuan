@@ -171,11 +171,12 @@ namespace GY2021001BLL
                     lst.AddRange(_DirtyUsers.Distinct());
                     _DirtyUsers.Clear();
                 }
+                GameUser item = null;
                 for (int i = 0; i < lst.Count; i++)
                 {
                     try
                     {
-                        var item = lst[i];
+                        item = lst[i];
                         if (!Monitor.TryEnter(item)) //若锁定失败
                         {
                             _DirtyUsers.Enqueue(item);  //放入队列下次再保存
@@ -195,8 +196,13 @@ namespace GY2021001BLL
                         }
                         Thread.Yield();
                     }
-                    catch (Exception)
+                    catch (DbUpdateConcurrencyException err)
                     {
+                        Trace.WriteLine($"保存数据时出现未知错误{err.Message}");
+                    }
+                    catch (Exception err)
+                    {
+                        Trace.WriteLine($"保存数据时出现未知错误{err.Message}");
                     }
                 }
                 try

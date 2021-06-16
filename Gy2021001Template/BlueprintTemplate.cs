@@ -164,6 +164,11 @@ namespace Gy2021001Template
         [Column("新建物品否")]
         public bool IsNew { get; set; }
 
+        /// <summary>
+        /// 这个原料项可以没有对应的物品，如果有则尽量填入。
+        /// </summary>
+        [Column("允许空")]
+        public bool AllowEmpty { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private GameExpressionCompileEnvironment StartCurrentObject()

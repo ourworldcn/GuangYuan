@@ -149,6 +149,17 @@ namespace GY2021001DAL
             }
         }
 
+        public static void AddToAdds(ICollection<ChangesItem> changes, Guid destContainerId, GameItem gameItem)
+        {
+            var item = changes.FirstOrDefault(c => c.ContainerId == destContainerId);
+            if (null == item)
+            {
+                item = new ChangesItem() { ContainerId = destContainerId };
+                changes.Add(item);
+            }
+            item.Adds.Add(gameItem);
+        }
+
         public ChangesItem()
         {
 

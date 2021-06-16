@@ -42,7 +42,7 @@ namespace OwGame
             Id = id;
         }
 
-        [Key, Column(Order = 0)]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.None), Column(Order = 0)]
         public Guid Id { get; set; }
 
         /// <summary>

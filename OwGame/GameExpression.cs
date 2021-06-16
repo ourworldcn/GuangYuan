@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -232,6 +233,23 @@ namespace OwGame.Expression
         public abstract bool TryGetValue(GameExpressionRuntimeEnvironment env, out object result);
 
         /// <summary>
+        /// 试图将返回值转化为一个数字。
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="result"></param>
+        /// <returns>true成功获取，false无法获得返回值或返回值不是数字。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetDecimal(GameExpressionRuntimeEnvironment env, out decimal result)
+        {
+            if (!TryGetValue(env, out var obj) || !OwHelper.TryGetDecimal(obj, out result))
+            {
+                result = default;
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="env"></param>
@@ -303,7 +321,7 @@ namespace OwGame.Expression
             if (string.IsNullOrEmpty(inputs))
                 return;
             Dictionary<string, GameExpressionBase> result = env.Variables;
-            var alls = inputs.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => c.Split('=', StringSplitOptions.None).Select(exp => exp.Trim()).ToArray());
+            var alls = Split(inputs, true).Select(c => c.Split('=', StringSplitOptions.None).Select(exp => exp.Trim()).ToArray());
             foreach (var expStr in alls.Where(c => c.Length != 2))
             {
                 Debug.WriteLine($"检测到不合规的变量声明——{string.Join('=', expStr)}");
@@ -432,9 +450,63 @@ namespace OwGame.Expression
         /// <returns></returns>
         static public BlockGExpression CompileBlockExpression(GameExpressionCompileEnvironment env, string str)
         {
-            var coll = str.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
+            //var coll = str.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
+            var coll = Split(str, true);
             var para = coll.Select(c => CompileExpression(env, c));
             return new BlockGExpression(para);
+        }
+
+        /// <summary>
+        /// 按逗号拆分字符串，逗号如果在小括号范围内，则不作为拆分的分隔符看待。
+        /// 这样做可以保证多参数的函数调用可以正常拆分。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="ignoreWhite"></param>
+        /// <returns></returns>
+        static public List<string> Split(string str, bool ignoreWhite = false)
+        {
+            StringBuilder sb = new StringBuilder();
+            int deep = 0;
+            var result = new List<string>();
+            foreach (var ch in str)
+            {
+                switch (ch)
+                {
+                    case '(':
+                        deep++;
+                        sb.Append(ch);
+                        break;
+                    case ')':
+                        deep--;
+                        sb.Append(ch);
+                        break;
+                    case ',':
+                    case '，':
+                        if (deep <= 0) //若不在括号内
+                        {
+                            deep = 0;
+                            result.Add(sb.ToString());
+                            sb.Clear();
+                        }
+                        else //若尚在括号内
+                        {
+                            sb.Append(ch);
+                        }
+                        break;
+                    default:
+                        sb.Append(ch);
+                        break;
+                }
+            }
+            result.Add(sb.ToString());  //加入最后一段
+            if (ignoreWhite)    //若需去除空白
+                for (int i = result.Count - 1; i >= 0; i--)
+                {
+                    var item = result[i];
+                    if (string.IsNullOrWhiteSpace(item))
+                        result.RemoveAt(i);
+                }
+            return result;
         }
 
         /// <summary>
@@ -575,7 +647,7 @@ namespace OwGame.Expression
         public override bool TryGetValue(GameExpressionRuntimeEnvironment env, out object result)
         {
             bool succ = false;
-            switch (Name)
+            switch (Name.ToLower())
             {
                 case "rnd": //生成[0,1)之间的随机数
                     Debug.Assert(Parameters.Count == 0, "rnd函数不需要参数");
@@ -620,9 +692,9 @@ namespace OwGame.Expression
                             var probNum = 0m;    //概率数
                             for (int i = 0; i < Parameters.Count / 3; i++)
                             {
-                                var succ1 = OwHelper.TryGetDecimal(Parameters[i]?.GetValueOrDefault(env), out var d1);
-                                var succ2 = OwHelper.TryGetDecimal(Parameters[i + 1]?.GetValueOrDefault(env), out var d2);
-                                var succ3 = OwHelper.TryGetDecimal(Parameters[i + 2]?.GetValueOrDefault(env), out var d3);
+                                var succ1 = OwHelper.TryGetDecimal(Parameters[i * 3]?.GetValueOrDefault(env), out var d1);
+                                var succ2 = OwHelper.TryGetDecimal(Parameters[i * 3 + 1]?.GetValueOrDefault(env), out var d2);
+                                var succ3 = OwHelper.TryGetDecimal(Parameters[i * 3 + 2]?.GetValueOrDefault(env), out var d3);
                                 if (!(succ1 && succ2 && succ3))
                                 {
                                     result = default;
@@ -638,17 +710,19 @@ namespace OwGame.Expression
                                 result = default;
                                 break;
                             }
-                            var fac = lst.Sum(c => c.Item1) * (decimal)NextDouble();  //缩放后的因子
-                            var item = lst.First(c => c.Item1 > fac);   //命中项
+                            var fac = lst[lst.Count - 1].Item1 * (decimal)NextDouble();  //缩放后的因子
+                            var item = lst.First(c => c.Item1 >= fac);   //命中项
                             _CacheRandom = item.Item2 + (item.Item3 - item.Item2) * (decimal)NextDouble();
                             succ = true;
                         }
                     }
+                    else
+                        succ = true;
                     result = _CacheRandom.Value;
                     break;
                 case "lerp":
-                    if (Parameters.Count != 3 || !OwHelper.TryGetDecimal(Parameters[0], out var value1) || !OwHelper.TryGetDecimal(Parameters[1], out var value2) ||
-                        !OwHelper.TryGetDecimal(Parameters[0], out var amount) || amount < 0 || amount > 1)   //若参数个数不是3个数值或比重不在[0,1]区间内
+                    if (Parameters.Count != 3 || !Parameters[0].TryGetDecimal(env, out var value1) || !Parameters[1].TryGetDecimal(env, out var value2) ||
+                        !Parameters[2].TryGetDecimal(env, out var amount) || amount < 0 || amount > 1)   //若参数个数不是3个数值或比重不在[0,1]区间内
                     {
                         result = default;
                     }
@@ -656,6 +730,33 @@ namespace OwGame.Expression
                     {
                         result = value1 + amount * (value2 - value1);
                         //result = value1 * (1 - amount) + amount * value2;
+                        succ = true;
+                    }
+                    break;
+                case "isexists":
+                    if (Parameters.Count != 1 || !Parameters[0].TryGetValue(env, out var para1))
+                    {
+                        result = default;
+                    }
+                    else
+                    {
+                        string name;    //变量的名字
+                        if (para1 is Guid id)
+                        {
+                            name = id.ToString();
+                        }
+                        else if (para1 is string str && Guid.TryParse(str, out id))
+                        {
+                            name = id.ToString();
+                        }
+                        else if (para1 is string str1)
+                            name = str1;
+                        else
+                        {
+                            result = default;
+                            break;
+                        }
+                        result = env.Variables.ContainsKey(name) ? decimal.One : decimal.Zero;
                         succ = true;
                     }
                     break;
@@ -772,47 +873,60 @@ namespace OwGame.Expression
         /// <returns>true成功设置，false未能设置值。</returns>
         public override bool SetValue(GameExpressionRuntimeEnvironment env, object val)
         {
-            if (env.Variables.TryGetValue(Name, out var expr))   //若此引用是一个常量
+            bool succ;
+            if (env.Variables.TryGetValue(Name, out var expr))   //若此引用是一个命名的表达式
             {
-                return expr.SetValue(env, val);
+                env.Variables[Name] = new ConstGExpression(val);
+                succ = true;
             }
-            if (!env.Variables.TryGetValue(ObjectId, out var objExp) || !objExp.TryGetValue(env, out var obj))   //若没有找到对象
-                return false;
-            var srv = env.Services.GetService(typeof(GamePropertyHelper)) as GamePropertyHelper;
-            return srv.SetValue(obj, Name, val);
+            else if (!env.Variables.TryGetValue(ObjectId, out var objExp) || !objExp.TryGetValue(env, out var obj))   //若没有找到对象
+                succ = false;
+            else
+            {
+                var srv = env.Services.GetService(typeof(GamePropertyHelper)) as GamePropertyHelper;
+                succ = srv.SetValue(obj, Name, val);
+            }
+            if (succ)
+                _IsCache = false;
+            return succ;
         }
 
-        /// <summary>
-        /// 试图获取变量的值。
-        /// </summary>
-        /// <param name="env"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetVariablesValue(GameExpressionRuntimeEnvironment env, out object result)
+        public bool Cache(GameExpressionRuntimeEnvironment env)
         {
-            return env.TryGetVariableValue(Name, out result);
+            if (!TryGetValue(env, out _CacheValue))
+                return false;
+            _IsCache = true;
+            return true;
         }
+
+        bool _IsCache;
+        object _CacheValue;
 
         public override bool TryGetValue(GameExpressionRuntimeEnvironment env, out object result)
         {
-            bool succ = TryGetVariablesValue(env, out result);
-            if (succ)   //若是变量
-                return succ;
-            if (!env.Variables.TryGetValue(ObjectId, out var obj) || obj is null)  //若找不到对象
+            if (_IsCache)
             {
-                result = default;
+                result = _CacheValue;
+                return true;
             }
-            else //若找到了对象
+            bool succ = env.TryGetVariableValue(Name, out result);
+            if (!succ)   //若不是变量
             {
-                var gph = env.Services.GetService(typeof(GamePropertyHelper)) as GamePropertyHelper;
-
-                if (!obj.TryGetValue(env, out var tmp) || tmp == null)  //若未找到了对象
-                    result = null;
-                else
+                if (!env.Variables.TryGetValue(ObjectId, out var obj) || obj is null)  //若找不到对象
                 {
-                    result = gph.GetValue(tmp, Name);
-                    return result != default;
+                    result = default;
+                }
+                else //若找到了对象
+                {
+                    var gph = env.Services.GetService(typeof(GamePropertyHelper)) as GamePropertyHelper;
+
+                    if (!obj.TryGetValue(env, out var tmp) || tmp == null)  //若未找到了对象
+                        result = null;
+                    else
+                    {
+                        result = gph.GetValue(tmp, Name);
+                        succ = result != default;
+                    }
                 }
             }
             return succ;
@@ -975,8 +1089,17 @@ namespace OwGame.Expression
         public override bool TryGetValue(GameExpressionRuntimeEnvironment env, out object result)
         {
             bool succ = true;
-            var leftObj = Left.GetValueOrDefault(env);
-            var rightObj = Right.GetValueOrDefault(env);
+            object leftObj, rightObj;
+            try
+            {
+                leftObj = Left.GetValueOrDefault(env);
+                rightObj = Right.GetValueOrDefault(env);
+            }
+            catch (Exception)
+            {
+                leftObj = null;
+                rightObj = null;
+            }
             switch (Operator)
             {
                 #region 算数运算符

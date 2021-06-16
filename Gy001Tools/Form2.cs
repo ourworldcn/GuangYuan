@@ -41,29 +41,16 @@ namespace Gy001Tools
 
         private void test()
         {
-            var succ = decimal.TryParse("4001;4002;4003;4004;4005;15001;15002;15003;15004;15005", out var dec1);
-
-            BlockExpression blockExpr = Expression.Block(
-                Expression.Call(
-                    null,
-                    typeof(Console).GetMethod("Write", new Type[] { typeof(String) }),
-                    Expression.Constant("Hello ")
-                   ),
-                Expression.Call(
-                    null,
-                    typeof(Console).GetMethod("WriteLine", new Type[] { typeof(String) }),
-                    Expression.Constant("World!")
-                    ),
-                Expression.Constant(42)
-            );
-            
-            var expr = Expression.Add(
-                Constant(5),
-                Constant(6));
-            Console.WriteLine("The result of executing the expression tree:");
-            // The following statement first creates an expression tree,
-            // then compiles it, and then executes it.
-            var result = Expression.Lambda<Func<int>>(expr).Compile()();
+            var str = "v3rate=mds(0.2,0,0.25,0.6,0.25,0.75,0.2,0.75,1),d=4+9,nemhp=lerp(nemhp,v2mhp,v3rate),nemhp=round(nemhp),neatk=lerp(neatk,v2atk,v3rate),neatk=round(neatk),neqlt=lerp(neqlt,v2qlt,v3rate),neqlt=round(neqlt)";
+            string patt = @"(?<item>[^\,，]+|{func})[,，]?";
+            string subPatt = @".*?\=.*?\(.*?\)";
+            patt = patt.Replace("{func}", subPatt);
+            var ma = Regex.Matches(str, patt);
+            foreach (var item in ma.OfType<Match>())
+            {
+                var tmp = item.Groups["item"];
+                var val = tmp.Value;
+            }
         }
 
         string left = "k1";

@@ -429,6 +429,9 @@ namespace GY2021001WebApi.Models
         {
             //throw new NotImplementedException();
         }
+
+        [DataMember]
+        public string ClientString { get; set; }
     }
 
     /// <summary>
@@ -638,15 +641,11 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// 带变化物品集合的返回数据对象基类。
+    /// 返回数据对象的基类。
     /// </summary>
     [DataContract]
-    public partial class ChangesReturnDtoBase
+    public class ReturnDtoBase
     {
-        public ChangesReturnDtoBase()
-        {
-
-        }
         /// <summary>
         /// 返回时指示是否有错误。false表示正常完成，true表示有错误发生。
         /// </summary>
@@ -658,6 +657,19 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string DebugMessage { get; set; }
+
+    }
+
+    /// <summary>
+    /// 带变化物品集合的返回数据对象基类。
+    /// </summary>
+    [DataContract]
+    public partial class ChangesReturnDtoBase : ReturnDtoBase
+    {
+        public ChangesReturnDtoBase()
+        {
+
+        }
 
         [IgnoreDataMember]
         private List<ChangesItemDto> _ChangesItems;
@@ -814,6 +826,27 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string ClientString { get; set; }
+    }
+
+    /// <summary>
+    /// ModifyClentString接口返回数据的类。
+    /// </summary>
+    [DataContract]
+    public class ModifyClentReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 这里返回修改后的字符串。如果删除了则返回null。
+        /// 仅当成功返回时，此成员才有用。
+        /// </summary>
+        [DataMember]
+        public string Result { get; set; }
+
+        /// <summary>
+        /// 更改对象的Id。
+        /// 仅当成功返回时，此成员才有用。
+        /// </summary>
+        [DataMember]
+        public string ObjectId { get; set; }
     }
 
     #region 战斗相关数据
@@ -1137,16 +1170,19 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 要移动到的容器的Id。
         /// </summary>
+        [DataMember]
         public string DestContainerId { get; set; }
 
         /// <summary>
         /// 要移动物品的Id。
         /// </summary>
+        [DataMember]
         public string ItemId { get; set; }
 
         /// <summary>
         /// 要移动的数量。大于物品的数量将导致调用出错。
         /// </summary>
+        [DataMember]
         public decimal Count { get; set; }
     }
 
@@ -1161,6 +1197,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 要移动的物品的详细数据。
         /// </summary>
+        [DataMember]
         public List<MoveItemsItemDto> Items { get => _Items ?? (_Items = new List<MoveItemsItemDto>()); set => _Items = value; }
 
     }
