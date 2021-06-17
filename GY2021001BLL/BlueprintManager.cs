@@ -83,6 +83,7 @@ namespace GY2021001BLL
                     continue;
                 if (item.Apply(datas))   //若执行蓝图成功
                 {
+                    datas.FormulaIds.Add(item.Template.Id);
                     if (!item.Template.IsContinue)  //若无需继续
                         break;
                 }
@@ -311,14 +312,49 @@ namespace GY2021001BLL
         public bool Apply(ApplyBlueprintDatas datas)
         {
             var env = Parent.RuntimeEnvironment;
+            GameItem gameItem;
+            GameItemManager gim;
             //获取该原料对象
-            if (!env.Variables.TryGetValue(Template.Id.ToString(), out var expr) || !expr.TryGetValue(env, out var obj) || !(obj is GameItem gameItem))
+            if (Template.IsNew)
+            {
+                var setTidExpr = (Template.PropertiesChangesExpression as BlockGExpression).Expressions.OfType<BinaryGExpression>().FirstOrDefault(c =>
+                {
+                    if (c.Left is ReferenceGExpression refExpr && refExpr.Name == "tid" && refExpr.ObjectId == Template.Id.ToString())    //若是设置此条目的模板
+                        return true;
+                    return false;
+                });
+                if (setTidExpr == null)
+                {
+                    datas.DebugMessage = "未能找到新建物品设置模板Id的表达式。";
+                    datas.HasError = true;
+                    return false;
+                }
+                if (!setTidExpr.Right.TryGetValue(env, out var tidObj) || !OwHelper.TryGetGuid(tidObj, out var tid))
+                {
+                    datas.DebugMessage = "未能找到新建物品的模板Id。";
+                    datas.HasError = true;
+                    return false;
+                }
+                gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
+                gameItem = gim.CreateGameItem(tid);
+                var keyName = Template.Id.ToString();
+                GameExpressionBase expr;
+                if (env.Variables.TryGetValue(keyName, out expr))   //若已经存在该变量
+                    expr.SetValue(env, gameItem);
+                else
+                {
+                    env.Variables[keyName] = new ConstGExpression(gameItem);
+                }
+            }
+            else if (!env.Variables.TryGetValue(Template.Id.ToString(), out var expr) || !expr.TryGetValue(env, out var obj) || !(obj is GameItem))
                 return false || Template.AllowEmpty;
+            else
+                gameItem = obj as GameItem;
             //修改数量
             if (!Template.CountProbExpression.TryGetValue(env, out var countPropObj) || !OwHelper.TryGetDecimal(countPropObj, out var prob)) //若无法获取概率
                 return false;
             var world = Parent.Parent.Service.GetRequiredService<VWorld>();
-            var gim = Parent.Parent.Service.GetService<GameItemManager>();
+            gim = Parent.Parent.Service.GetService<GameItemManager>();
             var ci = new ChangesItem()
             {
                 ContainerId = gameItem.ParentId ?? gameItem.OwnerId.Value,
@@ -424,6 +460,11 @@ namespace GY2021001BLL
         /// 调试信息，如果发生错误，这里给出简要说明。
         /// </summary>
         public string DebugMessage { get; set; }
+
+        /// <summary>
+        /// 返回命中公式的Id集合。
+        /// </summary>
+        public List<Guid> FormulaIds { get; } = new List<Guid>();
     }
 
     /// <summary>

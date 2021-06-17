@@ -522,6 +522,11 @@
             获取或设置成功执行的次数。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.FormulaIds">
+            <summary>
+            返回命中公式的Id集合。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。
@@ -1050,6 +1055,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

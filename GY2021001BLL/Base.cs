@@ -68,7 +68,7 @@ namespace GY2021001BLL
         /// </summary>
         public GameManagerBase()
         {
-
+            
         }
 
         /// <summary>

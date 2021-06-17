@@ -74,6 +74,7 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<CombatEndReturnDto> Test()
         {
+           
             var world = HttpContext.RequestServices.GetService<VWorld>();
             var gitm = world.ItemTemplateManager;
             var gim = world.ItemManager;

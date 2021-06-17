@@ -1082,6 +1082,11 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public int SuccCount { get; set; }
 
+        /// <summary>
+        /// 返回命中公式的Id集合。
+        /// </summary>
+        [DataMember]
+        public List<string> FormulaIds { get; set; } = new List<string>();
     }
 
     /// <summary>

@@ -265,6 +265,7 @@ namespace GY2021001WebApi.Models
                 SuccCount = obj.SuccCount,
             };
             result.ChangesItems.AddRange(obj.ChangesItem.Select(c => (ChangesItemDto)c));
+            result.FormulaIds.AddRange(obj.FormulaIds.Select(c => c.ToBase64String()));
             return result;
         }
 

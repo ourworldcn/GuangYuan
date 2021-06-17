@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -146,6 +147,36 @@ namespace OwGame
         }
 
         /// <summary>
+        /// 尽可能转换为Guid类型。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="result"></param>
+        /// <returns>true成功转换，false未成功。</returns>
+        static public bool TryGetGuid(object obj, out Guid result)
+        {
+
+            if (obj is Guid id)
+            {
+                result = id;
+                return true;
+            }
+            else if (obj is string str && Guid.TryParse(str, out result))
+            {
+                return true;
+            }
+            else if(obj is byte[] ary && ary.Length==16)
+            {
+                result = new Guid(ary);
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 分割属性字符串。
         /// </summary>
         /// <param name="propStr">属性字符串。</param>
@@ -197,11 +228,18 @@ namespace OwGame
                 var guts = item.Split('=', StringSplitOptions.RemoveEmptyEntries);
                 if (2 != guts.Length)
                 {
-                    throw new InvalidCastException($"数据格式错误:'{guts}'");   //TO DO
+                    if (item.IndexOf('=') > 0 && item.Count(c => c == '=') == 1)  //若是xxx= 格式，解释为xxx=null
+                        ;
+                    else
+                        throw new InvalidCastException($"数据格式错误:'{guts}'");   //TO DO
                 }
                 var keyName = string.Intern(guts[0].Trim());
-                var val = guts[1].Trim();
-                if (val.Contains('|'))  //若是序列属性
+                var val = guts?[1]?.Trim();
+                if (val is null)
+                {
+                    props[keyName] = null;
+                }
+                else if (val.Contains('|'))  //若是序列属性
                 {
                     var seq = val.Split('|', StringSplitOptions.RemoveEmptyEntries);
                     var ary = seq.Select(c => decimal.Parse(c.Trim())).ToArray();
@@ -351,15 +389,44 @@ namespace OwGame
             }
             return true;
         }
-    }
 
-    public struct MyStruct
-    {
-        long _Data;
-
-        public MyStruct(decimal dec)
+        /// <summary>
+        /// 在一组相对概率中选择一个元素。
+        /// </summary>
+        /// <param name="seq">所有元素要是非负数。序列不可为空</param>
+        /// <param name="rnd">随机数，要在区间[0,1)中。</param>
+        /// <returns></returns>
+        public static int RandomSelect(IEnumerable<decimal> seq, double rnd)
         {
-            _Data = (long)dec;
+            if (rnd < 0 || rnd >= 1)
+                throw new ArgumentOutOfRangeException(nameof(rnd), "要在区间[0,1)中");
+            if (seq.Any(c => c < 0))
+                throw new ArgumentOutOfRangeException(nameof(seq), "所有元素要是非负数。");
+            if (!seq.Any())
+                throw new ArgumentException("序列不可为空。", nameof(seq));
+            decimal tmp = decimal.Zero;
+            List<decimal> lst = new List<decimal>();
+            foreach (var item in seq)
+            {
+                tmp += item;
+                lst.Add(item == 0 ? -1 : tmp);  //标记概率为0的项
+            }
+            decimal max = lst[^1];
+            var fact = (decimal)rnd * max; //放大随机因子
+            int result = 0;
+            for (int i = 0; i < lst.Count; i++)
+            {
+                var item = lst[i];
+                if (item < 0)   //若概率为0则不可命中
+                    continue;
+                if (fact <= item)   //若找到命中项
+                {
+                    result = i;
+                    break;
+                }
+            }
+            return result;
         }
     }
+
 }

@@ -255,6 +255,16 @@ namespace GY2021001BLL
             {
                 return ItemTemplateManager.GetTemplateFromeId(gameItem.TemplateId)?.GenusCode;
             }
+            else if (propName.Equals("freecap", StringComparison.InvariantCultureIgnoreCase)) //容器剩余空间
+            {
+                var cap = GetCapacity(gameItem);
+                if (cap is null)
+                    return 0;
+                else if (cap == -1)
+                    return int.MaxValue;
+                else
+                    return cap.Value - gameItem.Children.Count;
+            }
             else
                 return gameItem.Properties.GetValueOrDefault(propName, 0m);
         }
@@ -437,14 +447,15 @@ namespace GY2021001BLL
         /// <param name="changesItems">物品变化信息，null或省略则不生成具体的变化信息。</param>
         /// <returns>true成功移动了物品，false是以下情况的一种或多种：物品现存数量小于要求移动的数量，没有可以移动的物品,目标背包已经满,。</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/>应该大于0</exception>
-        public bool MoveItem(GameItem item, decimal count, GameItem destContainer, ICollection<ChangesItem> changesItems = null)
+        public bool MoveItem(GameItem item, decimal count, GameThingBase destContainer, ICollection<ChangesItem> changesItems = null)
         {
+            var container = GetChildrenCollection(destContainer);
             //TO DO 不会堆叠
             if (count <= 0)
                 throw new ArgumentOutOfRangeException(nameof(count), "应大于0");
             var result = false;
-            var cap = GetCapacity(destContainer);
-            if (cap is null || (cap != -1 && cap <= destContainer.Children.Count))   //若目标背包已经满
+            var cap = GetFreeCapacity(destContainer);
+            if (cap <= 0)   //若目标背包已经满
                 return false;
             if (item.Count < count)
                 return false;
@@ -467,19 +478,9 @@ namespace GY2021001BLL
                 if (null != changesItems)
                 {
                     //增加变化 
-                    var changes = new ChangesItem()
-                    {
-                        ContainerId = parent.Id,
-                    };
-                    changes.Changes.Add(item);
-                    changesItems.Add(changes);
+                    ChangesToChanges(changesItems, item);
                     //增加新增
-                    var adds = new ChangesItem()
-                    {
-                        ContainerId = destContainer.Id,
-                    };
-                    adds.Adds.Add(moveItem);
-                    changesItems.Add(adds);
+                    ChangesToAdds(changesItems, moveItem);
                 }
             }
             return result;
@@ -519,6 +520,42 @@ namespace GY2021001BLL
         }
 
         /// <summary>
+        /// 获取最大子物品容量。
+        /// </summary>
+        /// <param name="container"></param>
+        /// <returns>不是容器则返回0。不限定容量则返回<see cref="int.MaxValue"/></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetMaxCapacity(GameThingBase container)
+        {
+            if (!container.Properties.TryGetValue(ProjectConstant.ContainerCapacity, out object obj))   //若没有属性,视同非容器
+                return 0;
+            if (!OwHelper.TryGetDecimal(obj, out var result))
+                return 0;
+            return result switch
+            {
+                -1 => int.MaxValue,
+                _ => Convert.ToInt32(result),
+            };
+        }
+
+        /// <summary>
+        /// 获取容器剩余的容量。
+        /// </summary>
+        /// <param name="container"></param>
+        /// <returns>0非容器或容器已满，<see cref="int.MaxValue"/>表示无限制。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetFreeCapacity(GameThingBase container)
+        {
+            var max = GetMaxCapacity(container);
+            return max switch
+            {
+                0 => 0,
+                int.MaxValue => int.MaxValue,
+                _ => Math.Max(max - (GetChildrenCollection(container)?.Count ?? 0), 0), //容错
+            };
+        }
+
+        /// <summary>
         /// 获取物品堆叠的空余数量。
         /// </summary>
         /// <param name="gameItem"></param>
@@ -537,6 +574,61 @@ namespace GY2021001BLL
         #endregion 动态属性相关
 
         #region 物品增减相关
+
+        #region 变化信息相关
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="changes"></param>
+        /// <param name="gameItem">>如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
+        public void ChangesToAdds(ICollection<ChangesItem> changes, GameItem gameItem)
+        {
+            var cid = GetContainer(gameItem)?.Id ?? Guid.Empty;
+            var item = changes.FirstOrDefault(c => c.ContainerId == cid);
+            if (null == item)
+            {
+                item = new ChangesItem() { ContainerId = cid };
+                changes.Add(item);
+            }
+            item.Adds.Add(gameItem);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="changes"></param>
+        /// <param name="gameItem">如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
+        public void ChangesToChanges(ICollection<ChangesItem> changes, GameItem gameItem)
+        {
+            var cid = GetContainer(gameItem)?.Id ?? Guid.Empty;
+            var item = changes.FirstOrDefault(c => c.ContainerId == cid);
+            if (null == item)
+            {
+                item = new ChangesItem() { ContainerId = cid };
+                changes.Add(item);
+            }
+            item.Changes.Add(gameItem);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="changes"></param>
+        /// <param name="itemId"></param>
+        /// <param name="containerId"></param>
+        public void ChangesToRemoves(ICollection<ChangesItem> changes, Guid itemId, Guid containerId)
+        {
+            var item = changes.FirstOrDefault(c => c.ContainerId == containerId);
+            if (null == item)
+            {
+                item = new ChangesItem() { ContainerId = containerId };
+                changes.Add(item);
+            }
+            item.Removes.Add(itemId);
+        }
+
+        #endregion 变化信息相关
 
         /// <summary>
         /// 将符合条件的物品对象及其子代从容器中移除并返回。

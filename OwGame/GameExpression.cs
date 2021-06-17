@@ -306,6 +306,16 @@ namespace OwGame.Expression
             }
         }
 
+        /// <summary>
+        /// 计算该表达式的结果可能发生变化了。
+        /// </summary>
+        public event EventHandler ValueChanged;
+
+        protected virtual void OnValueChanged(EventArgs e)
+        {
+            ValueChanged?.Invoke(this, e);
+        }
+
         #endregion 运行时相关成员
 
         #region 编译时相关成员
@@ -415,7 +425,7 @@ namespace OwGame.Expression
                 if (items.Length == 2) //若是函数调用
                 {
                     var paras = items[1].TrimEnd(')').Trim();   //参数列表
-                    if (string.IsNullOrEmpty(paras)) //若是空列表
+                    if (string.IsNullOrWhiteSpace(paras)) //若是空列表
                         result = new FunctionCallGExpression(items[0], Array.Empty<GameExpressionBase>() as IEnumerable<GameExpressionBase>);
                     else
                     {
@@ -760,6 +770,40 @@ namespace OwGame.Expression
                         succ = true;
                     }
                     break;
+                case "iif":
+                    if (Parameters.Count != 3)
+                    {
+                        Debug.WriteLine("iif函数需要3个参数。");
+                        result = default;
+                    }
+                    else if (!Parameters[0].TryGetValue(env, out var b))
+                    {
+                        Debug.WriteLine("iif函数无法获取判定表达式。");
+                        result = default;
+                    }
+                    else
+                    {
+                        bool bCondition;
+                        if (b is bool bTmp)
+                            bCondition = bTmp;
+                        else if (OwHelper.TryGetDecimal(b, out var decTmp))
+                            bCondition = decTmp != 0;
+                        else
+                        {
+                            result = default;
+                            Debug.WriteLine("iif函数第一个参数无法转换为bool值。");
+                            break;
+                        }
+                        if (bCondition)  //若计算第二个参数
+                        {
+                            succ = Parameters[1].TryGetValue(env, out result);
+                        }
+                        else //若计算第三个参数
+                        {
+                            succ = Parameters[2].TryGetValue(env, out result);
+                        }
+                    }
+                    break;
                 default:
                     result = default;
                     break;
@@ -821,7 +865,11 @@ namespace OwGame.Expression
         public override bool SetValue(GameExpressionRuntimeEnvironment env, object val)
         {
             Debug.WriteLineIf(val is GameExpressionBase, $"不应在常量对象中引用另一个常量对象。");
-            _Value = val;
+            if (!Equals(_Value, val))
+            {
+                _Value = val;
+                OnValueChanged(EventArgs.Empty);
+            }
             return true;
         }
 
