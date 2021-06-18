@@ -164,7 +164,7 @@ namespace OwGame
             {
                 return true;
             }
-            else if(obj is byte[] ary && ary.Length==16)
+            else if (obj is byte[] ary && ary.Length == 16)
             {
                 result = new Guid(ary);
                 return true;
@@ -393,39 +393,33 @@ namespace OwGame
         /// <summary>
         /// 在一组相对概率中选择一个元素。
         /// </summary>
-        /// <param name="seq">所有元素要是非负数。序列不可为空</param>
+        /// <param name="seq">所有元素要是非负数。序列不可为空，不可全为0(此时行为未知)</param>
         /// <param name="rnd">随机数，要在区间[0,1)中。</param>
         /// <returns></returns>
-        public static int RandomSelect(IEnumerable<decimal> seq, double rnd)
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public static TSource RandomSelect<TSource>(IEnumerable<TSource> source, Func<TSource, decimal> getProb, double rnd)
         {
             if (rnd < 0 || rnd >= 1)
                 throw new ArgumentOutOfRangeException(nameof(rnd), "要在区间[0,1)中");
-            if (seq.Any(c => c < 0))
-                throw new ArgumentOutOfRangeException(nameof(seq), "所有元素要是非负数。");
-            if (!seq.Any())
-                throw new ArgumentException("序列不可为空。", nameof(seq));
-            decimal tmp = decimal.Zero;
-            List<decimal> lst = new List<decimal>();
-            foreach (var item in seq)
+            decimal tmp = 0;
+            bool hasNoneZero = false;
+            var innerSeq = source.OrderByDescending(c => getProb(c)).Select(c =>
             {
-                tmp += item;
-                lst.Add(item == 0 ? -1 : tmp);  //标记概率为0的项
-            }
-            decimal max = lst[^1];
-            var fact = (decimal)rnd * max; //放大随机因子
-            int result = 0;
-            for (int i = 0; i < lst.Count; i++)
-            {
-                var item = lst[i];
-                if (item < 0)   //若概率为0则不可命中
-                    continue;
-                if (fact <= item)   //若找到命中项
-                {
-                    result = i;
-                    break;
-                }
-            }
-            return result;
+                var tmpProb = getProb(c);
+                if (tmpProb < 0)
+                    throw new ArgumentOutOfRangeException(nameof(source), "所有元素要是非负数。");
+                else if (tmpProb > 0)
+                    hasNoneZero = true;
+                tmp += tmpProb;
+                return (Prob: tmp, Data: c);
+            }).ToArray();
+            if (!hasNoneZero)
+                throw new ArgumentException("序列所有相对概率数都是0。", nameof(source));
+            var seed = (decimal)rnd * innerSeq[^1].Prob;
+
+            var result = innerSeq.First(c => c.Prob >= seed);
+            return result.Data;
         }
     }
 

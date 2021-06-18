@@ -482,6 +482,7 @@ namespace GY2021001BLL
         public bool Verify(Guid dungeonId, IEnumerable<GameItem> gameItems, out string errorString)
         {
             var gitm = World.ItemTemplateManager;
+            var gim = World.ItemManager;
             var giTemplate = gitm.GetTemplateFromeId(dungeonId);  //对应的物品表模板数据
             var collMount = from tmp in gameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi)
                             select tmp; //野兽集合
@@ -507,7 +508,7 @@ namespace GY2021001BLL
                 }
             }
             //限定坐骑数量
-            var items = gameItems.Select(c => (GetBody(c)?.TemplateId ?? c.TemplateId, 1m)); //坐骑身体的模板Id替换坐骑Id
+            var items = gameItems.Select(c => (gim.GetBody(c)?.TemplateId ?? c.TemplateId, 1m)); //坐骑身体的模板Id替换坐骑Id
             var tmplimits = limits.ToDictionary(c => c.ItemTemplateId, c => c.MaxCount);
             if (!Verify(tmplimits, items, out var errItem))
             {
@@ -593,22 +594,5 @@ namespace GY2021001BLL
             return neatk + nemhp + neqlt;
         }
 
-        /// <summary>
-        /// 获取坐骑或野兽的身体对象。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <returns>身体对象或null。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private GameItem GetBody(GameItem gameItem)
-        {
-            if (gameItem.TemplateId != ProjectConstant.ZuojiZuheRongqi) //若不是组合容器
-                return null;
-            var bodySlot = gameItem.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti);
-            if (null == bodySlot)   //若没有找到身体槽
-                return null;
-            if (bodySlot.Children.Count != 1)
-                return null;
-            return bodySlot.Children[0];
-        }
     }
 }

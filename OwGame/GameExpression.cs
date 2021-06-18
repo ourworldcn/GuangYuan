@@ -24,7 +24,6 @@ namespace OwGame.Expression
         /// <param name="propertyName"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual object GetValue(object obj, string propertyName, object defaultValue = default)
         {
             var pd = TypeDescriptor.GetProperties(obj).OfType<PropertyDescriptor>().FirstOrDefault(c => c.Name == propertyName);
@@ -660,7 +659,7 @@ namespace OwGame.Expression
             switch (Name.ToLower())
             {
                 case "rnd": //生成[0,1)之间的随机数
-                    Debug.Assert(Parameters.Count == 0, "rnd函数不需要参数");
+                    Debug.WriteIf(Parameters.Count > 0, "rnd函数不需要参数。");
                     _CacheRandom ??= Convert.ToDecimal(NextDouble());
                     result = _CacheRandom.Value;
                     succ = true;
@@ -699,7 +698,6 @@ namespace OwGame.Expression
                         else //若参数正确
                         {
                             List<ValueTuple<decimal, decimal, decimal>> lst = new List<(decimal, decimal, decimal)>();
-                            var probNum = 0m;    //概率数
                             for (int i = 0; i < Parameters.Count / 3; i++)
                             {
                                 var succ1 = OwHelper.TryGetDecimal(Parameters[i * 3]?.GetValueOrDefault(env), out var d1);
@@ -711,17 +709,10 @@ namespace OwGame.Expression
                                     succ = false;
                                     break;
                                 }
-                                probNum += d1;
-                                lst.Add((probNum, d2, d3));
+                                lst.Add((d1, d2, d3));
                                 succ = true;
                             }
-                            if (!succ)  //若参数有错误
-                            {
-                                result = default;
-                                break;
-                            }
-                            var fac = lst[lst.Count - 1].Item1 * (decimal)NextDouble();  //缩放后的因子
-                            var item = lst.First(c => c.Item1 >= fac);   //命中项
+                            var item = OwHelper.RandomSelect(lst, c => c.Item1, NextDouble());
                             _CacheRandom = item.Item2 + (item.Item3 - item.Item2) * (decimal)NextDouble();
                             succ = true;
                         }
@@ -924,15 +915,24 @@ namespace OwGame.Expression
             bool succ;
             if (env.Variables.TryGetValue(Name, out var expr))   //若此引用是一个命名的表达式
             {
-                env.Variables[Name] = new ConstGExpression(val);
-                succ = true;
+                if (expr is ConstGExpression constGExpression)
+                    succ = constGExpression.SetValue(env, val);
+                else
+                {
+                    env.Variables[Name] = new ConstGExpression(val);
+                    succ = true;
+                }
             }
-            else if (!env.Variables.TryGetValue(ObjectId, out var objExp) || !objExp.TryGetValue(env, out var obj))   //若没有找到对象
+            else if (!env.TryGetVariableValue(ObjectId, out var obj))   //若没有找到对象
                 succ = false;
             else
             {
                 var srv = env.Services.GetService(typeof(GamePropertyHelper)) as GamePropertyHelper;
                 succ = srv.SetValue(obj, Name, val);
+                if(succ)    //若成功设置
+                {
+                    OnValueChanged(EventArgs.Empty);
+                }
             }
             if (succ)
                 _IsCache = false;

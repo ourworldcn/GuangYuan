@@ -261,7 +261,7 @@ namespace GY2021001BLL
         /// <returns></returns>
         public decimal GetGradientProperty(GameChar gameChar, string propertyName)
         {
-            if (gameChar.GradientProperties.TryGetValue(propertyName, out GradientProperty gradientProperty))
+            if (gameChar.GradientProperties.TryGetValue(propertyName, out FastChangingProperty gradientProperty))
                 return gradientProperty.GetCurrentValueWithUtc();
             return decimal.Zero;
         }

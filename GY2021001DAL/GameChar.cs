@@ -78,22 +78,22 @@ namespace GY2021001DAL
         /// </summary>
         public DateTime? CombatStartUtc { get; set; }
 
-        Dictionary<string, GradientProperty> _GradientProperties;
+        Dictionary<string, FastChangingProperty> _GradientProperties;
         /// <summary>
         /// 渐变属性字典。
         /// </summary>
         [NotMapped]
-        public IReadOnlyDictionary<string, GradientProperty> GradientProperties
+        public IReadOnlyDictionary<string, FastChangingProperty> GradientProperties
         {
             get
             {
                 if (null == _GradientProperties)
                 {
-                    _GradientProperties = new Dictionary<string, GradientProperty>()
+                    _GradientProperties = new Dictionary<string, FastChangingProperty>()
                     {
                         {
                             "pp",
-                            new GradientProperty((decimal)Properties.GetValueOrDefault("pp",20m),DateTime.Parse( Properties.GetValueOrDefault("cpp",DateTime.UtcNow.ToString()) as string),
+                            new FastChangingProperty((decimal)Properties.GetValueOrDefault("pp",20m),DateTime.Parse( Properties.GetValueOrDefault("cpp",DateTime.UtcNow.ToString()) as string),
                                 TimeSpan.FromSeconds(Convert.ToDouble( Properties.GetValueOrDefault("dpp",300m))),(decimal)Properties.GetValueOrDefault("ipp",1m),(decimal)Properties.GetValueOrDefault("mpp",20m))
                             { Tag="pp"}
                         },
@@ -129,7 +129,7 @@ namespace GY2021001DAL
             if (null != _GradientProperties)   //若已经生成了渐变属性
             {
                 DateTime dtNow = DateTime.UtcNow;
-                if (_GradientProperties.TryGetValue("pp", out GradientProperty p))
+                if (_GradientProperties.TryGetValue("pp", out FastChangingProperty p))
                 {
                     Properties["pp"] = p.GetCurrentValue(ref dtNow);
                     Properties["cpp"] = p.LastComputerDateTime.ToString();
@@ -141,79 +141,4 @@ namespace GY2021001DAL
         }
     }
 
-    /// <summary>
-    /// 渐变属性封装类。
-    /// </summary>
-    [NotMapped]
-    public class GradientProperty
-    {
-        /// <summary>
-        /// 构造函数、
-        /// </summary>
-        /// <param name="oriVal">当前值。</param>
-        /// <param name="now">时间。建议一律采用Utc时间。</param>
-        /// <param name="delay">计算间隔。</param>
-        /// <param name="increment">增量。</param>
-        /// <param name="maxVal">最大值。不会超过此值。</param>
-        public GradientProperty(decimal oriVal, DateTime now, TimeSpan delay, decimal increment, decimal maxVal)
-        {
-            LastValue = oriVal;
-            LastComputerDateTime = now;
-            Delay = delay;
-            Increment = increment;
-            MaxValue = maxVal;
-        }
-
-        public decimal MaxValue { get; set; }
-
-        /// <summary>
-        /// 获取或设置最后计算的时间。建议一律采用Utc时间。
-        /// </summary>
-        public DateTime LastComputerDateTime { get; set; }
-
-        /// <summary>
-        /// 获取或设置最后计算的结果。
-        /// </summary>
-        public decimal LastValue { get; set; }
-
-        /// <summary>
-        /// 多久计算一次。
-        /// </summary>
-        public TimeSpan Delay { get; set; }
-
-        /// <summary>
-        /// 增量。
-        /// </summary>
-        public decimal Increment { get; set; }
-
-        /// <summary>
-        /// 获取当前值。自动修改LastComputerDateTime和LastValue属性。
-        /// </summary>
-        /// <param name="now">当前时间。返回时可能更改，如果没有正好到跳变时间，则会略微提前到上一次跳变的时间点。</param>
-        /// <returns>当前值。</returns>
-        public decimal GetCurrentValue(ref DateTime now)
-        {
-            var count = Math.DivRem((now - LastComputerDateTime).Ticks, Delay.Ticks, out long remainder);  //跳变次数 和 余数
-            var val = Math.Min(count * Increment + LastValue, MaxValue);
-            LastValue = val; //计算得到最后值
-            now = now - TimeSpan.FromTicks(remainder);
-            LastComputerDateTime = now;
-            return LastValue;
-        }
-
-        /// <summary>
-        /// 使用当前Utc时间获取当前值。
-        /// </summary>
-        /// <returns></returns>
-        public decimal GetCurrentValueWithUtc()
-        {
-            DateTime now = DateTime.UtcNow;
-            return GetCurrentValue(ref now);
-        }
-
-        /// <summary>
-        /// 一个记录额外信息的属性。本类成员不使用该属性。
-        /// </summary>
-        public object Tag { get; set; }
-    }
 }

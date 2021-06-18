@@ -37,8 +37,10 @@ namespace Gy001
         /// </summary>
         private static void Test(IHost host)
         {
-            var world = host.Services.GetRequiredService<VWorld>();
-            var dic = world.CombatManager.Id2DungeonLimites;
+            var ser = new decimal[] { 0, 0.5m, 0, 0.3m, 0.2m };
+            Random rnd = new Random();
+            var seed = rnd.NextDouble();
+            //var index = OwHelper.RandomSelect(ser, c=>c,seed);
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

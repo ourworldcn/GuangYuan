@@ -111,7 +111,7 @@ namespace GY2021001WebApi.Controllers
             var bodys = gitm.Id2Template.Values.Where(c => c.GenusCode == 4).ToArray();
             for (int i = rnd.Next(1, 2) - 1; i >= 0; i--)
             {
-                var item = SpecificProject.CreateMounts(HttpContext.RequestServices, heads[rnd.Next(heads.Length)], bodys[rnd.Next(bodys.Length)]);
+                var item = gim.CreateMounts( heads[rnd.Next(heads.Length)], bodys[rnd.Next(bodys.Length)]);
                 item.Count = 1;
                 item.Properties["neatk"] = VWorld.WorldRandom.Next(20);
                 item.Properties["neqlt"] = VWorld.WorldRandom.Next(20);

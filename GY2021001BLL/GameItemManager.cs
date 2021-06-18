@@ -175,18 +175,19 @@ namespace GY2021001BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameItem GetHead(GameItem mounts)
         {
-            var result = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheTou)?.Children?.FirstOrDefault();
-            return result ?? mounts.Children.FirstOrDefault(c => World.ItemTemplateManager.GetTemplateFromeId(c.TemplateId).GenusCode == 3);
+            var result = mounts.Children.FirstOrDefault(c => World.ItemTemplateManager.GetTemplateFromeId(c.TemplateId).GenusCode == 3);
+#pragma warning disable CS0618 // 类型或成员已过时
+            return result ?? mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheTou)?.Children?.FirstOrDefault();
+#pragma warning restore CS0618 // 类型或成员已过时
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetHead(GameItem mounts, GameItem head)
+        public bool SetHead(GameItem mounts, GameItem head)
         {
-            var slot = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheTou)?.Children;
-            if (null != slot)
-                slot.Add(head);
-            else
-                mounts.Children.Add(head);
+#pragma warning disable CS0618 // 类型或成员已过时
+            var slot = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheTou);
+#pragma warning restore CS0618 // 类型或成员已过时
+            return null != slot ? ForcedAdd(head, slot) : ForcedAdd(head, mounts);
         }
 
         /// <summary>
@@ -197,19 +198,20 @@ namespace GY2021001BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameItem GetBody(GameItem mounts)
         {
-            var result = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti)?.Children?.FirstOrDefault();
-            return result ?? mounts.Children.FirstOrDefault(c => World.ItemTemplateManager.GetTemplateFromeId(c.TemplateId).GenusCode == 4);
+            var result = mounts.Children.FirstOrDefault(c => World.ItemTemplateManager.GetTemplateFromeId(c.TemplateId).GenusCode == 4);
+#pragma warning disable CS0618 // 类型或成员已过时
+            return result ?? mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti)?.Children?.FirstOrDefault();
+#pragma warning restore CS0618 // 类型或成员已过时
 
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetBody(GameItem mounts, GameItem body)
+        public bool SetBody(GameItem mounts, GameItem body)
         {
-            var slot = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti)?.Children;
-            if (null != slot)
-                slot.Add(body);
-            else
-                mounts.Children.Add(body);
+#pragma warning disable CS0618 // 类型或成员已过时
+            var slot = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti);
+#pragma warning restore CS0618 // 类型或成员已过时
+            return null != slot ? ForcedAdd(body, slot) : ForcedAdd(body, mounts);
         }
         #endregion 坐骑相关
 

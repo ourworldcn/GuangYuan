@@ -2,6 +2,7 @@
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OwGame;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -214,39 +215,14 @@ namespace GY2021001BLL
         /// </summary>
         public static List<GameItemTemplate> StoreTemplates = new List<GameItemTemplate>()
         {
-    #region 已废弃
-            new GameItemTemplate(ProjectConstant.ZuojiTou)
-            {
-                DisplayName="当前坐骑头(已废弃)",
-            },
-            new GameItemTemplate(ProjectConstant.ZuojiShen)
-            {
-                DisplayName="当前坐骑身(已废弃)",
-
-            },
-	#endregion 已废弃
-
             new GameItemTemplate(ProjectConstant.ZuojiZuheRongqi)
             {
                 DisplayName="坐骑组合",
-                ChildrenTemplateIdString=$"{ProjectConstant.ZuojiZuheTou},{ProjectConstant.ZuojiZuheShenti}",
-            },
-            new GameItemTemplate(ProjectConstant.ZuojiZuheTou)
-            {
-                DisplayName="坐骑组合的头",
-            },
-            new GameItemTemplate(ProjectConstant.ZuojiZuheShenti)
-            {
-                DisplayName="坐骑组合的身体",
-            },
-            new GameItemTemplate(ProjectConstant.DangqianZuoqiSlotId)
-            {
-                DisplayName="当前坐骑槽"
             },
             new GameItemTemplate(ProjectConstant.CharTemplateId)
             {
                 DisplayName="角色的模板",
-                ChildrenTemplateIdString=$"{ProjectConstant.DangqianZuoqiSlotId},{ProjectConstant.ShenWenSlotId},{ProjectConstant.DaojuBagSlotId},{ProjectConstant.ShoulanSlotId}" +  //通过串联将长字符串文本拆分为较短的字符串，从而提高源代码的可读性。 编译时将这些部分连接到单个字符串中。 无论涉及到多少个字符串，均不产生运行时性能开销。
+                ChildrenTemplateIdString=$"{ProjectConstant.ShenWenSlotId},{ProjectConstant.DaojuBagSlotId},{ProjectConstant.ShoulanSlotId}" +  //通过串联将长字符串文本拆分为较短的字符串，从而提高源代码的可读性。 编译时将这些部分连接到单个字符串中。 无论涉及到多少个字符串，均不产生运行时性能开销。
                     $",{ProjectConstant.JinbiId},{ProjectConstant.ShouyiSlotId},{ProjectConstant.ZuojiBagSlotId}",
                 PropertiesString="mpp=20,dpp=1,ipp=1",    //最大体力，未测试临时更改 TO DO dpp=300
             },
@@ -339,7 +315,7 @@ namespace GY2021001BLL
             {
                 var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == i);
                 var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 1000 + i);
-                var mounts =world.ItemManager.CreateMounts(headTemplate, bodyTemplate);
+                var mounts = world.ItemManager.CreateMounts(headTemplate, bodyTemplate);
                 world.ItemManager.ForcedAdd(mounts, mountsBagSlot);
             }
             //增加神纹
@@ -348,38 +324,6 @@ namespace GY2021001BLL
             var shenwens = templates.Select(c => world.ItemManager.CreateGameItem(c));
             world.ItemManager.AddItems(shenwens, runseSlot, null, null);
             result = true;
-            return result;
-        }
-
-        public static GameItem CreateMounts(IServiceProvider service, Guid headId, Guid bodyId)
-        {
-            var gitm = service.GetRequiredService<GameItemTemplateManager>();
-            return CreateMounts(service, gitm.GetTemplateFromeId(headId), gitm.GetTemplateFromeId(bodyId));
-        }
-
-
-        /// <summary>
-        /// 创建一个坐骑。
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="head">头的模板，若是null，则不创建。</param>
-        /// <param name="body">身体的模板，若是null，则不创建。</param>
-        /// <returns></returns>
-        public static GameItem CreateMounts(IServiceProvider service, GameItemTemplate head, GameItemTemplate body)
-        {
-            var gim = service.GetService<GameItemManager>();
-            var gitm = service.GetService<GameItemTemplateManager>();
-            var result = gim.CreateGameItem(gitm.GetTemplateFromeId(ProjectConstant.ZuojiZuheRongqi));
-            if (null != head)
-            {
-                var hGi = gim.CreateGameItem(head);
-                result.Children.First(c => c.TemplateId == ProjectConstant.ZuojiZuheTou).Children.Add(hGi);
-            }
-            if (null != body)
-            {
-                var bGi = gim.CreateGameItem(body);
-                result.Children.First(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti).Children.Add(bGi);
-            }
             return result;
         }
 
@@ -411,7 +355,7 @@ namespace GY2021001BLL
             {
                 //扣除体力
                 var pp = (decimal)parent.Properties.GetValueOrDefault("pp", 0m);
-                if (gc.GradientProperties.TryGetValue("pp", out GradientProperty gp))
+                if (gc.GradientProperties.TryGetValue("pp", out FastChangingProperty gp))
                 {
                     if (gp.GetCurrentValueWithUtc() < pp)
                     {
@@ -438,6 +382,7 @@ namespace GY2021001BLL
             var world = service.GetRequiredService<VWorld>();
             var gitm = world.ItemTemplateManager;
             var cmbm = world.CombatManager;
+            var gim = world.ItemManager;
             var tm = gitm.GetTemplateFromeId(gameChar.CurrentDungeonId.Value);    //关卡模板
             //校验时间
             DateTime dt = gameChar.CombatStartUtc.GetValueOrDefault(DateTime.UtcNow);
@@ -466,19 +411,20 @@ namespace GY2021001BLL
             }
             //记录收益——改写收益槽数据
             //坐骑
-            var mounts = data.GameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi).Select(c =>
+            var mounts = data.GameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi).Select(c => //规范化坐骑数据
             {
-                var head = c.Children.First(c => c.TemplateId == ProjectConstant.ZuojiZuheTou).Children.First();
+                var head = gim.GetHead(c);
                 var headTemplate = gitm.GetTemplateFromeId(head.TemplateId);
-                var body = c.Children.First(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti).Children.First();
+                var body = gim.GetBody(c);
                 var bodyTemplate = gitm.GetTemplateFromeId(body.TemplateId);
-                var result = CreateMounts(service, headTemplate, bodyTemplate);
-                if (c.Properties.TryGetValue("neatk", out object valObj))
-                    result.Properties["neatk"] = Convert.ToDecimal(valObj);
-                if (c.Properties.TryGetValue("neqlt", out valObj))
-                    result.Properties["neqlt"] = Convert.ToDecimal(valObj);
-                if (c.Properties.TryGetValue("nemhp", out valObj))
-                    result.Properties["nemhp"] = Convert.ToDecimal(valObj);
+                var result = gim.CreateMounts(headTemplate,bodyTemplate);
+                
+                if (c.Properties.TryGetValue("neatk", out object valObj) && OwHelper.TryGetDecimal(valObj,out var dec))
+                    result.Properties["neatk"] = dec;
+                if (c.Properties.TryGetValue("neqlt", out valObj) && OwHelper.TryGetDecimal(valObj,out  dec))
+                    result.Properties["neqlt"] = dec;
+                if (c.Properties.TryGetValue("nemhp", out valObj) && OwHelper.TryGetDecimal(valObj, out dec))
+                    result.Properties["nemhp"] = dec;
                 return result;
             });
             shouyiSlot.Children.AddRange(mounts);   //加入坐骑
@@ -501,7 +447,6 @@ namespace GY2021001BLL
             data.NextTemplate = cmbm.GetNext(data.Template);
             if (null == data.NextTemplate || data.EndRequested) //若大关卡已经结束
             {
-                var gim = world.ItemManager;
                 var changes = new List<ChangesItem>();
                 //移动收益槽数据到各自背包。
                 //金币

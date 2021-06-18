@@ -402,6 +402,7 @@ namespace GY2021001WebApi.Models
         /// 获取坐骑的身体，如果该物品不是坐骑则这里返回null。
         /// </summary>
         [IgnoreDataMember]
+        [Obsolete]
         public GameItemDto Body
         {
             get
