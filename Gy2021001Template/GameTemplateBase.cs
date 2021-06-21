@@ -117,5 +117,29 @@ namespace Gy2021001Template
             }
         }
 
+        /// <summary>
+        /// 获取属性值。
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public virtual object GetPropertyValue(string propertyName, object defaultVal = default)
+        {
+            object result;
+            switch (propertyName)
+            {
+                case "Id":
+                    result = Id;
+                    break;
+                default:
+                    result = Properties.GetValueOrDefault(propertyName, defaultVal);
+                    break;
+            }
+            return result;
+        }
+
+        public override string ToString()
+        {
+            return $"{DisplayName}(Properties.Count = {Properties.Count}, Id = {Id})";
+        }
     }
 }

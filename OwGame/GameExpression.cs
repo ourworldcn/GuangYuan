@@ -542,39 +542,56 @@ namespace OwGame.Expression
             }
             //构造表达式树
             operandList.Reverse();
-            Stack<string> operands = new Stack<string>(operandList);
+            Stack<GameExpressionBase> operands = new Stack<GameExpressionBase>(operandList.Select(c => MakeOperand(env, c)));
             operatorList.Reverse();
             Stack<string> operators = new Stack<string>(operatorList);
+            if (operands.Count != operators.Count + 1)
+                throw new InvalidOperationException("操作数数量应比操作符数量大1。");
             return CompileExpression(env, operands, operators);
         }
 
         /// <summary>
         /// 编译表达式。
         /// </summary>
-        /// <param name="operators"></param>
-        /// <param name="operands">操作数</param>
+        /// <param name="env"></param>
+        /// <param name="operands">操作数集合。</param>
+        /// <param name="operators">操作符集合。</param>
         /// <param name="opt">操作符</param>
-        static public GameExpressionBase CompileExpression(GameExpressionCompileEnvironment env, Stack<string> operands, Stack<string> operators)
+        /// <param name="noroot">true遇到降优先级运算符则返回，false(默认值)不返回。</param>
+        static public GameExpressionBase CompileExpression(GameExpressionCompileEnvironment env, Stack<GameExpressionBase> operands, Stack<string> operators, bool noroot = false)
         {
-            var left = MakeOperand(env, operands.Pop());
+            var left = operands.Pop();
             if (operators.Count <= 0)   //若没有操作符
                 return left;
             var opt = operators.Pop();
             while (true)
             {
                 if (!operators.TryPeek(out var optNext))    //若已经没有操作符
-                    return new BinaryGExpression(left, opt, MakeOperand(env, operands.Pop()));
+                    return new BinaryGExpression(left, opt, operands.Pop());
                 else //若还有操作符
                 {
-                    if (OperatorCompareTo(opt, optNext) >= 0)   //若当前操作符优先级大于或等于下一个操作符
+                    var compResult = OperatorCompareTo(opt, optNext);
+                    if (compResult == 0)   //若当前操作符优先级等于下一个操作符
                     {
-                        left = new BinaryGExpression(left, opt, MakeOperand(env, operands.Pop()));
+                        left = new BinaryGExpression(left, opt, operands.Pop());
                         opt = operators.Pop();
                     }
-                    else
+                    else if (compResult > 0)  //若比下一个操作符优先级更高
                     {
-                        left = new BinaryGExpression(left, opt, CompileExpression(env, operands, operators));
-                        break;
+                        left = new BinaryGExpression(left, opt, operands.Pop());
+                        if (noroot)
+                        {
+                            operands.Push(left);
+                            return left;
+                        }
+                        else
+                            opt = operators.Pop();
+                    }
+                    else   //若比下一个操作符优先级更低
+                    {
+                        var right = CompileExpression(env, operands, operators, true);
+                        if (operators.Count == 0)  //若已经没有操作符
+                            return new BinaryGExpression(left, opt, right);
                     }
                 }
             }
@@ -795,6 +812,23 @@ namespace OwGame.Expression
                         }
                     }
                     break;
+                case "cguid":
+                    if (Parameters.Count != 1)
+                    {
+                        Debug.WriteLine($"{Name}函数需要1个参数。");
+                        result = default;
+                    }
+                    else if (!Parameters[0].TryGetValue(env, out var obj) || !(obj is string idStr) || !Guid.TryParse(idStr, out var id))
+                    {
+                        Debug.WriteLine($"{Name}函数无法获取正确的参数。");
+                        result = default;
+                    }
+                    else
+                    {
+                        result = id;
+                        succ = true;
+                    }
+                    break;
                 default:
                     result = default;
                     break;
@@ -929,7 +963,7 @@ namespace OwGame.Expression
             {
                 var srv = env.Services.GetService(typeof(GamePropertyHelper)) as GamePropertyHelper;
                 succ = srv.SetValue(obj, Name, val);
-                if(succ)    //若成功设置
+                if (succ)    //若成功设置
                 {
                     OnValueChanged(EventArgs.Empty);
                 }

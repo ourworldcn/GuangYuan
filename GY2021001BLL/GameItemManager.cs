@@ -194,7 +194,7 @@ namespace GY2021001BLL
         /// 获取身体对象。
         /// </summary>
         /// <param name="mounts"></param>
-        /// <returns></returns>
+        /// <returns>身体对象，不是坐骑或没有身体则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameItem GetBody(GameItem mounts)
         {
@@ -267,6 +267,10 @@ namespace GY2021001BLL
                 else
                     return cap.Value - gameItem.Children.Count;
             }
+            else if ((propName.Equals("gid", StringComparison.InvariantCultureIgnoreCase)))
+            {
+                return GetTemplate(gameItem).GId ?? 0;
+            }
             else
                 return gameItem.Properties.GetValueOrDefault(propName, 0m);
         }
@@ -289,6 +293,9 @@ namespace GY2021001BLL
             }
             else if (propName.Equals("pid", StringComparison.InvariantCultureIgnoreCase))
             {
+                if (!OwHelper.TryGetGuid(val, out var pid))
+                    return false;
+                gameItem.ParentId = pid;
                 return true;
             }
             else if (propName.Equals("ptid", StringComparison.InvariantCultureIgnoreCase))  //移动到新的父容器
@@ -586,7 +593,7 @@ namespace GY2021001BLL
         /// <param name="gameItem">>如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
         public void ChangesToAdds(ICollection<ChangesItem> changes, GameItem gameItem)
         {
-            var cid = GetContainer(gameItem)?.Id ?? Guid.Empty;
+            var cid = (GetContainer(gameItem)?.Id ?? gameItem.ParentId) ?? Guid.Empty;
             var item = changes.FirstOrDefault(c => c.ContainerId == cid);
             if (null == item)
             {
@@ -603,7 +610,7 @@ namespace GY2021001BLL
         /// <param name="gameItem">如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
         public void ChangesToChanges(ICollection<ChangesItem> changes, GameItem gameItem)
         {
-            var cid = GetContainer(gameItem)?.Id ?? Guid.Empty;
+            var cid = (GetContainer(gameItem)?.Id ?? gameItem.ParentId) ?? Guid.Empty;
             var item = changes.FirstOrDefault(c => c.ContainerId == cid);
             if (null == item)
             {

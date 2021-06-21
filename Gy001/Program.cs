@@ -10,6 +10,7 @@ using OwGame;
 using OwGame.Expression;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,10 +38,6 @@ namespace Gy001
         /// </summary>
         private static void Test(IHost host)
         {
-            var ser = new decimal[] { 0, 0.5m, 0, 0.3m, 0.2m };
-            Random rnd = new Random();
-            var seed = rnd.NextDouble();
-            //var index = OwHelper.RandomSelect(ser, c=>c,seed);
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

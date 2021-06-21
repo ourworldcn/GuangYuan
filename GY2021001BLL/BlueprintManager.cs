@@ -174,14 +174,32 @@ namespace GY2021001BLL
         public bool Apply(ApplyBlueprintDatas datas)
         {
             bool succ = false;
+            if (!IsMatched)
+            {
+                datas.DebugMessage = "未匹配的公式不能应用。";
+                datas.HasError = true;
+                return succ;
+            }
             try
             {
-                succ = Materials.OrderBy(c => c.Template.PropertiesChanges)   //TO DO
-                    .All(c => c.Apply(datas));
+                succ = Materials.Where(c => c.Template.IsNew).All(c => c.CreateNewItem());
+
+                if (succ)
+                {
+                    datas.GameChar.GameUser.DbContext.AddRange(Materials.Where(c => c.Template.IsNew).Select(c => c.GetMatched()));
+                    succ = Materials.OrderBy(c => c.Template.PropertiesChanges)   //TO DO
+                        .All(c => c.Apply(datas));
+                }
+                else
+                {
+                    datas.DebugMessage = "至少有一个新建物品无法创建";
+                    datas.HasError = true;
+                }
             }
-            catch (Exception)
+            catch (Exception err)
             {
-                //TO DO
+                Debug.WriteLine(err.Message);   //TO DO
+                datas.HasError = true;
             }
             return succ;
         }
@@ -315,38 +333,7 @@ namespace GY2021001BLL
             GameItem gameItem;
             GameItemManager gim;
             //获取该原料对象
-            if (Template.IsNew)
-            {
-                var setTidExpr = (Template.PropertiesChangesExpression as BlockGExpression).Expressions.OfType<BinaryGExpression>().FirstOrDefault(c =>
-                {
-                    if (c.Left is ReferenceGExpression refExpr && refExpr.Name == "tid" && refExpr.ObjectId == Template.Id.ToString())    //若是设置此条目的模板
-                        return true;
-                    return false;
-                });
-                if (setTidExpr == null)
-                {
-                    datas.DebugMessage = "未能找到新建物品设置模板Id的表达式。";
-                    datas.HasError = true;
-                    return false;
-                }
-                if (!setTidExpr.Right.TryGetValue(env, out var tidObj) || !OwHelper.TryGetGuid(tidObj, out var tid))
-                {
-                    datas.DebugMessage = "未能找到新建物品的模板Id。";
-                    datas.HasError = true;
-                    return false;
-                }
-                gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
-                gameItem = gim.CreateGameItem(tid);
-                var keyName = Template.Id.ToString();
-                GameExpressionBase expr;
-                if (env.Variables.TryGetValue(keyName, out expr))   //若已经存在该变量
-                    expr.SetValue(env, gameItem);
-                else
-                {
-                    env.Variables[keyName] = new ConstGExpression(gameItem);
-                }
-            }
-            else if (!env.Variables.TryGetValue(Template.Id.ToString(), out var expr) || !expr.TryGetValue(env, out var obj) || !(obj is GameItem))
+            if (!env.Variables.TryGetValue(Template.Id.ToString(), out var expr) || !expr.TryGetValue(env, out var obj) || !(obj is GameItem))
                 return false || Template.AllowEmpty;
             else
                 gameItem = obj as GameItem;
@@ -355,10 +342,6 @@ namespace GY2021001BLL
                 return false;
             var world = Parent.Parent.Service.GetRequiredService<VWorld>();
             gim = Parent.Parent.Service.GetService<GameItemManager>();
-            var ci = new ChangesItem()
-            {
-                ContainerId = gameItem.ParentId ?? gameItem.OwnerId.Value,
-            };
             decimal count = gameItem.Count.Value;
             if (world.IsHit((double)CountIncrementProb)) //若需要增量
             {
@@ -372,10 +355,12 @@ namespace GY2021001BLL
             if (!Template.PropertiesChangesExpression.TryGetValue(env, out _))
                 return false;
             if (gameItem.Count.Value > 0) //若有剩余
-                ci.Changes.Add(gameItem);
+                if (Template.IsNew)
+                    gim.ChangesToAdds(datas.ChangesItem, gameItem);
+                else
+                    gim.ChangesToChanges(datas.ChangesItem, gameItem);
             else //若没有剩余
-                ci.Removes.Add(gameItem.Id);
-            datas.ChangesItem.Add(ci);
+                gim.ChangesToRemoves(datas.ChangesItem, gameItem.Id, gameItem.ParentId ?? gameItem.OwnerId.Value);
             return true;
         }
 
@@ -397,6 +382,47 @@ namespace GY2021001BLL
             if (!env.TryGetVariableValue(Template.Id.ToString(), out var result))
                 return null;
             return result;
+        }
+
+        /// <summary>
+        /// 返回设置模板Id的表达式。
+        /// </summary>
+        /// <returns></returns>
+        public BinaryGExpression GetSetTIdExpr()
+        {
+            var setTidExpr = (Template.PropertiesChangesExpression as BlockGExpression).Expressions.OfType<BinaryGExpression>().FirstOrDefault(c =>
+            {
+                if (c.Left is ReferenceGExpression refExpr && refExpr.Name == "tid" && refExpr.ObjectId == Template.Id.ToString() && c.Operator == "=")    //若是设置此条目的模板
+                    return true;
+                return false;
+            });
+            return setTidExpr;
+        }
+
+        /// <summary>
+        /// 创建新建项。
+        /// </summary>
+        /// <returns>true成功创建，false该项不是新建物品或无法找到指定模板Id。</returns>
+        public bool CreateNewItem()
+        {
+            var env = Parent.RuntimeEnvironment;
+
+            var setTidExpr = GetSetTIdExpr();
+            if (null == setTidExpr || !setTidExpr.Right.TryGetValue(env, out var tidObj) || !OwHelper.TryGetGuid(tidObj, out var tid))
+            {
+                //datas.DebugMessage = "未能找到新建物品的模板Id。";
+                //datas.HasError = true;
+                return false;
+            }
+            var gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
+            var gameItem = gim.CreateGameItem(tid);
+            var keyName = Template.Id.ToString();
+            GameExpressionBase expr;
+            if (env.Variables.TryGetValue(keyName, out expr) && expr is ConstGExpression)   //若已经存在该变量
+                return expr.SetValue(env, gameItem);
+            else
+                env.Variables[keyName] = new ConstGExpression(gameItem);
+            return true;
         }
     }
 
@@ -557,6 +583,12 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         public void ApplyBluprint(ApplyBlueprintDatas datas)
         {
+            if (datas.Count <= 0)
+            {
+                datas.HasError = true;
+                datas.DebugMessage = "Count必须大于0";
+                return;
+            }
             var gu = datas.GameChar.GameUser;
             var tmpList = World.ObjectPoolListGameItem.Get();
             if (!World.CharManager.Lock(gu))
