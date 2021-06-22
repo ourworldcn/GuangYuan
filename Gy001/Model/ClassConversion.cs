@@ -57,7 +57,11 @@ namespace GY2021001WebApi.Models
                 ParentId = obj.ParentId?.ToBase64String(),
                 ClientString = obj.ClientGutsString,
             };
-
+            foreach (var item in obj.Name2FastChangingProperty)
+            {
+                item.Value.GetCurrentValueWithUtc();
+                FastChangingProperty.ToDictionary(item.Value, obj.Properties, item.Key);
+            }
             foreach (var item in obj.Properties)
             {
                 result.Properties[item.Key] = item.Value;

@@ -360,8 +360,24 @@ namespace GY2021001BLL
                     gameItem.Properties[propName] = nlv;    //设置等级
                 }
             }
+            else if (propName.StartsWith(ProjectConstant.FastChangingPropertyName))  //若设置一个快速变化属性
+            {
+                if (propName.Length <= ProjectConstant.FastChangingPropertyName.Length)    //若名字太短
+                    return false;
+                string tmp = propName.Substring(ProjectConstant.FastChangingPropertyName.Length);
+                if (tmp.Length < 2)    //若名字太短
+                    return false;
+                var prefix = tmp[0];
+                string innerName = tmp.Substring(1);   //获得实际属性名
+                if (!gameItem.Name2FastChangingProperty.TryGetValue(innerName, out var fcp))    //若不存在该属性
+                {
+                    fcp = new FastChangingProperty(default, DateTime.UtcNow, default, default, default);
+                    gameItem.Name2FastChangingProperty[innerName] = fcp;
+                }
+                fcp.SetPropertyValue(prefix, val);
+            }
             else
-                gameItem.Properties[propName] = val;
+                gameItem.SetPropertyValue(propName, val);
             return true;
         }
 

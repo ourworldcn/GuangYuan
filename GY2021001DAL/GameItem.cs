@@ -12,7 +12,6 @@ namespace GY2021001DAL
     /// <summary>
     /// 游戏中物品，装备，货币，积分的基类。
     /// </summary>
-    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class GameItem : GameThingBase
     {
         /// <summary>
@@ -65,20 +64,15 @@ namespace GY2021001DAL
         /// </summary>
         public Guid? OwnerId { get; set; }
 
-        protected string GetDebuggerDisplay()
-        {
-            if (Properties.TryGetValue("tname", out object obj) && obj is string result)
-                return $"TName = {result}";
-            return ToString();
-        }
-
         public override string ToString()
         {
             var result = (Template as GameItemTemplate)?.DisplayName ?? (Template as GameItemTemplate)?.Remark;
-            if (null == result)
+            if (string.IsNullOrWhiteSpace(result))
                 return base.ToString();
             return $"{{{result},{Count}}}";
         }
+
+
     }
 
     /// <summary>

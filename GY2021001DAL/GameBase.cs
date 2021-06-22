@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -112,6 +113,7 @@ namespace GY2021001DAL
                     {
                         _Properties = new Dictionary<string, object>();
                         OwHelper.AnalysePropertiesString(PropertiesString, _Properties);
+
                     }
                 return _Properties;
             }
@@ -122,6 +124,11 @@ namespace GY2021001DAL
         /// </summary>
         public void FillPropertiesString()
         {
+            if (null != _Name2FastChangingProperty)
+                foreach (var item in _Name2FastChangingProperty)
+                {
+                    FastChangingProperty.ToDictionary(item.Value, Properties, item.Key);
+                }
             PropertiesString = OwHelper.ToPropertiesString(Properties);
         }
 
@@ -139,6 +146,81 @@ namespace GY2021001DAL
                 return (T)Convert.ChangeType(obj, typeof(T));
             }
             return base.GetProperyValue(name, defaultValue);
+        }
+
+        /// <summary>
+        /// 获取指定名称的属性名。调用<see cref="TryGetPropertyValue(string, out object)"/>来实现。
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object GetValueOrDefault(string propertyName, object defaultVal = default)
+        {
+            if (!TryGetPropertyValue(propertyName, out var result))
+                result = defaultVal;
+            return result;
+        }
+
+        /// <summary>
+        /// 获取指定属性名称的属性值。
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="result"></param>
+        /// <returns>true成功返回属性，false未找到属性。</returns>
+        public virtual bool TryGetPropertyValue(string propertyName, out object result)
+        {
+            bool succ;
+            switch (propertyName)
+            {
+                default:
+                    succ = Properties.TryGetValue(propertyName, out result);
+                    break;
+            }
+            return succ;
+        }
+
+        /// <summary>
+        /// 设置一个属性。
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="val"></param>
+        /// <returns>true，如果属性名存在或确实应该有(基于某种需要)，且设置成功。false，设置成功一个不存在且不认识的属性。</returns>
+        public virtual bool SetPropertyValue(string propertyName, object val)
+        {
+            bool succ;
+            switch (propertyName)
+            {
+                default:
+                    succ = Properties.ContainsKey(propertyName);
+                    Properties[propertyName] = val;
+                    break;
+            }
+            return succ;
+        }
+
+        Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
+
+        /// <summary>
+        /// 快速变化属性。
+        /// </summary>
+        [NotMapped]
+        public Dictionary<string, FastChangingProperty> Name2FastChangingProperty
+        {
+            get
+            {
+                if (null == _Name2FastChangingProperty)
+                {
+                    lock (this)
+                        if (null == _Name2FastChangingProperty)
+                        {
+                            var coll = Properties.Keys.Where(c => c.StartsWith(FastChangingProperty.ClassPrefix) && c.Length > FastChangingProperty.ClassPrefix.Length + 1).
+                                Select(c => c.Substring(FastChangingProperty.ClassPrefix.Length + 1)).Distinct();   //获取快速变化属性的名称集合
+                            _Name2FastChangingProperty = coll.Select(c => (Name: c, FastChangingProperty.FromDictionary(Properties, c))).ToDictionary(c => c.Name, c => c.Item2);
+                        }
+                }
+                return _Name2FastChangingProperty;
+            }
         }
 
     }

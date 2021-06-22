@@ -123,6 +123,11 @@ namespace GY2021001BLL
         public static readonly Guid RunesId = new Guid("{2B86FF50-0257-4913-8BEC-F5CF3C84B6D5}");
 
         /// <summary>
+        /// 快速变化属性的属性名前缀。
+        /// </summary>
+        public const string FastChangingPropertyName = "fcp";
+
+        /// <summary>
         /// 级别属性的名字。
         /// </summary>
         public const string LevelPropertyName = "lv";   //Runes
@@ -190,6 +195,11 @@ namespace GY2021001BLL
         /// 神纹升级蓝图Id。
         /// </summary>
         public static readonly Guid ShenwenLvUpBlueprint = new Guid("{31E0945A-94E4-43D5-835F-6546D68349F1}");
+
+        /// <summary>
+        /// 孵化槽的模板Id。
+        /// </summary>
+        public static readonly Guid FuhuaSlotTId=new Guid("{b84072af-bb91-46eb-af5c-b462e3361c6c}");
 
         #endregion 蓝图常量
     }
