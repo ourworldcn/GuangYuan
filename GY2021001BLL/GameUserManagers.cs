@@ -203,6 +203,8 @@ namespace GY2021001BLL
                     catch (Exception err)
                     {
                         Trace.WriteLine($"保存数据时出现未知错误{err.Message}");
+                        var coll = OwHelper.GetAllSubItemsOfTree(item.GameChars[0].GameItems, c => c.Children);
+                        var coll2 = coll.Where(c => c.Id == Guid.Empty).ToArray();
                     }
                 }
                 try

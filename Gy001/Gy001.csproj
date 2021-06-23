@@ -17,11 +17,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="web.Debug.config" />
-    <Content Remove="web.Release.config" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="3.1.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.14">
       <PrivateAssets>all</PrivateAssets>
@@ -37,6 +32,8 @@
     <ProjectReference Include="..\Gy2021001Template\Gy2021001Template.csproj" />
     <ProjectReference Include="..\OwGame\OwGame.csproj" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties _1filenesting_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 
 </Project>

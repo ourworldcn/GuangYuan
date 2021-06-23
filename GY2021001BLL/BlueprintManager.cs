@@ -356,11 +356,11 @@ namespace GY2021001BLL
                 return false;
             if (gameItem.Count.Value > 0) //若有剩余
                 if (Template.IsNew)
-                    gim.ChangesToAdds(datas.ChangesItem, gameItem);
+                    datas.ChangesItem.AddToAdds(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
                 else
-                    gim.ChangesToChanges(datas.ChangesItem, gameItem);
+                    datas.ChangesItem.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
             else //若没有剩余
-                gim.ChangesToRemoves(datas.ChangesItem, gameItem.Id, gameItem.ParentId ?? gameItem.OwnerId.Value);
+                datas.ChangesItem.AddToRemoves(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem.Id);
             return true;
         }
 
@@ -605,31 +605,58 @@ namespace GY2021001BLL
                     return;
                 datas.GameItems.Clear();
                 datas.GameItems.AddRange(tmpList);
-
-                var data = new BlueprintData(Service, datas.Blueprint);
-                for (int i = 0; i < datas.Count; i++)
+                if (new Guid("{7F35CDA3-316D-4BE6-9CCF-C348BB7DD28B}") == datas.Blueprint.Id)
                 {
-                    data.Match(datas);
-                    if (!data.Formulas.Any(c => c.IsMatched))  //若已经没有符合条件的公式。
-                    {
-                        datas.DebugMessage = $"计划制造{datas.Count}次,实际成功{i}次后，原料不足";
-                        break;
-                    }
-                    foreach (var item in data.Formulas)
-                    {
-                        if (!item.IsMatched)
-                            continue;
-                        foreach (var meter in item.Materials)
-                        {
-                            meter.Template.VariableDeclaration.OfType<ReferenceGExpression>().All(c => c.Cache(item.RuntimeEnvironment));
-                        }
-                    }
-                    data.Apply(datas);
-                    datas.SuccCount++;
+                    GetFhResult(datas);
                 }
+                else if (new Guid("{972C78BF-773C-4DE7-95DB-5FD685A9A263}") == datas.Blueprint.Id)  //若是加速孵化
+                {
+                    JiasuFuhua(datas);
+                }
+                else
+                {
 
+                    var data = new BlueprintData(Service, datas.Blueprint);
+                    for (int i = 0; i < datas.Count; i++)
+                    {
+                        data.Match(datas);
+                        if (!data.Formulas.Any(c => c.IsMatched))  //若已经没有符合条件的公式。
+                        {
+                            datas.DebugMessage = $"计划制造{datas.Count}次,实际成功{i}次后，原料不足";
+                            break;
+                        }
+                        foreach (var item in data.Formulas)
+                        {
+                            if (!item.IsMatched)
+                                continue;
+                            foreach (var meter in item.Materials)
+                            {
+                                meter.Template.VariableDeclaration.OfType<ReferenceGExpression>().All(c => c.Cache(item.RuntimeEnvironment));
+                            }
+                        }
+                        data.Apply(datas);
+                        datas.SuccCount++;
+                    }
+                }
                 ChangesItem.Reduce(datas.ChangesItem);    //压缩变化数据
-
+                switch (datas.Blueprint.Id.ToString())
+                {
+                    case "8b4ac76c-d8cc-4300-95ca-668350149821": //针对孵化蓝图
+                        var tmp = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);
+                        var slotFh = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == tmp.Id);    //孵化容器
+                        if (slotFh == null)
+                            break;
+                        var gameItem = slotFh.Adds.FirstOrDefault();    //孵化的组合
+                        if (gameItem == null)
+                            break;
+                        var containerMounts = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == gameItem.Id);    //组合容器
+                        Debug.Assert(containerMounts.Adds.Count == 2);
+                        gameItem.Children.AddRange(containerMounts.Adds);
+                        datas.ChangesItem.Remove(containerMounts);
+                        break;
+                    default:
+                        break;
+                }
                 World.CharManager.NotifyChange(gu);
             }
             finally
@@ -695,15 +722,48 @@ namespace GY2021001BLL
                     datas.DebugMessage = "找不到兽栏。";
                     return;
                 }
-                gim.AddItem(gameItem, slotSl, null, datas.ChangesItem);
+                gim.MoveItem(gameItem, 1m, slotSl, datas.ChangesItem);
             }
             else //若尚无同种坐骑
             {
                 gameItem.Properties["neatk"] = 10m;
                 gameItem.Properties["nemhp"] = 10m;
                 gameItem.Properties["neqlt"] = 10m;
-                gim.AddItem(gameItem, slotZq, null, datas.ChangesItem);
+                gim.MoveItem(gameItem, 1, slotZq, datas.ChangesItem);
             }
+        }
+
+        /// <summary>
+        /// 加速孵化。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void JiasuFuhua(ApplyBlueprintDatas datas)
+        {
+            var fhSlot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);    //孵化槽
+            var gameItem = fhSlot.Children.FirstOrDefault(c => c.Id == datas.GameItems[0].Id);  //要加速孵化的物品
+            if (gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out var fcp))
+            {
+                datas.HasError = true;
+                datas.DebugMessage = "孵化物品没有冷却属性";
+                return;
+            }
+            //计算所需钻石
+            var zuanshi = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);    //钻石
+            var tm = fcp.GetCurrentValueWithUtc() / 60;
+            decimal cost;
+            if (tm <= 5)   //若不收费
+                cost = 0;
+            else
+                cost = Math.Ceiling(tm - 5);
+            if (zuanshi.Count < cost)
+            {
+                datas.HasError = true;
+                datas.DebugMessage = $"需要{cost}钻石,但目前仅有{zuanshi.Count}个钻石。";
+                return;
+            }
+            zuanshi.Count -= cost;
+            var gim = World.ItemManager;
+            datas.ChangesItem.AddToChanges(zuanshi.ParentId ?? zuanshi.OwnerId.Value, zuanshi);
         }
     }
 

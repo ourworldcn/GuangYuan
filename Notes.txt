@@ -6,3 +6,4 @@ fcpdfhcd=1	计算间隔，单位：秒
 fcpcfhcd=xx	当前值
 fcptfhcd=2021-6-1 1:0:0	最后计算的时间点,这个字符串会变格式，用DateTime.Parse分析能得到。注意是utc时间。
 fcpmfhcd=25400	孵化cd最大值
+

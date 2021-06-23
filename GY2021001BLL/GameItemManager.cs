@@ -503,9 +503,9 @@ namespace GY2021001BLL
                 if (null != changesItems)
                 {
                     //增加变化 
-                    ChangesToChanges(changesItems, item);
+                    changesItems.AddToChanges(item.ParentId ?? item.OwnerId.Value, item);
                     //增加新增
-                    ChangesToAdds(changesItems, moveItem);
+                    changesItems.AddToAdds(moveItem.ParentId ?? moveItem.OwnerId.Value, moveItem);
                 }
             }
             return result;
@@ -599,61 +599,6 @@ namespace GY2021001BLL
         #endregion 动态属性相关
 
         #region 物品增减相关
-
-        #region 变化信息相关
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="changes"></param>
-        /// <param name="gameItem">>如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
-        public void ChangesToAdds(ICollection<ChangesItem> changes, GameItem gameItem)
-        {
-            var cid = (GetContainer(gameItem)?.Id ?? gameItem.ParentId) ?? Guid.Empty;
-            var item = changes.FirstOrDefault(c => c.ContainerId == cid);
-            if (null == item)
-            {
-                item = new ChangesItem() { ContainerId = cid };
-                changes.Add(item);
-            }
-            item.Adds.Add(gameItem);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="changes"></param>
-        /// <param name="gameItem">如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
-        public void ChangesToChanges(ICollection<ChangesItem> changes, GameItem gameItem)
-        {
-            var cid = (GetContainer(gameItem)?.Id ?? gameItem.ParentId) ?? Guid.Empty;
-            var item = changes.FirstOrDefault(c => c.ContainerId == cid);
-            if (null == item)
-            {
-                item = new ChangesItem() { ContainerId = cid };
-                changes.Add(item);
-            }
-            item.Changes.Add(gameItem);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="changes"></param>
-        /// <param name="itemId"></param>
-        /// <param name="containerId"></param>
-        public void ChangesToRemoves(ICollection<ChangesItem> changes, Guid itemId, Guid containerId)
-        {
-            var item = changes.FirstOrDefault(c => c.ContainerId == containerId);
-            if (null == item)
-            {
-                item = new ChangesItem() { ContainerId = containerId };
-                changes.Add(item);
-            }
-            item.Removes.Add(itemId);
-        }
-
-        #endregion 变化信息相关
 
         /// <summary>
         /// 将符合条件的物品对象及其子代从容器中移除并返回。
@@ -961,6 +906,7 @@ namespace GY2021001BLL
             List<Guid> adds = new List<Guid>();
             foreach (var item in coll)
             {
+                item.tmp.GenerateIdIfEmpty();
                 item.tmp.Template = item.tt;
                 adds.Clear();
                 item.tmp.Children.ApartWithWithRepeated(item.tt.ChildrenTemplateIds, c => c.TemplateId, c => c, null, null, adds);

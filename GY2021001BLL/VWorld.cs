@@ -149,6 +149,7 @@ namespace GY2021001BLL
         /// <returns></returns>
         public GY2021001DbContext CreateNewUserDbContext()
         {
+            //DbContextOptionsBuilder.EnableSensitiveDataLogging
             return new GY2021001DbContext(Options.UserDbOptions);
         }
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace GY2021001DAL
@@ -194,4 +195,121 @@ namespace GY2021001DAL
         public bool IsEmpty => (_Adds?.Count ?? 0) + (_Removes?.Count ?? 0) + (_Changes?.Count ?? 0) == 0;
     }
 
+    /// <summary>
+    /// <see cref="ChangesItem"/>相关的扩展方法。
+    /// </summary>
+    public static class ChangesItemExtensions
+    {
+        //#region 变化信息相关
+
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        ///// <param name="changes"></param>
+        ///// <param name="gameItem">>如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
+        //public void ChangesToAdds(ICollection<ChangesItem> changes, GameItem gameItem)
+        //{
+        //    var cid = (GetContainer(gameItem)?.Id ?? gameItem.ParentId) ?? Guid.Empty;
+        //    var item = changes.FirstOrDefault(c => c.ContainerId == cid);
+        //    if (null == item)
+        //    {
+        //        item = new ChangesItem() { ContainerId = cid };
+        //        changes.Add(item);
+        //    }
+        //    item.Adds.Add(gameItem);
+        //}
+
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        ///// <param name="changes"></param>
+        ///// <param name="gameItem">如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
+        //public void ChangesToChanges(ICollection<ChangesItem> changes, GameItem gameItem)
+        //{
+        //    var cid = (GetContainer(gameItem)?.Id ?? gameItem.ParentId) ?? Guid.Empty;
+        //    var item = changes.FirstOrDefault(c => c.ContainerId == cid);
+        //    if (null == item)
+        //    {
+        //        item = new ChangesItem() { ContainerId = cid };
+        //        changes.Add(item);
+        //    }
+        //    item.Changes.Add(gameItem);
+        //}
+
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        ///// <param name="changes"></param>
+        ///// <param name="itemId"></param>
+        ///// <param name="containerId"></param>
+        //public void ChangesToRemoves(ICollection<ChangesItem> changes, Guid itemId, Guid containerId)
+        //{
+        //    var item = changes.FirstOrDefault(c => c.ContainerId == containerId);
+        //    if (null == item)
+        //    {
+        //        item = new ChangesItem() { ContainerId = containerId };
+        //        changes.Add(item);
+        //    }
+        //    item.Removes.Add(itemId);
+        //}
+
+        //#endregion 变化信息相关
+
+        /// <summary>
+        /// 追加物品到追加数据中。
+        /// </summary>
+        /// <param name="coll"></param>
+        /// <param name="containerId"></param>
+        /// <param name="items">即使没有指定参数，也会增加容器。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void AddToAdds(this ICollection<ChangesItem> coll, Guid containerId, params GameItem[] items)
+        {
+            var item = coll.FirstOrDefault(c => c.ContainerId == containerId);
+            if (null == item)
+            {
+                item = new ChangesItem() { ContainerId = containerId };
+                coll.Add(item);
+            }
+            for (int i = 0; i < items.Length; i++)
+                item.Adds.Add(items[i]);
+        }
+
+        /// <summary>
+        /// 追加物品到移除数据中。
+        /// </summary>
+        /// <param name="coll"></param>
+        /// <param name="containerId"></param>
+        /// <param name="items"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void AddToRemoves(this ICollection<ChangesItem> coll, Guid containerId, params Guid[] items)
+        {
+            var item = coll.FirstOrDefault(c => c.ContainerId == containerId);
+            if (null == item)
+            {
+                item = new ChangesItem() { ContainerId = containerId };
+                coll.Add(item);
+            }
+            for (int i = 0; i < items.Length; i++)
+                item.Removes.Add(items[i]);
+        }
+
+        /// <summary>
+        /// 追加物品到变化数据中。
+        /// </summary>
+        /// <param name="coll"></param>
+        /// <param name="containerId"></param>
+        /// <param name="items"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void AddToChanges(this ICollection<ChangesItem> coll, Guid containerId, params GameItem[] items)
+        {
+            var item = coll.FirstOrDefault(c => c.ContainerId == containerId);
+            if (null == item)
+            {
+                item = new ChangesItem() { ContainerId = containerId };
+                coll.Add(item);
+            }
+            for (int i = 0; i < items.Length; i++)
+                item.Changes.Add(items[i]);
+        }
+    }
 }

@@ -50,6 +50,7 @@ namespace OwGame
         /// 如果Id是Guid.Empty则生成新Id,否则立即返回false。
         /// </summary>
         /// <returns>true生成了新Id，false已经有了非空Id。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool GenerateIdIfEmpty()
         {
             if (Guid.Empty != Id)
@@ -111,7 +112,7 @@ namespace OwGame
                 result = default;
                 return false;
             }
-            bool succ = true;
+            bool succ;
             switch (Type.GetTypeCode(obj.GetType()))
             {
                 case TypeCode.SByte:
@@ -125,9 +126,11 @@ namespace OwGame
                 case TypeCode.Single:
                 case TypeCode.Double:
                     result = Convert.ToDecimal(obj);
+                    succ = true;
                     break;
                 case TypeCode.Decimal:
                     result = (decimal)obj;
+                    succ = true;
                     break;
                 case TypeCode.String:
                     succ = decimal.TryParse(obj as string, out result);
@@ -166,7 +169,16 @@ namespace OwGame
             }
             else if (obj is byte[] ary && ary.Length == 16)
             {
-                result = new Guid(ary);
+                try
+                {
+                    result = new Guid(ary);
+
+                }
+                catch (Exception)
+                {
+                    result = default;
+                    return false;
+                }
                 return true;
             }
             else

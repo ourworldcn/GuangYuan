@@ -38,6 +38,7 @@ namespace GY2021001WebApi.Models
                 result.Properties[item.Key] = item.Value is JsonElement je ? (je.ValueKind switch { JsonValueKind.Number => je.GetDecimal(), _ => throw new InvalidOperationException(), }) : item.Value;
             }
             result.Children.AddRange(obj.Children.Select(c => (GameItem)c));
+            result.GenerateIdIfEmpty();
             return result;
         }
 

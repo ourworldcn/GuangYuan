@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -41,16 +42,9 @@ namespace Gy001Tools
 
         private void test()
         {
-            var str = "v3rate=mds(0.2,0,0.25,0.6,0.25,0.75,0.2,0.75,1),d=4+9,nemhp=lerp(nemhp,v2mhp,v3rate),nemhp=round(nemhp),neatk=lerp(neatk,v2atk,v3rate),neatk=round(neatk),neqlt=lerp(neqlt,v2qlt,v3rate),neqlt=round(neqlt)";
-            string patt = @"(?<item>[^\,，]+|{func})[,，]?";
-            string subPatt = @".*?\=.*?\(.*?\)";
-            patt = patt.Replace("{func}", subPatt);
-            var ma = Regex.Matches(str, patt);
-            foreach (var item in ma.OfType<Match>())
-            {
-                var tmp = item.Groups["item"];
-                var val = tmp.Value;
-            }
+            object i = "10.0m";
+            var ct = TypeDescriptor.GetConverter(typeof(decimal));
+            var id = ct.IsValid(i);
         }
 
         string left = "k1";
