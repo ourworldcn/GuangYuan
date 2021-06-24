@@ -139,7 +139,8 @@ namespace Gy2021001Template
 
         public override string ToString()
         {
-            return $"{DisplayName}(Properties.Count = {Properties.Count}, Id = {Id})";
+            var tmp = Id.ToString();
+            return $"{DisplayName}(Properties.Count = {Properties.Count}, Id = {{{tmp[0..4]}...{tmp[^4..^0]}}})";
         }
     }
 }

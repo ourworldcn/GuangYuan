@@ -42,7 +42,20 @@ namespace Gy001
 
             #region 配置通用服务
 
+
             services.AddResponseCompression();
+            //日志服务
+            services.AddLogging(builder =>
+            {
+                builder.AddEventSourceLogger();
+                builder.AddConfiguration(Configuration.GetSection("Logging")); 
+
+                builder.AddConsole(option => option.IncludeScopes = true);
+#if DEBUG
+                builder.AddDebug();
+#endif //DEBUG
+            });
+
             services.AddDbContext<GY2021001DbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).EnableSensitiveDataLogging(), ServiceLifetime.Scoped);
             services.AddDbContext<GameTemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).EnableSensitiveDataLogging(), ServiceLifetime.Singleton);
 
@@ -123,7 +136,7 @@ namespace Gy001
                 app.UseDeveloperExceptionPage();
             }
             #endregion 启用通用服务
-
+            
             #region 启用中间件服务生成Swagger
             app.UseSwagger();
             //启用中间件服务生成SwaggerUI，指定Swagger JSON终结点

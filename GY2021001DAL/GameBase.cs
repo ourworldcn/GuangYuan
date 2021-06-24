@@ -3,6 +3,7 @@ using OwGame;
 using OwGame.Expression;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
@@ -50,6 +51,15 @@ namespace GY2021001DAL
         {
             return Template?.Remark ?? base.ToString();
         }
+
+        #region 事件及相关
+
+        public void InvokeLoaded(GameTemplateBase template)
+        {
+            Template = template;
+        }
+
+        #endregion 事件及相关
     }
 
     /// <summary>
@@ -117,19 +127,6 @@ namespace GY2021001DAL
                     }
                 return _Properties;
             }
-        }
-
-        /// <summary>
-        /// 把<see cref="Properties"/>属性中的内容填写到<see cref="PropertiesString"/>属性中。
-        /// </summary>
-        public void FillPropertiesString()
-        {
-            if (null != _Name2FastChangingProperty)
-                foreach (var item in _Name2FastChangingProperty)
-                {
-                    FastChangingProperty.ToDictionary(item.Value, Properties, item.Key);
-                }
-            PropertiesString = OwHelper.ToPropertiesString(Properties);
         }
 
         /// <summary>
@@ -223,6 +220,28 @@ namespace GY2021001DAL
             }
         }
 
+        #region 事件及相关
+        protected virtual void OnSaving(EventArgs e)
+        {
+            foreach (var item in Name2FastChangingProperty)
+            {
+                FastChangingProperty.ToDictionary(item.Value, Properties, item.Key);
+            }
+            PropertiesString = OwHelper.ToPropertiesString(Properties);
+
+        }
+
+        /// <summary>
+        /// 通知该实例，即将保存到数据库。
+        /// </summary>
+        /// <param name="e"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void InvokeSaving(EventArgs e)
+        {
+            OnSaving(e);
+        }
+
+        #endregion 事件及相关
     }
 
     /// <summary>

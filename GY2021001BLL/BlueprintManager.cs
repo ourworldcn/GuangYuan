@@ -2,6 +2,7 @@
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OwGame;
 using OwGame.Expression;
 using System;
@@ -673,38 +674,24 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         public void GetFhResult(ApplyBlueprintDatas datas)
         {
-            if (datas.GameItems.Count <= 0)
-            {
-                datas.HasError = true;
-                datas.DebugMessage = "参数过少";
-                return;
-            }
+            if (!datas.Verify(datas.GameItems.Count > 0, "参数过少。")) return;
             var slotFh = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId); //孵化槽
             if (null == slotFh)
             {
                 datas.HasError = true;
-                datas.DebugMessage = "找不到孵化槽";
+                datas.DebugMessage = "找不到孵化槽。";
                 return;
             }
             var gameItem = datas.GameItems.Join(slotFh.Children, c => c.Id, c => c.Id, (l, r) => r).FirstOrDefault();    //要取出的物品
             if (null == gameItem)
             {
                 datas.HasError = true;
-                datas.DebugMessage = "找不到要取出的物品";
+                datas.DebugMessage = "找不到要取出的物品。";
                 return;
             }
-            if (gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out var fcp))
-            {
-                datas.HasError = true;
-                datas.DebugMessage = "孵化物品没有冷却属性";
+            if (!datas.Verify(gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out var fcp), $"孵化物品没有冷却属性。Id = {gameItem.Id}")) return;
+            if (!datas.Verify(fcp.IsComplate, $"物品没有孵化完成。Id = {gameItem.Id}。")) //若未完成孵化
                 return;
-            }
-            if (!fcp.IsComplate) //若未完成孵化
-            {
-                datas.HasError = true;
-                datas.DebugMessage = "物品没有孵化完成。";
-                return;
-            }
             var slotZq = datas.GameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);   //坐骑背包
             var gim = World.ItemManager;
             var headTid = gim.GetHead(gameItem).TemplateId;
@@ -716,13 +703,8 @@ namespace GY2021001BLL
             if (null != zq)    //若已经有同种坐骑
             {
                 var slotSl = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
-                if (null == slotSl)
-                {
-                    datas.HasError = true;
-                    datas.DebugMessage = "找不到兽栏。";
-                    return;
-                }
-                gim.MoveItem(gameItem, 1m, slotSl, datas.ChangesItem);
+                if (!datas.Verify(null != slotSl, "找不到兽栏。")) return;
+                gim.MoveItem(gameItem, 1, slotSl, datas.ChangesItem);
             }
             else //若尚无同种坐骑
             {
@@ -741,7 +723,7 @@ namespace GY2021001BLL
         {
             var fhSlot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);    //孵化槽
             var gameItem = fhSlot.Children.FirstOrDefault(c => c.Id == datas.GameItems[0].Id);  //要加速孵化的物品
-            if (gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out var fcp))
+            if (!gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out var fcp))
             {
                 datas.HasError = true;
                 datas.DebugMessage = "孵化物品没有冷却属性";
@@ -749,7 +731,7 @@ namespace GY2021001BLL
             }
             //计算所需钻石
             var zuanshi = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);    //钻石
-            var tm = fcp.GetCurrentValueWithUtc() / 60;
+            var tm = (fcp.MaxValue - fcp.GetCurrentValueWithUtc()) / 60;
             decimal cost;
             if (tm <= 5)   //若不收费
                 cost = 0;
@@ -761,10 +743,41 @@ namespace GY2021001BLL
                 datas.DebugMessage = $"需要{cost}钻石,但目前仅有{zuanshi.Count}个钻石。";
                 return;
             }
+            //减少钻石
             zuanshi.Count -= cost;
             var gim = World.ItemManager;
             datas.ChangesItem.AddToChanges(zuanshi.ParentId ?? zuanshi.OwnerId.Value, zuanshi);
+            //修改冷却时间
+            fcp.LastValue = fcp.MaxValue;
+            fcp.LastComputerDateTime = DateTime.UtcNow;
+            datas.ChangesItem.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool Verify(ApplyBlueprintDatas datas, IEnumerable<GameItem> gameItems, Guid containerTId, Guid itemTId)
+        {
+            var gitm = World.ItemTemplateManager;
+            var cTemplate = gitm.GetTemplateFromeId(containerTId);
+            if (datas.Verify(cTemplate != null, $"无法找到指定容器模板，Id = {containerTId}"))
+                return false;
+            var container = gameItems.FirstOrDefault(c => c.TemplateId == containerTId);
+            datas.Verify(container != null, $"无法找到指定模板Id的容器，模板Id = {containerTId}");
+            return true;
+        }
+
     }
 
+    public static class ApplyBlueprintDatasExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool Verify(this ApplyBlueprintDatas obj, bool succ, string errorMessage)
+        {
+            if (!succ)
+            {
+                obj.DebugMessage = errorMessage;
+                obj.HasError = true;
+            }
+            return succ;
+        }
+    }
 }

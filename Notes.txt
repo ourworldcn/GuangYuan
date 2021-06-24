@@ -1,6 +1,8 @@
 Add-Migration 21042501 -Context GameTemplateContext
 Add-Migration 21042501 -Context GY2021001DbContext
 
+select * from master.dbo.sysprocesses where dbid = DB_ID('GY2021001Dev') --取活动链接数量
+
 fcpifhcd=1	增量
 fcpdfhcd=1	计算间隔，单位：秒
 fcpcfhcd=xx	当前值

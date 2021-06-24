@@ -118,7 +118,6 @@ namespace GY2021001DAL
         /// </summary>
         public void InvokeLoaded()
         {
-
         }
 
         /// <summary>
@@ -137,7 +136,7 @@ namespace GY2021001DAL
             }
             PropertiesString = OwHelper.ToPropertiesString(Properties);
             foreach (var item in OwHelper.GetAllSubItemsOfTree(GameItems, c => c.Children).ToArray())
-                item.FillPropertiesString();
+                item.InvokeSaving(EventArgs.Empty);
         }
     }
 

@@ -65,6 +65,10 @@ namespace GY2021001DAL
         /// </summary>
         public Guid? OwnerId { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             var result = (Template as GameItemTemplate)?.DisplayName ?? (Template as GameItemTemplate)?.Remark;

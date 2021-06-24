@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -94,11 +95,11 @@ namespace GY2021001BLL
                     var db = TemplateContext;
                     //追加数据
                     #region 追加模板数据
-                    db.ItemTemplates.Load();
+                    //db.ItemTemplates.Load();
                     //bool dbDirty = Options?.Loaded?.Invoke(db) ?? false;
                     //if (dbDirty)
                     //    db.SaveChanges();
-                    _Id2Template = new ConcurrentDictionary<Guid, GameItemTemplate>(db.ItemTemplates.ToDictionary(c => c.Id));
+                    _Id2Template = new ConcurrentDictionary<Guid, GameItemTemplate>(db.ItemTemplates.AsNoTracking().ToDictionary(c => c.Id));
                     #endregion 追加模板数据
 
                 }
@@ -114,12 +115,11 @@ namespace GY2021001BLL
         /// </summary>
         /// <param name="id"></param>
         /// <returns>没有找到则返回null</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public GameItemTemplate GetTemplateFromeId(Guid id)
         {
             _InitializeTask.Wait();
-            if (!_Id2Template.TryGetValue(id, out GameItemTemplate result))
-                return null;
-            return result;
+            return _Id2Template.GetValueOrDefault(id, null);
         }
 
         /// <summary>

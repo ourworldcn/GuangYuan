@@ -793,6 +793,13 @@ namespace GY2021001BLL
                 gim.MoveItems(slot, c => true, daojuBag);
                 slot = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockQltSlotId); //锁定槽
                 gim.MoveItems(slot, c => true, daojuBag);
+
+                //通知所属物品加载完毕
+                var coll = OwHelper.GetAllSubItemsOfTree(e.GameChar.GameItems, c => c.Children).ToArray();
+                var gitm = World.ItemTemplateManager;
+                foreach (var item in coll)
+                    item.InvokeLoaded(gitm.GetTemplateFromeId(item.TemplateId));
+
             }
             catch (Exception)
             {
