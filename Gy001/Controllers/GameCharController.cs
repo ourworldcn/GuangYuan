@@ -94,21 +94,21 @@ namespace GY2021001WebApi.Controllers
                 var gc = gu.GameChars[0];
                 if (model.IsRemove)
                 {
-                    if (!gc.ClientExtendProperties.Remove(model.Name, out GameExtendProperty val))
+                    if (!gc.ClientExtendProperties.Remove(model.Name, out GameClientExtendProperty val))
                         return false;
-                    gu.DbContext.Set<GameExtendProperty>().Remove(val);
+                    gu.DbContext.Set<GameClientExtendProperty>().Remove(val);
                 }
-                else if (gc.ClientExtendProperties.TryGetValue(model.Name, out GameExtendProperty gep))
+                else if (gc.ClientExtendProperties.TryGetValue(model.Name, out GameClientExtendProperty gep))
                     gep.Value = model.Value;
                 else
                 {
-                    gep = new GameExtendProperty()
+                    gep = new GameClientExtendProperty()
                     {
                         Name = model.Name,
                         Value = model.Value,
                         ParentId = gc.Id,
                     };
-                    gu.DbContext.Set<GameExtendProperty>().Add(gep);
+                    gu.DbContext.Set<GameClientExtendProperty>().Add(gep);
                     gc.ClientExtendProperties[gep.Name] = gep;
                 }
                 world.CharManager.Nope(gu);

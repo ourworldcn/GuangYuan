@@ -8,7 +8,6 @@ using System.Text;
 
 namespace GY2021001DAL
 {
-    [Table(nameof(GameChar))]
     public class GameChar : GameThingBase
     {
 
@@ -104,14 +103,14 @@ namespace GY2021001DAL
         }
 
 
-        private Dictionary<string, GameExtendProperty> _ClientExtendProperties = new Dictionary<string, GameExtendProperty>();
+        private Dictionary<string, GameClientExtendProperty> _ClientExtendProperties = new Dictionary<string, GameClientExtendProperty>();
 
         /// <summary>
         /// 客户端使用的扩展属性集合，服务器不使用该属性，仅帮助保存和传回。
         /// 键最长64字符，值最长8000字符。（一个中文算一个字符）
         /// </summary>
         [NotMapped]
-        public IDictionary<string, GameExtendProperty> ClientExtendProperties { get => _ClientExtendProperties; }
+        public IDictionary<string, GameClientExtendProperty> ClientExtendProperties { get => _ClientExtendProperties; }
 
         /// <summary>
         /// 在基础数据加载到内存后调用。
@@ -137,6 +136,7 @@ namespace GY2021001DAL
             PropertiesString = OwHelper.ToPropertiesString(Properties);
             foreach (var item in OwHelper.GetAllSubItemsOfTree(GameItems, c => c.Children).ToArray())
                 item.InvokeSaving(EventArgs.Empty);
+
         }
     }
 

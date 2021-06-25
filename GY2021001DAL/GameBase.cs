@@ -159,6 +159,14 @@ namespace GY2021001DAL
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public decimal GetDecimalOrDefault(string propertyName, decimal defaultVal = default)
+        {
+            if (!TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec))
+                return defaultVal;
+            return dec;
+        }
+
         /// <summary>
         /// 获取指定属性名称的属性值。
         /// </summary>
@@ -220,6 +228,11 @@ namespace GY2021001DAL
             }
         }
 
+        /// <summary>
+        /// 服务器用通用扩展属性集合。
+        /// </summary>
+        public virtual List<GameExtendProperty> GameExtendProperties { get; set; }
+
         #region 事件及相关
         protected virtual void OnSaving(EventArgs e)
         {
@@ -256,11 +269,11 @@ namespace GY2021001DAL
     }
 
     /// <summary>
-    /// 通用扩展属性类。
+    /// 客户端使用通用扩展属性类。
     /// </summary>
-    public class GameExtendProperty : GuidKeyBase
+    public class GameClientExtendProperty : GuidKeyBase
     {
-        public GameExtendProperty()
+        public GameClientExtendProperty()
         {
 
         }
@@ -280,6 +293,29 @@ namespace GY2021001DAL
         /// 获取或设置值。
         /// </summary>
         public string Value { get; set; }
+    }
+
+    /// <summary>
+    /// 服务器内部使用的通用扩展属性。
+    /// </summary>
+    public class GameExtendProperty
+    {
+        [ForeignKey(nameof(GameThing))]
+        public Guid ParentId { get; set; }
+
+        public virtual GameThingBase GameThing { get; set; }
+
+        [MaxLength(64)]
+        public string Name { get; set; }
+
+        [MaxLength(256)]
+        public string StringValue { get; set; }
+
+        public int IntValue { get; set; }
+
+        public decimal DecimalValue { get; set; }
+
+        public double DoubleValue { get; set; }
     }
 
     public class GameThingPropertyHelper : GamePropertyHelper

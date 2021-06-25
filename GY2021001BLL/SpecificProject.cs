@@ -234,7 +234,7 @@ namespace GY2021001BLL
                 DisplayName="角色的模板",
                 ChildrenTemplateIdString=$"{ProjectConstant.ShenWenSlotId},{ProjectConstant.DaojuBagSlotId},{ProjectConstant.ShoulanSlotId}" +  //通过串联将长字符串文本拆分为较短的字符串，从而提高源代码的可读性。 编译时将这些部分连接到单个字符串中。 无论涉及到多少个字符串，均不产生运行时性能开销。
                     $",{ProjectConstant.JinbiId},{ProjectConstant.ShouyiSlotId},{ProjectConstant.ZuojiBagSlotId}",
-                PropertiesString="mpp=20,dpp=1,ipp=1",    //最大体力，未测试临时更改 TO DO dpp=300
+                PropertiesString="mpp=20,dpp=2,ipp=1",    //最大体力，未测试临时更改 TO DO dpp=300
             },
             new GameItemTemplate(ProjectConstant.ShenWenSlotId)
             {

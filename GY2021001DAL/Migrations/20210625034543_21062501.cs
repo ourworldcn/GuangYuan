@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GY2021001DAL.Migrations
 {
-    public partial class _21051801 : Migration
+    public partial class _21062501 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ExtendProperties",
+                name: "ClientExtendProperties",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -18,31 +18,7 @@ namespace GY2021001DAL.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ExtendProperties", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "GameItems",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    TemplateId = table.Column<Guid>(nullable: false),
-                    ClientGutsString = table.Column<string>(nullable: true),
-                    CreateUtc = table.Column<DateTime>(nullable: false),
-                    PropertiesString = table.Column<string>(nullable: true),
-                    Count = table.Column<decimal>(nullable: true),
-                    ParentId = table.Column<Guid>(nullable: true),
-                    OwnerId = table.Column<Guid>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_GameItems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_GameItems_GameItems_ParentId",
-                        column: x => x.ParentId,
-                        principalTable: "GameItems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                    table.PrimaryKey("PK_ClientExtendProperties", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -74,7 +50,7 @@ namespace GY2021001DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GameChar",
+                name: "GameThingBase",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -82,40 +58,97 @@ namespace GY2021001DAL.Migrations
                     ClientGutsString = table.Column<string>(nullable: true),
                     CreateUtc = table.Column<DateTime>(nullable: false),
                     PropertiesString = table.Column<string>(nullable: true),
-                    GameUserId = table.Column<Guid>(nullable: false),
+                    Discriminator = table.Column<string>(nullable: false),
+                    GameUserId = table.Column<Guid>(nullable: true),
                     DisplayName = table.Column<string>(nullable: true),
                     CurrentDungeonId = table.Column<Guid>(nullable: true),
-                    CombatStartUtc = table.Column<DateTime>(nullable: true)
+                    CombatStartUtc = table.Column<DateTime>(nullable: true),
+                    Count = table.Column<decimal>(nullable: true),
+                    ParentId = table.Column<Guid>(nullable: true),
+                    OwnerId = table.Column<Guid>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GameChar", x => x.Id);
+                    table.PrimaryKey("PK_GameThingBase", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_GameChar_GameUsers_GameUserId",
+                        name: "FK_GameThingBase_GameUsers_GameUserId",
                         column: x => x.GameUserId,
                         principalTable: "GameUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GameThingBase_GameThingBase_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "GameThingBase",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GameExtendProperties",
+                columns: table => new
+                {
+                    ParentId = table.Column<Guid>(nullable: false),
+                    Name = table.Column<string>(maxLength: 64, nullable: false),
+                    StringValue = table.Column<string>(maxLength: 256, nullable: true),
+                    IntValue = table.Column<int>(nullable: false),
+                    DecimalValue = table.Column<decimal>(nullable: false),
+                    DoubleValue = table.Column<double>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GameExtendProperties", x => new { x.ParentId, x.Name });
+                    table.ForeignKey(
+                        name: "FK_GameExtendProperties_GameThingBase_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "GameThingBase",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExtendProperties_ParentId",
-                table: "ExtendProperties",
+                name: "IX_ClientExtendProperties_ParentId",
+                table: "ClientExtendProperties",
                 column: "ParentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GameChar_GameUserId",
-                table: "GameChar",
+                name: "IX_GameExtendProperties_DecimalValue",
+                table: "GameExtendProperties",
+                column: "DecimalValue");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GameExtendProperties_DoubleValue",
+                table: "GameExtendProperties",
+                column: "DoubleValue");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GameExtendProperties_IntValue",
+                table: "GameExtendProperties",
+                column: "IntValue");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GameExtendProperties_Name",
+                table: "GameExtendProperties",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GameExtendProperties_StringValue",
+                table: "GameExtendProperties",
+                column: "StringValue");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GameThingBase_GameUserId",
+                table: "GameThingBase",
                 column: "GameUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GameItems_OwnerId",
-                table: "GameItems",
+                name: "IX_GameThingBase_OwnerId",
+                table: "GameThingBase",
                 column: "OwnerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GameItems_ParentId",
-                table: "GameItems",
+                name: "IX_GameThingBase_ParentId",
+                table: "GameThingBase",
                 column: "ParentId");
 
             migrationBuilder.CreateIndex(
@@ -133,16 +166,16 @@ namespace GY2021001DAL.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ExtendProperties");
+                name: "ClientExtendProperties");
 
             migrationBuilder.DropTable(
-                name: "GameChar");
-
-            migrationBuilder.DropTable(
-                name: "GameItems");
+                name: "GameExtendProperties");
 
             migrationBuilder.DropTable(
                 name: "GameSettings");
+
+            migrationBuilder.DropTable(
+                name: "GameThingBase");
 
             migrationBuilder.DropTable(
                 name: "GameUsers");

@@ -23,7 +23,14 @@ namespace GY2021001DAL
             modelBuilder.Entity<GameUser>().HasIndex(c => c.CreateUtc);
             modelBuilder.Entity<GameUser>().HasIndex(c => c.LoginName).IsUnique();
             modelBuilder.Entity<GameItem>().HasIndex(c => c.OwnerId);
-            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.ParentId);
+            modelBuilder.Entity<GameClientExtendProperty>().HasIndex(c => c.ParentId);
+            //
+            modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.ParentId, c.Name });
+            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.Name).IsUnique(false);
+            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.DecimalValue).IsUnique(false);
+            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.DoubleValue).IsUnique(false);
+            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.IntValue).IsUnique(false);
+            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.StringValue).IsUnique(false);
             base.OnModelCreating(modelBuilder);
         }
 
@@ -47,9 +54,14 @@ namespace GY2021001DAL
         public DbSet<GameSetting> GameSettings { get; set; }
 
         /// <summary>
-        /// 通用扩展属性记录的表。
+        /// 客户端通用扩展属性记录的表。
         /// </summary>
-        public DbSet<GameExtendProperty> ExtendProperties { get; set; }
+        public DbSet<GameClientExtendProperty> ClientExtendProperties { get; set; }
+
+        /// <summary>
+        /// 游戏服务器用通用属性记录表。
+        /// </summary>
+        public DbSet<GameExtendProperty> GameExtendProperties { get; set; }
     }
 
     public static class MigrateDbInitializer

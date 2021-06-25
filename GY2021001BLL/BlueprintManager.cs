@@ -614,9 +614,12 @@ namespace GY2021001BLL
                 {
                     JiasuFuhua(datas);
                 }
+                else if (new Guid("{7B1348B8-87DE-4C98-98B8-4705340E1ED2}") == datas.Blueprint.Id)  //若是增加体力
+                {
+                    AddTili(datas);
+                }
                 else
                 {
-
                     var data = new BlueprintData(Service, datas.Blueprint);
                     for (int i = 0; i < datas.Count; i++)
                     {
@@ -765,6 +768,24 @@ namespace GY2021001BLL
             return true;
         }
 
+        /// <summary>
+        /// 钻石买体力。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void AddTili(ApplyBlueprintDatas datas)
+        {
+            if (!datas.Verify(datas.GameChar.GradientProperties.TryGetValue("pp", out var fcp), "无法找到体力属性"))
+                return;
+            var zuanshi = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);
+            if (!datas.Verify(zuanshi != null, "无法找到钻石对象"))
+                return;
+            if (!datas.Verify(zuanshi.Count < 20, $"需要20钻石，但目前仅有{zuanshi.Count}。"))
+                return;
+            zuanshi.Count -= 20;    //扣除钻石
+            fcp.GetCurrentValueWithUtc();
+            fcp.LastValue += 20;    //增加体力
+            datas.ChangesItem.AddToChanges(datas.GameChar.Id, zuanshi);
+        }
     }
 
     public static class ApplyBlueprintDatasExtensions

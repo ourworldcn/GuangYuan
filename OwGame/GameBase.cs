@@ -59,7 +59,10 @@ namespace OwGame
         public decimal GetCurrentValue(ref DateTime now)
         {
             if (LastValue >= MaxValue)  //若已经结束
-                return MaxValue;
+            {
+                LastComputerDateTime = now;
+                return LastValue;
+            }
             var count = Math.DivRem((now - LastComputerDateTime).Ticks, Delay.Ticks, out long remainder);  //跳变次数 和 余数
             var val = Math.Min(count * Increment + LastValue, MaxValue);
             LastValue = val; //计算得到最后值

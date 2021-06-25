@@ -434,14 +434,14 @@ namespace GY2021001BLL
                         gu.DbContext = db;
                         foreach (var item in gu.GameChars)
                         {
-                            item.GameItems.AddRange(db.GameItems.Where(c => c.OwnerId == item.Id));
+                            item.GameItems.AddRange(db.GameItems.Where(c => c.OwnerId == item.Id).Include(c => c.Children).ThenInclude(c => c.Children));
                         }
                         _LoginName2Token.AddOrUpdate(loginName, token, (c1, c2) => token);
                         _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
                         var gc = gu.GameChars[0];
                         var gcId = gc.Id;
 
-                        var coll = gu.DbContext.Set<GameExtendProperty>().Where(c => c.ParentId == gcId);
+                        var coll = gu.DbContext.Set<GameClientExtendProperty>().Where(c => c.ParentId == gcId);
                         foreach (var item in coll)
                         {
                             gc.ClientExtendProperties[item.Name] = item;
@@ -713,25 +713,6 @@ namespace GY2021001BLL
             gameChar.GameItems.AddRange(gameItems);
         }
 
-        public void SetGameCharEx(Guid token, string keyName, string val)
-        {
-
-        }
-
-        public void SetGameCharEx(GameChar gameChar, string keyName, string val)
-        {
-            if (!Lock(gameChar.GameUser))
-                return;
-            try
-            {
-
-            }
-            finally
-            {
-                Unlock(gameChar.GameUser);
-            }
-        }
-
         /// <summary>
         /// 修改客户端字符串。
         /// </summary>
@@ -784,7 +765,7 @@ namespace GY2021001BLL
                 }
                 //补足所属物品的槽
                 World.ItemManager.Normalize(e.GameChar.GameItems);
-                //清楚锁定属性槽内物品，放回道具背包中
+                //清除锁定属性槽内物品，放回道具背包中
                 var gim = World.ItemManager;
                 var daojuBag = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包
                 var slot = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockAtkSlotId); //锁定槽

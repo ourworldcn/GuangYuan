@@ -594,5 +594,99 @@ namespace GY2021001BLL
             return neatk + nemhp + neqlt;
         }
 
+        /// <summary>
+        /// 突破次数,对应主动技能等级：1，2，3， 4， 5。
+        /// </summary>
+        readonly int[] _aryTupo = new int[] { 0, 6, 12, 18, 24 };
+
+        /// <summary>
+        /// 坐骑等级，对应被动技能等级：1，2，3， 4， 5
+        /// </summary>
+        readonly int[] _aryLvZuoqi = new int[] { 0, 4, 9, 14, 19 };
+
+        /// <summary>
+        /// 更新指定坐骑的战斗力属性。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="dic"></param>
+        /// <returns>true成功计算了属性，false没有计算得到属性。</returns>
+        public bool UpdateAbility(GameItem gameItem, IDictionary<string, double> dic)
+        {
+            var gim = World.ItemManager;
+            var body = gim.GetBody(gameItem);
+            if (null == body)
+                return false;
+            if (!OwHelper.TryGetDecimal(gim.GetPropertyValue(gameItem, "gid"), out var gid) || 0 == gid)
+                return false;
+            var bodyGid = (int)gid; //身体Id
+            //计算本体属性
+            var head = gim.GetHead(gameItem);
+            if (null == head)
+                return false;
+            double atk = 0, qlt = 0, mhp = 0;
+            atk += (double)head.GetDecimalOrDefault("atk", decimal.Zero);
+            atk += (double)body.GetDecimalOrDefault("atk", decimal.Zero);
+
+            mhp += (double)head.GetDecimalOrDefault("mhp", decimal.Zero);
+            mhp += (double)body.GetDecimalOrDefault("mhp", decimal.Zero);
+
+            qlt += (double)head.GetDecimalOrDefault("qlt", decimal.Zero);
+            qlt += (double)body.GetDecimalOrDefault("qlt", decimal.Zero);
+
+            //计算资质加成
+            var neatk = gameItem.GetDecimalOrDefault("neatk", decimal.Zero);
+            var nemhp = gameItem.GetDecimalOrDefault("nemhp", decimal.Zero);
+            var neqlt = gameItem.GetDecimalOrDefault("nemhp", decimal.Zero);
+            atk *= (double)(100 + neatk) / 100;
+            mhp *= (double)(100 + nemhp) / 100;
+            qlt *= (double)(100 + neqlt) / 100;
+            //计算其他加成，如时装
+            var ary = gameItem.Children.Where(c => c.Id != head.Id && c.Id != body.Id).ToArray();
+            atk += (double)ary.Sum(c => c.GetDecimalOrDefault("atk", decimal.Zero));
+            mhp += (double)ary.Sum(c => c.GetDecimalOrDefault("mhp", decimal.Zero));
+            qlt += (double)ary.Sum(c => c.GetDecimalOrDefault("qlt", decimal.Zero));
+
+            var gc = gim.GetChar(gameItem);
+            if (null == gc)
+                return false;
+            //获取对应神纹
+            var slotShenwen = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShenWenSlotId);
+            if (null == slotShenwen)
+                return false;
+            var shenwen = slotShenwen.Children.FirstOrDefault(c =>
+            {
+                if (!c.TryGetPropertyValue("body", out var bodyObj) || !OwHelper.TryGetDecimal(bodyObj, out var bodyDec))
+                    return false;
+                return bodyDec == bodyGid;
+            });
+            //计算神纹加成
+            atk += (double)shenwen.GetDecimalOrDefault("atk", decimal.Zero);
+            mhp += (double)shenwen.GetDecimalOrDefault("mhp", decimal.Zero);
+            qlt += (double)shenwen.GetDecimalOrDefault("qlt", decimal.Zero);
+            dic["atk"] = atk;
+            dic["mhp"] = mhp;
+            dic["qlt"] = qlt;
+            //计算主动技能等级
+            var ssc = shenwen.GetDecimalOrDefault("sscatk", decimal.Zero) + shenwen.GetDecimalOrDefault("sscmhp", decimal.Zero) + shenwen.GetDecimalOrDefault("sscqlt", decimal.Zero);
+            int i;
+            for (i = 0; i < _aryTupo.Length; i++)
+                if (ssc < _aryTupo[i])
+                    break;
+            int lvZhudong = i - 1; //主动技能等级
+            //计算被动技能等级
+            var lv = (int)gameItem.GetDecimalOrDefault("lv", decimal.Zero);
+            for (i = 0; i < _aryLvZuoqi.Length; i++)
+                if (lv < _aryLvZuoqi[i])
+                    break;
+            var lvBeidong = i - 1;  //被动技能等级
+
+            var abi = mhp + atk * 10 + qlt * 30;    //战力
+            abi += 500 + 100 * lvZhudong;   //合并主动技能战力
+            abi += 500 + 100 * lvBeidong;   //合并被动技能战力
+            dic["lvzhudong"] = lvZhudong;
+            dic["lvbeidong"] = lvBeidong;
+            dic["abi"] = abi;
+            return true;
+        }
     }
 }

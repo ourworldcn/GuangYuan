@@ -99,10 +99,10 @@ namespace GY2021001WebApi.Models
             }
             foreach (var item in obj.ClientExtendProperties)    //初始化客户端扩展属性
             {
-                if (result.ClientExtendProperties.TryGetValue(item.Key, out GameExtendProperty gep))
+                if (result.ClientExtendProperties.TryGetValue(item.Key, out GameClientExtendProperty gep))
                     gep.Value = item.Value;
                 else
-                    result.ClientExtendProperties[item.Key] = new GameExtendProperty()
+                    result.ClientExtendProperties[item.Key] = new GameClientExtendProperty()
                     {
                         ParentId = result.Id,
                         Name = item.Key,
