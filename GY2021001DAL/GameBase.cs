@@ -159,12 +159,27 @@ namespace GY2021001DAL
             return result;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public decimal GetDecimalOrDefault(string propertyName, decimal defaultVal = default)
+        /// <summary>
+        /// 获取指定的属性值并转换为<see cref="decimal"/>,如果找不到，或不能转换则返回指定默认值。
+        /// </summary>
+        /// <param name="propertyName" >
+        /// <list type="table">
+        /// <listheader>
+        /// <term>term</term>
+        /// <description>F2</description>
+        /// </listheader>
+        /// <item><term>term</term>
+        /// <description>1</description></item>
+        /// <item><term>term</term>
+        /// <description>2</description></item>
+        /// </list>
+        /// </param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public decimal GetDecimalOrDefault(string propertyName, decimal defaultVal = 0m)
         {
-            if (!TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec))
-                return defaultVal;
-            return dec;
+            return !TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec) ? defaultVal : dec;
         }
 
         /// <summary>

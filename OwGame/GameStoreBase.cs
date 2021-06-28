@@ -105,9 +105,10 @@ namespace OwGame
         /// <param name="obj">null导致立即返回false。</param>
         /// <param name="result"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         static public bool TryGetDecimal(object obj, out decimal result)
         {
-            if (null == obj)
+            if (obj is null )
             {
                 result = default;
                 return false;

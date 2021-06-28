@@ -17,10 +17,12 @@ using OwGame;
 using OwGame.Expression;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gy001
@@ -41,7 +43,6 @@ namespace Gy001
             var templateDbConnectionString = Configuration.GetConnectionString("TemplateDbConnection");
 
             #region 配置通用服务
-
 
             services.AddResponseCompression();
             //日志服务
@@ -104,7 +105,7 @@ namespace Gy001
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
             {
                 Loaded = SpecificProject.ItemTemplateLoaded,
-            }));
+            })); 
             services.AddSingleton(c => new GameItemManager(c, new GameItemManagerOptions()
             {
                 ItemCreated = SpecificProject.GameItemCreated,
@@ -159,5 +160,7 @@ namespace Gy001
             });
 
         }
+
     }
+
 }

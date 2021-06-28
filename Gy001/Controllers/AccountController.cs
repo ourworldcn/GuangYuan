@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Gy001;
 using GY2021001BLL;
 using GY2021001DAL;
 using GY2021001WebApi.Models;
@@ -38,7 +39,6 @@ namespace GY2021001WebApi.Controllers
         [HttpGet]
         public ActionResult<QuicklyRegisterReturnDto> QuicklyRegister()
         {
-
             try
             {
                 var db = HttpContext.RequestServices.GetService<GY2021001DbContext>();

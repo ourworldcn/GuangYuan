@@ -701,12 +701,15 @@ namespace GY2021001BLL
             var bodyTid = gim.GetBody(gameItem).TemplateId;
             var zq = slotZq.Children.FirstOrDefault(c =>    //找同头同身坐骑
             {
-                return c.Children.Any(c2 => c2.TemplateId == headTid) && c.Children.Any(c2 => c.TemplateId == headTid);
+                return c.Children.Any(c2 => c2.TemplateId == headTid) && c.Children.Any(c2 => c2.TemplateId == bodyTid);
             });
             if (null != zq)    //若已经有同种坐骑
             {
                 var slotSl = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
                 if (!datas.Verify(null != slotSl, "找不到兽栏。")) return;
+                gameItem.Properties["neatk"] = Math.Round(gameItem.GetDecimalOrDefault("neatk"), MidpointRounding.AwayFromZero);
+                gameItem.Properties["nemhp"] = Math.Round(gameItem.GetDecimalOrDefault("nemhp"), MidpointRounding.AwayFromZero);
+                gameItem.Properties["neqlt"] = Math.Round(gameItem.GetDecimalOrDefault("neqlt"), MidpointRounding.AwayFromZero);
                 gim.MoveItem(gameItem, 1, slotSl, datas.ChangesItem);
             }
             else //若尚无同种坐骑
@@ -779,7 +782,7 @@ namespace GY2021001BLL
             var zuanshi = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);
             if (!datas.Verify(zuanshi != null, "无法找到钻石对象"))
                 return;
-            if (!datas.Verify(zuanshi.Count < 20, $"需要20钻石，但目前仅有{zuanshi.Count}。"))
+            if (!datas.Verify(zuanshi.Count > 20, $"需要20钻石，但目前仅有{zuanshi.Count}。"))
                 return;
             zuanshi.Count -= 20;    //扣除钻石
             fcp.GetCurrentValueWithUtc();

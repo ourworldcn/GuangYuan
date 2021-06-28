@@ -2,14 +2,15 @@
   "WorldServiceHost": "http://192.168.0.104:10080",
   "GameChars": [
     {
-      "Id": "BZpXiH3/iEKbKEerA4BTPA==",
+      "Id": "ar5o1RLtakmt8vdVxamfog==",
       "Properties": {
         "lv": 0,
         "mpp": 20,
-        "dpp": 1,
+        "dpp": 5,
         "ipp": 1,
         "cap": 17,
         "cd": 25200,
+        "inccapcost": 500,
         "stc": -2,
         "nemhp": 10,
         "neatk": 10,
@@ -45,342 +46,59 @@
         "sscatk": 0,
         "sscmhp": 0,
         "sscqlt": 0,
-        "pp": 20,
-        "cpp": "2021/6/23 11:19:31"
+        "pp": 20
       },
       "DisplayName": null,
       "ClientGutsString": null,
       "TemplateId": "aZLzDAFjC0eFJwevKcXu7A==",
-      "CreateUtc": "2021-06-23T11:19:30.7479054",
-      "GameUserId": "NiQKTQvfo0SNMdIOFp2n5w==",
+      "CreateUtc": "2021-06-28T02:19:39.7763781",
+      "GameUserId": "o3IwslfF0Eaiz1wzfUfo7Q==",
       "GameItems": [
         {
-          "Id": "u5f3DyrYwUy6mxQM5FnOAw==",
-          "TemplateId": "ie4qusMLEka2/13f74XJ5Q==",
-          "CreateUtc": "2021-06-23T11:19:30.7551024",
+          "Id": "WPkyaYl+XE6CXwDuZEsH8w==",
+          "TemplateId": "d7Kg/saML0aw7YVAmr6ceQ==",
+          "CreateUtc": "2021-06-28T02:19:39.7764723",
           "Count": 1.00,
           "Properties": { "cap": -1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "Zjb1ABHo6kyQqjInnlS4hg==",
+          "TemplateId": "xo6xgpCRBEiBtTP/oDUa3g==",
+          "CreateUtc": "2021-06-28T02:19:39.7764873",
+          "Count": 1.00,
+          "Properties": { "cap": 1 },
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "gOvmZ/tJiEaxTWoC62mUVQ==",
+          "TemplateId": "QsmDK5weRUuYFq0svw5HPw==",
+          "CreateUtc": "2021-06-28T02:19:39.7764704",
+          "Count": 0.00,
+          "Properties": { "stc": -1 },
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "MkRsRPpd6UOaV3S+JsOI5Q==",
+          "TemplateId": "ie4qusMLEka2/13f74XJ5Q==",
+          "CreateUtc": "2021-06-28T02:19:39.7764743",
+          "Count": 1.00,
+          "Properties": { "cap": -1 },
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
           "Children": [
             {
-              "Id": "msSKTcKmQ0q05BW4ZavWsQ==",
+              "Id": "uavPIGUPYU+7qKMmrh9X7w==",
               "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:38.4295942",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 0,
-                "neatk": 0,
-                "neqlt": 0,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "PyCJty9YmE2gXkmBK3M3HA==",
-                  "TemplateId": "dGTLEdYE8kazYdxXOmp8wg==",
-                  "CreateUtc": "2021-06-23T11:19:38.4295975",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1504,
-                    "ps": 5004,
-                    "js": 2004
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "msSKTcKmQ0q05BW4ZavWsQ==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "aa++tqnAykGjEuHDB8IjhA==",
-                  "TemplateId": "GOb20b73gUqnThIQR9JqRQ==",
-                  "CreateUtc": "2021-06-23T11:19:38.4296015",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1004,
-                    "nm": 1504,
-                    "hi": 3004,
-                    "mhp": 1100,
-                    "atk": 200,
-                    "qlt": 140,
-                    "lug": -100,
-                    "sg": 300
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "msSKTcKmQ0q05BW4ZavWsQ==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "u5f3DyrYwUy6mxQM5FnOAw==",
-              "ClientString": null
-            },
-            {
-              "Id": "7QJ1TBSQakyLRylf2mcD+Q==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:38.4295632",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 0,
-                "neatk": 0,
-                "neqlt": 0,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "uVRDcUHPT0CgxEacTQy1wg==",
-                  "TemplateId": "1a0YHQp870izLLHoNliyIQ==",
-                  "CreateUtc": "2021-06-23T11:19:38.4295679",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1503,
-                    "ps": 5003,
-                    "js": 2003
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "7QJ1TBSQakyLRylf2mcD+Q==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "TUpyXsYspESd4tQgU8AsqQ==",
-                  "TemplateId": "Q22ffbPVCUu7a5wcgFRC7w==",
-                  "CreateUtc": "2021-06-23T11:19:38.4295719",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1003,
-                    "nm": 1503,
-                    "hi": 3003,
-                    "mhp": 1500,
-                    "atk": 105,
-                    "qlt": 120,
-                    "lug": -100,
-                    "sg": 300
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "7QJ1TBSQakyLRylf2mcD+Q==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "u5f3DyrYwUy6mxQM5FnOAw==",
-              "ClientString": null
-            },
-            {
-              "Id": "v5V+rrSGI06sYDBVALwNtA==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:38.429286",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 0,
-                "neatk": 0,
-                "neqlt": 0,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "sTejzAFHGUiFvXAgtgIZEg==",
-                  "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                  "CreateUtc": "2021-06-23T11:19:38.4294947",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1002,
-                    "nm": 1502,
-                    "hi": 3002,
-                    "mhp": 1100,
-                    "atk": 180,
-                    "qlt": 80,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "v5V+rrSGI06sYDBVALwNtA==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "kCBhT9XFHkCkT3lRf1WF1A==",
-                  "TemplateId": "yFRXDDQOakOBqVzq/RJqtQ==",
-                  "CreateUtc": "2021-06-23T11:19:38.4294285",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1502,
-                    "ps": 5002,
-                    "js": 2002
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "v5V+rrSGI06sYDBVALwNtA==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "u5f3DyrYwUy6mxQM5FnOAw==",
-              "ClientString": null
-            },
-            {
-              "Id": "QvK/OHp7M0yqeEHV5Vw6DQ==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:38.4297507",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 0,
-                "neatk": 0,
-                "neqlt": 0,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "G78suszqKk6DPDivMhBRBQ==",
-                  "TemplateId": "1a0YHQp870izLLHoNliyIQ==",
-                  "CreateUtc": "2021-06-23T11:19:38.4297562",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1503,
-                    "ps": 5003,
-                    "js": 2003
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "QvK/OHp7M0yqeEHV5Vw6DQ==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "sKbcctYXIUKE0kiapOCg/Q==",
-                  "TemplateId": "GOb20b73gUqnThIQR9JqRQ==",
-                  "CreateUtc": "2021-06-23T11:19:38.4297589",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1004,
-                    "nm": 1504,
-                    "hi": 3004,
-                    "mhp": 1100,
-                    "atk": 200,
-                    "qlt": 140,
-                    "lug": -100,
-                    "sg": 300
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "QvK/OHp7M0yqeEHV5Vw6DQ==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "u5f3DyrYwUy6mxQM5FnOAw==",
-              "ClientString": null
-            },
-            {
-              "Id": "kjPykWf72kiwt1hHa8bmvg==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:38.429731",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 0,
-                "neatk": 0,
-                "neqlt": 0,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "ga3hYJTKf0O7UhyAsQYZmw==",
-                  "TemplateId": "qToBAf85t0GdQxWoGN+gVw==",
-                  "CreateUtc": "2021-06-23T11:19:38.4297336",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1506,
-                    "ps": 5006,
-                    "js": 2006
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "kjPykWf72kiwt1hHa8bmvg==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "COF95Z6qSUSBLI77Y/piWg==",
-                  "TemplateId": "Fn+lABimDE6EnziaBSOmMQ==",
-                  "CreateUtc": "2021-06-23T11:19:38.4297358",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1007,
-                    "nm": 1507,
-                    "hi": 3007,
-                    "mhp": 1800,
-                    "atk": 120,
-                    "qlt": 150,
-                    "lug": -100,
-                    "sg": 300
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "kjPykWf72kiwt1hHa8bmvg==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "u5f3DyrYwUy6mxQM5FnOAw==",
-              "ClientString": null
-            },
-            {
-              "Id": "poVXjNguIk+kSHhJTHcT+A==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:30.7574426",
+              "CreateUtc": "2021-06-28T02:19:39.7765447",
               "Count": 1.00,
               "Properties": {
                 "nemhp": 10,
@@ -391,28 +109,24 @@
               "OwnerId": null,
               "Children": [
                 {
-                  "Id": "GI5CnPPLq0i/rylgoZOkXg==",
-                  "TemplateId": "DJwSf8Lc90ORnb6hdXkvFA==",
-                  "CreateUtc": "2021-06-23T11:19:40.5640065",
+                  "Id": "DvnrK/Ht/E+Ev7J/HT6EGw==",
+                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
+                  "CreateUtc": "2021-06-28T02:19:39.7765523",
                   "Count": 1.00,
                   "Properties": {
-                    "perfabs": "Sheep_Skin_fatiao",
-                    "nm": 4002,
-                    "mhp": 500,
-                    "atk": 150,
-                    "qlt": 20,
-                    "body": 4001,
-                    "bd": 300
+                    "nm": 1501,
+                    "ps": 5001,
+                    "js": 2001
                   },
                   "OwnerId": null,
                   "Children": [],
-                  "ParentId": "poVXjNguIk+kSHhJTHcT+A==",
+                  "ParentId": "uavPIGUPYU+7qKMmrh9X7w==",
                   "ClientString": null
                 },
                 {
-                  "Id": "ctqAT0prWU+RNZu9XX2bjA==",
+                  "Id": "iieRGKnqf0yrI72pyNDaQQ==",
                   "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
-                  "CreateUtc": "2021-06-23T11:19:30.7579787",
+                  "CreateUtc": "2021-06-28T02:19:39.7765661",
                   "Count": 1.00,
                   "Properties": {
                     "alt": 5,
@@ -429,287 +143,19 @@
                     "SK": 1001,
                     "nm": 1501,
                     "hi": 3001,
-                    "mhp": 4900,
-                    "atk": 430,
-                    "qlt": 106,
-                    "lug": -12850,
-                    "sg": 200,
-                    "lv": 6
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "poVXjNguIk+kSHhJTHcT+A==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "GgQgjZiJ8EOhR8FIOQuEQQ==",
-                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                  "CreateUtc": "2021-06-23T11:19:30.7574991",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1501,
-                    "ps": 5001,
-                    "js": 2001
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "poVXjNguIk+kSHhJTHcT+A==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "u5f3DyrYwUy6mxQM5FnOAw==",
-              "ClientString": null
-            },
-            {
-              "Id": "HvbO4URc5EOZx5PE+GYvrQ==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:38.4296496",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 0,
-                "neatk": 0,
-                "neqlt": 0,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "6PkTIprlD0ORLKLlJv0bKw==",
-                  "TemplateId": "qToBAf85t0GdQxWoGN+gVw==",
-                  "CreateUtc": "2021-06-23T11:19:38.4296558",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1506,
-                    "ps": 5006,
-                    "js": 2006
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "HvbO4URc5EOZx5PE+GYvrQ==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "r9QkokintUiA9OglkhMKzA==",
-                  "TemplateId": "FlNF5fu330ybHAkF5ytnQg==",
-                  "CreateUtc": "2021-06-23T11:19:38.4296632",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1006,
-                    "nm": 1506,
-                    "hi": 3006,
-                    "mhp": 1600,
-                    "atk": 190,
-                    "qlt": 110,
-                    "lug": -100,
-                    "sg": 500
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "HvbO4URc5EOZx5PE+GYvrQ==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "u5f3DyrYwUy6mxQM5FnOAw==",
-              "ClientString": null
-            },
-            {
-              "Id": "GUs3e4cYN0aHTpv8yb1V/A==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:38.4296232",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 0,
-                "neatk": 0,
-                "neqlt": 0,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "YeB1hP+EVk68Myt9koOtBg==",
-                  "TemplateId": "snxc/VedNESzkjM0131zSw==",
-                  "CreateUtc": "2021-06-23T11:19:38.4296332",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1005,
-                    "nm": 1505,
-                    "hi": 3005,
-                    "mhp": 1150,
-                    "atk": 170,
-                    "qlt": 80,
+                    "mhp": 1000,
+                    "atk": 100,
+                    "qlt": 100,
                     "lug": -100,
                     "sg": 200
                   },
                   "OwnerId": null,
                   "Children": [],
-                  "ParentId": "GUs3e4cYN0aHTpv8yb1V/A==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "iPapAiNH+EyP0M7/KeuZSw==",
-                  "TemplateId": "+/RJL7UYVkaKsNcBYJCR6w==",
-                  "CreateUtc": "2021-06-23T11:19:38.4296263",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1505,
-                    "ps": 5005,
-                    "js": 2005
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "GUs3e4cYN0aHTpv8yb1V/A==",
+                  "ParentId": "uavPIGUPYU+7qKMmrh9X7w==",
                   "ClientString": null
                 }
               ],
-              "ParentId": "u5f3DyrYwUy6mxQM5FnOAw==",
-              "ClientString": null
-            },
-            {
-              "Id": "oiyE3/yep0CmTqdwOUfdjQ==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:38.429682",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 0,
-                "neatk": 0,
-                "neqlt": 0,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "8IKsLDBKJkeZiI/HB7GHkQ==",
-                  "TemplateId": "PGKZeGbqe0qR7fWomH1IWA==",
-                  "CreateUtc": "2021-06-23T11:19:38.429685",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1507,
-                    "ps": 5007,
-                    "js": 2007
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "oiyE3/yep0CmTqdwOUfdjQ==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "E9GJFtFmHUu/gpIx0HNLdQ==",
-                  "TemplateId": "Fn+lABimDE6EnziaBSOmMQ==",
-                  "CreateUtc": "2021-06-23T11:19:38.4296879",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1007,
-                    "nm": 1507,
-                    "hi": 3007,
-                    "mhp": 1800,
-                    "atk": 120,
-                    "qlt": 150,
-                    "lug": -100,
-                    "sg": 300
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "oiyE3/yep0CmTqdwOUfdjQ==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "u5f3DyrYwUy6mxQM5FnOAw==",
-              "ClientString": null
-            },
-            {
-              "Id": "qzrIDSSjOU6Aos4abx0iPg==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:38.4297087",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 0,
-                "neatk": 0,
-                "neqlt": 0,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "CdGSCl01W0+r73+DxQQwEg==",
-                  "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                  "CreateUtc": "2021-06-23T11:19:38.4297141",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1002,
-                    "nm": 1502,
-                    "hi": 3002,
-                    "mhp": 1100,
-                    "atk": 180,
-                    "qlt": 80,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "qzrIDSSjOU6Aos4abx0iPg==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "leWAeHmW0UuH/M6gt75zrA==",
-                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                  "CreateUtc": "2021-06-23T11:19:38.4297117",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1501,
-                    "ps": 5001,
-                    "js": 2001
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "qzrIDSSjOU6Aos4abx0iPg==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "u5f3DyrYwUy6mxQM5FnOAw==",
+              "ParentId": "MkRsRPpd6UOaV3S+JsOI5Q==",
               "ClientString": null
             }
           ],
@@ -717,1062 +163,112 @@
           "ClientString": null
         },
         {
-          "Id": "griSEl5Sd0+biCkqQAzKpA==",
-          "TemplateId": "oaAwFkA1mkeyxRC2PnpXdA==",
-          "CreateUtc": "2021-06-23T11:19:30.7541433",
-          "Count": 1.00,
-          "Properties": { "cap": 20 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
-          "Children": [
-            {
-              "Id": "EY2VrPXXA0ev0RjbmBNxFQ==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0012004",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 20,
-                "neatk": 20,
-                "neqlt": 30,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "CB/Xdt7vFkqa+9fCjHsGFg==",
-                  "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                  "CreateUtc": "2021-06-23T11:19:39.0012315",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1002,
-                    "nm": 1502,
-                    "hi": 3002,
-                    "mhp": 1100,
-                    "atk": 180,
-                    "qlt": 80,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "EY2VrPXXA0ev0RjbmBNxFQ==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "+gxgORRrTkWBHNsSyCeGyg==",
-                  "TemplateId": "yFRXDDQOakOBqVzq/RJqtQ==",
-                  "CreateUtc": "2021-06-23T11:19:39.0012119",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1502,
-                    "ps": 5002,
-                    "js": 2002
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "EY2VrPXXA0ev0RjbmBNxFQ==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "qvmWrjsYa0iXlRz9itSRvg==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.001336",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 50,
-                "neatk": 40,
-                "neqlt": 20,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "7M0+FMUUkE+tMrTsqpk4Kw==",
-                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                  "CreateUtc": "2021-06-23T11:19:39.0013393",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1501,
-                    "ps": 5001,
-                    "js": 2001
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "qvmWrjsYa0iXlRz9itSRvg==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "JwzTfaamUU2Fs/KYZDv+Ew==",
-                  "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                  "CreateUtc": "2021-06-23T11:19:39.0013454",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1002,
-                    "nm": 1502,
-                    "hi": 3002,
-                    "mhp": 1100,
-                    "atk": 180,
-                    "qlt": 80,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "qvmWrjsYa0iXlRz9itSRvg==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "EzB/pQ6KDESuySt2eUtc7w==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0013675",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 20,
-                "neatk": 40,
-                "neqlt": 10,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "c3LE2Rkj30GWC5RIGbdxag==",
-                  "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                  "CreateUtc": "2021-06-23T11:19:39.0013767",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1002,
-                    "nm": 1502,
-                    "hi": 3002,
-                    "mhp": 1100,
-                    "atk": 180,
-                    "qlt": 80,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "EzB/pQ6KDESuySt2eUtc7w==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "liYLBrAw1kmavv639sMnPg==",
-                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                  "CreateUtc": "2021-06-23T11:19:39.0013709",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1501,
-                    "ps": 5001,
-                    "js": 2001
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "EzB/pQ6KDESuySt2eUtc7w==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "gHRYLSSIxUqc4DBUg7lFcg==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0009654",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 20,
-                "neatk": 10,
-                "neqlt": 30,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "awq1hJip1UiYWBPgLUN0hQ==",
-                  "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                  "CreateUtc": "2021-06-23T11:19:39.0009979",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1002,
-                    "nm": 1502,
-                    "hi": 3002,
-                    "mhp": 1100,
-                    "atk": 180,
-                    "qlt": 80,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "gHRYLSSIxUqc4DBUg7lFcg==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "l7b44viRdUSDYuELTFE80w==",
-                  "TemplateId": "yFRXDDQOakOBqVzq/RJqtQ==",
-                  "CreateUtc": "2021-06-23T11:19:39.0009797",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1502,
-                    "ps": 5002,
-                    "js": 2002
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "gHRYLSSIxUqc4DBUg7lFcg==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "mriQZzAjjUWp2D+aTXEiiw==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0000561",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 20,
-                "neatk": 8,
-                "neqlt": 30,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "7mniP87dnE6NqLWSKH9MkQ==",
-                  "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
-                  "CreateUtc": "2021-06-23T11:19:39.0001952",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1001,
-                    "nm": 1501,
-                    "hi": 3001,
-                    "mhp": 1000,
-                    "atk": 100,
-                    "qlt": 100,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "mriQZzAjjUWp2D+aTXEiiw==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "YOwH9ek7MkSv1ulYnE0iZA==",
-                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                  "CreateUtc": "2021-06-23T11:19:39.0001357",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1501,
-                    "ps": 5001,
-                    "js": 2001
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "mriQZzAjjUWp2D+aTXEiiw==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "QRDKP2onQkCAr38ul/puBQ==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0006111",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 0,
-                "neatk": 0,
-                "neqlt": 0,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "/fDFt7KOwkidWiEEtw+nFg==",
-                  "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
-                  "CreateUtc": "2021-06-23T11:19:39.0006701",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1001,
-                    "nm": 1501,
-                    "hi": 3001,
-                    "mhp": 1000,
-                    "atk": 100,
-                    "qlt": 100,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "QRDKP2onQkCAr38ul/puBQ==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "+H7OldmVWkGcYKSspCfwPw==",
-                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                  "CreateUtc": "2021-06-23T11:19:39.000635",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1501,
-                    "ps": 5001,
-                    "js": 2001
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "QRDKP2onQkCAr38ul/puBQ==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "tlBCTOYidkO1IougYra5Vw==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0007609",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 20,
-                "neatk": 10,
-                "neqlt": 15,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "R0xP0gzqj02R/b/+HmPo6A==",
-                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                  "CreateUtc": "2021-06-23T11:19:39.0007789",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1501,
-                    "ps": 5001,
-                    "js": 2001
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "tlBCTOYidkO1IougYra5Vw==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "WRUukso9KE+uHvKQLIMmPg==",
-                  "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
-                  "CreateUtc": "2021-06-23T11:19:39.0007967",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1001,
-                    "nm": 1501,
-                    "hi": 3001,
-                    "mhp": 1000,
-                    "atk": 100,
-                    "qlt": 100,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "tlBCTOYidkO1IougYra5Vw==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "kfnnKf1tyEqmOKd4UXaa0g==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0004425",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 20,
-                "neatk": 4,
-                "neqlt": 30,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "X+TYQXuniUaosjZn6q1MeQ==",
-                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                  "CreateUtc": "2021-06-23T11:19:39.0004736",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1501,
-                    "ps": 5001,
-                    "js": 2001
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "kfnnKf1tyEqmOKd4UXaa0g==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "M27AVvoCk0O5wUwSZX5sAg==",
-                  "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
-                  "CreateUtc": "2021-06-23T11:19:39.0005085",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1001,
-                    "nm": 1501,
-                    "hi": 3001,
-                    "mhp": 1000,
-                    "atk": 100,
-                    "qlt": 100,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "kfnnKf1tyEqmOKd4UXaa0g==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "OKMjdgwlgUGr1MdvoOaC6w==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0011441",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 20,
-                "neatk": 10,
-                "neqlt": 30,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "VRSwt5zuF0KIkH9Zpxk7rw==",
-                  "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                  "CreateUtc": "2021-06-23T11:19:39.0011673",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1002,
-                    "nm": 1502,
-                    "hi": 3002,
-                    "mhp": 1100,
-                    "atk": 180,
-                    "qlt": 80,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "OKMjdgwlgUGr1MdvoOaC6w==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "KHQzFSZN4kWKTdr9jD2UkQ==",
-                  "TemplateId": "yFRXDDQOakOBqVzq/RJqtQ==",
-                  "CreateUtc": "2021-06-23T11:19:39.0011543",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1502,
-                    "ps": 5002,
-                    "js": 2002
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "OKMjdgwlgUGr1MdvoOaC6w==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "mpXKWeBBKEuqrtWuP8DEfQ==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0012664",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 20,
-                "neatk": 10,
-                "neqlt": 15,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "QXgXdj7VuUeBfqVS2nA5yQ==",
-                  "TemplateId": "yFRXDDQOakOBqVzq/RJqtQ==",
-                  "CreateUtc": "2021-06-23T11:19:39.0012769",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1502,
-                    "ps": 5002,
-                    "js": 2002
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "mpXKWeBBKEuqrtWuP8DEfQ==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "wqhd4tOCIkm4xPQ8rK0C0A==",
-                  "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                  "CreateUtc": "2021-06-23T11:19:39.0012833",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1002,
-                    "nm": 1502,
-                    "hi": 3002,
-                    "mhp": 1100,
-                    "atk": 180,
-                    "qlt": 80,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "mpXKWeBBKEuqrtWuP8DEfQ==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "6CN6jNxl2kKzwupXrV99UA==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0010563",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 20,
-                "neatk": 10,
-                "neqlt": 30,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "YiLSS8jUyESneQmYjB4Ruw==",
-                  "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                  "CreateUtc": "2021-06-23T11:19:39.0010809",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1002,
-                    "nm": 1502,
-                    "hi": 3002,
-                    "mhp": 1100,
-                    "atk": 180,
-                    "qlt": 80,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "6CN6jNxl2kKzwupXrV99UA==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "gYX9NOcLjkiPtmVD5yZ9YA==",
-                  "TemplateId": "yFRXDDQOakOBqVzq/RJqtQ==",
-                  "CreateUtc": "2021-06-23T11:19:39.0010663",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1502,
-                    "ps": 5002,
-                    "js": 2002
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "6CN6jNxl2kKzwupXrV99UA==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "Ysfa4TRDYUGB3POZxM8u+A==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0013057",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 50,
-                "neatk": 10,
-                "neqlt": 60,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "n44Zf7TtFk2g/j8/AzNXuA==",
-                  "TemplateId": "FVenLIOGX0Wm1Mco2/xlcw==",
-                  "CreateUtc": "2021-06-23T11:19:39.001315",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1002,
-                    "nm": 1502,
-                    "hi": 3002,
-                    "mhp": 1100,
-                    "atk": 180,
-                    "qlt": 80,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "Ysfa4TRDYUGB3POZxM8u+A==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "HGS63SEsV0exp4lYl0Sy5g==",
-                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                  "CreateUtc": "2021-06-23T11:19:39.0013091",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1501,
-                    "ps": 5001,
-                    "js": 2001
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "Ysfa4TRDYUGB3POZxM8u+A==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            },
-            {
-              "Id": "rkZ5jtbZ706e5P2YIiWhSA==",
-              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-              "CreateUtc": "2021-06-23T11:19:39.0008668",
-              "Count": 1.00,
-              "Properties": {
-                "nemhp": 20,
-                "neatk": 10,
-                "neqlt": 15,
-                "cap": -1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "ZOixmmMtmUqkBwywkBFIMw==",
-                  "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
-                  "CreateUtc": "2021-06-23T11:19:39.0008976",
-                  "Count": 1.00,
-                  "Properties": {
-                    "alt": 5,
-                    "ms": 8,
-                    "eng": 30,
-                    "crp": 0,
-                    "crv": 2,
-                    "aha": 60,
-                    "at": 1,
-                    "bt": 0.3,
-                    "csr": 9,
-                    "ssr": 7,
-                    "rci": 0.5,
-                    "SK": 1001,
-                    "nm": 1501,
-                    "hi": 3001,
-                    "mhp": 1000,
-                    "atk": 100,
-                    "qlt": 100,
-                    "lug": -100,
-                    "sg": 200
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "rkZ5jtbZ706e5P2YIiWhSA==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "WpKycZ05oESwj+H2bwxt4g==",
-                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-                  "CreateUtc": "2021-06-23T11:19:39.0008793",
-                  "Count": 1.00,
-                  "Properties": {
-                    "nm": 1501,
-                    "ps": 5001,
-                    "js": 2001
-                  },
-                  "OwnerId": null,
-                  "Children": [],
-                  "ParentId": "rkZ5jtbZ706e5P2YIiWhSA==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "griSEl5Sd0+biCkqQAzKpA==",
-              "ClientString": null
-            }
-          ],
-          "ParentId": null,
-          "ClientString": null
-        },
-        {
-          "Id": "lK5X7AdS6UC2E0BSdKFE1g==",
-          "TemplateId": "d7Kg/saML0aw7YVAmr6ceQ==",
-          "CreateUtc": "2021-06-23T11:19:30.7550964",
+          "Id": "vsYyj9Jzl0GKCHVqN9Rk5w==",
+          "TemplateId": "e843ZAOKZ06fiYyatxQSYw==",
+          "CreateUtc": "2021-06-28T02:19:39.7764842",
           "Count": 1.00,
           "Properties": { "cap": -1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
           "Children": [],
           "ParentId": null,
           "ClientString": null
         },
         {
-          "Id": "cYbytBlcOESYcEJY3+uzbg==",
+          "Id": "CnSi9pbunEakQYWiz3bSHA==",
           "TemplateId": "EEUMsY4MrUCHu29YKCc+KQ==",
-          "CreateUtc": "2021-06-23T11:19:30.755133",
+          "CreateUtc": "2021-06-28T02:19:39.7764891",
           "Count": 1.00,
           "Properties": { "cap": 1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
           "Children": [],
           "ParentId": null,
           "ClientString": null
         },
         {
-          "Id": "R4A8/yRZlk2N1mV+Dznr3g==",
-          "TemplateId": "xo6xgpCRBEiBtTP/oDUa3g==",
-          "CreateUtc": "2021-06-23T11:19:30.7551308",
+          "Id": "yuBdDkOJ70C40Ycwezdl7g==",
+          "TemplateId": "r3JAuJG760avXLRi4zYcbA==",
+          "CreateUtc": "2021-06-28T02:19:39.7764904",
           "Count": 1.00,
-          "Properties": { "cap": 1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
+          "Properties": {
+            "cd": 25200,
+            "cap": 1,
+            "inccapcost": 500
+          },
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
           "Children": [],
           "ParentId": null,
           "ClientString": null
         },
         {
-          "Id": "nr4fK1+nzU2i+m0uSKgvWA==",
+          "Id": "77AwS/K+WUK5nYwHmKrE0A==",
           "TemplateId": "7Fs2Pj34fUaljJ66Q0WGgg==",
-          "CreateUtc": "2021-06-23T11:19:30.7551085",
+          "CreateUtc": "2021-06-28T02:19:39.7764756",
           "Count": 2000.00,
           "Properties": { "stc": -1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
           "Children": [],
           "ParentId": null,
           "ClientString": null
         },
         {
-          "Id": "K3YB9JvywUqg7HY4VFOiYQ==",
+          "Id": "xv3RiZSwTEig64+xQmhAuw==",
+          "TemplateId": "oaAwFkA1mkeyxRC2PnpXdA==",
+          "CreateUtc": "2021-06-28T02:19:39.7764561",
+          "Count": 1.00,
+          "Properties": { "cap": 20 },
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "OICQkW01/keG25Rst4R2wA==",
+          "TemplateId": "zT+qK+grlkCRav8tR+CE7w==",
+          "CreateUtc": "2021-06-28T02:19:39.7764524",
+          "Count": 1.00,
+          "Properties": { "cap": -1 },
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "7RsPl63PAUykrdVflrR/qg==",
           "TemplateId": "GSSpsKptyEGQdJVxdf2cOw==",
-          "CreateUtc": "2021-06-23T11:19:30.7551283",
+          "CreateUtc": "2021-06-28T02:19:39.7764857",
           "Count": 1.00,
           "Properties": { "cap": 1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
           "Children": [],
           "ParentId": null,
           "ClientString": null
         },
         {
-          "Id": "McFJkgZL/EmmpIVqvYuZsQ==",
-          "TemplateId": "zT+qK+grlkCRav8tR+CE7w==",
-          "CreateUtc": "2021-06-23T11:19:30.754122",
+          "Id": "UsyE8VDBjECyddXcynBDzQ==",
+          "TemplateId": "CeLHo1Bd30mKeCH/P6ohOg==",
+          "CreateUtc": "2021-06-28T02:19:39.7764826",
           "Count": 1.00,
           "Properties": { "cap": -1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
-          "Children": [
-            {
-              "Id": "vV4y7TvBE0uz8R5JpzmLAA==",
-              "TemplateId": "iQ69qQURUkqYKpfm7krVdw==",
-              "CreateUtc": "2021-06-23T11:19:37.6640742",
-              "Count": 50.00,
-              "Properties": {
-                "dia": 10,
-                "stc": 999,
-                "sd": 10,
-                "it": 2
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "McFJkgZL/EmmpIVqvYuZsQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "L6KoTvKQbkaLOSLJCshIeg==",
-              "TemplateId": "W7vz97cNnEmVNHAqdM72pw==",
-              "CreateUtc": "2021-06-23T11:19:37.6640556",
-              "Count": 50.00,
-              "Properties": {
-                "body": 4001,
-                "stc": 999,
-                "sg": 1000,
-                "it": 3
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "McFJkgZL/EmmpIVqvYuZsQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "ufkDC0LZQECVGGTVBr4V6g==",
-              "TemplateId": "vPd2ZqziVkK49flct3zunQ==",
-              "CreateUtc": "2021-06-23T11:19:37.6640706",
-              "Count": 50.00,
-              "Properties": {
-                "body": 4002,
-                "stc": 999,
-                "sg": 1000,
-                "it": 3
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "McFJkgZL/EmmpIVqvYuZsQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "fDwngIftD0GjApwTJo395A==",
-              "TemplateId": "QUmZCEShC0qeJFFrAhxKww==",
-              "CreateUtc": "2021-06-23T11:19:37.6639827",
-              "Count": 50.00,
-              "Properties": {
-                "body": 4001,
-                "stc": 999,
-                "sg": 1000,
-                "it": 3
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "McFJkgZL/EmmpIVqvYuZsQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "t5R5+zBMgk6OQJ74U/kOAw==",
-              "TemplateId": "tONd3nj16UeuroZirCM/QA==",
-              "CreateUtc": "2021-06-23T11:19:37.6640635",
-              "Count": 50.00,
-              "Properties": {
-                "body": 4002,
-                "stc": 999,
-                "sg": 1000,
-                "it": 3
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "McFJkgZL/EmmpIVqvYuZsQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "asMHBwrgAUKnfbi5d1ibrQ==",
-              "TemplateId": "r4XpJiNMjE2fDNoo0+tkQg==",
-              "CreateUtc": "2021-06-23T11:19:37.6640595",
-              "Count": 50.00,
-              "Properties": {
-                "body": 4002,
-                "stc": 999,
-                "sg": 1000,
-                "it": 3
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "McFJkgZL/EmmpIVqvYuZsQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "LmyrnVezXkqRPNgN52abOQ==",
-              "TemplateId": "Mo/QHRsI20uV6hZrGjesJg==",
-              "CreateUtc": "2021-06-23T11:19:37.6640784",
-              "Count": 50.00,
-              "Properties": {
-                "dia": 100,
-                "stc": 999,
-                "sd": 20,
-                "it": 2
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "McFJkgZL/EmmpIVqvYuZsQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "WtotWTOM5kKQweKXvwhqiw==",
-              "TemplateId": "PFl9rILOQkaXoxQCXaYz5A==",
-              "CreateUtc": "2021-06-23T11:19:37.6640818",
-              "Count": 50.00,
-              "Properties": {
-                "dia": 200,
-                "stc": 999,
-                "sd": 40,
-                "it": 2
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "McFJkgZL/EmmpIVqvYuZsQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "Gi12N+sV2EOJD/w2JNrjEg==",
-              "TemplateId": "Fm6pKP2RIEqm5WMc+KO1hA==",
-              "CreateUtc": "2021-06-23T11:19:37.6640488",
-              "Count": 50.00,
-              "Properties": {
-                "body": 4001,
-                "stc": 999,
-                "sg": 1000,
-                "it": 3
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "McFJkgZL/EmmpIVqvYuZsQ==",
-              "ClientString": null
-            }
-          ],
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
+          "Children": [],
           "ParentId": null,
           "ClientString": null
         },
         {
-          "Id": "Xp9bR/F9AkKb7KYTc86Ncw==",
+          "Id": "StcMt4KAskurKPX5nwYo0w==",
           "TemplateId": "1u6kiOsKcEqP3mf3Xl4sCg==",
-          "CreateUtc": "2021-06-23T11:19:30.7539679",
+          "CreateUtc": "2021-06-28T02:19:39.776417",
           "Count": 1.00,
           "Properties": { "cap": -1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
+          "OwnerId": "ar5o1RLtakmt8vdVxamfog==",
           "Children": [
             {
-              "Id": "pdf6Ha1zXEesEgIUC/X2OQ==",
-              "TemplateId": "zoAln9dGFE26S5fvL2BTXg==",
-              "CreateUtc": "2021-06-23T11:19:30.7621148",
+              "Id": "Gjm6PDuTWUyNUxzRx2K0LA==",
+              "TemplateId": "tXew/6XOT0aKRNefPBkrQw==",
+              "CreateUtc": "2021-06-28T02:19:39.7766419",
               "Count": 1.00,
               "Properties": {
-                "body": 4003,
+                "body": 4005,
                 "mhp": 0,
                 "atk": 0,
                 "qlt": 0,
@@ -1788,13 +284,38 @@
               },
               "OwnerId": null,
               "Children": [],
-              "ParentId": "Xp9bR/F9AkKb7KYTc86Ncw==",
+              "ParentId": "StcMt4KAskurKPX5nwYo0w==",
               "ClientString": null
             },
             {
-              "Id": "At38hNw6m0GBCAoslofZqA==",
+              "Id": "DC7/OBqEAUKoTB01eDRhlg==",
+              "TemplateId": "wSmGLVe+/k6ngcguaZu/IQ==",
+              "CreateUtc": "2021-06-28T02:19:39.7766637",
+              "Count": 1.00,
+              "Properties": {
+                "body": 4006,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "StcMt4KAskurKPX5nwYo0w==",
+              "ClientString": null
+            },
+            {
+              "Id": "DGXn6HaGK06ZLzlUNixH3Q==",
               "TemplateId": "kqIErFNN/UmBOnXiDzi1oA==",
-              "CreateUtc": "2021-06-23T11:19:30.7622619",
+              "CreateUtc": "2021-06-28T02:19:39.7766719",
               "Count": 1.00,
               "Properties": {
                 "body": 4004,
@@ -1813,13 +334,63 @@
               },
               "OwnerId": null,
               "Children": [],
-              "ParentId": "Xp9bR/F9AkKb7KYTc86Ncw==",
+              "ParentId": "StcMt4KAskurKPX5nwYo0w==",
               "ClientString": null
             },
             {
-              "Id": "PwmhBiW7xkGR1ygmI2oMvg==",
+              "Id": "sv3rJf/AYU+32UBWK7qHRg==",
+              "TemplateId": "zoAln9dGFE26S5fvL2BTXg==",
+              "CreateUtc": "2021-06-28T02:19:39.7766506",
+              "Count": 1.00,
+              "Properties": {
+                "body": 4003,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "StcMt4KAskurKPX5nwYo0w==",
+              "ClientString": null
+            },
+            {
+              "Id": "VbW9sM/PR0qCOZcMQrDOEA==",
+              "TemplateId": "k1fIQQ34FE+jy+sM2DRQPg==",
+              "CreateUtc": "2021-06-28T02:19:39.7766571",
+              "Count": 1.00,
+              "Properties": {
+                "body": 4002,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "StcMt4KAskurKPX5nwYo0w==",
+              "ClientString": null
+            },
+            {
+              "Id": "Q5wJVJv52k6m+8wKuzdKmA==",
               "TemplateId": "j90G3HrMLUa05ct62igxmA==",
-              "CreateUtc": "2021-06-23T11:19:30.7585677",
+              "CreateUtc": "2021-06-28T02:19:39.7766045",
               "Count": 1.00,
               "Properties": {
                 "body": 4007,
@@ -1838,63 +409,13 @@
               },
               "OwnerId": null,
               "Children": [],
-              "ParentId": "Xp9bR/F9AkKb7KYTc86Ncw==",
+              "ParentId": "StcMt4KAskurKPX5nwYo0w==",
               "ClientString": null
             },
             {
-              "Id": "z0Zy8L2ZgEaGcV0BLVY/hA==",
-              "TemplateId": "k1fIQQ34FE+jy+sM2DRQPg==",
-              "CreateUtc": "2021-06-23T11:19:30.7621659",
-              "Count": 1.00,
-              "Properties": {
-                "body": 4002,
-                "mhp": 0,
-                "atk": 0,
-                "qlt": 0,
-                "lvatk": 0,
-                "lvmhp": 0,
-                "lvqlt": 0,
-                "mlvatk": 10,
-                "mlvmhp": 10,
-                "mlvqlt": 10,
-                "sscatk": 0,
-                "sscmhp": 0,
-                "sscqlt": 0
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "Xp9bR/F9AkKb7KYTc86Ncw==",
-              "ClientString": null
-            },
-            {
-              "Id": "5jKub4gsK0ad3XPaM2+PNg==",
-              "TemplateId": "tXew/6XOT0aKRNefPBkrQw==",
-              "CreateUtc": "2021-06-23T11:19:30.7620635",
-              "Count": 1.00,
-              "Properties": {
-                "body": 4005,
-                "mhp": 0,
-                "atk": 0,
-                "qlt": 0,
-                "lvatk": 0,
-                "lvmhp": 0,
-                "lvqlt": 0,
-                "mlvatk": 10,
-                "mlvmhp": 10,
-                "mlvqlt": 10,
-                "sscatk": 0,
-                "sscmhp": 0,
-                "sscqlt": 0
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "Xp9bR/F9AkKb7KYTc86Ncw==",
-              "ClientString": null
-            },
-            {
-              "Id": "DgBIkJacfkOlaIvBzWxeMg==",
+              "Id": "2EjamDVgskSgR9L3Uko4dw==",
               "TemplateId": "FyBUaZgMxEGmbVdYcz9Ffg==",
-              "CreateUtc": "2021-06-23T11:19:30.7619938",
+              "CreateUtc": "2021-06-28T02:19:39.7766336",
               "Count": 1.00,
               "Properties": {
                 "body": 4001,
@@ -1913,251 +434,7 @@
               },
               "OwnerId": null,
               "Children": [],
-              "ParentId": "Xp9bR/F9AkKb7KYTc86Ncw==",
-              "ClientString": null
-            },
-            {
-              "Id": "Zx8tQwh+tEO1pP6Q/OG20A==",
-              "TemplateId": "wSmGLVe+/k6ngcguaZu/IQ==",
-              "CreateUtc": "2021-06-23T11:19:30.7622135",
-              "Count": 1.00,
-              "Properties": {
-                "body": 4006,
-                "mhp": 0,
-                "atk": 0,
-                "qlt": 0,
-                "lvatk": 0,
-                "lvmhp": 0,
-                "lvqlt": 0,
-                "mlvatk": 10,
-                "mlvmhp": 10,
-                "mlvqlt": 10,
-                "sscatk": 0,
-                "sscmhp": 0,
-                "sscqlt": 0
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "Xp9bR/F9AkKb7KYTc86Ncw==",
-              "ClientString": null
-            }
-          ],
-          "ParentId": null,
-          "ClientString": null
-        },
-        {
-          "Id": "9zqjtY44j0Gt/b6WDv1FBQ==",
-          "TemplateId": "QsmDK5weRUuYFq0svw5HPw==",
-          "CreateUtc": "2021-06-23T11:19:30.7550897",
-          "Count": 9399.00,
-          "Properties": { "stc": -1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
-          "Children": [],
-          "ParentId": null,
-          "ClientString": null
-        },
-        {
-          "Id": "Q+ofZ57qDEaJRM5StI200w==",
-          "TemplateId": "r3JAuJG760avXLRi4zYcbA==",
-          "CreateUtc": "2021-06-23T11:19:30.7551415",
-          "Count": 1.00,
-          "Properties": {
-            "cd": 25200,
-            "cap": 1
-          },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
-          "Children": [],
-          "ParentId": null,
-          "ClientString": null
-        },
-        {
-          "Id": "QaGS4SiU1kai0+1m608lPQ==",
-          "TemplateId": "CeLHo1Bd30mKeCH/P6ohOg==",
-          "CreateUtc": "2021-06-23T11:19:30.7551224",
-          "Count": 1.00,
-          "Properties": { "cap": -1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
-          "Children": [
-            {
-              "Id": "A5k/Eawn8kunXAnnAt8QPg==",
-              "TemplateId": "i6mYjOXq2EOBc3IYZea9wg==",
-              "CreateUtc": "2021-06-23T11:19:40.564014",
-              "Count": 1.00,
-              "Properties": {
-                "perfabs": "Wolf_Skin_shandian",
-                "nm": 4003,
-                "mhp": 60,
-                "atk": 30,
-                "qlt": 2,
-                "body": 4002,
-                "bd": 100
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "QaGS4SiU1kai0+1m608lPQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "EkfWJbH62kGAbBTWOgmjXg==",
-              "TemplateId": "6dSxD+P+CEm3vV6+g6rHEw==",
-              "CreateUtc": "2021-06-23T11:19:40.5640351",
-              "Count": 1.00,
-              "Properties": {
-                "perfabs": "Corgi_Skin_piaochong",
-                "nm": 4007,
-                "mhp": 200,
-                "atk": 321,
-                "qlt": 11,
-                "body": 4005,
-                "bd": 100
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "QaGS4SiU1kai0+1m608lPQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "2oi6O/sX2kqjshbOWeWftQ==",
-              "TemplateId": "K0Mu5pyi3E2z4MhXd2ms4g==",
-              "CreateUtc": "2021-06-23T11:19:40.5640014",
-              "Count": 1.00,
-              "Properties": {
-                "perfabs": "Sheep_Skin_fatiao",
-                "nm": 4001,
-                "mhp": 10,
-                "atk": 100,
-                "qlt": 20,
-                "body": 4001,
-                "bd": 200
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "QaGS4SiU1kai0+1m608lPQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "Yz2oQwWGjEmNeqJks3HyuQ==",
-              "TemplateId": "OZPDj313xU2XotU517LUew==",
-              "CreateUtc": "2021-06-23T11:19:40.5639888",
-              "Count": 1.00,
-              "Properties": {
-                "perfabs": "Sheep_Skin_fatiao",
-                "nm": 4000,
-                "mhp": 100,
-                "atk": 50,
-                "qlt": 10,
-                "body": 4001,
-                "bd": 100
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "QaGS4SiU1kai0+1m608lPQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "s8L90uQdRky1HbC5V8Q6BQ==",
-              "TemplateId": "BvRgmwngLUOIip+NSXPyyQ==",
-              "CreateUtc": "2021-06-23T11:19:40.5640393",
-              "Count": 1.00,
-              "Properties": {
-                "perfabs": "Wolf_Skin_shandian",
-                "nm": 4008,
-                "mhp": 220,
-                "atk": 250,
-                "qlt": 19,
-                "body": 4006,
-                "bd": 100
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "QaGS4SiU1kai0+1m608lPQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "BpoIjNu1Zkyqs7XirOMzRg==",
-              "TemplateId": "RQj7dSepfkukXQl50hpiIg==",
-              "CreateUtc": "2021-06-23T11:19:40.5640193",
-              "Count": 1.00,
-              "Properties": {
-                "perfabs": "Wolf_Skin_shandian",
-                "nm": 4004,
-                "mhp": 70,
-                "atk": 40,
-                "qlt": 13,
-                "body": 4002,
-                "bd": 100
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "QaGS4SiU1kai0+1m608lPQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "Gxkfi2imR06tjLwSH6GqoQ==",
-              "TemplateId": "mU37zLhU+0egDEk/w6rKuw==",
-              "CreateUtc": "2021-06-23T11:19:40.5640265",
-              "Count": 1.00,
-              "Properties": {
-                "perfabs": "Tiger_Skin_nangua",
-                "nm": 4006,
-                "mhp": 90,
-                "atk": 60,
-                "qlt": 130,
-                "body": 4004,
-                "bd": 100
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "QaGS4SiU1kai0+1m608lPQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "WcOFkkjpYUmEWdeOHL03Nw==",
-              "TemplateId": "aCSd2csbB06epw2pHzf4Ow==",
-              "CreateUtc": "2021-06-23T11:19:40.5640231",
-              "Count": 1.00,
-              "Properties": {
-                "perfabs": "Giraffe_Skin_yangtuo",
-                "nm": 4005,
-                "mhp": 80,
-                "atk": 30,
-                "qlt": 15,
-                "body": 4003,
-                "bd": 100
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "QaGS4SiU1kai0+1m608lPQ==",
-              "ClientString": null
-            }
-          ],
-          "ParentId": null,
-          "ClientString": null
-        },
-        {
-          "Id": "skzgiE8zHUWNhfr4Bx6vLg==",
-          "TemplateId": "e843ZAOKZ06fiYyatxQSYw==",
-          "CreateUtc": "2021-06-23T11:19:30.7551256",
-          "Count": 1.00,
-          "Properties": { "cap": -1 },
-          "OwnerId": "BZpXiH3/iEKbKEerA4BTPA==",
-          "Children": [
-            {
-              "Id": "0Ylhf9CsvkO+WxzDlwbm7g==",
-              "TemplateId": "IVAjjKl53UuB4S3Yil1FDw==",
-              "CreateUtc": "2021-06-23T11:19:41.1517622",
-              "Count": 1.00,
-              "Properties": {
-                "hbab": 4001,
-                "hbbb": 4002,
-                "hbsr": 0.7,
-                "hbcb": 4005,
-                "outheadtid": "{2F49F4FB-18B5-4656-8AB0-D701609091EB}",
-                "outbodytid": "{FD5C7CB2-9D57-4434-B392-3334D77D734B}"
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "skzgiE8zHUWNhfr4Bx6vLg==",
+              "ParentId": "StcMt4KAskurKPX5nwYo0w==",
               "ClientString": null
             }
           ],
@@ -2170,5 +447,5 @@
       "ClientExtendProperties": {}
     }
   ],
-  "Token": "wth5EvuR7Ua6Sxs1fV/O7w=="
+  "Token": "H8p1+uV/bUKM44lna34Y7g=="
 }

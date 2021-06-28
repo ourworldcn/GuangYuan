@@ -31,11 +31,6 @@ namespace GY2021001BLL
             return string.IsNullOrWhiteSpace(str) ? Guid.Empty : new Guid(Convert.FromBase64String(str));
         }
 
-        public static GameItemTemplate GetTemplate(this GameChar gameChar)
-        {
-            return null;
-        }
-
     }
 }
 

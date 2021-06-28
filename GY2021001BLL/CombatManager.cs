@@ -19,7 +19,6 @@ namespace GY2021001BLL
     {
         public CombatManagerOptions()
         {
-
         }
 
         /// <summary>
@@ -414,7 +413,7 @@ namespace GY2021001BLL
                 //记录收益——改写收益槽数据
                 List<GameItem> lst = new List<GameItem>();
                 World.ItemManager.AddItems(data.GameItems, shouyiSlot, lst);
-                Trace.WriteLineIf(lst.Count > 0, "老爷老爷，大事不好东西没放进去。");   //目前是不可能地
+                Trace.WriteLineIf(lst.Count > 0, "大事不好东西没放进去。");   //目前是不可能地
 
                 //判断大关卡是否要结束
                 //下一关数据
@@ -668,17 +667,10 @@ namespace GY2021001BLL
             dic["qlt"] = qlt;
             //计算主动技能等级
             var ssc = shenwen.GetDecimalOrDefault("sscatk", decimal.Zero) + shenwen.GetDecimalOrDefault("sscmhp", decimal.Zero) + shenwen.GetDecimalOrDefault("sscqlt", decimal.Zero);
-            int i;
-            for (i = 0; i < _aryTupo.Length; i++)
-                if (ssc < _aryTupo[i])
-                    break;
-            int lvZhudong = i - 1; //主动技能等级
+            int lvZhudong = Array.FindLastIndex(_aryTupo, c => ssc >= c); //主动技能等级
             //计算被动技能等级
             var lv = (int)gameItem.GetDecimalOrDefault("lv", decimal.Zero);
-            for (i = 0; i < _aryLvZuoqi.Length; i++)
-                if (lv < _aryLvZuoqi[i])
-                    break;
-            var lvBeidong = i - 1;  //被动技能等级
+            var lvBeidong = Array.FindLastIndex(_aryLvZuoqi, c => ssc >= c);  //被动技能等级
 
             var abi = mhp + atk * 10 + qlt * 30;    //战力
             abi += 500 + 100 * lvZhudong;   //合并主动技能战力
@@ -687,6 +679,42 @@ namespace GY2021001BLL
             dic["lvbeidong"] = lvBeidong;
             dic["abi"] = abi;
             return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        private static float GetFloatOrDefalut(IDictionary<string, float> dic, string key, float defaultVal = 0f)
+        {
+            return dic.TryGetValue(key, out var result) ? result : defaultVal;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="dic"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void GetCombatProperties(GameThingBase thing, IEnumerable<string> propertyNames, IDictionary<string, float> dic)
+        {
+            foreach (var name in propertyNames)
+            {
+                dic[name] = OwHelper.TryGetDecimal(thing.Properties.GetValueOrDefault(name, 0m), out var tmp) ? (float)tmp : 0f;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddCombatProperties(GameThingBase thing, IDictionary<string, float> dic)
+        {
+            dic["atk"] = (float)thing.GetDecimalOrDefault("atk") + GetFloatOrDefalut(dic, "atk");
+            dic["mhp"] = (float)thing.GetDecimalOrDefault("mhp") + GetFloatOrDefalut(dic, "mhp");
+            dic["qlt"] = (float)thing.GetDecimalOrDefault("qlt") + GetFloatOrDefalut(dic, "qlt");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void MultCombatProperties(GameThingBase thing, IDictionary<string, float> dic)
+        {
+            dic["atk"] = (float)thing.GetDecimalOrDefault("atk") * GetFloatOrDefalut(dic, "atk");
+            dic["mhp"] = (float)thing.GetDecimalOrDefault("mhp") * GetFloatOrDefalut(dic, "mhp");
+            dic["qlt"] = (float)thing.GetDecimalOrDefault("qlt") * GetFloatOrDefalut(dic, "qlt");
         }
     }
 }
