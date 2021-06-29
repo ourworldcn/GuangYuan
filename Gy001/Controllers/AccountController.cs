@@ -91,12 +91,14 @@ namespace GY2021001WebApi.Controllers
         /// 发送一个空操作以保证闲置下线重新开始计时。
         /// </summary>
         /// <param name="model">令牌。</param>
-        /// <returns>true成功的延迟下线时间，false指定令牌无效。</returns>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        /// <response code="200">成功刷新。</response>
         [HttpPost]
-        public ActionResult<bool> Nop(NopParamsDto model)
+        public ActionResult Nop(NopParamsDto model)
         {
             var gm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
-            return gm.Nope(GameHelper.FromBase64String(model.Token));
+            return gm.Nope(GameHelper.FromBase64String(model.Token)) ? Ok() as ActionResult : Unauthorized("令牌错误。");
         }
 
         /// <summary>

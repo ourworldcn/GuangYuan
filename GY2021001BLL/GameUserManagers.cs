@@ -287,8 +287,7 @@ namespace GY2021001BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameUser GetUserFromToken(Guid token)
         {
-            _Token2User.TryGetValue(token, out GameUser result);
-            return result;
+            return _Token2User.TryGetValue(token, out GameUser result) ? result : null;
         }
 
         /// <summary>
@@ -309,6 +308,7 @@ namespace GY2021001BLL
         /// <param name="user"></param>
         /// <param name="timeout">超时时间。</param>
         /// <returns>true该用户已经锁定且有效。false锁定超时或用户已经无效。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public bool Lock(GameUser user, TimeSpan timeout)
         {
             if (user.IsDisposed)    //若已经无效
@@ -542,7 +542,7 @@ namespace GY2021001BLL
         public bool Nope(Guid token)
         {
             var gu = GetUserFromToken(token);
-            return Nope(gu);
+            return gu == null ? false : Nope(gu);
         }
 
         /// <summary>

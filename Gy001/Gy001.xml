@@ -29,7 +29,9 @@
             发送一个空操作以保证闲置下线重新开始计时。
             </summary>
             <param name="model">令牌。</param>
-            <returns>true成功的延迟下线时间，false指定令牌无效。</returns>
+            <returns></returns>
+            <response code="401">令牌错误。</response>
+            <response code="200">成功刷新。</response>
         </member>
         <member name="M:GY2021001WebApi.Controllers.AccountController.ChangePwd(GY2021001WebApi.Models.ChangePwdParamsDto)">
             <summary>
