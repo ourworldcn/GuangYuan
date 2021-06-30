@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Gy2021001Template
@@ -141,6 +142,19 @@ namespace Gy2021001Template
         {
             var tmp = Id.ToString();
             return $"{DisplayName}(Properties.Count = {Properties.Count}, Id = {{{tmp[0..4]}...{tmp[^4..^0]}}})";
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public bool TryGetPropertyValue(string propertyName, out object result)
+        {
+            bool succ;
+            switch (propertyName)
+            {
+                default:
+                    succ = Properties.TryGetValue(propertyName, out result);
+                    break;
+            }
+            return succ;
         }
     }
 }

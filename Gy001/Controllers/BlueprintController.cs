@@ -45,12 +45,12 @@ namespace Gy001.Controllers
             //执行蓝图制造
             if (!world.BlueprintManager.Id2BlueprintTemplate.TryGetValue(new Guid("d40c1818-06cf-4d19-9f6e-5ba54472b6fc"), out BlueprintTemplate blueprint))
                 return Unauthorized();
-            var gc = gu.GameChars[0];
+            var gc = gu.CurrentChar;
             ApplyBlueprintDatas applyBluprintDatas = new ApplyBlueprintDatas()
             {
                 Count = 9,
                 Blueprint = blueprint,
-                GameChar = gu.GameChars[0],
+                GameChar = gu.CurrentChar,
             };
             var shenwenBag = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShenWenSlotId);
             applyBluprintDatas.GameItems.Add(new GameItem()
@@ -83,13 +83,14 @@ namespace Gy001.Controllers
             {
                 return Unauthorized("令牌无效");
             }
+            ApplyBlueprintDatas datas = null;
             try
             {
-                ApplyBlueprintDatas datas = new ApplyBlueprintDatas()
+                datas = new ApplyBlueprintDatas()
                 {
                     Blueprint = world.BlueprintManager.GetTemplateFromId(GameHelper.FromBase64String(model.BlueprintId)) as BlueprintTemplate,  //这里不处理是空的情况
-                    GameChar = gu.GameChars[0],
-                    Count=model.Count,
+                    GameChar = gu.CurrentChar,
+                    Count = model.Count,
                 };
                 datas.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
                 world.BlueprintManager.ApplyBluprint(datas);
@@ -107,6 +108,18 @@ namespace Gy001.Controllers
             {
                 world.CharManager.Unlock(gu, true);
             }
+            if (datas != null && datas.Blueprint != null && !result.HasError)
+                switch (datas.Blueprint.Id.ToString("D").ToLower())
+                {
+                    case "c7051e47-0a73-4319-85dc-7b02f26f14f4":    //兽栏背包扩容
+                        {
+                            var tidStr = ProjectConstant.ShoulanSlotId.ToBase64String();
+                            result.ChangesItems.SelectMany(c => c.Changes).FirstOrDefault(c => c.TemplateId == tidStr)?.Children?.Clear();  //清空子对象。
+                        }
+                        break;
+                    default:
+                        break;
+                }
             return result;
         }
     }

@@ -34,7 +34,7 @@ namespace GY2021001DAL
         /// 模板对象。
         /// </summary>
         [NotMapped]
-        public GameTemplateBase Template { get; set; }
+        public GameThingTemplateBase Template { get; set; }
 
         public virtual T GetProperyValue<T>(string name, T defaultValue = default)
         {
@@ -54,7 +54,7 @@ namespace GY2021001DAL
 
         #region 事件及相关
 
-        public void InvokeLoaded(GameTemplateBase template)
+        public void InvokeLoaded(GameThingTemplateBase template)
         {
             Template = template;
         }
@@ -111,7 +111,7 @@ namespace GY2021001DAL
         Dictionary<string, object> _Properties;
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
-        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
+        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，拆箱问题不大，且非核心战斗才会较多的使用该系统。
         /// </summary>
         [NotMapped]
         public Dictionary<string, object> Properties
@@ -188,6 +188,7 @@ namespace GY2021001DAL
         /// <param name="propertyName"></param>
         /// <param name="result"></param>
         /// <returns>true成功返回属性，false未找到属性。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public virtual bool TryGetPropertyValue(string propertyName, out object result)
         {
             bool succ;
@@ -195,6 +196,8 @@ namespace GY2021001DAL
             {
                 default:
                     succ = Properties.TryGetValue(propertyName, out result);
+                    if (!succ && null != Template)
+                        succ = Template.TryGetPropertyValue(propertyName, out result);
                     break;
             }
             return succ;
@@ -206,14 +209,19 @@ namespace GY2021001DAL
         /// <param name="propertyName"></param>
         /// <param name="val"></param>
         /// <returns>true，如果属性名存在或确实应该有(基于某种需要)，且设置成功。false，设置成功一个不存在且不认识的属性。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public virtual bool SetPropertyValue(string propertyName, object val)
         {
             bool succ;
             switch (propertyName)
             {
                 default:
-                    succ = Properties.ContainsKey(propertyName);
-                    Properties[propertyName] = val;
+                    succ = TryGetPropertyValue(propertyName, out var oldVal);
+                    if (!succ || !Equals(oldVal, val))
+                    {
+                        Properties[propertyName] = val;
+                        succ = true;
+                    }
                     break;
             }
             return succ;

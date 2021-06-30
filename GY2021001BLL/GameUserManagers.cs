@@ -186,7 +186,6 @@ namespace GY2021001BLL
                         {
                             if (item.IsDisposed)    //若已经无效
                                 continue;
-                            item.GameChars[0].InvokeSaving();
                             item.DbContext.SaveChanges();
                         }
                         finally
@@ -203,7 +202,7 @@ namespace GY2021001BLL
                     catch (Exception err)
                     {
                         Trace.WriteLine($"保存数据时出现未知错误{err.Message}");
-                        var coll = OwHelper.GetAllSubItemsOfTree(item.GameChars[0].GameItems, c => c.Children);
+                        var coll = OwHelper.GetAllSubItemsOfTree(item.CurrentChar.GameItems, c => c.Children);
                         var coll2 = coll.Where(c => c.Id == Guid.Empty).ToArray();
                     }
                 }
@@ -432,13 +431,10 @@ namespace GY2021001BLL
                         token = Guid.NewGuid();
                         gu.CurrentToken = token;
                         gu.DbContext = db;
-                        foreach (var item in gu.GameChars)
-                        {
-                            item.GameItems.AddRange(db.GameItems.Where(c => c.OwnerId == item.Id).Include(c => c.Children).ThenInclude(c => c.Children));
-                        }
+                        gu.CurrentChar = gu.GameChars[0];
                         _LoginName2Token.AddOrUpdate(loginName, token, (c1, c2) => token);
                         _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
-                        var gc = gu.GameChars[0];
+                        var gc = gu.CurrentChar;
                         var gcId = gc.Id;
 
                         var coll = gu.DbContext.Set<GameClientExtendProperty>().Where(c => c.ParentId == gcId);
@@ -447,7 +443,7 @@ namespace GY2021001BLL
                             gc.ClientExtendProperties[item.Name] = item;
                         }
                         _Id2GameChar[gc.Id] = gc;
-                        OnCharLoaded(new CharLoadedEventArgs(gu.GameChars[0]));
+                        OnCharLoaded(new CharLoadedEventArgs(gu.CurrentChar));
                     }
                 }
             }
@@ -526,6 +522,7 @@ namespace GY2021001BLL
                 var charTemplate = ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
                 var gc = CreateChar(charTemplate);
                 gu.GameChars.Add(gc);
+                gu.CurrentChar = gu.GameChars[0];
                 db.GameItems.AddRange(gc.GameItems);
                 db.GameUsers.Add(gu);
                 db.SaveChanges();
@@ -599,7 +596,6 @@ namespace GY2021001BLL
                     }
                     try
                     {
-                        gu.GameChars[0].InvokeSaving();
                         gu.DbContext.SaveChanges();
                         gu.DbContext.Dispose();
                     }
@@ -610,7 +606,7 @@ namespace GY2021001BLL
                     gu.IsDisposed = true;
                     _Token2User.TryRemove(token, out _);
                     _LoginName2Token.TryRemove(loginName, out _);
-                    _Id2GameChar.Remove(gu.GameChars[0].Id, out _); //去除角色Id
+                    _Id2GameChar.Remove(gu.CurrentChar.Id, out _); //去除角色Id
                     _LoginName.Remove(loginName, out _);    //去除登录名
                 }
             }

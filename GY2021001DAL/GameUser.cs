@@ -78,6 +78,13 @@ namespace GY2021001DAL
         /// 创建该对象的通用协调时间。
         /// </summary>
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 玩家当前使用的角色。
+        /// 选择当前角色后，需要设置该属性。
+        /// </summary>
+        [NotMapped]
+        public GameChar CurrentChar { get; set; }
         #endregion 非数据库属性
 
         #region 事件

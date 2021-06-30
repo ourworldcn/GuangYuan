@@ -34,7 +34,7 @@ namespace GY2021001WebApi.Controllers
             var gu = gitm.GetUserFromToken(GameHelper.FromBase64String(model.Token));
             if (null == gu) //若令牌无效
                 return Unauthorized();
-            var gc = gu.GameChars[0];
+            var gc = gu.CurrentChar;
             if (null != gc.DisplayName) //若已经有名字
                 return StatusCode((int)HttpStatusCode.PaymentRequired); //TO DO
             gc.DisplayName = model.DisplayName;
@@ -61,14 +61,14 @@ namespace GY2021001WebApi.Controllers
             if (null == gu) //若令牌无效
                 return Unauthorized();
             var objectId = GameHelper.FromBase64String(model.ObjectId);
-            if (gu.GameChars[0].Id == objectId)
+            if (gu.CurrentChar.Id == objectId)
             {
-                gu.GameChars[0].ClientGutsString = model.ClientString;
+                gu.CurrentChar.ClientGutsString = model.ClientString;
                 gitm.NotifyChange(gu);
             }
             else
             {
-                var succ = gitm.ModifyClientString(gu.GameChars[0], objectId, model.ClientString);
+                var succ = gitm.ModifyClientString(gu.CurrentChar, objectId, model.ClientString);
                 if (!succ)
                     result.HasError = true;
             }
@@ -91,7 +91,7 @@ namespace GY2021001WebApi.Controllers
             }
             try
             {
-                var gc = gu.GameChars[0];
+                var gc = gu.CurrentChar;
                 if (model.IsRemove)
                 {
                     if (!gc.ClientExtendProperties.Remove(model.Name, out GameClientExtendProperty val))
@@ -137,7 +137,7 @@ namespace GY2021001WebApi.Controllers
             try
             {
                 lst = world.ObjectPoolListGameItem.Get();   //获取列表
-                var gc = gu.GameChars[0];
+                var gc = gu.CurrentChar;
 
                 var zuoqiBag = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId); //背包容器
                 var combatSlot = gc.GameItems.First(c => c.TemplateId == ProjectConstant.DangqianZuoqiSlotId);  //出战容器
@@ -172,7 +172,7 @@ namespace GY2021001WebApi.Controllers
                 return Unauthorized("令牌无效");
             try
             {
-                var gc = gu.GameChars[0];
+                var gc = gu.CurrentChar;
                 var shoulan = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId); //兽栏
                 HashSet<Guid> ids = new HashSet<Guid>(shoulan.Children.Select(c => c.Id));  //所有兽栏动物Id
                 var sellIds = new HashSet<Guid>(model.Ids.Select(c => GameHelper.FromBase64String(c)));    //要卖的物品Id
@@ -243,7 +243,7 @@ namespace GY2021001WebApi.Controllers
                 return Unauthorized("令牌无效");
             try
             {
-                var gc = gu.GameChars[0];
+                var gc = gu.CurrentChar;
                 var gim = world.ItemManager;
                 var allDic = gim.GetAllChildrenDictionary(gc);
                 var coll = from tmp in model.Settings
@@ -305,7 +305,7 @@ namespace GY2021001WebApi.Controllers
                     result.DebugMessage = "空的参数";
                     return result;
                 }
-                var gc = gu.GameChars[0];
+                var gc = gu.CurrentChar;
                 var lst = new List<GameItem>();
                 var coll = from tmp in model.Items
                            select (Id: GameHelper.FromBase64String(tmp.ItemId), Count: tmp.Count, PId: GameHelper.FromBase64String(tmp.DestContainerId));
@@ -357,7 +357,7 @@ namespace GY2021001WebApi.Controllers
                 return Unauthorized("令牌无效");
             try
             {
-                var gc = gu.GameChars[0];
+                var gc = gu.CurrentChar;
                 var gim = world.ItemManager;
                 List<GameItem> lst = new List<GameItem>();
                 foreach (var item in model.Items)

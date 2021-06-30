@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,6 +19,7 @@ using OwGame;
 using OwGame.Expression;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -163,4 +166,32 @@ namespace Gy001
 
     }
 
+    //public class AadAuthenticationInterceptor : DbConnectionInterceptor
+    //{
+    //    public override InterceptionResult ConnectionOpening(
+    //        DbConnection connection,
+    //        ConnectionEventData eventData,
+    //        InterceptionResult result)
+    //        => throw new InvalidOperationException("Open connections asynchronously when using AAD authentication.");
+
+    //    //public override async ValueTask<InterceptionResult> ConnectionOpeningAsync(
+    //    //    DbConnection connection,
+    //    //    ConnectionEventData eventData,
+    //    //    InterceptionResult result,
+    //    //    CancellationToken cancellationToken = default)
+    //    //{
+    //    //    var sqlConnection = (SqlConnection)connection;
+
+    //    //    //var provider = new AzureServiceTokenProvider();
+    //    //    // Note: in some situations the access token may not be cached automatically the Azure Token Provider.
+    //    //    // Depending on the kind of token requested, you may need to implement your own caching here.
+    //    //    //sqlConnection.AccessToken = await provider.GetAccessTokenAsync("https://database.windows.net/", null, cancellationToken);
+
+    //    //    return result;
+    //    //}
+    //    public override void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData)
+    //    {
+    //        base.ConnectionOpened(connection, eventData);
+    //    }
+    //}
 }

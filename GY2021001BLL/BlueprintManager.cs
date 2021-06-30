@@ -643,7 +643,7 @@ namespace GY2021001BLL
                     }
                 }
                 ChangesItem.Reduce(datas.ChangesItem);    //压缩变化数据
-                switch (datas.Blueprint.Id.ToString())
+                switch (datas.Blueprint.Id.ToString("D").ToLower())
                 {
                     case "8b4ac76c-d8cc-4300-95ca-668350149821": //针对孵化蓝图
                         var tmp = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);

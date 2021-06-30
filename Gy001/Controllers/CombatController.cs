@@ -40,7 +40,7 @@ namespace GY2021001WebApi.Controllers
             var cbm = world.CombatManager;
             StartCombatData data = new StartCombatData()
             {
-                GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.GameChars[0],
+                GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.CurrentChar,
                 Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
             };
             cbm.StartCombat(data);
@@ -59,7 +59,7 @@ namespace GY2021001WebApi.Controllers
             var world = HttpContext.RequestServices.GetService<VWorld>();
             var result = new EndCombatData()
             {
-                GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.GameChars[0],
+                GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.CurrentChar,
                 Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
                 EndRequested = model.EndRequested,
             };
@@ -83,14 +83,14 @@ namespace GY2021001WebApi.Controllers
             var gu = world.CharManager.Login(loginName, pwd, "");
             var sd = new StartCombatData()
             {
-                GameChar = gu.GameChars[0],
+                GameChar = gu.CurrentChar,
                 Template = world.ItemTemplateManager.Id2Template.Values.First(c => Convert.ToInt32(c.Properties.GetValueOrDefault("sec", -2m)) == -1),
             };
             world.CombatManager.StartCombat(sd);
 
             EndCombatData endCombatData = new EndCombatData()
             {
-                GameChar = gu.GameChars[0],
+                GameChar = gu.CurrentChar,
                 EndRequested = true,
                 Template = sd.Template,
             };

@@ -129,9 +129,9 @@ namespace GY2021001WebApi.Controllers
                 return BadRequest("令牌无效");
             try
             {
-                foreach (var item in gu.GameChars[0].GradientProperties)
+                foreach (var item in gu.CurrentChar.GradientProperties)
                     item.Value.GetCurrentValueWithUtc();
-                return gu.GameChars[0].GradientProperties.Values.Select(c => (GradientPropertyDto)c).ToList();
+                return gu.CurrentChar.GradientProperties.Values.Select(c => (GradientPropertyDto)c).ToList();
             }
             finally
             {
