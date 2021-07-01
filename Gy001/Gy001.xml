@@ -1083,12 +1083,6 @@
             测试点。
             </summary>
         </member>
-        <member name="M:Gy001.Program.LoadCache(Microsoft.Extensions.Hosting.IHost)">
-            <summary>
-            加载缓存。
-            </summary>
-            <param name="host"></param>
-        </member>
         <member name="M:Gy001.Program.CreateDb(Microsoft.Extensions.Hosting.IHost)">
             <summary>
             创建数据库。

@@ -28,7 +28,6 @@ namespace Gy001
             var host = CreateHostBuilder(args).Build();
             _Host = host;
             CreateDb(_Host);
-            LoadCache(_Host);
             Test(_Host);
             _Host.Run();
         }
@@ -46,17 +45,6 @@ namespace Gy001
                 {
                     webBuilder.UseStartup<Startup>();
                 });
-
-        /// <summary>
-        /// 加载缓存。
-        /// </summary>
-        /// <param name="host"></param>
-        private static void LoadCache(IHost host)
-        {
-            var gitm = host.Services.GetService<GameItemTemplateManager>();
-            var bptm = host.Services.GetService<BlueprintManager>();
-            var test = host.Services.GetService<GamePropertyHelper>();
-        }
 
         /// <summary>
         /// 创建数据库。

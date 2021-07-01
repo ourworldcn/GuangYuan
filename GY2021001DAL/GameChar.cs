@@ -59,6 +59,10 @@ namespace GY2021001DAL
                 }
                 return _GameItems;
             }
+            internal set
+            {
+                _GameItems = value;
+            }
         }
 
 

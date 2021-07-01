@@ -112,8 +112,9 @@ namespace OwGame
             OwHelper.TryGetDecimal(dic[$"{ClassPrefix}i{name}"], out var pi);
             OwHelper.TryGetDecimal(dic[$"{ClassPrefix}d{name}"], out var pd);
             OwHelper.TryGetDecimal(dic[$"{ClassPrefix}m{name}"], out var pm);
-            OwHelper.TryGetDecimal(dic[$"{ClassPrefix}c{name}"], out var pc);
-            DateTime.TryParse(dic[$"{ClassPrefix}t{name}"] as string, out var pt);
+            OwHelper.TryGetDecimal(dic.GetValueOrDefault($"{ClassPrefix}c{name}", 0m), out var pc);
+            if (!dic.TryGetValue($"{ClassPrefix}t{name}", out var tmpl) || !(tmpl is string strl) || !DateTime.TryParse(strl, out var pt))
+                pt = DateTime.UtcNow;
             return new FastChangingProperty(pc, pt, TimeSpan.FromSeconds((double)pd), pi, pm);
         }
 
@@ -168,22 +169,22 @@ namespace OwGame
         {
             switch (propertyNamePrefix)
             {
-                case 'i':
+                case 'i':   //增量
                     result = Increment;
                     break;
-                case 'd':
+                case 'd':   //增量间隔，单位:秒
                     result = (decimal)Delay.TotalSeconds;
                     break;
-                case 'm':
+                case 'm':   //最大值
                     result = MaxValue;
                     break;
-                case 'c':
+                case 'c':   //当前刷新后的最后值
                     result = GetCurrentValueWithUtc();
                     break;
-                case 'l':
+                case 'l':   //最后计算结果值
                     result = LastValue;
                     break;
-                case 't':
+                case 't':   //最后计算时间点
                     GetCurrentValueWithUtc();
                     result = LastComputerDateTime.ToString("s");
                     break;

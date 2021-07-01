@@ -34,6 +34,11 @@ namespace GY2021001DAL
             base.OnModelCreating(modelBuilder);
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+        }
+
         /// <summary>
         /// 用户账号表。
         /// </summary>

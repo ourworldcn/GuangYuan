@@ -45,6 +45,7 @@ namespace Gy001
             var userDbConnectionString = Configuration.GetConnectionString("DefaultConnection");
             var templateDbConnectionString = Configuration.GetConnectionString("TemplateDbConnection");
 
+            services.AddHostedService<GameHostedService>();
             #region 配置通用服务
 
             services.AddResponseCompression();
@@ -52,7 +53,7 @@ namespace Gy001
             services.AddLogging(builder =>
             {
                 builder.AddEventSourceLogger();
-                builder.AddConfiguration(Configuration.GetSection("Logging")); 
+                builder.AddConfiguration(Configuration.GetSection("Logging"));
 
                 builder.AddConsole(option => option.IncludeScopes = true);
 #if DEBUG
@@ -108,7 +109,7 @@ namespace Gy001
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
             {
                 Loaded = SpecificProject.ItemTemplateLoaded,
-            })); 
+            }));
             services.AddSingleton(c => new GameItemManager(c, new GameItemManagerOptions()
             {
                 ItemCreated = SpecificProject.GameItemCreated,
@@ -140,7 +141,7 @@ namespace Gy001
                 app.UseDeveloperExceptionPage();
             }
             #endregion 启用通用服务
-            
+
             #region 启用中间件服务生成Swagger
             app.UseSwagger();
             //启用中间件服务生成SwaggerUI，指定Swagger JSON终结点

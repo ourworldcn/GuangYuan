@@ -2,8 +2,10 @@
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.ObjectPool;
 using OwGame;
+using OwGame.Expression;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,6 +15,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GY2021001BLL
 {
@@ -201,6 +204,46 @@ namespace GY2021001BLL
             obj.Clear();
             return true;
         }
+
+    }
+
+    /// <summary>
+    /// 游戏的服务主机。
+    /// </summary>
+    public class GameHostedService : IHostedService
+    {
+        private IServiceProvider _Services;
+
+        public GameHostedService(IServiceProvider services)
+        {
+            _Services = services;
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            LoadCache();
+            var svr = _Services.GetService<IHostApplicationLifetime>();
+            Task.Run(() =>
+            {
+            });
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 加载缓存。
+        /// </summary>
+        private void LoadCache()
+        {
+            var gitm = _Services.GetService<GameItemTemplateManager>();
+            var bptm = _Services.GetService<BlueprintManager>();
+            var test = _Services.GetService<GamePropertyHelper>();
+        }
+
 
     }
 }

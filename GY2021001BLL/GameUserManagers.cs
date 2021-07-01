@@ -520,10 +520,9 @@ namespace GY2021001BLL
                 };
                 var vw = World;
                 var charTemplate = ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
-                var gc = CreateChar(charTemplate);
+                var gc = CreateChar(charTemplate, gu);
                 gu.GameChars.Add(gc);
                 gu.CurrentChar = gu.GameChars[0];
-                db.GameItems.AddRange(gc.GameItems);
                 db.GameUsers.Add(gu);
                 db.SaveChanges();
             }
@@ -639,8 +638,9 @@ namespace GY2021001BLL
         /// 特别地，GameChar.Children中的元素需要额外加入，这个属性当前不是自动导航属性。
         /// </summary>
         /// <param name="template"></param>
+        /// <param name="user"></param>
         /// <returns></returns>
-        public GameChar CreateChar(GameItemTemplate template)
+        public GameChar CreateChar(GameItemTemplate template, GameUser user)
         {
             var result = new GameChar()
             {
@@ -667,9 +667,15 @@ namespace GY2021001BLL
                     result.Properties[item.Key] = item.Value;
             }
             result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
+            //建立关联
+            result.GameUser = user;
+            result.GameUserId = user.Id;
             //初始化容器
             var gim = World.ItemManager;
-            result.GameItems.AddRange(template.ChildrenTemplateIds.Select(c => gim.CreateGameItem(c, result.Id)));
+            var ary = template.ChildrenTemplateIds.Select(c => gim.CreateGameItem(c, result.Id)).ToArray();
+            user.DbContext.Set<GameItem>().AddRange(ary);
+            result.GameItems.AddRange(ary);
+
             //调用外部创建委托
             try
             {
@@ -680,16 +686,16 @@ namespace GY2021001BLL
             {
             }
             //累计属性
-            var allProps = OwHelper.GetAllSubItemsOfTree(result.GameItems, c => c.Children).SelectMany(c => c.Properties);
-            var coll = from tmp in allProps
-                       where tmp.Value is decimal && tmp.Key != ProjectConstant.LevelPropertyName   //避免累加级别属性
-                       group (decimal)tmp.Value by tmp.Key into g
-                       select ValueTuple.Create(g.Key, g.Sum());
-            foreach (var item in coll)
-            {
-                result.Properties[item.Item1] = item.Item2;
-            }
-            result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
+            //var allProps = OwHelper.GetAllSubItemsOfTree(result.GameItems, c => c.Children).SelectMany(c => c.Properties);
+            //var coll = from tmp in allProps
+            //           where tmp.Value is decimal && tmp.Key != ProjectConstant.LevelPropertyName   //避免累加级别属性
+            //           group (decimal)tmp.Value by tmp.Key into g
+            //           select ValueTuple.Create(g.Key, g.Sum());
+            //foreach (var item in coll)
+            //{
+            //    result.Properties[item.Item1] = item.Item2;
+            //}
+            //result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
 
             return result;
         }
