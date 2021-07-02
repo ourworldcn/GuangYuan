@@ -270,8 +270,11 @@ namespace GY2021001WebApi.Models
                 DebugMessage = obj.DebugMessage,
                 SuccCount = obj.SuccCount,
             };
-            result.ChangesItems.AddRange(obj.ChangesItem.Select(c => (ChangesItemDto)c));
-            result.FormulaIds.AddRange(obj.FormulaIds.Select(c => c.ToBase64String()));
+            if (!result.HasError)
+            {
+                result.ChangesItems.AddRange(obj.ChangesItem.Select(c => (ChangesItemDto)c));
+                result.FormulaIds.AddRange(obj.FormulaIds.Select(c => c.ToBase64String()));
+            }
             return result;
         }
 

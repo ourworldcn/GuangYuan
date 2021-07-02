@@ -3,14 +3,14 @@
   <Class Name="Gy2021001Template.GameTemplateBase">
     <Position X="2" Y="3.25" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAABAAAQAAQAAAAAAAAAQA=</HashCode>
       <FileName>GameTemplateBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Gy2021001Template.GameItemTemplate">
-    <Position X="2" Y="9" Width="2" />
+    <Position X="2" Y="11.75" Width="2" />
     <TypeIdentifier>
-      <HashCode>BAAAAAAACAAAIAAAAAAAAAAAAAAQACAAAAAAAAAAAAA=</HashCode>
+      <HashCode>BAAAAAAACBAAIAAAAAAAAAAAAAAQACAAAAAAAAAAAAA=</HashCode>
       <FileName>GameItemTemplate.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -26,9 +26,9 @@
     <TypeIdentifier />
   </Class>
   <Class Name="Gy2021001Template.GameThingTemplateBase">
-    <Position X="2" Y="5.25" Width="2" />
+    <Position X="2" Y="6.25" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAGAAAAAQAABAAAAAAABAAAAAAAAAAAIgAAAACAAA=</HashCode>
+      <HashCode>AABEGAAAAJQAABAEAAAAABAABAAAABIAAIgAAAACAAA=</HashCode>
       <FileName>GameTemplateBase.cs</FileName>
     </TypeIdentifier>
   </Class>

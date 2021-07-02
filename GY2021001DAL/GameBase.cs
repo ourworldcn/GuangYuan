@@ -13,7 +13,7 @@ using System.Text;
 
 namespace GY2021001DAL
 {
-    public class GameObjectBase : GuidKeyBase
+    public abstract class GameObjectBase : GuidKeyBase
     {
         public GameObjectBase()
         {
@@ -25,39 +25,7 @@ namespace GY2021001DAL
 
         }
 
-        /// <summary>
-        /// 模板Id。
-        /// </summary>
-        public Guid TemplateId { get; set; }
-
-        /// <summary>
-        /// 模板对象。
-        /// </summary>
-        [NotMapped]
-        public GameThingTemplateBase Template { get; set; }
-
-        public virtual T GetProperyValue<T>(string name, T defaultValue = default)
-        {
-            return name switch
-            {
-                "Id" => Id is T id ? id : defaultValue,
-                "TId" => TemplateId is T id ? id : defaultValue,
-                nameof(TemplateId) => TemplateId is T id ? id : defaultValue,
-                _ => defaultValue,
-            };
-        }
-
-        public override string ToString()
-        {
-            return Template?.Remark ?? base.ToString();
-        }
-
         #region 事件及相关
-
-        public void InvokeLoaded(GameThingTemplateBase template)
-        {
-            Template = template;
-        }
 
         #endregion 事件及相关
     }
@@ -94,7 +62,11 @@ namespace GY2021001DAL
         /// </summary>
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
 
+        /// <summary>
+        /// <see cref="Properties"/>属性的后备字段。
+        /// </summary>
         private string _PropertiesString;
+
         /// <summary>
         /// 属性字符串。
         /// </summary>
@@ -116,15 +88,16 @@ namespace GY2021001DAL
         [NotMapped]
         public Dictionary<string, object> Properties
         {
+            [MethodImpl(MethodImplOptions.AggressiveOptimization)]
             get
             {
-                lock (this)
-                    if (null == _Properties)
-                    {
-                        _Properties = new Dictionary<string, object>();
-                        OwHelper.AnalysePropertiesString(PropertiesString, _Properties);
-
-                    }
+                if (null == _Properties)
+                    lock (this)
+                        if (null == _Properties)
+                        {
+                            _Properties = new Dictionary<string, object>();
+                            OwHelper.AnalysePropertiesString(PropertiesString, _Properties);
+                        }
                 return _Properties;
             }
         }
@@ -136,13 +109,13 @@ namespace GY2021001DAL
         /// <param name="name"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        public override T GetProperyValue<T>(string name, T defaultValue = default)
+        public virtual T GetProperyValue<T>(string name, T defaultValue = default)
         {
             if (Properties.TryGetValue(name, out object obj))
             {
                 return (T)Convert.ChangeType(obj, typeof(T));
             }
-            return base.GetProperyValue(name, defaultValue);
+            return defaultValue;
         }
 
         /// <summary>
@@ -177,7 +150,7 @@ namespace GY2021001DAL
         /// <param name="defaultVal"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public decimal GetDecimalOrDefault(string propertyName, decimal defaultVal = 0m)
+        public decimal GetDecimalOrDefault(string propertyName, decimal defaultVal = decimal.Zero)
         {
             return !TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec) ? defaultVal : dec;
         }
@@ -275,6 +248,27 @@ namespace GY2021001DAL
         public void InvokeSaving(EventArgs e)
         {
             OnSaving(e);
+        }
+
+        /// <summary>
+        /// 模板对象。
+        /// </summary>
+        [NotMapped]
+        public GameThingTemplateBase Template { get; set; }
+
+        /// <summary>
+        /// 模板Id。
+        /// </summary>
+        public Guid TemplateId { get; set; }
+
+        public void InvokeLoaded(GameThingTemplateBase template)
+        {
+            Template = template;
+        }
+
+        public void InitialCreation(GameThingTemplateBase template)
+        {
+            Template = template;
         }
 
         #endregion 事件及相关
@@ -375,4 +369,12 @@ namespace GY2021001DAL
         }
     }
 
+    /// <summary>
+    /// 帮助<see cref="GameThingBase"/>获取<see cref="GameThingTemplateBase"/>对象的接口。
+    /// </summary>
+    public interface GameThingTemplateHelper
+    {
+        public GameThingTemplateBase GetTemplateFromeId(Guid id);
+
+    }
 }

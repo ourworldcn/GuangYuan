@@ -3,6 +3,7 @@ using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using OwGame;
 using OwGame.Expression;
@@ -71,21 +72,21 @@ namespace GY2021001BLL
 
         #region 属性及相关
         private GameItemTemplateManager _ItemTemplateManager;
-        public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= Service.GetRequiredService<GameItemTemplateManager>(); }
+        public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= Services.GetRequiredService<GameItemTemplateManager>(); }
 
         private GameCharManager _GameCharManager;
-        public GameCharManager CharManager { get => _GameCharManager ??= Service.GetRequiredService<GameCharManager>(); }
+        public GameCharManager CharManager { get => _GameCharManager ??= Services.GetRequiredService<GameCharManager>(); }
 
         private CombatManager _CombatManager;
-        public CombatManager CombatManager { get => _CombatManager ??= Service.GetRequiredService<CombatManager>(); }
+        public CombatManager CombatManager { get => _CombatManager ??= Services.GetRequiredService<CombatManager>(); }
 
         private GameItemManager _GameItemManager;
 
-        public GameItemManager ItemManager { get => _GameItemManager ??= Service.GetRequiredService<GameItemManager>(); }
+        public GameItemManager ItemManager { get => _GameItemManager ??= Services.GetRequiredService<GameItemManager>(); }
 
         private BlueprintManager _BlueprintManager;
 
-        public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Service.GetRequiredService<BlueprintManager>(); }
+        public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Services.GetRequiredService<BlueprintManager>(); }
 
         ObjectPool<List<GameItem>> _ObjectPoolListGameItem;
 
@@ -96,7 +97,7 @@ namespace GY2021001BLL
                 if (null == _ObjectPoolListGameItem)
                 {
                     lock (ThisLocker)
-                        _ObjectPoolListGameItem ??= Service.GetService<ObjectPool<List<GameItem>>>() ?? new DefaultObjectPool<List<GameItem>>(new ListGameItemPolicy(), Environment.ProcessorCount * 8);
+                        _ObjectPoolListGameItem ??= Services.GetService<ObjectPool<List<GameItem>>>() ?? new DefaultObjectPool<List<GameItem>>(new ListGameItemPolicy(), Environment.ProcessorCount * 8);
                 }
                 return _ObjectPoolListGameItem;
             }
@@ -188,6 +189,9 @@ namespace GY2021001BLL
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class ListGameItemPolicy : PooledObjectPolicy<List<GameItem>>
     {
         public ListGameItemPolicy()
@@ -204,7 +208,6 @@ namespace GY2021001BLL
             obj.Clear();
             return true;
         }
-
     }
 
     /// <summary>
@@ -222,10 +225,9 @@ namespace GY2021001BLL
         public Task StartAsync(CancellationToken cancellationToken)
         {
             LoadCache();
-            var svr = _Services.GetService<IHostApplicationLifetime>();
-            Task.Run(() =>
-            {
-            });
+            //Task.Run(() =>
+            //{
+            //});
             return Task.CompletedTask;
         }
 
@@ -244,6 +246,21 @@ namespace GY2021001BLL
             var test = _Services.GetService<GamePropertyHelper>();
         }
 
+        private void CreateDb(IServiceProvider services)
+        {
+            try
+            {
+                var tContext = services.GetRequiredService<GameTemplateContext>();
+                TemplateMigrateDbInitializer.Initialize(tContext);
+                var context = services.GetRequiredService<GY2021001DbContext>();
+                MigrateDbInitializer.Initialize(context);
+            }
+            catch (Exception ex)
+            {
+                var logger = services.GetRequiredService<ILogger<GameHostedService>>();
+                logger.LogError(ex, "An error occurred creating the DB.");
+            }
+        }
 
     }
 }

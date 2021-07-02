@@ -100,6 +100,17 @@ namespace GY2021001WebApi.Models
         /// 坐骑背包Id。
         /// </summary>
         public static readonly Guid ZuojiBagSlotId = new Guid("{BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5}");
+
+        /// <summary>
+        /// 家园模板Id。
+        /// </summary>
+        public static readonly Guid HomelandSlotId = new Guid("{3a855606-a5ee-459b-b1ed-76e9b5847d7d}");
+
+        /// <summary>
+        /// 主基地模板Id。
+        /// </summary>
+        public static readonly Guid MainBaseSlotId = new Guid("{234f8c55-4c3c-4406-ad38-081d29564f20}");
+
         #endregion  角色直属槽及其相关
         /// <summary>
         /// 角色模板Id。当前只有一个模板。

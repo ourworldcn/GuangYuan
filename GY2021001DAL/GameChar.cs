@@ -65,6 +65,23 @@ namespace GY2021001DAL
             }
         }
 
+        /// <summary>
+        /// 获取该物品直接或间接下属对象的枚举数。
+        /// </summary>
+        /// <returns>枚举数。不包含自己。枚举过程中不能更改树节点的关系。</returns>
+        [NotMapped]
+        public IEnumerable<GameItem> AllChildren
+        {
+            get
+            {
+                foreach (var item in GameItems)
+                {
+                    yield return item;
+                    foreach (var item2 in item.AllChildren)
+                        yield return item2;
+                }
+            }
+        }
 
         /// <summary>
         /// 所属用户Id。
@@ -93,6 +110,7 @@ namespace GY2021001DAL
         public DateTime? CombatStartUtc { get; set; }
 
         Dictionary<string, FastChangingProperty> _GradientProperties;
+
         /// <summary>
         /// 渐变属性字典。
         /// </summary>
@@ -132,6 +150,23 @@ namespace GY2021001DAL
         /// </summary>
         public void InvokeLoaded()
         {
+            var db = GameUser.DbContext;
+            //加载所属物品对象
+            _GameItems ??= db.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ThenInclude(c => c.Children).ToList();
+            foreach (var item in _GameItems)
+            {
+                
+            }
+            //加载客户端属性
+            var coll = db.Set<GameClientExtendProperty>().Where(c => c.ParentId == Id);
+            foreach (var item in coll)
+            {
+                ClientExtendProperties[item.Name] = item;
+            }
+            foreach (var item in AllChildren)
+            {
+
+            }
         }
 
         /// <summary>

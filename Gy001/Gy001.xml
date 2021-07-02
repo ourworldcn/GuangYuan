@@ -22,7 +22,7 @@
             <param name="loginParamsDto">登陆参数,参见<seealso cref="T:GY2021001WebApi.Models.LoginParamsDto"/> </param>
             <returns>Token为空则是用户名或密码错误。</returns>
             <response code="500">用户名或密码错误。</response>
-            <response code="429">登录人数过多。请稍后登录。目前按每颗CPU带1000在线计算，未来更具实际数据增减。</response>
+            <response code="503">登录人数过多。请稍后登录。目前按每颗CPU带1000在线计算，未来更具实际数据增减。</response>
         </member>
         <member name="M:GY2021001WebApi.Controllers.AccountController.Nop(GY2021001WebApi.Models.NopParamsDto)">
             <summary>
@@ -607,6 +607,16 @@
         <member name="F:GY2021001WebApi.Models.DtoConstant.ZuojiBagSlotId">
             <summary>
             坐骑背包Id。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.HomelandSlotId">
+            <summary>
+            家园模板Id。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.DtoConstant.MainBaseSlotId">
+            <summary>
+            主基地模板Id。
             </summary>
         </member>
         <member name="F:GY2021001WebApi.Models.DtoConstant.CharTemplateId">

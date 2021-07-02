@@ -1,4 +1,95 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="GY2021001DAL.GameObjectBase">
+    <Position X="4" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GY2021001DAL.GameThingBase">
+    <Position X="4" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAQAQAAGAgABAAAAAEAJAAAAAAAAFAIAhAKBACAAA=</HashCode>
+      <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Template" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GY2021001DAL.GameSetting" Collapsed="true">
+    <Position X="10" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GY2021001DAL.GameClientExtendProperty" Collapsed="true">
+    <Position X="7.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAgAgAAAAAAA=</HashCode>
+      <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GY2021001DAL.GameExtendProperty" Collapsed="true">
+    <Position X="13.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAAEAEAAAAQAAAAAAEAgAgAAAAAAAAA=</HashCode>
+      <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GY2021001DAL.GameThingPropertyHelper" Collapsed="true">
+    <Position X="11.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GY2021001DAL.GameItem">
+    <Position X="3" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIIAAAAAAAEAAAEQAQAAAAAAAAAAgAAAAAAAAA=</HashCode>
+      <FileName>GameItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GY2021001DAL.ChangesItem" Collapsed="true">
+    <Position X="10" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIBAAAAAABAAAAgCgAICAAAAIAAgAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GY2021001DAL.ChangesItemExtensions" Collapsed="true">
+    <Position X="11.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACBAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAA=</HashCode>
+      <FileName>GameItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OwGame.GuidKeyBase" Collapsed="true">
+    <Position X="5.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Gy2021001Template.GameThingTemplateBase" Collapsed="true">
+    <Position X="1" Y="6" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="GY2021001DAL.GameChar">
+    <Position X="5.25" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAEAgAACAAgCAAAIAAAAAAAQAAAAAACAAABJAAAAI=</HashCode>
+      <FileName>GameChar.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="GameItems" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Interface Name="GY2021001DAL.GameThingTemplateHelper" Collapsed="true">
+    <Position X="10" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
   <Font Name="Microsoft YaHei UI" Size="9" />
 </ClassDiagram>

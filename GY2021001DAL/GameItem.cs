@@ -39,10 +39,10 @@ namespace GY2021001DAL
         public decimal? Count { get; set; }
 
         /// <summary>
-        /// 如果物品处于某个容器中，则这个成员指示其所处位置号，从0开始，但未必连续。
+        /// 如果物品处于某个容器中，则这个成员指示其所处位置号，从0开始，但未必连续,序号相同则顺序随机。
         /// </summary>
         [NotMapped] //TO DO
-        public int? OrderNumber { get; set; }
+        public int OrderNumber { get; set; }
 
         /// <summary>
         /// 所属槽导航属性。
@@ -59,6 +59,24 @@ namespace GY2021001DAL
         /// 拥有的子物品或槽。
         /// </summary>
         public virtual List<GameItem> Children { get; } = new List<GameItem>();
+
+        /// <summary>
+        /// 获取该物品直接或间接下属对象的枚举数。
+        /// </summary>
+        /// <returns>枚举数。不包含自己。枚举过程中不能更改树节点的关系。</returns>
+        [NotMapped]
+        public IEnumerable<GameItem> AllChildren
+        {
+            get
+            {
+                foreach (var item in Children)
+                {
+                    yield return item;
+                    foreach (var item2 in item.AllChildren)
+                        yield return item2;
+                }
+            }
+        }
 
         /// <summary>
         /// 所属角色Id或其他关联对象的Id。

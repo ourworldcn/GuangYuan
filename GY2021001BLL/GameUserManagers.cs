@@ -377,7 +377,7 @@ namespace GY2021001BLL
         /// <returns>true是，false密码错误。</returns>
         public bool IsPwd(GameUser user, string pwd)
         {
-            var hashAlgorithm = Service.GetService<HashAlgorithm>();
+            var hashAlgorithm = Services.GetService<HashAlgorithm>();
             var hash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(pwd));
             return Enumerable.SequenceEqual(hash, user.PwdHash);
         }
@@ -428,21 +428,19 @@ namespace GY2021001BLL
                             return null;    //TO DO视同没有
                         if (!IsPwd(gu, pwd))   //若密码错误
                             return null;
+                        //初始化属性
                         token = Guid.NewGuid();
                         gu.CurrentToken = token;
                         gu.DbContext = db;
+                        gu.Services = Services;
                         gu.CurrentChar = gu.GameChars[0];
+                        gu.LastModifyDateTimeUtc = DateTime.UtcNow;
+
+                        //加入全局列表
+                        var gc = gu.CurrentChar;
+                        _Id2GameChar[gc.Id] = gc;
                         _LoginName2Token.AddOrUpdate(loginName, token, (c1, c2) => token);
                         _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
-                        var gc = gu.CurrentChar;
-                        var gcId = gc.Id;
-
-                        var coll = gu.DbContext.Set<GameClientExtendProperty>().Where(c => c.ParentId == gcId);
-                        foreach (var item in coll)
-                        {
-                            gc.ClientExtendProperties[item.Name] = item;
-                        }
-                        _Id2GameChar[gc.Id] = gc;
                         OnCharLoaded(new CharLoadedEventArgs(gu.CurrentChar));
                     }
                 }
@@ -478,7 +476,10 @@ namespace GY2021001BLL
         /// <returns>返回用户对象，当前版本，会默认生成唯一一个角色。指定了用户名且重名的情况将导致返回null。</returns>
         public GameUser QuicklyRegister(ref string pwd, string loginName = null)
         {
-            GameUser result = new GameUser(); //gy210415123456 密码12位大小写
+            GameUser result = new GameUser()
+            {
+
+            }; //gy210415123456 密码12位大小写
             using (var db = World.CreateNewUserDbContext())
             {
                 //生成返回值
@@ -510,7 +511,7 @@ namespace GY2021001BLL
                     pwd = sb.ToString();
                 }
                 //存储角色信息
-                var hash = Service.GetService<HashAlgorithm>();
+                var hash = Services.GetService<HashAlgorithm>();
                 var pwdHash = hash.ComputeHash(Encoding.UTF8.GetBytes(pwd));
                 var gu = new GameUser()
                 {
@@ -626,7 +627,7 @@ namespace GY2021001BLL
             {
                 if (gu.IsDisposed)   //若已经无效
                     return false;
-                var ha = Service.GetService<HashAlgorithm>();
+                var ha = Services.GetService<HashAlgorithm>();
                 gu.PwdHash = ha.ComputeHash(Encoding.UTF8.GetBytes(newPwd));
                 _DirtyUsers.Enqueue(gu);
             }
@@ -680,7 +681,7 @@ namespace GY2021001BLL
             try
             {
                 result.InitialCreation();
-                var dirty = Options?.CharCreated?.Invoke(Service, result);
+                var dirty = Options?.CharCreated?.Invoke(Services, result);
             }
             catch (Exception)
             {
@@ -782,7 +783,6 @@ namespace GY2021001BLL
                 var gitm = World.ItemTemplateManager;
                 foreach (var item in coll)
                     item.InvokeLoaded(gitm.GetTemplateFromeId(item.TemplateId));
-
             }
             catch (Exception)
             {

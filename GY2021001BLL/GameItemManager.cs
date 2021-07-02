@@ -105,7 +105,7 @@ namespace GY2021001BLL
             result.Children.AddRange(template.ChildrenTemplateIds.Select(c => CreateGameItem(c)));
             try
             {
-                var dirty = Options?.ItemCreated?.Invoke(Service, result) ?? false;
+                var dirty = Options?.ItemCreated?.Invoke(Services, result) ?? false;
             }
             catch (Exception)
             {
@@ -162,10 +162,7 @@ namespace GY2021001BLL
         /// <param name="gameItem"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMounts(GameItem gameItem)
-        {
-            return gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi;
-        }
+        public bool IsMounts(GameItem gameItem) => gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi;
 
         /// <summary>
         /// 获取头对象。
@@ -222,7 +219,7 @@ namespace GY2021001BLL
         /// <param name="gameObject"></param>
         /// <returns>如果无效的模板Id，则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameItemTemplate GetTemplate(GameObjectBase gameObject)
+        public GameItemTemplate GetTemplate(GameThingBase gameObject)
         {
             return ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
         }

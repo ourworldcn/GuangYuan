@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,7 +17,10 @@ namespace GY2021001DAL
         SystemShutdown,
     }
 
-    public class GameUser : GameObjectBase
+    /// <summary>
+    /// 用户账户数据类。
+    /// </summary>
+    public class GameUser : GameObjectBase, IDisposable
     {
         public GameUser()
         {
@@ -27,6 +31,41 @@ namespace GY2021001DAL
         {
 
         }
+
+        #region Dispose
+        private bool disposedValue;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    DbContext?.Dispose();
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _GameChars = null;
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~GameUser()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion Dispose
 
         /// <summary>
         /// 登录名。
@@ -47,9 +86,19 @@ namespace GY2021001DAL
         public string Region { get; set; }
 
         /// <summary>
+        /// <see cref="GameChars"/>属性的后备字段。
+        /// </summary>
+        private List<GameChar> _GameChars = new List<GameChar>();
+
+        /// <summary>
         /// 导航到多个角色的属性。
         /// </summary>
-        public virtual List<GameChar> GameChars { get; } = new List<GameChar>();
+        public virtual List<GameChar> GameChars => _GameChars;
+
+        /// <summary>
+        /// 创建该对象的通用协调时间。
+        /// </summary>
+        public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
 
         #region 非数据库属性
 
@@ -72,12 +121,7 @@ namespace GY2021001DAL
         /// 管理该用户数据存储的上下文。
         /// </summary>
         [NotMapped]
-        public Microsoft.EntityFrameworkCore.DbContext DbContext { get; set; }
-
-        /// <summary>
-        /// 创建该对象的通用协调时间。
-        /// </summary>
-        public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
+        public DbContext DbContext { get; set; }
 
         /// <summary>
         /// 玩家当前使用的角色。
@@ -85,6 +129,13 @@ namespace GY2021001DAL
         /// </summary>
         [NotMapped]
         public GameChar CurrentChar { get; set; }
+
+        /// <summary>
+        /// 记录服务提供者。
+        /// </summary>
+        [NotMapped]
+        public IServiceProvider Services { get; set; }
+
         #endregion 非数据库属性
 
         #region 事件

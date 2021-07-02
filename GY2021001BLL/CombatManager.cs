@@ -332,7 +332,7 @@ namespace GY2021001BLL
                 }
                 try
                 {
-                    if (!Options?.CombatStart?.Invoke(Service, data) ?? true)
+                    if (!Options?.CombatStart?.Invoke(Services, data) ?? true)
                     {
                         data.HasError = true;
                         return;

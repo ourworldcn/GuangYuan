@@ -620,7 +620,7 @@ namespace GY2021001BLL
                 }
                 else
                 {
-                    var data = new BlueprintData(Service, datas.Blueprint);
+                    var data = new BlueprintData(Services, datas.Blueprint);
                     for (int i = 0; i < datas.Count; i++)
                     {
                         data.Match(datas);

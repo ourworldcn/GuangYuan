@@ -37,6 +37,7 @@ namespace Gy001Tools
         }
         private void Form2_Load(object sender, EventArgs e)
         {
+            var str = decimal.MaxValue.ToString();
             var d1 = Math.Round(3.5, MidpointRounding.AwayFromZero);
             var d2 = Math.Round(-3.5, MidpointRounding.AwayFromZero);
             var d3 = Math.Round(-3.45, MidpointRounding.AwayFromZero);

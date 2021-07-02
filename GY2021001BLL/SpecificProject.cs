@@ -115,6 +115,18 @@ namespace GY2021001BLL
         public static readonly Guid LockAtkSlotId = new Guid("{82b18ec6-9190-4804-81b5-33ffa0351ade}");
         public static readonly Guid LockMhpSlotId = new Guid("{b0a92419-6daa-41c8-9074-957175fd9c3b}");
         public static readonly Guid LockQltSlotId = new Guid("{b10c4510-0c8e-40ad-87bb-6f5828273e29}");
+
+        /// <summary>
+        /// 家园模板Id。
+        /// </summary>
+        public static readonly Guid HomelandSlotId = new Guid("{3a855606-a5ee-459b-b1ed-76e9b5847d7d}");
+
+        /// <summary>
+        /// 主基地模板Id。
+        /// </summary>
+        public static readonly Guid MainBaseSlotId = new Guid("{234f8c55-4c3c-4406-ad38-081d29564f20}");
+
+
         #endregion 固定模板Id
 
         /// <summary>
@@ -161,6 +173,7 @@ namespace GY2021001BLL
         /// 阵容属性前缀。
         /// </summary>
         public const string ZhenrongPropertyName = "for";
+
 
         #region 类别号
         /// <summary>
@@ -550,4 +563,5 @@ namespace GY2021001BLL
             throw new NotImplementedException();
         }
     }
+
 }
