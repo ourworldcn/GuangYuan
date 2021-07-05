@@ -176,6 +176,16 @@ namespace GY2021001DAL
             return succ;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetDecimal(string propertyName, out decimal result)
+        {
+            if (TryGetPropertyValue(propertyName, out var obj))
+                return OwHelper.TryGetDecimal(obj, out result);
+            else
+                result = default;
+            return false;
+        }
+
         /// <summary>
         /// 设置一个属性。
         /// </summary>

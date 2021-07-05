@@ -10,7 +10,7 @@
   <Class Name="GY2021001DAL.GameThingBase">
     <Position X="4" Y="3.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AABAQAQAAGAgABAAAAAEAJAAAAAAAAFAIAhAKBACAAA=</HashCode>
+      <HashCode>AABAQAwAAGAgABAAAAAEAJAAAAAAAAFAIAhAKBACAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -48,7 +48,7 @@
   <Class Name="GY2021001DAL.GameItem">
     <Position X="3" Y="9.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAIIAAAAAAAEAAAEQAQAAAAAAAAAAgAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAIIAAAAAAAEAAAEQAQAAAAAAAAAAgAAAAAAAAg=</HashCode>
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -75,9 +75,9 @@
     <TypeIdentifier />
   </Class>
   <Class Name="GY2021001DAL.GameChar">
-    <Position X="5.25" Y="9.5" Width="1.5" />
+    <Position X="6.75" Y="9.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>BAAAEAgAACAAgCAAAIAAAAAAAQAAAAAACAAABJAAAAI=</HashCode>
+      <HashCode>BAAAEAgAACAAgCAAAIAAAAAAAQAAAAAACAAABJAAAAo=</HashCode>
       <FileName>GameChar.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>

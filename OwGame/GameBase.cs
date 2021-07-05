@@ -3,6 +3,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace OwGame
@@ -107,8 +108,15 @@ namespace OwGame
             dic[$"{ClassPrefix}t{name}"] = obj.LastComputerDateTime.ToString("s");
         }
 
+        /// <summary>
+        /// 从属性集合生成渐变属性对象。
+        /// </summary>
+        /// <param name="dic">至少要有fcpiXXX,fcpdXXX,fcpmXXX三个属性才能生成。</param>
+        /// <param name="name">主名称，XXX,不带fcpi等前缀。</param>
+        /// <returns>渐变属性对象，如果没有足够属性生成则返回null。</returns>
         static public FastChangingProperty FromDictionary(IReadOnlyDictionary<string, object> dic, string name)
         {
+            Debug.Assert(!name.StartsWith(ClassPrefix),$"主名称不能以{ClassPrefix}开头。");
             OwHelper.TryGetDecimal(dic[$"{ClassPrefix}i{name}"], out var pi);
             OwHelper.TryGetDecimal(dic[$"{ClassPrefix}d{name}"], out var pd);
             OwHelper.TryGetDecimal(dic[$"{ClassPrefix}m{name}"], out var pm);
@@ -116,6 +124,20 @@ namespace OwGame
             if (!dic.TryGetValue($"{ClassPrefix}t{name}", out var tmpl) || !(tmpl is string strl) || !DateTime.TryParse(strl, out var pt))
                 pt = DateTime.UtcNow;
             return new FastChangingProperty(pc, pt, TimeSpan.FromSeconds((double)pd), pi, pm);
+        }
+
+        /// <summary>
+        /// 从属性列表中清楚渐变属性涉及到的属性。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="name"></param>
+        static public void Clear(IDictionary<string, object> dic, string name)
+        {
+            dic.Remove($"{ClassPrefix}i{name}");
+            dic.Remove($"{ClassPrefix}d{name}");
+            dic.Remove($"{ClassPrefix}m{name}");
+            dic.Remove($"{ClassPrefix}c{name}");
+            dic.Remove($"{ClassPrefix}t{name}");
         }
 
         /// <summary>
@@ -142,6 +164,12 @@ namespace OwGame
                     if (!OwHelper.TryGetDecimal(val, out dec))
                         return false;
                     MaxValue = dec;
+                    break;
+                case 'c':   //当前刷新后的最后值
+                    if (!OwHelper.TryGetDecimal(val, out dec))
+                        return false;
+                    LastValue = dec;
+                    LastComputerDateTime = DateTime.UtcNow;
                     break;
                 case 'l':
                     if (!OwHelper.TryGetDecimal(val, out dec))

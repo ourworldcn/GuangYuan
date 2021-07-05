@@ -116,6 +116,8 @@ namespace GY2021001BLL
         public static readonly Guid LockMhpSlotId = new Guid("{b0a92419-6daa-41c8-9074-957175fd9c3b}");
         public static readonly Guid LockQltSlotId = new Guid("{b10c4510-0c8e-40ad-87bb-6f5828273e29}");
 
+        #region 家园及相关
+
         /// <summary>
         /// 家园模板Id。
         /// </summary>
@@ -126,6 +128,12 @@ namespace GY2021001BLL
         /// </summary>
         public static readonly Guid MainBaseSlotId = new Guid("{234f8c55-4c3c-4406-ad38-081d29564f20}");
 
+        /// <summary>
+        /// 家园工人模板Id。
+        /// </summary>
+        public static readonly Guid WorkerOfHomelandTId = new Guid("3b70d798-4969-443a-b081-b05a966002e5");
+
+        #endregion 家园及相关
 
         #endregion 固定模板Id
 

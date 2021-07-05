@@ -481,17 +481,35 @@ namespace GY2021001BLL
         /// <summary>
         /// 是否有错误。
         /// </summary>
-        public bool HasError { get; set; }
+        public bool HasError
+        {
+            get;
+            set;
+        }
 
+        public void SetDebugMessage(string msg) => DebugMessage = msg;
+
+        private string _DebugMessage;
         /// <summary>
         /// 调试信息，如果发生错误，这里给出简要说明。
         /// </summary>
-        public string DebugMessage { get; set; }
+        public string DebugMessage
+        {
+            get => _DebugMessage;
+            set => _DebugMessage = value;
+        }
 
         /// <summary>
         /// 返回命中公式的Id集合。
         /// </summary>
         public List<Guid> FormulaIds { get; } = new List<Guid>();
+
+        List<Guid> _ErrorItemTIds;
+
+        /// <summary>
+        /// 获取或设置，出错虚拟物品的模板Id。具体意义根据不同蓝图区别。
+        /// </summary>
+        public List<Guid> ErrorItemTIds => _ErrorItemTIds ??= new List<Guid>();
     }
 
     /// <summary>
@@ -579,6 +597,120 @@ namespace GY2021001BLL
         }
 
         /// <summary>
+        /// 分发需要特定处理的蓝图。
+        /// </summary>
+        /// <param name="datas"></param>
+        /// <returns>true蓝图已经处理，false蓝图未处理。</returns>
+        private bool Dispatch(ApplyBlueprintDatas datas)
+        {
+            bool succ;
+            var idStr = datas.Blueprint.Id.ToString("D").ToLower();
+            try
+            {
+                switch (idStr)
+                {
+                    case "7f35cda3-316d-4be6-9ccf-c348bb7dd28b":    //若是取蛋
+                        GetFhResult(datas);
+                        succ = true;
+                        break;
+                    case "972c78bf-773c-4de7-95db-5fd685a9a263":  //若是加速孵化
+                        JiasuFuhua(datas);
+                        succ = true;
+                        break;
+                    case "7b1348b8-87de-4c98-98b8-4705340e1ed2":  //若是增加体力
+                        AddTili(datas);
+                        succ = true;
+                        break;
+                    case "384ed85c-82fd-4f08-86e7-eae5ad6eef2c":    //家园所属虚拟物品内升级
+                        UpgradeOnHomeland(datas);
+                        succ = true;
+                        break;
+                    default:
+                        succ = false;
+                        break;
+                }
+            }
+            catch (Exception err)
+            {
+                datas.HasError = true;
+                datas.SetDebugMessage(err.Message);
+                succ = true;
+            }
+            return succ;
+        }
+
+        /// <summary>
+        /// 家园内部相关物品升级。
+        /// </summary>
+        /// <param name="datas"></param>
+        private void UpgradeOnHomeland(ApplyBlueprintDatas datas)
+        {
+            Guid hlTid = ProjectConstant.HomelandSlotId; //家园Id
+            Guid jianzhuBagTid = new Guid("{312612a5-30dd-4e0a-a71d-5074397428fb}");   //建筑背包tid
+            var hl = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == hlTid);   //家园对象
+            if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。"))
+                return;
+            var gameItem = hl.AllChildren.FirstOrDefault(c => c.Id == datas.GameItems[0].Id);   //要升级的物品
+            if (!datas.Verify(gameItem.ParentId.HasValue, "找不到父容器Id。"))
+                return;
+            var gim = World.ItemManager;
+            if (!datas.Verify(OwHelper.TryGetDecimal(gameItem.GetValueOrDefault(ProjectConstant.LevelPropertyName, 0m), out var lvDec), "级别属性类型错误。"))
+                return;
+            var lv = (int)lvDec;    //原等级
+
+            GameItem gold = null;
+            if (gameItem.TryGetDecimal("lug", out var lug)) //若需要金子
+            {
+                gold = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.JinbiId);
+                if (!datas.Verify(gold.Count >= lug, $"需要{lug}金币，目前只有{gold.Count}金币。", gold.TemplateId))
+                    return;
+            }
+            GameItem wood = null;
+            if (gameItem.TryGetDecimal("luw", out var luw)) //若需要木头
+            {
+                wood = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaiId);
+                if (!datas.Verify(wood.Count >= luw, $"需要{luw}木材，目前只有{wood.Count}木材。", wood.TemplateId))
+                    return;
+            }
+            #region 冷却相关
+            var fcp = FastChangingProperty.FromDictionary(gameItem.Properties, "upgradecd");
+            if (fcp != null)
+                if (!datas.Verify(fcp.IsComplate, "虚拟物品还在升级中", gameItem.TemplateId))
+                    return;
+            var time = gameItem.GetDecimalOrDefault("lut", -2); //冷却的秒数
+            var worker = hl.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);  //工人
+            var countOfBuilding = worker.Count ?? 0;    //当前在建建筑
+            var maxCountOfBuilding = worker.GetDecimalOrDefault("stc", 0m); //最大建筑队列数
+            if (!datas.Verify(countOfBuilding < maxCountOfBuilding, "当前工人已全部在工作", worker.TemplateId))
+                return;
+            #endregion 冷却相关
+            //修改属性
+            if (null != wood)
+                wood.Count -= luw;
+            if (null != gold)
+                gold.Count -= lug;
+            gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
+            if (time > 0) //若需要冷却
+            {
+                gameItem.Name2FastChangingProperty["upgradecd"] = new FastChangingProperty(0, DateTime.UtcNow, TimeSpan.FromSeconds(1), 1, time)
+                {
+                    Tag = "upgradecd",
+                };
+            }
+            datas.ChangesItem.AddToChanges(gameItem.ParentId.Value, gameItem);
+            return;
+        }
+
+        /// <summary>
+        /// 加速完成家园内的升级项目。
+        /// </summary>
+        /// <param name="datas"></param>
+        private void HastenOnHomeland(ApplyBlueprintDatas datas)
+        {
+
+        }
+
+        /// <summary>
         /// 使用指定数据升级或制造物品。
         /// </summary>
         /// <param name="datas"></param>
@@ -606,19 +738,7 @@ namespace GY2021001BLL
                     return;
                 datas.GameItems.Clear();
                 datas.GameItems.AddRange(tmpList);
-                if (new Guid("{7F35CDA3-316D-4BE6-9CCF-C348BB7DD28B}") == datas.Blueprint.Id)
-                {
-                    GetFhResult(datas);
-                }
-                else if (new Guid("{972C78BF-773C-4DE7-95DB-5FD685A9A263}") == datas.Blueprint.Id)  //若是加速孵化
-                {
-                    JiasuFuhua(datas);
-                }
-                else if (new Guid("{7B1348B8-87DE-4C98-98B8-4705340E1ED2}") == datas.Blueprint.Id)  //若是增加体力
-                {
-                    AddTili(datas);
-                }
-                else
+                if (!Dispatch(datas))
                 {
                     var data = new BlueprintData(Services, datas.Blueprint);
                     for (int i = 0; i < datas.Count; i++)
@@ -794,10 +914,11 @@ namespace GY2021001BLL
     public static class ApplyBlueprintDatasExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public bool Verify(this ApplyBlueprintDatas obj, bool succ, string errorMessage)
+        static public bool Verify(this ApplyBlueprintDatas obj, bool succ, string errorMessage, params Guid[] errorItemTIds)
         {
             if (!succ)
             {
+                obj.ErrorItemTIds.AddRange(errorItemTIds);
                 obj.DebugMessage = errorMessage;
                 obj.HasError = true;
             }
