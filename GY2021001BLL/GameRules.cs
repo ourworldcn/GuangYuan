@@ -3,7 +3,9 @@ using Gy2021001Template;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Text;
 
 namespace GY2021001BLL
@@ -82,4 +84,52 @@ namespace GY2021001BLL
             return ValidationResult.Success;
         }
     }
+
+    public class GameValidationResult
+    {
+        public bool Success { get; set; }
+
+        public GameItem Result { get; set; }
+
+        public string ErrorMessage { get; set; }
+    }
+
+    public class VerifyGameItemObject
+    {
+        public VerifyGameItemObject(Guid? parentTemplateId, Guid? templateId, Guid? id = default)
+        {
+            ParentTemplateId = parentTemplateId;
+            TemplateId = templateId;
+            Id = id;
+        }
+
+        public Guid? ParentTemplateId { get; set; }
+
+        public Guid? TemplateId { get; set; }
+
+        public Guid? Id { get; set; }
+
+        public int? MinCount { get; set; }
+
+        public int? MaxCount { get; set; }
+
+        public GameItem Result { get; set; }
+
+        public GameValidationResult MatchAndVerify(IServiceProvider services, GameChar gameChar)
+        {
+            GameValidationResult result = new GameValidationResult();
+            IEnumerable<GameItem> parent;
+            if (ParentTemplateId.HasValue)
+                parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ParentTemplateId.Value)?.AllChildren;
+            else
+                parent = gameChar.AllChildren;
+            if (null == parent)
+            {
+                result.Success = false;
+                result.ErrorMessage = $"无法找到父对象，Id={ParentTemplateId.Value}";
+            }
+            return result;
+        }
+    }
+
 }

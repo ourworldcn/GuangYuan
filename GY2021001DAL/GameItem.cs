@@ -32,11 +32,25 @@ namespace GY2021001DAL
 
         }
 
+        private decimal? _Count;
         /// <summary>
         /// 此物品的数量。
         /// 可能没有数量属性，如装备永远是1。对货币类(积分)都使用的是实际值。
         /// </summary>
-        public decimal? Count { get; set; }
+        public decimal? Count
+        {
+            get => Name2FastChangingProperty.TryGetValue(nameof(Count), out var obj) ? obj.GetCurrentValueWithUtc() : _Count;
+            set
+            {
+                if (Name2FastChangingProperty.TryGetValue(nameof(Count), out var obj))
+                {
+                    obj.LastValue = value.Value;
+                    obj.LastComputerDateTime = DateTime.UtcNow;
+                }
+                else
+                    _Count = value;
+            }
+        }
 
         /// <summary>
         /// 如果物品处于某个容器中，则这个成员指示其所处位置号，从0开始，但未必连续,序号相同则顺序随机。
@@ -95,7 +109,29 @@ namespace GY2021001DAL
             return $"{{{result},{Count}}}";
         }
 
-
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="propertyName"><inheritdoc/></param>
+        /// <param name="result"><inheritdoc/></param>
+        /// <returns><inheritdoc/></returns>
+        public override bool TryGetPropertyValue(string propertyName, out object result)
+        {
+            bool succ;
+            switch (propertyName)
+            {
+                case "count":
+                case "Count":
+                    var obj = Count;
+                    succ = obj.HasValue;
+                    result = obj ?? 0;
+                    break;
+                default:
+                    succ = base.TryGetPropertyValue(propertyName, out result);
+                    break;
+            }
+            return succ;
+        }
     }
 
     /// <summary>

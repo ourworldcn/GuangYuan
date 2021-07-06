@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -18,6 +19,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GY2021001BLL
@@ -689,15 +691,68 @@ namespace GY2021001BLL
                 wood.Count -= luw;
             if (null != gold)
                 gold.Count -= lug;
-            gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
             if (time > 0) //若需要冷却
             {
-                gameItem.Name2FastChangingProperty["upgradecd"] = new FastChangingProperty(0, DateTime.UtcNow, TimeSpan.FromSeconds(1), 1, time)
+                var fcpObj = new FastChangingProperty(0, DateTime.UtcNow, TimeSpan.FromSeconds(1), 1, time)
                 {
                     Tag = "upgradecd",
                 };
+                gameItem.Name2FastChangingProperty["upgradecd"] = fcpObj;
+                DateTime dtComplate = fcpObj.ComputeToComplate();   //预计完成时间
+                //计算可能的完成时间
+                Timer timer = new Timer(UpgradeComplateCallback, (gameItem.Id), dtComplate - DateTime.UtcNow, Timeout.InfiniteTimeSpan);
+            }
+            else //立即完成
+            {
+                gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
             }
             datas.ChangesItem.AddToChanges(gameItem.ParentId.Value, gameItem);
+            return;
+        }
+
+        /// <summary>
+        /// 当升级可能结束时调用。
+        /// </summary>
+        /// <param name="state">值元组(角色Id,虚拟物品Id)</param>
+        private void UpgradeComplateCallback(object state)
+        {
+            var para = ((Guid, Guid))state;
+            var cm = World.CharManager;
+            var gc = cm.GetCharFromId(para.Item1);
+            if (null == gc) //若角色不在线
+                return;
+            var gu = gc.GameUser;
+            if (!cm.Lock(gu))   //若不能锁定
+                if (null == cm.GetCharFromId(para.Item1)) //若争用导致已经下线
+                    return; //可以等待下次登录时再计算
+                else   //TO DO 致命问题，但目前不知道如何才会引发(大概率发生了死锁)，暂无解决方法
+                {
+                    var logger = Services.GetService<ILogger<BlueprintManager>>();
+                    logger.LogError($"长期无法锁定在线用户，Id={gu.Id}。");
+                }
+            try
+            {
+                var gameItem = gc.AllChildren.FirstOrDefault(c => c.Id == para.Item2);  //获取结束升级的对象
+                if (gameItem == null)  //若已经无效
+                    return;
+                var fcp = gameItem.Name2FastChangingProperty.GetValueOrDefault("upgradecd");
+                if (fcp == null)    //若已经处理完毕
+                    return;
+                var dtComplate = fcp.ComputeToComplate();   //预期完成时间
+                var dtTmp = dtComplate;
+                var fcpCount = gameItem.Name2FastChangingProperty.GetValueOrDefault("Count");
+                if (fcp.IsComplate)  //若已经完成
+                {
+                    fcpCount?.GetCurrentValue(ref dtTmp);    //计算升级完成时点的数量，忽略时点回退误差
+                    var gim = World.ItemManager;
+                    var lv = (int)gameItem.GetDecimalOrDefault(ProjectConstant.LevelPropertyName, 0m);  //原等级
+                    gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
+                }
+            }
+            finally
+            {
+                cm.Unlock(gu, true);
+            }
             return;
         }
 
@@ -925,4 +980,5 @@ namespace GY2021001BLL
             return succ;
         }
     }
+
 }

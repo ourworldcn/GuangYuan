@@ -3,6 +3,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -38,7 +39,7 @@ namespace OwGame
         public DateTime LastComputerDateTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// 获取或设置最后计算的结果。
+        /// 获取或设置最后计算的结果。<see cref="LastComputerDateTime"/>这个时点上计算的值。
         /// </summary>
         public decimal LastValue { get; set; }
 
@@ -73,6 +74,18 @@ namespace OwGame
         }
 
         /// <summary>
+        /// 预估完成时间点。
+        /// </summary>
+        /// <returns>预估完成时间。不会刷新计算最新值。</returns>
+        public DateTime ComputeToComplate()
+        {
+            if (LastValue >= MaxValue)  //若已经结束
+                return LastComputerDateTime;
+            var count = Math.Round((MaxValue - LastValue) / Increment, MidpointRounding.AwayFromZero);  //到结束还需跳变多少次
+            return LastComputerDateTime + TimeSpan.FromTicks(Delay.Ticks * (long)count);
+        }
+
+        /// <summary>
         /// 使用当前Utc时间获取当前值。
         /// </summary>
         /// <returns></returns>
@@ -89,7 +102,7 @@ namespace OwGame
         public object Tag { get; set; }
 
         /// <summary>
-        /// 获取指示该渐变属性是否已经完成。
+        /// 获取指示该渐变属性是否已经完成。会更新计算时间。
         /// </summary>
         public bool IsComplate => GetCurrentValueWithUtc() >= MaxValue;
 
@@ -116,7 +129,7 @@ namespace OwGame
         /// <returns>渐变属性对象，如果没有足够属性生成则返回null。</returns>
         static public FastChangingProperty FromDictionary(IReadOnlyDictionary<string, object> dic, string name)
         {
-            Debug.Assert(!name.StartsWith(ClassPrefix),$"主名称不能以{ClassPrefix}开头。");
+            Debug.Assert(!name.StartsWith(ClassPrefix), $"主名称不能以{ClassPrefix}开头。");
             OwHelper.TryGetDecimal(dic[$"{ClassPrefix}i{name}"], out var pi);
             OwHelper.TryGetDecimal(dic[$"{ClassPrefix}d{name}"], out var pd);
             OwHelper.TryGetDecimal(dic[$"{ClassPrefix}m{name}"], out var pm);
@@ -225,5 +238,6 @@ namespace OwGame
 
         public const string ClassPrefix = "fcp";
     }
+
 
 }

@@ -518,7 +518,8 @@ namespace GY2021001BLL
         {
             var _ = GetTemplate(gameItem);
             if (!_.Properties.TryGetValue(ProjectConstant.StackUpperLimit, out object obj) || !(obj is decimal count))
-                return null;
+                if (!gameItem.TryGetPropertyValue(ProjectConstant.StackUpperLimit, out obj) || !OwHelper.TryGetDecimal(obj, out count))
+                    return null;
             return count;
         }
 

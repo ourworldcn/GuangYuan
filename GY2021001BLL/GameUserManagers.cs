@@ -336,7 +336,7 @@ namespace GY2021001BLL
         }
 
         /// <summary>
-        /// 解锁用户。与<seealso cref="GetUsreFromTokenAndLock(Guid)"/>配对使用。
+        /// 解锁用户。与<seealso cref="Lock(GameUser, int)"/>配对使用。
         /// </summary>
         /// <param name="user">用户对象。</param>
         /// <param name="pulse">是否通知等待队列中的线程锁定对象状态的更改。</param>

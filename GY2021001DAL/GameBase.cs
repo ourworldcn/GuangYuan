@@ -136,16 +136,6 @@ namespace GY2021001DAL
         /// 获取指定的属性值并转换为<see cref="decimal"/>,如果找不到，或不能转换则返回指定默认值。
         /// </summary>
         /// <param name="propertyName" >
-        /// <list type="table">
-        /// <listheader>
-        /// <term>term</term>
-        /// <description>F2</description>
-        /// </listheader>
-        /// <item><term>term</term>
-        /// <description>1</description></item>
-        /// <item><term>term</term>
-        /// <description>2</description></item>
-        /// </list>
         /// </param>
         /// <param name="defaultVal"></param>
         /// <returns></returns>
@@ -158,8 +148,8 @@ namespace GY2021001DAL
         /// <summary>
         /// 获取指定属性名称的属性值。
         /// </summary>
-        /// <param name="propertyName"></param>
-        /// <param name="result"></param>
+        /// <param name="propertyName">动态属性的名称。</param>
+        /// <param name="result">动态属性的值。</param>
         /// <returns>true成功返回属性，false未找到属性。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public virtual bool TryGetPropertyValue(string propertyName, out object result)
@@ -168,9 +158,17 @@ namespace GY2021001DAL
             switch (propertyName)
             {
                 default:
-                    succ = Properties.TryGetValue(propertyName, out result);
-                    if (!succ && null != Template)
-                        succ = Template.TryGetPropertyValue(propertyName, out result);
+                    if (Name2FastChangingProperty.TryGetValue(propertyName, out var fcp))
+                    {
+                        result = fcp.GetCurrentValueWithUtc();
+                        succ = true;
+                    }
+                    else
+                    {
+                        succ = Properties.TryGetValue(propertyName, out result);
+                        if (!succ && null != Template)
+                            succ = Template.TryGetPropertyValue(propertyName, out result);
+                    }
                     break;
             }
             return succ;

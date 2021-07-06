@@ -43,19 +43,21 @@ namespace Gy001.Controllers
             var loginName = world.CharManager.QuicklyRegister(ref pwd).LoginName;
             var gu = world.CharManager.Login(loginName, pwd, "");
             //执行蓝图制造
-            if (!world.BlueprintManager.Id2BlueprintTemplate.TryGetValue(new Guid("d40c1818-06cf-4d19-9f6e-5ba54472b6fc"), out BlueprintTemplate blueprint))
-                return Unauthorized();
+            if (!world.BlueprintManager.Id2BlueprintTemplate.TryGetValue(new Guid("384ed85c-82fd-4f08-86e7-eae5ad6eef2c"), out BlueprintTemplate blueprint))
+                return NotFound("未发现蓝图");
             var gc = gu.CurrentChar;
             ApplyBlueprintDatas applyBluprintDatas = new ApplyBlueprintDatas()
             {
-                Count = 9,
+                Count = 1,
                 Blueprint = blueprint,
                 GameChar = gu.CurrentChar,
             };
-            var shenwenBag = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShenWenSlotId);
+            var hl = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);
+            var goldTId = new Guid("7a00740c-035e-4846-a619-2d0855f60b55");
+            var gold = hl.AllChildren.FirstOrDefault(c => c.TemplateId == goldTId);
             applyBluprintDatas.GameItems.Add(new GameItem()
             {
-                Id = shenwenBag.Children.First(c => c.TemplateId == new Guid("69542017-0C98-41C4-A66D-5758733F457E")).Id,
+                Id = gold.Id,
             });
             var bpm = world.BlueprintManager;
             bpm.ApplyBluprint(applyBluprintDatas);
