@@ -37,6 +37,8 @@ namespace Gy001Tools
         }
         private void Form2_Load(object sender, EventArgs e)
         {
+            IEnumerable<string> coll= new string[] { string.Empty, "", "ds", null, " " };
+            var ary = coll.OfType<string>().ToArray();
             var str = decimal.MaxValue.ToString();
             var d1 = Math.Round(3.5, MidpointRounding.AwayFromZero);
             var d2 = Math.Round(-3.5, MidpointRounding.AwayFromZero);

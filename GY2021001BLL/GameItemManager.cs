@@ -368,7 +368,7 @@ namespace GY2021001BLL
                 string innerName = tmp.Substring(1);   //获得实际属性名
                 if (!gameItem.Name2FastChangingProperty.TryGetValue(innerName, out var fcp))    //若不存在该属性
                 {
-                    fcp = new FastChangingProperty(default, DateTime.UtcNow, default, default, default);
+                    fcp = new FastChangingProperty(default, default, default, default, DateTime.UtcNow);
                     gameItem.Name2FastChangingProperty[innerName] = fcp;
                 }
                 fcp.SetPropertyValue(prefix, val);

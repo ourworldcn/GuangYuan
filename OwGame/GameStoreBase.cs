@@ -108,7 +108,7 @@ namespace OwGame
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         static public bool TryGetDecimal(object obj, out decimal result)
         {
-            if (obj is null )
+            if (obj is null)
             {
                 result = default;
                 return false;
@@ -315,7 +315,26 @@ namespace OwGame
                     gameItems.Push(item);
                 yield return result;
             }
-            yield break;
+        }
+
+        /// <summary>
+        /// 遍历一个树结构的所有子项。广度优先算法遍历子树。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="getChildren">从每个节点获取其所有子节点的委托。</param>
+        /// <param name="roots">多个根的节点对象。</param>
+        /// <returns>一个可枚举集合，包含所有根下的所有节点(不含根节点)。</returns>
+        public static IEnumerable<T> GetAllSubItemsOfTreeWithBfs<T>(Func<T, IEnumerable<T>> getChildren, params T[] roots)
+        {
+            Queue<T> gameItems = new Queue<T>(roots);
+            while (gameItems.TryDequeue(out T result))
+            {
+                foreach (var item in getChildren(result))
+                {
+                    gameItems.Enqueue(item);
+                    yield return item;
+                }
+            }
         }
 
         /// <summary>

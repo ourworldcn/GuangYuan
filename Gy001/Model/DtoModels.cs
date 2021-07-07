@@ -1099,6 +1099,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<string> FormulaIds { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 存在问题的物品的模板Id。
+        /// </summary>
+        [DataMember]
+        public List<string> ErrorTIds { get; set; } = new List<string>();
     }
 
     /// <summary>

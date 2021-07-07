@@ -529,6 +529,11 @@
             返回命中公式的Id集合。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.ErrorTIds">
+            <summary>
+            存在问题的物品的模板Id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。

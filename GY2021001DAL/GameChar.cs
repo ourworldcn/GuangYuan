@@ -66,7 +66,7 @@ namespace GY2021001DAL
         }
 
         /// <summary>
-        /// 获取该物品直接或间接下属对象的枚举数。
+        /// 获取该物品直接或间接下属对象的枚举数。深度优先。
         /// </summary>
         /// <returns>枚举数。不包含自己。枚举过程中不能更改树节点的关系。</returns>
         [NotMapped]
@@ -81,6 +81,16 @@ namespace GY2021001DAL
                         yield return item2;
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取该物品直接或间接下属对象的枚举数。广度优先。
+        /// </summary>
+        /// <returns>枚举数。不包含自己。枚举过程中不能更改树节点的关系。</returns>
+        [NotMapped]
+        public IEnumerable<GameItem> AllChildrenWithBfs
+        {
+            get => OwHelper.GetAllSubItemsOfTreeWithBfs(c => c.Children, GameItems.ToArray());
         }
 
         /// <summary>
@@ -125,9 +135,9 @@ namespace GY2021001DAL
                     {
                         {
                             "pp",
-                            new FastChangingProperty((decimal)Properties.GetValueOrDefault("pp",20m),DateTime.Parse( Properties.GetValueOrDefault("cpp",DateTime.UtcNow.ToString()) as string),
-                                TimeSpan.FromSeconds(Convert.ToDouble( Properties.GetValueOrDefault("dpp",300m))),(decimal)Properties.GetValueOrDefault("ipp",1m),(decimal)Properties.GetValueOrDefault("mpp",20m))
-                            { Tag="pp"}
+                            new FastChangingProperty(TimeSpan.FromSeconds(Convert.ToDouble( Properties.GetValueOrDefault("dpp",300m))),(decimal)Properties.GetValueOrDefault("ipp",1m),
+                                (decimal)Properties.GetValueOrDefault("mpp",20m),(decimal)Properties.GetValueOrDefault("pp",20m),DateTime.Parse( Properties.GetValueOrDefault("cpp",DateTime.UtcNow.ToString()) as string))
+                            { Name="pp"}
                         },
                     };
                 }
@@ -155,7 +165,7 @@ namespace GY2021001DAL
             _GameItems ??= db.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ThenInclude(c => c.Children).ToList();
             foreach (var item in _GameItems)
             {
-                
+
             }
             //加载客户端属性
             var coll = db.Set<GameClientExtendProperty>().Where(c => c.ParentId == Id);
@@ -180,7 +190,7 @@ namespace GY2021001DAL
                 if (_GradientProperties.TryGetValue("pp", out FastChangingProperty p))
                 {
                     Properties["pp"] = p.GetCurrentValue(ref dtNow);
-                    Properties["cpp"] = p.LastComputerDateTime.ToString();
+                    Properties["cpp"] = p.LastDateTime.ToString();
                 }
             }
             PropertiesString = OwHelper.ToPropertiesString(Properties);

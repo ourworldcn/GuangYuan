@@ -223,13 +223,23 @@ namespace GY2021001DAL
                     lock (this)
                         if (null == _Name2FastChangingProperty)
                         {
-                            var coll = Properties.Keys.Where(c => c.StartsWith(FastChangingProperty.ClassPrefix) && c.Length > FastChangingProperty.ClassPrefix.Length + 1).
-                                Select(c => c.Substring(FastChangingProperty.ClassPrefix.Length + 1)).Distinct();   //获取快速变化属性的名称集合
-                            _Name2FastChangingProperty = coll.Select(c => (Name: c, FastChangingProperty.FromDictionary(Properties, c))).ToDictionary(c => c.Name, c => c.Item2);
+                            _Name2FastChangingProperty = FastChangingPropertyExtensions.FromGameThing(this).ToDictionary(c => c.Name);
                         }
                 }
                 return _Name2FastChangingProperty;
             }
+        }
+
+        /// <summary>
+        /// 移除一个渐变属性。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>移除的渐变属性对象，如果没有找到指定名称的渐变属性对象则返回null。</returns>
+        public FastChangingProperty RemoveFastChangingProperty(string name)
+        {
+            if (Name2FastChangingProperty.Remove(name, out var result))
+                FastChangingPropertyExtensions.Clear(Properties, name);
+            return result;
         }
 
         /// <summary>
@@ -242,7 +252,7 @@ namespace GY2021001DAL
         {
             foreach (var item in Name2FastChangingProperty)
             {
-                FastChangingProperty.ToDictionary(item.Value, Properties, item.Key);
+                FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
             }
             PropertiesString = OwHelper.ToPropertiesString(Properties);
 
@@ -385,4 +395,120 @@ namespace GY2021001DAL
         public GameThingTemplateBase GetTemplateFromeId(Guid id);
 
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class FastChangingPropertyExtensions
+    {
+        public const string DefaultClassPrefix = "fcp";
+
+        static string GetDefaultKeyName(string propertyName, string name, string classPrefix = DefaultClassPrefix)
+        {
+            return propertyName switch
+            {
+                nameof(FastChangingProperty.MaxValue) => $"{classPrefix}m{name}",
+                nameof(FastChangingProperty.Increment) => $"{classPrefix}i{name}",
+                nameof(FastChangingProperty.Delay) => $"{classPrefix}d{name}",
+                nameof(FastChangingProperty.LastValue) => $"{classPrefix}c{name}",
+                nameof(FastChangingProperty.LastDateTime) => $"{classPrefix}t{name}",
+                _ => string.Empty,
+            };
+        }
+
+        /// <summary>
+        /// 按指定的主名称和类前缀名称返回所有键的名称。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="classPrefix"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IEnumerable<string> GetKeyNames(string name, string classPrefix = DefaultClassPrefix)
+        {
+            return new string[]{
+                $"{classPrefix}i{name}",
+                $"{classPrefix}d{name}",
+                $"{classPrefix}m{name}",
+                $"{classPrefix}c{name}",
+                $"{classPrefix}t{name}",};
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="dic"></param>
+        /// <param name="name">主名称</param>
+        /// <param name="classPrefix"></param>
+        static public void ToDictionary(this FastChangingProperty obj, IDictionary<string, object> dic, string name, string classPrefix = DefaultClassPrefix)
+        {
+            Debug.Assert(!string.IsNullOrWhiteSpace(name));
+            dic[$"{classPrefix}i{name}"] = obj.Increment;
+            dic[$"{classPrefix}d{name}"] = obj.Delay.TotalSeconds;
+            dic[$"{classPrefix}m{name}"] = obj.MaxValue;
+            dic[$"{classPrefix}c{name}"] = obj.LastValue;
+            dic[$"{classPrefix}t{name}"] = obj.LastDateTime.ToString("s");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="thing"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void ToGameThing(this FastChangingProperty obj, GameThingBase thing)
+        {
+            obj.ToDictionary(thing.Properties, obj.Name);
+        }
+
+        /// <summary>
+        /// 从属性集合生成渐变属性对象。
+        /// </summary>
+        /// <param name="dic">至少要有fcpiXXX,fcpdXXX,fcpmXXX三个属性才能生成。</param>
+        /// <param name="name">主名称，XXX,不带fcpi等前缀。</param>
+        /// <returns>渐变属性对象，如果没有足够属性生成则返回null。</returns>
+        static public FastChangingProperty FromDictionary(IReadOnlyDictionary<string, object> dic, string name, string classPrefix = DefaultClassPrefix)
+        {
+            Debug.Assert(!name.StartsWith(classPrefix), $"主名称不能以{classPrefix}开头。");
+            if (!dic.TryGetValue($"{classPrefix}i{name}", out var piObj) || !OwHelper.TryGetDecimal(piObj, out var pi)) return null;
+            if (!dic.TryGetValue($"{classPrefix}d{name}", out var pdObj) || !OwHelper.TryGetDecimal(pdObj, out var pd)) return null;
+            if (!dic.TryGetValue($"{classPrefix}m{name}", out var pmObj) || !OwHelper.TryGetDecimal(pmObj, out var pm)) return null;
+
+            OwHelper.TryGetDecimal(dic.GetValueOrDefault($"{classPrefix}c{name}", 0m), out var pc);
+            if (!dic.TryGetValue($"{classPrefix}t{name}", out var tmpl) || !(tmpl is string strl) || !DateTime.TryParse(strl, out var pt))
+                pt = DateTime.UtcNow;
+            return new FastChangingProperty(TimeSpan.FromSeconds((double)pd), pi, pm, pc, pt) { Name = name };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="classPrefix"></param>
+        /// <returns></returns>
+        static public IEnumerable<FastChangingProperty> FromGameThing(GameThingBase thing, string classPrefix = DefaultClassPrefix)
+        {
+            var dic = thing.Properties;
+            var names = dic.Keys.Where(c => c.StartsWith(classPrefix)).Select(c => c[4..]).Distinct();
+            var coll = names.Select(c => FromDictionary(dic, c, classPrefix)).OfType<FastChangingProperty>();
+            return coll;
+
+        }
+
+        /// <summary>
+        /// 从属性列表中清楚渐变属性涉及到的属性。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="name"></param>
+        static public void Clear(IDictionary<string, object> dic, string name, string classPrefix = DefaultClassPrefix)
+        {
+            dic.Remove($"{classPrefix}i{name}");
+            dic.Remove($"{classPrefix}d{name}");
+            dic.Remove($"{classPrefix}m{name}");
+            dic.Remove($"{classPrefix}c{name}");
+            dic.Remove($"{classPrefix}t{name}");
+        }
+
+    }
+
 }

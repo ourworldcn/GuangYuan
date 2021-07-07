@@ -61,7 +61,7 @@ namespace GY2021001WebApi.Models
             foreach (var item in obj.Name2FastChangingProperty)
             {
                 item.Value.GetCurrentValueWithUtc();
-                FastChangingProperty.ToDictionary(item.Value, obj.Properties, item.Key);
+                FastChangingPropertyExtensions.ToDictionary(item.Value, obj.Properties, item.Key);
             }
             foreach (var item in obj.Properties)
             {
@@ -236,10 +236,10 @@ namespace GY2021001WebApi.Models
             var result = new GradientPropertyDto()
             {
                 Increment = obj.Increment,
-                LastComputerDateTime = obj.LastComputerDateTime,
+                LastComputerDateTime = obj.LastDateTime,
                 LastValue = obj.LastValue,
                 MaxValue = obj.MaxValue,
-                Tag = obj.Tag,
+                Tag = obj.Name,
                 Delay = (int)obj.Delay.TotalSeconds,
             };
             return result;
@@ -274,6 +274,7 @@ namespace GY2021001WebApi.Models
             {
                 result.ChangesItems.AddRange(obj.ChangesItem.Select(c => (ChangesItemDto)c));
                 result.FormulaIds.AddRange(obj.FormulaIds.Select(c => c.ToBase64String()));
+                result.ErrorTIds.AddRange(obj.ErrorItemTIds.Select(c => c.ToBase64String()));
             }
             return result;
         }

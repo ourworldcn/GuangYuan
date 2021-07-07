@@ -675,7 +675,7 @@ namespace GY2021001BLL
                     return;
             }
             #region 冷却相关
-            var fcp = FastChangingProperty.FromDictionary(gameItem.Properties, "upgradecd");
+            var fcp = FastChangingPropertyExtensions.FromDictionary(gameItem.Properties, "upgradecd");
             if (fcp != null)
                 if (!datas.Verify(fcp.IsComplate, "虚拟物品还在升级中", gameItem.TemplateId))
                     return;
@@ -693,9 +693,9 @@ namespace GY2021001BLL
                 gold.Count -= lug;
             if (time > 0) //若需要冷却
             {
-                var fcpObj = new FastChangingProperty(0, DateTime.UtcNow, TimeSpan.FromSeconds(1), 1, time)
+                var fcpObj = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, time, 0, DateTime.UtcNow)
                 {
-                    Tag = "upgradecd",
+                    Name = "upgradecd",
                 };
                 gameItem.Name2FastChangingProperty["upgradecd"] = fcpObj;
                 DateTime dtComplate = fcpObj.ComputeToComplate();   //预计完成时间
@@ -762,7 +762,58 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         private void HastenOnHomeland(ApplyBlueprintDatas datas)
         {
+            if (!datas.Verify(datas.GameItems.Count == 1, "只能加速一个建筑"))
+                return;
+            var gameItem = datas.GameItems[0];  //加速的物品
+            var hl = datas.Lookup(Services, ProjectConstant.CharTemplateId, ProjectConstant.HomelandSlotId);
+            if (hl is null)
+                return;
+            var worker = datas.Lookup(hl.Children, ProjectConstant.WorkerOfHomelandTId);
+            if (worker is null)
+                return;
+            if (!datas.Verify(worker.Count.HasValue && worker.Count > 0, "没有在升级的物品"))
+                return;
+            if (!datas.Verify(gameItem.Name2FastChangingProperty.TryGetValue("upgradecd", out var fcp), "物品未进行升级"))
+            {
+                datas.ErrorItemTIds.Add(gameItem.TemplateId);
+                return;
+            }
+            DateTime dt = DateTime.UtcNow;
+            fcp.GetCurrentValue(ref dt);
+            if (fcp.LastValue >= fcp.MaxValue)  //若已经完成
+            {
+                gameItem.RemoveFastChangingProperty("upgradecd");
+                datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
+                return;
+            }
+            else //若未完成
+            {
+                var dtComplate = fcp.ComputeToComplate();
+                var tm = (decimal)(dtComplate - dt).TotalMinutes;
 
+                var cost = tm switch //需要花费的钻石
+                {
+                    _ when tm <= 5m => 0,
+                    _ => Math.Ceiling(tm - 5),
+                };
+                if (cost > 0)   //若需要钻石
+                {
+                    var dim = datas.Lookup(datas.GameChar.GameItems, ProjectConstant.ZuanshiId);    //钻石
+                    if (dim is null)
+                        return;
+                    if (!datas.Verify(dim.Count >= cost, $"需要{cost}钻石,但只有{dim.Count}钻石。"))
+                    {
+                        datas.ErrorItemTIds.Add(dim.TemplateId);
+                        return;
+                    }
+                    dim.Count -= cost;
+                    datas.ChangesItem.AddToChanges(dim.ContainerId.Value, dim);
+                }
+                gameItem.RemoveFastChangingProperty("upgradecd");
+                datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
+            }
+
+            return;
         }
 
         /// <summary>
@@ -930,7 +981,7 @@ namespace GY2021001BLL
             datas.ChangesItem.AddToChanges(zuanshi.ParentId ?? zuanshi.OwnerId.Value, zuanshi);
             //修改冷却时间
             fcp.LastValue = fcp.MaxValue;
-            fcp.LastComputerDateTime = DateTime.UtcNow;
+            fcp.LastDateTime = DateTime.UtcNow;
             datas.ChangesItem.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
         }
 
@@ -978,6 +1029,114 @@ namespace GY2021001BLL
                 obj.HasError = true;
             }
             return succ;
+        }
+
+        /// <summary>
+        /// 获取指定条件的物品，如果发生错误，自动填写<see cref="ApplyBlueprintDatas"/>类内容。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="service"></param>
+        /// <param name="parentTId"></param>
+        /// <param name="templateId"></param>
+        /// <param name="id"></param>
+        /// <returns>找到的虚拟物品，null表示没有找到符合条件的物品。</returns>
+        static public GameItem Lookup(this ApplyBlueprintDatas obj, IServiceProvider service, Guid? parentTId, Guid? templateId, Guid? id = null)
+        {
+            if (null == service)
+            {
+                obj.DebugMessage = "没有找到所必须的服务容器。";
+                obj.HasError = true;
+                return null;
+            }
+            var gitm = service.GetRequiredService<GameItemTemplateManager>();
+            GameItem result;
+            IEnumerable<GameItem> parent;
+            if (parentTId.HasValue)  //若需限制容器模板
+            {
+                var pTId = parentTId.Value;
+                if (pTId == obj.GameChar.TemplateId)  //若容器就是角色
+                {
+                    parent = obj.GameChar.AllChildrenWithBfs;
+                }
+                else
+                {
+                    var template = gitm.GetTemplateFromeId(pTId);
+                    if (template == null)  //若模板无效
+                    {
+                        obj.DebugMessage = $"无法找到指定Id的模板，Id={pTId}。";
+                        obj.HasError = true;
+                        return null;
+                    }
+                    parent = obj.GameChar.AllChildrenWithBfs.FirstOrDefault(c => c.TemplateId == pTId)?.AllChildrenWithBfs;
+                    if (parent is null)
+                    {
+                        obj.DebugMessage = $"无法找到指定的模板的父容器对象，Id={pTId}。";
+                        obj.HasError = true;
+                        return null;
+                    }
+                }
+            }
+            else //若不限定容器
+                parent = obj.GameChar.AllChildrenWithBfs;
+            IEnumerable<GameItem> me;
+            if (templateId.HasValue) //若限制该物品模板Id
+            {
+                var tid = templateId.Value;
+                var tt = gitm.GetTemplateFromeId(tid);
+                if (tt is null)
+                {
+                    obj.DebugMessage = $"无法找到物品模板Id，Id={tid}。";
+                    obj.HasError = true;
+                    return null;
+                }
+                me = parent.Where(c => c.TemplateId == tid);
+            }
+            else
+                me = parent;
+            if (id.HasValue) //若需要限定Id
+            {
+                var idMe = id.Value;
+                result = me.FirstOrDefault(c => c.Id == idMe);
+            }
+            else
+                result = me.FirstOrDefault();
+            if (result is null)  //若没有找到
+            {
+                obj.DebugMessage = $"无法找到物品。TId={templateId},Id={id}";
+                obj.HasError = true;
+                if (templateId.HasValue)
+                    obj.ErrorItemTIds.Add(templateId.Value);
+            }
+            return result;
+        }
+
+        static public GameItem Lookup(this ApplyBlueprintDatas obj, IEnumerable<GameItem> parent, Guid? templateId, Guid? id = null)
+        {
+            //var gitm=service.GetRequiredService<GameItemTemplateManager>();
+            IEnumerable<GameItem> resultColl;
+            if (templateId.HasValue)    //若需限定模板Id
+            {
+                var tid = templateId.Value;
+                resultColl = parent.Where(c => c.TemplateId == tid);
+            }
+            else
+                resultColl = parent;
+            GameItem result;
+            if (id.HasValue) //若要限定Id
+            {
+                var idMe = id.Value;
+                result = resultColl.FirstOrDefault(c => c.Id == idMe);
+            }
+            else
+                result = resultColl.FirstOrDefault();
+            if (result is null)  //若没有找到
+            {
+                obj.DebugMessage = $"无法找到物品。TId={templateId},Id={id}";
+                obj.HasError = true;
+                if (templateId.HasValue)
+                    obj.ErrorItemTIds.Add(templateId.Value);
+            }
+            return result;
         }
     }
 

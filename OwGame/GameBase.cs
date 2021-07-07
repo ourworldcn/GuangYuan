@@ -2,10 +2,12 @@
  * 文件放置游戏专用的一些基础类
  */
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace OwGame
 {
@@ -17,26 +19,29 @@ namespace OwGame
         /// <summary>
         /// 构造函数、
         /// </summary>
-        /// <param name="currentVal">当前值。</param>
-        /// <param name="lastComputerDateTime">时间。建议一律采用Utc时间。</param>
         /// <param name="delay">计算间隔。</param>
         /// <param name="increment">增量。</param>
         /// <param name="maxVal">最大值。不会超过此值。</param>
-        public FastChangingProperty(decimal currentVal, DateTime lastComputerDateTime, TimeSpan delay, decimal increment, decimal maxVal)
+        /// <param name="currentVal">当前值。</param>
+        /// <param name="lastComputerDateTime">时间。建议一律采用Utc时间。</param>
+        public FastChangingProperty(TimeSpan delay, decimal increment, decimal maxVal, decimal currentVal, DateTime lastComputerDateTime)
         {
             LastValue = currentVal;
-            LastComputerDateTime = lastComputerDateTime;
+            LastDateTime = lastComputerDateTime;
             Delay = delay;
             Increment = increment;
             MaxValue = maxVal;
         }
 
+        /// <summary>
+        /// 自动跳变到的最大值。
+        /// </summary>
         public decimal MaxValue { get; set; }
 
         /// <summary>
         /// 获取或设置最后计算的时间。建议一律采用Utc时间。默认值是构造时的当前时间。
         /// </summary>
-        public DateTime LastComputerDateTime { get; set; } = DateTime.UtcNow;
+        public DateTime LastDateTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// 获取或设置最后计算的结果。<see cref="LastComputerDateTime"/>这个时点上计算的值。
@@ -49,7 +54,7 @@ namespace OwGame
         public TimeSpan Delay { get; set; }
 
         /// <summary>
-        /// 增量。
+        /// 每次计算的增量。
         /// </summary>
         public decimal Increment { get; set; }
 
@@ -62,27 +67,29 @@ namespace OwGame
         {
             if (LastValue >= MaxValue)  //若已经结束
             {
-                LastComputerDateTime = now;
+                LastDateTime = now;
                 return LastValue;
             }
-            var count = Math.DivRem((now - LastComputerDateTime).Ticks, Delay.Ticks, out long remainder);  //跳变次数 和 余数
+            var count = Math.DivRem((now - LastDateTime).Ticks, Delay.Ticks, out long remainder);  //跳变次数 和 余数
             var val = Math.Min(count * Increment + LastValue, MaxValue);
             LastValue = val; //计算得到最后值
             now = now - TimeSpan.FromTicks(remainder);
-            LastComputerDateTime = now;
+            LastDateTime = now;
+            if (LastValue >= MaxValue)
+                OnCompleted(new CompletedEventArgs(now));
             return LastValue;
         }
 
         /// <summary>
-        /// 预估完成时间点。
+        /// 以当前<see cref="LastValue"/>为准预估完成时间点。
         /// </summary>
         /// <returns>预估完成时间。不会刷新计算最新值。</returns>
         public DateTime ComputeToComplate()
         {
             if (LastValue >= MaxValue)  //若已经结束
-                return LastComputerDateTime;
+                return LastDateTime;
             var count = Math.Round((MaxValue - LastValue) / Increment, MidpointRounding.AwayFromZero);  //到结束还需跳变多少次
-            return LastComputerDateTime + TimeSpan.FromTicks(Delay.Ticks * (long)count);
+            return LastDateTime + TimeSpan.FromTicks(Delay.Ticks * (long)count);
         }
 
         /// <summary>
@@ -97,6 +104,11 @@ namespace OwGame
         }
 
         /// <summary>
+        /// 名字，本类成员不使用该属性。
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
         /// 一个记录额外信息的属性。本类成员不使用该属性。
         /// </summary>
         public object Tag { get; set; }
@@ -105,53 +117,6 @@ namespace OwGame
         /// 获取指示该渐变属性是否已经完成。会更新计算时间。
         /// </summary>
         public bool IsComplate => GetCurrentValueWithUtc() >= MaxValue;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="dic"></param>
-        /// <param name="name"></param>
-        static public void ToDictionary(FastChangingProperty obj, IDictionary<string, object> dic, string name)
-        {
-            dic[$"{ClassPrefix}i{name}"] = obj.Increment;
-            dic[$"{ClassPrefix}d{name}"] = obj.Delay.TotalSeconds;
-            dic[$"{ClassPrefix}m{name}"] = obj.MaxValue;
-            dic[$"{ClassPrefix}c{name}"] = obj.LastValue;
-            dic[$"{ClassPrefix}t{name}"] = obj.LastComputerDateTime.ToString("s");
-        }
-
-        /// <summary>
-        /// 从属性集合生成渐变属性对象。
-        /// </summary>
-        /// <param name="dic">至少要有fcpiXXX,fcpdXXX,fcpmXXX三个属性才能生成。</param>
-        /// <param name="name">主名称，XXX,不带fcpi等前缀。</param>
-        /// <returns>渐变属性对象，如果没有足够属性生成则返回null。</returns>
-        static public FastChangingProperty FromDictionary(IReadOnlyDictionary<string, object> dic, string name)
-        {
-            Debug.Assert(!name.StartsWith(ClassPrefix), $"主名称不能以{ClassPrefix}开头。");
-            OwHelper.TryGetDecimal(dic[$"{ClassPrefix}i{name}"], out var pi);
-            OwHelper.TryGetDecimal(dic[$"{ClassPrefix}d{name}"], out var pd);
-            OwHelper.TryGetDecimal(dic[$"{ClassPrefix}m{name}"], out var pm);
-            OwHelper.TryGetDecimal(dic.GetValueOrDefault($"{ClassPrefix}c{name}", 0m), out var pc);
-            if (!dic.TryGetValue($"{ClassPrefix}t{name}", out var tmpl) || !(tmpl is string strl) || !DateTime.TryParse(strl, out var pt))
-                pt = DateTime.UtcNow;
-            return new FastChangingProperty(pc, pt, TimeSpan.FromSeconds((double)pd), pi, pm);
-        }
-
-        /// <summary>
-        /// 从属性列表中清楚渐变属性涉及到的属性。
-        /// </summary>
-        /// <param name="dic"></param>
-        /// <param name="name"></param>
-        static public void Clear(IDictionary<string, object> dic, string name)
-        {
-            dic.Remove($"{ClassPrefix}i{name}");
-            dic.Remove($"{ClassPrefix}d{name}");
-            dic.Remove($"{ClassPrefix}m{name}");
-            dic.Remove($"{ClassPrefix}c{name}");
-            dic.Remove($"{ClassPrefix}t{name}");
-        }
 
         /// <summary>
         /// 
@@ -182,7 +147,7 @@ namespace OwGame
                     if (!OwHelper.TryGetDecimal(val, out dec))
                         return false;
                     LastValue = dec;
-                    LastComputerDateTime = DateTime.UtcNow;
+                    LastDateTime = DateTime.UtcNow;
                     break;
                 case 'l':
                     if (!OwHelper.TryGetDecimal(val, out dec))
@@ -192,7 +157,7 @@ namespace OwGame
                 case 't':
                     if (!DateTime.TryParse(val as string, out var dt))
                         return false;
-                    LastComputerDateTime = dt;
+                    LastDateTime = dt;
                     break;
                 default:
                     return false;
@@ -227,7 +192,7 @@ namespace OwGame
                     break;
                 case 't':   //最后计算时间点
                     GetCurrentValueWithUtc();
-                    result = LastComputerDateTime.ToString("s");
+                    result = LastDateTime.ToString("s");
                     break;
                 default:
                     result = default;
@@ -236,8 +201,37 @@ namespace OwGame
             return true;
         }
 
-        public const string ClassPrefix = "fcp";
+        #region 事件及相关
+
+        public event EventHandler<CompletedEventArgs> Completed;
+
+        /// <summary>
+        /// 在直接或间接调用<see cref="GetCurrentValue(ref DateTime)"/>时，如果计算状态由未完成变为完成则引发该事件。
+        /// </summary>
+        /// <remarks>如果使用未完成时间计算后，再用完成的时间点计算，如此返回将每次都引发事件。
+        /// 处理函数最好是各种管理器的实例成员。因为需要并发锁定，否则行为未知。</remarks>
+        /// <param name="e"></param>
+        protected virtual void OnCompleted(CompletedEventArgs e)
+        {
+            Completed?.Invoke(this, e);
+        }
+        #endregion 事件及相关
     }
 
+    /// <summary>
+    /// <see cref="FastChangingProperty.Completed"/>事件所用参数。
+    /// </summary>
+    public class CompletedEventArgs : EventArgs
+    {
+        /// <summary>
+        /// 获取或设置完成的时间点。
+        /// </summary>
+        public DateTime CompletedDateTime { get; set; }
+
+        public CompletedEventArgs(DateTime completedDateTime)
+        {
+            CompletedDateTime = completedDateTime;
+        }
+    }
 
 }
