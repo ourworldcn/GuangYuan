@@ -44,8 +44,11 @@ namespace GY2021001DAL
             {
                 if (Name2FastChangingProperty.TryGetValue(nameof(Count), out var obj))
                 {
+                    var oldVal = obj.LastValue;
                     obj.LastValue = value.Value;
                     obj.LastDateTime = DateTime.UtcNow;
+                    if (oldVal < obj.MaxValue && obj.LastValue >= obj.MaxValue)  //若需要引发事件
+                        ;// TO DO
                 }
                 else
                     _Count = value;

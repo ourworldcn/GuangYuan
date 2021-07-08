@@ -72,6 +72,31 @@ namespace GY2021001WebApi.Models
             return result;
         }
 
+        static public GameItemDto FromGameItem(GameItem obj, bool includeChildren = false)
+        {
+            var result = new GameItemDto()
+            {
+                Id = obj.Id.ToBase64String(),
+                Count = obj.Count,
+                TemplateId = obj.TemplateId.ToBase64String(),
+                CreateUtc = obj.CreateUtc,
+                OwnerId = obj.OwnerId?.ToBase64String(),
+                ParentId = obj.ParentId?.ToBase64String(),
+                ClientString = obj.ClientGutsString,
+            };
+            foreach (var item in obj.Name2FastChangingProperty)
+            {
+                item.Value.GetCurrentValueWithUtc();
+                FastChangingPropertyExtensions.ToDictionary(item.Value, obj.Properties, item.Key);
+            }
+            foreach (var item in obj.Properties)
+            {
+                result.Properties[item.Key] = item.Value;
+            }
+            if (includeChildren && obj.Children.Count > 0)  //若有孩子需要转换
+                result.Children.AddRange(obj.Children.Select(c => FromGameItem(c, includeChildren)));
+            return result;
+        }
     }
 
     public partial class GameCharDto

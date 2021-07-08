@@ -55,22 +55,30 @@ namespace Gy2021001Template
         [NotMapped]
         public int GenusCode { get => GId.GetValueOrDefault() / 1000; }
 
-        public override object GetPropertyValue(string propertyName, object defaultVal = null)
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="propertyName"><inheritdoc/></param>
+        /// <param name="result"><inheritdoc/></param>
+        /// <returns><inheritdoc/></returns>
+        public override bool TryGetPropertyValue(string propertyName, out object result)
         {
-            object result;
+            bool succ;
             switch (propertyName)
             {
                 case "GId":
                     result = GId;
+                    succ = true;
                     break;
                 case "GenusCode":
                     result = GenusCode;
+                    succ = true;
                     break;
                 default:
-                    result = base.GetPropertyValue(propertyName, defaultVal);
+                    succ = base.TryGetPropertyValue(propertyName, out result);
                     break;
             }
-            return result;
+            return succ;
         }
     }
 }

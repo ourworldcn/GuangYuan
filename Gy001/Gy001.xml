@@ -46,7 +46,14 @@
             </summary>
             <param name="model">参见 TokenDtoBase</param>
             <returns>返回缓慢变化属性的集合。</returns>
-            <response code="400">令牌无效。</response>
+            <response code="401">令牌无效。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AccountController.QuicklyRegisterAndLogin">
+            <summary>
+            快速注册一个新账号并登录。仅调试状态才有接口。
+            </summary>
+            <returns></returns>
+            <response code="400">意外错误。</response>
         </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
@@ -138,6 +145,15 @@
             </summary>
             <param name="model">要增加的物品对象数组，需要设置Count,TemplateId,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
             <returns></returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetItems(GY2021001WebApi.Models.GetItemsParamsDto)">
+            <summary>
+            获取物品的信息。
+            这个调用不会触发空闲重新计时，即使一直调用此方法用户也可能被登出。
+            </summary>
+            <param name="model">参见 GetItemsParamsDto.</param>
+            <returns>参见 GetItemsReturnDto.</returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
@@ -1066,6 +1082,32 @@
         <member name="T:GY2021001WebApi.Models.MoveItemsReturnDto">
             <summary>
             MoveItems接口使用的返回类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetItemsParamsDto">
+            <summary>
+            获取对象信息接口用的数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetItemsParamsDto.Ids">
+            <summary>
+            要获取信息的Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetItemsParamsDto.IncludeChildren">
+            <summary>
+            是否返回每个对象完整的孩子集合。
+            true 则返回所有孩子；false则Children属性返回空集合。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetItemsReturnDto">
+            <summary>
+            获取对象信息接口返回的数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetItemsReturnDto.GameItems">
+            <summary>
+            返回的物品信息。
             </summary>
         </member>
         <member name="T:Gy001.Controllers.BlueprintController">

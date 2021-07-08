@@ -43,11 +43,15 @@ namespace Gy2021001Template
     public abstract class GameThingTemplateBase : GameTemplateBase
     {
         /// <summary>
+        /// 通用索引序列属性的名称或专用索引序列属性的前缀。
+        /// </summary>
+        public const string LevelPrefix = "lv";
+
+        /// <summary>
         /// 
         /// </summary>
         public GameThingTemplateBase()
         {
-
         }
 
         public GameThingTemplateBase(Guid id) : base(id)
@@ -94,6 +98,7 @@ namespace Gy2021001Template
 
         /// <summary>
         /// 该模板创建对象应有的子模板Id字符串集合。用逗号分割。
+        /// 可能存在多个相同Id。
         /// </summary>
         public string ChildrenTemplateIdString { get; set; }
 
@@ -101,6 +106,7 @@ namespace Gy2021001Template
 
         /// <summary>
         /// 该模板创建对象应有的子模板Id集合。
+        /// 可能存在多个相同Id。
         /// </summary>
         [NotMapped]
         public List<Guid> ChildrenTemplateIds
@@ -125,23 +131,17 @@ namespace Gy2021001Template
         /// </summary>
         /// <param name="propertyName"></param>
         /// <returns></returns>
-        public virtual object GetPropertyValue(string propertyName, object defaultVal = default)
-        {
-            object result;
-            switch (propertyName)
-            {
-                case "Id":
-                    result = Id;
-                    break;
-                default:
-                    result = Properties.GetValueOrDefault(propertyName, defaultVal);
-                    break;
-            }
-            return result;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object GetPropertyValue(string propertyName, object defaultVal = default) => TryGetPropertyValue(propertyName, out var result) ? result : defaultVal;
 
+        /// <summary>
+        /// 获取指定属性名的属性值。
+        /// </summary>
+        /// <param name="propertyName">属性名。</param>
+        /// <param name="result">属性的值。</param>
+        /// <returns>true成功返回属性值，false没有找到指定名称的属性。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public bool TryGetPropertyValue(string propertyName, out object result)
+        public virtual bool TryGetPropertyValue(string propertyName, out object result)
         {
             bool succ;
             switch (propertyName)
@@ -152,6 +152,8 @@ namespace Gy2021001Template
             }
             return succ;
         }
+
+        #region 序列属性相关
 
         /// <summary>
         /// 获取指定名称指定级别的序列属性的值。
@@ -192,18 +194,36 @@ namespace Gy2021001Template
         /// <summary>
         /// 获取所有序列属性名的数组。
         /// </summary>
-        public IEnumerable<string> SequencePropertyNames
+        [NotMapped]
+        public string[] SequencePropertyNames
         {
             get
             {
-                lock (this)
-                    if (null == _SequencePropertyNames)
-                    {
-                        _SequencePropertyNames = Properties.Where(c => c.Value is Array).Select(c => c.Key).ToArray();
-                    }
+                if (null == _SequencePropertyNames)
+                    lock (this)
+                        if (null == _SequencePropertyNames)
+                        {
+                            _SequencePropertyNames = Properties.Where(c => c.Value is Array).Select(c => c.Key).ToArray();
+                        }
                 return _SequencePropertyNames;
             }
         }
+
+        /// <summary>
+        /// 获取指定序列属性的索引属性名。
+        /// 如果有lvXXX则返回，没有则一律返回 lv。
+        /// </summary>
+        /// <param name="sequencePropertyNames"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string GetIndexPropertyName(string sequencePropertyNames)
+        {
+            string specName = LevelPrefix + sequencePropertyNames;
+            if (!Properties.TryGetValue(specName, out var indexObj) || !OwHelper.TryGetDecimal(indexObj, out _))
+                return specName;
+            return LevelPrefix;
+        }
+        #endregion 序列属性相关
 
         /// <summary>
         /// 

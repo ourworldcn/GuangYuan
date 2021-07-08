@@ -119,14 +119,14 @@ namespace GY2021001WebApi.Controllers
         /// </summary>
         /// <param name="model">参见 TokenDtoBase</param>
         /// <returns>返回缓慢变化属性的集合。</returns>
-        /// <response code="400">令牌无效。</response>
+        /// <response code="401">令牌无效。</response>
         [HttpPost]
         public ActionResult<List<GradientPropertyDto>> RefreshGradientProperty(TokenDtoBase model)
         {
             var world = HttpContext.RequestServices.GetService<VWorld>();
 
             if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-                return BadRequest("令牌无效");
+                return Unauthorized("令牌无效");
             try
             {
                 foreach (var item in gu.CurrentChar.GradientProperties)
@@ -138,6 +138,30 @@ namespace GY2021001WebApi.Controllers
                 world.CharManager.Unlock(gu, true);
             }
         }
+
+#if DEBUG
+        /// <summary>
+        /// 快速注册一个新账号并登录。仅调试状态才有接口。
+        /// </summary>
+        /// <returns></returns>
+        /// <response code="400">意外错误。</response>
+        [HttpGet]
+        public ActionResult<GameCharDto> QuicklyRegisterAndLogin()
+        {
+            try
+            {
+                string pwd = null;
+                var gcm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
+                var gu = gcm.QuicklyRegister(ref pwd);
+                gu = gcm.Login(gu.LoginName, pwd, "IOS/Test");
+                return (GameCharDto)gu.CurrentChar;
+            }
+            catch (Exception err)
+            {
+                return base.BadRequest(err.Message);
+            }
+        }
+#endif //DEBUG
     }
 
 }

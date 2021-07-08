@@ -1244,6 +1244,44 @@ namespace GY2021001WebApi.Models
         public List<GameItemDto> Items { get; set; } = new List<GameItemDto>();
     }
 
+    /// <summary>
+    /// 获取对象信息接口用的数据封装类。
+    /// </summary>
+    [DataContract]
+    public class GetItemsParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要获取信息的Id集合。
+        /// </summary>
+        [DataMember]
+        public List<string> Ids { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 是否返回每个对象完整的孩子集合。
+        /// true 则返回所有孩子；false则Children属性返回空集合。
+        /// </summary>
+        [DataMember]
+        public bool IncludeChildren { get; set; }
+    }
+
+    /// <summary>
+    /// 获取对象信息接口返回的数据封装类。
+    /// </summary>
+    [DataContract]
+    public class GetItemsReturnDto
+    {
+        public GetItemsReturnDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 返回的物品信息。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
+    }
+
     #endregion 接口特定数据封装类
 
 

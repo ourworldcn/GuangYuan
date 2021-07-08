@@ -133,6 +133,16 @@ namespace GY2021001BLL
         /// </summary>
         public static readonly Guid WorkerOfHomelandTId = new Guid("3b70d798-4969-443a-b081-b05a966002e5");
 
+        /// <summary>
+        /// 玉米田（玉米）模板Id。
+        /// </summary>
+        public static readonly Guid YumitianTId = new Guid("{7a00740c-035e-4846-a619-2d0855f60b55}");
+
+        /// <summary>
+        /// 木材树（木材）模板Id。
+        /// </summary>
+        public static readonly Guid MucaishuTId = new Guid("{9c5edb6d-b5bd-4be9-a3a6-cbf794e6bf13}");
+
         #endregion 家园及相关
 
         #endregion 固定模板Id
@@ -220,7 +230,7 @@ namespace GY2021001BLL
         /// <summary>
         /// 孵化槽的模板Id。
         /// </summary>
-        public static readonly Guid FuhuaSlotTId=new Guid("{b84072af-bb91-46eb-af5c-b462e3361c6c}");
+        public static readonly Guid FuhuaSlotTId = new Guid("{b84072af-bb91-46eb-af5c-b462e3361c6c}");
 
         #endregion 蓝图常量
     }
@@ -448,11 +458,11 @@ namespace GY2021001BLL
                 var headTemplate = gitm.GetTemplateFromeId(head.TemplateId);
                 var body = gim.GetBody(c);
                 var bodyTemplate = gitm.GetTemplateFromeId(body.TemplateId);
-                var result = gim.CreateMounts(headTemplate,bodyTemplate);
-                
-                if (c.Properties.TryGetValue("neatk", out object valObj) && OwHelper.TryGetDecimal(valObj,out var dec))
+                var result = gim.CreateMounts(headTemplate, bodyTemplate);
+
+                if (c.Properties.TryGetValue("neatk", out object valObj) && OwHelper.TryGetDecimal(valObj, out var dec))
                     result.Properties["neatk"] = dec;
-                if (c.Properties.TryGetValue("neqlt", out valObj) && OwHelper.TryGetDecimal(valObj,out  dec))
+                if (c.Properties.TryGetValue("neqlt", out valObj) && OwHelper.TryGetDecimal(valObj, out dec))
                     result.Properties["neqlt"] = dec;
                 if (c.Properties.TryGetValue("nemhp", out valObj) && OwHelper.TryGetDecimal(valObj, out dec))
                     result.Properties["nemhp"] = dec;

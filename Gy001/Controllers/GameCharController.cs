@@ -398,6 +398,33 @@ namespace GY2021001WebApi.Controllers
             return result;
         }
 
+        /// <summary>
+        /// 获取物品的信息。
+        /// 这个调用不会触发空闲重新计时，即使一直调用此方法用户也可能被登出。
+        /// </summary>
+        /// <param name="model">参见 GetItemsParamsDto.</param>
+        /// <returns>参见 GetItemsReturnDto.</returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPut]
+        public ActionResult<GetItemsReturnDto> GetItems(GetItemsParamsDto model)
+        {
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return Unauthorized("令牌无效");
+            try
+            {
+                var gc = gu.CurrentChar;
+                var result = new GetItemsReturnDto();
+                HashSet<Guid> guids = new HashSet<Guid>(model.Ids.Select(c => GameHelper.FromBase64String(c)));
+                var coll = gc.AllChildren.Where(c => guids.Contains(c.Id)).Select(c => GameItemDto.FromGameItem(c, model.IncludeChildren));
+                result.GameItems.AddRange(coll);
+                return result;
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu, true);
+            }
+        }
     }
 }
 

@@ -80,9 +80,8 @@ namespace GY2021001BLL
                 TemplateId = template.Id,
                 Template = template,
                 OwnerId = ownerId,
-                Count = 1,
+                //Count = 1,
             };
-            result.Count = null == GetStackUpper(result) ? 1 : 0;
             //初始化属性
             var gitm = World.ItemTemplateManager;
             foreach (var item in template.Properties)   //复制属性
@@ -99,6 +98,7 @@ namespace GY2021001BLL
                 else
                     result.Properties[item.Key] = item.Value;
             }
+            result.Count ??= null == GetStackUpper(result) ? 1 : 0;
             if (result.Properties.Count > 0)    //若需要改写属性字符串。
                 result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
             //递归初始化容器

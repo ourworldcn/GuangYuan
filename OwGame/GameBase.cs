@@ -203,6 +203,12 @@ namespace OwGame
 
         #region 事件及相关
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void InvokeOnCompleted(CompletedEventArgs e)
+        {
+            OnCompleted(e);
+        }
+
         public event EventHandler<CompletedEventArgs> Completed;
 
         /// <summary>

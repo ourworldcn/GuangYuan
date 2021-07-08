@@ -31,7 +31,7 @@ namespace GY2021001DAL
     }
 
     /// <summary>
-    /// 游戏内部事物的基类(非容器)。
+    /// 游戏内部事物的基类。
     /// </summary>
     public abstract class GameThingBase : GameObjectBase
     {
@@ -75,8 +75,11 @@ namespace GY2021001DAL
             get => _PropertiesString;
             set
             {
-                _PropertiesString = value;
-                _Properties = null;
+                if (_PropertiesString != value)
+                {
+                    _PropertiesString = value;
+                    _Properties = null;
+                }
             }
         }
 
@@ -140,10 +143,9 @@ namespace GY2021001DAL
         /// <param name="defaultVal"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public decimal GetDecimalOrDefault(string propertyName, decimal defaultVal = decimal.Zero)
-        {
-            return !TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec) ? defaultVal : dec;
-        }
+        public decimal GetDecimalOrDefault(string propertyName, decimal defaultVal = decimal.Zero) =>
+            !TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec) ? defaultVal : dec;
+
 
         /// <summary>
         /// 获取指定属性名称的属性值。
@@ -158,7 +160,7 @@ namespace GY2021001DAL
             switch (propertyName)
             {
                 default:
-                    if (Name2FastChangingProperty.TryGetValue(propertyName, out var fcp))
+                    if (Name2FastChangingProperty.TryGetValue(propertyName, out var fcp))   //若存在渐变属性
                     {
                         result = fcp.GetCurrentValueWithUtc();
                         succ = true;
@@ -172,16 +174,6 @@ namespace GY2021001DAL
                     break;
             }
             return succ;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetDecimal(string propertyName, out decimal result)
-        {
-            if (TryGetPropertyValue(propertyName, out var obj))
-                return OwHelper.TryGetDecimal(obj, out result);
-            else
-                result = default;
-            return false;
         }
 
         /// <summary>
@@ -511,4 +503,20 @@ namespace GY2021001DAL
 
     }
 
+    /// <summary>
+    /// <see cref="GameThingBase"/>的扩展方法封装类。
+    /// </summary>
+    public static class GameThingBaseExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool TryGetDecimalPropertyValue(this GameThingBase obj, string propertyName, out decimal result)
+        {
+            if (obj.TryGetPropertyValue(propertyName, out var tmp))
+                return OwHelper.TryGetDecimal(tmp, out result);
+            result = default;
+            return false;
+        }
+
+
+    }
 }

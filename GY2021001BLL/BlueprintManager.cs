@@ -627,6 +627,10 @@ namespace GY2021001BLL
                         UpgradeOnHomeland(datas);
                         succ = true;
                         break;
+                    case "8b26f520-fbf3-4979-831c-398a0150b3da":    // 取得玉米/ 木材放入仓库
+                        Harvest(datas);
+                        succ = true;
+                        break;
                     default:
                         succ = false;
                         break;
@@ -639,6 +643,50 @@ namespace GY2021001BLL
                 succ = true;
             }
             return succ;
+        }
+
+        /// <summary>
+        /// 收获家园中玉米，木材等资源放入仓库。
+        /// </summary>
+        /// <param name="datas"></param>
+        private void Harvest(ApplyBlueprintDatas datas)
+        {
+            if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。")) return;
+            var gameItem = datas.GameItems[0];  //收取的容器
+            var gameChar = datas.GameChar;
+            var hl = datas.Lookup(gameChar.GameItems, ProjectConstant.CharTemplateId, ProjectConstant.HomelandSlotId);    //家园
+            if (null == hl) return;
+            var mainBase = datas.Lookup(hl.Children, ProjectConstant.MainBaseSlotId); //主基地
+            if (null == mainBase) return;
+            if (gameItem.TemplateId == ProjectConstant.MucaishuTId)    //若收取木材
+            {
+                var wood = datas.Lookup(gameChar.GameItems, ProjectConstant.CharTemplateId, ProjectConstant.MucaiId); //木材
+                if (null == wood) return;
+                var count = gameItem.Count.Value; //收取数量
+                var gim = Services.GetRequiredService<GameItemManager>();
+                var stc = gim.GetNumberOfStackRemainder(wood, out _);   //可堆叠数
+                count = Math.Min(count, stc);   //实际移走数量
+                wood.Count += count;
+                gameItem.Count -= count;
+                datas.ChangesItem.AddToChanges(wood.ContainerId.Value, wood);
+                datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
+            }
+            else if (gameItem.TemplateId == ProjectConstant.YumitianTId)   //若收取玉米地
+            {
+                var gold = datas.Lookup(gameChar.GameItems, ProjectConstant.CharTemplateId, ProjectConstant.JinbiId); //金币
+                if (null == gold) return;
+                var count = gameItem.Count;
+                gold.Count += count;
+                gameItem.Count -= count;
+                datas.ChangesItem.AddToChanges(gold.ContainerId.Value, gold);
+                datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
+            }
+            else
+            {
+                datas.ErrorItemTIds.Add(gameItem.TemplateId);
+                datas.DebugMessage = $"不认识的物品，TemplateId={gameItem.TemplateId}";
+                datas.HasError = true;
+            }
         }
 
         /// <summary>
@@ -661,14 +709,14 @@ namespace GY2021001BLL
             var lv = (int)lvDec;    //原等级
 
             GameItem gold = null;
-            if (gameItem.TryGetDecimal("lug", out var lug)) //若需要金子
+            if (gameItem.TryGetDecimalPropertyValue("lug", out var lug)) //若需要金子
             {
                 gold = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.JinbiId);
                 if (!datas.Verify(gold.Count >= lug, $"需要{lug}金币，目前只有{gold.Count}金币。", gold.TemplateId))
                     return;
             }
             GameItem wood = null;
-            if (gameItem.TryGetDecimal("luw", out var luw)) //若需要木头
+            if (gameItem.TryGetDecimalPropertyValue("luw", out var luw)) //若需要木头
             {
                 wood = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaiId);
                 if (!datas.Verify(wood.Count >= luw, $"需要{luw}木材，目前只有{wood.Count}木材。", wood.TemplateId))
@@ -707,7 +755,55 @@ namespace GY2021001BLL
                 gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
             }
             datas.ChangesItem.AddToChanges(gameItem.ParentId.Value, gameItem);
+            fcp.Tag = (datas.GameChar.Id, gameItem.Id);
+            fcp.Completed += UpgradeCompleted;
             return;
+        }
+
+        /// <summary>
+        /// 某个物品升级结束。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void UpgradeCompleted(object sender, CompletedEventArgs e)
+        {
+            var fcp = sender as FastChangingProperty;
+            if (fcp is null || fcp.Name != "upgradecd")
+                return; //忽略
+            if (!(fcp.Tag is ValueTuple<Guid, Guid> ids))
+                return;
+            var cm = World.CharManager;
+            var gameChar = cm.GetCharFromId(ids.Item1);
+            if (gameChar is null)   //若用户已经下线
+                return;
+            if (!cm.Lock(gameChar.GameUser))   //若用户已经下线
+                return;
+            try
+            {
+                var gameItem = gameChar.AllChildren.FirstOrDefault(c => c.Id == ids.Item2);
+                if (gameItem is null)
+                    return;
+                var gim = World.ItemManager;
+                var lv = (int)gameItem.GetDecimalOrDefault(ProjectConstant.LevelPropertyName, 0m);  //原等级
+                gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
+                if (gameItem.TemplateId == ProjectConstant.MainBaseSlotId) //如果是主基地升级
+                {
+
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+            finally
+            {
+                cm.Unlock(gameChar.GameUser, true);
+            }
+        }
+
+        private void MainBaseUpgraded()
+        {
+
         }
 
         /// <summary>
@@ -762,17 +858,13 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         private void HastenOnHomeland(ApplyBlueprintDatas datas)
         {
-            if (!datas.Verify(datas.GameItems.Count == 1, "只能加速一个建筑"))
-                return;
+            if (!datas.Verify(datas.GameItems.Count == 1, "只能加速一个物品")) return;
             var gameItem = datas.GameItems[0];  //加速的物品
             var hl = datas.Lookup(Services, ProjectConstant.CharTemplateId, ProjectConstant.HomelandSlotId);
-            if (hl is null)
-                return;
+            if (hl is null) return;
             var worker = datas.Lookup(hl.Children, ProjectConstant.WorkerOfHomelandTId);
-            if (worker is null)
-                return;
-            if (!datas.Verify(worker.Count.HasValue && worker.Count > 0, "没有在升级的物品"))
-                return;
+            if (worker is null) return;
+            if (!datas.Verify(worker.Count.HasValue && worker.Count > 0, "没有在升级的物品")) return;
             if (!datas.Verify(gameItem.Name2FastChangingProperty.TryGetValue("upgradecd", out var fcp), "物品未进行升级"))
             {
                 datas.ErrorItemTIds.Add(gameItem.TemplateId);
@@ -1110,6 +1202,15 @@ namespace GY2021001BLL
             return result;
         }
 
+        /// <summary>
+        /// 在指定的集合中寻找指定模板Id 或和 物品Id的物品。
+        /// 无法找到时，自动填写<see cref="ApplyBlueprintDatas"/>中数据。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="parent"></param>
+        /// <param name="templateId"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         static public GameItem Lookup(this ApplyBlueprintDatas obj, IEnumerable<GameItem> parent, Guid? templateId, Guid? id = null)
         {
             //var gitm=service.GetRequiredService<GameItemTemplateManager>();
