@@ -44,6 +44,30 @@ namespace OwGame
         public DateTime LastDateTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
+        /// 设置最后计算的值和时间，并根据值是否大于或等于最大值，引发事件。
+        /// 如果已经结束则不会引发事件，只有当设置之前未结束，设置之后结束才会引发事件。
+        /// </summary>
+        /// <param name="lastValue"></param>
+        /// <param name="lastDateTime"></param>
+        /// <param name="maxValue">设置的最大值，省略或空则不会设置最大值<see cref="MaxValue"/>属性。</param>
+        /// <returns>true引发了事件，false未引发事件。</returns>
+        public bool SetAndRaiseEvent(decimal lastValue, DateTime lastDateTime, decimal? maxValue = null)
+        {
+            DateTime dt = DateTime.UtcNow;
+            var isComplete = LastValue >= MaxValue || ComputeComplateDateTime() <= dt;
+            LastValue = lastValue;
+            LastDateTime = lastDateTime;
+            if (maxValue.HasValue)
+                MaxValue = maxValue.Value;
+            if (LastValue < MaxValue && !isComplete)   //若需引发事件
+            {
+                OnCompleted(new CompletedEventArgs(lastDateTime));
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 获取或设置最后计算的结果。<see cref="LastComputerDateTime"/>这个时点上计算的值。
         /// </summary>
         public decimal LastValue { get; set; }
@@ -84,7 +108,7 @@ namespace OwGame
         /// 以当前<see cref="LastValue"/>为准预估完成时间点。
         /// </summary>
         /// <returns>预估完成时间。不会刷新计算最新值。</returns>
-        public DateTime ComputeToComplate()
+        public DateTime ComputeComplateDateTime()
         {
             if (LastValue >= MaxValue)  //若已经结束
                 return LastDateTime;

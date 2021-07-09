@@ -112,7 +112,7 @@ namespace GY2021001BLL
         public static Random WorldRandom => _WorldRandom ??= new Random();
 
         /// <summary>
-        /// 获取两个数之间的一个随机数。
+        /// 获取两个数之间的一个随机数。支持并发调用。
         /// </summary>
         /// <param name="from">返回值大于或等于此参数。</param>
         /// <param name="to">返回值小于此参数。</param>
@@ -224,11 +224,12 @@ namespace GY2021001BLL
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            LoadCache();
-            //Task.Run(() =>
-            //{
-            //});
-            return Task.CompletedTask;
+            var result = Task.Factory.StartNew(c =>
+            {
+                //CreateDb((IServiceProvider)c);
+                Task.Run(() => LoadCache());
+            }, _Services, cancellationToken);
+            return result;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

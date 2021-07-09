@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Gy001;
 using GY2021001BLL;
 using GY2021001DAL;
+using Gy2021001Template;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -146,15 +147,24 @@ namespace GY2021001WebApi.Controllers
         /// <returns></returns>
         /// <response code="400">意外错误。</response>
         [HttpGet]
-        public ActionResult<GameCharDto> QuicklyRegisterAndLogin()
+        public ActionResult<LoginReturnDto> QuicklyRegisterAndLogin()
         {
             try
             {
+                var services = HttpContext.RequestServices;
                 string pwd = null;
-                var gcm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
+                var gcm = services.GetService<GameCharManager>();
                 var gu = gcm.QuicklyRegister(ref pwd);
                 gu = gcm.Login(gu.LoginName, pwd, "IOS/Test");
-                return (GameCharDto)gu.CurrentChar;
+                var worldServiceHost = $"{Request.Scheme}://{Request.Host}";
+
+                var result = new LoginReturnDto()
+                {
+                    Token = gu.CurrentToken.ToBase64String(),
+                    WorldServiceHost = worldServiceHost,
+                };
+                result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
+                return result;
             }
             catch (Exception err)
             {

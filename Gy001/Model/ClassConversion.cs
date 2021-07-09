@@ -305,4 +305,59 @@ namespace GY2021001WebApi.Models
         }
 
     }
+
+    public partial class HomelandPlanDto
+    {
+        public static implicit operator HomelandPlan(HomelandPlanDto obj)
+        {
+            var result = new HomelandPlan()
+            {
+                ClientString = obj.ClientString,
+                Id = GameHelper.FromBase64String(obj.Id),
+                IsActived = obj.IsActived,
+            };
+            result.PlanItems.AddRange(obj.PlanItems.Select(c => (HomelandPlanItem)c));
+            return result;
+        }
+
+        public static implicit operator HomelandPlanDto(HomelandPlan obj)
+        {
+            var result = new HomelandPlanDto()
+            {
+                ClientString = obj.ClientString,
+                Id = obj.Id.ToBase64String(),
+                IsActived = obj.IsActived,
+            };
+            result.PlanItems.AddRange(obj.PlanItems.Select(c => (HomelandPlanItemDto)c));
+            return result;
+        }
+    }
+
+    public partial class HomelandPlanItemDto
+    {
+        public static implicit operator HomelandPlanItem(HomelandPlanItemDto obj)
+        {
+            var result = new HomelandPlanItem()
+            {
+                ContainerId = GameHelper.FromBase64String(obj.ContainerId),
+                NewTemplateId = GameHelper.FromBase64String(obj.NewTemplateId),
+            };
+            result.ItemIds.AddRange(obj.ItemIds.Select(c => GameHelper.FromBase64String(c)));
+            return result;
+        }
+
+        public static implicit operator HomelandPlanItemDto(HomelandPlanItem obj)
+        {
+            var result = new HomelandPlanItemDto()
+            {
+                ContainerId = obj.ContainerId.ToBase64String(),
+                NewTemplateId = obj.NewTemplateId?.ToBase64String(),
+            };
+            result.ItemIds.AddRange(obj.ItemIds.Select(c => c.ToBase64String()));
+            return result;
+        }
+
+
+    }
+
 }

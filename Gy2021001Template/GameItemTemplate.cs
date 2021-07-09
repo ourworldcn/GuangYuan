@@ -8,6 +8,9 @@ using System.Text;
 
 namespace Gy2021001Template
 {
+    /// <summary>
+    /// 游戏内物品的模板对象。
+    /// </summary>
     public class GameItemTemplate : GameThingTemplateBase
     {
         public GameItemTemplate()

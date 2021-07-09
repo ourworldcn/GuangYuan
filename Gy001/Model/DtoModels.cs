@@ -1282,6 +1282,75 @@ namespace GY2021001WebApi.Models
         public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
     }
 
+    #region 家园建设方案
+    /// <summary>
+    /// 方案。
+    /// </summary>
+    [DataContract]
+    public partial class HomelandPlanDto
+    {
+        public HomelandPlanDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 方案的唯一Id。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 方案具体子项。
+        /// </summary>
+        [DataMember]
+        public List<HomelandPlanItemDto> PlanItems { get; set; } = new List<HomelandPlanItemDto>();
+
+        /// <summary>
+        /// 是否是激活方案。
+        /// </summary>
+        [DataMember]
+        public bool IsActived { get; set; }
+
+        /// <summary>
+        /// 方案对象的 ClientString 属性。
+        /// </summary>
+        [DataMember]
+        public string ClientString { get; set; }
+    }
+
+    /// <summary>
+    /// 方案中的子项。
+    /// </summary>
+    [DataContract]
+    public partial class HomelandPlanItemDto
+    {
+        public HomelandPlanItemDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 要加入 ContainerId 指出容器的子对象Id。
+        /// </summary>
+        [DataMember]
+        public List<string> ItemIds { get; } = new List<string>();
+
+        /// <summary>
+        /// 容器的Id。
+        /// </summary>
+        [DataMember]
+        public string ContainerId { get; set; }
+
+        /// <summary>
+        /// 要替换的新的模板Id值。空表示不替换。
+        /// </summary>
+        [DataMember]
+        public string NewTemplateId { get; set; }
+    }
+
+    #endregion 家园建设方案
+
     #endregion 接口特定数据封装类
 
 

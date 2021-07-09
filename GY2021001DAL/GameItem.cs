@@ -96,16 +96,6 @@ namespace GY2021001DAL
         }
 
         /// <summary>
-        /// 获取该物品直接或间接下属对象的枚举数。广度优先。
-        /// </summary>
-        /// <returns>枚举数。不包含自己。枚举过程中不能更改树节点的关系。</returns>
-        [NotMapped]
-        public IEnumerable<GameItem> AllChildrenWithBfs
-        {
-            get => OwHelper.GetAllSubItemsOfTreeWithBfs(c => c.Children, Children.ToArray());
-        }
-
-        /// <summary>
         /// 所属角色Id或其他关联对象的Id。
         /// </summary>
         public Guid? OwnerId { get; set; }

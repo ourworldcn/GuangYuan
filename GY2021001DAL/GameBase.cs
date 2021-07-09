@@ -35,6 +35,8 @@ namespace GY2021001DAL
     /// </summary>
     public abstract class GameThingBase : GameObjectBase
     {
+        #region 构造函数
+
         /// <summary>
         /// 构造函数。
         /// </summary>
@@ -51,6 +53,8 @@ namespace GY2021001DAL
         {
 
         }
+
+        #endregion 构造函数
 
         /// <summary>
         /// 客户端要记录的一些属性，这个属性客户端可以随意更改，服务器不使用。
@@ -106,46 +110,14 @@ namespace GY2021001DAL
         }
 
         /// <summary>
-        /// 获取属性值并强制转化类型。如果不存在指定属性或属性类型不兼容，则返回默认值。
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="name"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
-        public virtual T GetProperyValue<T>(string name, T defaultValue = default)
-        {
-            if (Properties.TryGetValue(name, out object obj))
-            {
-                return (T)Convert.ChangeType(obj, typeof(T));
-            }
-            return defaultValue;
-        }
-
-        /// <summary>
         /// 获取指定名称的属性名。调用<see cref="TryGetPropertyValue(string, out object)"/>来实现。
         /// </summary>
         /// <param name="propertyName"></param>
         /// <param name="defaultVal"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object GetValueOrDefault(string propertyName, object defaultVal = default)
-        {
-            if (!TryGetPropertyValue(propertyName, out var result))
-                result = defaultVal;
-            return result;
-        }
-
-        /// <summary>
-        /// 获取指定的属性值并转换为<see cref="decimal"/>,如果找不到，或不能转换则返回指定默认值。
-        /// </summary>
-        /// <param name="propertyName" >
-        /// </param>
-        /// <param name="defaultVal"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public decimal GetDecimalOrDefault(string propertyName, decimal defaultVal = decimal.Zero) =>
-            !TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec) ? defaultVal : dec;
-
+        public object GetPropertyValueOrDefault(string propertyName, object defaultVal = default) =>
+            TryGetPropertyValue(propertyName, out var result) ? result : defaultVal;
 
         /// <summary>
         /// 获取指定属性名称的属性值。
@@ -162,8 +134,8 @@ namespace GY2021001DAL
                 default:
                     if (Name2FastChangingProperty.TryGetValue(propertyName, out var fcp))   //若存在渐变属性
                     {
-                        result = fcp.GetCurrentValueWithUtc();
                         succ = true;
+                        result = fcp.GetCurrentValueWithUtc();
                     }
                     else
                     {
@@ -200,6 +172,8 @@ namespace GY2021001DAL
             return succ;
         }
 
+        #region 快速变化属性相关
+
         Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
 
         /// <summary>
@@ -233,6 +207,7 @@ namespace GY2021001DAL
                 FastChangingPropertyExtensions.Clear(Properties, name);
             return result;
         }
+        #endregion 快速变化属性相关
 
         /// <summary>
         /// 服务器用通用扩展属性集合。
@@ -261,6 +236,30 @@ namespace GY2021001DAL
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
+        public void InvokeLoaded(IServiceProvider services)
+        {
+            var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
+            Template = helper.GetTemplateFromeId(TemplateId);
+        }
+
+
+        /// <summary>
+        /// 引发<see cref="Created"/>事件。
+        /// </summary>
+        /// <param name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void InvokeCreated(IServiceProvider services)
+        {
+            var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
+            Template = helper.GetTemplateFromeId(TemplateId);
+        }
+
+        #endregion 事件及相关
+
+        /// <summary>
         /// 模板对象。
         /// </summary>
         [NotMapped]
@@ -271,17 +270,6 @@ namespace GY2021001DAL
         /// </summary>
         public Guid TemplateId { get; set; }
 
-        public void InvokeLoaded(GameThingTemplateBase template)
-        {
-            Template = template;
-        }
-
-        public void InitialCreation(GameThingTemplateBase template)
-        {
-            Template = template;
-        }
-
-        #endregion 事件及相关
     }
 
     /// <summary>
@@ -380,15 +368,6 @@ namespace GY2021001DAL
     }
 
     /// <summary>
-    /// 帮助<see cref="GameThingBase"/>获取<see cref="GameThingTemplateBase"/>对象的接口。
-    /// </summary>
-    public interface GameThingTemplateHelper
-    {
-        public GameThingTemplateBase GetTemplateFromeId(Guid id);
-
-    }
-
-    /// <summary>
     /// 
     /// </summary>
     public static class FastChangingPropertyExtensions
@@ -426,7 +405,7 @@ namespace GY2021001DAL
         }
 
         /// <summary>
-        /// 
+        /// 将当前值写入字典，不会自己计算更新属性。
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="dic"></param>
@@ -517,6 +496,25 @@ namespace GY2021001DAL
             return false;
         }
 
+        /// <summary>
+        /// 获取指定的属性值并转换为<see cref="decimal"/>,如果找不到，或不能转换则返回指定默认值。
+        /// </summary>
+        /// <param name="propertyName" >
+        /// </param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public decimal GetDecimalOrDefault(this GameThingBase @this, string propertyName, decimal defaultVal = decimal.Zero) =>
+            !@this.TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec) ? defaultVal : dec;
 
     }
+
+    /// <summary>
+    /// <see cref="GameThingBase"/>用到的服务。
+    /// </summary>
+    public interface IGameThingHelper
+    {
+        public GameItemTemplate GetTemplateFromeId(Guid id);
+    }
+
 }

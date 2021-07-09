@@ -128,6 +128,7 @@ namespace Gy001
             {
                 DoApply = SpecificProject.ApplyBlueprint,
             }));
+            services.AddSingleton<IGameThingHelper>(c => c.GetService<GameItemManager>());
             #endregion 配置游戏专用服务
         }
 

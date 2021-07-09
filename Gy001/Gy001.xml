@@ -550,6 +550,51 @@
             存在问题的物品的模板Id。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.HomelandPlanDto">
+            <summary>
+            方案。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandPlanDto.Id">
+            <summary>
+            方案的唯一Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandPlanDto.PlanItems">
+            <summary>
+            方案具体子项。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandPlanDto.IsActived">
+            <summary>
+            是否是激活方案。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandPlanDto.ClientString">
+            <summary>
+            方案对象的 ClientString 属性。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.HomelandPlanItemDto">
+            <summary>
+            方案中的子项。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandPlanItemDto.ItemIds">
+            <summary>
+            要加入 ContainerId 指出容器的子对象Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandPlanItemDto.ContainerId">
+            <summary>
+            容器的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandPlanItemDto.NewTemplateId">
+            <summary>
+            要替换的新的模板Id值。空表示不替换。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。

@@ -254,18 +254,6 @@ namespace GY2021001BLL
 
         #region 公共方法
 
-        /// <summary>
-        /// 获取动态渐变属性。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        public decimal GetGradientProperty(GameChar gameChar, string propertyName)
-        {
-            if (gameChar.GradientProperties.TryGetValue(propertyName, out FastChangingProperty gradientProperty))
-                return gradientProperty.GetCurrentValueWithUtc();
-            return decimal.Zero;
-        }
 
         /// <summary>
         /// 用指定的Id获取角色对象。
@@ -768,6 +756,10 @@ namespace GY2021001BLL
                 }
                 //补足所属物品的槽
                 World.ItemManager.Normalize(e.GameChar.GameItems);
+                //通知所属物品加载完毕
+                var coll = OwHelper.GetAllSubItemsOfTree(e.GameChar.GameItems, c => c.Children).ToArray();
+                foreach (var item in coll)
+                    item.InvokeLoaded(Services);
                 //清除锁定属性槽内物品，放回道具背包中
                 var gim = World.ItemManager;
                 var daojuBag = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包
@@ -778,11 +770,6 @@ namespace GY2021001BLL
                 slot = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockQltSlotId); //锁定槽
                 gim.MoveItems(slot, c => true, daojuBag);
 
-                //通知所属物品加载完毕
-                var coll = OwHelper.GetAllSubItemsOfTree(e.GameChar.GameItems, c => c.Children).ToArray();
-                var gitm = World.ItemTemplateManager;
-                foreach (var item in coll)
-                    item.InvokeLoaded(gitm.GetTemplateFromeId(item.TemplateId));
             }
             catch (Exception)
             {
@@ -808,4 +795,51 @@ namespace GY2021001BLL
         }
         public GameChar GameChar { get; set; }
     }
+
+    /// <summary>
+    /// 方案。
+    /// </summary>
+    public class HomelandPlan
+    {
+        public HomelandPlan()
+        {
+
+        }
+
+        public Guid Id { get; set; }
+
+        public List<HomelandPlanItem> PlanItems { get; } = new List<HomelandPlanItem>();
+
+        public bool IsActived { get; set; }
+
+        public string ClientString { get; set; }
+
+    }
+
+    /// <summary>
+    /// 方案中的子项。
+    /// </summary>
+    public class HomelandPlanItem
+    {
+        public HomelandPlanItem()
+        {
+
+        }
+
+        /// <summary>
+        /// 要加入 ContainerId 指出容器的子对象Id。
+        /// </summary>
+        public List<Guid> ItemIds { get; } = new List<Guid>();
+
+        /// <summary>
+        /// 容器的Id。
+        /// </summary>
+        public Guid ContainerId { get; set; }
+
+        /// <summary>
+        /// 要替换的新的模板Id值。空表示不替换。
+        /// </summary>
+        public Guid? NewTemplateId { get; set; }
+    }
+
 }

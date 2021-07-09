@@ -236,4 +236,5 @@ namespace Gy2021001Template
             return $"{DisplayName}(Properties.Count = {Properties.Count}, Id = {{{tmp[0..4]}...{tmp[^4..^0]}}})";
         }
     }
+
 }

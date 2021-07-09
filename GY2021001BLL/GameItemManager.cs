@@ -28,7 +28,7 @@ namespace GY2021001BLL
     /// <summary>
     /// 虚拟物品管理器。
     /// </summary>
-    public class GameItemManager : GameManagerBase<GameItemManagerOptions>
+    public class GameItemManager : GameManagerBase<GameItemManagerOptions>, IGameThingHelper
     {
         #region 构造函数
 
@@ -113,6 +113,7 @@ namespace GY2021001BLL
 #if DEBUG
             result.Properties["tname"] = template.DisplayName;
 #endif
+            result.InvokeCreated(Services);
             return result;
         }
 
@@ -222,6 +223,17 @@ namespace GY2021001BLL
         public GameItemTemplate GetTemplate(GameThingBase gameObject)
         {
             return ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="tId"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GameItemTemplate GetTemplateFromeId(Guid tId)
+        {
+            return ItemTemplateManager.GetTemplateFromeId(tId);
         }
 
         #region 动态属性相关
@@ -344,7 +356,7 @@ namespace GY2021001BLL
             }
             else if (propName.StartsWith(ProjectConstant.LevelPropertyName))  //若是一个级别属性
             {
-                var olv = Convert.ToDecimal(gameItem.GetProperyValue(propName, 0m));    //当前等级
+                var olv = gameItem.GetDecimalOrDefault(propName, 0m);    //当前等级
                 var nlv = Convert.ToDecimal(val);   //新等级
                 if (olv != nlv)    //若需要改变等级
                 {
