@@ -30,6 +30,12 @@ namespace GY2021001BLL
         /// 角色被创建后调用。
         /// </summary>
         public Func<IServiceProvider, GameChar, bool> CharCreated { get; set; }
+
+        /// <summary>
+        /// 默认锁定超时。单位：秒
+        /// 在指定时间内无法锁定对象就返回失败。
+        /// </summary>
+        public double DefaultLockTimeout { get; set; } = 2;
     }
 
     public class GameCharManager : GameManagerBase<GameCharManagerOptions>
@@ -320,7 +326,7 @@ namespace GY2021001BLL
         public bool Lock(Guid token, out GameUser gameUser)
         {
             gameUser = GetUserFromToken(token);
-            return null == gameUser ? false : Lock(gameUser);
+            return null == gameUser ? false : Lock(gameUser, TimeSpan.FromSeconds(Options.DefaultLockTimeout));
         }
 
         /// <summary>

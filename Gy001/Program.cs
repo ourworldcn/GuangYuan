@@ -11,6 +11,7 @@ using OwGame.Expression;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,6 +38,14 @@ namespace Gy001
         /// </summary>
         private static void Test(IHost host)
         {
+            Random rnd = new Random();
+            var sw = Stopwatch.StartNew();
+            for (int i = 10000 - 1; i >= 0; i--)
+            {
+                Math.Sqrt(rnd.NextDouble());
+            }
+            sw.Stop();
+            var ss = sw.Elapsed;
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

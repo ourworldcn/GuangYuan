@@ -183,25 +183,6 @@ namespace GY2021001BLL
 
         }
 
-        Dictionary<Guid, DungeonLimit[]> _DungeonLimites;
-
-        public Dictionary<Guid, DungeonLimit[]> Id2DungeonLimites
-        {
-            get
-            {
-                lock (ThisLocker)
-                    if (null == _DungeonLimites)
-                    {
-                        using (var db = World.CreateNewTemplateDbContext())
-                        {
-                            _DungeonLimites = db.DungeonLimites.ToArray().GroupBy(c => c.DungeonId).ToDictionary(c => c.Key, c => c.ToArray());
-                        }
-                    }
-                return _DungeonLimites;
-            }
-        }
-
-
         List<GameItemTemplate> _Dungeons;
 
         /// <summary>
@@ -353,7 +334,6 @@ namespace GY2021001BLL
             return;
         }
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -393,7 +373,7 @@ namespace GY2021001BLL
                     return;
 
                 //核准本次收益
-                var succ = Verify(data.Template.Id, data.GameItems, out var errMsg);
+                var succ = Verify(data.Template, data.GameItems,data.GameChar, out var errMsg);
                 if (!succ)   //若本次收益不合法
                 {
                     data.HasError = true;
@@ -403,7 +383,7 @@ namespace GY2021001BLL
                 //核准总收益
                 var shouyiSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShouyiSlotId);   //收益槽
                 var totalItems = shouyiSlot.Children.Concat(data.GameItems);    //总计收益
-                succ = Verify(GetParent(data.Template).Id, totalItems, out errMsg);
+                succ = Verify(GetParent(data.Template),totalItems, data.GameChar, out errMsg);
                 if (!succ)   //若总收益不合法
                 {
                     data.HasError = true;
@@ -473,81 +453,84 @@ namespace GY2021001BLL
         }
 
         /// <summary>
-        /// 验证一组数据是否符合要求。
+        /// 按指定关卡数据校验集合中物品是否合规。
         /// </summary>
-        /// <param name="limit"></param>
+        /// <param name="dungeon"></param>
         /// <param name="gameItems"></param>
+        /// <param name="errorString"></param>
         /// <returns></returns>
-        public bool Verify(Guid dungeonId, IEnumerable<GameItem> gameItems, out string errorString)
+        public bool Verify(GameItemTemplate dungeon, IEnumerable<GameItem> gameItems, GameChar gameChar, out string errorString)
         {
-            var gitm = World.ItemTemplateManager;
-            var gim = World.ItemManager;
-            var giTemplate = gitm.GetTemplateFromeId(dungeonId);  //对应的物品表模板数据
-            var collMount = from tmp in gameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi)
-                            select tmp; //野兽集合
-            if (!Id2DungeonLimites.TryGetValue(dungeonId, out var limits))  //若找不到限定数据
+            errorString = string.Empty;
+            //typ关卡类别=1普通管卡 mis大关数 sec=小关，gold=数金币掉落上限，aml=获得资质野怪的数量，mne=资质和上限，mt=神纹数量上限，wood=木头掉落上限，
+            //tl = 通关最短时限，idt = 道具掉落上限
+            if (dungeon.TryGetPropertyValue("gold", out var goldObj) && OwHelper.TryGetDecimal(goldObj, out var gold)) //若需要限定金币
             {
-                errorString = $"找不到指定关卡Id的数据，Id={dungeonId}";
-                Debug.Fail(errorString);
-                return false;
-            }
-            var group = from tmp in limits
-                        group tmp by tmp.GroupNumber into g
-                        select new { GroupNumber = g.Key, MaxCount = g.First().MaxCountOfGroup };   //每组最大数量
-            var id2Limit = limits.ToDictionary(c => c.ItemTemplateId);   //每种物品的约束
-
-            //限定资质
-            if (giTemplate.Properties.TryGetValue("mne", out var mneObj) && OwHelper.TryGetDecimal(mneObj, out var mne))  //若需限定总资质
-            {
-                var first = collMount.FirstOrDefault(c => GetTotalNe(c.Properties) > mne);
-                if (first != null) //若超过资质限制
+                var tmp = gameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).Sum(c => c.Count.Value);
+                if (tmp > gold) //若超限
                 {
-                    errorString = $"至少有一个野兽资质超过限制。TemplateId={first.TemplateId}";
+                    errorString = $"金币最多允许掉落{gold}，实际掉落{tmp}。";
                     return false;
                 }
             }
-            //限定坐骑数量
-            var items = gameItems.Select(c => (gim.GetBody(c)?.TemplateId ?? c.TemplateId, 1m)); //坐骑身体的模板Id替换坐骑Id
-            var tmplimits = limits.ToDictionary(c => c.ItemTemplateId, c => c.MaxCount);
-            if (!Verify(tmplimits, items, out var errItem))
+            if (dungeon.TryGetPropertyValue("wood", out var woodObj) && OwHelper.TryGetDecimal(woodObj, out var wood)) //若需要限定木材
             {
-                errorString = $"至少有一个虚拟物品数量超过限制。{errItem.Item1}";
-                return false;
+                var tmp = gameItems.Where(c => c.TemplateId == ProjectConstant.MucaiId).Sum(c => c.Count.Value);
+                if (tmp > wood) //若超限
+                {
+                    errorString = $"木材最多允许掉落{wood}，实际掉落{tmp}。";
+                    return false;
+                }
             }
-            //限定组数量
-            if (!VerifyGroup(limits, items, out var errGroupItem))
+            var gim = World.ItemManager;
+            var aryMounts = gameItems.Where(c => gim.IsMounts(c)).ToArray();
+            if (dungeon.TryGetPropertyValue("aml", out var amlObj) && OwHelper.TryGetDecimal(amlObj, out var aml)) //若需要限定资质野怪的数量
             {
-                errorString = $"至少有一个虚拟物品组数量超过限制。{errGroupItem.Item1}";
-                return false;
+                var tmp = aryMounts.Length;
+                if (tmp > aml) //若超限
+                {
+                    errorString = $"资质野怪最多允许掉落{aml}，实际掉落{tmp}。";
+                    return false;
+                }
+                var mounts = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);    //坐骑包
+                var lookup = mounts.Children.ToLookup(c => gim.GetMountsTIds(c));
+                var coll = aryMounts.Where(c => !lookup.Contains(gim.GetMountsTIds(c)));   //错误的资质怪类型
+                if (coll.Any())
+                {
+                    errorString = $"至少有一个资质怪的类型尚不存在对应坐骑。";
+                    return false;
+                }
             }
-            errorString = null;
-            return true;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="limits"></param>
-        /// <param name="items"></param>
-        /// <param name="errItem"></param>
-        /// <returns></returns>
-        private bool VerifyGroup(IEnumerable<DungeonLimit> limits, IEnumerable<(Guid, decimal)> items, out (int, decimal) errItem)
-        {
-            var coll = from limit in limits
-                       join tmp in items
-                       on limit.ItemTemplateId equals tmp.Item1
-                       group (limit, tmp) by limit.GroupNumber into g
-                       let count = g.Sum(c => c.tmp.Item2)
-                       let limitCount = g.First().limit.MaxCountOfGroup
-                       where count > limitCount
-                       select (g.Key, count, limitCount);
-            if (coll.Any())
+            if (dungeon.TryGetPropertyValue("mne", out var mneObj) && OwHelper.TryGetDecimal(mneObj, out var mne)) //若需要限定资质野怪的最高资质
             {
-                var tmpErr = coll.FirstOrDefault();
-                errItem = (tmpErr.Key, tmpErr.count);
-                return false;
+                var tmp = aryMounts.FirstOrDefault(c => GetTotalNe(c.Properties) > mne);
+                if (null != tmp)   //若资质超限
+                {
+                    errorString = $"资质野怪资质总和只允许{mne},但至少有一个资质怪自制总和是{GetTotalNe(tmp.Properties)}。";
+                    return false;
+                }
             }
-            errItem = (default, default);
+            var gimt = World.ItemTemplateManager;
+            var aryShenwen = gameItems.Where(c => gimt.GetTemplateFromeId(c.TemplateId).GenusCode >= 15 && gimt.GetTemplateFromeId(c.TemplateId).GenusCode <= 17).ToArray();
+            if (dungeon.TryGetPropertyValue("mt", out var mtObj) && OwHelper.TryGetDecimal(mtObj, out var mt)) //若需要限定神纹数量上限
+            {
+                var tmp = aryShenwen.Sum(c => c.Count ?? 1);
+                if (tmp > mt)   //若神纹道具数量超限
+                {
+                    errorString = $"神纹道具只允许{mt}个,但掉落了{tmp}个";
+                    return false;
+                }
+            }
+            var items = gameItems.Where(c => c.TemplateId != ProjectConstant.JinbiId && c.TemplateId != ProjectConstant.MucaiId && c.TemplateId != ProjectConstant.ZuojiZuheRongqi).Except(aryShenwen);  //道具
+            if (dungeon.TryGetPropertyValue("idt", out var idtObj) && OwHelper.TryGetDecimal(idtObj, out var idt)) //若需要限定其他道具数量上限
+            {
+                var tmp = items.Sum(c => c.Count ?? 1);
+                if (tmp > idt)
+                {
+                    errorString = $"非神纹道具只允许{idt}个,但掉落了{tmp}个";
+                    return false;
+                }
+            }
             return true;
         }
 

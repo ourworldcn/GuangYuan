@@ -379,4 +379,10 @@ namespace GY2021001DAL
                 item.Changes.Add(items[i]);
         }
     }
+
+    public interface IGameItemHelper
+    {
+        public GameChar GetChar(GameItem item);
+    }
+
 }

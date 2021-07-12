@@ -253,15 +253,16 @@ namespace OwGame
     /// </summary>
     public class CompletedEventArgs : EventArgs
     {
+        public CompletedEventArgs(DateTime completedDateTime)
+        {
+            CompletedDateTime = completedDateTime;
+        }
+
         /// <summary>
         /// 获取或设置完成的时间点。
         /// </summary>
         public DateTime CompletedDateTime { get; set; }
 
-        public CompletedEventArgs(DateTime completedDateTime)
-        {
-            CompletedDateTime = completedDateTime;
-        }
     }
 
 }

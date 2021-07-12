@@ -28,7 +28,7 @@ namespace GY2021001BLL
     /// <summary>
     /// 虚拟物品管理器。
     /// </summary>
-    public class GameItemManager : GameManagerBase<GameItemManagerOptions>, IGameThingHelper
+    public class GameItemManager : GameManagerBase<GameItemManagerOptions>, IGameThingHelper, IGameItemHelper
     {
         #region 构造函数
 
@@ -52,7 +52,7 @@ namespace GY2021001BLL
         #endregion
 
         /// <summary>
-        /// 按照指定模板Id创建一个对象
+        /// 按照指定模板Id创建一个对象。
         /// </summary>
         /// <param name="templateId">创建事物所需模板Id。</param>
         /// <param name="ownerId">指定一个父Id,如果不指定或为null则忽略。</param>
@@ -98,6 +98,8 @@ namespace GY2021001BLL
                 else
                     result.Properties[item.Key] = item.Value;
             }
+            if (template.SequencePropertyNames.Length > 0 && !result.Properties.Keys.Any(c => c.StartsWith(GameThingTemplateBase.LevelPrefix))) //若需追加等级属性
+                result.Properties[GameThingTemplateBase.LevelPrefix] = 0m;
             result.Count ??= null == GetStackUpper(result) ? 1 : 0;
             if (result.Properties.Count > 0)    //若需要改写属性字符串。
                 result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
@@ -169,7 +171,7 @@ namespace GY2021001BLL
         /// 获取头对象。
         /// </summary>
         /// <param name="mounts"></param>
-        /// <returns></returns>
+        /// <returns>返回头对象，如果没有则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameItem GetHead(GameItem mounts)
         {
@@ -211,6 +213,16 @@ namespace GY2021001BLL
 #pragma warning restore CS0618 // 类型或成员已过时
             return null != slot ? ForcedAdd(body, slot) : ForcedAdd(body, mounts);
         }
+
+        /// <summary>
+        /// 返回坐骑头和身体的模板Id。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="gim"></param>
+        /// <returns>返回(头模板Id,身体模板Id),若不是坐骑则返回(<see cref="Guid.Empty"/>,<see cref="Guid.Empty"/>)。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public (Guid, Guid) GetMountsTIds(GameItem gameItem) => (GetHead(gameItem)?.TemplateId ?? Guid.Empty, GetBody(gameItem)?.TemplateId ?? Guid.Empty);
+
         #endregion 坐骑相关
 
 

@@ -123,6 +123,17 @@ namespace GY2021001BLL
         }
 
         /// <summary>
+        /// 获取符合条件的一组模板。
+        /// </summary>
+        /// <param name="conditional"></param>
+        /// <returns></returns>
+        public IEnumerable<GameItemTemplate> GetTemplates(Func<GameItemTemplate, bool> conditional)
+        {
+            _InitializeTask.Wait();
+            return _Id2Template.Values.Where(c => conditional(c));
+        }
+
+        /// <summary>
         /// 获取指定名字序列属性的索引属性名，如果没有找到则考虑使用lv。
         /// </summary>
         /// <param name="template"></param>

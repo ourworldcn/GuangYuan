@@ -36,10 +36,6 @@ namespace Gy2021001Template
         /// </summary>
         public DbSet<BlueprintTemplate> BlueprintTemplates { get; set; }
 
-        /// <summary>
-        /// 关卡掉落限制。
-        /// </summary>
-        public DbSet<DungeonLimit> DungeonLimites { get; set; }
     }
 
     public static class TemplateMigrateDbInitializer

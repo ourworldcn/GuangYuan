@@ -628,6 +628,10 @@ namespace GY2021001BLL
                         UpgradeOnHomeland(datas);
                         succ = true;
                         break;
+                    case "06bdaa5c-3d88-4279-9826-8f5a554ab588":    //加速主控室/玉米地/树林/炮台/旗子/陷阱/捕兽竿升级
+                        HastenOnHomeland(datas);
+                        succ = true;
+                        break;
                     case "8b26f520-fbf3-4979-831c-398a0150b3da":    // 取得玉米/ 木材放入仓库
                         Harvest(datas);
                         succ = true;
@@ -707,9 +711,24 @@ namespace GY2021001BLL
             if (!datas.Verify(gameItem.ParentId.HasValue, "找不到父容器Id。"))
                 return;
             var gim = World.ItemManager;
+            var template = gim.GetTemplateFromeId(gameItem.TemplateId); //物品的模板对象
             if (!datas.Verify(OwHelper.TryGetDecimal(gameItem.GetPropertyValueOrDefault(ProjectConstant.LevelPropertyName, 0m), out var lvDec), "级别属性类型错误。"))
                 return;
             var lv = (int)lvDec;    //原等级
+
+            #region 等级校验
+            if (!datas.Verify(template.SequencePropertyNames.First().Length > lv, "已达最大等级", gameItem.TemplateId))  //若已达最大等级
+                return;
+            if (template.TryGetPropertyValue("mbnlv", out var mbnlvObj) && OwHelper.TryGetDecimal(mbnlvObj, out var mbnlv))    //若需要根据主控室等级限定升级
+            {
+                var mb = hl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);    //主控室
+                var mbLv = mb.GetDecimalOrDefault(GameThingTemplateBase.LevelPrefix, 0m); //当前主控室等级
+                if (!datas.Verify(mbLv >= mbnlv, "主控室等级过低，不能升级指定物品。", gameItem.TemplateId))
+                    return;
+            }
+            #endregion 等级校验
+
+            #region 所需资源校验
 
             GameItem gold = null;
             if (gameItem.TryGetDecimalPropertyValue("lug", out var lug)) //若需要金子
@@ -725,6 +744,8 @@ namespace GY2021001BLL
                 if (!datas.Verify(wood.Count >= luw, $"需要{luw}木材，目前只有{wood.Count}木材。", wood.TemplateId))
                     return;
             }
+            #endregion 所需资源校验
+
             #region 冷却相关
             var fcp = FastChangingPropertyExtensions.FromDictionary(gameItem.Properties, "upgradecd");
             if (fcp != null)
@@ -737,11 +758,19 @@ namespace GY2021001BLL
             if (!datas.Verify(countOfBuilding < maxCountOfBuilding, "当前工人已全部在工作", worker.TemplateId))
                 return;
             #endregion 冷却相关
-            //修改属性
+
+            #region 修改属性
+
             if (null != wood)
+            {
                 wood.Count -= luw;
+                datas.ChangesItem.AddToChanges(wood.ContainerId.Value, wood);
+            }
             if (null != gold)
+            {
                 gold.Count -= lug;
+                datas.ChangesItem.AddToChanges(gold.ContainerId.Value, gold);
+            }
             if (time > 0) //若需要冷却
             {
                 var fcpObj = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, time, 0, DateTime.UtcNow)
@@ -759,6 +788,7 @@ namespace GY2021001BLL
             }
             datas.ChangesItem.AddToChanges(gameItem.ParentId.Value, gameItem);
             fcp.Tag = (datas.GameChar.Id, gameItem.Id);
+            #endregion 修改属性
             fcp.Completed += UpgradeCompleted;
             return;
         }
@@ -810,6 +840,9 @@ namespace GY2021001BLL
                         return;
                     }
                     dim.Count -= cost;
+                    fcp.LastDateTime = dt;
+                    fcp.LastValue = fcp.MaxValue;
+                    fcp.InvokeOnCompleted(new CompletedEventArgs(dt));
                     datas.ChangesItem.AddToChanges(dim.ContainerId.Value, dim);
                 }
                 gameItem.RemoveFastChangingProperty("upgradecd");
@@ -820,6 +853,11 @@ namespace GY2021001BLL
         }
 
         #endregion 家园相关
+
+        [ContextStatic]
+        static List<ChangesItem> _LastChangesItems;
+
+        public static List<ChangesItem> LastChangesItems => _LastChangesItems ??= new List<ChangesItem>();
 
         /// <summary>
         /// 某个物品升级结束。
@@ -834,7 +872,9 @@ namespace GY2021001BLL
             if (!(fcp.Tag is ValueTuple<Guid, Guid> ids))
                 return;
             var cm = World.CharManager;
+            var gim = World.ItemManager;
             var gameChar = cm.GetCharFromId(ids.Item1);
+            //gameChar ??= gim.GetChar(ids.Item2);
             if (gameChar is null)   //若用户已经下线
                 return;
             if (!cm.Lock(gameChar.GameUser))   //若用户已经下线
@@ -844,13 +884,32 @@ namespace GY2021001BLL
                 var gameItem = gameChar.AllChildren.FirstOrDefault(c => c.Id == ids.Item2);
                 if (gameItem is null)
                     return;
-                var gim = World.ItemManager;
                 var lv = (int)gameItem.GetDecimalOrDefault(ProjectConstant.LevelPropertyName, 0m);  //原等级
                 gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
                 if (gameItem.TemplateId == ProjectConstant.MainBaseSlotId) //如果是主基地升级
                 {
-
+                    var coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv + 1);
+                    List<GameItem> addItems = new List<GameItem>();
+                    foreach (var item in coll)
+                    {
+                        var parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == item.ParentTId);
+                        if (item.PrvTId.HasValue)    //若送物品
+                        {
+                            var tmp = gim.CreateGameItem(item.PrvTId.Value);
+                            gim.AddItem(gameItem, parent, null, LastChangesItems);
+                        }
+                        if (item.Genus.HasValue)   //若送地块
+                        {
+                            var dikuai = World.ItemTemplateManager.GetTemplates(c => c.GenusCode == item.Genus.Value);
+                            foreach (var subItem in dikuai)
+                            {
+                                var tmp = gim.CreateGameItem(subItem);
+                                gim.AddItem(gameItem, parent, null, LastChangesItems);
+                            }
+                        }
+                    }
                 }
+                LastChangesItems.AddToChanges(gameItem.ContainerId.Value, gameItem);
             }
             catch (Exception)
             {
@@ -1255,4 +1314,83 @@ namespace GY2021001BLL
         }
     }
 
+    /// <summary>
+    /// 主基地升级送物配置类。
+    /// </summary>
+    public class MainbaseUpgradePrv
+    {
+        public const string text = "1	{9ae7307a-9d30-43f2-91ce-3a43957ab86a}		{312612a5-30dd-4e0a-a71d-5074397428fb}	直射炮-1" + "\r\n" +
+        "1	{6793b827-7984-4eb4-a6a9-61386972619e}		{312612a5-30dd-4e0a-a71d-5074397428fb}	直射炮-2" + "\r\n" +
+        "1	{c930c04b-1086-4298-acf6-059b180e45d7}		{312612a5-30dd-4e0a-a71d-5074397428fb}	迫击炮-1+" + "\r\n" +
+        "1	{499ae360-e368-4c0f-9ea8-ef8b3e048583}		{312612a5-30dd-4e0a-a71d-5074397428fb}	爆炸樱桃-1" + "\r\n" +
+        "1	{7267e30f-68de-4e0a-98f6-e4f889bf63cc}		{312612a5-30dd-4e0a-a71d-5074397428fb}	弹飞蘑菇-1" + "\r\n" +
+        "2	{e58f479f-362b-44e7-a5da-74f2ff0f1667}		{312612a5-30dd-4e0a-a71d-5074397428fb}	迫击炮-2" + "\r\n" +
+        "2	{cad6ffb8-3e56-4bf0-a3ab-af0251e467ee}		{312612a5-30dd-4e0a-a71d-5074397428fb}	近战炮-1" + "\r\n" +
+        "2	{fff06375-be88-4930-bc5b-ea73a8f97c12}		{312612a5-30dd-4e0a-a71d-5074397428fb}	爆炸樱桃-2" + "\r\n" +
+        "2	{e0a05839-bb55-4e0c-9982-44123b307bde}		{312612a5-30dd-4e0a-a71d-5074397428fb}	减速荆棘-1" + "\r\n" +
+        "3	{b2e4887c-401c-4753-bf15-dcae2a05194f}		{312612a5-30dd-4e0a-a71d-5074397428fb}	回旋炮-1" + "\r\n" +
+        "3	{ce188fec-ce1a-4c35-aa8c-c41c65767fcb}		{312612a5-30dd-4e0a-a71d-5074397428fb}	爆炸樱桃-3" + "\r\n" +
+        "3	{868a9f60-cf8c-4a81-8a20-8ff92487833c}		{312612a5-30dd-4e0a-a71d-5074397428fb}	弹飞蘑菇-2" + "\r\n" +
+        "3		45	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-1" + "\r\n" +
+        "4	{6d7e3c66-8be5-44a3-b548-702bf91118b9}		{312612a5-30dd-4e0a-a71d-5074397428fb}	近战炮-2" + "\r\n" +
+        "4	{dfe95a1f-e54a-41d0-85cd-5c2d82741e23}		{312612a5-30dd-4e0a-a71d-5074397428fb}	滚石炮-1" + "\r\n" +
+        "4	{a1f79ee3-374e-4e21-84a2-f77071444906}		{312612a5-30dd-4e0a-a71d-5074397428fb}	减速荆棘-2" + "\r\n" +
+        "5	{24ec8437-f886-4289-9d5d-7e304e7b1974}		{312612a5-30dd-4e0a-a71d-5074397428fb}	回旋炮-2" + "\r\n" +
+        "5	{51b4bb51-33fc-4595-a174-52f01b52c72e}		{312612a5-30dd-4e0a-a71d-5074397428fb}	毁灭蘑菇-1" + "\r\n" +
+        "5		46	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-2" + "\r\n" +
+        "6	{97f6af0d-77ce-4eeb-bad6-78577651e5d1}		{312612a5-30dd-4e0a-a71d-5074397428fb}	直射炮-3" + "\r\n" +
+        "6	{c447775c-5079-4524-84df-2130d66a8f64}		{312612a5-30dd-4e0a-a71d-5074397428fb}	导弹炮-1" + "\r\n" +
+        "6	{6733f1c6-b5e6-4f57-8011-790e83ea8a96}		{312612a5-30dd-4e0a-a71d-5074397428fb}	弹飞蘑菇-3" + "\r\n" +
+        "7	{8b493d6d-3fb4-42e2-92a8-91ba9bf177e4}		{312612a5-30dd-4e0a-a71d-5074397428fb}	近战炮-3" + "\r\n" +
+        "7	{e377981a-2501-44cf-a350-6d82255a4f02}		{312612a5-30dd-4e0a-a71d-5074397428fb}	黏着栗子-1" + "\r\n" +
+        "7		47	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-3" + "\r\n" +
+        "8	{67cbef93-c4f0-4df2-9647-915cb85fce7b}		{312612a5-30dd-4e0a-a71d-5074397428fb}	迫击炮-3" + "\r\n" +
+        "8	{fad2355c-6514-42bb-8ca8-101c7c1be06a}		{312612a5-30dd-4e0a-a71d-5074397428fb}	减速荆棘-3" + "\r\n" +
+        "8	{bba37f02-c4b1-4bb7-aa2e-d3f35a722cf8}		{312612a5-30dd-4e0a-a71d-5074397428fb}	黏着栗子-2" + "\r\n" +
+        "9	{2a9a1e7c-6676-4e97-8726-3062b57a2a6a}		{312612a5-30dd-4e0a-a71d-5074397428fb}	滚石炮-2" + "\r\n" +
+        "9	{f9144284-5e50-4643-bb2a-f8ae6e4f3290}		{312612a5-30dd-4e0a-a71d-5074397428fb}	回旋炮-3" + "\r\n" +
+        "9		48	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-4" + "\r\n" +
+        "10	{05be07f7-a97a-4cab-85c1-4759daeb17bf}		{312612a5-30dd-4e0a-a71d-5074397428fb}	导弹炮-2" + "\r\n" +
+        "10	{d4bd6008-af90-4a38-9c17-7ee961fb4787}		{312612a5-30dd-4e0a-a71d-5074397428fb}	毁灭蘑菇-2";
+
+        public int Level { get; set; }
+
+        public int? Genus { get; set; }
+
+        public Guid? PrvTId { get; set; }
+
+        public Guid ParentTId { get; set; }
+
+        public string Remark { get; set; }
+
+        private static List<MainbaseUpgradePrv> _Alls;
+        public static List<MainbaseUpgradePrv> Alls
+        {
+            get
+            {
+                if (_Alls is null)
+                    lock (typeof(MainbaseUpgradePrv))
+                        if (_Alls is null)
+                        {
+                            _Alls = new List<MainbaseUpgradePrv>();
+                            foreach (var line in text.Split("\r\n", StringSplitOptions.None))   //枚举行
+                            {
+                                if (string.IsNullOrWhiteSpace(line))
+                                    continue;
+                                var ary = line.Split('\t', StringSplitOptions.None);
+                                var item = new MainbaseUpgradePrv()
+                                {
+                                    Level = int.Parse(ary[0]),
+                                    Genus = int.TryParse(ary[2], out var gns) ? gns : null as int?,
+                                    ParentTId = Guid.Parse(ary[3]),
+                                    PrvTId = string.IsNullOrWhiteSpace(ary[1]) ? null as Guid? : Guid.Parse(ary[1]),
+                                    Remark = ary[4],
+                                };
+                                _Alls.Add(item);
+                            }
+                        }
+                return _Alls;
+            }
+        }
+    }
 }

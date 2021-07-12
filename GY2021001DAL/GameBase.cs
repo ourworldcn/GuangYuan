@@ -189,7 +189,12 @@ namespace GY2021001DAL
                     lock (this)
                         if (null == _Name2FastChangingProperty)
                         {
-                            _Name2FastChangingProperty = FastChangingPropertyExtensions.FromGameThing(this).ToDictionary(c => c.Name);
+                            var list = FastChangingPropertyExtensions.FromGameThing(this);
+                            foreach (var item in list)
+                            {
+                                item.Tag = (Guid.Empty, Id);    //设置Tag
+                            }
+                            _Name2FastChangingProperty = list.ToDictionary(c => c.Name);
                         }
                 }
                 return _Name2FastChangingProperty;
@@ -515,6 +520,7 @@ namespace GY2021001DAL
     public interface IGameThingHelper
     {
         public GameItemTemplate GetTemplateFromeId(Guid id);
+
     }
 
 }
