@@ -129,6 +129,11 @@ namespace GY2021001BLL
         public static readonly Guid MainBaseSlotId = new Guid("{234f8c55-4c3c-4406-ad38-081d29564f20}");
 
         /// <summary>
+        /// 主控室模板Id。
+        /// </summary>
+        public static readonly Guid MainControlRoomSlotId = new Guid("{fb9ccb27-05c2-4df1-ae21-345eeaace08f}");
+
+        /// <summary>
         /// 家园工人模板Id。
         /// </summary>
         public static readonly Guid WorkerOfHomelandTId = new Guid("3b70d798-4969-443a-b081-b05a966002e5");
@@ -363,7 +368,10 @@ namespace GY2021001BLL
             var runseSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShenWenSlotId);   //神纹装备槽
             var templates = world.ItemTemplateManager.Id2Template.Values.Where(c => c.GenusCode == 10);
             var shenwens = templates.Select(c => world.ItemManager.CreateGameItem(c));
-            world.ItemManager.AddItems(shenwens, runseSlot, null, null);
+            foreach (var item in shenwens)
+            {
+                world.ItemManager.ForcedAdd(item, runseSlot);
+            }
             result = true;
             return result;
         }

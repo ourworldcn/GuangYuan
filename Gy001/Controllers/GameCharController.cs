@@ -425,6 +425,32 @@ namespace GY2021001WebApi.Controllers
                 world.CharManager.Unlock(gu, true);
             }
         }
+
+        /// <summary>
+        /// 获取自动变化的数据集合。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>参见 GetChangesItemReturnDto 说明。</returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPost]
+        public ActionResult<GetChangesItemReturnDto> GetChangesItem(GetChangesItemParamsDto model)
+        {
+            var result = new GetChangesItemReturnDto();
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return Unauthorized("令牌无效");
+            try
+            {
+                var gc = gu.CurrentChar;
+                result.Changes.AddRange(gc.ChangesItems.Select(c => (ChangesItemDto)c));
+                gc.ChangesItems.Clear();
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
     }
 }
 

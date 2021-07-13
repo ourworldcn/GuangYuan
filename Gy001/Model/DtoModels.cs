@@ -618,6 +618,12 @@ namespace GY2021001WebApi.Models
         public string ContainerId { get; set; }
 
         /// <summary>
+        /// 该变化产生的时间，服务器的UTC时间。
+        /// </summary>
+        [DataMember]
+        public DateTime DateTimeUtc { get; set; }
+
+        /// <summary>
         /// 增加的数据。
         /// </summary>
         [DataMember]
@@ -1280,6 +1286,43 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
+    }
+
+    /// <summary>
+    /// GetChangesItem 的参数封装类。
+    /// </summary>
+    [DataContract]
+    public class GetChangesItemParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public GetChangesItemParamsDto()
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// GetChangesItem 返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class GetChangesItemReturnDto
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public GetChangesItemReturnDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 变化的对象数据，可能是空集合。
+        /// </summary>
+        [DataMember]
+        public List<ChangesItemDto> Changes { get; set; } = new List<ChangesItemDto>();
+
     }
 
     #region 家园建设方案

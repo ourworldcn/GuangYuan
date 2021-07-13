@@ -190,9 +190,10 @@ namespace GY2021001DAL
                         if (null == _Name2FastChangingProperty)
                         {
                             var list = FastChangingPropertyExtensions.FromGameThing(this);
+                            var charId = (this as GameItem)?.GameChar?.Id ?? Guid.Empty;
                             foreach (var item in list)
                             {
-                                item.Tag = (Guid.Empty, Id);    //设置Tag
+                                item.Tag = (charId, Id);    //设置Tag
                             }
                             _Name2FastChangingProperty = list.ToDictionary(c => c.Name);
                         }
@@ -217,7 +218,7 @@ namespace GY2021001DAL
         /// <summary>
         /// 服务器用通用扩展属性集合。
         /// </summary>
-        public virtual List<GameExtendProperty> GameExtendProperties { get; set; }
+        public virtual List<GameExtendProperty> ExtendProperties { get; set; }
 
         #region 事件及相关
         protected virtual void OnSaving(EventArgs e)
@@ -336,6 +337,8 @@ namespace GY2021001DAL
         public decimal DecimalValue { get; set; }
 
         public double DoubleValue { get; set; }
+
+        public string Text { get; set; }
     }
 
     public class GameThingPropertyHelper : GamePropertyHelper

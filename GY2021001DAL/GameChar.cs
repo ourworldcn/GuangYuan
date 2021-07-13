@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace GY2021001DAL
 {
@@ -39,7 +42,8 @@ namespace GY2021001DAL
         /// </summary>
         public void InitialCreation()
         {
-
+            foreach (var item in GameItems)
+                item.GameChar = this;
         }
 
         List<GameItem> _GameItems;
@@ -162,10 +166,10 @@ namespace GY2021001DAL
         {
             var db = GameUser.DbContext;
             //加载所属物品对象
-            _GameItems ??= db.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ThenInclude(c => c.Children).ToList();
+            _GameItems ??= db.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ThenInclude(c => c.Children).Include(c => c.ExtendProperties).ToList();
             foreach (var item in _GameItems)
             {
-
+                item.GameChar = this;
             }
             //加载客户端属性
             var coll = db.Set<GameClientExtendProperty>().Where(c => c.ParentId == Id);
@@ -176,6 +180,12 @@ namespace GY2021001DAL
             foreach (var item in AllChildren)
             {
 
+            }
+            var exProp = ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);
+            if (null != exProp)    //若有需要反序列化的对象
+            {
+                var tmp = JsonSerializer.Deserialize<List<ChangesItemSummary>>(exProp.Text);
+                _ChangesItems = ChangesItemSummary.ToChangesItem(tmp, this);
             }
         }
 
@@ -196,8 +206,83 @@ namespace GY2021001DAL
             PropertiesString = OwHelper.ToPropertiesString(Properties);
             foreach (var item in OwHelper.GetAllSubItemsOfTree(GameItems, c => c.Children).ToArray())
                 item.InvokeSaving(EventArgs.Empty);
-
+            if (_ChangesItems != null)    //若需要序列化变化属性
+            {
+                var exProp = ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);
+                if (exProp is null)
+                    exProp = new GameExtendProperty();
+                exProp.Text = JsonSerializer.Serialize(_ChangesItems.Select(c => (ChangesItemSummary)c).ToList());
+            }
         }
+
+        private List<ChangesItem> _ChangesItems;
+
+        /// <summary>
+        /// 保存未能发送给客户端的变化数据。
+        /// </summary>
+        public List<ChangesItem> ChangesItems => _ChangesItems ??= new List<ChangesItem>();
+
+        public const string ChangesItemExPropertyName = "{BAD410C8-6393-44B4-9EB1-97F91ED11C12}";
     }
 
+    [DataContract]
+    public class ChangesItemSummary
+    {
+        /// <summary>
+        /// 转换为摘要类。
+        /// </summary>
+        /// <param name="obj"></param>
+        public static explicit operator ChangesItemSummary(ChangesItem obj)
+        {
+            var result = new ChangesItemSummary()
+            {
+                ContainerId = obj.ContainerId,
+                DateTimeUtc = obj.DateTimeUtc,
+            };
+            result.AddIds.AddRange(obj.Adds.Select(c => c.Id));
+            result.RemoveIds.AddRange(obj.Removes);
+            result.ChangeIds.AddRange(obj.Changes.Select(c => c.Id));
+            return result;
+        }
+
+        /// <summary>
+        /// 从摘要类恢复完整对象。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static List<ChangesItem> ToChangesItem(IEnumerable<ChangesItemSummary> objs, GameChar gameChar)
+        {
+            var results = new List<ChangesItem>();
+            var dic = gameChar.AllChildren.ToDictionary(c => c.Id);
+            foreach (var obj in objs)
+            {
+                var result = new ChangesItem()
+                {
+                    ContainerId = obj.ContainerId,
+                    DateTimeUtc = obj.DateTimeUtc
+                };
+                result.Adds.AddRange(obj.AddIds.Select(c => dic.GetValueOrDefault(c)).Where(c => c != null));
+                result.Changes.AddRange(obj.ChangeIds.Select(c => dic.GetValueOrDefault(c)).Where(c => c != null));
+                result.Removes.AddRange(obj.AddIds);
+                results.Add(result);
+            }
+            return results;
+        }
+
+        [DataMember]
+        public Guid ContainerId { get; set; }
+
+        [DataMember]
+        public List<Guid> AddIds { get; set; } = new List<Guid>();
+
+        [DataMember]
+        public List<Guid> RemoveIds { get; set; } = new List<Guid>();
+
+        [DataMember]
+        public List<Guid> ChangeIds { get; set; } = new List<Guid>();
+
+        [DataMember]
+        public DateTime DateTimeUtc { get; set; }
+    }
 }

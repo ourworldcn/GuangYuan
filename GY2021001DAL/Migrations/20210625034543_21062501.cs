@@ -85,7 +85,7 @@ namespace GY2021001DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GameExtendProperties",
+                name: "ExtendProperties",
                 columns: table => new
                 {
                     ParentId = table.Column<Guid>(nullable: false),
@@ -113,27 +113,27 @@ namespace GY2021001DAL.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameExtendProperties_DecimalValue",
-                table: "GameExtendProperties",
+                table: "ExtendProperties",
                 column: "DecimalValue");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameExtendProperties_DoubleValue",
-                table: "GameExtendProperties",
+                table: "ExtendProperties",
                 column: "DoubleValue");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameExtendProperties_IntValue",
-                table: "GameExtendProperties",
+                table: "ExtendProperties",
                 column: "IntValue");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameExtendProperties_Name",
-                table: "GameExtendProperties",
+                table: "ExtendProperties",
                 column: "Name");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameExtendProperties_StringValue",
-                table: "GameExtendProperties",
+                table: "ExtendProperties",
                 column: "StringValue");
 
             migrationBuilder.CreateIndex(
@@ -169,7 +169,7 @@ namespace GY2021001DAL.Migrations
                 name: "ClientExtendProperties");
 
             migrationBuilder.DropTable(
-                name: "GameExtendProperties");
+                name: "ExtendProperties");
 
             migrationBuilder.DropTable(
                 name: "GameSettings");

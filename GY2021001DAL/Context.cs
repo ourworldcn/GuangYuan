@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GY2021001DAL
 {
@@ -71,11 +73,17 @@ namespace GY2021001DAL
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
             foreach (var item in GameUsers.Local)
-            {
                 item.CurrentChar.InvokeSaving();
-            } 
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            foreach (var item in GameUsers.Local)
+                item.CurrentChar.InvokeSaving();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
     }
 
     public static class MigrateDbInitializer

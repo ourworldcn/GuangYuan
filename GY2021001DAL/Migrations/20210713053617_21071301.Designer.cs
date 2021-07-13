@@ -10,14 +10,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GY2021001DAL.Migrations
 {
     [DbContext(typeof(GY2021001DbContext))]
-    [Migration("20210625034543_21062501")]
-    partial class _21062501
+    [Migration("20210713053617_21071301")]
+    partial class _21071301
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.14")
+                .HasAnnotation("ProductVersion", "3.1.16")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -64,6 +64,9 @@ namespace GY2021001DAL.Migrations
                     b.Property<string>("StringValue")
                         .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
+
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ParentId", "Name");
 
@@ -140,9 +143,6 @@ namespace GY2021001DAL.Migrations
                     b.Property<string>("Region")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
-
-                    b.Property<Guid>("TemplateId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 

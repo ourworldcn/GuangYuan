@@ -714,10 +714,11 @@ namespace GY2021001BLL
             var template = gim.GetTemplateFromeId(gameItem.TemplateId); //物品的模板对象
             if (!datas.Verify(OwHelper.TryGetDecimal(gameItem.GetPropertyValueOrDefault(ProjectConstant.LevelPropertyName, 0m), out var lvDec), "级别属性类型错误。"))
                 return;
+
             var lv = (int)lvDec;    //原等级
 
             #region 等级校验
-            if (!datas.Verify(template.SequencePropertyNames.First().Length > lv, "已达最大等级", gameItem.TemplateId))  //若已达最大等级
+            if (!datas.Verify(template.GetMaxLevel(template.SequencePropertyNames.FirstOrDefault()) > lv, "已达最大等级", gameItem.TemplateId))  //若已达最大等级
                 return;
             if (template.TryGetPropertyValue("mbnlv", out var mbnlvObj) && OwHelper.TryGetDecimal(mbnlvObj, out var mbnlv))    //若需要根据主控室等级限定升级
             {
@@ -752,10 +753,8 @@ namespace GY2021001BLL
                 if (!datas.Verify(fcp.IsComplate, "虚拟物品还在升级中", gameItem.TemplateId))
                     return;
             var time = gameItem.GetDecimalOrDefault("lut", -2); //冷却的秒数
-            var worker = hl.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);  //工人
-            var countOfBuilding = worker.Count ?? 0;    //当前在建建筑
-            var maxCountOfBuilding = worker.GetDecimalOrDefault("stc", 0m); //最大建筑队列数
-            if (!datas.Verify(countOfBuilding < maxCountOfBuilding, "当前工人已全部在工作", worker.TemplateId))
+            var worker = datas.Lookup(hl.Children, ProjectConstant.WorkerOfHomelandTId);
+            if (worker is null)
                 return;
             #endregion 冷却相关
 
@@ -773,23 +772,27 @@ namespace GY2021001BLL
             }
             if (time > 0) //若需要冷却
             {
+                if (!datas.Verify(gim.GetNumberOfStackRemainder(worker, out _) > 0, "所有建筑工人都在忙"))
+                    return;
                 var fcpObj = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, time, 0, DateTime.UtcNow)
                 {
                     Name = "upgradecd",
+                    Tag = (datas.GameChar.Id, gameItem.Id),
                 };
                 gameItem.Name2FastChangingProperty["upgradecd"] = fcpObj;
                 DateTime dtComplate = fcpObj.ComputeComplateDateTime();   //预计完成时间
+                fcpObj.Completed += UpgradeCompleted;
                 //计算可能的完成时间
-                Timer timer = new Timer(UpgradeComplateCallback, (gameItem.Id), dtComplate - DateTime.UtcNow, Timeout.InfiniteTimeSpan);
+                Timer timer = new Timer(UpgradeComplateCallback, (datas.GameChar.Id, gameItem.Id), dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.1), Timeout.InfiniteTimeSpan);
+                worker.Count++;
+                datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
             }
             else //立即完成
             {
                 gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
             }
             datas.ChangesItem.AddToChanges(gameItem.ParentId.Value, gameItem);
-            fcp.Tag = (datas.GameChar.Id, gameItem.Id);
             #endregion 修改属性
-            fcp.Completed += UpgradeCompleted;
             return;
         }
 
@@ -839,10 +842,14 @@ namespace GY2021001BLL
                         datas.ErrorItemTIds.Add(dim.TemplateId);
                         return;
                     }
+                    worker.Count--;
+                    datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
                     dim.Count -= cost;
                     fcp.LastDateTime = dt;
                     fcp.LastValue = fcp.MaxValue;
                     fcp.InvokeOnCompleted(new CompletedEventArgs(dt));
+                    datas.ChangesItem.AddRange(LastChangesItems); //追加新建物品
+                    LastChangesItems.Clear();
                     datas.ChangesItem.AddToChanges(dim.ContainerId.Value, dim);
                 }
                 gameItem.RemoveFastChangingProperty("upgradecd");
@@ -886,7 +893,7 @@ namespace GY2021001BLL
                     return;
                 var lv = (int)gameItem.GetDecimalOrDefault(ProjectConstant.LevelPropertyName, 0m);  //原等级
                 gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
-                if (gameItem.TemplateId == ProjectConstant.MainBaseSlotId) //如果是主基地升级
+                if (gameItem.TemplateId == ProjectConstant.MainControlRoomSlotId) //如果是主控室升级
                 {
                     var coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv + 1);
                     List<GameItem> addItems = new List<GameItem>();
@@ -921,18 +928,14 @@ namespace GY2021001BLL
             }
         }
 
-        private void MainBaseUpgraded()
-        {
-
-        }
-
         /// <summary>
         /// 当升级可能结束时调用。
         /// </summary>
         /// <param name="state">值元组(角色Id,虚拟物品Id)</param>
         private void UpgradeComplateCallback(object state)
         {
-            var para = ((Guid, Guid))state;
+            if (!(state is ValueTuple<Guid, Guid> para))
+                return;
             var cm = World.CharManager;
             var gc = cm.GetCharFromId(para.Item1);
             if (null == gc) //若角色不在线
@@ -944,7 +947,8 @@ namespace GY2021001BLL
                 else   //TO DO 致命问题，但目前不知道如何才会引发(大概率发生了死锁)，暂无解决方法
                 {
                     var logger = Services.GetService<ILogger<BlueprintManager>>();
-                    logger.LogError($"长期无法锁定在线用户，Id={gu.Id}。");
+                    logger?.LogError($"长期无法锁定在线用户，Id={gu.Id}。");
+                    return;
                 }
             try
             {
@@ -955,15 +959,21 @@ namespace GY2021001BLL
                 if (fcp == null)    //若已经处理完毕
                     return;
                 var dtComplate = fcp.ComputeComplateDateTime();   //预期完成时间
+                var ary = gameItem.Name2FastChangingProperty.Where(c => c.Key != "upgradecd").ToArray();
+                foreach (var item in ary)   //先引发所有渐变属性的计算，升级后可能需要重新计算公式
+                {
+                    var tmp = dtComplate;
+                    item.Value.GetCurrentValue(ref tmp);
+                }
                 var dtTmp = dtComplate;
-                var fcpCount = gameItem.Name2FastChangingProperty.GetValueOrDefault("Count");
+                fcp.GetCurrentValue(ref dtTmp);
+                //var fcpCount = gameItem.Name2FastChangingProperty.GetValueOrDefault("Count");
                 if (fcp.IsComplate)  //若已经完成
                 {
-                    fcpCount?.GetCurrentValue(ref dtTmp);    //计算升级完成时点的数量，忽略时点回退误差
+                    //fcpCount?.GetCurrentValue(ref dtTmp);    //计算升级完成时点的数量，忽略时点回退误差
                     var gim = World.ItemManager;
-                    var lv = (int)gameItem.GetDecimalOrDefault(ProjectConstant.LevelPropertyName, 0m);  //原等级
-                    gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
                 }
+                gc.ChangesItems.AddRange(LastChangesItems); LastChangesItems.Clear();
             }
             finally
             {

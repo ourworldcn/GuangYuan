@@ -100,7 +100,7 @@ namespace GY2021001BLL
             }
             if (template.SequencePropertyNames.Length > 0 && !result.Properties.Keys.Any(c => c.StartsWith(GameThingTemplateBase.LevelPrefix))) //若需追加等级属性
                 result.Properties[GameThingTemplateBase.LevelPrefix] = 0m;
-            result.Count ??= null == GetStackUpper(result) ? 1 : 0;
+            result.Count ??= template.TryGetPropertyValue("stc", out _) ? 0 : 1;
             if (result.Properties.Count > 0)    //若需要改写属性字符串。
                 result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
             //递归初始化容器

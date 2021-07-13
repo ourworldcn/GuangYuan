@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 
 namespace GY2021001DAL
 {
@@ -39,18 +40,18 @@ namespace GY2021001DAL
         /// </summary>
         public decimal? Count
         {
-            get => Name2FastChangingProperty.TryGetValue(nameof(Count), out var obj) ? obj.GetCurrentValueWithUtc() : _Count;
+            get => _Count;
             set
             {
-                if (Name2FastChangingProperty.TryGetValue(nameof(Count), out var obj))
-                {
-                    var oldVal = obj.LastValue;
-                    obj.LastValue = value.Value;
-                    obj.LastDateTime = DateTime.UtcNow;
-                    if (oldVal < obj.MaxValue && obj.LastValue >= obj.MaxValue)  //若需要引发事件
-                        ;// TO DO
-                }
-                else
+                //if (Name2FastChangingProperty.TryGetValue(nameof(Count), out var obj))
+                //{
+                //    var oldVal = obj.LastValue;
+                //    obj.LastValue = value.Value;
+                //    obj.LastDateTime = DateTime.UtcNow;
+                //    if (oldVal < obj.MaxValue && obj.LastValue >= obj.MaxValue)  //若需要引发事件
+                //        ;// TO DO
+                //}
+                //else
                     _Count = value;
             }
         }
@@ -99,6 +100,24 @@ namespace GY2021001DAL
         /// 所属角色Id或其他关联对象的Id。
         /// </summary>
         public Guid? OwnerId { get; set; }
+
+        GameChar _GameChar;
+        /// <summary>
+        /// 获取或设置所属的角色对象。
+        /// </summary>
+        [NotMapped]
+        public GameChar GameChar
+        {
+            get
+            {
+                GameItem tmp;
+                for (tmp = this; tmp != null && tmp._GameChar is null; tmp = tmp.Parent) ;
+                return tmp?._GameChar;
+
+            }
+            set => _GameChar = value;
+        }
+
 
         /// <summary>
         /// 容器的Id。可能返回容器Id。
@@ -378,6 +397,7 @@ namespace GY2021001DAL
             for (int i = 0; i < items.Length; i++)
                 item.Changes.Add(items[i]);
         }
+
     }
 
     public interface IGameItemHelper

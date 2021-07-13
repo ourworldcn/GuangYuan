@@ -156,6 +156,14 @@
             <returns>参见 GetItemsReturnDto.</returns>
             <response code="401">令牌错误。</response>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetChangesItem(GY2021001WebApi.Models.GetChangesItemParamsDto)">
+            <summary>
+            获取自动变化的数据集合。
+            </summary>
+            <param name="model"></param>
+            <returns>参见 GetChangesItemReturnDto 说明。</returns>
+            <response code="401">令牌错误。</response>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
             <summary>
             世界服务器的相关操作。
@@ -389,6 +397,11 @@
         <member name="P:GY2021001WebApi.Models.ChangesItemDto.ContainerId">
             <summary>
             容器的Id。如果是容器本身属性变化，这个成员是容器的上层容器Id,例如背包的容量变化了则这个成员就是角色Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesItemDto.DateTimeUtc">
+            <summary>
+            该变化产生的时间，服务器的UTC时间。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.ChangesItemDto.Adds">
@@ -1153,6 +1166,31 @@
         <member name="P:GY2021001WebApi.Models.GetItemsReturnDto.GameItems">
             <summary>
             返回的物品信息。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetChangesItemParamsDto">
+            <summary>
+            GetChangesItem 的参数封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GetChangesItemParamsDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetChangesItemReturnDto">
+            <summary>
+            GetChangesItem 返回值封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GetChangesItemReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetChangesItemReturnDto.Changes">
+            <summary>
+            变化的对象数据，可能是空集合。
             </summary>
         </member>
         <member name="T:Gy001.Controllers.BlueprintController">

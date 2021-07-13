@@ -208,13 +208,16 @@ namespace GY2021001WebApi.Models
         }
     }
 
+
     public partial class ChangesItemDto
     {
+
         public static explicit operator ChangesItemDto(ChangesItem obj)
         {
             var result = new ChangesItemDto()
             {
                 ContainerId = obj.ContainerId.ToBase64String(),
+                DateTimeUtc = obj.DateTimeUtc,
             };
             result.Adds.AddRange(obj.Adds.Select(c => (GameItemDto)c));
             result.Changes.AddRange(obj.Changes.Select(c => (GameItemDto)c));

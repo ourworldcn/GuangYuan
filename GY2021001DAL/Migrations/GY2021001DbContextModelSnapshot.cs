@@ -63,6 +63,9 @@ namespace GY2021001DAL.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("ParentId", "Name");
 
                     b.HasIndex("DecimalValue");
@@ -75,7 +78,7 @@ namespace GY2021001DAL.Migrations
 
                     b.HasIndex("StringValue");
 
-                    b.ToTable("GameExtendProperties");
+                    b.ToTable("ExtendProperties");
                 });
 
             modelBuilder.Entity("GY2021001DAL.GameSetting", b =>
@@ -193,7 +196,7 @@ namespace GY2021001DAL.Migrations
             modelBuilder.Entity("GY2021001DAL.GameExtendProperty", b =>
                 {
                     b.HasOne("GY2021001DAL.GameThingBase", "GameThing")
-                        .WithMany("GameExtendProperties")
+                        .WithMany("ExtendProperties")
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
