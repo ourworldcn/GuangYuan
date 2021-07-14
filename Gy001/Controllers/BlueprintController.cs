@@ -97,8 +97,7 @@ namespace Gy001.Controllers
                 datas.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
                 world.BlueprintManager.ApplyBluprint(datas);
 
-                result.ChangesItems.AddRange(datas.ChangesItem.Select(c => (ChangesItemDto)c));
-                result.SuccCount = datas.SuccCount;
+                result = (ApplyBlueprintReturnDto)datas;
                 world.CharManager.NotifyChange(gu);
             }
             catch (Exception err)

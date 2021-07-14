@@ -1,5 +1,6 @@
 ﻿using GY2021001DAL;
 using Gy2021001Template;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using OwGame;
@@ -521,6 +522,10 @@ namespace GY2021001BLL
                 item.Count = item.Count - count;
                 var parent = GetContainer(item);   //获取源父容器
                 AddItem(moveItem, destContainer);  //TO DO 需要处理无法完整放入问题
+#if DEBUG
+                var gc = moveItem.GameChar;
+                var state = gc.GameUser.DbContext.Entry(moveItem).State;
+#endif
                 if (null != changesItems)
                 {
                     //增加变化 
@@ -758,9 +763,7 @@ namespace GY2021001BLL
                     return;
                 }
                 var succ = ForcedAdd(gameItem, parent);
-                var _ = new ChangesItem(parent.Id);
-                _.Adds.Add(gameItem);
-                changeItems?.Add(_);
+                changeItems.AddToAdds(parent.Id,gameItem);
                 return;
             }
             else //若可堆叠
@@ -780,9 +783,7 @@ namespace GY2021001BLL
                     var redCount = Math.Min(GetNumberOfStackRemainder(dest, out _), gameItem.Count ?? 0);   //移动的数量
                     dest.Count = dest.Count.Value + redCount;
                     gameItem.Count -= redCount;
-                    var changesItem = new ChangesItem(parent.Id);
-                    changesItem.Changes.Add(dest);
-                    changeItems?.Add(changesItem);
+                    changeItems.AddToChanges(parent.Id,dest);
                     result.Add(dest);
                 }
                 if (gameItem.Count <= 0)   //若已经全部堆叠进入
@@ -866,8 +867,9 @@ namespace GY2021001BLL
         /// </summary>
         /// <param name="gameItem">无视容量限制堆叠规则，不考虑原有容器。</param>
         /// <param name="container">无视容量限制堆叠规则。</param>
+        /// <param name="db">使用的数据库上下文。</param>
         /// <returns>true成功加入.false <paramref name="container"/>不是可以容纳物品的类型。</returns>
-        public bool ForcedAdd(GameItem gameItem, GameThingBase container)
+        public bool ForcedAdd(GameItem gameItem, GameThingBase container, DbContext db = null)
         {
             if (container is GameChar gameChar)  //若容器是角色
             {
@@ -908,11 +910,35 @@ namespace GY2021001BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ForceRemove(GameItem gameItem)
         {
-            var result = GetChildrenCollection(GetContainer(gameItem))?.Remove(gameItem) ?? false;
+            bool result;
+            var container = GetContainer(gameItem);
+            if (null != container)
+                result = GetChildrenCollection(container)?.Remove(gameItem) ?? false;
+            else
+                result = false;
             gameItem.Parent = null; gameItem.ParentId = gameItem.OwnerId = null;
             return result;
         }
 
+        /// <summary>
+        /// 强制彻底删除一个物品。会正确设置导航属性。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="db">使用的数据库上下文，如果省略或为null则会在关系中寻找。</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool ForceDelete(GameItem gameItem, DbContext db = null)
+        {
+            var gc = gameItem.GameChar;   //保存所属角色
+            bool result = ForceRemove(gameItem);
+            if (result)   //若成功移除关系
+            {
+                db ??= gc?.GameUser?.DbContext;
+                if (!(db is null) && db.Entry(gameItem).State != EntityState.Detached)  //若非新加入的物品
+                    db.Remove(gameItem);
+            }
+            return result;
+        }
         #endregion 物品增减相关
 
         /// <summary>

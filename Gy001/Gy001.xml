@@ -164,6 +164,23 @@
             <returns>参见 GetChangesItemReturnDto 说明。</returns>
             <response code="401">令牌错误。</response>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetHomelandPlan(GY2021001WebApi.Models.GetHomelandPlanParamsDto)">
+            <summary>
+            获取家园方案。
+            此接口不重置下线计时器。
+            </summary>
+            <param name="model"></param>
+            <returns>建立账号后第一次返回的所有方案中，除了Id是有效的其他属性是空或空集合。</returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.SetHomelandPlan(GY2021001WebApi.Models.SetHomelandPlanParamsDto)">
+            <summary>
+            设置家园方案。
+            </summary>
+            <param name="model"></param>
+            <returns>如果有错大概率是不认识的Id。</returns>
+            <response code="401">令牌错误。</response>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
             <summary>
             世界服务器的相关操作。
@@ -568,6 +585,11 @@
             方案。
             </summary>
         </member>
+        <member name="M:GY2021001WebApi.Models.HomelandPlanDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.HomelandPlanDto.Id">
             <summary>
             方案的唯一Id。
@@ -580,7 +602,7 @@
         </member>
         <member name="P:GY2021001WebApi.Models.HomelandPlanDto.IsActived">
             <summary>
-            是否是激活方案。
+            是否是激活方案。默认值是false。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.HomelandPlanDto.ClientString">
@@ -1191,6 +1213,56 @@
         <member name="P:GY2021001WebApi.Models.GetChangesItemReturnDto.Changes">
             <summary>
             变化的对象数据，可能是空集合。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SetHomelandPlanParamsDto">
+            <summary>
+            SetHomelandPlan 接口使用的参数类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.SetHomelandPlanParamsDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetHomelandPlanParamsDto.Plans">
+            <summary>
+            家园建设方案的集合。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SetHomelandPlanReturnDto">
+            <summary>
+            SetHomelandPlan 接口返回数据的封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.SetHomelandPlanReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetHomelandPlanParamsDto">
+            <summary>
+            GetHomelandPlan 接口使用的参数类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GetHomelandPlanParamsDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetHomelandPlanReturnDto">
+            <summary>
+            GetHomelandPlan 接口返回数据的封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GetHomelandPlanReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetHomelandPlanReturnDto.Plans">
+            <summary>
+            家园建设方案的集合。
             </summary>
         </member>
         <member name="T:Gy001.Controllers.BlueprintController">

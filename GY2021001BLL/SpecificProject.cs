@@ -148,6 +148,21 @@ namespace GY2021001BLL
         /// </summary>
         public static readonly Guid MucaishuTId = new Guid("{9c5edb6d-b5bd-4be9-a3a6-cbf794e6bf13}");
 
+        /// <summary>
+        /// 家园方案背包模板Id。
+        /// </summary>
+        public static readonly Guid HomelandPlanBagTId = new Guid("{366468d3-00d7-42ec-811d-8822fb0def42}");
+
+        /// <summary>
+        /// 家园方案对象的模板Id。
+        /// </summary>
+        public static readonly Guid HomelandPlanTId = new Guid("{5d374961-a072-4222-ab46-94d72dc394f7}");
+
+        /// <summary>
+        /// 家园数据存储于家园方案对象中 <see cref="GameThingBase.ExtendProperties"/> 属性的名字。
+        /// </summary>
+        public const string HomelandPlanPropertyName = "d681df0c-73ed-434a-9eb7-5c6c158ea1af";
+
         #endregion 家园及相关
 
         #endregion 固定模板Id
@@ -238,6 +253,7 @@ namespace GY2021001BLL
         public static readonly Guid FuhuaSlotTId = new Guid("{b84072af-bb91-46eb-af5c-b462e3361c6c}");
 
         #endregion 蓝图常量
+
     }
 
     /// <summary>

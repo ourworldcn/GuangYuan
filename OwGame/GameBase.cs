@@ -43,6 +43,13 @@ namespace OwGame
         /// </summary>
         public DateTime LastDateTime { get; set; } = DateTime.UtcNow;
 
+        private decimal _LastValue;
+
+        /// <summary>
+        /// 获取或设置最后计算的结果。<see cref="LastComputerDateTime"/>这个时点上计算的值。
+        /// </summary>
+        public decimal LastValue { get => _LastValue; set => _LastValue = value; }
+
         /// <summary>
         /// 设置最后计算的值和时间，并根据值是否大于或等于最大值，引发事件。
         /// 如果已经结束则不会引发事件，只有当设置之前未结束，设置之后结束才会引发事件。
@@ -66,11 +73,6 @@ namespace OwGame
             }
             return false;
         }
-
-        /// <summary>
-        /// 获取或设置最后计算的结果。<see cref="LastComputerDateTime"/>这个时点上计算的值。
-        /// </summary>
-        public decimal LastValue { get; set; }
 
         /// <summary>
         /// 多久计算一次。

@@ -290,7 +290,7 @@ namespace GY2021001WebApi.Models
 
     public partial class ApplyBlueprintReturnDto
     {
-        public static implicit operator ApplyBlueprintReturnDto(ApplyBlueprintDatas obj)
+        public static explicit operator ApplyBlueprintReturnDto(ApplyBlueprintDatas obj)
         {
             var result = new ApplyBlueprintReturnDto()
             {

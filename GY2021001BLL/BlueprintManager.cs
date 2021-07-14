@@ -636,6 +636,10 @@ namespace GY2021001BLL
                         Harvest(datas);
                         succ = true;
                         break;
+                    case "f9262cb1-7357-4027-b742-d0a82f3ad4c1":    //合成
+                        Hecheng(datas);
+                        succ = true;
+                        break;
                     default:
                         succ = false;
                         break;
@@ -760,19 +764,9 @@ namespace GY2021001BLL
 
             #region 修改属性
 
-            if (null != wood)
-            {
-                wood.Count -= luw;
-                datas.ChangesItem.AddToChanges(wood.ContainerId.Value, wood);
-            }
-            if (null != gold)
-            {
-                gold.Count -= lug;
-                datas.ChangesItem.AddToChanges(gold.ContainerId.Value, gold);
-            }
             if (time > 0) //若需要冷却
             {
-                if (!datas.Verify(gim.GetNumberOfStackRemainder(worker, out _) > 0, "所有建筑工人都在忙"))
+                if (!datas.Verify(gim.GetNumberOfStackRemainder(worker, out _) > 0, "所有建筑工人都在忙", worker.TemplateId))
                     return;
                 var fcpObj = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, time, 0, DateTime.UtcNow)
                 {
@@ -790,6 +784,16 @@ namespace GY2021001BLL
             else //立即完成
             {
                 gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
+            }
+            if (null != wood)
+            {
+                wood.Count -= luw;
+                datas.ChangesItem.AddToChanges(wood.ContainerId.Value, wood);
+            }
+            if (null != gold)
+            {
+                gold.Count -= lug;
+                datas.ChangesItem.AddToChanges(gold.ContainerId.Value, gold);
             }
             datas.ChangesItem.AddToChanges(gameItem.ParentId.Value, gameItem);
             #endregion 修改属性
@@ -1160,16 +1164,19 @@ namespace GY2021001BLL
         public void Hecheng(ApplyBlueprintDatas datas)
         {
             if (!datas.Verify(datas.GameItems.Count == 2, $"物品数量错误。")) return;
-            var lockAtk = datas.Lookup(datas.GameItems, ProjectConstant.LockAtkSlotId);
+            var gc = datas.GameChar;
+            var lockAtk = datas.Lookup(gc.GameItems, ProjectConstant.LockAtkSlotId);
             if (lockAtk is null) return;
-            var lockMhp = datas.Lookup(datas.GameItems, ProjectConstant.LockMhpSlotId);
+            var lockMhp = datas.Lookup(gc.GameItems, ProjectConstant.LockMhpSlotId);
             if (lockMhp is null) return;
-            var lockQlt = datas.Lookup(datas.GameItems, ProjectConstant.LockQltSlotId);
+            var lockQlt = datas.Lookup(gc.GameItems, ProjectConstant.LockQltSlotId);
             if (lockQlt is null) return;
             var gameItem = datas.GameItems.FirstOrDefault(c => c.Parent.TemplateId == ProjectConstant.ZuojiBagSlotId);
             if (!datas.Verify(null != gameItem, "没有坐骑。")) return;
             var gameItem2 = datas.GameItems.FirstOrDefault(c => c.Parent.TemplateId == ProjectConstant.ShoulanSlotId);
             if (!datas.Verify(null != gameItem2, "没有野兽。")) return;
+            var db = datas.GameChar.GameUser.DbContext;
+            var gim = World.ItemManager;
             //攻击资质
             if (lockAtk.Children.Count <= 0)
             {
@@ -1188,8 +1195,7 @@ namespace GY2021001BLL
             {
                 var lockItem = lockAtk.Children.First();
                 datas.ChangesItem.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
-                lockAtk.Children.Remove(lockItem);
-                datas.GameChar.GameUser.DbContext.Remove(lockItem);
+                gim.ForceDelete(lockItem);
             }
             //血量资质
             if (lockMhp.Children.Count <= 0)
@@ -1209,8 +1215,7 @@ namespace GY2021001BLL
             {
                 var lockItem = lockMhp.Children.First();
                 datas.ChangesItem.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
-                lockMhp.Children.Remove(lockItem);
-                datas.GameChar.GameUser.DbContext.Remove(lockItem);
+                gim.ForceDelete(lockItem);
             }
             //质量资质
             if (lockQlt.Children.Count <= 0)
@@ -1230,12 +1235,10 @@ namespace GY2021001BLL
             {
                 var lockItem = lockQlt.Children.First();
                 datas.ChangesItem.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
-                lockQlt.Children.Remove(lockItem);
-                datas.GameChar.GameUser.DbContext.Remove(lockItem);
+                gim.ForceDelete(lockItem);
             }
             datas.ChangesItem.AddToRemoves(gameItem2.ContainerId.Value, gameItem2.Id);
-            gameItem2.Parent.Children.Remove(gameItem2);
-            datas.GameChar.GameUser.DbContext.Remove(gameItem2);
+            gim.ForceDelete(gameItem2);
             datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
         }
         #endregion 合成相关

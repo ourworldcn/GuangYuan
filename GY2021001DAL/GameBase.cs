@@ -220,6 +220,25 @@ namespace GY2021001DAL
         /// </summary>
         public virtual List<GameExtendProperty> ExtendProperties { get; set; }
 
+        /// <summary>
+        /// 获取或创建一个指定名称的<see cref="GameExtendProperty"/>对象。
+        /// </summary>
+        /// <param name="name">对象名称。</param>
+        /// <param name="creator">创建器。</param>
+        /// <returns>获取或创建的对象。返回时创建的对象已经被加入了集合，且设置了必要导航属性。</returns>
+        public GameExtendProperty GetOrAddExtendProperty(string name, Func<string, GameExtendProperty> creator)
+        {
+            var result = ExtendProperties.FirstOrDefault(c => c.Name == name);
+            if (result is null)
+            {
+                result = creator(name);
+                result.GameThing = this;
+                result.ParentId = Id;
+                ExtendProperties.Add(result);
+            }
+            return result;
+        }
+
         #region 事件及相关
         protected virtual void OnSaving(EventArgs e)
         {
@@ -321,6 +340,16 @@ namespace GY2021001DAL
     /// </summary>
     public class GameExtendProperty
     {
+        public GameExtendProperty()
+        {
+
+        }
+
+        public GameExtendProperty(string name)
+        {
+            Name = name;
+        }
+
         [ForeignKey(nameof(GameThing))]
         public Guid ParentId { get; set; }
 

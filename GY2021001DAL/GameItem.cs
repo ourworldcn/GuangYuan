@@ -52,7 +52,7 @@ namespace GY2021001DAL
                 //        ;// TO DO
                 //}
                 //else
-                    _Count = value;
+                _Count = value;
             }
         }
 
@@ -103,7 +103,7 @@ namespace GY2021001DAL
 
         GameChar _GameChar;
         /// <summary>
-        /// 获取或设置所属的角色对象。
+        /// 获取或设置所属的角色对象。没有设置关系可能返回null。
         /// </summary>
         [NotMapped]
         public GameChar GameChar

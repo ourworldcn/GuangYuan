@@ -1326,12 +1326,88 @@ namespace GY2021001WebApi.Models
     }
 
     #region 家园建设方案
+
+    /// <summary>
+    /// SetHomelandPlan 接口使用的参数类。
+    /// </summary>
+    [DataContract]
+    public class SetHomelandPlanParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public SetHomelandPlanParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 家园建设方案的集合。
+        /// </summary>
+        [DataMember]
+        public List<HomelandPlanDto> Plans { get; set; } = new List<HomelandPlanDto>();
+    }
+
+    /// <summary>
+    /// SetHomelandPlan 接口返回数据的封装类。
+    /// </summary>
+    [DataContract]
+    public class SetHomelandPlanReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public SetHomelandPlanReturnDto()
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// GetHomelandPlan 接口使用的参数类。
+    /// </summary>
+    [DataContract]
+    public class GetHomelandPlanParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public GetHomelandPlanParamsDto()
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// GetHomelandPlan 接口返回数据的封装类。
+    /// </summary>
+    [DataContract]
+    public class GetHomelandPlanReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public GetHomelandPlanReturnDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 家园建设方案的集合。
+        /// </summary>
+        [DataMember]
+        public List<HomelandPlanDto> Plans { get; set; } = new List<HomelandPlanDto>();
+    }
+
     /// <summary>
     /// 方案。
     /// </summary>
     [DataContract]
     public partial class HomelandPlanDto
     {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
         public HomelandPlanDto()
         {
 
@@ -1350,7 +1426,7 @@ namespace GY2021001WebApi.Models
         public List<HomelandPlanItemDto> PlanItems { get; set; } = new List<HomelandPlanItemDto>();
 
         /// <summary>
-        /// 是否是激活方案。
+        /// 是否是激活方案。默认值是false。
         /// </summary>
         [DataMember]
         public bool IsActived { get; set; }

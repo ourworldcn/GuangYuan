@@ -222,6 +222,9 @@ namespace GY2021001DAL
         /// </summary>
         public List<ChangesItem> ChangesItems => _ChangesItems ??= new List<ChangesItem>();
 
+        /// <summary>
+        /// 未发送给客户端的数据保存在<see cref="GameThingBase.ExtendProperties"/>中使用的属性名称。
+        /// </summary>
         public const string ChangesItemExPropertyName = "{BAD410C8-6393-44B4-9EB1-97F91ED11C12}";
     }
 

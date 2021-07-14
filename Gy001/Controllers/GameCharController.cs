@@ -451,6 +451,68 @@ namespace GY2021001WebApi.Controllers
             }
             return result;
         }
+
+        /// <summary>
+        /// 获取家园方案。
+        /// 此接口不重置下线计时器。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>建立账号后第一次返回的所有方案中，除了Id是有效的其他属性是空或空集合。</returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPut]
+        public ActionResult<GetHomelandPlanReturnDto> GetHomelandPlan(GetHomelandPlanParamsDto model)
+        {
+            var result = new GetHomelandPlanReturnDto() { };
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return Unauthorized("令牌无效");
+            try
+            {
+                var gc = gu.CurrentChar;
+                var plans = world.CharManager.GetHomelandPlans(gc);   //获取所有方案
+                result.Plans.AddRange(plans.Select(c => (HomelandPlanDto)c));
+            }
+            catch (Exception err)
+            {
+                result.DebugMessage = err.Message;
+                result.HasError = true;
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 设置家园方案。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>如果有错大概率是不认识的Id。</returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPost]
+        public ActionResult<SetHomelandPlanReturnDto> SetHomelandPlan(SetHomelandPlanParamsDto model)
+        {
+            var result = new SetHomelandPlanReturnDto() { };
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return Unauthorized("令牌无效");
+            try
+            {
+                var coll = model.Plans.Select(c => (HomelandPlan)c);
+                world.CharManager.SetHomelandPlans(model.Plans.Select(c => (HomelandPlan)c), gu.CurrentChar);
+            }
+            catch (Exception err)
+            {
+                result.DebugMessage = err.Message;
+                result.HasError = true;
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
     }
 }
 
