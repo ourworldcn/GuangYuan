@@ -907,7 +907,7 @@ namespace GY2021001BLL
                         if (item.PrvTId.HasValue)    //若送物品
                         {
                             var tmp = gim.CreateGameItem(item.PrvTId.Value);
-                            gim.AddItem(gameItem, parent, null, LastChangesItems);
+                            gim.AddItem(tmp, parent, null, LastChangesItems);
                         }
                         if (item.Genus.HasValue)   //若送地块
                         {
@@ -915,7 +915,7 @@ namespace GY2021001BLL
                             foreach (var subItem in dikuai)
                             {
                                 var tmp = gim.CreateGameItem(subItem);
-                                gim.AddItem(gameItem, parent, null, LastChangesItems);
+                                gim.AddItem(tmp, parent, null, LastChangesItems);
                             }
                         }
                     }

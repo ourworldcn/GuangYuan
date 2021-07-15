@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -612,24 +613,24 @@ namespace GY2021001BLL
         /// 设置家园的建设方案。
         /// </summary>
         /// <param name="plans">家园建设方案的集合。</param>
-        public void SetHomelandPlans(IEnumerable<HomelandPlan> plans, GameChar gameChar)
+        public void SetHomelandPlans(IEnumerable<HomelandFengge> plans, GameChar gameChar)
         {
             var gu = gameChar.GameUser;
             if (!World.CharManager.Lock(gu))
                 return;
             try
             {
-                var hpb = gameChar.AllChildren.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId); //家园方案背包
-                var coll = from nPlan in plans
-                           join oPlan in hpb.Children on nPlan.Id equals oPlan.Id
-                           select (NewPlan: nPlan, OldPlan: oPlan);
-                foreach (var item in coll)
-                {
-                    var exProp = item.OldPlan.GetOrAddExtendProperty(ProjectConstant.HomelandPlanPropertyName, c =>
-                         new GameExtendProperty() { Name = c, });
-                    var jsonStr = JsonSerializer.Serialize(item.NewPlan);
-                    exProp.Text = jsonStr;
-                }
+                //var hpb = gameChar.AllChildren.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId); //家园方案背包
+                //var coll = from nPlan in plans
+                //           join oPlan in hpb.Children on nPlan.Id equals oPlan.Id
+                //           select (NewPlan: nPlan, OldPlan: oPlan);
+                //foreach (var item in coll)
+                //{
+                //    var exProp = item.OldPlan.GetOrAddExtendProperty(ProjectConstant.HomelandPlanPropertyName, c =>
+                //         new GameExtendProperty() { Name = c, });
+                //    var jsonStr = JsonSerializer.Serialize(item.NewPlan);
+                //    exProp.Text = jsonStr;
+                //}
                 World.CharManager.NotifyChange(gu);
             }
             finally
@@ -639,32 +640,32 @@ namespace GY2021001BLL
         }
 
         /// <summary>
-        /// 获取指定角色的家园建设方案。
+        /// 获取指定角色的家园建设风格及方案。
         /// 此函数不重置下线计时器。
         /// </summary>
         /// <param name="gc">角色对象。</param>
-        /// <returns>方案集合，对应每个家园方案对象都会生成一个方案，如无内容则仅有Id,ClientString有效。</returns>
+        /// <returns>方案集合，对应每个家园风格对象都会生成一个风格，如无内容则仅有Id,ClientString有效。</returns>
         /// <exception cref="InvalidOperationException">内部数据结构损坏</exception>
-        public IEnumerable<HomelandPlan> GetHomelandPlans(GameChar gc)
+        public IEnumerable<HomelandFengge> GetHomelandPlans(GameChar gc)
         {
-            var result = new List<HomelandPlan>();
+            var result = new List<HomelandFengge>();
             try
             {
-                var hpb = gc.AllChildren.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId); //家园方案背包
-                foreach (var item in hpb.Children)
-                {
-                    var hpo = item.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.HomelandPlanPropertyName);  //方案数据对象
-                    HomelandPlan tmp;
-                    if (hpo is null || string.IsNullOrWhiteSpace(hpo.Text)) //若未初始化
-                    {
-                        tmp = new HomelandPlan() { Id = item.Id, ClientString = item.ClientGutsString };
-                    }
-                    else
-                    {
-                        tmp = JsonSerializer.Deserialize(hpo.Text, typeof(HomelandPlan)) as HomelandPlan;
-                    }
-                    result.Add(tmp);
-                }
+                //var hpb = gc.AllChildren.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId); //家园方案背包
+                //foreach (var item in hpb.Children)
+                //{
+                //    var hpo = item.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.HomelandPlanPropertyName);  //方案数据对象
+                //    HomelandFengge tmp;
+                //    if (hpo is null || string.IsNullOrWhiteSpace(hpo.Text)) //若未初始化
+                //    {
+                //        tmp = new HomelandFengge() { Id = item.Id, ClientString = item.ClientGutsString };
+                //    }
+                //    else
+                //    {
+                //        tmp = JsonSerializer.Deserialize(hpo.Text, typeof(HomelandFengge)) as HomelandFengge;
+                //    }
+                //    result.Add(tmp);
+                //}
             }
             catch (Exception err)
             {
@@ -869,50 +870,5 @@ namespace GY2021001BLL
         public GameChar GameChar { get; set; }
     }
 
-    /// <summary>
-    /// 方案。
-    /// </summary>
-    public class HomelandPlan
-    {
-        public HomelandPlan()
-        {
-
-        }
-
-        public Guid Id { get; set; }
-
-        public List<HomelandPlanItem> PlanItems { get; } = new List<HomelandPlanItem>();
-
-        public bool IsActived { get; set; }
-
-        public string ClientString { get; set; }
-
-    }
-
-    /// <summary>
-    /// 方案中的子项。
-    /// </summary>
-    public class HomelandPlanItem
-    {
-        public HomelandPlanItem()
-        {
-
-        }
-
-        /// <summary>
-        /// 要加入 ContainerId 指出容器的子对象Id。
-        /// </summary>
-        public List<Guid> ItemIds { get; } = new List<Guid>();
-
-        /// <summary>
-        /// 容器的Id。
-        /// </summary>
-        public Guid ContainerId { get; set; }
-
-        /// <summary>
-        /// 要替换的新的模板Id值。空表示不替换。
-        /// </summary>
-        public Guid? NewTemplateId { get; set; }
-    }
 
 }

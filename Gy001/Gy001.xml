@@ -164,7 +164,7 @@
             <returns>参见 GetChangesItemReturnDto 说明。</returns>
             <response code="401">令牌错误。</response>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetHomelandPlan(GY2021001WebApi.Models.GetHomelandPlanParamsDto)">
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetHomelandPlan(GY2021001WebApi.Models.GetHomelandFenggeParamsDto)">
             <summary>
             获取家园方案。
             此接口不重置下线计时器。
@@ -173,7 +173,7 @@
             <returns>建立账号后第一次返回的所有方案中，除了Id是有效的其他属性是空或空集合。</returns>
             <response code="401">令牌错误。</response>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.GameCharController.SetHomelandPlan(GY2021001WebApi.Models.SetHomelandPlanParamsDto)">
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.SetHomelandPlan(GY2021001WebApi.Models.SetHomelandFenggeParamsDto)">
             <summary>
             设置家园方案。
             </summary>
@@ -580,54 +580,80 @@
             存在问题的物品的模板Id。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.HomelandPlanDto">
+        <member name="T:GY2021001WebApi.Models.HomelandFenggeDto">
             <summary>
-            方案。
+            HomelandFangan。
             </summary>
         </member>
-        <member name="M:GY2021001WebApi.Models.HomelandPlanDto.#ctor">
+        <member name="M:GY2021001WebApi.Models.HomelandFenggeDto.#ctor">
             <summary>
             构造函数。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.HomelandPlanDto.Id">
+        <member name="P:GY2021001WebApi.Models.HomelandFenggeDto.Id">
             <summary>
-            方案的唯一Id。
+            方案号。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.HomelandPlanDto.PlanItems">
+        <member name="P:GY2021001WebApi.Models.HomelandFenggeDto.Fangans">
             <summary>
             方案具体子项。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.HomelandPlanDto.IsActived">
+        <member name="P:GY2021001WebApi.Models.HomelandFenggeDto.ClientString">
             <summary>
-            是否是激活方案。默认值是false。
+            客户端记录一些额外信息。服务器不使用。
+            记录在风格对象的 ClientString 上。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.HomelandPlanDto.ClientString">
+        <member name="T:GY2021001WebApi.Models.HomelandFanganDto">
             <summary>
-            方案对象的 ClientString 属性。
+            方案对象。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.HomelandPlanItemDto">
+        <member name="P:GY2021001WebApi.Models.HomelandFanganDto.Id">
+            <summary>
+            唯一Id，暂时无用，但一旦生成则保持不变。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandFanganDto.FanganItems">
+            <summary>
+            下属具体加载物品及其位置信息
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandFanganDto.IsActived">
+            <summary>
+            该方案是否被激活。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandFanganDto.ClientString">
+            <summary>
+            客户端记录一些额外信息。服务器不使用。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.HomelandFanganItemDto">
             <summary>
             方案中的子项。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.HomelandPlanItemDto.ItemIds">
+        <member name="P:GY2021001WebApi.Models.HomelandFanganItemDto.ItemIds">
             <summary>
             要加入 ContainerId 指出容器的子对象Id。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.HomelandPlanItemDto.ContainerId">
+        <member name="P:GY2021001WebApi.Models.HomelandFanganItemDto.ContainerId">
             <summary>
             容器的Id。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.HomelandPlanItemDto.NewTemplateId">
+        <member name="P:GY2021001WebApi.Models.HomelandFanganItemDto.NewTemplateId">
             <summary>
             要替换的新的模板Id值。空表示不替换。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.HomelandFanganItemDto.ClientString">
+            <summary>
+            客户端记录一些额外信息。服务器不使用。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
@@ -1215,52 +1241,52 @@
             变化的对象数据，可能是空集合。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.SetHomelandPlanParamsDto">
+        <member name="T:GY2021001WebApi.Models.SetHomelandFenggeParamsDto">
             <summary>
             SetHomelandPlan 接口使用的参数类。
             </summary>
         </member>
-        <member name="M:GY2021001WebApi.Models.SetHomelandPlanParamsDto.#ctor">
+        <member name="M:GY2021001WebApi.Models.SetHomelandFenggeParamsDto.#ctor">
             <summary>
             构造函数。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.SetHomelandPlanParamsDto.Plans">
+        <member name="P:GY2021001WebApi.Models.SetHomelandFenggeParamsDto.Fengges">
             <summary>
             家园建设方案的集合。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.SetHomelandPlanReturnDto">
+        <member name="T:GY2021001WebApi.Models.SetHomelandFenggeReturnDto">
             <summary>
             SetHomelandPlan 接口返回数据的封装类。
             </summary>
         </member>
-        <member name="M:GY2021001WebApi.Models.SetHomelandPlanReturnDto.#ctor">
+        <member name="M:GY2021001WebApi.Models.SetHomelandFenggeReturnDto.#ctor">
             <summary>
             构造函数。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.GetHomelandPlanParamsDto">
+        <member name="T:GY2021001WebApi.Models.GetHomelandFenggeParamsDto">
             <summary>
             GetHomelandPlan 接口使用的参数类。
             </summary>
         </member>
-        <member name="M:GY2021001WebApi.Models.GetHomelandPlanParamsDto.#ctor">
+        <member name="M:GY2021001WebApi.Models.GetHomelandFenggeParamsDto.#ctor">
             <summary>
             构造函数。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.GetHomelandPlanReturnDto">
+        <member name="T:GY2021001WebApi.Models.GetHomelandFenggeReturnDto">
             <summary>
             GetHomelandPlan 接口返回数据的封装类。
             </summary>
         </member>
-        <member name="M:GY2021001WebApi.Models.GetHomelandPlanReturnDto.#ctor">
+        <member name="M:GY2021001WebApi.Models.GetHomelandFenggeReturnDto.#ctor">
             <summary>
             构造函数。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.GetHomelandPlanReturnDto.Plans">
+        <member name="P:GY2021001WebApi.Models.GetHomelandFenggeReturnDto.Plans">
             <summary>
             家园建设方案的集合。
             </summary>

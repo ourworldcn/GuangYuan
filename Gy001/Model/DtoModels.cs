@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace GY2021001WebApi.Models
@@ -1331,12 +1332,12 @@ namespace GY2021001WebApi.Models
     /// SetHomelandPlan 接口使用的参数类。
     /// </summary>
     [DataContract]
-    public class SetHomelandPlanParamsDto : TokenDtoBase
+    public class SetHomelandFenggeParamsDto : TokenDtoBase
     {
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public SetHomelandPlanParamsDto()
+        public SetHomelandFenggeParamsDto()
         {
 
         }
@@ -1345,19 +1346,19 @@ namespace GY2021001WebApi.Models
         /// 家园建设方案的集合。
         /// </summary>
         [DataMember]
-        public List<HomelandPlanDto> Plans { get; set; } = new List<HomelandPlanDto>();
+        public List<HomelandFenggeDto> Fengges { get; set; } = new List<HomelandFenggeDto>();
     }
 
     /// <summary>
     /// SetHomelandPlan 接口返回数据的封装类。
     /// </summary>
     [DataContract]
-    public class SetHomelandPlanReturnDto : ReturnDtoBase
+    public class SetHomelandFenggeReturnDto : ReturnDtoBase
     {
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public SetHomelandPlanReturnDto()
+        public SetHomelandFenggeReturnDto()
         {
 
         }
@@ -1367,12 +1368,12 @@ namespace GY2021001WebApi.Models
     /// GetHomelandPlan 接口使用的参数类。
     /// </summary>
     [DataContract]
-    public class GetHomelandPlanParamsDto : TokenDtoBase
+    public class GetHomelandFenggeParamsDto : TokenDtoBase
     {
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public GetHomelandPlanParamsDto()
+        public GetHomelandFenggeParamsDto()
         {
 
         }
@@ -1382,12 +1383,12 @@ namespace GY2021001WebApi.Models
     /// GetHomelandPlan 接口返回数据的封装类。
     /// </summary>
     [DataContract]
-    public class GetHomelandPlanReturnDto : ReturnDtoBase
+    public class GetHomelandFenggeReturnDto : ReturnDtoBase
     {
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public GetHomelandPlanReturnDto()
+        public GetHomelandFenggeReturnDto()
         {
 
         }
@@ -1396,55 +1397,87 @@ namespace GY2021001WebApi.Models
         /// 家园建设方案的集合。
         /// </summary>
         [DataMember]
-        public List<HomelandPlanDto> Plans { get; set; } = new List<HomelandPlanDto>();
+        public List<HomelandFenggeDto> Plans { get; set; } = new List<HomelandFenggeDto>();
     }
 
     /// <summary>
-    /// 方案。
+    /// HomelandFangan。
     /// </summary>
     [DataContract]
-    public partial class HomelandPlanDto
+    public partial class HomelandFenggeDto
     {
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public HomelandPlanDto()
+        public HomelandFenggeDto()
         {
 
         }
 
         /// <summary>
-        /// 方案的唯一Id。
+        /// 方案号。
         /// </summary>
         [DataMember]
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// 方案具体子项。
         /// </summary>
         [DataMember]
-        public List<HomelandPlanItemDto> PlanItems { get; set; } = new List<HomelandPlanItemDto>();
+        public List<HomelandFanganDto> Fangans { get; set; } = new List<HomelandFanganDto>();
 
         /// <summary>
-        /// 是否是激活方案。默认值是false。
-        /// </summary>
-        [DataMember]
-        public bool IsActived { get; set; }
-
-        /// <summary>
-        /// 方案对象的 ClientString 属性。
+        /// 客户端记录一些额外信息。服务器不使用。
+        /// 记录在风格对象的 ClientString 上。
         /// </summary>
         [DataMember]
         public string ClientString { get; set; }
     }
 
     /// <summary>
+    /// 方案对象。
+    /// </summary>
+    [DataContract]
+    public partial class HomelandFanganDto
+    {
+        public HomelandFanganDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 唯一Id，暂时无用，但一旦生成则保持不变。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 下属具体加载物品及其位置信息
+        /// </summary>
+        [DataMember]
+        public List<HomelandFanganItemDto> FanganItems { get; set; } = new List<HomelandFanganItemDto>();
+
+        /// <summary>
+        /// 该方案是否被激活。
+        /// </summary>
+        [DataMember]
+        public bool IsActived { get; set; }
+
+        /// <summary>
+        /// 客户端记录一些额外信息。服务器不使用。
+        /// </summary>
+        [DataMember]
+        public string ClientString { get; set; }
+
+    }
+
+    /// <summary>
     /// 方案中的子项。
     /// </summary>
     [DataContract]
-    public partial class HomelandPlanItemDto
+    public partial class HomelandFanganItemDto
     {
-        public HomelandPlanItemDto()
+        public HomelandFanganItemDto()
         {
 
         }
@@ -1453,7 +1486,7 @@ namespace GY2021001WebApi.Models
         /// 要加入 ContainerId 指出容器的子对象Id。
         /// </summary>
         [DataMember]
-        public List<string> ItemIds { get; } = new List<string>();
+        public List<string> ItemIds { get; set; } = new List<string>();
 
         /// <summary>
         /// 容器的Id。
@@ -1466,6 +1499,13 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string NewTemplateId { get; set; }
+
+        /// <summary>
+        /// 客户端记录一些额外信息。服务器不使用。
+        /// </summary>
+        [DataMember]
+        public string ClientString { get; set; }
+
     }
 
     #endregion 家园建设方案

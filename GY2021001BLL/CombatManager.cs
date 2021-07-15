@@ -373,7 +373,7 @@ namespace GY2021001BLL
                     return;
 
                 //核准本次收益
-                var succ = Verify(data.Template, data.GameItems,data.GameChar, out var errMsg);
+                var succ = Verify(data.Template, data.GameItems, data.GameChar, out var errMsg);
                 if (!succ)   //若本次收益不合法
                 {
                     data.HasError = true;
@@ -383,7 +383,7 @@ namespace GY2021001BLL
                 //核准总收益
                 var shouyiSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShouyiSlotId);   //收益槽
                 var totalItems = shouyiSlot.Children.Concat(data.GameItems);    //总计收益
-                succ = Verify(GetParent(data.Template),totalItems, data.GameChar, out errMsg);
+                succ = Verify(GetParent(data.Template), totalItems, data.GameChar, out errMsg);
                 if (!succ)   //若总收益不合法
                 {
                     data.HasError = true;

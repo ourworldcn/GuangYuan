@@ -13,6 +13,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Gy001
@@ -36,16 +39,14 @@ namespace Gy001
         /// <summary>
         /// ≤‚ ‘µ„°£
         /// </summary>
+        [Conditional("DEBUG")]
         private static void Test(IHost host)
         {
-            Random rnd = new Random();
-            var sw = Stopwatch.StartNew();
-            for (int i = 10000 - 1; i >= 0; i--)
-            {
-                Math.Sqrt(rnd.NextDouble());
-            }
-            sw.Stop();
-            var ss = sw.Elapsed;
+            //var JsonOptions = new JsonSerializerOptions()
+            //{
+            //    PropertyNamingPolicy = null,
+            //    DictionaryKeyPolicy = null,
+            //};
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

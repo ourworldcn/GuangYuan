@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Gy2021001Template
@@ -56,7 +57,61 @@ namespace Gy2021001Template
         /// 类型码。没有指定则返回0。
         /// </summary>
         [NotMapped]
-        public int GenusCode { get => GId.GetValueOrDefault() / 1000; }
+        public int GenusCode
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Catalog3Number;
+        }
+
+        /// <summary>
+        /// 序列号。
+        /// </summary>
+        [NotMapped]
+        public int Sequence
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => GId.GetValueOrDefault() % 1000;
+        }
+
+        /// <summary>
+        /// 大类类号。
+        /// </summary>
+        [NotMapped]
+        public int Catalog1Number
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => GId.GetValueOrDefault() / 10000000;
+        }
+
+        /// <summary>
+        /// 中类类号。
+        /// </summary>
+        [NotMapped]
+        public int Catalog2Number
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => GId.GetValueOrDefault() / 100000 % 100;
+        }
+
+        /// <summary>
+        /// 小类类号。属号。
+        /// </summary>
+        [NotMapped]
+        public int Catalog3Number
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => GId.GetValueOrDefault() / 1000 % 100;
+        }
+
+        /// <summary>
+        /// 类号。除了序列号以外的前6位分类号
+        /// </summary>
+        [NotMapped]
+        public int CatalogNumber
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => GId.GetValueOrDefault() / 1000;
+        }
 
         /// <summary>
         /// <inheritdoc/>

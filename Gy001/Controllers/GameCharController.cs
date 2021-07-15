@@ -460,9 +460,9 @@ namespace GY2021001WebApi.Controllers
         /// <returns>建立账号后第一次返回的所有方案中，除了Id是有效的其他属性是空或空集合。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPut]
-        public ActionResult<GetHomelandPlanReturnDto> GetHomelandPlan(GetHomelandPlanParamsDto model)
+        public ActionResult<GetHomelandFenggeReturnDto> GetHomelandPlan(GetHomelandFenggeParamsDto model)
         {
-            var result = new GetHomelandPlanReturnDto() { };
+            var result = new GetHomelandFenggeReturnDto() { };
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
                 return Unauthorized("令牌无效");
@@ -470,7 +470,7 @@ namespace GY2021001WebApi.Controllers
             {
                 var gc = gu.CurrentChar;
                 var plans = world.CharManager.GetHomelandPlans(gc);   //获取所有方案
-                result.Plans.AddRange(plans.Select(c => (HomelandPlanDto)c));
+                result.Plans.AddRange(plans.Select(c => (HomelandFenggeDto)c));
             }
             catch (Exception err)
             {
@@ -491,16 +491,16 @@ namespace GY2021001WebApi.Controllers
         /// <returns>如果有错大概率是不认识的Id。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPost]
-        public ActionResult<SetHomelandPlanReturnDto> SetHomelandPlan(SetHomelandPlanParamsDto model)
+        public ActionResult<SetHomelandFenggeReturnDto> SetHomelandPlan(SetHomelandFenggeParamsDto model)
         {
-            var result = new SetHomelandPlanReturnDto() { };
+            var result = new SetHomelandFenggeReturnDto() { };
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
                 return Unauthorized("令牌无效");
             try
             {
-                var coll = model.Plans.Select(c => (HomelandPlan)c);
-                world.CharManager.SetHomelandPlans(model.Plans.Select(c => (HomelandPlan)c), gu.CurrentChar);
+                var coll = model.Fengges.Select(c => (HomelandFengge)c);
+                world.CharManager.SetHomelandPlans(model.Fengges.Select(c => (HomelandFengge)c), gu.CurrentChar);
             }
             catch (Exception err)
             {

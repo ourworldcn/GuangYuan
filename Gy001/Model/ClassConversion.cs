@@ -309,52 +309,91 @@ namespace GY2021001WebApi.Models
 
     }
 
-    public partial class HomelandPlanDto
+    #region 家园相关
+
+    public partial class HomelandFenggeDto
     {
-        public static implicit operator HomelandPlan(HomelandPlanDto obj)
+        public Guid StyleTemplateId
         {
-            var result = new HomelandPlan()
+            get => default;
+            set
+            {
+            }
+        }
+
+        public static explicit operator HomelandFengge(HomelandFenggeDto obj)
+        {
+            var result = new HomelandFengge()
             {
                 ClientString = obj.ClientString,
-                Id = GameHelper.FromBase64String(obj.Id),
-                IsActived = obj.IsActived,
+                Id = obj.Id,
             };
-            result.PlanItems.AddRange(obj.PlanItems.Select(c => (HomelandPlanItem)c));
+            result.Fangans.AddRange(obj.Fangans.Select(c => (HomelandFangan)c));
             return result;
         }
 
-        public static implicit operator HomelandPlanDto(HomelandPlan obj)
+        public static explicit operator HomelandFenggeDto(HomelandFengge obj)
         {
-            var result = new HomelandPlanDto()
+            var result = new HomelandFenggeDto()
+            {
+                ClientString = obj.ClientString,
+                Id = obj.Id,
+            };
+            result.Fangans.AddRange(obj.Fangans.Select(c => (HomelandFanganDto)c));
+            return result;
+        }
+    }
+
+    public partial class HomelandFanganDto
+    {
+        public static explicit operator HomelandFanganDto(HomelandFangan obj)
+        {
+            var result = new HomelandFanganDto()
             {
                 ClientString = obj.ClientString,
                 Id = obj.Id.ToBase64String(),
                 IsActived = obj.IsActived,
             };
-            result.PlanItems.AddRange(obj.PlanItems.Select(c => (HomelandPlanItemDto)c));
+            result.FanganItems.AddRange(obj.FanganItems.Select(c => (HomelandFanganItemDto)c));
             return result;
         }
+
+        public static explicit operator HomelandFangan(HomelandFanganDto obj)
+        {
+            var result = new HomelandFangan()
+            {
+                ClientString = obj.ClientString,
+                Id = GameHelper.FromBase64String(obj.Id),
+                IsActived = obj.IsActived,
+            };
+            result.FanganItems.AddRange(obj.FanganItems.Select(c => (HomelandFanganItem)c));
+            return result;
+        }
+
+
     }
 
-    public partial class HomelandPlanItemDto
+    public partial class HomelandFanganItemDto
     {
-        public static implicit operator HomelandPlanItem(HomelandPlanItemDto obj)
+        public static explicit operator HomelandFanganItem(HomelandFanganItemDto obj)
         {
-            var result = new HomelandPlanItem()
+            var result = new HomelandFanganItem()
             {
                 ContainerId = GameHelper.FromBase64String(obj.ContainerId),
                 NewTemplateId = GameHelper.FromBase64String(obj.NewTemplateId),
+                ClientString = obj.ClientString,
             };
             result.ItemIds.AddRange(obj.ItemIds.Select(c => GameHelper.FromBase64String(c)));
             return result;
         }
 
-        public static implicit operator HomelandPlanItemDto(HomelandPlanItem obj)
+        public static explicit operator HomelandFanganItemDto(HomelandFanganItem obj)
         {
-            var result = new HomelandPlanItemDto()
+            var result = new HomelandFanganItemDto()
             {
                 ContainerId = obj.ContainerId.ToBase64String(),
                 NewTemplateId = obj.NewTemplateId?.ToBase64String(),
+                ClientString = obj.ClientString,
             };
             result.ItemIds.AddRange(obj.ItemIds.Select(c => c.ToBase64String()));
             return result;
@@ -363,4 +402,5 @@ namespace GY2021001WebApi.Models
 
     }
 
+    #endregion 家园相关
 }
