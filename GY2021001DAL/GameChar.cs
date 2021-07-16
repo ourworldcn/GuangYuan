@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 
 namespace GY2021001DAL
 {
-    public class GameChar : GameThingBase
+    public class GameChar : GameThingBase, IDisposable
     {
 
         public GameChar()
@@ -189,10 +189,7 @@ namespace GY2021001DAL
             }
         }
 
-        /// <summary>
-        /// 在保存数据前被调用。
-        /// </summary>
-        public void InvokeSaving()
+        override protected void OnSaving(EventArgs e)
         {
             if (null != _GradientProperties)   //若已经生成了渐变属性
             {
@@ -203,7 +200,6 @@ namespace GY2021001DAL
                     Properties["cpp"] = p.LastDateTime.ToString();
                 }
             }
-            PropertiesString = OwHelper.ToPropertiesString(Properties);
             foreach (var item in OwHelper.GetAllSubItemsOfTree(GameItems, c => c.Children).ToArray())
                 item.InvokeSaving(EventArgs.Empty);
             if (_ChangesItems != null)    //若需要序列化变化属性
@@ -213,9 +209,11 @@ namespace GY2021001DAL
                     exProp = new GameExtendProperty();
                 exProp.Text = JsonSerializer.Serialize(_ChangesItems.Select(c => (ChangesItemSummary)c).ToList());
             }
+            base.OnSaving(e);
         }
 
         private List<ChangesItem> _ChangesItems;
+        private bool disposedValue;
 
         /// <summary>
         /// 保存未能发送给客户端的变化数据。
@@ -226,6 +224,51 @@ namespace GY2021001DAL
         /// 未发送给客户端的数据保存在<see cref="GameThingBase.ExtendProperties"/>中使用的属性名称。
         /// </summary>
         public const string ChangesItemExPropertyName = "{BAD410C8-6393-44B4-9EB1-97F91ED11C12}";
+
+        #region IDisposable接口相关
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    if (!disposedValue)  //若第一次调用
+                        OnDisposed(EventArgs.Empty);
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                disposedValue = true;
+            }
+        }
+
+        virtual protected void OnDisposed(EventArgs e)
+        {
+            Disposed?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// 对象已经被处置。
+        /// </summary>
+        public event EventHandler Disposed;
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~GameChar()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion IDisposable接口相关
     }
 
     [DataContract]

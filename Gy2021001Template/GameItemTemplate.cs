@@ -104,7 +104,7 @@ namespace Gy2021001Template
         }
 
         /// <summary>
-        /// 类号。除了序列号以外的前6位分类号
+        /// 类号。除了序列号以外的前6位(十进制)分类号。
         /// </summary>
         [NotMapped]
         public int CatalogNumber

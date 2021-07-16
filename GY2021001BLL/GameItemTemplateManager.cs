@@ -1,6 +1,7 @@
 ﻿using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OwGame;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -148,6 +149,28 @@ namespace GY2021001BLL
                 return pn;
             return ProjectConstant.LevelPropertyName;
         }
+
+    }
+
+    public static class GameItemTemplateManagerExtensions
+    {
+        /// <summary>
+        /// 获取该物品的价格，指钻石计价的价格。
+        /// </summary>
+        /// <param name="templat"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public decimal? GetPriceWithDiamond(this GameItemTemplate templat) =>
+            templat.TryGetPropertyValue("sd", out var sdObj) && OwHelper.TryGetDecimal(sdObj, out var sd) ? new decimal?(sd) : null;
+
+        /// <summary>
+        /// 获取这个模板指出的物品是否是免费的（钻石计价）。
+        /// </summary>
+        /// <param name="templat"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsFree(this GameItemTemplate templat) =>
+            !templat.TryGetPropertyValue("sd", out var sdObj) || !OwHelper.TryGetDecimal(sdObj, out var sd) || sd <= 0;
 
     }
 }

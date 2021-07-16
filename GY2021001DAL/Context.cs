@@ -73,14 +73,14 @@ namespace GY2021001DAL
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
             foreach (var item in GameUsers.Local)
-                item.CurrentChar.InvokeSaving();
+                item.CurrentChar.InvokeSaving(EventArgs.Empty);
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
         {
             foreach (var item in GameUsers.Local)
-                item.CurrentChar.InvokeSaving();
+                item.CurrentChar.InvokeSaving(EventArgs.Empty);
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 

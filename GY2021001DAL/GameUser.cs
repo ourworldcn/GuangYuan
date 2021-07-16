@@ -32,7 +32,7 @@ namespace GY2021001DAL
 
         }
 
-        #region Dispose
+        #region IDisposable 接口相关
         private bool disposedValue;
 
         protected virtual void Dispose(bool disposing)
@@ -42,11 +42,13 @@ namespace GY2021001DAL
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
+                    CurrentChar?.Dispose();
                     DbContext?.Dispose();
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
+                CurrentChar = null;
                 _GameChars = null;
                 disposedValue = true;
             }
@@ -65,7 +67,7 @@ namespace GY2021001DAL
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
-        #endregion Dispose
+        #endregion IDisposable 接口相关
 
         /// <summary>
         /// 登录名。
@@ -115,7 +117,7 @@ namespace GY2021001DAL
         /// 该对象是否有效。
         /// </summary>
         [NotMapped]
-        public bool IsDisposed { get; set; } = false;
+        public bool IsDisposed { get => disposedValue; }
 
         /// <summary>
         /// 管理该用户数据存储的上下文。

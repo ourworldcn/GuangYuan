@@ -3,6 +3,7 @@ using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OwGame;
 using System;
 using System.Collections.Concurrent;
@@ -210,8 +211,8 @@ namespace GY2021001BLL
                     catch (Exception err)
                     {
                         Trace.WriteLine($"保存数据时出现未知错误{err.Message}");
-                        var coll = OwHelper.GetAllSubItemsOfTree(item.CurrentChar.GameItems, c => c.Children);
-                        var coll2 = coll.Where(c => c.Id == Guid.Empty).ToArray();
+                        //var coll = OwHelper.GetAllSubItemsOfTree(item.CurrentChar.GameItems, c => c.Children);
+                        //var coll2 = coll.Where(c => c.Id == Guid.Empty).ToArray();
                     }
                 }
                 try
@@ -593,13 +594,13 @@ namespace GY2021001BLL
                     try
                     {
                         gu.DbContext.SaveChanges();
-                        gu.DbContext.Dispose();
                     }
-                    catch (Exception)
+                    catch (Exception err)
                     {
-                        //TO DO
+                        var logger = Services.GetService<ILogger<GameChar>>();
+                        logger?.LogError("保存用户(Id={Id})信息时发生错误。——{err}", gu.Id, err);
                     }
-                    gu.IsDisposed = true;
+                    gu.Dispose();
                     _Token2User.TryRemove(token, out _);
                     _LoginName2Token.TryRemove(loginName, out _);
                     _Id2GameChar.Remove(gu.CurrentChar.Id, out _); //去除角色Id
@@ -607,72 +608,6 @@ namespace GY2021001BLL
                 }
             }
             return true;
-        }
-
-        /// <summary>
-        /// 设置家园的建设方案。
-        /// </summary>
-        /// <param name="plans">家园建设方案的集合。</param>
-        public void SetHomelandPlans(IEnumerable<HomelandFengge> plans, GameChar gameChar)
-        {
-            var gu = gameChar.GameUser;
-            if (!World.CharManager.Lock(gu))
-                return;
-            try
-            {
-                //var hpb = gameChar.AllChildren.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId); //家园方案背包
-                //var coll = from nPlan in plans
-                //           join oPlan in hpb.Children on nPlan.Id equals oPlan.Id
-                //           select (NewPlan: nPlan, OldPlan: oPlan);
-                //foreach (var item in coll)
-                //{
-                //    var exProp = item.OldPlan.GetOrAddExtendProperty(ProjectConstant.HomelandPlanPropertyName, c =>
-                //         new GameExtendProperty() { Name = c, });
-                //    var jsonStr = JsonSerializer.Serialize(item.NewPlan);
-                //    exProp.Text = jsonStr;
-                //}
-                World.CharManager.NotifyChange(gu);
-            }
-            finally
-            {
-                World.CharManager.Unlock(gu, true);
-            }
-        }
-
-        /// <summary>
-        /// 获取指定角色的家园建设风格及方案。
-        /// 此函数不重置下线计时器。
-        /// </summary>
-        /// <param name="gc">角色对象。</param>
-        /// <returns>方案集合，对应每个家园风格对象都会生成一个风格，如无内容则仅有Id,ClientString有效。</returns>
-        /// <exception cref="InvalidOperationException">内部数据结构损坏</exception>
-        public IEnumerable<HomelandFengge> GetHomelandPlans(GameChar gc)
-        {
-            var result = new List<HomelandFengge>();
-            try
-            {
-                //var hpb = gc.AllChildren.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId); //家园方案背包
-                //foreach (var item in hpb.Children)
-                //{
-                //    var hpo = item.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.HomelandPlanPropertyName);  //方案数据对象
-                //    HomelandFengge tmp;
-                //    if (hpo is null || string.IsNullOrWhiteSpace(hpo.Text)) //若未初始化
-                //    {
-                //        tmp = new HomelandFengge() { Id = item.Id, ClientString = item.ClientGutsString };
-                //    }
-                //    else
-                //    {
-                //        tmp = JsonSerializer.Deserialize(hpo.Text, typeof(HomelandFengge)) as HomelandFengge;
-                //    }
-                //    result.Add(tmp);
-                //}
-            }
-            catch (Exception err)
-            {
-
-                throw new InvalidOperationException("", err);
-            }
-            return result;
         }
 
         /// <summary>

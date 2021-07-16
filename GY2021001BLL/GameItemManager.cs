@@ -87,8 +87,7 @@ namespace GY2021001BLL
             var gitm = World.ItemTemplateManager;
             foreach (var item in template.Properties)   //复制属性
             {
-                decimal[] seq = item.Value as decimal[];
-                if (null != seq)   //若是属性序列
+                if (item.Value is decimal[] seq)   //若是属性序列
                 {
                     var indexPn = gitm.GetIndexPropName(template, item.Key);
                     var lv = Convert.ToInt32(template.Properties.GetValueOrDefault(indexPn, 0m));
@@ -374,7 +373,7 @@ namespace GY2021001BLL
                 if (olv != nlv)    //若需要改变等级
                 {
                     string seqPName;
-                    seqPName = propName.Length > 2 ? propName.Substring(2) : ProjectConstant.LevelPropertyName;
+                    seqPName = propName.Length > 2 ? propName[2..] : ProjectConstant.LevelPropertyName;
                     if (seqPName == ProjectConstant.LevelPropertyName)
                         SetLevel(gameItem, (int)nlv);
                     else
@@ -386,11 +385,11 @@ namespace GY2021001BLL
             {
                 if (propName.Length <= ProjectConstant.FastChangingPropertyName.Length)    //若名字太短
                     return false;
-                string tmp = propName.Substring(ProjectConstant.FastChangingPropertyName.Length);
+                string tmp = propName[ProjectConstant.FastChangingPropertyName.Length..];
                 if (tmp.Length < 2)    //若名字太短
                     return false;
                 var prefix = tmp[0];
-                string innerName = tmp.Substring(1);   //获得实际属性名
+                string innerName = tmp[1..];   //获得实际属性名
                 if (!gameItem.Name2FastChangingProperty.TryGetValue(innerName, out var fcp))    //若不存在该属性
                 {
                     fcp = new FastChangingProperty(default, default, default, default, DateTime.UtcNow);
@@ -414,9 +413,9 @@ namespace GY2021001BLL
             if (null == template)   //若找不到模板
                 return false;
             var seqKeys = template.Properties.Where(c => c.Value is decimal[]).Select(c => (SeqPn: c.Key, IndexPn: ItemTemplateManager.GetIndexPropName(template, c.Key))).ToArray();    //序列属性的名字
-            foreach (var item in seqKeys)   //设置序列属性
+            foreach (var (SeqPn, IndexPn) in seqKeys)   //设置序列属性
             {
-                SetLevel(gameItem, item.SeqPn, Convert.ToInt32(gameItem.Properties.GetValueOrDefault(item.IndexPn, 0m)));
+                SetLevel(gameItem, SeqPn, Convert.ToInt32(gameItem.Properties.GetValueOrDefault(IndexPn, 0m)));
             }
             var keys = template.Properties.Where(c => !(c.Value is decimal[])).Select(c => c.Key).Except(gameItem.Properties.Keys).ToArray(); //需要增加的简单属性的名字
             foreach (var item in keys)  //添加简单属性
@@ -519,7 +518,7 @@ namespace GY2021001BLL
                 stc = stc == -1 ? decimal.MaxValue : stc;
                 var moveItem = CreateGameItem(item.TemplateId);
                 moveItem.Count = count;
-                item.Count = item.Count - count;
+                item.Count -= count;
                 var parent = GetContainer(item);   //获取源父容器
                 AddItem(moveItem, destContainer);  //TO DO 需要处理无法完整放入问题
 #if DEBUG
@@ -763,7 +762,7 @@ namespace GY2021001BLL
                     return;
                 }
                 var succ = ForcedAdd(gameItem, parent);
-                changeItems.AddToAdds(parent.Id,gameItem);
+                changeItems.AddToAdds(parent.Id, gameItem);
                 return;
             }
             else //若可堆叠
@@ -783,7 +782,7 @@ namespace GY2021001BLL
                     var redCount = Math.Min(GetNumberOfStackRemainder(dest, out _), gameItem.Count ?? 0);   //移动的数量
                     dest.Count = dest.Count.Value + redCount;
                     gameItem.Count -= redCount;
-                    changeItems.AddToChanges(parent.Id,dest);
+                    changeItems.AddToChanges(parent.Id, dest);
                     result.Add(dest);
                 }
                 if (gameItem.Count <= 0)   //若已经全部堆叠进入
@@ -806,7 +805,7 @@ namespace GY2021001BLL
                             _.Adds.Add(item);
                         }
                         else //TO DO当前不会不成功
-                            ;
+                            throw new InvalidOperationException("加入物品异常失败。");
                         tmp.RemoveAt(i);
                     }
                     if (_.Adds.Count > 0)
@@ -952,16 +951,16 @@ namespace GY2021001BLL
                         select (tmp, tt)).ToArray();
             var gim = World.ItemManager;
             List<Guid> adds = new List<Guid>();
-            foreach (var item in coll)
+            foreach (var (tmp, tt) in coll)
             {
-                item.tmp.GenerateIdIfEmpty();
-                item.tmp.Template = item.tt;
+                tmp.GenerateIdIfEmpty();
+                tmp.Template = tt;
                 adds.Clear();
-                item.tmp.Children.ApartWithWithRepeated(item.tt.ChildrenTemplateIds, c => c.TemplateId, c => c, null, null, adds);
+                tmp.Children.ApartWithWithRepeated(tt.ChildrenTemplateIds, c => c.TemplateId, c => c, null, null, adds);
                 foreach (var addItem in adds)
                 {
                     var newItem = gim.CreateGameItem(addItem);
-                    item.tmp.Children.Add(newItem);
+                    tmp.Children.Add(newItem);
                 }
             }
         }
@@ -1066,4 +1065,25 @@ namespace GY2021001BLL
 
     }
 
+    public static class GameItemManagerExtensions
+    {
+        /// <summary>
+        /// 在指定集合中寻找指定模板Id的第一个对象。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="parent"></param>
+        /// <param name="templateId"></param>
+        /// <param name="msg"></param>
+        /// <returns>找到的第一个对象，null没有找到，msg给出提示信息。</returns>
+        public static GameItem FindFirstOrDefault(this GameItemManager manager, IEnumerable<GameItem> parent, Guid templateId, out string msg)
+        {
+            var result = parent.FirstOrDefault(c => c.TemplateId == templateId);
+            if (result is null)
+                msg = $"找不到指定模板Id的物品，TemplateId={templateId}";
+            else
+                msg = null;
+            return result;
+        }
+
+    }
 }

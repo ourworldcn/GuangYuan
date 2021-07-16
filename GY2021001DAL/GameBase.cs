@@ -242,13 +242,21 @@ namespace GY2021001DAL
         #region 事件及相关
         protected virtual void OnSaving(EventArgs e)
         {
-            foreach (var item in Name2FastChangingProperty)
+            try
             {
-                FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
+                Saving?.Invoke(this, e);
             }
-            PropertiesString = OwHelper.ToPropertiesString(Properties);
-
+            finally
+            {
+                foreach (var item in Name2FastChangingProperty)
+                {
+                    FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
+                }
+                PropertiesString = OwHelper.ToPropertiesString(Properties);
+            }
         }
+
+        public event EventHandler Saving;
 
         /// <summary>
         /// 通知该实例，即将保存到数据库。
