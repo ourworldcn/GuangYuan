@@ -212,7 +212,7 @@ namespace GY2021001BLL
                     {
                         Trace.WriteLine($"保存数据时出现未知错误{err.Message}");
                         //var coll = OwHelper.GetAllSubItemsOfTree(item.CurrentChar.GameItems, c => c.Children);
-                        //var coll2 = coll.Where(c => c.Id == Guid.Empty).ToArray();
+                        //var coll2 = coll.Where(c => c.Number == Guid.Empty).ToArray();
                     }
                 }
                 try
@@ -598,7 +598,7 @@ namespace GY2021001BLL
                     catch (Exception err)
                     {
                         var logger = Services.GetService<ILogger<GameChar>>();
-                        logger?.LogError("保存用户(Id={Id})信息时发生错误。——{err}", gu.Id, err);
+                        logger?.LogError("保存用户(Number={Number})信息时发生错误。——{err}", gu.Id, err);
                     }
                     gu.Dispose();
                     _Token2User.TryRemove(token, out _);

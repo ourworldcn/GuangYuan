@@ -2,6 +2,7 @@ using GY2021001BLL;
 using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -66,17 +67,20 @@ namespace Gy001
             using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+                var logger = host.Services.GetService<ILogger<Program>>();
+
                 try
                 {
                     var tContext = services.GetRequiredService<GameTemplateContext>();
                     TemplateMigrateDbInitializer.Initialize(tContext);
+                    logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={tContext.Database.GetDbConnection().ConnectionString}");
                     var context = services.GetRequiredService<GY2021001DbContext>();
                     MigrateDbInitializer.Initialize(context);
+                    logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={context.Database.GetDbConnection().ConnectionString}");
                 }
                 catch (Exception ex)
                 {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred creating the DB.");
+                    logger.LogError(ex, "An error occurred creating the DB——{err.Message}");
                 }
             }
         }

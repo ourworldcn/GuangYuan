@@ -227,7 +227,7 @@ namespace GY2021001BLL
             var result = Task.Factory.StartNew(c =>
             {
                 //CreateDb((IServiceProvider)c);
-                Task.Run(() => LoadCache());
+                //Task.Run(() => LoadCache());
             }, _Services, cancellationToken);
             return result;
         }
@@ -242,24 +242,37 @@ namespace GY2021001BLL
         /// </summary>
         private void LoadCache()
         {
-            var gitm = _Services.GetService<GameItemTemplateManager>();
+            var logger = _Services.GetService<ILogger<GameItemTemplateManager>>();
+            try
+            {
+                var gitm = _Services.GetService<GameItemTemplateManager>();
+                var templates = gitm.Id2Template;
+                logger?.LogInformation($"{DateTime.UtcNow:s}服务已上线，初始化加载{templates.Count}个模板数据进行缓存。");
+            }
+            catch (Exception err)
+            {
+                logger?.LogError($"{DateTime.UtcNow:s}初始化发生异常{err.Message}", err);
+            }
             var bptm = _Services.GetService<BlueprintManager>();
             var test = _Services.GetService<GamePropertyHelper>();
         }
 
         private void CreateDb(IServiceProvider services)
         {
+            var logger = services.GetRequiredService<ILogger<GameHostedService>>();
             try
             {
                 var tContext = services.GetRequiredService<GameTemplateContext>();
                 TemplateMigrateDbInitializer.Initialize(tContext);
+                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={tContext.Database.GetDbConnection().ConnectionString}");
+
                 var context = services.GetRequiredService<GY2021001DbContext>();
                 MigrateDbInitializer.Initialize(context);
+                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={context.Database.GetDbConnection().ConnectionString}");
             }
-            catch (Exception ex)
+            catch (Exception err)
             {
-                var logger = services.GetRequiredService<ILogger<GameHostedService>>();
-                logger.LogError(ex, "An error occurred creating the DB.");
+                logger.LogError(err, $"An error occurred creating the DB.{err.Message}");
             }
         }
 

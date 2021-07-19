@@ -140,9 +140,8 @@ namespace GY2021001WebApi.Controllers
             }
         }
 
-#if DEBUG
         /// <summary>
-        /// 快速注册一个新账号并登录。仅调试状态才有接口。
+        /// 快速注册一个新账号并登录。
         /// </summary>
         /// <returns></returns>
         /// <response code="400">意外错误。</response>
@@ -171,7 +170,6 @@ namespace GY2021001WebApi.Controllers
                 return base.BadRequest(err.Message);
             }
         }
-#endif //DEBUG
     }
 
 }

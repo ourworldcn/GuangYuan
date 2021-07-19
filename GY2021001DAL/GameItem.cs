@@ -160,6 +160,16 @@ namespace GY2021001DAL
             }
             return succ;
         }
+
+        /// <summary>
+        /// 试图转换为<see cref="GameItemTemplate"/>,如果不能转化则返回null。
+        /// </summary>
+        [NotMapped]
+        public GameItemTemplate ItemTemplate
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Template as GameItemTemplate;
+        }
     }
 
     /// <summary>

@@ -327,7 +327,7 @@ namespace GY2021001WebApi.Models
             var result = new HomelandFengge()
             {
                 ClientString = obj.ClientString,
-                Id = obj.Id,
+                Number = obj.Id,
             };
             result.Fangans.AddRange(obj.Fangans.Select(c => (HomelandFangan)c));
             return result;
@@ -338,7 +338,7 @@ namespace GY2021001WebApi.Models
             var result = new HomelandFenggeDto()
             {
                 ClientString = obj.ClientString,
-                Id = obj.Id,
+                Id = obj.Number,
             };
             result.Fangans.AddRange(obj.Fangans.Select(c => (HomelandFanganDto)c));
             return result;
@@ -403,5 +403,12 @@ namespace GY2021001WebApi.Models
 
     }
 
+    public partial class ApplyHomelandStyleParamsDto : TokenDtoBase
+    {
+    }
+
+    public partial class ApplyHomelandStyleReturnDto : ReturnDtoBase
+    {
+    }
     #endregion 家园相关
 }

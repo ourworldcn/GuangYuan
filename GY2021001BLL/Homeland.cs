@@ -29,12 +29,12 @@ namespace GY2021001BLL.Homeland
         /// <summary>
         /// 风格号。
         /// </summary>
-        public int Id { get; set; }
+        public int Number { get; set; }
 
         /// <summary>
         /// 下属方案对象集合。
         /// </summary>
-        public List<HomelandFangan> Fangans { get; } = new List<HomelandFangan>();
+        public List<HomelandFangan> Fangans { get; set; } = new List<HomelandFangan>();
 
         /// <summary>
         /// 客户端记录一些额外信息。服务器不使用。
@@ -56,12 +56,12 @@ namespace GY2021001BLL.Homeland
         /// <summary>
         /// 唯一Id，暂时无用，但一旦生成则保持不变。
         /// </summary>
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = new Guid();
 
         /// <summary>
         /// 下属具体加载物品及其位置信息
         /// </summary>
-        public List<HomelandFanganItem> FanganItems { get; } = new List<HomelandFanganItem>();
+        public List<HomelandFanganItem> FanganItems { get; set; } = new List<HomelandFanganItem>();
 
         /// <summary>
         /// 该方案是否被激活。
@@ -88,7 +88,7 @@ namespace GY2021001BLL.Homeland
         /// <summary>
         /// 要加入 ContainerId 指出容器的子对象Id。
         /// </summary>
-        public List<Guid> ItemIds { get; } = new List<Guid>();
+        public List<Guid> ItemIds { get; set; } = new List<Guid>();
 
         /// <summary>
         /// 容器的Id。
@@ -259,25 +259,90 @@ namespace GY2021001BLL.Homeland
         static public int GetDikuaiIndex(this GameItem gameItem) => (gameItem.Template as GameItemTemplate)?.GetDikuaiIndex() ?? -1;
 
         /// <summary>
-        /// 获取模板的风格号，如果没有风格号则返回-1。
+        /// 获取模板的风格号，如果不是风格则返回-1。
         /// </summary>
         /// <param name="gameItem"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int GetFenggeNumber(this GameItem gameItem) => (gameItem.Template as GameItemTemplate)?.GetFenggeNumber() ?? -1;
 
-        static public void GetCurrentFengge(this GameChar gameChar, List<HomelandFanganItem> fanganItems)
+        /// <summary>
+        /// 获取角色当前的风格号。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int GetCurrentFenggeNumber(this GameChar gameChar) =>
+            gameChar.GetHomeland().Children.FirstOrDefault(c => c.GetDikuaiIndex() == 0)?.GetFenggeNumber() ?? -1;
+
+        /// <summary>
+        /// 合并风格对象。
+        /// </summary>
+        /// <param name="gameChar">角色对象。</param>
+        /// <param name="fenggeItems">自动添加数据，和免费风格。</param>
+        /// <param name="manager">模板管理器。</param>
+        static public void MergeFangans(this GameChar gameChar, List<HomelandFengge> fenggeItems, GameItemTemplateManager manager)
         {
             var hl = gameChar.GetHomeland();
 
-            var tmp = new HomelandFanganItem()
+            var numbers = manager.GetFenggeNumbersWithFree().Union(fenggeItems.Select(c => c.Number));    //当前有的风格号及免费送的风格号
+            foreach (var number in numbers.ToArray()) //遍历每个风格号
             {
-                ContainerId = hl.Id,
-            };
-            var mb = gameChar.GetMainbase();
-            var mbTemplate = mb.Template as GameItemTemplate;
-            var result = new HomelandFengge() { Id = mbTemplate.GetFenggeNumber() };
+                var fengge = fenggeItems.FirstOrDefault(c => c.Number == number);   //获取风格对象
+                if (fengge is null)  //若没有风格对象
+                {
+                    fengge = new HomelandFengge()
+                    {
+                        Number = number,
+                    };
+                    fenggeItems.Add(fengge);
+                }
+                while (fengge.Fangans.Count < 2)   //若方案不足
+                {
+                    var fangan = new HomelandFangan();
+                    fengge.Fangans.Add(fangan);
+                }
+                foreach (var fangan in fengge.Fangans)  //遍历方案
+                {
+                    fangan.FanganItems.MergeContainer(hl, number, manager); //合并方案项
+                }
+            }
         }
+
+        /// <summary>
+        /// 追加或合并一个物品的信息到一组方案项中。
+        /// </summary>
+        /// <param name="obj">要合并的集合。</param>
+        /// <param name="gameItem">顶层物品。</param>
+        /// <param name="fenggeNumber">指定风格号。</param>
+        /// <param name="manager">模板管理器。</param>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        static public void MergeContainer(this ICollection<HomelandFanganItem> obj, GameItem gameItem, int fenggeNumber, GameItemTemplateManager manager)
+        {
+            var dikuaiNumber = gameItem.GetDikuaiIndex();   //指定物品的地块索引
+            var item = obj.FirstOrDefault(c => c.ContainerId == gameItem.Id);   //获得此项在方案项中的对象
+            if (item is null)    //若需要加入
+            {
+                item = new HomelandFanganItem()
+                {
+                    ContainerId = gameItem.Id,
+                };
+                obj.Add(item);
+            }
+            if (dikuaiNumber >= 0)   //若是地块
+                item.NewTemplateId = manager.GetAllDikuai()[(fenggeNumber, dikuaiNumber)].Id;
+            else if (gameItem.GetCatalogNumber() == 42)  //若是旗帜
+            {
+                item.NewTemplateId ??= gameItem.TemplateId;
+            }
+            foreach (var child in gameItem.Children)    //遍历加入子项
+            {
+                if (!item.ItemIds.Contains(child.Id))    //若无此子项Id
+                    item.ItemIds.Add(child.Id);
+                obj.MergeContainer(child, fenggeNumber, manager);   //递归加入
+            }
+        }
+
         #endregion 基础功能
 
         /// <summary>
@@ -294,7 +359,7 @@ namespace GY2021001BLL.Homeland
             {
                 //var hpb = gameChar.AllChildren.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId); //家园方案背包
                 //var coll = from nPlan in plans
-                //           join oPlan in hpb.Children on nPlan.Id equals oPlan.Id
+                //           join oPlan in hpb.Children on nPlan.Number equals oPlan.Number
                 //           select (NewPlan: nPlan, OldPlan: oPlan);
                 //foreach (var item in coll)
                 //{
@@ -330,7 +395,7 @@ namespace GY2021001BLL.Homeland
                 //    HomelandFengge tmp;
                 //    if (hpo is null || string.IsNullOrWhiteSpace(hpo.Text)) //若未初始化
                 //    {
-                //        tmp = new HomelandFengge() { Id = item.Id, ClientString = item.ClientGutsString };
+                //        tmp = new HomelandFengge() { Number = item.Number, ClientString = item.ClientGutsString };
                 //    }
                 //    else
                 //    {
@@ -357,66 +422,6 @@ namespace GY2021001BLL.Homeland
         public static IEnumerable<int> GetFenggeNumbersWithFree(this GameItemTemplateManager manager) =>
            manager.GetAllDikuai().Where(c => c.Value.CatalogNumber == 100 && c.Value.IsFree()) //免费的
                 .Select(c => c.Value.GetFenggeNumber()).Distinct();
-
-        /// <summary>
-        /// 获取指定风格号的风格对象。
-        /// </summary>
-        /// <param name="gameChar">根据当前解锁的地块生成方案对象。</param>
-        /// <param name="fenggeNumber">方案号。</param>
-        /// <param name="services">用到的服务容器。</param>
-        /// <returns></returns>
-        public static List<HomelandFengge> GetFenggeObject(this GameChar gameChar, int fenggeNumber, List<HomelandFengge> fengges, IServiceProvider services)
-        {
-            if (gameChar is null)
-                throw new ArgumentNullException(nameof(gameChar));
-
-            if (services is null)
-                throw new ArgumentNullException(nameof(services));
-
-            var gitm = services.GetService<GameItemTemplateManager>();
-            var gim = services.GetService<GameItemManager>();
-
-            var result = gameChar.GetFengges();
-            if (0 == result.Count) //若需要初始化
-            {
-                var numbers = gitm.GetFenggeNumbersWithFree();  //所有免费风格号
-                foreach (var number in numbers)
-                {
-                    var mbTemplate = gitm.GetTemplateByNumberAndIndex(number, 0); //唯一的主基地模板
-                    var fengge = new HomelandFengge() { Id = number };
-                    for (int i = 0; i < 3; i++) //三个方案
-                    {
-                        var fangan = new HomelandFangan()
-                        {
-                            Id = Guid.NewGuid(),
-                        };
-                        var fanganItme = new HomelandFanganItem()
-                        {
-                            ContainerId = gameChar.GetHomeland().Id,
-                        };
-
-                        fengge.Fangans.Add(fangan);
-                    }
-
-                }
-
-            }
-            var coll = gitm.GetTemplatesByFenggeNumber(fenggeNumber).ToArray(); //该风格的所有相关模板
-            for (int i = 0; i < 2; i++) //方案
-            {
-                HomelandFangan fangan = new HomelandFangan()    //方案
-                {
-                    Id = Guid.NewGuid(),
-                };
-                foreach (var item in coll)    //方案项
-                {
-
-                }
-                //result.Fangans.Add(fangan);
-            }
-            return result;
-        }
-
 
         static public void AddFengge(this GameChar gameChar, HomelandFengge fengge, int dikuaiIndex, IServiceProvider services)
         {

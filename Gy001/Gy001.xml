@@ -50,7 +50,7 @@
         </member>
         <member name="M:GY2021001WebApi.Controllers.AccountController.QuicklyRegisterAndLogin">
             <summary>
-            快速注册一个新账号并登录。仅调试状态才有接口。
+            快速注册一个新账号并登录。
             </summary>
             <returns></returns>
             <response code="400">意外错误。</response>
@@ -164,7 +164,7 @@
             <returns>参见 GetChangesItemReturnDto 说明。</returns>
             <response code="401">令牌错误。</response>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetHomelandPlan(GY2021001WebApi.Models.GetHomelandFenggeParamsDto)">
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetHomelandStyle(GY2021001WebApi.Models.GetHomelandFenggeParamsDto)">
             <summary>
             获取家园方案。
             此接口不重置下线计时器。
@@ -173,13 +173,20 @@
             <returns>建立账号后第一次返回的所有方案中，除了Id是有效的其他属性是空或空集合。</returns>
             <response code="401">令牌错误。</response>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.GameCharController.SetHomelandPlan(GY2021001WebApi.Models.SetHomelandFenggeParamsDto)">
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.SetHomelandStyle(GY2021001WebApi.Models.SetHomelandFenggeParamsDto)">
             <summary>
             设置家园方案。
             </summary>
             <param name="model"></param>
             <returns>如果有错大概率是不认识的Id。</returns>
             <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.ApplyHomelandStyle(GY2021001WebApi.Models.ApplyHomelandStyleParamsDto)">
+            <summary>
+            应用
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
             <summary>
@@ -654,6 +661,21 @@
         <member name="P:GY2021001WebApi.Models.HomelandFanganItemDto.ClientString">
             <summary>
             客户端记录一些额外信息。服务器不使用。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ApplyHomelandStyleParamsDto">
+            <summary>
+             ApplyHomelandStyle 接口用的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyHomelandStyleParamsDto.FenggeNumber">
+            <summary>
+            要应用的方案号。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ApplyHomelandStyleReturnDto">
+            <summary>
+             ApplyHomelandStyle 接口返回值封装类。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
@@ -1243,7 +1265,7 @@
         </member>
         <member name="T:GY2021001WebApi.Models.SetHomelandFenggeParamsDto">
             <summary>
-            SetHomelandPlan 接口使用的参数类。
+            SetHomelandStyle 接口使用的参数类。
             </summary>
         </member>
         <member name="M:GY2021001WebApi.Models.SetHomelandFenggeParamsDto.#ctor">
@@ -1258,7 +1280,7 @@
         </member>
         <member name="T:GY2021001WebApi.Models.SetHomelandFenggeReturnDto">
             <summary>
-            SetHomelandPlan 接口返回数据的封装类。
+            SetHomelandStyle 接口返回数据的封装类。
             </summary>
         </member>
         <member name="M:GY2021001WebApi.Models.SetHomelandFenggeReturnDto.#ctor">
@@ -1268,7 +1290,7 @@
         </member>
         <member name="T:GY2021001WebApi.Models.GetHomelandFenggeParamsDto">
             <summary>
-            GetHomelandPlan 接口使用的参数类。
+            GetHomelandStyle 接口使用的参数类。
             </summary>
         </member>
         <member name="M:GY2021001WebApi.Models.GetHomelandFenggeParamsDto.#ctor">
@@ -1278,7 +1300,7 @@
         </member>
         <member name="T:GY2021001WebApi.Models.GetHomelandFenggeReturnDto">
             <summary>
-            GetHomelandPlan 接口返回数据的封装类。
+            GetHomelandStyle 接口返回数据的封装类。
             </summary>
         </member>
         <member name="M:GY2021001WebApi.Models.GetHomelandFenggeReturnDto.#ctor">

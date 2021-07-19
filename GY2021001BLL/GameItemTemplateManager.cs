@@ -70,45 +70,25 @@ namespace GY2021001BLL
             }
         }
 
-        private ConcurrentDictionary<Guid, GameItemTemplate> _Id2Template;
+        private Lazy<ConcurrentDictionary<Guid, GameItemTemplate>> _Id2Template;
 
         /// <summary>
         /// 所有模板的字典。键是模板Id,值是模板对象。
         /// </summary>
         public ConcurrentDictionary<Guid, GameItemTemplate> Id2Template
         {
-            get
-            {
-                _InitializeTask.Wait();
-                return _Id2Template;
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _Id2Template.Value;
         }
-
         #endregion 属性及相关
 
-        private Task _InitializeTask;
         private void Initialize()
         {
-            _InitializeTask = Task.Factory.StartNew(() =>
+            _Id2Template = new Lazy<ConcurrentDictionary<Guid, GameItemTemplate>>(() =>
             {
-                try
-                {
-                    var db = TemplateContext;
-                    //追加数据
-                    #region 追加模板数据
-                    //db.ItemTemplates.Load();
-                    //bool dbDirty = Options?.Loaded?.Invoke(db) ?? false;
-                    //if (dbDirty)
-                    //    db.SaveChanges();
-                    _Id2Template = new ConcurrentDictionary<Guid, GameItemTemplate>(db.ItemTemplates.AsNoTracking().ToDictionary(c => c.Id));
-                    #endregion 追加模板数据
-
-                }
-                catch (Exception err)
-                {
-                    Trace.WriteLine(err.Message);
-                }
-            }, TaskCreationOptions.LongRunning);
+                var db = TemplateContext;
+                return new ConcurrentDictionary<Guid, GameItemTemplate>(db.ItemTemplates.AsNoTracking().ToDictionary(c => c.Id));
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         /// <summary>
@@ -117,22 +97,15 @@ namespace GY2021001BLL
         /// <param name="id"></param>
         /// <returns>没有找到则返回null</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public GameItemTemplate GetTemplateFromeId(Guid id)
-        {
-            _InitializeTask.Wait();
-            return _Id2Template.GetValueOrDefault(id, null);
-        }
+        public GameItemTemplate GetTemplateFromeId(Guid id) => Id2Template.GetValueOrDefault(id, null);
 
         /// <summary>
         /// 获取符合条件的一组模板。
         /// </summary>
         /// <param name="conditional"></param>
         /// <returns></returns>
-        public IEnumerable<GameItemTemplate> GetTemplates(Func<GameItemTemplate, bool> conditional)
-        {
-            _InitializeTask.Wait();
-            return _Id2Template.Values.Where(c => conditional(c));
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public IEnumerable<GameItemTemplate> GetTemplates(Func<GameItemTemplate, bool> conditional) => Id2Template.Values.Where(c => conditional(c));
 
         /// <summary>
         /// 获取指定名字序列属性的索引属性名，如果没有找到则考虑使用lv。

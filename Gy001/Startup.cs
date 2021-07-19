@@ -86,7 +86,7 @@ namespace Gy001
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "光元001",
+                    Title = $"光元001",
                     Description = "接口文档v1.1.2"
                 });
                 // 为 Swagger 设置xml文档注释路径
@@ -148,7 +148,7 @@ namespace Gy001
             //启用中间件服务生成SwaggerUI，指定Swagger JSON终结点
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", env.EnvironmentName + " V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", env.EnvironmentName + $" V1({env.EnvironmentName})");
                 c.RoutePrefix = string.Empty;//设置根节点访问
             });
             #endregion 启用中间件服务生成Swagger

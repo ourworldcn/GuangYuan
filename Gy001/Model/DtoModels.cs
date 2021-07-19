@@ -1329,7 +1329,7 @@ namespace GY2021001WebApi.Models
     #region 家园建设方案
 
     /// <summary>
-    /// SetHomelandPlan 接口使用的参数类。
+    /// SetHomelandStyle 接口使用的参数类。
     /// </summary>
     [DataContract]
     public class SetHomelandFenggeParamsDto : TokenDtoBase
@@ -1350,7 +1350,7 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// SetHomelandPlan 接口返回数据的封装类。
+    /// SetHomelandStyle 接口返回数据的封装类。
     /// </summary>
     [DataContract]
     public class SetHomelandFenggeReturnDto : ReturnDtoBase
@@ -1365,7 +1365,7 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// GetHomelandPlan 接口使用的参数类。
+    /// GetHomelandStyle 接口使用的参数类。
     /// </summary>
     [DataContract]
     public class GetHomelandFenggeParamsDto : TokenDtoBase
@@ -1380,7 +1380,7 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// GetHomelandPlan 接口返回数据的封装类。
+    /// GetHomelandStyle 接口返回数据的封装类。
     /// </summary>
     [DataContract]
     public class GetHomelandFenggeReturnDto : ReturnDtoBase
@@ -1506,6 +1506,27 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string ClientString { get; set; }
 
+    }
+
+    /// <summary>
+    ///  ApplyHomelandStyle 接口用的参数封装类。
+    /// </summary>
+    [DataContract]
+    public partial class ApplyHomelandStyleParamsDto: TokenDtoBase
+    {
+        /// <summary>
+        /// 要应用的方案号。
+        /// </summary>
+        [DataMember]
+        public int FenggeNumber { get; set; }
+    }
+
+    /// <summary>
+    ///  ApplyHomelandStyle 接口返回值封装类。
+    /// </summary>
+    [DataContract]
+    public partial class ApplyHomelandStyleReturnDto: ReturnDtoBase
+    {
     }
 
     #endregion 家园建设方案

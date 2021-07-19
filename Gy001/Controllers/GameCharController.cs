@@ -181,7 +181,7 @@ namespace GY2021001WebApi.Controllers
                 if (Guid.Empty != errItem)   //若找不到某个Id
                 {
                     result.HasError = true;
-                    result.DebugMessage = $"至少有一个对象无法找到，Id={errItem}";
+                    result.DebugMessage = $"至少有一个对象无法找到，Number={errItem}";
                 }
                 else
                 {
@@ -253,7 +253,7 @@ namespace GY2021001WebApi.Controllers
                 if (tmpGi != null)  //若有无效Id
                 {
                     result.HasError = true;
-                    result.DebugMessage = $"至少有一个坐骑Id无效:Id={tmpGi.Id}";
+                    result.DebugMessage = $"至少有一个坐骑Id无效:Number={tmpGi.Id}";
                 }
                 else
                 {
@@ -315,7 +315,7 @@ namespace GY2021001WebApi.Controllers
                 if (tmpGi.Id != Guid.Empty)
                 {
                     result.HasError = true;
-                    result.DebugMessage = $"至少有一个物品没有找到。Id={tmpGi.Id},PId={tmpGi.PId}";
+                    result.DebugMessage = $"至少有一个物品没有找到。Number={tmpGi.Id},PId={tmpGi.PId}";
                     return result;
                 }
                 try
@@ -461,7 +461,7 @@ namespace GY2021001WebApi.Controllers
         /// <returns>建立账号后第一次返回的所有方案中，除了Id是有效的其他属性是空或空集合。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPut]
-        public ActionResult<GetHomelandFenggeReturnDto> GetHomelandPlan(GetHomelandFenggeParamsDto model)
+        public ActionResult<GetHomelandFenggeReturnDto> GetHomelandStyle(GetHomelandFenggeParamsDto model)
         {
             var result = new GetHomelandFenggeReturnDto() { };
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
@@ -469,13 +469,16 @@ namespace GY2021001WebApi.Controllers
                 return Unauthorized("令牌无效");
             try
             {
+                var gitm = world.ItemTemplateManager;
                 var gc = gu.CurrentChar;
-                var plans = world.CharManager.GetHomelandPlans(gc);   //获取所有方案
-                result.Plans.AddRange(plans.Select(c => (HomelandFenggeDto)c));
+                var fengges = gc.GetFengges();
+                if (fengges.Count == 0) //若未初始化
+                    gc.MergeFangans(fengges, gitm);
+                result.Plans.AddRange(fengges.Select(c => (HomelandFenggeDto)c));
             }
             catch (Exception err)
             {
-                result.DebugMessage = err.Message;
+                result.DebugMessage = err.Message+err.StackTrace;
                 result.HasError = true;
             }
             finally
@@ -492,7 +495,7 @@ namespace GY2021001WebApi.Controllers
         /// <returns>如果有错大概率是不认识的Id。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPost]
-        public ActionResult<SetHomelandFenggeReturnDto> SetHomelandPlan(SetHomelandFenggeParamsDto model)
+        public ActionResult<SetHomelandFenggeReturnDto> SetHomelandStyle(SetHomelandFenggeParamsDto model)
         {
             var result = new SetHomelandFenggeReturnDto() { };
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
@@ -500,8 +503,21 @@ namespace GY2021001WebApi.Controllers
                 return Unauthorized("令牌无效");
             try
             {
-                var coll = model.Fengges.Select(c => (HomelandFengge)c);
-                world.CharManager.SetHomelandPlans(model.Fengges.Select(c => (HomelandFengge)c), gu.CurrentChar);
+                var gc = gu.CurrentChar;
+                var gitm = world.ItemTemplateManager;
+                var oldFengges = gc.GetFengges();
+                if (oldFengges.Count == 0) //若未初始化
+                    gc.MergeFangans(oldFengges, gitm);
+                var fengges = model.Fengges.Select(c => (HomelandFengge)c).ToArray();
+                for (int i = 0; i < fengges.Length; i++)
+                {
+                    var newFengge = fengges[i];
+                    var oldFengge = oldFengges.FirstOrDefault(c => c.Number == newFengge.Number);   //已有风格对象
+                    oldFengges.Remove(oldFengge);   //删除旧对象
+                    oldFengges.Add(newFengge);  //加入新对象
+                }
+                gc.MergeFangans(oldFengges, gitm);  //更新对象数据
+                world.CharManager.NotifyChange(gu);
             }
             catch (Exception err)
             {
@@ -514,6 +530,19 @@ namespace GY2021001WebApi.Controllers
             }
             return result;
         }
+
+        /// <summary>
+        /// 应用
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<ApplyHomelandStyleReturnDto> ApplyHomelandStyle(ApplyHomelandStyleParamsDto model)
+        {
+            var result = new ApplyHomelandStyleReturnDto();
+            return result;
+        }
     }
+
 }
 

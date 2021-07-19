@@ -951,7 +951,7 @@ namespace GY2021001BLL
                 else   //TO DO 致命问题，但目前不知道如何才会引发(大概率发生了死锁)，暂无解决方法
                 {
                     var logger = Services.GetService<ILogger<BlueprintManager>>();
-                    logger?.LogError($"长期无法锁定在线用户，Id={gu.Id}。");
+                    logger?.LogError($"长期无法锁定在线用户，Number={gu.Id}。");
                     return;
                 }
             try
@@ -1090,8 +1090,8 @@ namespace GY2021001BLL
                 datas.DebugMessage = "找不到要取出的物品。";
                 return;
             }
-            if (!datas.Verify(gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out var fcp), $"孵化物品没有冷却属性。Id = {gameItem.Id}")) return;
-            if (!datas.Verify(fcp.IsComplate, $"物品没有孵化完成。Id = {gameItem.Id}。")) //若未完成孵化
+            if (!datas.Verify(gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out var fcp), $"孵化物品没有冷却属性。Number = {gameItem.Id}")) return;
+            if (!datas.Verify(fcp.IsComplate, $"物品没有孵化完成。Number = {gameItem.Id}。")) //若未完成孵化
                 return;
             var slotZq = datas.GameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);   //坐骑背包
             var gim = World.ItemManager;
@@ -1248,7 +1248,7 @@ namespace GY2021001BLL
         {
             var gitm = World.ItemTemplateManager;
             var cTemplate = gitm.GetTemplateFromeId(containerTId);
-            if (datas.Verify(cTemplate != null, $"无法找到指定容器模板，Id = {containerTId}"))
+            if (datas.Verify(cTemplate != null, $"无法找到指定容器模板，Number = {containerTId}"))
                 return false;
             var container = gameItems.FirstOrDefault(c => c.TemplateId == containerTId);
             datas.Verify(container != null, $"无法找到指定模板Id的容器，模板Id = {containerTId}");
@@ -1318,7 +1318,7 @@ namespace GY2021001BLL
                 result = resultColl.FirstOrDefault();
             if (result is null)  //若没有找到
             {
-                obj.DebugMessage = $"无法找到物品。TId={templateId},Id={id}";
+                obj.DebugMessage = $"无法找到物品。TId={templateId},Number={id}";
                 obj.HasError = true;
                 if (templateId.HasValue)
                     obj.ErrorItemTIds.Add(templateId.Value);

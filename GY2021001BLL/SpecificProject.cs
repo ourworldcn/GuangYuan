@@ -6,6 +6,7 @@ using OwGame;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
@@ -606,4 +607,14 @@ namespace GY2021001BLL
         }
     }
 
+    public static class GameItemExtensions
+    {
+        /// <summary>
+        /// 类号。除了序列号以外的前6位(十进制)分类号。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>如果不能得到正确的模板对象则返回-1。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int GetCatalogNumber(this GameItem gameItem) => gameItem.ItemTemplate?.CatalogNumber ?? -1;
+    }
 }

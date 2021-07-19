@@ -126,7 +126,7 @@ namespace GY2021001BLL
             if (null == parent)
             {
                 result.Success = false;
-                result.ErrorMessage = $"无法找到父对象，Id={ParentTemplateId.Value}";
+                result.ErrorMessage = $"无法找到父对象，Number={ParentTemplateId.Value}";
             }
             return result;
         }

@@ -68,7 +68,7 @@ namespace GY2021001DAL
         /// <summary>
         /// 游戏服务器用通用属性记录表。
         /// </summary>
-        public DbSet<GameExtendProperty> GameExtendProperties { get; set; }
+        public DbSet<GameExtendProperty> ExtendProperties { get; set; }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
