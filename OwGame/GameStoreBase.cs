@@ -192,6 +192,13 @@ namespace OwGame
         }
 
         /// <summary>
+        /// 四舍五入取整。
+        /// </summary>
+        /// <param name="result"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int RoundWithAwayFromZero(decimal result) => (int)Math.Round(result, MidpointRounding.AwayFromZero);
+
+        /// <summary>
         /// 分割属性字符串。
         /// </summary>
         /// <param name="propStr">属性字符串。</param>

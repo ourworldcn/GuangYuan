@@ -73,6 +73,20 @@ namespace GY2021001BLL.Homeland
         /// </summary>
         public string ClientString { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<(Guid, Guid)> ToWorkItems()
+        {
+            foreach (var item in FanganItems)
+            {
+                foreach (var id in item.ItemIds)
+                {
+                    yield return (item.ContainerId, id);
+                }
+            }
+        }
     }
 
     /// <summary>

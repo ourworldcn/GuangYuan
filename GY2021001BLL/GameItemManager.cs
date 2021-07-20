@@ -1,4 +1,5 @@
-﻿using GY2021001DAL;
+﻿using GY2021001BLL.Homeland;
+using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -1063,6 +1064,25 @@ namespace GY2021001BLL
             return OwHelper.GetAllSubItemsOfTree(_, c => c.Children);
         }
 
+        public void ChangeTemplate(GameItem container, GameItemTemplate newContainer)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ActiveStyleDatas
+    {
+        public ActiveStyleDatas()
+        {
+        }
+
+        public HomelandFangan Fangan { get; set; }
+
+        public string Message { get; set; }
+        public bool HasError { get; set; }
+
+        public List<ChangesItem> ItemChanges { get; set; }
+        public GameChar GameChar { get; set; }
     }
 
     public static class GameItemManagerExtensions
@@ -1084,6 +1104,65 @@ namespace GY2021001BLL
                 msg = null;
             return result;
         }
+
+        /// <summary>
+        /// 可移动的物品GIds。
+        /// </summary>
+        static int[] moveableGIds = new int[] { 11, 40, 41 };
+
+        static public void ActiveStyle(this GameItemManager manager, ActiveStyleDatas datas)
+        {
+            var gcManager = manager.Services.GetRequiredService<GameCharManager>();
+            if (!gcManager.Lock(datas.GameChar.GameUser))
+            {
+                datas.HasError = true;
+                datas.Message = "无法锁定用户。";
+            }
+            try
+            {
+                var gitm = manager.Services.GetRequiredService<GameItemTemplateManager>();
+                var hl = datas.GameChar.GetHomeland();
+                var builderBag = hl.Children.First(c => c.TemplateId == ProjectConstant.HomelandBuilderBagTId);
+                var dic = datas.Fangan.FanganItems.SelectMany(c => c.ItemIds).Distinct().Join(hl.AllChildren, c => c, c => c.Id, (l, r) => r).ToDictionary(c => c.Id);
+                dic[hl.Id] = hl;    //包括家园
+                foreach (var item in datas.Fangan.FanganItems)
+                {
+                    var destParent = dic.GetValueOrDefault(item.ContainerId);
+                    if (destParent is null)  //若找不到目标容器
+                        continue;
+                    //将可移动物品收回包裹（除捕获竿）
+                    manager.MoveItems(destParent, c => c.GetCatalogNumber() != 11 && moveableGIds.Contains(c.GetCatalogNumber()), builderBag, datas.ItemChanges);
+                    //改变容器模板
+                    var container = dic.GetValueOrDefault(item.ContainerId);
+                    if (container is null)  //若找不到容器对象
+                        continue;
+                    if (item.NewTemplateId.HasValue) //若需要改变容器模板
+                    {
+                        var newContainer = gitm.GetTemplateFromeId(item.NewTemplateId.Value);
+                        manager.ChangeTemplate(container, newContainer);
+                    }
+                    foreach (var id in item.ItemIds)    //添加物品
+                    {
+                        var gameItem = dic.GetValueOrDefault(id);
+                        if (gameItem is null)   //若不是家园内物品
+                            continue;
+                        if (!moveableGIds.Contains(gameItem.GetCatalogNumber()))  //若不可移动
+                            continue;
+                        manager.MoveItems(manager.GetContainer(gameItem), c => c.Id == gameItem.Id, destParent, datas.ItemChanges);
+                    }
+                }
+            }
+            catch (Exception err)
+            {
+                datas.HasError = true;
+                datas.Message = err.Message;
+            }
+            finally
+            {
+                gcManager.Unlock(datas.GameChar.GameUser, true);
+            }
+        }
+
 
     }
 }

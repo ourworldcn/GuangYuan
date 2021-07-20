@@ -183,7 +183,7 @@
         </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.ApplyHomelandStyle(GY2021001WebApi.Models.ApplyHomelandStyleParamsDto)">
             <summary>
-            应用
+            应用指定方案。
             </summary>
             <param name="model"></param>
             <returns></returns>
@@ -668,7 +668,7 @@
              ApplyHomelandStyle 接口用的参数封装类。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.ApplyHomelandStyleParamsDto.FenggeNumber">
+        <member name="P:GY2021001WebApi.Models.ApplyHomelandStyleParamsDto.FanganId">
             <summary>
             要应用的方案号。
             </summary>

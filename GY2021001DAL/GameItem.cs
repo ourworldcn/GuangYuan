@@ -3,11 +3,8 @@ using OwGame;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json;
 
 namespace GY2021001DAL
 {
@@ -45,10 +42,10 @@ namespace GY2021001DAL
             {
                 //if (Name2FastChangingProperty.TryGetValue(nameof(Count), out var obj))
                 //{
-                //    var oldVal = obj.LastValue;
+                //    var currentVal = obj.LastValue;
                 //    obj.LastValue = value.Value;
                 //    obj.LastDateTime = DateTime.UtcNow;
-                //    if (oldVal < obj.MaxValue && obj.LastValue >= obj.MaxValue)  //若需要引发事件
+                //    if (currentVal < obj.MaxValue && obj.LastValue >= obj.MaxValue)  //若需要引发事件
                 //        ;// TO DO
                 //}
                 //else
@@ -91,7 +88,9 @@ namespace GY2021001DAL
                 {
                     yield return item;
                     foreach (var item2 in item.AllChildren)
+                    {
                         yield return item2;
+                    }
                 }
             }
         }
@@ -101,7 +100,7 @@ namespace GY2021001DAL
         /// </summary>
         public Guid? OwnerId { get; set; }
 
-        GameChar _GameChar;
+        private GameChar _GameChar;
         /// <summary>
         /// 获取或设置所属的角色对象。没有设置关系可能返回null。
         /// </summary>
@@ -111,7 +110,11 @@ namespace GY2021001DAL
             get
             {
                 GameItem tmp;
-                for (tmp = this; tmp != null && tmp._GameChar is null; tmp = tmp.Parent) ;
+                for (tmp = this; tmp != null && tmp._GameChar is null; tmp = tmp.Parent)
+                {
+                    ;
+                }
+
                 return tmp?._GameChar;
 
             }
@@ -133,7 +136,10 @@ namespace GY2021001DAL
         {
             var result = (Template as GameItemTemplate)?.DisplayName ?? (Template as GameItemTemplate)?.Remark;
             if (string.IsNullOrWhiteSpace(result))
+            {
                 return base.ToString();
+            }
+
             return $"{{{result},{Count}}}";
         }
 
@@ -170,6 +176,76 @@ namespace GY2021001DAL
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => Template as GameItemTemplate;
         }
+
+        /// <summary>
+        /// 获取指定属性的当前级别索引值。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>如果不是序列属性或索引属性值不是数值类型则返回-1。如果没有找到索引属性返回0。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetIndexPropertyValue(string name)
+        {
+            if (!Template.TryGetPropertyValue(name, out var tVal) || !(tVal is decimal[]))  //若不是序列属性
+                return -1;
+            var indexPName = Template.GetIndexPropertyName(name);   //其索引属性名
+            int result;
+            if (!TryGetPropertyValue(indexPName, out var resultObj))    //若没有找到索引属性的值
+                result = 0;
+            else //若找到索引属性
+                result = OwHelper.TryGetDecimal(resultObj, out var resultDec) ? OwHelper.RoundWithAwayFromZero(resultDec) : -1;
+            return result;
+        }
+
+        /// <summary>
+        /// 换新模板。
+        /// </summary>
+        /// <param name="template"></param>
+        public void ChangeTemplate(GameItemTemplate template)
+        {
+            var keysBoth = Properties.Keys.Intersect(template.Properties.Keys);
+            var keysNew = template.Properties.Keys.Except(keysBoth);
+            foreach (var key in keysNew)    //新属性
+            {
+                var newValue = template.GetPropertyValue(key);
+                if (newValue is decimal[] ary)   //若是一个序列属性
+                {
+                    var indexName = template.GetIndexPropertyName(key); //索引属性名
+                    if ((TryGetPropertyValue(indexName, out var indexObj) || template.TryGetPropertyValue(indexName, out indexObj)) &&
+                        OwHelper.TryGetDecimal(indexObj, out var index))
+                    {
+                        index = Math.Round(index, MidpointRounding.AwayFromZero);
+                        SetPropertyValue(key, ary[(int)index]);
+                    }
+                    else
+                        SetPropertyValue(key, ary[0]);
+                }
+                else
+                    SetPropertyValue(key, newValue);
+            }
+            foreach (var key in keysBoth)   //遍历两者皆有的属性
+            {
+                var currentVal = GetPropertyValueOrDefault(key);
+                var oldVal = Template.GetPropertyValue(key);    //模板值
+                if (oldVal is decimal[] ary && OwHelper.TryGetDecimal(currentVal, out var currentDec))   //若是一个序列属性
+                {
+                    var lv = GetIndexPropertyValue(key);    //当前等级
+                    var nVal = currentDec - ary[lv] + template.GetSequencePropertyValueOrDefault<decimal>(key, lv); //求新值
+                    SetPropertyValue(key, nVal);
+                }
+                else if (OwHelper.TryGetDecimal(currentVal, out var dec)) //若是一个数值属性
+                {
+                    OwHelper.TryGetDecimal(Template.GetPropertyValue(key, 0), out var nDec);    //当前模板中该属性
+                    OwHelper.TryGetDecimal(template.GetPropertyValue(key), out var tDec);
+                    var nVal = dec - nDec + tDec;
+                    SetPropertyValue(key, nVal);
+                }
+                else //其他类型属性
+                {
+                    SetPropertyValue(key, template.GetPropertyValue(key));
+                }
+            }
+        }
+
     }
 
     /// <summary>
@@ -185,7 +261,9 @@ namespace GY2021001DAL
         public static void Reduce(List<ChangesItem> changes)
         {
             if (changes is null)
+            {
                 throw new ArgumentNullException(nameof(changes));
+            }
             //合并容器
             var _ = from tmp in changes
                     group tmp by tmp.ContainerId into g
@@ -236,10 +314,15 @@ namespace GY2021001DAL
             {
                 var item = changes[i];
                 if (item.IsEmpty)
+                {
                     changes.RemoveAt(i);
+                }
             }
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
         public ChangesItem()
         {
 
@@ -249,11 +332,19 @@ namespace GY2021001DAL
         {
             ContainerId = containerId;
             if (null != adds)
+            {
                 Adds.AddRange(adds);
+            }
+
             if (null != removes)
+            {
                 Removes.AddRange(removes);
+            }
+
             if (null != changes)
+            {
                 Changes.AddRange(changes);
+            }
         }
 
         /// <summary>
@@ -266,13 +357,13 @@ namespace GY2021001DAL
         /// </summary>
         public Guid ContainerId { get; set; }
 
-        List<GameItem> _Adds;
+        private List<GameItem> _Adds;
         /// <summary>
         /// 增加的数据。
         /// </summary>
         public List<GameItem> Adds => _Adds ??= new List<GameItem>();
 
-        List<Guid> _Removes;
+        private List<Guid> _Removes;
 
         /// <summary>
         /// 删除的对象的唯一Id集合。
@@ -367,7 +458,9 @@ namespace GY2021001DAL
                 coll.Add(item);
             }
             for (int i = 0; i < items.Length; i++)
+            {
                 item.Adds.Add(items[i]);
+            }
         }
 
         /// <summary>
@@ -386,7 +479,9 @@ namespace GY2021001DAL
                 coll.Add(item);
             }
             for (int i = 0; i < items.Length; i++)
+            {
                 item.Removes.Add(items[i]);
+            }
         }
 
         /// <summary>
@@ -405,7 +500,9 @@ namespace GY2021001DAL
                 coll.Add(item);
             }
             for (int i = 0; i < items.Length; i++)
+            {
                 item.Changes.Add(items[i]);
+            }
         }
 
     }

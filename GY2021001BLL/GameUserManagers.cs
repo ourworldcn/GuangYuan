@@ -154,6 +154,11 @@ namespace GY2021001BLL
                             Monitor.Exit(item);
                         }
                     }
+                    catch (Exception err)
+                    {
+                        var logger = Services.GetRequiredService<ILogger<GameCharManager>>();
+                        logger.LogError($"{err.Message}{Environment.NewLine}@{err.StackTrace}");
+                    }
                     finally
                     {
                         Monitor.Exit(loginName);
@@ -600,11 +605,11 @@ namespace GY2021001BLL
                         var logger = Services.GetService<ILogger<GameChar>>();
                         logger?.LogError("保存用户(Number={Number})信息时发生错误。——{err}", gu.Id, err);
                     }
-                    gu.Dispose();
                     _Token2User.TryRemove(token, out _);
                     _LoginName2Token.TryRemove(loginName, out _);
                     _Id2GameChar.Remove(gu.CurrentChar.Id, out _); //去除角色Id
                     _LoginName.Remove(loginName, out _);    //去除登录名
+                    gu.Dispose();
                 }
             }
             return true;

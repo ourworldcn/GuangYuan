@@ -155,6 +155,11 @@ namespace GY2021001BLL
         public static readonly Guid HomelandPlanBagTId = new Guid("{366468d3-00d7-42ec-811d-8822fb0def42}");
 
         /// <summary>
+        /// 家园建筑背包模板Id。
+        /// </summary>
+        public static readonly Guid HomelandBuilderBagTId = new Guid("{312612a5-30dd-4e0a-a71d-5074397428fb}");
+
+        /// <summary>
         /// 家园方案对象的模板Id。
         /// </summary>
         public static readonly Guid HomelandPlanTId = new Guid("{5d374961-a072-4222-ab46-94d72dc394f7}");

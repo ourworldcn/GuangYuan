@@ -552,6 +552,7 @@ namespace GY2021001DAL
         static public decimal GetDecimalOrDefault(this GameThingBase @this, string propertyName, decimal defaultVal = decimal.Zero) =>
             !@this.TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec) ? defaultVal : dec;
 
+
     }
 
     /// <summary>

@@ -478,7 +478,7 @@ namespace GY2021001WebApi.Controllers
             }
             catch (Exception err)
             {
-                result.DebugMessage = err.Message+err.StackTrace;
+                result.DebugMessage = err.Message + err.StackTrace;
                 result.HasError = true;
             }
             finally
@@ -532,7 +532,7 @@ namespace GY2021001WebApi.Controllers
         }
 
         /// <summary>
-        /// 应用
+        /// 应用指定方案。
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -540,6 +540,35 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<ApplyHomelandStyleReturnDto> ApplyHomelandStyle(ApplyHomelandStyleParamsDto model)
         {
             var result = new ApplyHomelandStyleReturnDto();
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+                return Unauthorized("令牌无效");
+            try
+            {
+                var gc = gu.CurrentChar;
+                var gitm = world.ItemTemplateManager;
+                var lstFengge = gc.GetFengges();
+                var id = GameHelper.FromBase64String(model.FanganId);
+                var fangan = lstFengge.SelectMany(c=>c.Fangans).FirstOrDefault(c => c.Id == id);
+                var gim = world.ItemManager;
+                var datas = new ActiveStyleDatas()
+                {
+                    Fangan = fangan,
+                    GameChar=gc,
+                };
+                gim.ActiveStyle(datas);
+                result.DebugMessage = datas.Message;
+                result.HasError = datas.HasError;
+            }
+            catch (Exception err)
+            {
+                result.DebugMessage = err.Message;
+                result.HasError = true;
+            }
+            finally
+            {
+                world.CharManager.Unlock(gu, true);
+            }
             return result;
         }
     }

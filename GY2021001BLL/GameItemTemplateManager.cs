@@ -25,6 +25,8 @@ namespace GY2021001BLL
         /// 当模板加载后调用该委托。
         /// </summary>
         public Func<DbContext, bool> Loaded { get; set; }
+
+        public string TestString { get; set; }
     }
 
     public class GameItemTemplateManager : GameManagerBase<GameItemTemplateManagerOptions>

@@ -1,10 +1,11 @@
-﻿using OwGame;
+﻿/*物品对象
+ */
+using OwGame;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Gy2021001Template
 {
@@ -75,7 +76,7 @@ namespace Gy2021001Template
             set => _PropertiesString = value;
         }
 
-        Dictionary<string, object> _Properties;
+        private Dictionary<string, object> _Properties;
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
         /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
@@ -86,12 +87,17 @@ namespace Gy2021001Template
             get
             {
                 if (null == _Properties)
+                {
                     lock (this)
+                    {
                         if (null == _Properties)
                         {
                             _Properties = new Dictionary<string, object>();
                             OwHelper.AnalysePropertiesString(PropertiesString, _Properties);
                         }
+                    }
+                }
+
                 return _Properties;
             }
         }
@@ -114,14 +120,23 @@ namespace Gy2021001Template
             get
             {
                 if (null == _ChildrenTemplateIds)
+                {
                     lock (this)
+                    {
                         if (null == _ChildrenTemplateIds)
                         {
                             if (string.IsNullOrWhiteSpace(ChildrenTemplateIdString))
+                            {
                                 _ChildrenTemplateIds = new List<Guid>();
+                            }
                             else
+                            {
                                 _ChildrenTemplateIds = ChildrenTemplateIdString.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
+                            }
                         }
+                    }
+                }
+
                 return _ChildrenTemplateIds;
             }
         }
@@ -155,24 +170,6 @@ namespace Gy2021001Template
 
         #region 序列属性相关
 
-        /// <summary>
-        /// 获取指定名称指定级别的序列属性的值。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="level"></param>
-        /// <param name="result"></param>
-        /// <returns>true返回值，false,指定名称的属性不是序列属性，或指定级别超出限制。</returns>
-        public bool TryGetValueWithLevel<T>(string name, int level, out T result)
-        {
-            var ary = GetSequenceProperty<T>(name);
-            if (level < 0 || null == ary || level >= ary.Length)
-            {
-                result = default;
-                return false;
-            }
-            result = ary[level];
-            return true;
-        }
 
         /// <summary>
         /// 获取指定名称的属性的最大等级（基于0）.
@@ -182,15 +179,7 @@ namespace Gy2021001Template
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int? GetMaxLevel(string name) => (Properties.GetValueOrDefault(name) as Array)?.Length;
 
-        /// <summary>
-        /// 试图获取指定的序列属性的值。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns>序列属性（数组表示），null表示不存在指定名称的属性或其不是指定元素类型的序列属性。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T[] GetSequenceProperty<T>(string name) => Properties.GetValueOrDefault(name) as T[];
-
-        string[] _SequencePropertyNames;
+        private string[] _SequencePropertyNames;
         /// <summary>
         /// 获取所有序列属性名的数组。
         /// </summary>
@@ -200,11 +189,16 @@ namespace Gy2021001Template
             get
             {
                 if (null == _SequencePropertyNames)
+                {
                     lock (this)
+                    {
                         if (null == _SequencePropertyNames)
                         {
                             _SequencePropertyNames = Properties.Where(c => c.Value is Array).Select(c => c.Key).ToArray();
                         }
+                    }
+                }
+
                 return _SequencePropertyNames;
             }
         }
@@ -213,15 +207,13 @@ namespace Gy2021001Template
         /// 获取指定序列属性的索引属性名。
         /// 如果有lvXXX则返回，没有则一律返回 lv。
         /// </summary>
-        /// <param name="sequencePropertyNames"></param>
+        /// <param name="sequencePropertyName"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string GetIndexPropertyName(string sequencePropertyNames)
+        public string GetIndexPropertyName(string sequencePropertyName)
         {
-            string specName = LevelPrefix + sequencePropertyNames;
-            if (!Properties.TryGetValue(specName, out var indexObj) || !OwHelper.TryGetDecimal(indexObj, out _))
-                return specName;
-            return LevelPrefix;
+            string specName = LevelPrefix + sequencePropertyName;
+            return Properties.TryGetValue(specName, out var indexObj) && OwHelper.TryGetDecimal(indexObj, out _) ? specName : LevelPrefix;
         }
         #endregion 序列属性相关
 
@@ -237,4 +229,51 @@ namespace Gy2021001Template
         }
     }
 
+    static public class GameThingTemplateBaseExtensons
+    {
+        /// <summary>
+        /// 试图获取指定的序列属性的值。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>序列属性（数组表示），null表示不存在指定名称的属性或其不是指定元素类型的序列属性。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public T[] GetSequenceProperty<T>(this GameThingTemplateBase obj, string name) => obj.Properties.GetValueOrDefault(name) as T[];
+
+
+        /// <summary>
+        /// 获取指定名称和等级的序列属性的值。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        /// <param name="lv"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public T GetSequencePropertyValueOrDefault<T>(this GameThingTemplateBase obj, string name, int lv, T defaultVal = default)
+        {
+            var tmp = obj.GetSequenceProperty<T>(name);
+            return tmp is null ? defaultVal : tmp[lv];
+        }
+
+        /// <summary>
+        /// 获取指定名称指定级别的序列属性的值。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="level"></param>
+        /// <param name="result"></param>
+        /// <returns>true返回值，false,指定名称的属性不是序列属性，或指定级别超出限制。</returns>
+        static public bool TryGetValueWithLevel<T>(this GameThingTemplateBase obj, string name, int level, out T result)
+        {
+            var ary = obj.GetSequenceProperty<T>(name);
+            if (level < 0 || null == ary || level >= ary.Length)
+            {
+                result = default;
+                return false;
+            }
+            result = ary[level];
+            return true;
+        }
+
+    }
 }

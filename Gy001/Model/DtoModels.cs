@@ -1518,7 +1518,7 @@ namespace GY2021001WebApi.Models
         /// 要应用的方案号。
         /// </summary>
         [DataMember]
-        public int FenggeNumber { get; set; }
+        public string FanganId { get; set; }
     }
 
     /// <summary>
