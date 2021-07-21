@@ -1512,7 +1512,7 @@ namespace GY2021001WebApi.Models
     ///  ApplyHomelandStyle 接口用的参数封装类。
     /// </summary>
     [DataContract]
-    public partial class ApplyHomelandStyleParamsDto: TokenDtoBase
+    public partial class ApplyHomelandStyleParamsDto : TokenDtoBase
     {
         /// <summary>
         /// 要应用的方案号。
@@ -1525,7 +1525,7 @@ namespace GY2021001WebApi.Models
     ///  ApplyHomelandStyle 接口返回值封装类。
     /// </summary>
     [DataContract]
-    public partial class ApplyHomelandStyleReturnDto: ReturnDtoBase
+    public partial class ApplyHomelandStyleReturnDto : ReturnDtoBase
     {
     }
 

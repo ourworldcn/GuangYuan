@@ -1,4 +1,5 @@
-﻿using GY2021001DAL;
+﻿using GY2021001BLL.Homeland;
+using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,19 +7,10 @@ using Microsoft.Extensions.Logging;
 using OwGame;
 using OwGame.Expression;
 using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,32 +28,38 @@ namespace GY2021001BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override object GetValue(object obj, string propertyName, object defaultValue = null)
         {
-            var gameItem = obj as GameItem;
+            GameItem gameItem = obj as GameItem;
             if (null == gameItem)
+            {
                 return defaultValue;
+            }
+
             return _Manager.GetPropertyValue(gameItem, propertyName);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool SetValue(object obj, string propertyName, object val)
         {
-            var gameItem = obj as GameItem;
+            GameItem gameItem = obj as GameItem;
             if (null == gameItem)
+            {
                 return false;
+            }
+
             return _Manager.SetPropertyValue(gameItem, propertyName, val);
         }
     }
 
     public class BlueprintData
     {
-        IServiceProvider _Service;
+        private IServiceProvider _Service;
         private readonly BlueprintTemplate _Template;
 
         public IServiceProvider Service { get => _Service; set => _Service = value; }
 
         public BlueprintTemplate Template => _Template;
 
-        private List<FormulaData> _Formulas;
+        private readonly List<FormulaData> _Formulas;
         public List<FormulaData> Formulas { get => _Formulas; }
 
         public BlueprintData(IServiceProvider service, BlueprintTemplate template)
@@ -73,22 +71,33 @@ namespace GY2021001BLL
 
         public void Apply(ApplyBlueprintDatas datas)
         {
-            var world = Service.GetRequiredService<VWorld>();
-            var formus = Formulas.OrderBy(c => c.Template.OrderNumber).ToArray();
+            VWorld world = Service.GetRequiredService<VWorld>();
+            FormulaData[] formus = Formulas.OrderBy(c => c.Template.OrderNumber).ToArray();
 
-            foreach (var item in formus)    //执行所有公式
+            foreach (FormulaData item in formus)    //执行所有公式
             {
                 if (!item.IsMatched) //若不可用
+                {
                     continue;
-                if (!item.Template.ProbExpression.TryGetValue(item.RuntimeEnvironment, out var probObj) || !OwHelper.TryGetDecimal(probObj, out var prob))  //若无法得到命中概率
+                }
+
+                if (!item.Template.ProbExpression.TryGetValue(item.RuntimeEnvironment, out object probObj) || !OwHelper.TryGetDecimal(probObj, out decimal prob))  //若无法得到命中概率
+                {
                     continue;
+                }
+
                 if (!world.IsHit((double)prob)) //若未命中
+                {
                     continue;
+                }
+
                 if (item.Apply(datas))   //若执行蓝图成功
                 {
                     datas.FormulaIds.Add(item.Template.Id);
                     if (!item.Template.IsContinue)  //若无需继续
+                    {
                         break;
+                    }
                 }
             }
             ChangesItem.Reduce(datas.ChangesItem);
@@ -97,7 +106,7 @@ namespace GY2021001BLL
 
         public void Match(ApplyBlueprintDatas datas)
         {
-            foreach (var item in Formulas)
+            foreach (FormulaData item in Formulas)
             {
                 item.Match(datas);
             }
@@ -124,14 +133,14 @@ namespace GY2021001BLL
         /// <summary>
         /// 脚本的运行时环境。
         /// </summary>
-        GameExpressionRuntimeEnvironment _RuntimeEnvironment;
+        private GameExpressionRuntimeEnvironment _RuntimeEnvironment;
 
         /// <summary>
         /// 脚本的运行时环境。每个公式独立。
         /// </summary>
         public GameExpressionRuntimeEnvironment RuntimeEnvironment => _RuntimeEnvironment ??= new GameExpressionRuntimeEnvironment(Template?.CompileEnvironment);
 
-        private List<MaterialData> _Materials;
+        private readonly List<MaterialData> _Materials;
         public List<MaterialData> Materials { get => _Materials; }
 
         public bool IsMatched { get; set; }
@@ -143,27 +152,33 @@ namespace GY2021001BLL
         /// <returns></returns>
         public bool Match(ApplyBlueprintDatas datas)
         {
-            var tmpList = Materials.Where(c => !c.Template.IsNew) //排除新建物品
+            List<MaterialData> tmpList = Materials.Where(c => !c.Template.IsNew) //排除新建物品
                 .ToList();
-            var coll = datas.GameItems.Concat(OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children)).ToList();    //要遍历的所有物品，确保指定物品最先被匹配
+            List<GameItem> coll = datas.GameItems.Concat(OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children)).ToList();    //要遍历的所有物品，确保指定物品最先被匹配
             RuntimeEnvironment.StartScope();
             try
             {
                 while (tmpList.Count > 0)   //当还有未匹配的原料时
                 {
-                    var succ = false;
+                    bool succ = false;
                     for (int i = tmpList.Count - 1; i >= 0; i--)
                     {
-                        var item = tmpList[i];
+                        MaterialData item = tmpList[i];
                         if (item.Match(coll, out GameItem gameItem))
                         {
                             tmpList.RemoveAt(i);
-                            while (coll.Remove(gameItem)) ;
+                            while (coll.Remove(gameItem))
+                            {
+                                ;
+                            }
+
                             succ = true;
                         }
                     }
                     if (!succ)   //若本轮没有任何一个原料匹配上
+                    {
                         break;
+                    }
                 }
             }
             finally
@@ -235,7 +250,7 @@ namespace GY2021001BLL
             {
                 if (_CountIncrement is null)    //若尚未计算
                 {
-                    GetIncrement(out var min, out var max);
+                    GetIncrement(out decimal min, out decimal max);
                     _CountIncrement = (decimal)VWorld.WorldRandom.NextDouble() * (max - min) + min;
                 }
                 return _CountIncrement.Value;
@@ -251,12 +266,15 @@ namespace GY2021001BLL
             {
                 decimal result = decimal.Zero;
                 if (!Template.CountProbExpression.TryGetValue(Parent.RuntimeEnvironment, out var resultObj) || !OwHelper.TryGetDecimal(resultObj, out result))
+                {
                     Debug.Fail($"无法获取增量发生的概率。原料Id={Template.Id}({Template.Remark})");
+                }
+
                 return result;
             }
         }
 
-        decimal? _Min, _Max;
+        private decimal? _Min, _Max;
         /// <summary>
         /// 最小和最大的增量值。仅计算一次，后续调用返回缓存，避免多次计算随机数。
         /// </summary>
@@ -265,10 +283,10 @@ namespace GY2021001BLL
             if (_Min is null)
             {
                 Debug.Assert(_Max is null);
-                var env = Parent.RuntimeEnvironment;
-                bool succ = Template.TryGetLowerBound(env, out var lower);
+                GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
+                bool succ = Template.TryGetLowerBound(env, out decimal lower);
                 Debug.Assert(succ);
-                succ = Template.TryGetUpperBound(env, out var upper);
+                succ = Template.TryGetUpperBound(env, out decimal upper);
                 Debug.Assert(succ);
                 _Min = Math.Min(upper, lower);
                 _Max = Math.Max(upper, lower);
@@ -288,35 +306,49 @@ namespace GY2021001BLL
         {
             bool result = false;
             matchItem = null;
-            var coll = gameItems;
-            var env = Parent.RuntimeEnvironment;
+            IEnumerable<GameItem> coll = gameItems;
+            GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
             env.StartScope();
             try
             {
                 ConstGExpression constExpr;
-                var id = Template.Id.ToString();
-                if (env.Variables.TryGetValue(id, out var oRxpr))
+                string id = Template.Id.ToString();
+                if (env.Variables.TryGetValue(id, out GameExpressionBase oRxpr))
                 {
                     Debug.Assert(oRxpr is ConstGExpression);
                     constExpr = oRxpr as ConstGExpression;
                 }
                 else
-                    env.Variables[id] = constExpr = new ConstGExpression();
-                foreach (var item in coll)
                 {
-                    var _ = constExpr.SetValue(env, item);   //设置对象
+                    env.Variables[id] = constExpr = new ConstGExpression();
+                }
+
+                foreach (GameItem item in coll)
+                {
+                    bool _ = constExpr.SetValue(env, item);   //设置对象
                     Debug.Assert(_);
-                    if (!Template.ConditionalExpression.TryGetValue(env, out var matchObj) || !(matchObj is bool isMatth) || !isMatth) //若不符合条件
+                    if (!Template.ConditionalExpression.TryGetValue(env, out object matchObj) || !(matchObj is bool isMatth) || !isMatth) //若不符合条件
+                    {
                         continue;
-                    if (OwHelper.TryGetDecimal(Template.CountProbExpression.GetValueOrDefault(env, 0), out var countProp) && countProp > 0) //若概率可能大于0 TO DO
+                    }
+
+                    if (OwHelper.TryGetDecimal(Template.CountProbExpression.GetValueOrDefault(env, 0), out decimal countProp) && countProp > 0) //若概率可能大于0 TO DO
                     {
                         //校验数量
-                        if (OwHelper.TryGetDecimal(Template.CountLowerBoundExpression.GetValueOrDefault(env, 0), out var lower))
+                        if (OwHelper.TryGetDecimal(Template.CountLowerBoundExpression.GetValueOrDefault(env, 0), out decimal lower))
+                        {
                             ;
-                        if (OwHelper.TryGetDecimal(Template.CountUpperBoundExpression.GetValueOrDefault(env, 0), out var upper))
+                        }
+
+                        if (OwHelper.TryGetDecimal(Template.CountUpperBoundExpression.GetValueOrDefault(env, 0), out decimal upper))
+                        {
                             ;
+                        }
+
                         if (Math.Min(lower, upper) + (item.Count ?? 0) < 0) //若数量不够
+                        {
                             continue;
+                        }
                     }
                     matchItem = item;
                     result = true;
@@ -332,44 +364,66 @@ namespace GY2021001BLL
 
         public bool Apply(ApplyBlueprintDatas datas)
         {
-            var env = Parent.RuntimeEnvironment;
+            GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
             GameItem gameItem;
             GameItemManager gim;
             //获取该原料对象
-            if (!env.Variables.TryGetValue(Template.Id.ToString(), out var expr) || !expr.TryGetValue(env, out var obj) || !(obj is GameItem))
+            if (!env.Variables.TryGetValue(Template.Id.ToString(), out GameExpressionBase expr) || !expr.TryGetValue(env, out object obj) || !(obj is GameItem))
+            {
                 return false || Template.AllowEmpty;
+            }
             else
+            {
                 gameItem = obj as GameItem;
+            }
             //修改数量
-            if (!Template.CountProbExpression.TryGetValue(env, out var countPropObj) || !OwHelper.TryGetDecimal(countPropObj, out var prob)) //若无法获取概率
+            if (!Template.CountProbExpression.TryGetValue(env, out object countPropObj) || !OwHelper.TryGetDecimal(countPropObj, out decimal prob)) //若无法获取概率
+            {
                 return false;
-            var world = Parent.Parent.Service.GetRequiredService<VWorld>();
+            }
+
+            VWorld world = Parent.Parent.Service.GetRequiredService<VWorld>();
             gim = Parent.Parent.Service.GetService<GameItemManager>();
             decimal count = gameItem.Count.Value;
             if (world.IsHit((double)CountIncrementProb)) //若需要增量
             {
-                var inc = CountIncrement;
+                decimal inc = CountIncrement;
                 if (gameItem.Count + inc < 0)
+                {
                     return false;
+                }
+
                 count = inc + gameItem.Count.Value;
-                var _ = gim.SetPropertyValue(gameItem, "count", count);
+                bool _ = gim.SetPropertyValue(gameItem, "count", count);
                 Debug.Assert(_);
             }
             if (!Template.PropertiesChangesExpression.TryGetValue(env, out _))
+            {
                 return false;
+            }
+
             if (gameItem.Count.Value > 0) //若有剩余
+            {
                 if (Template.IsNew)
+                {
                     datas.ChangesItem.AddToAdds(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
+                }
                 else
+                {
                     datas.ChangesItem.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
+                }
+            }
             else //若没有剩余
+            {
                 datas.ChangesItem.AddToRemoves(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem.Id);
+            }
+
             return true;
         }
 
         private string GetDebuggerDisplay()
         {
-            var str1 = string.IsNullOrWhiteSpace(Template?.DisplayName) ? Template?.Remark : Template?.DisplayName;
+            string str1 = string.IsNullOrWhiteSpace(Template?.DisplayName) ? Template?.Remark : Template?.DisplayName;
             return $"{{{str1},Matched={GetMatched()}}}";
         }
 
@@ -380,10 +434,16 @@ namespace GY2021001BLL
         public object GetMatched()
         {
             if (null == Template)
+            {
                 return null;
-            var env = Parent.RuntimeEnvironment;
-            if (!env.TryGetVariableValue(Template.Id.ToString(), out var result))
+            }
+
+            GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
+            if (!env.TryGetVariableValue(Template.Id.ToString(), out object result))
+            {
                 return null;
+            }
+
             return result;
         }
 
@@ -393,10 +453,13 @@ namespace GY2021001BLL
         /// <returns></returns>
         public BinaryGExpression GetSetTIdExpr()
         {
-            var setTidExpr = (Template.PropertiesChangesExpression as BlockGExpression).Expressions.OfType<BinaryGExpression>().FirstOrDefault(c =>
+            BinaryGExpression setTidExpr = (Template.PropertiesChangesExpression as BlockGExpression).Expressions.OfType<BinaryGExpression>().FirstOrDefault(c =>
             {
                 if (c.Left is ReferenceGExpression refExpr && refExpr.Name == "tid" && refExpr.ObjectId == Template.Id.ToString() && c.Operator == "=")    //若是设置此条目的模板
+                {
                     return true;
+                }
+
                 return false;
             });
             return setTidExpr;
@@ -408,23 +471,28 @@ namespace GY2021001BLL
         /// <returns>true成功创建，false该项不是新建物品或无法找到指定模板Id。</returns>
         public bool CreateNewItem()
         {
-            var env = Parent.RuntimeEnvironment;
+            GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
 
-            var setTidExpr = GetSetTIdExpr();
-            if (null == setTidExpr || !setTidExpr.Right.TryGetValue(env, out var tidObj) || !OwHelper.TryGetGuid(tidObj, out var tid))
+            BinaryGExpression setTidExpr = GetSetTIdExpr();
+            if (null == setTidExpr || !setTidExpr.Right.TryGetValue(env, out object tidObj) || !OwHelper.TryGetGuid(tidObj, out Guid tid))
             {
                 //datas.DebugMessage = "未能找到新建物品的模板Id。";
                 //datas.HasError = true;
                 return false;
             }
-            var gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
-            var gameItem = gim.CreateGameItem(tid);
-            var keyName = Template.Id.ToString();
+            GameItemManager gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
+            GameItem gameItem = gim.CreateGameItem(tid);
+            string keyName = Template.Id.ToString();
             GameExpressionBase expr;
             if (env.Variables.TryGetValue(keyName, out expr) && expr is ConstGExpression)   //若已经存在该变量
+            {
                 return expr.SetValue(env, gameItem);
+            }
             else
+            {
                 env.Variables[keyName] = new ConstGExpression(gameItem);
+            }
+
             return true;
         }
     }
@@ -507,7 +575,7 @@ namespace GY2021001BLL
         /// </summary>
         public List<Guid> FormulaIds { get; } = new List<Guid>();
 
-        List<Guid> _ErrorItemTIds;
+        private List<Guid> _ErrorItemTIds;
 
         /// <summary>
         /// 获取或设置，出错虚拟物品的模板Id。具体意义根据不同蓝图区别。
@@ -551,6 +619,7 @@ namespace GY2021001BLL
         private void Initialize()
         {
             lock (ThisLocker)
+            {
                 _InitializeTask ??= Task.Run(() =>
                 {
                     _Id2BlueprintTemplate = Context.Set<BlueprintTemplate>().Include(c => c.FormulaTemplates).ThenInclude(c => c.BptfItemTemplates).ToDictionary(c => c.Id);
@@ -561,15 +630,16 @@ namespace GY2021001BLL
                                                         .Concat(_Id2BlueprintTemplate.Select(c => c.Value).OfType<GameThingTemplateBase>())
                                                         .ToDictionary(c => c.Id);
                 });
+            }
         }
 
-        Task _InitializeTask;
+        private Task _InitializeTask;
 
         private DbContext _DbContext;
 
         public DbContext Context { get => _DbContext ??= World.CreateNewTemplateDbContext(); }
 
-        Dictionary<Guid, BlueprintTemplate> _Id2BlueprintTemplate;
+        private Dictionary<Guid, BlueprintTemplate> _Id2BlueprintTemplate;
 
         /// <summary>
         /// 记录所有蓝图模板的字典，键是蓝图Id值是蓝图模板对象。
@@ -607,7 +677,7 @@ namespace GY2021001BLL
         private bool Dispatch(ApplyBlueprintDatas datas)
         {
             bool succ;
-            var idStr = datas.Blueprint.Id.ToString("D").ToLower();
+            string idStr = datas.Blueprint.Id.ToString("D").ToLower();
             try
             {
                 switch (idStr)
@@ -662,42 +732,65 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         private void Harvest(ApplyBlueprintDatas datas)
         {
-            if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。")) return;
-            var gameItem = datas.GameItems[0];  //收取的容器
-            var gameChar = datas.GameChar;
-            var hl = datas.Lookup(gameChar.GameItems, ProjectConstant.CharTemplateId, ProjectConstant.HomelandSlotId);    //家园
-            if (null == hl) return;
-            var mainBase = datas.Lookup(hl.Children, ProjectConstant.MainBaseSlotId); //主基地
-            if (null == mainBase) return;
-            if (gameItem.TemplateId == ProjectConstant.MucaishuTId)    //若收取木材
+            if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。"))
             {
-                var wood = datas.Lookup(gameChar.GameItems, ProjectConstant.CharTemplateId, ProjectConstant.MucaiId); //木材
-                if (null == wood) return;
-                var count = gameItem.Count.Value; //收取数量
-                var gim = Services.GetRequiredService<GameItemManager>();
-                var stc = gim.GetNumberOfStackRemainder(wood, out _);   //可堆叠数
-                count = Math.Min(count, stc);   //实际移走数量
-                wood.Count += count;
-                gameItem.Count -= count;
-                datas.ChangesItem.AddToChanges(wood.ContainerId.Value, wood);
-                datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
+                return;
             }
-            else if (gameItem.TemplateId == ProjectConstant.YumitianTId)   //若收取玉米地
+
+            GameItem gameItem = datas.GameItems[0];  //收取的容器
+            GameChar gameChar = datas.GameChar;
+            Guid destTId = gameItem.TemplateId switch //收纳对象模板Id
             {
-                var gold = datas.Lookup(gameChar.GameItems, ProjectConstant.CharTemplateId, ProjectConstant.JinbiId); //金币
-                if (null == gold) return;
-                var count = gameItem.Count;
-                gold.Count += count;
-                gameItem.Count -= count;
-                datas.ChangesItem.AddToChanges(gold.ContainerId.Value, gold);
-                datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
+                _ when gameItem.TemplateId == ProjectConstant.MucaishuTId => ProjectConstant.MucaiId,   //木材
+                _ when gameItem.TemplateId == ProjectConstant.YumitianTId => ProjectConstant.JinbiId, //玉米
+                _ => Guid.Empty,
+            };
+            GameItem hl = datas.Lookup(gameChar.GameItems, ProjectConstant.HomelandSlotId);    //家园
+            if (null == hl)
+            {
+                return;
+            }
+
+            GameItem mainBase = datas.Lookup(hl.Children, ProjectConstant.MainBaseSlotId); //主基地
+            if (mainBase is null)
+            {
+                return;
+            }
+
+            GameItem src = datas.Lookup(mainBase.Children, gameItem.TemplateId); //收获物
+            if (src is null)
+            {
+                return;
+            }
+
+            GameItem destItem = datas.Lookup(gameChar.GameItems, destTId);  //目标对象
+            if (destItem is null)
+            {
+                return;
+            }
+
+            if (!src.TryGetPropertyValueWithFcp("Count", DateTime.UtcNow, true, out object countObj, out DateTime dt) || !OwHelper.TryGetDecimal(countObj, out decimal count))
+            {
+                datas.DebugMessage = "未知原因无法获取收获数量。";
+                datas.HasError = true;
+                return;
+            }
+            GameItemManager gim = Services.GetRequiredService<GameItemManager>();
+            decimal stc = gim.GetNumberOfStackRemainder(src, out _);   //剩余可堆叠数
+            count = Math.Min(count, stc);   //实际移走数量
+            if (src.Name2FastChangingProperty.TryGetValue("Count", out FastChangingProperty fcp))    //若有快速变化属性
+            {
+                fcp.SetLastValue(fcp.LastValue - count, ref dt);
+                src.Count = fcp.LastValue;
             }
             else
             {
-                datas.ErrorItemTIds.Add(gameItem.TemplateId);
-                datas.DebugMessage = $"不认识的物品，TemplateId={gameItem.TemplateId}";
-                datas.HasError = true;
+                src.Count -= count;
             }
+
+            destItem.Count += count;
+            datas.ChangesItem.AddToChanges(src.ContainerId.Value, src);
+            datas.ChangesItem.AddToChanges(destItem.ContainerId.Value, destItem);
         }
 
         /// <summary>
@@ -708,58 +801,82 @@ namespace GY2021001BLL
         {
             Guid hlTid = ProjectConstant.HomelandSlotId; //家园Id
             Guid jianzhuBagTid = new Guid("{312612a5-30dd-4e0a-a71d-5074397428fb}");   //建筑背包tid
-            var hl = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == hlTid);   //家园对象
+            GameItem hl = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == hlTid);   //家园对象
             if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。"))
+            {
                 return;
-            var gameItem = hl.AllChildren.FirstOrDefault(c => c.Id == datas.GameItems[0].Id);   //要升级的物品
-            if (!datas.Verify(gameItem.ParentId.HasValue, "找不到父容器Id。"))
-                return;
-            var gim = World.ItemManager;
-            var template = gim.GetTemplateFromeId(gameItem.TemplateId); //物品的模板对象
-            if (!datas.Verify(OwHelper.TryGetDecimal(gameItem.GetPropertyValueOrDefault(ProjectConstant.LevelPropertyName, 0m), out var lvDec), "级别属性类型错误。"))
-                return;
+            }
 
-            var lv = (int)lvDec;    //原等级
+            GameItem gameItem = hl.AllChildren.FirstOrDefault(c => c.Id == datas.GameItems[0].Id);   //要升级的物品
+            if (!datas.Verify(gameItem.ParentId.HasValue, "找不到父容器Id。"))
+            {
+                return;
+            }
+
+            GameItemManager gim = World.ItemManager;
+            GameItemTemplate template = gim.GetTemplateFromeId(gameItem.TemplateId); //物品的模板对象
+            if (!datas.Verify(OwHelper.TryGetDecimal(gameItem.GetPropertyValueOrDefault(ProjectConstant.LevelPropertyName, 0m), out decimal lvDec), "级别属性类型错误。"))
+            {
+                return;
+            }
+
+            int lv = (int)lvDec;    //原等级
 
             #region 等级校验
             if (!datas.Verify(template.GetMaxLevel(template.SequencePropertyNames.FirstOrDefault()) > lv, "已达最大等级", gameItem.TemplateId))  //若已达最大等级
-                return;
-            if (template.TryGetPropertyValue("mbnlv", out var mbnlvObj) && OwHelper.TryGetDecimal(mbnlvObj, out var mbnlv))    //若需要根据主控室等级限定升级
             {
-                var mb = hl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);    //主控室
-                var mbLv = mb.GetDecimalOrDefault(GameThingTemplateBase.LevelPrefix, 0m); //当前主控室等级
+                return;
+            }
+
+            if (template.TryGetPropertyValue("mbnlv", out object mbnlvObj) && OwHelper.TryGetDecimal(mbnlvObj, out decimal mbnlv))    //若需要根据主控室等级限定升级
+            {
+                GameItem mb = hl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);    //主控室
+                decimal mbLv = mb.GetDecimalOrDefault(GameThingTemplateBase.LevelPrefix, 0m); //当前主控室等级
                 if (!datas.Verify(mbLv >= mbnlv, "主控室等级过低，不能升级指定物品。", gameItem.TemplateId))
+                {
                     return;
+                }
             }
             #endregion 等级校验
 
             #region 所需资源校验
 
             GameItem gold = null;
-            if (gameItem.TryGetDecimalPropertyValue("lug", out var lug)) //若需要金子
+            if (gameItem.TryGetDecimalPropertyValue("lug", out decimal lug)) //若需要金子
             {
                 gold = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.JinbiId);
                 if (!datas.Verify(gold.Count >= lug, $"需要{lug}金币，目前只有{gold.Count}金币。", gold.TemplateId))
+                {
                     return;
+                }
             }
             GameItem wood = null;
-            if (gameItem.TryGetDecimalPropertyValue("luw", out var luw)) //若需要木头
+            if (gameItem.TryGetDecimalPropertyValue("luw", out decimal luw)) //若需要木头
             {
                 wood = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaiId);
                 if (!datas.Verify(wood.Count >= luw, $"需要{luw}木材，目前只有{wood.Count}木材。", wood.TemplateId))
+                {
                     return;
+                }
             }
             #endregion 所需资源校验
 
             #region 冷却相关
-            var fcp = FastChangingPropertyExtensions.FromDictionary(gameItem.Properties, "upgradecd");
+            FastChangingProperty fcp = FastChangingPropertyExtensions.FromDictionary(gameItem.Properties, "upgradecd");
             if (fcp != null)
+            {
                 if (!datas.Verify(fcp.IsComplate, "虚拟物品还在升级中", gameItem.TemplateId))
+                {
                     return;
-            var time = gameItem.GetDecimalOrDefault("lut", -2); //冷却的秒数
-            var worker = datas.Lookup(hl.Children, ProjectConstant.WorkerOfHomelandTId);
+                }
+            }
+
+            decimal time = gameItem.GetDecimalOrDefault("lut", -2); //冷却的秒数
+            GameItem worker = datas.Lookup(hl.Children, ProjectConstant.WorkerOfHomelandTId);
             if (worker is null)
+            {
                 return;
+            }
             #endregion 冷却相关
 
             #region 修改属性
@@ -767,8 +884,11 @@ namespace GY2021001BLL
             if (time > 0) //若需要冷却
             {
                 if (!datas.Verify(gim.GetNumberOfStackRemainder(worker, out _) > 0, "所有建筑工人都在忙", worker.TemplateId))
+                {
                     return;
-                var fcpObj = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, time, 0, DateTime.UtcNow)
+                }
+
+                FastChangingProperty fcpObj = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, time, 0, DateTime.UtcNow)
                 {
                     Name = "upgradecd",
                     Tag = (datas.GameChar.Id, gameItem.Id),
@@ -777,7 +897,7 @@ namespace GY2021001BLL
                 DateTime dtComplate = fcpObj.ComputeComplateDateTime();   //预计完成时间
                 fcpObj.Completed += UpgradeCompleted;
                 //计算可能的完成时间
-                Timer timer = new Timer(UpgradeComplateCallback, (datas.GameChar.Id, gameItem.Id), dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.1), Timeout.InfiniteTimeSpan);
+                Timer timer = new Timer(UpgradeComplateCallback, (datas.GameChar.Id, gameItem.Id), dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.01), Timeout.InfiniteTimeSpan);
                 worker.Count++;
                 datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
             }
@@ -806,14 +926,21 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         private void HastenOnHomeland(ApplyBlueprintDatas datas)
         {
-            if (!datas.Verify(datas.GameItems.Count == 1, "只能加速一个物品")) return;
-            var gameItem = datas.GameItems[0];  //加速的物品
-            var hl = datas.Lookup(datas.GameChar.GameItems, ProjectConstant.HomelandSlotId);
+            if (!datas.Verify(datas.GameItems.Count == 1, "只能加速一个物品"))
+            {
+                return;
+            }
+
+            GameItem gameItem = datas.GameItems[0];  //加速的物品
+            GameItem hl = datas.Lookup(datas.GameChar.GameItems, ProjectConstant.HomelandSlotId);
             if (hl is null) return;
-            var worker = datas.Lookup(hl.Children, ProjectConstant.WorkerOfHomelandTId);
+
+            GameItem worker = datas.Lookup(hl.Children, ProjectConstant.WorkerOfHomelandTId);
             if (worker is null) return;
+
             if (!datas.Verify(worker.Count.HasValue && worker.Count > 0, "没有在升级的物品")) return;
-            if (!datas.Verify(gameItem.Name2FastChangingProperty.TryGetValue("upgradecd", out var fcp), "物品未进行升级"))
+
+            if (!datas.Verify(gameItem.Name2FastChangingProperty.TryGetValue("upgradecd", out FastChangingProperty fcp), "物品未进行升级"))
             {
                 datas.ErrorItemTIds.Add(gameItem.TemplateId);
                 return;
@@ -828,34 +955,38 @@ namespace GY2021001BLL
             }
             else //若未完成
             {
-                var dtComplate = fcp.ComputeComplateDateTime();
-                var tm = (decimal)(dtComplate - dt).TotalMinutes;
+                DateTime dtComplate = fcp.ComputeComplateDateTime();
+                decimal tm = (decimal)(dtComplate - dt).TotalMinutes;
 
-                var cost = tm switch //需要花费的钻石
+                decimal cost = tm switch //需要花费的钻石
                 {
                     _ when tm <= 5m => 0,
                     _ => Math.Ceiling(tm - 5),
                 };
                 if (cost > 0)   //若需要钻石
                 {
-                    var dim = datas.Lookup(datas.GameChar.GameItems, ProjectConstant.ZuanshiId);    //钻石
-                    if (dim is null)
-                        return;
+                    GameItem dim = datas.Lookup(datas.GameChar.GameItems, ProjectConstant.ZuanshiId);    //钻石
+                    if (dim is null) return;
+
                     if (!datas.Verify(dim.Count >= cost, $"需要{cost}钻石,但只有{dim.Count}钻石。"))
                     {
                         datas.ErrorItemTIds.Add(dim.TemplateId);
                         return;
                     }
-                    worker.Count--;
-                    datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
                     dim.Count -= cost;
-                    fcp.LastDateTime = dt;
-                    fcp.LastValue = fcp.MaxValue;
-                    fcp.InvokeOnCompleted(new CompletedEventArgs(dt));
-                    datas.ChangesItem.AddRange(LastChangesItems); //追加新建物品
-                    LastChangesItems.Clear();
                     datas.ChangesItem.AddToChanges(dim.ContainerId.Value, dim);
                 }
+                //工人
+                if (worker.Count > 0)
+                    worker.Count--;
+                datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
+                //修改快速变化属性
+                fcp.LastDateTime = dt;
+                fcp.LastValue = fcp.MaxValue;
+                fcp.InvokeOnCompleted(new CompletedEventArgs(dt));
+                //追加新建物品
+                datas.ChangesItem.AddRange(LastChangesItems); //追加新建物品
+                LastChangesItems.Clear();
                 gameItem.RemoveFastChangingProperty("upgradecd");
                 datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
             }
@@ -866,8 +997,11 @@ namespace GY2021001BLL
         #endregion 家园相关
 
         [ContextStatic]
-        static List<ChangesItem> _LastChangesItems;
+        private static List<ChangesItem> _LastChangesItems;
 
+        /// <summary>
+        /// 暂存自然cd得到的物品。
+        /// </summary>
         public static List<ChangesItem> LastChangesItems => _LastChangesItems ??= new List<ChangesItem>();
 
         /// <summary>
@@ -877,44 +1011,59 @@ namespace GY2021001BLL
         /// <param name="e"></param>
         private void UpgradeCompleted(object sender, CompletedEventArgs e)
         {
-            var fcp = sender as FastChangingProperty;
+            FastChangingProperty fcp = sender as FastChangingProperty;
             if (fcp is null || fcp.Name != "upgradecd")
+            {
                 return; //忽略
+            }
+
             if (!(fcp.Tag is ValueTuple<Guid, Guid> ids))
+            {
                 return;
-            var cm = World.CharManager;
-            var gim = World.ItemManager;
-            var gameChar = cm.GetCharFromId(ids.Item1);
+            }
+
+            GameCharManager cm = World.CharManager;
+            GameItemManager gim = World.ItemManager;
+            GameChar gameChar = cm.GetCharFromId(ids.Item1);
             //gameChar ??= gim.GetChar(ids.Item2);
             if (gameChar is null)   //若用户已经下线
+            {
                 return;
+            }
+
             if (!cm.Lock(gameChar.GameUser))   //若用户已经下线
+            {
                 return;
+            }
+
             try
             {
-                var gameItem = gameChar.AllChildren.FirstOrDefault(c => c.Id == ids.Item2);
+                GameItem gameItem = gameChar.AllChildren.FirstOrDefault(c => c.Id == ids.Item2);
                 if (gameItem is null)
+                {
                     return;
-                var lv = (int)gameItem.GetDecimalOrDefault(ProjectConstant.LevelPropertyName, 0m);  //原等级
+                }
+
+                int lv = (int)gameItem.GetDecimalOrDefault(ProjectConstant.LevelPropertyName, 0m);  //原等级
                 gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
                 if (gameItem.TemplateId == ProjectConstant.MainControlRoomSlotId) //如果是主控室升级
                 {
-                    var coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv + 1);
+                    IEnumerable<MainbaseUpgradePrv> coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv + 1);
                     List<GameItem> addItems = new List<GameItem>();
-                    foreach (var item in coll)
+                    foreach (MainbaseUpgradePrv item in coll)
                     {
-                        var parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == item.ParentTId);
+                        GameItem parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == item.ParentTId);
                         if (item.PrvTId.HasValue)    //若送物品
                         {
-                            var tmp = gim.CreateGameItem(item.PrvTId.Value);
+                            GameItem tmp = gim.CreateGameItem(item.PrvTId.Value);
                             gim.AddItem(tmp, parent, null, LastChangesItems);
                         }
                         if (item.Genus.HasValue)   //若送地块
                         {
-                            var dikuai = World.ItemTemplateManager.GetTemplates(c => c.GenusCode == item.Genus.Value);
-                            foreach (var subItem in dikuai)
+                            IEnumerable<GameItemTemplate> dikuai = World.ItemTemplateManager.GetTemplates(c => c.GenusCode == item.Genus.Value);
+                            foreach (GameItemTemplate subItem in dikuai)
                             {
-                                var tmp = gim.CreateGameItem(subItem);
+                                GameItem tmp = gim.CreateGameItem(subItem);
                                 gim.AddItem(tmp, parent, null, LastChangesItems);
                             }
                         }
@@ -939,43 +1088,63 @@ namespace GY2021001BLL
         private void UpgradeComplateCallback(object state)
         {
             if (!(state is ValueTuple<Guid, Guid> para))
+            {
                 return;
-            var cm = World.CharManager;
-            var gc = cm.GetCharFromId(para.Item1);
+            }
+
+            GameCharManager cm = World.CharManager;
+            GameChar gc = cm.GetCharFromId(para.Item1);
             if (null == gc) //若角色不在线
+            {
                 return;
-            var gu = gc.GameUser;
+            }
+
+            GameUser gu = gc.GameUser;
             if (!cm.Lock(gu))   //若不能锁定
+            {
                 if (null == cm.GetCharFromId(para.Item1)) //若争用导致已经下线
+                {
                     return; //可以等待下次登录时再计算
+                }
                 else   //TO DO 致命问题，但目前不知道如何才会引发(大概率发生了死锁)，暂无解决方法
                 {
-                    var logger = Services.GetService<ILogger<BlueprintManager>>();
+                    ILogger<BlueprintManager> logger = Services.GetService<ILogger<BlueprintManager>>();
                     logger?.LogError($"长期无法锁定在线用户，Number={gu.Id}。");
                     return;
                 }
+            }
+
             try
             {
-                var gameItem = gc.AllChildren.FirstOrDefault(c => c.Id == para.Item2);  //获取结束升级的对象
+                GameItem gameItem = gc.AllChildren.FirstOrDefault(c => c.Id == para.Item2);  //获取结束升级的对象
                 if (gameItem == null)  //若已经无效
-                    return;
-                var fcp = gameItem.Name2FastChangingProperty.GetValueOrDefault("upgradecd");
-                if (fcp == null)    //若已经处理完毕
-                    return;
-                var dtComplate = fcp.ComputeComplateDateTime();   //预期完成时间
-                var ary = gameItem.Name2FastChangingProperty.Where(c => c.Key != "upgradecd").ToArray();
-                foreach (var item in ary)   //先引发所有渐变属性的计算，升级后可能需要重新计算公式
                 {
-                    var tmp = dtComplate;
+                    return;
+                }
+
+                FastChangingProperty fcp = gameItem.Name2FastChangingProperty.GetValueOrDefault("upgradecd");
+                if (fcp == null)    //若已经处理完毕
+                {
+                    return;
+                }
+
+                DateTime dtComplate = fcp.ComputeComplateDateTime();   //预期完成时间
+                KeyValuePair<string, FastChangingProperty>[] ary = gameItem.Name2FastChangingProperty.Where(c => c.Key != "upgradecd").ToArray();
+                foreach (KeyValuePair<string, FastChangingProperty> item in ary)   //先引发所有渐变属性的计算，升级后可能需要重新计算公式
+                {
+                    DateTime tmp = dtComplate;
                     item.Value.GetCurrentValue(ref tmp);
                 }
-                var dtTmp = dtComplate;
+                DateTime dtTmp = dtComplate;
                 fcp.GetCurrentValue(ref dtTmp);
                 //var fcpCount = gameItem.Name2FastChangingProperty.GetValueOrDefault("Count");
                 if (fcp.IsComplate)  //若已经完成
                 {
                     //fcpCount?.GetCurrentValue(ref dtTmp);    //计算升级完成时点的数量，忽略时点回退误差
-                    var gim = World.ItemManager;
+                    GameItemManager gim = World.ItemManager;
+                    var work = gc.GetHomeland().Children.First(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);
+                    work.Count--;
+                    LastChangesItems.AddToChanges(work.ContainerId.Value, work);    //追加工人变化数据
                 }
                 gc.ChangesItems.AddRange(LastChangesItems); LastChangesItems.Clear();
             }
@@ -998,8 +1167,8 @@ namespace GY2021001BLL
                 datas.DebugMessage = "Count必须大于0";
                 return;
             }
-            var gu = datas.GameChar.GameUser;
-            var tmpList = World.ObjectPoolListGameItem.Get();
+            GameUser gu = datas.GameChar.GameUser;
+            List<GameItem> tmpList = World.ObjectPoolListGameItem.Get();
             if (!World.CharManager.Lock(gu))
             {
                 datas.HasError = true;
@@ -1011,12 +1180,15 @@ namespace GY2021001BLL
                 _InitializeTask.Wait(); //等待初始化结束
                 //获取有效的参与制造物品对象
                 if (!World.ItemManager.GetItems(datas.GameItems.Select(c => c.Id), tmpList, datas.GameChar))
+                {
                     return;
+                }
+
                 datas.GameItems.Clear();
                 datas.GameItems.AddRange(tmpList);
                 if (!Dispatch(datas))
                 {
-                    var data = new BlueprintData(Services, datas.Blueprint);
+                    BlueprintData data = new BlueprintData(Services, datas.Blueprint);
                     for (int i = 0; i < datas.Count; i++)
                     {
                         data.Match(datas);
@@ -1025,11 +1197,14 @@ namespace GY2021001BLL
                             datas.DebugMessage = $"计划制造{datas.Count}次,实际成功{i}次后，原料不足";
                             break;
                         }
-                        foreach (var item in data.Formulas)
+                        foreach (FormulaData item in data.Formulas)
                         {
                             if (!item.IsMatched)
+                            {
                                 continue;
-                            foreach (var meter in item.Materials)
+                            }
+
+                            foreach (MaterialData meter in item.Materials)
                             {
                                 meter.Template.VariableDeclaration.OfType<ReferenceGExpression>().All(c => c.Cache(item.RuntimeEnvironment));
                             }
@@ -1042,14 +1217,20 @@ namespace GY2021001BLL
                 switch (datas.Blueprint.Id.ToString("D").ToLower())
                 {
                     case "8b4ac76c-d8cc-4300-95ca-668350149821": //针对孵化蓝图
-                        var tmp = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);
-                        var slotFh = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == tmp.Id);    //孵化容器
+                        GameItem tmp = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);
+                        ChangesItem slotFh = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == tmp.Id);    //孵化容器
                         if (slotFh == null)
+                        {
                             break;
-                        var gameItem = slotFh.Adds.FirstOrDefault();    //孵化的组合
+                        }
+
+                        GameItem gameItem = slotFh.Adds.FirstOrDefault();    //孵化的组合
                         if (gameItem == null)
+                        {
                             break;
-                        var containerMounts = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == gameItem.Id);    //组合容器
+                        }
+
+                        ChangesItem containerMounts = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == gameItem.Id);    //组合容器
                         Debug.Assert(containerMounts.Adds.Count == 2);
                         gameItem.Children.AddRange(containerMounts.Adds);
                         datas.ChangesItem.Remove(containerMounts);
@@ -1062,7 +1243,10 @@ namespace GY2021001BLL
             finally
             {
                 if (null != tmpList)
+                {
                     World.ObjectPoolListGameItem.Return(tmpList);
+                }
+
                 World.CharManager.Unlock(gu, true);
             }
         }
@@ -1075,36 +1259,51 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         public void GetFhResult(ApplyBlueprintDatas datas)
         {
-            if (!datas.Verify(datas.GameItems.Count > 0, "参数过少。")) return;
-            var slotFh = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId); //孵化槽
+            if (!datas.Verify(datas.GameItems.Count > 0, "参数过少。"))
+            {
+                return;
+            }
+
+            GameItem slotFh = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId); //孵化槽
             if (null == slotFh)
             {
                 datas.HasError = true;
                 datas.DebugMessage = "找不到孵化槽。";
                 return;
             }
-            var gameItem = datas.GameItems.Join(slotFh.Children, c => c.Id, c => c.Id, (l, r) => r).FirstOrDefault();    //要取出的物品
+            GameItem gameItem = datas.GameItems.Join(slotFh.Children, c => c.Id, c => c.Id, (l, r) => r).FirstOrDefault();    //要取出的物品
             if (null == gameItem)
             {
                 datas.HasError = true;
                 datas.DebugMessage = "找不到要取出的物品。";
                 return;
             }
-            if (!datas.Verify(gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out var fcp), $"孵化物品没有冷却属性。Number = {gameItem.Id}")) return;
-            if (!datas.Verify(fcp.IsComplate, $"物品没有孵化完成。Number = {gameItem.Id}。")) //若未完成孵化
+            if (!datas.Verify(gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out FastChangingProperty fcp), $"孵化物品没有冷却属性。Number = {gameItem.Id}"))
+            {
                 return;
-            var slotZq = datas.GameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);   //坐骑背包
-            var gim = World.ItemManager;
-            var headTid = gim.GetHead(gameItem).TemplateId;
-            var bodyTid = gim.GetBody(gameItem).TemplateId;
-            var zq = slotZq.Children.FirstOrDefault(c =>    //找同头同身坐骑
+            }
+
+            if (!datas.Verify(fcp.IsComplate, $"物品没有孵化完成。Number = {gameItem.Id}。")) //若未完成孵化
+            {
+                return;
+            }
+
+            GameItem slotZq = datas.GameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);   //坐骑背包
+            GameItemManager gim = World.ItemManager;
+            Guid headTid = gim.GetHead(gameItem).TemplateId;
+            Guid bodyTid = gim.GetBody(gameItem).TemplateId;
+            GameItem zq = slotZq.Children.FirstOrDefault(c =>    //找同头同身坐骑
             {
                 return c.Children.Any(c2 => c2.TemplateId == headTid) && c.Children.Any(c2 => c2.TemplateId == bodyTid);
             });
             if (null != zq)    //若已经有同种坐骑
             {
-                var slotSl = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
-                if (!datas.Verify(null != slotSl, "找不到兽栏。")) return;
+                GameItem slotSl = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
+                if (!datas.Verify(null != slotSl, "找不到兽栏。"))
+                {
+                    return;
+                }
+
                 gameItem.Properties["neatk"] = Math.Round(gameItem.GetDecimalOrDefault("neatk"), MidpointRounding.AwayFromZero);
                 gameItem.Properties["nemhp"] = Math.Round(gameItem.GetDecimalOrDefault("nemhp"), MidpointRounding.AwayFromZero);
                 gameItem.Properties["neqlt"] = Math.Round(gameItem.GetDecimalOrDefault("neqlt"), MidpointRounding.AwayFromZero);
@@ -1125,27 +1324,35 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         public void JiasuFuhua(ApplyBlueprintDatas datas)
         {
-            var fhSlot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);    //孵化槽
-            var gameItem = fhSlot.Children.FirstOrDefault(c => c.Id == datas.GameItems[0].Id);  //要加速孵化的物品
-            if (!gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out var fcp))
+            GameItem fhSlot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);    //孵化槽
+            GameItem gameItem = fhSlot.Children.FirstOrDefault(c => c.Id == datas.GameItems[0].Id);  //要加速孵化的物品
+            if (!gameItem.Name2FastChangingProperty.TryGetValue("fhcd", out FastChangingProperty fcp))
             {
                 datas.HasError = true;
                 datas.DebugMessage = "孵化物品没有冷却属性";
                 return;
             }
             //计算所需钻石
-            var zuanshi = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);    //钻石
+            GameItem zuanshi = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);    //钻石
             DateTime dt = DateTime.UtcNow;
-            var tm = (fcp.MaxValue - fcp.GetCurrentValue(ref dt)) / 60;
+            decimal tm = (fcp.MaxValue - fcp.GetCurrentValue(ref dt)) / 60;
             decimal cost;
             if (tm <= 5)   //若不收费
+            {
                 cost = 0;
+            }
             else
+            {
                 cost = Math.Ceiling(tm - 5);
-            if (!datas.Verify(cost <= zuanshi.Count, $"需要{cost}钻石,但目前仅有{zuanshi.Count}个钻石。")) return;
+            }
+
+            if (!datas.Verify(cost <= zuanshi.Count, $"需要{cost}钻石,但目前仅有{zuanshi.Count}个钻石。"))
+            {
+                return;
+            }
             //减少钻石
             zuanshi.Count -= cost;
-            var gim = World.ItemManager;
+            GameItemManager gim = World.ItemManager;
             datas.ChangesItem.AddToChanges(zuanshi.ParentId ?? zuanshi.OwnerId.Value, zuanshi);
             //修改冷却时间
             fcp.LastValue = fcp.MaxValue;
@@ -1163,77 +1370,101 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         public void Hecheng(ApplyBlueprintDatas datas)
         {
-            if (!datas.Verify(datas.GameItems.Count == 2, $"物品数量错误。")) return;
-            var gc = datas.GameChar;
-            var lockAtk = datas.Lookup(gc.GameItems, ProjectConstant.LockAtkSlotId);
-            if (lockAtk is null) return;
-            var lockMhp = datas.Lookup(gc.GameItems, ProjectConstant.LockMhpSlotId);
-            if (lockMhp is null) return;
-            var lockQlt = datas.Lookup(gc.GameItems, ProjectConstant.LockQltSlotId);
-            if (lockQlt is null) return;
-            var gameItem = datas.GameItems.FirstOrDefault(c => c.Parent.TemplateId == ProjectConstant.ZuojiBagSlotId);
-            if (!datas.Verify(null != gameItem, "没有坐骑。")) return;
-            var gameItem2 = datas.GameItems.FirstOrDefault(c => c.Parent.TemplateId == ProjectConstant.ShoulanSlotId);
-            if (!datas.Verify(null != gameItem2, "没有野兽。")) return;
-            var db = datas.GameChar.GameUser.DbContext;
-            var gim = World.ItemManager;
+            if (!datas.Verify(datas.GameItems.Count == 2, $"物品数量错误。"))
+            {
+                return;
+            }
+
+            GameChar gc = datas.GameChar;
+            GameItem lockAtk = datas.Lookup(gc.GameItems, ProjectConstant.LockAtkSlotId);
+            if (lockAtk is null)
+            {
+                return;
+            }
+
+            GameItem lockMhp = datas.Lookup(gc.GameItems, ProjectConstant.LockMhpSlotId);
+            if (lockMhp is null)
+            {
+                return;
+            }
+
+            GameItem lockQlt = datas.Lookup(gc.GameItems, ProjectConstant.LockQltSlotId);
+            if (lockQlt is null)
+            {
+                return;
+            }
+
+            GameItem gameItem = datas.GameItems.FirstOrDefault(c => c.Parent.TemplateId == ProjectConstant.ZuojiBagSlotId);
+            if (!datas.Verify(null != gameItem, "没有坐骑。"))
+            {
+                return;
+            }
+
+            GameItem gameItem2 = datas.GameItems.FirstOrDefault(c => c.Parent.TemplateId == ProjectConstant.ShoulanSlotId);
+            if (!datas.Verify(null != gameItem2, "没有野兽。"))
+            {
+                return;
+            }
+
+            DbContext db = datas.GameChar.GameUser.DbContext;
+            GameItemManager gim = World.ItemManager;
             //攻击资质
             if (lockAtk.Children.Count <= 0)
             {
-                var rnd1 = VWorld.GetRandomNumber(0, 1);
-                var rnd2 = (decimal)(rnd1 switch
+                double rnd1 = VWorld.GetRandomNumber(0, 1);
+                decimal rnd2 = (decimal)(rnd1 switch
                 {
                     _ when rnd1 < 0.15 => VWorld.GetRandomNumber(0, 0.2),
                     _ when rnd1 >= 0.15 && rnd1 < 0.85 => VWorld.GetRandomNumber(0.25, 0.75),
                     _ => VWorld.GetRandomNumber(0.75, 1),
                 });
-                var ne = gameItem.GetDecimalOrDefault("neatk") * (1 - rnd2) + gameItem2.GetDecimalOrDefault("neatk") * rnd2;
+                decimal ne = gameItem.GetDecimalOrDefault("neatk") * (1 - rnd2) + gameItem2.GetDecimalOrDefault("neatk") * rnd2;
                 ne = Math.Round(ne, MidpointRounding.AwayFromZero);
                 gameItem.SetPropertyValue("neatk", ne);
             }
             else
             {
-                var lockItem = lockAtk.Children.First();
+                GameItem lockItem = lockAtk.Children.First();
                 datas.ChangesItem.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
                 gim.ForceDelete(lockItem);
             }
             //血量资质
             if (lockMhp.Children.Count <= 0)
             {
-                var rnd1 = VWorld.GetRandomNumber(0, 1);
-                var rnd2 = (decimal)(rnd1 switch
+                double rnd1 = VWorld.GetRandomNumber(0, 1);
+                decimal rnd2 = (decimal)(rnd1 switch
                 {
                     _ when rnd1 < 0.15 => VWorld.GetRandomNumber(0, 0.2),
                     _ when rnd1 >= 0.15 && rnd1 < 0.85 => VWorld.GetRandomNumber(0.25, 0.75),
                     _ => VWorld.GetRandomNumber(0.75, 1),
                 });
-                var ne = gameItem.GetDecimalOrDefault("nemhp") * (1 - rnd2) + gameItem2.GetDecimalOrDefault("nemhp") * rnd2;
+                decimal ne = gameItem.GetDecimalOrDefault("nemhp") * (1 - rnd2) + gameItem2.GetDecimalOrDefault("nemhp") * rnd2;
                 ne = Math.Round(ne, MidpointRounding.AwayFromZero);
                 gameItem.SetPropertyValue("nemhp", ne);
             }
             else
             {
-                var lockItem = lockMhp.Children.First();
+                GameItem lockItem = lockMhp.Children.First();
                 datas.ChangesItem.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
                 gim.ForceDelete(lockItem);
             }
             //质量资质
             if (lockQlt.Children.Count <= 0)
             {
-                var rnd1 = VWorld.GetRandomNumber(0, 1);
-                var rnd2 = (decimal)(rnd1 switch
+                double rnd1 = VWorld.GetRandomNumber(0, 1);
+                decimal rnd2 = (decimal)(rnd1 switch
                 {
                     _ when rnd1 < 0.15 => VWorld.GetRandomNumber(0, 0.2),
                     _ when rnd1 >= 0.15 && rnd1 < 0.85 => VWorld.GetRandomNumber(0.25, 0.75),
                     _ => VWorld.GetRandomNumber(0.75, 1),
                 });
-                var ne = gameItem.GetDecimalOrDefault("neqlt") * (1 - rnd2) + gameItem2.GetDecimalOrDefault("neqlt") * rnd2;
+                decimal ne = gameItem.GetDecimalOrDefault("neqlt") * (1 - rnd2) + gameItem2.GetDecimalOrDefault("neqlt") * rnd2;
                 ne = Math.Round(ne, MidpointRounding.AwayFromZero);
                 gameItem.SetPropertyValue("neqlt", ne);
             }
             else
             {
-                var lockItem = lockQlt.Children.First();
+                GameItem lockItem = lockQlt.Children.First();
                 datas.ChangesItem.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
                 gim.ForceDelete(lockItem);
             }
@@ -1244,13 +1475,16 @@ namespace GY2021001BLL
         #endregion 合成相关
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        bool Verify(ApplyBlueprintDatas datas, IEnumerable<GameItem> gameItems, Guid containerTId, Guid itemTId)
+        private bool Verify(ApplyBlueprintDatas datas, IEnumerable<GameItem> gameItems, Guid containerTId, Guid itemTId)
         {
-            var gitm = World.ItemTemplateManager;
-            var cTemplate = gitm.GetTemplateFromeId(containerTId);
+            GameItemTemplateManager gitm = World.ItemTemplateManager;
+            GameItemTemplate cTemplate = gitm.GetTemplateFromeId(containerTId);
             if (datas.Verify(cTemplate != null, $"无法找到指定容器模板，Number = {containerTId}"))
+            {
                 return false;
-            var container = gameItems.FirstOrDefault(c => c.TemplateId == containerTId);
+            }
+
+            GameItem container = gameItems.FirstOrDefault(c => c.TemplateId == containerTId);
             datas.Verify(container != null, $"无法找到指定模板Id的容器，模板Id = {containerTId}");
             return true;
         }
@@ -1261,13 +1495,22 @@ namespace GY2021001BLL
         /// <param name="datas"></param>
         public void AddTili(ApplyBlueprintDatas datas)
         {
-            if (!datas.Verify(datas.GameChar.GradientProperties.TryGetValue("pp", out var fcp), "无法找到体力属性"))
+            if (!datas.Verify(datas.GameChar.GradientProperties.TryGetValue("pp", out FastChangingProperty fcp), "无法找到体力属性"))
+            {
                 return;
-            var zuanshi = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);
+            }
+
+            GameItem zuanshi = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);
             if (!datas.Verify(zuanshi != null, "无法找到钻石对象"))
+            {
                 return;
+            }
+
             if (!datas.Verify(zuanshi.Count > 20, $"需要20钻石，但目前仅有{zuanshi.Count}。"))
+            {
                 return;
+            }
+
             zuanshi.Count -= 20;    //扣除钻石
             fcp.GetCurrentValueWithUtc();
             fcp.LastValue += 20;    //增加体力
@@ -1303,25 +1546,33 @@ namespace GY2021001BLL
             IEnumerable<GameItem> resultColl;
             if (templateId.HasValue)    //若需限定模板Id
             {
-                var tid = templateId.Value;
+                Guid tid = templateId.Value;
                 resultColl = parent.Where(c => c.TemplateId == tid);
             }
             else
+            {
                 resultColl = parent;
+            }
+
             GameItem result;
             if (id.HasValue) //若要限定Id
             {
-                var idMe = id.Value;
+                Guid idMe = id.Value;
                 result = resultColl.FirstOrDefault(c => c.Id == idMe);
             }
             else
+            {
                 result = resultColl.FirstOrDefault();
+            }
+
             if (result is null)  //若没有找到
             {
                 obj.DebugMessage = $"无法找到物品。TId={templateId},Number={id}";
                 obj.HasError = true;
                 if (templateId.HasValue)
+                {
                     obj.ErrorItemTIds.Add(templateId.Value);
+                }
             }
             return result;
         }
@@ -1382,19 +1633,24 @@ namespace GY2021001BLL
             get
             {
                 if (_Alls is null)
+                {
                     lock (typeof(MainbaseUpgradePrv))
+                    {
                         if (_Alls is null)
                         {
                             _Alls = new List<MainbaseUpgradePrv>();
-                            foreach (var line in text.Split("\r\n", StringSplitOptions.None))   //枚举行
+                            foreach (string line in text.Split("\r\n", StringSplitOptions.None))   //枚举行
                             {
                                 if (string.IsNullOrWhiteSpace(line))
+                                {
                                     continue;
-                                var ary = line.Split('\t', StringSplitOptions.None);
-                                var item = new MainbaseUpgradePrv()
+                                }
+
+                                string[] ary = line.Split('\t', StringSplitOptions.None);
+                                MainbaseUpgradePrv item = new MainbaseUpgradePrv()
                                 {
                                     Level = int.Parse(ary[0]),
-                                    Genus = int.TryParse(ary[2], out var gns) ? gns : null as int?,
+                                    Genus = int.TryParse(ary[2], out int gns) ? gns : null as int?,
                                     ParentTId = Guid.Parse(ary[3]),
                                     PrvTId = string.IsNullOrWhiteSpace(ary[1]) ? null as Guid? : Guid.Parse(ary[1]),
                                     Remark = ary[4],
@@ -1402,6 +1658,9 @@ namespace GY2021001BLL
                                 _Alls.Add(item);
                             }
                         }
+                    }
+                }
+
                 return _Alls;
             }
         }

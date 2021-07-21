@@ -467,6 +467,8 @@ namespace GY2021001WebApi.Controllers
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
                 return Unauthorized("令牌无效");
+            Guid[] filterTIds = new Guid[] { ProjectConstant.WorkerOfHomelandTId, ProjectConstant.HomelandPlanBagTId, ProjectConstant.HomelandBuilderBagTId };
+            string[] ary = null;
             try
             {
                 var gitm = world.ItemTemplateManager;
@@ -475,6 +477,7 @@ namespace GY2021001WebApi.Controllers
                 if (fengges.Count == 0) //若未初始化
                     gc.MergeFangans(fengges, gitm);
                 result.Plans.AddRange(fengges.Select(c => (HomelandFenggeDto)c));
+                ary = gc.GetHomeland().AllChildren.Where(c => filterTIds.Contains(c.TemplateId)).Select(c => c.Id.ToBase64String()).ToArray(); //排除的容器Id集合
             }
             catch (Exception err)
             {
@@ -485,6 +488,19 @@ namespace GY2021001WebApi.Controllers
             {
                 world.CharManager.Unlock(gu, true);
             }
+            if (null != ary)
+                foreach (var fengge in result.Plans)
+                {
+                    for (int i = fengge.Fangans.Count - 1; i >= 0; i--)
+                    {
+                        var fangan = fengge.Fangans[i];
+                        for (int j = fangan.FanganItems.Count - 1; j >= 0; j--)
+                        {
+                            if (ary.Contains(fangan.FanganItems[j].ContainerId)) //若需要删除
+                                fangan.FanganItems.RemoveAt(j);
+                        }
+                    }
+                }
             return result;
         }
 
@@ -549,12 +565,12 @@ namespace GY2021001WebApi.Controllers
                 var gitm = world.ItemTemplateManager;
                 var lstFengge = gc.GetFengges();
                 var id = GameHelper.FromBase64String(model.FanganId);
-                var fangan = lstFengge.SelectMany(c=>c.Fangans).FirstOrDefault(c => c.Id == id);
+                var fangan = lstFengge.SelectMany(c => c.Fangans).FirstOrDefault(c => c.Id == id);
                 var gim = world.ItemManager;
                 var datas = new ActiveStyleDatas()
                 {
                     Fangan = fangan,
-                    GameChar=gc,
+                    GameChar = gc,
                 };
                 gim.ActiveStyle(datas);
                 result.DebugMessage = datas.Message;

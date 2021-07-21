@@ -187,6 +187,26 @@ namespace GY2021001BLL
         {
             return (random ?? WorldRandom).NextDouble() < val;
         }
+
+        /// <summary>
+        /// 存储线程最后的错误信息。
+        /// </summary>
+        [ThreadStatic]
+        static internal protected string _LastErrorMessage;
+
+        /// <summary>
+        /// 获取最后的错误信息。
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public string GetLastErrorMessage() => _LastErrorMessage;
+
+        /// <summary>
+        /// 设置最后错误信息。
+        /// </summary>
+        /// <param name="msg"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void SetLastErrorMessage(string msg) => _LastErrorMessage = msg;
     }
 
     /// <summary>

@@ -184,10 +184,10 @@ namespace GY2021001DAL
         {
             get
             {
-                if (null == _Name2FastChangingProperty)
+                if (_Name2FastChangingProperty is null)
                 {
                     lock (this)
-                        if (null == _Name2FastChangingProperty)
+                        if (_Name2FastChangingProperty is null)
                         {
                             var list = FastChangingPropertyExtensions.FromGameThing(this);
                             var charId = (this as GameItem)?.GameChar?.Id ?? Guid.Empty;
@@ -200,6 +200,57 @@ namespace GY2021001DAL
                 }
                 return _Name2FastChangingProperty;
             }
+        }
+
+        /// <summary>
+        /// 获取属性，且考虑是否刷新并写入快速变化属性。
+        /// </summary>
+        /// <param name="name">要获取值的属性名。</param>
+        /// <param name="refreshDate">当有快速变化属性时，刷新时间，如果为null则不刷新。</param>
+        /// <param name="writeDictionary">当有快速变化属性时，是否写入<see cref="Properties"/>属性。</param>
+        /// <param name="result">属性的当前返回值。对快速变化属性是其<see cref="FastChangingProperty.LastValue"/>,是否在之前刷新取决于<paramref name="refresh"/>参数。</param>
+        /// <param name="refreshDatetime">如果是快速变化属性且需要刷新，则此处返回实际的计算时间。
+        /// 如果找到的不是快速渐变属性返回<see cref="DateTime.MinValue"/></param>
+        /// <returns>true成功找到属性。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public virtual bool TryGetPropertyValueWithFcp(string name, DateTime? refreshDate, bool writeDictionary, out object result, out DateTime refreshDatetime)
+        {
+            bool succ;
+            if (Name2FastChangingProperty.TryGetValue(name, out var fcp)) //若找到快速变化属性
+            {
+                if (refreshDate.HasValue) //若需要刷新
+                {
+                    refreshDatetime = refreshDate.Value;
+                    result = fcp.GetCurrentValue(ref refreshDatetime);
+                }
+                else
+                {
+                    refreshDatetime = DateTime.MinValue;
+                    result = fcp.LastValue;
+                }
+                if (writeDictionary)
+                    fcp.ToGameThing(this);
+                succ = true;
+            }
+            else //若是其他属性
+            {
+                refreshDatetime = DateTime.MinValue;
+                succ = Properties.TryGetValue(name, out result);
+            }
+            return succ;
+        }
+
+        /// <summary>
+        ///  获取属性，若是快速变化属性时会自动用当前时间刷新且写入<see cref="Properties"/>。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetPropertyValueWithFcp(string name, out object result)
+        {
+            DateTime dt = DateTime.UtcNow;
+            return TryGetPropertyValueWithFcp(name, dt, true, out result, out _);
         }
 
         /// <summary>

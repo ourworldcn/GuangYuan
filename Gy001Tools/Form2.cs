@@ -48,9 +48,9 @@ namespace Gy001Tools
 
         private void test()
         {
-            object i = "10.0m";
-            var ct = TypeDescriptor.GetConverter(typeof(decimal));
-            var id = ct.IsValid(i);
+            var dt1 = DateTime.UtcNow;
+            var dt2 = DateTime.UtcNow;
+            var tmp = (dt1 - dt2).Ticks;
         }
 
         string left = "k1";

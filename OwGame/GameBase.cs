@@ -2,12 +2,7 @@
  * 文件放置游戏专用的一些基础类
  */
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace OwGame
 {
@@ -26,7 +21,7 @@ namespace OwGame
         /// <param name="lastComputerDateTime">时间。建议一律采用Utc时间。</param>
         public FastChangingProperty(TimeSpan delay, decimal increment, decimal maxVal, decimal currentVal, DateTime lastComputerDateTime)
         {
-            LastValue = currentVal;
+            _LastValue = currentVal;
             LastDateTime = lastComputerDateTime;
             Delay = delay;
             Increment = increment;
@@ -50,29 +45,32 @@ namespace OwGame
         /// </summary>
         public decimal LastValue { get => _LastValue; set => _LastValue = value; }
 
-        /// <summary>
-        /// 设置最后计算的值和时间，并根据值是否大于或等于最大值，引发事件。
-        /// 如果已经结束则不会引发事件，只有当设置之前未结束，设置之后结束才会引发事件。
-        /// </summary>
-        /// <param name="lastValue"></param>
-        /// <param name="lastDateTime"></param>
-        /// <param name="maxValue">设置的最大值，省略或空则不会设置最大值<see cref="MaxValue"/>属性。</param>
-        /// <returns>true引发了事件，false未引发事件。</returns>
-        public bool SetAndRaiseEvent(decimal lastValue, DateTime lastDateTime, decimal? maxValue = null)
-        {
-            DateTime dt = DateTime.UtcNow;
-            var isComplete = LastValue >= MaxValue || ComputeComplateDateTime() <= dt;
-            LastValue = lastValue;
-            LastDateTime = lastDateTime;
-            if (maxValue.HasValue)
-                MaxValue = maxValue.Value;
-            if (LastValue < MaxValue && !isComplete)   //若需引发事件
-            {
-                OnCompleted(new CompletedEventArgs(lastDateTime));
-                return true;
-            }
-            return false;
-        }
+        ///// <summary>
+        ///// 设置最后计算的值和时间，并根据值是否大于或等于最大值，引发事件。
+        ///// 如果已经结束则不会引发事件，只有当设置之前未结束，设置之后结束才会引发事件。
+        ///// </summary>
+        ///// <param name="lastValue"></param>
+        ///// <param name="lastDateTime"></param>
+        ///// <param name="maxValue">设置的最大值，省略或空则不会设置最大值<see cref="MaxValue"/>属性。</param>
+        ///// <returns>true引发了事件，false未引发事件。</returns>
+        //public bool SetAndRaiseEvent(decimal lastValue, DateTime lastDateTime, decimal? maxValue = null)
+        //{
+        //    DateTime dt = DateTime.UtcNow;
+        //    var isComplete = LastValue >= MaxValue || ComputeComplateDateTime() <= dt;
+        //    LastValue = lastValue;
+        //    LastDateTime = lastDateTime;
+        //    if (maxValue.HasValue)
+        //    {
+        //        MaxValue = maxValue.Value;
+        //    }
+
+        //    if (LastValue < MaxValue && !isComplete)   //若需引发事件
+        //    {
+        //        OnCompleted(new CompletedEventArgs(lastDateTime));
+        //        return true;
+        //    }
+        //    return false;
+        //}
 
         /// <summary>
         /// 多久计算一次。
@@ -85,25 +83,28 @@ namespace OwGame
         public decimal Increment { get; set; }
 
         /// <summary>
-        /// 获取当前值。自动修改LastComputerDateTime和LastValue属性。
+        /// 获取当前值。自动修改<see cref="LastComputerDateTime"/>和<see cref="LastValue"/>属性。
         /// </summary>
         /// <param name="now">当前时间。返回时可能更改，如果没有正好到跳变时间，则会略微提前到上一次跳变的时间点。</param>
-        /// <returns>当前值。</returns>
+        /// <returns>更改后的值(<see cref="LastValue"/>)。</returns>
         public decimal GetCurrentValue(ref DateTime now)
         {
-            if (LastValue >= MaxValue)  //若已经结束
+            if (_LastValue >= MaxValue)  //若已经结束
             {
                 LastDateTime = now;
-                return LastValue;
+                return _LastValue;
             }
             var count = Math.DivRem((now - LastDateTime).Ticks, Delay.Ticks, out long remainder);  //跳变次数 和 余数
-            var val = Math.Min(count * Increment + LastValue, MaxValue);
-            LastValue = val; //计算得到最后值
+            var val = Math.Min(count * Increment + _LastValue, MaxValue);
+            _LastValue = val; //计算得到最后值
             now = now - TimeSpan.FromTicks(remainder);
             LastDateTime = now;
-            if (LastValue >= MaxValue)
+            if (_LastValue >= MaxValue)
+            {
                 OnCompleted(new CompletedEventArgs(now));
-            return LastValue;
+            }
+
+            return _LastValue;
         }
 
         /// <summary>
@@ -112,9 +113,12 @@ namespace OwGame
         /// <returns>预估完成时间。不会刷新计算最新值。</returns>
         public DateTime ComputeComplateDateTime()
         {
-            if (LastValue >= MaxValue)  //若已经结束
+            if (_LastValue >= MaxValue)  //若已经结束
+            {
                 return LastDateTime;
-            var count = Math.Round((MaxValue - LastValue) / Increment, MidpointRounding.AwayFromZero);  //到结束还需跳变多少次
+            }
+
+            var count = Math.Round((MaxValue - _LastValue) / Increment, MidpointRounding.AwayFromZero);  //到结束还需跳变多少次
             return LastDateTime + TimeSpan.FromTicks(Delay.Ticks * (long)count);
         }
 
@@ -156,33 +160,51 @@ namespace OwGame
             {
                 case 'i':
                     if (!OwHelper.TryGetDecimal(val, out var dec))
+                    {
                         return false;
+                    }
+
                     Increment = dec;
                     break;
                 case 'd':
                     if (!OwHelper.TryGetDecimal(val, out dec))
+                    {
                         return false;
+                    }
+
                     Delay = TimeSpan.FromSeconds((double)dec);
                     break;
                 case 'm':
                     if (!OwHelper.TryGetDecimal(val, out dec))
+                    {
                         return false;
+                    }
+
                     MaxValue = dec;
                     break;
                 case 'c':   //当前刷新后的最后值
                     if (!OwHelper.TryGetDecimal(val, out dec))
+                    {
                         return false;
-                    LastValue = dec;
+                    }
+
+                    _LastValue = dec;
                     LastDateTime = DateTime.UtcNow;
                     break;
                 case 'l':
                     if (!OwHelper.TryGetDecimal(val, out dec))
+                    {
                         return false;
-                    LastValue = dec;
+                    }
+
+                    _LastValue = dec;
                     break;
                 case 't':
                     if (!DateTime.TryParse(val as string, out var dt))
+                    {
                         return false;
+                    }
+
                     LastDateTime = dt;
                     break;
                 default:
@@ -214,7 +236,7 @@ namespace OwGame
                     result = GetCurrentValueWithUtc();
                     break;
                 case 'l':   //最后计算结果值
-                    result = LastValue;
+                    result = _LastValue;
                     break;
                 case 't':   //最后计算时间点
                     GetCurrentValueWithUtc();
@@ -246,6 +268,21 @@ namespace OwGame
         protected virtual void OnCompleted(CompletedEventArgs e)
         {
             Completed?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// 设置最后计算得到的值，同时将计算时间更新到最接近指定点的时间。
+        /// </summary>
+        /// <param name="val">这个时间点不晚于指定时间点，且又是正好一跳的时间点。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetLastValue(decimal val, ref DateTime dateTime)
+        {
+            var remainder = (dateTime - LastDateTime).Ticks % Delay.Ticks;
+            LastDateTime = dateTime.AddTicks(-remainder);
+            if (LastDateTime > dateTime)    //若时间点超过指定值
+                LastDateTime -= Delay;
+            dateTime = LastDateTime;
+            _LastValue = val;
         }
         #endregion 事件及相关
     }

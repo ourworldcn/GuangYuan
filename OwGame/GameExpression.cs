@@ -388,8 +388,8 @@ namespace OwGame.Expression
             return ConstGExpression.TryParse(str, out var result) ? (GameExpressionBase)result : new ReferenceGExpression(str.Trim()/*这里要考虑空白是否有意义 TO DO*/, env.CurrentObjectId);
         }
 
-        const string comparePattern = @"\s*(?<or>{dec}|[^{}]+)\s*(?<op>[{}]{0,2})"; //TO DO 有问题会把Id也拆开
-        const string decPattern = @"\-?[\d\.]+";
+        private const string comparePattern = @"\s*(?<or>{dec}|[^{}]+)\s*(?<op>[{}]{0,2})"; //TO DO 有问题会把Id也拆开
+        private const string decPattern = @"\-?[\d\.]+";
         private static string _Pattern;
 
         static protected string PatternString
@@ -598,7 +598,7 @@ namespace OwGame.Expression
             return left;
         }
 
-        static int GetPriority(string op)
+        private static int GetPriority(string op)
         {
             BinaryGExpression.Operators.TryGetValue(op, out var result);
             return result;
@@ -610,7 +610,7 @@ namespace OwGame.Expression
         /// <param name="op1"></param>
         /// <param name="op2"></param>
         /// <returns></returns>
-        static int OperatorCompareTo(string op1, string op2)
+        private static int OperatorCompareTo(string op1, string op2)
         {
             return GetPriority(op1).CompareTo(GetPriority(op2));
         }
@@ -981,8 +981,8 @@ namespace OwGame.Expression
             return true;
         }
 
-        bool _IsCache;
-        object _CacheValue;
+        private bool _IsCache;
+        private object _CacheValue;
 
         public override bool TryGetValue(GameExpressionRuntimeEnvironment env, out object result)
         {
@@ -1311,7 +1311,7 @@ namespace OwGame.Expression
             Expressions.AddRange(expressions);
         }
 
-        List<GameExpressionBase> _Expressions = new List<GameExpressionBase>();
+        private List<GameExpressionBase> _Expressions = new List<GameExpressionBase>();
 
         public List<GameExpressionBase> Expressions { get => _Expressions; }
 
