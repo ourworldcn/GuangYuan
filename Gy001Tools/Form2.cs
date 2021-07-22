@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Linq.Expressions.Expression;
@@ -48,9 +49,16 @@ namespace Gy001Tools
 
         private void test()
         {
+            System.Threading.Timer tm = new System.Threading.Timer(Callback, (DateTime.UtcNow), TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
+            Debug.WriteLine("Boot:{0}",DateTime.UtcNow);
             var dt1 = DateTime.UtcNow;
             var dt2 = DateTime.UtcNow;
             var tmp = (dt1 - dt2).Ticks;
+        }
+
+        private void Callback(object state)
+        {
+            Debug.WriteLine("Run:{0}",DateTime.UtcNow);
         }
 
         string left = "k1";

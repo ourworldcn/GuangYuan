@@ -118,8 +118,8 @@ namespace OwGame
                 return LastDateTime;
             }
 
-            var count = Math.Round((MaxValue - _LastValue) / Increment, MidpointRounding.AwayFromZero);  //到结束还需跳变多少次
-            return LastDateTime + TimeSpan.FromTicks(Delay.Ticks * (long)count);
+            var count = (long)Math.Round((MaxValue - _LastValue) / Increment, MidpointRounding.AwayFromZero);  //到结束还需跳变多少次
+            return LastDateTime.AddTicks(Delay.Ticks * count);
         }
 
         /// <summary>

@@ -55,7 +55,11 @@ namespace Gy001
                 builder.AddEventSourceLogger();
                 builder.AddConfiguration(Configuration.GetSection("Logging"));
 
-                builder.AddConsole(option => option.IncludeScopes = true);
+                builder.AddConsole(option =>
+                {
+                    option.IncludeScopes = true;
+                    option.TimestampFormat = "hh:mm:ss";
+                });
 #if DEBUG
                 builder.AddDebug();
 #endif //DEBUG

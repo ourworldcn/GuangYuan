@@ -1308,7 +1308,7 @@ namespace GY2021001WebApi.Models
     /// GetChangesItem 返回值封装类。
     /// </summary>
     [DataContract]
-    public class GetChangesItemReturnDto
+    public class GetChangesItemReturnDto:ReturnDtoBase
     {
         /// <summary>
         /// 构造函数。

@@ -2,13 +2,10 @@
 using OwGame;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace GY2021001DAL
 {
@@ -46,7 +43,7 @@ namespace GY2021001DAL
                 item.GameChar = this;
         }
 
-        List<GameItem> _GameItems;
+        private List<GameItem> _GameItems;
 
         /// <summary>
         /// 直接拥有的事物。
@@ -123,7 +120,7 @@ namespace GY2021001DAL
         /// </summary>
         public DateTime? CombatStartUtc { get; set; }
 
-        Dictionary<string, FastChangingProperty> _GradientProperties;
+        private Dictionary<string, FastChangingProperty> _GradientProperties;
 
         /// <summary>
         /// 渐变属性字典。
@@ -150,7 +147,7 @@ namespace GY2021001DAL
         }
 
 
-        private Dictionary<string, GameClientExtendProperty> _ClientExtendProperties = new Dictionary<string, GameClientExtendProperty>();
+        private readonly Dictionary<string, GameClientExtendProperty> _ClientExtendProperties = new Dictionary<string, GameClientExtendProperty>();
 
         /// <summary>
         /// 客户端使用的扩展属性集合，服务器不使用该属性，仅帮助保存和传回。
@@ -212,13 +209,12 @@ namespace GY2021001DAL
             base.OnSaving(e);
         }
 
-        private List<ChangesItem> _ChangesItems;
-        private bool disposedValue;
+        private List<ChangesItem> _ChangesItems = new List<ChangesItem>();
 
         /// <summary>
         /// 保存未能发送给客户端的变化数据。
         /// </summary>
-        public List<ChangesItem> ChangesItems => _ChangesItems ??= new List<ChangesItem>();
+        public List<ChangesItem> ChangesItems => _ChangesItems;
 
         /// <summary>
         /// 未发送给客户端的数据保存在<see cref="GameThingBase.ExtendProperties"/>中使用的属性名称。
@@ -227,20 +223,18 @@ namespace GY2021001DAL
 
         #region IDisposable接口相关
 
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    if (!disposedValue)  //若第一次调用
-                        OnDisposed(EventArgs.Empty);
                 }
-
+                OnDisposed(EventArgs.Empty);
+                base.Dispose(disposing);
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                disposedValue = true;
             }
         }
 
@@ -260,13 +254,6 @@ namespace GY2021001DAL
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
         //     Dispose(disposing: false);
         // }
-
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
 
         #endregion IDisposable接口相关
     }
@@ -331,4 +318,5 @@ namespace GY2021001DAL
         [DataMember]
         public DateTime DateTimeUtc { get; set; }
     }
+
 }

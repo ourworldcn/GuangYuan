@@ -2,14 +2,13 @@
 using OwGame;
 using OwGame.Expression;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace GY2021001DAL
 {
@@ -33,7 +32,7 @@ namespace GY2021001DAL
     /// <summary>
     /// 游戏内部事物的基类。
     /// </summary>
-    public abstract class GameThingBase : GameObjectBase
+    public abstract class GameThingBase : GameObjectBase, IDisposable
     {
         #region 构造函数
 
@@ -87,7 +86,7 @@ namespace GY2021001DAL
             }
         }
 
-        Dictionary<string, object> _Properties;
+        private Dictionary<string, object> _Properties;
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
         /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，拆箱问题不大，且非核心战斗才会较多的使用该系统。
@@ -174,7 +173,7 @@ namespace GY2021001DAL
 
         #region 快速变化属性相关
 
-        Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
+        private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
 
         /// <summary>
         /// 快速变化属性。
@@ -266,10 +265,12 @@ namespace GY2021001DAL
         }
         #endregion 快速变化属性相关
 
+        #region 扩展属性相关
+
         /// <summary>
         /// 服务器用通用扩展属性集合。
         /// </summary>
-        public virtual List<GameExtendProperty> ExtendProperties { get; set; }
+        public virtual List<GameExtendProperty> ExtendProperties { get; } = new List<GameExtendProperty>();
 
         /// <summary>
         /// 获取或创建一个指定名称的<see cref="GameExtendProperty"/>对象。
@@ -289,6 +290,17 @@ namespace GY2021001DAL
             }
             return result;
         }
+
+
+        private ConcurrentDictionary<string, object> _TemporaryDictionary;
+
+        /// <summary>
+        /// 这里记录一些临时属性。
+        /// 这些属性不会在保存时持久化，也不会在创建或加载时初始化。
+        /// </summary>
+        public ConcurrentDictionary<string, object> TemporaryDictionary => _TemporaryDictionary ??= new ConcurrentDictionary<string, object>();
+
+        #endregion 扩展属性相关
 
         #region 事件及相关
         protected virtual void OnSaving(EventArgs e)
@@ -354,6 +366,44 @@ namespace GY2021001DAL
         /// </summary>
         public Guid TemplateId { get; set; }
 
+        #region IDisposable接口相关
+
+        private bool _IsDisposed;
+
+        /// <summary>
+        /// 对象是否已经被处置。
+        /// </summary>
+        protected bool IsDisposed => _IsDisposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_IsDisposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _TemporaryDictionary = null;
+                _IsDisposed = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~GameThingBase()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion IDisposable接口相关
     }
 
     /// <summary>
@@ -470,7 +520,7 @@ namespace GY2021001DAL
     {
         public const string DefaultClassPrefix = "fcp";
 
-        static string GetDefaultKeyName(string propertyName, string name, string classPrefix = DefaultClassPrefix)
+        private static string GetDefaultKeyName(string propertyName, string name, string classPrefix = DefaultClassPrefix)
         {
             return propertyName switch
             {
@@ -556,7 +606,8 @@ namespace GY2021001DAL
         static public IEnumerable<FastChangingProperty> FromGameThing(GameThingBase thing, string classPrefix = DefaultClassPrefix)
         {
             var dic = thing.Properties;
-            var names = dic.Keys.Where(c => c.StartsWith(classPrefix)).Select(c => c[4..]).Distinct();
+            var startIndex = classPrefix.Length + 1;
+            var names = dic.Keys.Where(c => c.StartsWith(classPrefix)).Select(c => c[startIndex..]).Distinct();
             var coll = names.Select(c => FromDictionary(dic, c, classPrefix)).OfType<FastChangingProperty>();
             return coll;
 
@@ -603,6 +654,17 @@ namespace GY2021001DAL
         static public decimal GetDecimalOrDefault(this GameThingBase @this, string propertyName, decimal defaultVal = decimal.Zero) =>
             !@this.TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec) ? defaultVal : dec;
 
+        /// <summary>
+        /// 获取堆叠上限。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns><see cref="decimal.MaxValue"/>无限制，如果不可堆叠则为0.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public decimal GetStc(this GameThingBase obj)
+        {
+            var stc = obj.GetDecimalOrDefault("stc", 0);
+            return stc == -1 ? decimal.MaxValue : stc;
+        }
 
     }
 

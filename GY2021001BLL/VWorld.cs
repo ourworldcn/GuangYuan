@@ -131,6 +131,8 @@ namespace GY2021001BLL
         private void Initialize()
         {
             RequestShutdown = _CancellationTokenSource.Token;
+            var logger = Services.GetRequiredService<ILogger<VWorld>>();
+            logger.LogInformation("初始化完毕，开始服务。");
         }
 
         public TimeSpan GetServiceTime()

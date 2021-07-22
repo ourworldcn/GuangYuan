@@ -695,7 +695,7 @@ namespace GY2021001BLL
                         succ = true;
                         break;
                     case "384ed85c-82fd-4f08-86e7-eae5ad6eef2c":    //家园所属虚拟物品内升级
-                        UpgradeOnHomeland(datas);
+                        UpgradeInHomeland(datas);
                         succ = true;
                         break;
                     case "06bdaa5c-3d88-4279-9826-8f5a554ab588":    //加速主控室/玉米地/树林/炮台/旗子/陷阱/捕兽竿升级
@@ -797,7 +797,7 @@ namespace GY2021001BLL
         /// 家园内部相关物品升级。
         /// </summary>
         /// <param name="datas"></param>
-        private void UpgradeOnHomeland(ApplyBlueprintDatas datas)
+        private void UpgradeInHomeland(ApplyBlueprintDatas datas)
         {
             Guid hlTid = ProjectConstant.HomelandSlotId; //家园Id
             Guid jianzhuBagTid = new Guid("{312612a5-30dd-4e0a-a71d-5074397428fb}");   //建筑背包tid
@@ -881,23 +881,25 @@ namespace GY2021001BLL
 
             #region 修改属性
 
+            DateTime dt = DateTime.UtcNow;
             if (time > 0) //若需要冷却
             {
                 if (!datas.Verify(gim.GetNumberOfStackRemainder(worker, out _) > 0, "所有建筑工人都在忙", worker.TemplateId))
                 {
                     return;
                 }
-
-                FastChangingProperty fcpObj = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, time, 0, DateTime.UtcNow)
+                FastChangingProperty fcpObj = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, time, 0, dt)
                 {
-                    Name = "upgradecd",
-                    Tag = (datas.GameChar.Id, gameItem.Id),
+                    Name = ProjectConstant.UpgradeTimeName,
+                    Tag = ValueTuple.Create(datas.GameChar.Id, gameItem.Id),
                 };
-                gameItem.Name2FastChangingProperty["upgradecd"] = fcpObj;
-                DateTime dtComplate = fcpObj.ComputeComplateDateTime();   //预计完成时间
+                gameItem.Name2FastChangingProperty[ProjectConstant.UpgradeTimeName] = fcpObj;
                 fcpObj.Completed += UpgradeCompleted;
                 //计算可能的完成时间
-                Timer timer = new Timer(UpgradeComplateCallback, (datas.GameChar.Id, gameItem.Id), dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.01), Timeout.InfiniteTimeSpan);
+                DateTime dtComplate = fcpObj.ComputeComplateDateTime();   //预计完成时间
+                TimeSpan ts = dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.01);
+                Timer timer = new Timer(UpgradeComplateCallback, ValueTuple.Create(datas.GameChar.Id, gameItem.Id),
+                    ts, Timeout.InfiniteTimeSpan);timer.DisposeAsync();
                 worker.Count++;
                 datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
             }

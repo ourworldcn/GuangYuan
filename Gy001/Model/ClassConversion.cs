@@ -213,7 +213,7 @@ namespace GY2021001WebApi.Models
     public partial class ChangesItemDto
     {
 
-        public static explicit operator ChangesItemDto(ChangesItem obj)
+        public static implicit operator ChangesItemDto(ChangesItem obj)
         {
             var result = new ChangesItemDto()
             {

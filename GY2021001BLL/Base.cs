@@ -40,10 +40,10 @@ namespace GY2021001BLL
         #region 属性及相关
 
         private readonly IServiceProvider _Services;
-        public IServiceProvider Services { get => _Services; }
+        public IServiceProvider Services => _Services;
 
         private readonly TOptions _Options;
-        public TOptions Options { get => _Options; }
+        public TOptions Options => _Options;
 
         private VWorld _VWorld;
         /// <summary>
@@ -51,7 +51,7 @@ namespace GY2021001BLL
         /// </summary>
         public VWorld World
         {
-            get => _VWorld ??= _Services.GetService<VWorld>();   //一定是单例，所以无所谓并发
+            get => _VWorld ??= _Services.GetRequiredService<VWorld>();   //一定是单例，所以无所谓并发
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace GY2021001BLL
         /// </summary>
         public GameManagerBase()
         {
-            
+
         }
 
         /// <summary>

@@ -10,6 +10,7 @@ using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OwGame;
 
 namespace GY2021001WebApi.Controllers
@@ -439,12 +440,29 @@ namespace GY2021001WebApi.Controllers
             var result = new GetChangesItemReturnDto();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                var logger = HttpContext.RequestServices.GetRequiredService<ILogger<GameCharController>>();
+                logger.LogWarning("[{dt}]{method}锁定失败。", DateTime.UtcNow, nameof(GetChangesItem));
                 return Unauthorized("令牌无效");
+            }
             try
             {
                 var gc = gu.CurrentChar;
+                if (0 == gc.ChangesItems.Count)
+                {
+                    var fcp = gc.Name2FastChangingProperty.GetValueOrDefault(ProjectConstant.UpgradeTimeName);
+                    if (fcp is null)
+                        result.DebugMessage = $"无法找到{ProjectConstant.UpgradeTimeName}夸苏变化属性。";
+                    else
+                        result.DebugMessage = $"m={fcp.MaxValue},c={fcp.LastValue},t={fcp.LastDateTime}";
+                }
                 result.Changes.AddRange(gc.ChangesItems.Select(c => (ChangesItemDto)c));
                 gc.ChangesItems.Clear();
+            }
+            catch (Exception err)
+            {
+                result.DebugMessage = err.ToString();
+                result.HasError = true;
             }
             finally
             {

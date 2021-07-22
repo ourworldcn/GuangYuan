@@ -1,4 +1,5 @@
-﻿using GY2021001DAL;
+﻿using GY2021001BLL.Homeland;
+using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -150,6 +151,11 @@ namespace GY2021001BLL
         public static readonly Guid MucaishuTId = new Guid("{9c5edb6d-b5bd-4be9-a3a6-cbf794e6bf13}");
 
         /// <summary>
+        /// 木材仓库模板Id。
+        /// </summary>
+        public static readonly Guid MucaiStoreTId = new Guid("{8caea73b-e210-47bf-a121-06cc12973baf}");
+
+        /// <summary>
         /// 家园方案背包模板Id。
         /// </summary>
         public static readonly Guid HomelandPlanBagTId = new Guid("{366468d3-00d7-42ec-811d-8822fb0def42}");
@@ -187,6 +193,11 @@ namespace GY2021001BLL
         /// 级别属性的名字。
         /// </summary>
         public const string LevelPropertyName = "lv";   //Runes
+
+        /// <summary>
+        /// 升级计时快速变化属性名。
+        /// </summary>
+        public const string UpgradeTimeName = "upgradecd";
 
         /// <summary>
         /// 堆叠上限属性的名字。没有该属性的不可堆叠，无上限限制用-1表示。
@@ -395,6 +406,18 @@ namespace GY2021001BLL
                 world.ItemManager.ForcedAdd(item, runseSlot);
             }
             result = true;
+            //修正木材存贮最大量
+            //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
+            //var stcMucai = mucai.GetStc();
+            //if (stcMucai < decimal.MaxValue)
+            //{
+            //    var mucaiStore = gameChar.GetHomeland().Children.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);
+            //    var stcs = mucaiStore.Select(c => c.GetStc());
+            //    if (stcs.Any(c => c == decimal.MaxValue))   //若有任何仓库是最大堆叠
+            //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, -1);
+            //    else
+            //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, stcs.Sum() + stcMucai);
+            //}
             return result;
         }
 
