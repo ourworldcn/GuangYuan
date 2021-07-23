@@ -95,7 +95,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2191,
+      "dsid": 21587,
+      "abid": "2127;2128;2129;2130",
+      "labid": "2127;2129"
     },
     "GId": 31003,
     "ChildrenTemplateIdString": "",
@@ -199,7 +203,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2178,
+      "dsid": 2145,
+      "abid": "2161;2162;2163;2164",
+      "labid": "2161;2162"
     },
     "GId": 40053,
     "ChildrenTemplateIdString": "",
@@ -536,7 +544,7 @@
     "Id": "gSXXz0I9OEe8kDVlSjtp8A==",
     "Properties": {
       "stc": 999,
-      "sd": 40,
+      "bd": 40,
       "it": 2
     },
     "GId": 18006,
@@ -628,7 +636,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2178,
+      "dsid": 2145,
+      "abid": "2161;2162;2163;2164",
+      "labid": "2161;2162"
     },
     "GId": 40051,
     "ChildrenTemplateIdString": "",
@@ -895,7 +907,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2185,
+      "dsid": 2152,
+      "abid": "2161;2169;2171",
+      "labid": "2161;2169;2171"
     },
     "GId": 42002,
     "ChildrenTemplateIdString": "",
@@ -1201,7 +1217,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2190,
+      "dsid": 2157,
+      "abid": "2127;2128;2129;2130",
+      "labid": "2127;2129"
     },
     "GId": 31002,
     "ChildrenTemplateIdString": "",
@@ -1272,7 +1292,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2187,
+      "dsid": 2154,
+      "abid": "2161;2170;2171",
+      "labid": "2161;2170;2171"
     },
     "GId": 42004,
     "ChildrenTemplateIdString": "",
@@ -1337,7 +1361,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2183,
+      "dsid": 2150,
+      "abid": 2162,
+      "labid": 2162
     },
     "GId": 41042,
     "ChildrenTemplateIdString": "",
@@ -1393,7 +1421,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2183,
+      "dsid": 2150,
+      "abid": 2162,
+      "labid": 2162
     },
     "GId": 41041,
     "ChildrenTemplateIdString": "",
@@ -1691,7 +1723,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2174,
+      "dsid": 2141,
+      "abid": "2161;2162;2163;2164;2165",
+      "labid": "2161;2162;2165"
     },
     "GId": 40011,
     "ChildrenTemplateIdString": "",
@@ -1767,7 +1803,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2173,
+      "dsid": 2140,
+      "abid": "2161;2162;2163;2164",
+      "labid": "2161;2162"
     },
     "GId": 40003,
     "ChildrenTemplateIdString": "",
@@ -1823,7 +1863,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2179,
+      "dsid": 2146,
+      "abid": "2162;2163;2165",
+      "labid": "2162;2163;2165"
     },
     "GId": 41003,
     "ChildrenTemplateIdString": "",
@@ -1878,8 +1922,12 @@
         7,
         8,
         9,
-        99
-      ]
+        999
+      ],
+      "nmid": 2175,
+      "dsid": 2142,
+      "abid": "2161;2162;2164;2165",
+      "labid": "2161;2162"
     },
     "GId": 40023,
     "ChildrenTemplateIdString": "",
@@ -2506,7 +2554,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2176,
+      "dsid": 2143,
+      "abid": "2161;2162;2163",
+      "labid": "2161;2163"
     },
     "GId": 40033,
     "ChildrenTemplateIdString": "",
@@ -2562,7 +2614,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2181,
+      "dsid": 2148,
+      "abid": "2165;2166;2167;2195",
+      "labid": "2166;2167;2195"
     },
     "GId": 41022,
     "ChildrenTemplateIdString": "",
@@ -2575,7 +2631,7 @@
       "tnm": 5,
       "trm": 3,
       "dfm": 4,
-      "sd": 200
+      "bd": 200
     },
     "GId": 100003,
     "ChildrenTemplateIdString": "{fb9ccb27-05c2-4df1-ae21-345eeaace08f},{7a00740c-035e-4846-a619-2d0855f60b55},{9c5edb6d-b5bd-4be9-a3a6-cbf794e6bf13},{d3f271c6-1246-4812-b2a6-3a01c3e76714},{e31939bd-7056-4293-9a55-6c9ee0cd4681},{8caea73b-e210-47bf-a121-06cc12973baf}",
@@ -2776,7 +2832,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2176,
+      "dsid": 2143,
+      "abid": "2161;2162;2163",
+      "labid": "2161;2163"
     },
     "GId": 40031,
     "ChildrenTemplateIdString": "",
@@ -2832,7 +2892,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2181,
+      "dsid": 2148,
+      "abid": "2165;2166;2167;2195",
+      "labid": "2166;2167;2195"
     },
     "GId": 41023,
     "ChildrenTemplateIdString": "",
@@ -2887,8 +2951,12 @@
         7,
         8,
         9,
-        99
-      ]
+        999
+      ],
+      "nmid": 2175,
+      "dsid": 2142,
+      "abid": "2161;2162;2164;2165",
+      "labid": "2161;2162"
     },
     "GId": 40021,
     "ChildrenTemplateIdString": "",
@@ -3130,7 +3198,11 @@
         8000,
         9000,
         10000
-      ]
+      ],
+      "nmid": 2189,
+      "dsid": 2156,
+      "abid": 2161,
+      "labid": 2161
     },
     "GId": 31001,
     "ChildrenTemplateIdString": "",
@@ -3186,7 +3258,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2178,
+      "dsid": 2145,
+      "abid": "2161;2162;2163;2164",
+      "labid": "2161;2162"
     },
     "GId": 40052,
     "ChildrenTemplateIdString": "",
@@ -3281,7 +3357,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2178,
+      "dsid": 2145,
+      "abid": "2161;2162;2163;2164",
+      "labid": "2161;2162"
     },
     "GId": 40054,
     "ChildrenTemplateIdString": "",
@@ -3302,7 +3382,7 @@
     "Id": "A7guHKt+TEq1xsGpOBTUIw==",
     "Properties": {
       "stc": 999,
-      "sd": 40,
+      "bd": 40,
       "it": 2
     },
     "GId": 18007,
@@ -3386,7 +3466,7 @@
     "Id": "pclBAoNG00262Tx5ZDgM7w==",
     "Properties": {
       "stc": 999,
-      "sd": 40,
+      "bd": 40,
       "it": 2
     },
     "GId": 18009,
@@ -3799,7 +3879,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2179,
+      "dsid": 2146,
+      "abid": "2162;2163;2165",
+      "labid": "2162;2163;2165"
     },
     "GId": 41001,
     "ChildrenTemplateIdString": "",
@@ -3855,7 +3939,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2173,
+      "dsid": 2140,
+      "abid": "2161;2162;2163;2164",
+      "labid": "2161;2162"
     },
     "GId": 40004,
     "ChildrenTemplateIdString": "",
@@ -3865,7 +3953,7 @@
     "Id": "PFl9rILOQkaXoxQCXaYz5A==",
     "Properties": {
       "stc": 999,
-      "sd": 40,
+      "bd": 40,
       "it": 2
     },
     "GId": 18003,
@@ -3922,7 +4010,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2193,
+      "dsid": 2160,
+      "abid": 0,
+      "labid": 0
     },
     "GId": 11001,
     "ChildrenTemplateIdString": "",
@@ -3996,7 +4088,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2188,
+      "dsid": 2155,
+      "abid": "2161;2172;2171",
+      "labid": "2161;2168;2172"
     },
     "GId": 42005,
     "ChildrenTemplateIdString": "",
@@ -4052,7 +4148,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2180,
+      "dsid": 2147,
+      "abid": "2163;2165",
+      "labid": "2163;2165"
     },
     "GId": 41012,
     "ChildrenTemplateIdString": "",
@@ -4137,7 +4237,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2179,
+      "dsid": 2146,
+      "abid": "2162;2163;2165",
+      "labid": "2162;2163;2165"
     },
     "GId": 41002,
     "ChildrenTemplateIdString": "",
@@ -4153,7 +4257,16 @@
       "fcpmCount": 3,
       "fcpiCount": 3,
       "fcpcCount": 3,
-      "tdt": 3
+      "lud": [
+        5,
+        5,
+        10,
+        10,
+        30,
+        0
+      ],
+      "lv": 0,
+      "ltlv": "2021-1-1T0:0:0"
     },
     "GId": null,
     "ChildrenTemplateIdString": "",
@@ -4452,7 +4565,7 @@
       "tnm": 5,
       "trm": 3,
       "dfm": 4,
-      "sd": 100
+      "bd": 100
     },
     "GId": 100002,
     "ChildrenTemplateIdString": "{fb9ccb27-05c2-4df1-ae21-345eeaace08f},{7a00740c-035e-4846-a619-2d0855f60b55},{9c5edb6d-b5bd-4be9-a3a6-cbf794e6bf13},{d3f271c6-1246-4812-b2a6-3a01c3e76714},{e31939bd-7056-4293-9a55-6c9ee0cd4681},{8caea73b-e210-47bf-a121-06cc12973baf}",
@@ -4462,7 +4575,7 @@
     "Id": "UzlRWB0Kw0yH2RaD4IRiOA==",
     "Properties": {
       "stc": 999,
-      "sd": 40,
+      "bd": 40,
       "it": 2
     },
     "GId": 18005,
@@ -5140,8 +5253,12 @@
         7,
         8,
         9,
-        99
-      ]
+        999
+      ],
+      "nmid": 2175,
+      "dsid": 2142,
+      "abid": "2161;2162;2164;2165",
+      "labid": "2161;2162"
     },
     "GId": 40024,
     "ChildrenTemplateIdString": "",
@@ -5306,7 +5423,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2182,
+      "dsid": 2149,
+      "abid": "2162;2163;2165",
+      "labid": "2162;2163;2165"
     },
     "GId": 41031,
     "ChildrenTemplateIdString": "",
@@ -5383,7 +5504,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2177,
+      "dsid": 2144,
+      "abid": "2161;2162;2163;2164;2165",
+      "labid": "2161;2162;2165"
     },
     "GId": 40042,
     "ChildrenTemplateIdString": "",
@@ -5817,7 +5942,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2181,
+      "dsid": 2148,
+      "abid": "2165;2166;2167;2195",
+      "labid": "2166;2167;2195"
     },
     "GId": 41021,
     "ChildrenTemplateIdString": "",
@@ -5873,7 +6002,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2173,
+      "dsid": 2140,
+      "abid": "2161;2162;2163;2164",
+      "labid": "2161;2162"
     },
     "GId": 40002,
     "ChildrenTemplateIdString": "",
@@ -5929,7 +6062,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2184,
+      "dsid": 2151,
+      "abid": "2161;2168;2171",
+      "labid": "2161;2168;2171"
     },
     "GId": 42001,
     "ChildrenTemplateIdString": "",
@@ -6123,7 +6260,7 @@
     "Id": "Mo/QHRsI20uV6hZrGjesJg==",
     "Properties": {
       "stc": 999,
-      "sd": 20,
+      "bd": 20,
       "it": 2
     },
     "GId": 18002,
@@ -6406,7 +6543,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2186,
+      "dsid": 2153,
+      "abid": "2161;2167;2171",
+      "labid": "2161;2167;2171"
     },
     "GId": 42003,
     "ChildrenTemplateIdString": "",
@@ -6981,8 +7122,12 @@
         7,
         8,
         9,
-        99
-      ]
+        999
+      ],
+      "nmid": 2175,
+      "dsid": 2142,
+      "abid": "2161;2162;2164;2165",
+      "labid": "2161;2162"
     },
     "GId": 40022,
     "ChildrenTemplateIdString": "",
@@ -7128,7 +7273,7 @@
     "Id": "NOGzjizni0uq0TqPU04YKQ==",
     "Properties": {
       "stc": 999,
-      "sd": 40,
+      "bd": 40,
       "it": 2
     },
     "GId": 18008,
@@ -7200,8 +7345,12 @@
         7,
         8,
         9,
-        99
-      ]
+        999
+      ],
+      "nmid": 2174,
+      "dsid": 2141,
+      "abid": "2161;2162;2163;2164;2165",
+      "labid": "2161;2162;2165"
     },
     "GId": 40012,
     "ChildrenTemplateIdString": "",
@@ -7276,7 +7425,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2173,
+      "dsid": 2140,
+      "abid": "2161;2162;2163;2164",
+      "labid": "2161;2162"
     },
     "GId": 40001,
     "ChildrenTemplateIdString": "",
@@ -7332,7 +7485,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2176,
+      "dsid": 2143,
+      "abid": "2161;2162;2163",
+      "labid": "2161;2163"
     },
     "GId": 40032,
     "ChildrenTemplateIdString": "",
@@ -7400,7 +7557,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2177,
+      "dsid": 2144,
+      "abid": "2161;2162;2163;2164;2165",
+      "labid": "2161;2162;2165"
     },
     "GId": 40041,
     "ChildrenTemplateIdString": "",
@@ -7573,8 +7734,12 @@
         7,
         8,
         9,
-        99
-      ]
+        999
+      ],
+      "nmid": 2174,
+      "dsid": 2141,
+      "abid": "2161;2162;2163;2164;2165",
+      "labid": "2161;2162;2165"
     },
     "GId": 40013,
     "ChildrenTemplateIdString": "",
@@ -7752,7 +7917,7 @@
     "Id": "iQ69qQURUkqYKpfm7krVdw==",
     "Properties": {
       "stc": 999,
-      "sd": 10,
+      "bd": 10,
       "it": 2
     },
     "GId": 18001,
@@ -7867,7 +8032,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2180,
+      "dsid": 2147,
+      "abid": "2163;2165",
+      "labid": "2163;2165"
     },
     "GId": 41011,
     "ChildrenTemplateIdString": "",
@@ -7923,7 +8092,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2180,
+      "dsid": 2147,
+      "abid": "2163;2165",
+      "labid": "2163;2165"
     },
     "GId": 41013,
     "ChildrenTemplateIdString": "",
@@ -7984,7 +8157,7 @@
     "Id": "3eeEZcJzpUG2Qtuk/grwHg==",
     "Properties": {
       "stc": 999,
-      "sd": 40,
+      "bd": 40,
       "it": 2
     },
     "GId": 18004,
@@ -8071,7 +8244,11 @@
         8,
         9,
         99
-      ]
+      ],
+      "nmid": 2182,
+      "dsid": 2149,
+      "abid": "2162;2163;2165",
+      "labid": "2162;2163;2165"
     },
     "GId": 41032,
     "ChildrenTemplateIdString": "",
@@ -8165,7 +8342,11 @@
         850,
         900,
         1000
-      ]
+      ],
+      "nmid": 2192,
+      "dsid": 21597,
+      "abid": "2161;2194",
+      "labid": "2161;2194"
     },
     "GId": 31004,
     "ChildrenTemplateIdString": "",
@@ -8220,8 +8401,12 @@
         7,
         8,
         9,
-        99
-      ]
+        999
+      ],
+      "nmid": 2174,
+      "dsid": 2141,
+      "abid": "2161;2162;2163;2164;2165",
+      "labid": "2161;2162;2165"
     },
     "GId": 40014,
     "ChildrenTemplateIdString": "",
@@ -8660,7 +8845,7 @@
     "Id": "KU+cVLcU/EWO+E1aC/1BtA==",
     "Properties": {
       "stc": 999,
-      "sd": 40,
+      "bd": 40,
       "it": 2
     },
     "GId": 18010,

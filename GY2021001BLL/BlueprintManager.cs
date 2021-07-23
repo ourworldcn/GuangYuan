@@ -710,6 +710,10 @@ namespace GY2021001BLL
                         Hecheng(datas);
                         succ = true;
                         break;
+                    case "dd5095f8-929f-45a5-a86c-4a1792e9d9c8":
+                        BuyPveCount(datas);
+                        succ = true;
+                        break;
                     default:
                         succ = false;
                         break;
@@ -899,7 +903,7 @@ namespace GY2021001BLL
                 DateTime dtComplate = fcpObj.ComputeComplateDateTime();   //预计完成时间
                 TimeSpan ts = dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.01);
                 Timer timer = new Timer(UpgradeComplateCallback, ValueTuple.Create(datas.GameChar.Id, gameItem.Id),
-                    ts, Timeout.InfiniteTimeSpan);timer.DisposeAsync();
+                    ts, Timeout.InfiniteTimeSpan); timer.DisposeAsync();
                 worker.Count++;
                 datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
             }
@@ -996,6 +1000,46 @@ namespace GY2021001BLL
             return;
         }
 
+        /// <summary>
+        /// 购买pve次数。
+        /// </summary>
+        /// <param name="datas">钻石和塔防次数对象会在变化中返回。</param>
+        private void BuyPveCount(ApplyBlueprintDatas datas)
+        {
+            //5，5，10，10，30,0
+            //ltlv 记载最后一次升级的时间
+            var gc = datas.GameChar;    //角色对象
+            var td = datas.Lookup(gc.GameItems, ProjectConstant.TdPveCounterTId);
+            if (td is null) //若无塔防对象
+                return;
+            if (!datas.Verify(td.Name2FastChangingProperty.TryGetValue("Count", out var fcp), "找不到自动恢复属性。"))
+                return;
+            var lv = td.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+            DateTime dt = DateTime.UtcNow;  //当前时间
+            if (td.TryGetPropertyValue("ltlv", out var ltlvObj) && DateTime.TryParse(ltlvObj as string, out var ltlv))  //若找到上次升级时间属性
+            {
+                if (dt.Date <= ltlv.Date && !datas.Verify(td.Template.GetMaxLevel("lud") > lv + 1, "已经用尽全部购买次数。"))
+                    return;
+            }
+            else
+            {
+                ltlv = dt;
+                lv = 0;
+            }
+            var diam = datas.Lookup(gc.GameItems, ProjectConstant.ZuanshiId);//钻石
+            if (diam is null)   //若没有钻石
+                return;
+            if (!datas.Verify(td.TryGetDecimalPropertyValue("lud", out var lud), "没有找到升级所需钻石数量。"))
+                return;
+            if (!datas.Verify(lud <= diam.Count, "钻石不足")) return;
+            //修改数据
+            var gim = World.ItemManager;
+            gim.SetPropertyValue(td, ProjectConstant.LevelPropertyName, lv + 1);    //变更购买价格
+            td.SetPropertyValue("ltlv", ltlv.ToString());  //记录购时间
+            datas.ChangesItem.AddToChanges(td.ContainerId.Value, td);
+            diam.Count -= lud;  //改钻石
+            datas.ChangesItem.AddToChanges(diam.ContainerId.Value, diam);
+        }
         #endregion 家园相关
 
         [ContextStatic]

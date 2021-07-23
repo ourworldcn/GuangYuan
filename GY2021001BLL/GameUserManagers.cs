@@ -773,7 +773,7 @@ namespace GY2021001BLL
                 //通知所属物品加载完毕
                 var coll = OwHelper.GetAllSubItemsOfTree(e.GameChar.GameItems, c => c.Children).ToArray();
                 foreach (var item in coll)
-                    item.InvokeLoaded(Services);
+                    item.InvokeLoading(Services);
                 //清除锁定属性槽内物品，放回道具背包中
                 var gim = World.ItemManager;
                 var daojuBag = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包

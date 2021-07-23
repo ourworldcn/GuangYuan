@@ -171,6 +171,10 @@ namespace GY2021001BLL
         public static readonly Guid HomelandPlanTId = new Guid("{5d374961-a072-4222-ab46-94d72dc394f7}");
 
         /// <summary>
+        /// 塔防PVE次数的记录对象。
+        /// </summary>
+        public static readonly Guid TdPveCounterTId = new Guid("{D56E11C8-48AA-4787-822B-CE4EBBFA684D}");
+        /// <summary>
         /// 家园数据存储于家园方案对象中 <see cref="GameThingBase.ExtendProperties"/> 属性的名字。
         /// </summary>
         public const string HomelandPlanPropertyName = "d681df0c-73ed-434a-9eb7-5c6c158ea1af";

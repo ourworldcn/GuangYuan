@@ -166,7 +166,7 @@ namespace GY2021001DAL
             }
             return succ;
         }
-        
+
         /// <summary>
         /// 试图转换为<see cref="GameItemTemplate"/>,如果不能转化则返回null。
         /// </summary>
@@ -463,6 +463,13 @@ namespace GY2021001DAL
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void AddToAdds(this ICollection<ChangesItem> coll, params GameItem[] items)
+        {
+            foreach (var item in items)
+                coll.AddToAdds(item.ContainerId.Value, item);
+        }
+
         /// <summary>
         /// 追加物品到移除数据中。
         /// </summary>
@@ -505,6 +512,22 @@ namespace GY2021001DAL
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public void AddToChanges(this ICollection<ChangesItem> coll, params GameItem[] items)
+        {
+            //TO DO以后优化
+            //var tuples = from item in items
+            //             join change in coll
+            //             on item.ContainerId.Value equals change.ContainerId into g
+            //             from tmp in g.DefaultIfEmpty() //左链
+            //             select (tmp, item);
+            //foreach (var item in tuples)
+            //{
+            //    item.change.Changes.Add(item.item);
+            //}
+            foreach (var item in items)
+                coll.AddToChanges(item.ContainerId.Value, item);
+        }
     }
 
     public interface IGameItemHelper

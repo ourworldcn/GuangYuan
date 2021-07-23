@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace GY2021001DAL
 {
@@ -291,14 +292,13 @@ namespace GY2021001DAL
             return result;
         }
 
-
-        private ConcurrentDictionary<string, object> _TemporaryDictionary;
-
+        private ConcurrentDictionary<string, ExtendPropertyWrapper> _ExtendPropertyDictionary;
+        
         /// <summary>
-        /// 这里记录一些临时属性。
-        /// 这些属性不会在保存时持久化，也不会在创建或加载时初始化。
+        /// 扩展属性的封装字典。
         /// </summary>
-        public ConcurrentDictionary<string, object> TemporaryDictionary => _TemporaryDictionary ??= new ConcurrentDictionary<string, object>();
+        [NotMapped]
+        public ConcurrentDictionary<string, ExtendPropertyWrapper> ExtendPropertyDictionary => _ExtendPropertyDictionary ??= new ConcurrentDictionary<string, ExtendPropertyWrapper>();
 
         #endregion 扩展属性相关
 
@@ -311,6 +311,15 @@ namespace GY2021001DAL
             }
             finally
             {
+                if (null != _ExtendPropertyDictionary) //若需要写入
+                {
+                    ExtendPropertyWrapper.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
+                    //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
+                    //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
+                    //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
+                    //foreach (var item in removeItems)
+                    //    ExtendProperties.Remove(item);
+                }
                 foreach (var item in Name2FastChangingProperty)
                 {
                     FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
@@ -332,15 +341,20 @@ namespace GY2021001DAL
         }
 
         /// <summary>
-        /// 
+        /// 该对象自身数据已经加载到内存中进行调用。
         /// </summary>
         /// <param name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
-        public void InvokeLoaded(IServiceProvider services)
+        public void InvokeLoading(IServiceProvider services)
         {
             var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
             Template = helper.GetTemplateFromeId(TemplateId);
+            foreach (var item in ExtendProperties)
+            {
+                if (ExtendPropertyWrapper.TryParse(item, out var tmp))
+                    ExtendPropertyDictionary[tmp.Name] = tmp;
+            }
+            ExtendPropertyDictionary["LastLoginTime"] = new ExtendPropertyWrapper(DateTime.UtcNow, "LastLoginTime", true);
         }
-
 
         /// <summary>
         /// 引发<see cref="Created"/>事件。
@@ -385,7 +399,7 @@ namespace GY2021001DAL
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                _TemporaryDictionary = null;
+                _ExtendPropertyDictionary = null;
                 _IsDisposed = true;
             }
         }
@@ -442,6 +456,118 @@ namespace GY2021001DAL
         /// 获取或设置值。
         /// </summary>
         public string Value { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ExtendPropertyWrapper
+    {
+        /// <summary>
+        /// 持久化标志。
+        /// <see cref="GameExtendProperty.StringValue"/>以该字符串开头，且在逗号分隔之后的文本是一个类型的程序集限定名时，
+        /// 则该<see cref="GameExtendProperty"/>对象会被认为是一个需要持久化的属性。
+        /// </summary>
+        public const string Mark = "a88c6717-4fdc-4cb0-b127-e1799ebf3b35";
+
+        /// <summary>
+        /// 试图从<see cref="GameExtendProperty"/>中转化得到<see cref="PersistenceItem"/>对象。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="result"></param>
+        /// <returns>true成功得到对象，false转化错误。</returns>
+        static public bool TryParse(GameExtendProperty obj, out ExtendPropertyWrapper result)
+        {
+            var index = obj.StringValue is null ? -1 : obj.StringValue.IndexOf(',');
+            if (-1 == index || Mark != obj.StringValue[..index])    //若不是特定标记开头
+            {
+                result = null;
+                return false;
+            }
+            var fullName = obj.StringValue[(index + 1)..];
+            var type = Type.GetType(fullName);
+            if (type is null)
+            {
+                result = null;
+                return false;
+            }
+            result = new ExtendPropertyWrapper()
+            {
+                Data = string.IsNullOrWhiteSpace(obj.Text) ? default : JsonSerializer.Deserialize(obj.Text, type),
+                IsPersistence = true,
+                Name = obj.Name,
+                Type = type,
+            };
+            return true;
+        }
+
+        /// <summary>
+        /// 将当前对象内容填写到指定的<see cref="GameExtendProperty"/>对象中。
+        /// </summary>
+        /// <param name="obj"></param>
+        public void FillTo(GameExtendProperty obj)
+        {
+            obj.Text = Data is null ? null : JsonSerializer.Serialize(Data, Type);
+            obj.StringValue = $"{Mark},{Type.AssemblyQualifiedName}";
+            obj.Name = Name;
+        }
+
+        /// <summary>
+        /// 更新或追加对象。
+        /// </summary>
+        /// <param name="srcs"></param>
+        /// <param name="dests"></param>
+        static public void Fill(IEnumerable<ExtendPropertyWrapper> srcs, ICollection<GameExtendProperty> dests)
+        {
+            var coll = (from src in srcs
+                        where src.IsPersistence
+                        join dest in dests
+                        on src.Name equals dest.Name into g
+                        from tmp in g.DefaultIfEmpty()
+                        select (src, dest: tmp)).ToArray();
+            foreach (var item in coll)  //更新已有对象
+            {
+                if (item.dest is null)
+                {
+                    var tmp = new GameExtendProperty();
+                    item.src.FillTo(tmp);
+                    dests.Add(tmp);
+                }
+                else
+                    item.src.FillTo(item.dest);
+            }
+        }
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public ExtendPropertyWrapper()
+        {
+
+        }
+
+        /// <summary>
+        /// 名称，对应<see cref="GameExtendProperty.Name"/>
+        /// </summary>
+        public string Name { get; set; }
+
+        public ExtendPropertyWrapper(object data, string name, bool isPersistence = false, Type type = null)
+        {
+            Data = data;
+            Name = name;
+            IsPersistence = isPersistence;
+            Type = type ?? data.GetType();
+        }
+
+        /// <summary>
+        /// <see cref="Data"/>的实际类型，<see cref="Type.FullName"/>会存储在<see cref="GameExtendProperty.StringValue"/>中。前提是该数据需要持久化。
+        /// 鉴于二进制序列化过于复杂危险，当前实现使用<see cref="JsonSerializer"/>来完成序列化工作。
+        /// </summary>
+        public Type Type { get; set; }
+
+        public object Data { get; set; }
+
+        public bool IsPersistence { get; set; }
     }
 
     /// <summary>

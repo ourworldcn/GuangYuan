@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Linq.Expressions.Expression;
 
@@ -21,7 +18,7 @@ namespace Gy001Tools
         }
         private readonly string comparePattern = @"(?<left>[^\+\-\*\/\=]+)(?<op>[\+\-\*\/\=]+)(?<right>\d+)[\,，]?";
         [ThreadStatic]
-        static Random _WorldRandom;
+        private static Random _WorldRandom;
         public static Random WorldRandom => _WorldRandom ?? (_WorldRandom = new Random());
 
         private void button1_Click(object sender, EventArgs e)
@@ -38,7 +35,7 @@ namespace Gy001Tools
         }
         private void Form2_Load(object sender, EventArgs e)
         {
-            IEnumerable<string> coll= new string[] { string.Empty, "", "ds", null, " " };
+            IEnumerable<string> coll = new string[] { string.Empty, "", "ds", null, " " };
             var ary = coll.OfType<string>().ToArray();
             var str = decimal.MaxValue.ToString();
             var d1 = Math.Round(3.5, MidpointRounding.AwayFromZero);
@@ -49,23 +46,19 @@ namespace Gy001Tools
 
         private void test()
         {
-            System.Threading.Timer tm = new System.Threading.Timer(Callback, (DateTime.UtcNow), TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
-            Debug.WriteLine("Boot:{0}",DateTime.UtcNow);
-            var dt1 = DateTime.UtcNow;
-            var dt2 = DateTime.UtcNow;
-            var tmp = (dt1 - dt2).Ticks;
+
         }
 
         private void Callback(object state)
         {
-            Debug.WriteLine("Run:{0}",DateTime.UtcNow);
+            Debug.WriteLine("Run:{0}", DateTime.UtcNow);
         }
 
-        string left = "k1";
-        string right = "2";
-        ExpressionType Operator = ExpressionType.GreaterThanOrEqual;
+        private readonly string left = "k1";
+        private readonly string right = "2";
+        private readonly ExpressionType Operator = ExpressionType.GreaterThanOrEqual;
 
-        bool GetResult(IDictionary<string, object> dic)
+        private bool GetResult(IDictionary<string, object> dic)
         {
             decimal left, right;
             if (decimal.TryParse(this.left, out decimal dec))

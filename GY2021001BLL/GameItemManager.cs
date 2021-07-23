@@ -763,7 +763,7 @@ namespace GY2021001BLL
                     return;
                 }
                 var succ = ForcedAdd(gameItem, parent);
-                changeItems.AddToAdds(parent.Id, gameItem);
+                changeItems?.AddToAdds(parent.Id, gameItem);
                 return;
             }
             else //若可堆叠
@@ -783,7 +783,7 @@ namespace GY2021001BLL
                     var redCount = Math.Min(GetNumberOfStackRemainder(dest, out _), gameItem.Count ?? 0);   //移动的数量
                     dest.Count = dest.Count.Value + redCount;
                     gameItem.Count -= redCount;
-                    changeItems.AddToChanges(parent.Id, dest);
+                    changeItems?.AddToChanges(parent.Id, dest);
                     result.Add(dest);
                 }
                 if (gameItem.Count <= 0)   //若已经全部堆叠进入
