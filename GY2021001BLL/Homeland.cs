@@ -4,8 +4,6 @@
 
 using GY2021001DAL;
 using Gy2021001Template;
-using Microsoft.Extensions.DependencyInjection;
-using OwGame;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -169,7 +167,7 @@ namespace GY2021001BLL.Homeland
         /// <summary>
         /// 缓存所有地块信息。
         /// </summary>
-        static ConcurrentDictionary<ValueTuple<int, int>, GameItemTemplate> _AllDikuai;
+        private static ConcurrentDictionary<ValueTuple<int, int>, GameItemTemplate> _AllDikuai;
 
         /// <summary>
         /// 获取所有地块模板的字典。
@@ -437,20 +435,7 @@ namespace GY2021001BLL.Homeland
            manager.GetAllDikuai().Where(c => c.Value.CatalogNumber == 100 && c.Value.IsFree()) //免费的
                 .Select(c => c.Value.GetFenggeNumber()).Distinct();
 
-        static public void AddFengge(this GameChar gameChar, HomelandFengge fengge, int dikuaiIndex, IServiceProvider services)
-        {
-            foreach (var fangan in fengge.Fangans)
-            {
-
-            }
-        }
         #region 方案的缓存与存储
-
-        /// <summary>
-        /// 暂存用户的家园风格-方案对象。
-        /// 键是角色Id,值是所有风格对象集合。
-        /// </summary>
-        static readonly ConcurrentDictionary<Guid, List<HomelandFengge>> _HomelandFengges = new ConcurrentDictionary<Guid, List<HomelandFengge>>();
 
         /// <summary>
         /// 获取家园风格对象。
@@ -459,34 +444,20 @@ namespace GY2021001BLL.Homeland
         /// <returns>初始状态可能是空集合。需要自行初始化。</returns>
         public static List<HomelandFengge> GetFengges(this GameChar gameChar)
         {
-            var result = _HomelandFengges.GetOrAdd(gameChar.Id, c =>
-            {
-                var bag = gameChar.GetFenggeBag();
-                var obj = bag.GetOrAddExtendProperty(ProjectConstant.HomelandPlanPropertyName, c => new GameExtendProperty() { Name = c });
+            var bag = gameChar.GetHomeland().Children.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId);   //方案背包
+            var descriptor = bag.ExtendPropertyDictionary.GetOrAdd(ProjectConstant.HomelandPlanPropertyName, c =>
+                 new ExtendPropertyDescriptor()
+                 {
+                     Data = new List<HomelandFengge>(),
+                     IsPersistence = true,
+                     Name = c,
+                     Type = typeof(List<HomelandFengge>),
+                 });
+            var result = descriptor.Data as List<HomelandFengge>;
 
-                var str = obj.Text;
-                var result = string.IsNullOrWhiteSpace(str) ? new List<HomelandFengge>() : (List<HomelandFengge>)JsonSerializer.Deserialize(str, typeof(List<HomelandFengge>));
-                gameChar.Saving += Bag_Saving;
-                return result;
-            });
             return result;
         }
 
-        private static void Bag_Saving(object sender, EventArgs e)
-        {
-            if (sender is GameChar gc && _HomelandFengges.TryGetValue(gc.Id, out var list))
-            {
-                var bag = gc.GetFenggeBag();
-                var obj = bag.GetOrAddExtendProperty(ProjectConstant.HomelandPlanPropertyName, c => new GameExtendProperty() { Name = c });
-                var str = JsonSerializer.Serialize(list);
-                obj.Text = str;
-            }
-        }
-
-        static public void InitializeFengge(this GameChar gameChar, IServiceProvider service)
-        {
-            var list = gameChar.GetFengges();
-        }
         #endregion 方案的缓存与存储
 
     }

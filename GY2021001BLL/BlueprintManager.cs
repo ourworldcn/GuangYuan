@@ -40,13 +40,11 @@ namespace GY2021001BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool SetValue(object obj, string propertyName, object val)
         {
-            GameItem gameItem = obj as GameItem;
-            if (null == gameItem)
-            {
+            if (obj is GameItem gameItem)
+                return _Manager.SetPropertyValue(gameItem, propertyName, val);
+            else
                 return false;
-            }
 
-            return _Manager.SetPropertyValue(gameItem, propertyName, val);
         }
     }
 
@@ -780,7 +778,7 @@ namespace GY2021001BLL
                 return;
             }
             GameItemManager gim = Services.GetRequiredService<GameItemManager>();
-            decimal stc = gim.GetNumberOfStackRemainder(src, out _);   //剩余可堆叠数
+            decimal stc = src.GetNumberOfStackRemainder();  //剩余可堆叠数
             count = Math.Min(count, stc);   //实际移走数量
             if (src.Name2FastChangingProperty.TryGetValue("Count", out FastChangingProperty fcp))    //若有快速变化属性
             {
@@ -888,7 +886,7 @@ namespace GY2021001BLL
             DateTime dt = DateTime.UtcNow;
             if (time > 0) //若需要冷却
             {
-                if (!datas.Verify(gim.GetNumberOfStackRemainder(worker, out _) > 0, "所有建筑工人都在忙", worker.TemplateId))
+                if (!datas.Verify(worker.GetNumberOfStackRemainder() > 0, "所有建筑工人都在忙", worker.TemplateId))
                 {
                     return;
                 }

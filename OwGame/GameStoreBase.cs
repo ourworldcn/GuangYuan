@@ -303,7 +303,7 @@ namespace OwGame
                     result.Append(item.Value as string).Append(',');
                 }
             }
-            if (result.Length > 0 && result[result.Length - 1] == ',')   //若尾部是逗号
+            if (result.Length > 0 && result[^1] == ',')   //若尾部是逗号
                 result.Remove(result.Length - 1, 1);
             return result.ToString();
         }
@@ -373,7 +373,7 @@ namespace OwGame
                 var key = getRightKey(item);    //右序列元素的键
                 if (leftDic.TryGetValue(key, out leftLst))  //若两者皆有
                 {
-                    var tmp = leftLst[leftLst.Count - 1];
+                    var tmp = leftLst[^1];
                     leftLst.RemoveAt(leftLst.Count - 1);
                     boths?.Add((tmp, item));
                     if (leftLst.Count <= 0)

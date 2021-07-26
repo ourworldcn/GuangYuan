@@ -1,17 +1,11 @@
 ﻿using GY2021001BLL;
-using GY2021001DAL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections;
-using System.Collections.ObjectModel;
-using Gy2021001Template;
-using Microsoft.AspNetCore.Http;
-using Gy001;
-using System.Text.Json;
-using OwGame;
 using GY2021001BLL.Homeland;
+using GY2021001DAL;
+using Gy2021001Template;
+using OwGame;
+using System;
+using System.Linq;
+using System.Text.Json;
 
 namespace GY2021001WebApi.Models
 {
@@ -47,7 +41,7 @@ namespace GY2021001WebApi.Models
         /// 从数据对象获取传输对象。
         /// </summary>
         /// <param name="obj"></param>
-        public static explicit operator GameItemDto(GameItem obj)
+        public static implicit operator GameItemDto(GameItem obj)
         {
             var result = new GameItemDto()
             {
@@ -68,7 +62,9 @@ namespace GY2021001WebApi.Models
             {
                 result.Properties[item.Key] = item.Value;
             }
-
+            //特殊处理处理木材堆叠数
+            if (ProjectConstant.MucaiId == obj.TemplateId)
+                result.Properties[ProjectConstant.StackUpperLimit] = obj.GetDecimalOrDefault(ProjectConstant.StackUpperLimit);
             result.Children.AddRange(obj.Children.Select(c => (GameItemDto)c));
             return result;
         }

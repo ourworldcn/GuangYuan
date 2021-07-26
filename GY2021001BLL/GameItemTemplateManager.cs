@@ -136,7 +136,7 @@ namespace GY2021001BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public decimal? GetPriceWithDiamond(this GameItemTemplate templat) =>
-            templat.TryGetPropertyValue("sd", out var sdObj) && OwHelper.TryGetDecimal(sdObj, out var sd) ? new decimal?(sd) : null;
+            templat.TryGetPropertyValue("bd", out var sdObj) && OwHelper.TryGetDecimal(sdObj, out var sd) ? new decimal?(sd) : null;
 
         /// <summary>
         /// 获取这个模板指出的物品是否是免费的（钻石计价）。
@@ -145,7 +145,7 @@ namespace GY2021001BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsFree(this GameItemTemplate templat) =>
-            !templat.TryGetPropertyValue("sd", out var sdObj) || !OwHelper.TryGetDecimal(sdObj, out var sd) || sd <= 0;
+            !templat.TryGetPropertyValue("bd", out var sdObj) || !OwHelper.TryGetDecimal(sdObj, out var sd) || sd <= 0;
 
     }
 }

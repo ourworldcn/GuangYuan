@@ -292,13 +292,29 @@ namespace GY2021001DAL
             return result;
         }
 
-        private ConcurrentDictionary<string, ExtendPropertyWrapper> _ExtendPropertyDictionary;
-        
+        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
+
         /// <summary>
         /// 扩展属性的封装字典。
         /// </summary>
         [NotMapped]
-        public ConcurrentDictionary<string, ExtendPropertyWrapper> ExtendPropertyDictionary => _ExtendPropertyDictionary ??= new ConcurrentDictionary<string, ExtendPropertyWrapper>();
+        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
+        {
+            get
+            {
+                if (_ExtendPropertyDictionary is null)
+                {
+                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
+                    foreach (var item in ExtendProperties)
+                    {
+                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
+                            ExtendPropertyDictionary[tmp.Name] = tmp;
+                    }
+                    ExtendPropertyDictionary["LastLoginTime"] = new ExtendPropertyDescriptor(DateTime.UtcNow, "LastLoginTime", true);
+                }
+                return _ExtendPropertyDictionary;
+            }
+        }
 
         #endregion 扩展属性相关
 
@@ -313,7 +329,7 @@ namespace GY2021001DAL
             {
                 if (null != _ExtendPropertyDictionary) //若需要写入
                 {
-                    ExtendPropertyWrapper.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
+                    ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
                     //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
                     //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
                     //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
@@ -348,12 +364,6 @@ namespace GY2021001DAL
         {
             var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
             Template = helper.GetTemplateFromeId(TemplateId);
-            foreach (var item in ExtendProperties)
-            {
-                if (ExtendPropertyWrapper.TryParse(item, out var tmp))
-                    ExtendPropertyDictionary[tmp.Name] = tmp;
-            }
-            ExtendPropertyDictionary["LastLoginTime"] = new ExtendPropertyWrapper(DateTime.UtcNow, "LastLoginTime", true);
         }
 
         /// <summary>
@@ -461,7 +471,7 @@ namespace GY2021001DAL
     /// <summary>
     /// 
     /// </summary>
-    public class ExtendPropertyWrapper
+    public class ExtendPropertyDescriptor
     {
         /// <summary>
         /// 持久化标志。
@@ -476,7 +486,7 @@ namespace GY2021001DAL
         /// <param name="obj"></param>
         /// <param name="result"></param>
         /// <returns>true成功得到对象，false转化错误。</returns>
-        static public bool TryParse(GameExtendProperty obj, out ExtendPropertyWrapper result)
+        static public bool TryParse(GameExtendProperty obj, out ExtendPropertyDescriptor result)
         {
             var index = obj.StringValue is null ? -1 : obj.StringValue.IndexOf(',');
             if (-1 == index || Mark != obj.StringValue[..index])    //若不是特定标记开头
@@ -491,7 +501,7 @@ namespace GY2021001DAL
                 result = null;
                 return false;
             }
-            result = new ExtendPropertyWrapper()
+            result = new ExtendPropertyDescriptor()
             {
                 Data = string.IsNullOrWhiteSpace(obj.Text) ? default : JsonSerializer.Deserialize(obj.Text, type),
                 IsPersistence = true,
@@ -517,7 +527,7 @@ namespace GY2021001DAL
         /// </summary>
         /// <param name="srcs"></param>
         /// <param name="dests"></param>
-        static public void Fill(IEnumerable<ExtendPropertyWrapper> srcs, ICollection<GameExtendProperty> dests)
+        static public void Fill(IEnumerable<ExtendPropertyDescriptor> srcs, ICollection<GameExtendProperty> dests)
         {
             var coll = (from src in srcs
                         where src.IsPersistence
@@ -541,7 +551,7 @@ namespace GY2021001DAL
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public ExtendPropertyWrapper()
+        public ExtendPropertyDescriptor()
         {
 
         }
@@ -551,7 +561,7 @@ namespace GY2021001DAL
         /// </summary>
         public string Name { get; set; }
 
-        public ExtendPropertyWrapper(object data, string name, bool isPersistence = false, Type type = null)
+        public ExtendPropertyDescriptor(object data, string name, bool isPersistence = false, Type type = null)
         {
             Data = data;
             Name = name;
@@ -760,14 +770,22 @@ namespace GY2021001DAL
     /// </summary>
     public static class GameThingBaseExtensions
     {
+        /// <summary>
+        /// 获取指定属性的数值形式。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="result"></param>
+        /// <returns>true指定属性存在且能转换为数值形式；否则返回false。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool TryGetDecimalPropertyValue(this GameThingBase obj, string propertyName, out decimal result)
         {
-            if (obj.TryGetPropertyValue(propertyName, out var tmp))
-                return OwHelper.TryGetDecimal(tmp, out result);
+            if (obj.TryGetPropertyValue(propertyName, out var tmp) && OwHelper.TryGetDecimal(tmp, out result))
+                return true;
             result = default;
             return false;
         }
+
 
         /// <summary>
         /// 获取指定的属性值并转换为<see cref="decimal"/>,如果找不到，或不能转换则返回指定默认值。
@@ -777,20 +795,30 @@ namespace GY2021001DAL
         /// <param name="defaultVal"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public decimal GetDecimalOrDefault(this GameThingBase @this, string propertyName, decimal defaultVal = decimal.Zero) =>
-            !@this.TryGetPropertyValue(propertyName, out var obj) || !OwHelper.TryGetDecimal(obj, out var dec) ? defaultVal : dec;
+        static public decimal GetDecimalOrDefault(this GameThingBase obj, string propertyName, decimal defaultVal = decimal.Zero) =>
+            obj.TryGetPropertyValue(propertyName, out var stcObj) && OwHelper.TryGetDecimal(stcObj, out var dec) ? dec : defaultVal;
 
         /// <summary>
         /// 获取堆叠上限。
         /// </summary>
         /// <param name="obj"></param>
-        /// <returns><see cref="decimal.MaxValue"/>无限制，如果不可堆叠则为0.</returns>
+        /// <returns><see cref="decimal.MaxValue"/>如果不可堆叠则为1.无限制是<see cref="decimal.MaxValue"/>。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public decimal GetStc(this GameThingBase obj)
         {
-            var stc = obj.GetDecimalOrDefault("stc", 0);
+            var stc = obj.GetDecimalOrDefault("stc", 1);
             return stc == -1 ? decimal.MaxValue : stc;
         }
+
+        /// <summary>
+        /// 是否可堆叠。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="result">如果是可堆叠对象则返回堆叠最大数量。-1是不受限制。</param>
+        /// <returns>true可堆叠，false不可堆叠。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsStc(this GameThingBase obj, out decimal result) =>
+            obj.TryGetDecimalPropertyValue("stc", out result);
 
     }
 

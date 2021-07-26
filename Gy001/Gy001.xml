@@ -234,7 +234,7 @@
             </summary>
             <param name="obj"></param>
         </member>
-        <member name="M:GY2021001WebApi.Models.GameItemDto.op_Explicit(GY2021001DAL.GameItem)~GY2021001WebApi.Models.GameItemDto">
+        <member name="M:GY2021001WebApi.Models.GameItemDto.op_Implicit(GY2021001DAL.GameItem)~GY2021001WebApi.Models.GameItemDto">
             <summary>
             从数据对象获取传输对象。
             </summary>
@@ -1317,12 +1317,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

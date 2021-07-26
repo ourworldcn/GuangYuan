@@ -165,7 +165,7 @@ namespace OwGame.Expression
     {
         public GameExpressionCompileEnvironment()
         {
-
+            
         }
 
         public IServiceProvider Services { get; set; }

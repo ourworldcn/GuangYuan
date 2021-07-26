@@ -3,14 +3,12 @@ using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.ObjectPool;
 using OwGame;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace GY2021001BLL
 {
@@ -49,8 +47,9 @@ namespace GY2021001BLL
         #endregion 构造函数
 
         #region 属性及相关
-        GameItemTemplateManager _ItemTemplateManager;
-        GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= World.ItemTemplateManager; }
+        private GameItemTemplateManager _ItemTemplateManager;
+
+        private GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= World.ItemTemplateManager; }
         #endregion
 
         /// <summary>
@@ -101,7 +100,7 @@ namespace GY2021001BLL
             }
             if (template.SequencePropertyNames.Length > 0 && !result.Properties.Keys.Any(c => c.StartsWith(GameThingTemplateBase.LevelPrefix))) //若需追加等级属性
                 result.Properties[GameThingTemplateBase.LevelPrefix] = 0m;
-            result.Count ??= template.TryGetPropertyValue("stc", out _) ? 0 : 1;
+            result.Count ??= template.TryGetPropertyValue(ProjectConstant.StackUpperLimit, out _) ? 0 : 1;
             if (result.Properties.Count > 0)    //若需要改写属性字符串。
                 result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
             //递归初始化容器
@@ -506,9 +505,7 @@ namespace GY2021001BLL
                 return false;
             if (item.Count < count)
                 return false;
-
-            var stc = GetStackUpper(item);
-            if (stc is null || count == item.Count)  //若不可堆叠或全部移动
+            if (!item.IsStc(out var stc) || count == item.Count)  //若不可堆叠或全部移动
             {
                 var parent = GetContainer(item);   //获取父容器
                 MoveItems(parent, c => c.Id == item.Id, destContainer, changesItems);
@@ -535,21 +532,6 @@ namespace GY2021001BLL
                 }
             }
             return result;
-        }
-
-        /// <summary>
-        /// 获取指定物品堆叠上限。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <returns>null不可堆叠，-1表示无上限。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public decimal? GetStackUpper(GameThingBase gameItem)
-        {
-            var _ = GetTemplate(gameItem);
-            if (!_.Properties.TryGetValue(ProjectConstant.StackUpperLimit, out object obj) || !(obj is decimal count))
-                if (!gameItem.TryGetPropertyValue(ProjectConstant.StackUpperLimit, out obj) || !OwHelper.TryGetDecimal(obj, out count))
-                    return null;
-            return count;
         }
 
         /// <summary>
@@ -605,22 +587,6 @@ namespace GY2021001BLL
                 int.MaxValue => int.MaxValue,
                 _ => Math.Max(max - (GetChildrenCollection(container)?.Count ?? 0), 0), //容错
             };
-        }
-
-        /// <summary>
-        /// 获取物品堆叠的空余数量。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="stc">堆叠的限制数</param>
-        /// <returns>堆叠空余数量，不可堆叠将返回0，不限制将返回<see cref="decimal.MaxValue"/></returns>
-        public decimal GetNumberOfStackRemainder(GameItem gameItem, out decimal? stc)
-        {
-            stc = GetStackUpper(gameItem);
-            if (stc is null)    //若不可堆叠
-                return decimal.Zero;
-            if (-1 == stc)  //若不限制堆叠数量
-                return decimal.MaxValue;
-            return Math.Max(0, stc.Value - gameItem.Count.Value);
         }
 
         #endregion 动态属性相关
@@ -740,7 +706,7 @@ namespace GY2021001BLL
         /// 将一个物品放入容器。根据属性确定是否可以合并堆叠。
         /// </summary>
         /// <param name="gameItem">要放入的物品，返回时属性<see cref="GameItem.Count"/>可能被更改。</param>
-        /// <param name="parent">容器事物对象，或是一个角色对象。</param>
+        /// <param name="parent">放入的容器事物对象，或是一个角色对象。</param>
         /// <param name="remainder">追加不能放入的物品到此集合，可以是null或省略，此时忽略。</param>
         /// <param name="changeItems">变化的数据。可以是null或省略，此时忽略。
         /// 基于堆叠限制和容量限制，无法放入的部分。实际是<paramref name="gameItem"/>对象或拆分后的对象集合，对于可堆叠对象可能修改了<see cref="GameItem.Count"/>属性。若没有剩余则返回null。
@@ -748,11 +714,10 @@ namespace GY2021001BLL
         /// <returns>放入后的对象，如果是不可堆叠或堆叠后有剩余则是 <paramref name="gameItem"/>和堆叠对象，否则是容器内原有对象。返回空集合，因容量限制没有放入任何物品。</returns>
         public void AddItem(GameItem gameItem, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangesItem> changeItems = null)
         {
-            IList<GameItem> children = (parent as GameItem)?.Children; //获取容器的接口
-            children ??= (parent as GameChar)?.GameItems;    //容器
+            IList<GameItem> children = GetChildrenCollection(parent);
+            var stcItem = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId) ?? gameItem;
             Debug.Assert(null != children);
-            var stc = GetStackUpper(gameItem);
-            if (stc is null) //若不可堆叠
+            if (!stcItem.IsStc(out var stc)) //若不可堆叠
             {
                 gameItem.Count ??= 1;
                 var upper = GetCapacity(parent) ?? -1;    //TO DO 暂时未限制是否是容器
@@ -777,10 +742,10 @@ namespace GY2021001BLL
                 }
                 //处理存在物品的堆叠问题
                 var result = new List<GameItem>();
-                var dest = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && GetNumberOfStackRemainder(c, out _) > 0);    //找到已有的物品且尚可加入堆叠的
+                var dest = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && c.GetNumberOfStackRemainder() > 0);    //找到已有的物品且尚可加入堆叠的
                 if (null != dest)  //若存在同类物品
                 {
-                    var redCount = Math.Min(GetNumberOfStackRemainder(dest, out _), gameItem.Count ?? 0);   //移动的数量
+                    var redCount = Math.Min(dest.GetNumberOfStackRemainder(), gameItem.Count ?? 0);   //移动的数量
                     dest.Count = dest.Count.Value + redCount;
                     gameItem.Count -= redCount;
                     changeItems?.AddToChanges(parent.Id, dest);
@@ -793,7 +758,7 @@ namespace GY2021001BLL
                 else  //放入剩余物品,容错
                 {
                     var tmp = new List<GameItem>();
-                    SplitItem(gameItem, tmp);
+                    SplitItem(gameItem, tmp, parent);
                     var _ = new ChangesItem(parent.Id);
                     for (int i = tmp.Count - 1; i >= 0; i--)
                     {
@@ -826,10 +791,16 @@ namespace GY2021001BLL
         /// 若未设置数量，则对不可堆叠物品视同0，可堆叠物品视同1。</param>
         /// <param name="results">拆分后的物品。可能包含<paramref name="gameItem"/>，且其<see cref="GameItem.Count"/>属性被修正。
         /// <paramref name="gameItem"/>总是被放在第一个位置上。</param>
-        public void SplitItem(GameItem gameItem, ICollection<GameItem> results)
+        /// <param name="parent">父对象。</param>
+        public void SplitItem(GameItem gameItem, ICollection<GameItem> results, GameThingBase parent = null)
         {
-            var stc = GetStackUpper(gameItem);
-            if (stc is null) //若不可堆叠
+            var stcItem = gameItem;
+            if (gameItem.TemplateId == ProjectConstant.MucaiId)  //若是木材
+            {
+                var gameCher = parent as GameChar ?? (parent as GameItem)?.GameChar;
+                stcItem = gameCher.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaiId);
+            }
+            if (!stcItem.IsStc(out var stc)) //若不可堆叠
             {
                 gameItem.Count ??= 1;
                 var count = gameItem.Count.Value - 1;   //记录原始数量少1的值
@@ -842,22 +813,22 @@ namespace GY2021001BLL
                     results.Add(item);
                 }
             }
-            else if (-1 == stc.Value)  //若无堆叠上限限制
+            else if (-1 == stc)  //若无堆叠上限限制
             {
                 results.Add(gameItem);
             }
             else //若可堆叠且有限制
             {
                 gameItem.Count ??= 0;
-                var count = gameItem.Count.Value - stc.Value;   //记录当前数量减去第一堆以后的数量
-                gameItem.Count = Math.Min(gameItem.Count.Value, stc.Value);    //取当前数量，和允许最大堆叠数量中较小的值
+                var count = gameItem.Count.Value - stc;   //记录当前数量减去第一堆以后的数量
+                gameItem.Count = Math.Min(gameItem.Count.Value, stc);    //取当前数量，和允许最大堆叠数量中较小的值
                 results.Add(gameItem);  //加入第一个堆
                 while (count > 0) //当需要拆分
                 {
                     var item = CreateGameItem(gameItem.TemplateId);
-                    item.Count = Math.Min(count, stc.Value); //取当前剩余数量，和允许最大堆叠数量中较小的值
+                    item.Count = Math.Min(count, stc); //取当前剩余数量，和允许最大堆叠数量中较小的值
                     results.Add(item);
-                    count -= stc.Value;
+                    count -= stc;
                 }
             }
         }
@@ -1108,8 +1079,13 @@ namespace GY2021001BLL
         /// <summary>
         /// 可移动的物品GIds。
         /// </summary>
-        static int[] moveableGIds = new int[] { 11, 40, 41 };
+        private static readonly int[] moveableGIds = new int[] { 11, 40, 41 };
 
+        /// <summary>
+        /// 激活风格。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="datas"></param>
         static public void ActiveStyle(this GameItemManager manager, ActiveStyleDatas datas)
         {
             var gcManager = manager.Services.GetRequiredService<GameCharManager>();

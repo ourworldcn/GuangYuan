@@ -144,6 +144,21 @@ namespace GY2021001DAL
         }
 
         /// <summary>
+        /// 木材Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
+        /// </summary>
+        public static readonly Guid MucaiId = new Guid("{01959584-E2C9-4E54-BBB7-FCC58A9484EC}");
+
+        /// <summary>
+        /// 木材仓库模板Id。
+        /// </summary>
+        public static readonly Guid MucaiStoreTId = new Guid("{8caea73b-e210-47bf-a121-06cc12973baf}");
+
+        /// <summary>
+        /// 堆叠上限属性的名字。没有该属性的不可堆叠，无上限限制用-1表示。
+        /// </summary>
+        public const string StackUpperLimit = "stc";
+
+        /// <summary>
         /// <inheritdoc/>
         /// </summary>
         /// <param name="propertyName"><inheritdoc/></param>
@@ -154,6 +169,19 @@ namespace GY2021001DAL
             bool succ;
             switch (propertyName)
             {
+                case StackUpperLimit when TemplateId == MucaiId: //对木材特殊处理 TO DO应控制反转完成该工作
+                    var coll = Parent?.AllChildren ?? GameChar?.GameItems;
+                    if (coll is null)
+                    {
+                        result = 0m;
+                        return false;
+                    }
+                    var ary = coll.Where(c => c.TemplateId == MucaiStoreTId).ToArray();   //取所有木材仓库对象
+                    if (!OwHelper.TryGetDecimal(Properties.GetValueOrDefault(StackUpperLimit, 0m), out var myselfStc))
+                        myselfStc = 0;
+                    result = ary.Any(c => c.GetStc() >= decimal.MaxValue) ? -1 : ary.Sum(c => c.GetStc()) + myselfStc;
+                    succ = true;
+                    break;
                 case "count":
                 case "Count":
                     var obj = Count;
@@ -248,6 +276,21 @@ namespace GY2021001DAL
 
     }
 
+    public static class GameItemExtensions
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns>堆叠空余数量，不可堆叠将返回0，不限制将返回<see cref="decimal.MaxValue"/></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public decimal GetNumberOfStackRemainder(this GameItem obj)
+        {
+            if (!obj.IsStc(out decimal stc))
+                return 0;
+            return -1 == stc ? decimal.MaxValue : Math.Max(0, stc - obj.Count.Value);
+        }
+    }
     /// <summary>
     /// 记录虚拟物品、资源变化的类。
     /// </summary>

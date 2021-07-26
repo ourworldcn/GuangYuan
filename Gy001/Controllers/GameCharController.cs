@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using GY2021001BLL;
+﻿using GY2021001BLL;
 using GY2021001BLL.Homeland;
 using GY2021001DAL;
 using GY2021001WebApi.Models;
@@ -12,6 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OwGame;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -272,8 +271,10 @@ namespace GY2021001WebApi.Controllers
                         }
                         ci.Changes.Add(item.GItem);
                     }
-                    var changes = new List<ChangesItem>();
-                    changes.Add(ci);
+                    var changes = new List<ChangesItem>
+                    {
+                        ci
+                    };
                     ChangesItem.Reduce(changes);
                     result.ChangesItems.AddRange(changes.Select(c => (ChangesItemDto)c));
                     world.CharManager.NotifyChange(gu);
@@ -590,7 +591,11 @@ namespace GY2021001WebApi.Controllers
                     Fangan = fangan,
                     GameChar = gc,
                 };
+                fangan.IsActived = true;
                 gim.ActiveStyle(datas);
+                foreach (var item in lstFengge.SelectMany(c => c.Fangans))
+                    item.IsActived = false;
+                fangan.IsActived = true;
                 result.DebugMessage = datas.Message;
                 result.HasError = datas.HasError;
             }
