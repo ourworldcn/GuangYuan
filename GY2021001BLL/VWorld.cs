@@ -5,16 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using OwGame;
 using OwGame.Expression;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -48,8 +43,7 @@ namespace GY2021001BLL
     public class VWorld : GameManagerBase<VWorldOptions>
     {
         public readonly DateTime StartDateTimeUtc = DateTime.UtcNow;
-
-        CancellationTokenSource _CancellationTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _CancellationTokenSource = new CancellationTokenSource();
 
         /// <summary>
         /// 该游戏世界因为种种原因已经请求卸载。
@@ -81,14 +75,25 @@ namespace GY2021001BLL
         public CombatManager CombatManager { get => _CombatManager ??= Services.GetRequiredService<CombatManager>(); }
 
         private GameItemManager _GameItemManager;
-
+        /// <summary>
+        /// 虚拟事物管理器。
+        /// </summary>
         public GameItemManager ItemManager { get => _GameItemManager ??= Services.GetRequiredService<GameItemManager>(); }
 
-        private BlueprintManager _BlueprintManager;
+        private GameSocialManager _SocialManager;
+        /// <summary>
+        /// 社交管理器。
+        /// </summary>
+        public GameSocialManager SocialManager => _SocialManager ??= Services.GetRequiredService<GameSocialManager>();
 
+
+        private BlueprintManager _BlueprintManager;
+        /// <summary>
+        /// 资源转换管理器。
+        /// </summary>
         public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Services.GetRequiredService<BlueprintManager>(); }
 
-        ObjectPool<List<GameItem>> _ObjectPoolListGameItem;
+        private ObjectPool<List<GameItem>> _ObjectPoolListGameItem;
 
         public ObjectPool<List<GameItem>> ObjectPoolListGameItem
         {
@@ -237,7 +242,7 @@ namespace GY2021001BLL
     /// </summary>
     public class GameHostedService : IHostedService
     {
-        private IServiceProvider _Services;
+        private readonly IServiceProvider _Services;
 
         public GameHostedService(IServiceProvider services)
         {

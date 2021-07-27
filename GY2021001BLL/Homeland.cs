@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace GY2021001BLL.Homeland
 {
@@ -54,7 +53,7 @@ namespace GY2021001BLL.Homeland
         /// <summary>
         /// 唯一Id，暂时无用，但一旦生成则保持不变。
         /// </summary>
-        public Guid Id { get; set; } = new Guid();
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// 下属具体加载物品及其位置信息

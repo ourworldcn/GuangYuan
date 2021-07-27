@@ -1313,6 +1313,16 @@
             家园建设方案的集合。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetMailsParamsDto">
+            <summary>
+            获取邮件接口参数封装类数据。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetMailsReturnDto">
+            <summary>
+            获取邮件接口返回值封装数据类。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -1326,6 +1336,14 @@
             <returns>物品变化数据。</returns>
             <response code="401">令牌错误。</response>
             <response code="400">参数错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.GetMails(GY2021001WebApi.Models.GetMailsParamsDto)">
+            <summary>
+            获取指定用户的所有邮件。
+            </summary>
+            <param name="model">参见 GetMailsParamsDto</param>
+            <returns>参见 GetMailsReturnDto</returns>
+            <response code="401">令牌错误。</response>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">
             <summary>

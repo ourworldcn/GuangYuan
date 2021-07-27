@@ -1,7 +1,6 @@
 ﻿using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OwGame;
@@ -10,11 +9,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 
 namespace GY2021001BLL
@@ -46,37 +43,37 @@ namespace GY2021001BLL
         #region 字段
         private bool _QuicklyRegisterSuffixSeqInit = false;
         private int _QuicklyRegisterSuffixSeq;
+        private Timer _LogoutTimer;
 
-        Timer _LogoutTimer;
         /// <summary>
         /// 登录、注销时刻锁定的登录名存储对象。
         /// </summary>
-        ConcurrentDictionary<string, string> _LoginName = new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<string, string> _LoginName = new ConcurrentDictionary<string, string>();
 
         /// <summary>
         /// 登录名到令牌的转换字典。
         /// </summary>
-        ConcurrentDictionary<string, Guid> _LoginName2Token = new ConcurrentDictionary<string, Guid>();
+        private readonly ConcurrentDictionary<string, Guid> _LoginName2Token = new ConcurrentDictionary<string, Guid>();
 
         /// <summary>
         /// 存储令牌到用户对象的转换对象。
         /// </summary>
-        ConcurrentDictionary<Guid, GameUser> _Token2User = new ConcurrentDictionary<Guid, GameUser>();
+        private readonly ConcurrentDictionary<Guid, GameUser> _Token2User = new ConcurrentDictionary<Guid, GameUser>();
 
         /// <summary>
         /// 提示一些对象已经处于"脏"状态，后台线程应尽快保存。
         /// </summary>
-        ConcurrentQueue<GameUser> _DirtyUsers = new ConcurrentQueue<GameUser>();
+        private readonly ConcurrentQueue<GameUser> _DirtyUsers = new ConcurrentQueue<GameUser>();
 
         /// <summary>
         /// 保存数据的线程。
         /// </summary>
-        Thread _SaveThread;
+        private Thread _SaveThread;
 
         /// <summary>
         /// 角色Id到角色对象的字段。
         /// </summary>
-        ConcurrentDictionary<Guid, GameChar> _Id2GameChar = new ConcurrentDictionary<Guid, GameChar>();
+        private readonly ConcurrentDictionary<Guid, GameChar> _Id2GameChar = new ConcurrentDictionary<Guid, GameChar>();
 
         #endregion 字段
 
@@ -699,7 +696,29 @@ namespace GY2021001BLL
             //    result.Properties[item.Item1] = item.Item2;
             //}
             //result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
-
+            //创建欢迎邮件
+            var mail = new GameMail()
+            {
+                Subject = "欢迎您加入XXX世界",
+                Body = "此邮件是测试目的，正式版将删除。",
+            };
+            mail.MailAddresses.Add(new GameMailAddress()
+            {
+                Kind = Game.Social.MailAddressKind.From,
+                DisplayName = "xxx管理员",
+                ThingId = Guid.Empty
+            });
+            mail.MailAddresses.Add(new GameMailAddress()
+            {
+                Kind = Game.Social.MailAddressKind.To,
+                DisplayName = $"尊敬的玩家{result.DisplayName}",
+                ThingId = result.Id,
+            });
+            mail.Attachmentes.Add(new GameMailAttachment()
+            {
+                PropertyString = "TName=这是一个测试的附件对象,tid={89A586A8-CD8D-40FF-BDA2-41E68B6EC505},count=1,desc=tid是送的物品模板id;count是数量。",
+            });
+            World.SocialManager.AddMails(mail, result);
             return result;
         }
 

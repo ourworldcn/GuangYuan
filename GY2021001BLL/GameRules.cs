@@ -1,12 +1,9 @@
 ﻿using GY2021001DAL;
-using Gy2021001Template;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text;
 
 namespace GY2021001BLL
 {

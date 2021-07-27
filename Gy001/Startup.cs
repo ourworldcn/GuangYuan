@@ -133,6 +133,8 @@ namespace Gy001
                 DoApply = SpecificProject.ApplyBlueprint,
             }));
             services.AddSingleton<IGameThingHelper>(c => c.GetService<GameItemManager>());
+
+            services.AddSingleton(c => new GameSocialManager(c, new SocialManagerOptions()));
             #endregion 配置游戏专用服务
         }
 

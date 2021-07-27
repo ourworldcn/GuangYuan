@@ -4,14 +4,16 @@ using GY2021001DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GY2021001DAL.Migrations
 {
     [DbContext(typeof(GY2021001DbContext))]
-    partial class GY2021001DbContextModelSnapshot : ModelSnapshot
+    [Migration("20210727062545_21072704")]
+    partial class _21072704
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,9 +126,7 @@ namespace GY2021001DAL.Migrations
 
                     b.HasIndex("MailId");
 
-                    b.HasIndex("ThingId");
-
-                    b.ToTable("MailAddress");
+                    b.ToTable("GameMailAddress");
                 });
 
             modelBuilder.Entity("GY2021001DAL.GameMailAttachment", b =>

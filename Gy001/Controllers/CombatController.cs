@@ -10,6 +10,7 @@ using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using OwGame;
 
 namespace GY2021001WebApi.Controllers
 {

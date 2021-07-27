@@ -33,6 +33,9 @@ namespace GY2021001DAL
             modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.DoubleValue).IsUnique(false);
             modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.IntValue).IsUnique(false);
             modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.StringValue).IsUnique(false);
+
+            //
+            modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
             base.OnModelCreating(modelBuilder);
         }
 
@@ -69,6 +72,16 @@ namespace GY2021001DAL
         /// 游戏服务器用通用属性记录表。
         /// </summary>
         public DbSet<GameExtendProperty> ExtendProperties { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public DbSet<GameMail> Mails { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public DbSet<GameMailAddress> MailAddress { get; set; }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Game.Social;
+using GY2021001DAL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -1308,7 +1310,7 @@ namespace GY2021001WebApi.Models
     /// GetChangesItem 返回值封装类。
     /// </summary>
     [DataContract]
-    public class GetChangesItemReturnDto:ReturnDtoBase
+    public class GetChangesItemReturnDto : ReturnDtoBase
     {
         /// <summary>
         /// 构造函数。
@@ -1533,5 +1535,35 @@ namespace GY2021001WebApi.Models
 
     #endregion 接口特定数据封装类
 
+    #region 社交相关
+
+    /// <summary>
+    /// 获取邮件接口参数封装类数据。
+    /// </summary>
+    [DataContract]
+    public class GetMailsParamsDto : TokenDtoBase
+    {
+        public GetMailsParamsDto()
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// 获取邮件接口返回值封装数据类。
+    /// </summary>
+    [DataContract]
+    public class GetMailsReturnDto : ReturnDtoBase
+    {
+        public GetMailsReturnDto()
+        {
+
+        }
+
+        [DataMember]
+        public List<GameMailDto> Mails { get; set; } = new List<GameMailDto>();
+    }
+
+    #endregion 社交相关
 
 }

@@ -4,14 +4,16 @@ using GY2021001DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GY2021001DAL.Migrations
 {
     [DbContext(typeof(GY2021001DbContext))]
-    partial class GY2021001DbContextModelSnapshot : ModelSnapshot
+    [Migration("20210727020517_21072702")]
+    partial class _21072702
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,62 +91,18 @@ namespace GY2021001DAL.Migrations
                     b.Property<string>("Body")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreateUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PropertyString")
+                    b.Property<string>("From")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Subject")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("To")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Mails");
-                });
-
-            modelBuilder.Entity("GY2021001DAL.GameMailAddress", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DisplayName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Kind")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("MailId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ThingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MailId");
-
-                    b.HasIndex("ThingId");
-
-                    b.ToTable("MailAddress");
-                });
-
-            modelBuilder.Entity("GY2021001DAL.GameMailAttachment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("MailId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PropertyString")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MailId");
-
-                    b.ToTable("GameMailAttachment");
                 });
 
             modelBuilder.Entity("GY2021001DAL.GameSetting", b =>
@@ -264,24 +222,6 @@ namespace GY2021001DAL.Migrations
                     b.HasOne("GY2021001DAL.GameThingBase", "GameThing")
                         .WithMany("ExtendProperties")
                         .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("GY2021001DAL.GameMailAddress", b =>
-                {
-                    b.HasOne("GY2021001DAL.GameMail", "Mail")
-                        .WithMany("MailAddresses")
-                        .HasForeignKey("MailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("GY2021001DAL.GameMailAttachment", b =>
-                {
-                    b.HasOne("GY2021001DAL.GameMail", "Mail")
-                        .WithMany("Attachmentes")
-                        .HasForeignKey("MailId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -410,6 +410,7 @@ namespace GY2021001BLL
             {
                 world.ItemManager.ForcedAdd(item, runseSlot);
             }
+            gameChar.DisplayName ??= CnNames.GetName(true);
             result = true;
             //修正木材存贮最大量
             //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);

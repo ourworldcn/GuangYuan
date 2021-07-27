@@ -4,14 +4,16 @@ using GY2021001DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GY2021001DAL.Migrations
 {
     [DbContext(typeof(GY2021001DbContext))]
-    partial class GY2021001DbContextModelSnapshot : ModelSnapshot
+    [Migration("20210727030816_21072703")]
+    partial class _21072703
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,27 +126,7 @@ namespace GY2021001DAL.Migrations
 
                     b.HasIndex("MailId");
 
-                    b.HasIndex("ThingId");
-
-                    b.ToTable("MailAddress");
-                });
-
-            modelBuilder.Entity("GY2021001DAL.GameMailAttachment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("MailId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PropertyString")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MailId");
-
-                    b.ToTable("GameMailAttachment");
+                    b.ToTable("GameMailAddress");
                 });
 
             modelBuilder.Entity("GY2021001DAL.GameSetting", b =>
@@ -272,15 +254,6 @@ namespace GY2021001DAL.Migrations
                 {
                     b.HasOne("GY2021001DAL.GameMail", "Mail")
                         .WithMany("MailAddresses")
-                        .HasForeignKey("MailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("GY2021001DAL.GameMailAttachment", b =>
-                {
-                    b.HasOne("GY2021001DAL.GameMail", "Mail")
-                        .WithMany("Attachmentes")
                         .HasForeignKey("MailId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
