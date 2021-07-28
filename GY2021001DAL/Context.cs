@@ -97,6 +97,15 @@ namespace GY2021001DAL
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            return base.DisposeAsync();
+        }
     }
 
     public static class MigrateDbInitializer
@@ -107,4 +116,5 @@ namespace GY2021001DAL
         }
     }
 
+    
 }

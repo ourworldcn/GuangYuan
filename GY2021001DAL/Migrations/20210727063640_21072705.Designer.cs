@@ -273,7 +273,7 @@ namespace GY2021001DAL.Migrations
             modelBuilder.Entity("GY2021001DAL.GameMailAddress", b =>
                 {
                     b.HasOne("GY2021001DAL.GameMail", "Mail")
-                        .WithMany("MailAddresses")
+                        .WithMany("Addresses")
                         .HasForeignKey("MailId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

@@ -92,6 +92,9 @@ namespace GY2021001DAL.Migrations
                     b.Property<DateTime>("CreateUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<byte[]>("IdsOfMarkDeleteStream")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("PropertyString")
                         .HasColumnType("nvarchar(max)");
 
@@ -110,6 +113,9 @@ namespace GY2021001DAL.Migrations
 
                     b.Property<string>("DisplayName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<int>("Kind")
                         .HasColumnType("int");
@@ -271,7 +277,7 @@ namespace GY2021001DAL.Migrations
             modelBuilder.Entity("GY2021001DAL.GameMailAddress", b =>
                 {
                     b.HasOne("GY2021001DAL.GameMail", "Mail")
-                        .WithMany("MailAddresses")
+                        .WithMany("Addresses")
                         .HasForeignKey("MailId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

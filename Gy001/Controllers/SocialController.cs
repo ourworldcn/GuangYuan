@@ -44,6 +44,35 @@ namespace Gy001.Controllers
                 _World.CharManager.Unlock(gu);
             }
         }
+
+        /// <summary>
+        /// 删除指定id集合的所有邮件。
+        /// </summary>
+        /// <param name="model">参见 RemoveMailsParamsDto</param>
+        /// <returns>参见 RemoveMailsRetuenDto</returns>
+        [HttpDelete]
+        public ActionResult<RemoveMailsRetuenDto> RemoveMails(RemoveMailsParamsDto model)
+        {
+            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("令牌无效");
+            }
+            try
+            {
+                var result = new RemoveMailsRetuenDto();
+                var social = _World.SocialManager;
+                result.HasError = !social.RemoveMails(gu.CurrentChar, model.Ids.Select(c => GameHelper.FromBase64String(c)));
+                if (result.HasError)
+                    result.DebugMessage = VWorld.GetLastErrorMessage();
+                return result;
+
+            }
+            finally
+            {
+                _World.CharManager.Unlock(gu);
+            }
+
+        }
     }
 
 }

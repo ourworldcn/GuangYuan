@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GY2021001DAL.Migrations
 {
     [DbContext(typeof(GY2021001DbContext))]
-    [Migration("20210727062545_21072704")]
-    partial class _21072704
+    [Migration("20210728074237_21072801")]
+    partial class _21072801
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -94,6 +94,9 @@ namespace GY2021001DAL.Migrations
                     b.Property<DateTime>("CreateUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<byte[]>("IdsOfMarkDeleteStream")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("PropertyString")
                         .HasColumnType("nvarchar(max)");
 
@@ -113,6 +116,9 @@ namespace GY2021001DAL.Migrations
                     b.Property<string>("DisplayName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("Kind")
                         .HasColumnType("int");
 
@@ -126,7 +132,9 @@ namespace GY2021001DAL.Migrations
 
                     b.HasIndex("MailId");
 
-                    b.ToTable("GameMailAddress");
+                    b.HasIndex("ThingId");
+
+                    b.ToTable("MailAddress");
                 });
 
             modelBuilder.Entity("GY2021001DAL.GameMailAttachment", b =>

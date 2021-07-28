@@ -1284,6 +1284,11 @@ namespace GY2021001BLL
                 }
                 World.CharManager.NotifyChange(gu);
             }
+            catch (Exception err)
+            {
+                datas.DebugMessage = err.Message + " @" + err.StackTrace;
+                datas.HasError = true;
+            }
             finally
             {
                 if (null != tmpList)
@@ -1627,6 +1632,8 @@ namespace GY2021001BLL
     /// </summary>
     public class MainbaseUpgradePrv
     {
+        #region MyRegion
+
         public const string text = "1	{9ae7307a-9d30-43f2-91ce-3a43957ab86a}		{312612a5-30dd-4e0a-a71d-5074397428fb}	直射炮-1" + "\r\n" +
         "1	{6793b827-7984-4eb4-a6a9-61386972619e}		{312612a5-30dd-4e0a-a71d-5074397428fb}	直射炮-2" + "\r\n" +
         "1	{c930c04b-1086-4298-acf6-059b180e45d7}		{312612a5-30dd-4e0a-a71d-5074397428fb}	迫击炮-1+" + "\r\n" +
@@ -1660,15 +1667,31 @@ namespace GY2021001BLL
         "9		48	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-4" + "\r\n" +
         "10	{05be07f7-a97a-4cab-85c1-4759daeb17bf}		{312612a5-30dd-4e0a-a71d-5074397428fb}	导弹炮-2" + "\r\n" +
         "10	{d4bd6008-af90-4a38-9c17-7ee961fb4787}		{312612a5-30dd-4e0a-a71d-5074397428fb}	毁灭蘑菇-2";
+        #endregion
 
+        /// <summary>
+        /// 送的等级，如1，就是升级到1级时送品
+        /// </summary>
         public int Level { get; set; }
 
+        /// <summary>
+        /// 如果有值，则是送品地块的位置号。
+        /// </summary>
         public int? Genus { get; set; }
 
+        /// <summary>
+        /// 送品的模板Id。
+        /// </summary>
         public Guid? PrvTId { get; set; }
 
+        /// <summary>
+        /// 送品的父容器模板Id。
+        /// </summary>
         public Guid ParentTId { get; set; }
 
+        /// <summary>
+        /// 注释，服务器不使用。
+        /// </summary>
         public string Remark { get; set; }
 
         private static List<MainbaseUpgradePrv> _Alls;

@@ -290,6 +290,7 @@ namespace GY2021001DAL
                 return 0;
             return -1 == stc ? decimal.MaxValue : Math.Max(0, stc - obj.Count.Value);
         }
+
     }
     /// <summary>
     /// 记录虚拟物品、资源变化的类。

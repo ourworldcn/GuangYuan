@@ -1564,6 +1564,26 @@ namespace GY2021001WebApi.Models
         public List<GameMailDto> Mails { get; set; } = new List<GameMailDto>();
     }
 
+    /// <summary>
+    /// RemoveMails 接口返回数据封装类。
+    /// </summary>
+    [DataContract]
+    public class RemoveMailsRetuenDto : ReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// RemoveMails参数数据封装类。
+    /// </summary>
+    [DataContract]
+    public class RemoveMailsParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要删除的邮件Id集合。
+        /// </summary>
+        public List<string> Ids { get; set; } = new List<string>();
+    }
+
     #endregion 社交相关
 
 }

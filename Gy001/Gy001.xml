@@ -223,6 +223,13 @@
             <returns></returns>
             <response code="201">调用过于频繁。</response>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.VWorldController.GetNewCnName(System.Int32)">
+            <summary>
+            获取一个随机的名字。
+            </summary>
+            <param name="sex">0是传统意义上的女性，1是传统意义上的男性。未来可能添加多元性别，目前未得到此需求。</param>
+            <returns>一个随机的中文名。</returns>
+        </member>
         <member name="T:GY2021001WebApi.Models.GameItemDto">
             <summary>
             游戏物品，道具，金币，积分等等的对象。
@@ -1323,10 +1330,31 @@
             获取邮件接口返回值封装数据类。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.RemoveMailsRetuenDto">
+            <summary>
+            RemoveMails 接口返回数据封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.RemoveMailsParamsDto">
+            <summary>
+            RemoveMails参数数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RemoveMailsParamsDto.Ids">
+            <summary>
+            要删除的邮件Id集合。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
@@ -1344,6 +1372,13 @@
             <param name="model">参见 GetMailsParamsDto</param>
             <returns>参见 GetMailsReturnDto</returns>
             <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.RemoveMails(GY2021001WebApi.Models.RemoveMailsParamsDto)">
+            <summary>
+            删除指定id集合的所有邮件。
+            </summary>
+            <param name="model">参见 RemoveMailsParamsDto</param>
+            <returns>参见 RemoveMailsRetuenDto</returns>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">
             <summary>

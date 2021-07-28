@@ -239,6 +239,23 @@ namespace Gy2021001Template
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T[] GetSequenceProperty<T>(this GameThingTemplateBase obj, string name) => obj.Properties.GetValueOrDefault(name) as T[];
 
+        /// <summary>
+        /// 获取属性的值，若是序列属性则返回相应索引的值，如果不是序列属性则返回属性的值。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        /// <param name="lv"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public decimal GetSequenceValueOrValue(this GameThingTemplateBase obj, string name, int lv)
+        {
+            var seq = obj.GetSequenceProperty<decimal>(name);
+            if (seq is null) //若非序列属性
+                return obj.TryGetPropertyValue(name, out var resultObj) && OwHelper.TryGetDecimal(resultObj, out var result) ? result : default;
+            else //是序列属性
+                return seq[lv];
+        }
 
         /// <summary>
         /// 获取指定名称和等级的序列属性的值。
@@ -247,7 +264,7 @@ namespace Gy2021001Template
         /// <param name="obj"></param>
         /// <param name="name"></param>
         /// <param name="lv"></param>
-        /// <param name="defaultVal"></param>
+        /// <param name="defaultVal">若不是等级属性，使用此值。</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T GetSequencePropertyValueOrDefault<T>(this GameThingTemplateBase obj, string name, int lv, T defaultVal = default)

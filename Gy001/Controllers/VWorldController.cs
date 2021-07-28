@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using GY2021001BLL;
+﻿using GY2021001BLL;
 using Gy2021001Template;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -59,7 +57,7 @@ namespace GY2021001WebApi.Controllers
             world.NotifyShutdown();
             return Ok();
         }
-        
+
 
         /// <summary>
         /// 获取所有模板。
@@ -83,8 +81,26 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<string> GetResourceServerUrl()
         {
             var config = HttpContext.RequestServices.GetService(typeof(IConfiguration)) as IConfiguration;
-            string str = config.GetValue<string>("ResourceServerUrl");
+            string str = config.GetValue<string>("ResourceServerUrl"); //"🐆"
             return str;
+        }
+
+        /// <summary>
+        /// 获取一个随机的名字。
+        /// </summary>
+        /// <param name="sex">0是传统意义上的女性，1是传统意义上的男性。未来可能添加多元性别，目前未得到此需求。</param>
+        /// <returns>一个随机的中文名。</returns>
+        [HttpGet]
+        public ActionResult<string> GetNewCnName(int sex)
+        {
+            return CnNames.GetName(1==sex);
+        }
+
+        [ResponseCache(Location = ResponseCacheLocation.Any, Duration = 120)]
+        [HttpGet]
+        public ActionResult<List< MainbaseUpgradePrv>> GetMainbaseUpgradePrv()
+        {
+            return MainbaseUpgradePrv.Alls;
         }
     }
 }

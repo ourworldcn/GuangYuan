@@ -1035,10 +1035,48 @@ namespace GY2021001BLL
             return OwHelper.GetAllSubItemsOfTree(_, c => c.Children);
         }
 
-        public void ChangeTemplate(GameItem container, GameItemTemplate newContainer)
-        {
-            throw new NotImplementedException();
-        }
+        ///// <summary>
+        ///// 变化指定物品的模板。
+        ///// 追加新属性，变化序列属性。
+        ///// </summary>
+        ///// <param name="container"></param>
+        ///// <param name="newContainer"></param>
+        //public void ChangeTemplate(GameItem container, GameItemTemplate newContainer)
+        //{
+        //    if (container.TemplateId == newContainer.Id)    //若无需换Id
+        //        return;
+        //    var keys = container.Properties.Keys.Intersect(newContainer.Properties.Keys).ToArray(); //共有Id
+        //    foreach (var key in keys)
+        //    {
+        //        if (container.TryGetDecimalPropertyValue(key, out var tmp))   //若是数值属性
+        //        {
+        //            var lv = container.GetIndexPropertyValue(key);
+        //            if (lv >= 0)    //若是序列属性
+        //                tmp -= seq[lv];
+        //            var seq = container.Template.GetSequenceProperty<decimal>(key);
+        //            if (null != seq)   //若是序列属性
+        //            {
+        //                var lv = container.GetIndexPropertyValue(key);
+        //                if (lv >= 0)    //若是序列属性
+        //                    tmp -= seq[lv];
+        //            }
+        //            else //非序列属性
+        //                newContainer.GetSequenceValueOrValue(key);
+        //        }
+        //        else //若非数值属性
+        //        {
+
+        //        }
+        //        //TO DO
+        //        container.Properties[key] =;
+        //    }
+        //    foreach (var key in keys.Except(newContainer.Properties.Keys))  //追加属性值
+        //    {
+
+        //    }
+        //    container.TemplateId = newContainer.Id;
+        //    container.Template = newContainer;
+        //}
     }
 
     public class ActiveStyleDatas
@@ -1112,10 +1150,10 @@ namespace GY2021001BLL
                     var container = dic.GetValueOrDefault(item.ContainerId);
                     if (container is null)  //若找不到容器对象
                         continue;
-                    if (item.NewTemplateId.HasValue) //若需要改变容器模板
+                    if (item.NewTemplateId.HasValue && item.NewTemplateId != Guid.Empty) //若需要改变容器模板
                     {
                         var newContainer = gitm.GetTemplateFromeId(item.NewTemplateId.Value);
-                        manager.ChangeTemplate(container, newContainer);
+                        container.ChangeTemplate( newContainer);
                     }
                     foreach (var id in item.ItemIds)    //添加物品
                     {
