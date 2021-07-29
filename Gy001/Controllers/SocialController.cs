@@ -4,6 +4,8 @@ using GY2021001DAL;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using OwGame;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Gy001.Controllers
@@ -38,6 +40,7 @@ namespace Gy001.Controllers
                 var coll = social.GetMails(gu.CurrentChar);
                 result.Mails.AddRange(coll.Select(c => (GameMailDto)c));
                 return result;
+
             }
             finally
             {
@@ -72,6 +75,38 @@ namespace Gy001.Controllers
                 _World.CharManager.Unlock(gu);
             }
 
+        }
+
+        /// <summary>
+        /// 获取指定的附件。
+        /// </summary>
+        /// <param name="model">Ids中是附件Id的集合。</param>
+        /// <returns>ChangesItems中是收取的物品。</returns>
+        [HttpPost]
+        public ActionResult<GetAttachmentesRetuenDto> GetAttachmentes(GetAttachmentesParamsDto model)
+        {
+            var result = new GetAttachmentesRetuenDto();
+            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("令牌无效");
+            }
+            try
+            {
+                var social = _World.SocialManager;
+                var changes = new List<ChangesItem>();
+                social.GetAttachmentes(model.Ids.Select(c => GameHelper.FromBase64String(c)), gu.CurrentChar, changes);
+                result.ChangesItems.AddRange(changes.Select(c => (ChangesItemDto)c));
+            }
+            catch (Exception err)
+            {
+                result.DebugMessage = err.Message + " @" + err.StackTrace;
+                result.HasError = true;
+            }
+            finally
+            {
+                _World.CharManager.Unlock(gu);
+            }
+            return result;
         }
     }
 

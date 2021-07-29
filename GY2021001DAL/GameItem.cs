@@ -272,6 +272,8 @@ namespace GY2021001DAL
                     SetPropertyValue(key, template.GetPropertyValue(key));
                 }
             }
+            TemplateId = template.Id;
+            Template = template;
         }
 
     }

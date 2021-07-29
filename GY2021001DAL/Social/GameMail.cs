@@ -1,4 +1,5 @@
-﻿using Game.Social;
+﻿using Game.EntityFrameworkCore;
+using Game.Social;
 using OwGame;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Linq;
 
 namespace GY2021001DAL
 {
-    public class GameMail : GameSocialBase, ICloneable
+    public class GameMail : GameSocialBase
     {
         public GameMail()
         {
@@ -32,35 +33,8 @@ namespace GY2021001DAL
         /// </summary>
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
 
-        /// <summary>
-        /// 所有已经标记为删除的Id集合。
-        /// 如果用户标记删除邮件，则其Id会加入这里。
-        /// 当前版本保留未用，适用于大量长期存在的管理员群发邮件的情况，当前需求不存在这种情况。
-        /// </summary>
-        public byte[] IdsOfMarkDeleteStream { get; set; }
+        private List<Guid> _IdsOfMarkDelete;
 
-        List<Guid> _IdsOfMarkDelete;
-        /// <summary>
-        /// 保留未用，<seealso cref="IdsOfMarkDeleteStream"/>
-        /// </summary>
-        public List<Guid> IdsOfMarkDelete
-        {
-            get
-            {
-                lock (ThisLocker)
-                    if (null == _IdsOfMarkDelete)
-                    {
-                        _IdsOfMarkDelete = new List<Guid>();
-                        for (int i = 0; i < IdsOfMarkDeleteStream.Length; i += 8)
-                        {
-                            if (i + 8 >= IdsOfMarkDeleteStream.Length)
-                                break;  //容错
-                            _IdsOfMarkDelete.Add(new Guid(IdsOfMarkDeleteStream[i..(i + 8)]));
-                        }
-                    }
-                return _IdsOfMarkDelete;
-            }
-        }
         #region 地址相关
 
         private List<GameMailAddress> _Addresses;
@@ -140,27 +114,6 @@ namespace GY2021001DAL
 
         }
 
-        /// <summary>
-        /// 复制一个深表副本。
-        /// </summary>
-        /// <returns></returns>
-        public object Clone()
-        {
-            var result = new GameMail()
-            {
-                Id = Guid.NewGuid(),
-                Subject = Subject,
-                Body = Body,
-                CreateUtc = DateTime.UtcNow,
-                _Attachmentes = new List<GameMailAttachment>(Attachmentes.Select(c => (GameMailAttachment)c.Clone())),
-                _Addresses = new List<GameMailAddress>(Addresses),
-            };
-            foreach (var item in Properties)    //复制属性值
-            {
-                result.Properties[item.Key] = item.Value;
-            }
-            return result;
-        }
     }
 
     /// <summary>
@@ -210,7 +163,7 @@ namespace GY2021001DAL
     /// <summary>
     /// 邮件附件类。
     /// </summary>
-    public class GameMailAttachment : GameSocialBase, ICloneable
+    public class GameMailAttachment : GameSocialBase
     {
         /// <summary>
         /// 获取或设置此对象所属邮件的Id。
@@ -223,22 +176,33 @@ namespace GY2021001DAL
         /// </summary>
         virtual public GameMail Mail { get; set; }
 
-        /// <summary>
-        /// 复制一个深表副本，但没有设置导航相关的属性。
-        /// </summary>
-        /// <returns></returns>
-        public object Clone()
-        {
-            var result = new GameMailAttachment()
-            {
-                Id = Guid.NewGuid(),
+    }
 
-            };
-            foreach (var item in Properties)    //复制属性值
-            {
-                result.Properties[item.Key] = item.Value;
-            }
-            return result;
+    /// <summary>
+    /// 标记一个Id的通用类。
+    /// <see cref="ParentId"/> 和 <see cref="GuidKeyBase.Id"/> 是联合主键，且<see cref="ParentId"/>单独进行了非唯一索引。
+    /// </summary>
+    public class IdMark : StringKeyDictionaryPropertyBase
+    {
+        public IdMark()
+        {
         }
+
+        public IdMark(Guid id) : base(id)
+        {
+        }
+
+        /// <summary>
+        /// 相关实体Id。这个字段应与<see cref="GuidKeyBase.Id"/>形成联合主键。
+        /// </summary>
+        [Column(Order = 1)]
+        public Guid ParentId { get; set; }
+
+        private readonly object _ThisLocker = new object();
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        public override object ThisLocker => _ThisLocker;
     }
 }

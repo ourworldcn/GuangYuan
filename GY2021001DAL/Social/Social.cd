@@ -10,11 +10,10 @@
   <Class Name="GY2021001DAL.GameMail">
     <Position X="5.25" Y="4.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AgAAAAAAAAAgAAAAAIABAKAAAAAIEAAAAAQAABAAAgA=</HashCode>
+      <HashCode>AgJAAAAAAAAgCAAAAIIBAKAAAAIIAAAAAAQAABAAAgA=</HashCode>
       <FileName>Social\GameMail.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
-      <Property Name="MailAddresses" />
       <Property Name="Attachmentes" />
     </ShowAsCollectionAssociation>
   </Class>
@@ -32,5 +31,9 @@
       <FileName>Social\GameMail.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Interface Name="System.ICloneable" Collapsed="true">
+    <Position X="1.25" Y="0.75" Width="1.5" />
+    <TypeIdentifier />
+  </Interface>
   <Font Name="Microsoft YaHei UI" Size="9" />
 </ClassDiagram>

@@ -1153,7 +1153,7 @@ namespace GY2021001BLL
                     if (item.NewTemplateId.HasValue && item.NewTemplateId != Guid.Empty) //若需要改变容器模板
                     {
                         var newContainer = gitm.GetTemplateFromeId(item.NewTemplateId.Value);
-                        container.ChangeTemplate( newContainer);
+                        container.ChangeTemplate(newContainer);
                     }
                     foreach (var id in item.ItemIds)    //添加物品
                     {

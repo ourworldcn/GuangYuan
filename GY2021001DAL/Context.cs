@@ -36,6 +36,9 @@ namespace GY2021001DAL
 
             //
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
+            modelBuilder.Entity<IdMark>().HasIndex(c => c.ParentId).IsUnique(false);
+            modelBuilder.Entity<IdMark>().HasKey(c => new { c.Id, c.ParentId });
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -83,6 +86,11 @@ namespace GY2021001DAL
         /// </summary>
         public DbSet<GameMailAddress> MailAddress { get; set; }
 
+        /// <summary>
+        /// 标记一组Id。
+        /// </summary>
+        public DbSet<IdMark> IdMarks { get; set; }
+
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
             foreach (var item in GameUsers.Local)
@@ -116,5 +124,5 @@ namespace GY2021001DAL
         }
     }
 
-    
+
 }

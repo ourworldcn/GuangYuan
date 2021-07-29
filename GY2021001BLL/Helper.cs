@@ -6,5 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace GY2021001BLL
-{ }
+{
+    //"🐂, 🐄, 🐆";
+}
 

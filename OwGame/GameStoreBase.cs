@@ -490,4 +490,31 @@ namespace OwGame
 
     }
 
+    public static class StringDictionaryExtensions
+    {
+        /// <summary>
+        /// 获取指定键的值，并转换为Guid类型，如果没有指定键或不能转换则返回默认值。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="name"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        static public Guid GetGuidOrDefault(this IReadOnlyDictionary<string, object> dic, string name, Guid defaultVal = default)
+        {
+            if (!dic.TryGetValue(name, out var obj))
+                return defaultVal;
+            return obj switch
+            {
+                null => defaultVal,
+                _ when obj is string str && Guid.TryParse(str, out var guid) => guid,
+                _ when obj is Guid val => val,
+                _ => defaultVal,
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public decimal GetDecimalOrDefault(this IReadOnlyDictionary<string, object> dic, string name, decimal defaultVal = default) =>
+            dic.TryGetValue(name, out var obj) && OwHelper.TryGetDecimal(obj, out var result) ? result : defaultVal;
+
+    }
 }

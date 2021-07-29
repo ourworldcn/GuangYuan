@@ -159,5 +159,21 @@ namespace Game.Social
         /// 邮件动态属性键名，该名的值不为0则说明是系统发送邮件。
         /// </summary>
         public const string FromSystemPNmae = "FromSystem";
+
+        /// <summary>
+        /// 附件物品的模板Id的键名。
+        /// </summary>
+        public const string SentTIdPName = "tid";
+
+        /// <summary>
+        /// 附件物品的数量的键名。
+        /// </summary>
+        public const string SentCountPName = "count";
+
+        /// <summary>
+        /// 附件物品的放入容器的模板Id的键名。
+        /// </summary>
+        public const string SentDestPTIdPName = "ptid";
+
     }
 }

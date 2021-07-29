@@ -4,14 +4,16 @@ using GY2021001DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GY2021001DAL.Migrations
 {
     [DbContext(typeof(GY2021001DbContext))]
-    partial class GY2021001DbContextModelSnapshot : ModelSnapshot
+    [Migration("20210729020305_21072901")]
+    partial class _21072901
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,6 +93,9 @@ namespace GY2021001DAL.Migrations
 
                     b.Property<DateTime>("CreateUtc")
                         .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("IdsOfMarkDeleteStream")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("PropertyString")
                         .HasColumnType("nvarchar(max)");
@@ -228,9 +233,6 @@ namespace GY2021001DAL.Migrations
 
                     b.Property<Guid>("ParentId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PropertiesString")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id", "ParentId");
 

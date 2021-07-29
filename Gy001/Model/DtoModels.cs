@@ -1584,6 +1584,37 @@ namespace GY2021001WebApi.Models
         public List<string> Ids { get; set; } = new List<string>();
     }
 
+    /// <summary>
+    /// 获取附件接口使用的参数封装类。
+    /// </summary>
+    [DataContract]
+    public class GetAttachmentesParamsDto : TokenDtoBase
+    {
+        public GetAttachmentesParamsDto()
+        {
+        }
+
+        public GetAttachmentesParamsDto(string token) : base(token)
+        {
+        }
+
+        /// <summary>
+        /// 要获取的附件Id集合。
+        /// </summary>
+        public List<string> Ids { get; set; }
+    }
+
+    /// <summary>
+    /// 获取附件接口使用的返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class GetAttachmentesRetuenDto : ChangesReturnDtoBase
+    {
+        public GetAttachmentesRetuenDto()
+        {
+        }
+    }
+
     #endregion 社交相关
 
 }

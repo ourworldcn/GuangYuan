@@ -37,7 +37,6 @@ namespace Gy001
             //    PropertyNamingPolicy = null,
             //    DictionaryKeyPolicy = null,
             //};
-            var dir = AppDomain.CurrentDomain.BaseDirectory;
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

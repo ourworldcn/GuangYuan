@@ -1345,6 +1345,21 @@
             要删除的邮件Id集合。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetAttachmentesParamsDto">
+            <summary>
+            获取附件接口使用的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetAttachmentesParamsDto.Ids">
+            <summary>
+            要获取的附件Id集合。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetAttachmentesRetuenDto">
+            <summary>
+            获取附件接口使用的返回值封装类。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -1379,6 +1394,13 @@
             </summary>
             <param name="model">参见 RemoveMailsParamsDto</param>
             <returns>参见 RemoveMailsRetuenDto</returns>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.GetAttachmentes(GY2021001WebApi.Models.GetAttachmentesParamsDto)">
+            <summary>
+            获取指定的附件。
+            </summary>
+            <param name="model">Ids中是附件Id的集合。</param>
+            <returns>ChangesItems中是收取的物品。</returns>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">
             <summary>

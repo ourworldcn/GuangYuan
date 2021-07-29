@@ -1,6 +1,7 @@
 ﻿using Game.Social;
 using GY2021001DAL;
 using Microsoft.EntityFrameworkCore;
+using OwGame;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -55,17 +56,39 @@ namespace GY2021001BLL
         #endregion 构造函数及相关
 
         /// <summary>
+        /// 获取指定角色的所有有效邮件。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        private IEnumerable<GameMail> GetMails(GameChar gameChar, DbContext db)
+        {
+            var result = new List<GameMail>();
+            var gcId = gameChar.Id;
+
+            var coll = db.Set<GameMailAddress>().Where(c => c.ThingId == gcId && !c.IsDeleted && c.Kind == MailAddressKind.To).Select(c => c.Mail).Distinct();
+
+            return coll;
+        }
+
+        /// <summary>
         /// 获取指定用户的所有邮件。
         /// </summary>
         /// <returns></returns>
         public List<GameMail> GetMails(GameChar gameChar)
         {
-            using var db = World.CreateNewUserDbContext();
-            var result = new List<GameMail>();
-            var gcId = gameChar.Id;
-
-            var coll = db.MailAddress.Where(c => c.ThingId == gcId && !c.IsDeleted && c.Kind == MailAddressKind.To).Select(c => c.Mail).Distinct();
-            return coll.Include(c => c.Addresses).Include(c => c.Attachmentes).ToList();
+            var db = World.CreateNewUserDbContext();
+            try
+            {
+                var coll = GetMails(gameChar, db);
+                return coll.
+                        //Include(c => c.Addresses).Include(c => c.Attachmentes).
+                        ToList();
+            }
+            finally
+            {
+                Task.Delay(4000).ContinueWith((c, dbObj) => (dbObj as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);
+            }
         }
 
         /// <summary>
@@ -148,7 +171,7 @@ namespace GY2021001BLL
                     Mail = mail,
                     MailId = mail.Id,
                 };
-                mail.Properties[SocialConstant.FromSystemPNmae] = 1m;
+                mail.Properties[SocialConstant.FromSystemPNmae] = decimal.One;
             }
             else
             {
@@ -157,7 +180,7 @@ namespace GY2021001BLL
                     throw new ArgumentException("找不到指定Id的角色。", nameof(sendId));
                 sender = new GameMailAddress()
                 {
-                    ThingId = SocialConstant.FromSystemId,
+                    ThingId = sendId,
                     DisplayName = tmpChar.DisplayName,
                     Kind = MailAddressKind.From,
                     IsDeleted = false,
@@ -167,10 +190,79 @@ namespace GY2021001BLL
                 mail.Properties[SocialConstant.FromSystemPNmae] = decimal.Zero;
             }
             //追加相关人
-            mail.Addresses.AddRange(tos.Prepend(sender));
+            mail.Addresses.AddRange(tos);
+            mail.Addresses.Add(sender);
             db.Mails.Add(mail);
             db.SaveChangesAsync().ContinueWith((task, dbPara) => (dbPara as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);  //清理
         }
 
+        /// <summary>
+        /// 领取附件。
+        /// </summary>
+        /// <param name="attachmentesIds">附件Id集合。</param>
+        /// <param name="gameChar"></param>
+        /// <param name="changes"></param>
+        public bool GetAttachmentes(IEnumerable<Guid> attachmentesIds, GameChar gameChar, IList<ChangesItem> changes = null)
+        {
+            var db = World.CreateNewUserDbContext();
+            ValueTuple<Guid, decimal, Guid>[] templates;
+            try
+            {
+                //附件Id是IdMark.Id,角色Id是IdMark.ParentId
+                var gcId = gameChar.Id;
+                var coll = GetMails(gameChar, db);  //角色的所有邮件
+                var collIds = coll.Select(c => c.Id);   //邮件Id集合
+                var already = db.IdMarks.Where(c => c.ParentId == gcId && attachmentesIds.Contains(c.Id)).Select(c => c.Id);  //已领取的
+                if (attachmentesIds.Intersect(already).Any())
+                {
+                    VWorld.SetLastErrorMessage("至少有一个附件已经被领取");
+                    return false;
+                }
+                var ary = coll.SelectMany(c => c.Attachmentes).Where(c => attachmentesIds.Contains(c.Id)).ToList();   //所有可领取的附件
+                var idMarks = db.IdMarks;
+                foreach (var item in ary)   //标记已经删除
+                {
+                    idMarks.Add(new IdMark()
+                    {
+                        ParentId = gcId,
+                        Id = item.Id,
+                    });
+                }
+                templates = ary.Select(c =>
+                {
+                    return ValueTuple.Create(c.Properties.GetGuidOrDefault(SocialConstant.SentTIdPName, Guid.Empty),
+                     c.Properties.GetDecimalOrDefault(SocialConstant.SentTIdPName, decimal.Zero),
+                     c.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty));
+                }).ToArray();
+            }
+            finally
+            {
+                Task.Delay(1000).ContinueWith((c, dbObj) => (dbObj as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);
+            }
+            //修正玩家数据
+            if (!World.CharManager.Lock(gameChar.GameUser))
+            {
+                VWorld.SetLastErrorMessage("无法锁定玩家。");
+                return false;
+            }
+            try
+            {
+                var gim = World.ItemManager;
+                foreach (var item in templates) //遍历需要追加的物品
+                {
+                    var gameItem = gim.CreateGameItem(item.Item1);  //物品管理器
+                    gameItem.Count = item.Item2;
+                    GameThingBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == item.Item3);
+                    parent ??= gameChar;
+                    gim.AddItem(gameItem, parent, null, changes);
+                }
+                World.CharManager.NotifyChange(gameChar.GameUser);
+            }
+            finally
+            {
+                World.CharManager.Unlock(gameChar.GameUser, true);
+            }
+            return true;
+        }
     }
 }
