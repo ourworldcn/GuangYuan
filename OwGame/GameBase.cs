@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace OwGame
+namespace OW.Game
 {
     /// <summary>
     /// 渐变属性封装类。

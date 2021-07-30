@@ -1,14 +1,14 @@
 ﻿using Game.Social;
 using GY2021001DAL;
 using Microsoft.EntityFrameworkCore;
-using OwGame;
+using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GY2021001BLL
+namespace GuangYuan.GY001.BLL
 {
     public class SocialManagerOptions
     {

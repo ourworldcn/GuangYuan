@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>GuangYuan.GY001.BLL</RootNamespace>
+    <AssemblyName>GY001BllCore</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GY2021001DAL\GY2021001DAL.csproj" />
-    <ProjectReference Include="..\OwGame\OwGame.csproj" />
+    <ProjectReference Include="..\OwGame\OwGameCore.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿/*物品对象
  */
-using OwGame;
+using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;

@@ -1,16 +1,13 @@
 ﻿using GY2021001DAL;
 using Gy2021001Template;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.ObjectPool;
-using OwGame;
+using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
-namespace GY2021001BLL
+namespace GuangYuan.GY001.BLL
 {
     /// <summary>
     /// 战斗管理器的配置类。
@@ -183,7 +180,7 @@ namespace GY2021001BLL
 
         }
 
-        List<GameItemTemplate> _Dungeons;
+        private List<GameItemTemplate> _Dungeons;
 
         /// <summary>
         /// 所有副本信息。
@@ -205,7 +202,7 @@ namespace GY2021001BLL
             }
         }
 
-        Dictionary<GameItemTemplate, GameItemTemplate[]> _Parent2Children;
+        private Dictionary<GameItemTemplate, GameItemTemplate[]> _Parent2Children;
         /// <summary>
         /// 键是大关卡的模板，值所包含小关卡的模板数组。
         /// </summary>
@@ -229,7 +226,7 @@ namespace GY2021001BLL
             }
         }
 
-        Dictionary<GameItemTemplate, GameItemTemplate> _Child2Parent;
+        private Dictionary<GameItemTemplate, GameItemTemplate> _Child2Parent;
 
         /// <summary>
         /// 键是小关卡模板，值所属的大关卡模板。
@@ -434,7 +431,7 @@ namespace GY2021001BLL
         /// 校验时间
         /// </summary>
         /// <returns></returns>
-        bool VerifyTime(EndCombatData data)
+        private bool VerifyTime(EndCombatData data)
         {
             var gameChar = data.GameChar;
             var tm = World.ItemTemplateManager.GetTemplateFromeId(gameChar.CurrentDungeonId.Value);    //关卡模板
@@ -579,12 +576,12 @@ namespace GY2021001BLL
         /// <summary>
         /// 突破次数,对应主动技能等级：1，2，3， 4， 5。
         /// </summary>
-        readonly int[] _aryTupo = new int[] { 0, 6, 12, 18, 24 };
+        private readonly int[] _aryTupo = new int[] { 0, 6, 12, 18, 24 };
 
         /// <summary>
         /// 坐骑等级，对应被动技能等级：1，2，3， 4， 5
         /// </summary>
-        readonly int[] _aryLvZuoqi = new int[] { 0, 4, 9, 14, 19 };
+        private readonly int[] _aryLvZuoqi = new int[] { 0, 4, 9, 14, 19 };
 
         /// <summary>
         /// 更新指定坐骑的战斗力属性。

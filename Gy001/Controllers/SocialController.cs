@@ -1,9 +1,9 @@
 ﻿using Game.Social;
-using GY2021001BLL;
+using GuangYuan.GY001.BLL;
 using GY2021001DAL;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
-using OwGame;
+using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;

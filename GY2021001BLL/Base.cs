@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace GY2021001BLL
+namespace GuangYuan.GY001.BLL
 {
     public class Compiler
     {

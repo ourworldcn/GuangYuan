@@ -11,7 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace GY2021001BLL.Homeland
+namespace GuangYuan.GY001.BLL.Homeland
 {
     /// <summary>
     /// 风格。

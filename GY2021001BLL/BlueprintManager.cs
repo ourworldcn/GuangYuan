@@ -1,11 +1,11 @@
-﻿using GY2021001BLL.Homeland;
+﻿using GuangYuan.GY001.BLL.Homeland;
 using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OwGame;
-using OwGame.Expression;
+using OW.Game;
+using OW.Game.Expression;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GY2021001BLL
+namespace GuangYuan.GY001.BLL
 {
     public class GameManagerPropertyHelper : GameThingPropertyHelper
     {

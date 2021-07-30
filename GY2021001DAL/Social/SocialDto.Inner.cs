@@ -1,6 +1,6 @@
 ﻿
 using GY2021001DAL;
-using OwGame;
+using OW.Game;
 using System.Linq;
 
 namespace Game.Social

@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Gy001;
-using GY2021001BLL;
+using GuangYuan.GY001.BLL;
 using GY2021001DAL;
 using Gy2021001Template;
 using GY2021001WebApi.Models;
@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OwGame;
+using OW.Game;
 
 namespace GY2021001WebApi.Controllers
 {

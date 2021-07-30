@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gy2021001Template\Gy2021001Template.csproj" />
-    <ProjectReference Include="..\OwGame\OwGame.csproj" />
+    <ProjectReference Include="..\OwGame\OwGameCore.csproj" />
   </ItemGroup>
 
 </Project>

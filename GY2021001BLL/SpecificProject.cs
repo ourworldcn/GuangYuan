@@ -1,17 +1,14 @@
-﻿using GY2021001BLL.Homeland;
-using GY2021001DAL;
+﻿using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using OwGame;
+using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
 
-namespace GY2021001BLL
+namespace GuangYuan.GY001.BLL
 {
     /// <summary>
     /// 该项目使用的特定常量。

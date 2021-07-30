@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace GY2021001BLL
+namespace GuangYuan.GY001.BLL
 {
     public enum GameRulesKind
     {

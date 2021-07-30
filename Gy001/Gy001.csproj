@@ -37,10 +37,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GY2021001BLL\GY2021001BLL.csproj" />
+    <ProjectReference Include="..\GY2021001BLL\GY001BLL.csproj" />
     <ProjectReference Include="..\GY2021001DAL\GY2021001DAL.csproj" />
     <ProjectReference Include="..\Gy2021001Template\Gy2021001Template.csproj" />
-    <ProjectReference Include="..\OwGame\OwGame.csproj" />
+    <ProjectReference Include="..\OwGame\OwGameCore.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties _1filenesting_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

@@ -4,13 +4,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GY2021001BLL;
+using GuangYuan.GY001.BLL;
 using GY2021001DAL;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using OwGame;
+using OW.Game;
 
 namespace GY2021001WebApi.Controllers
 {

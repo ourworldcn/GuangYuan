@@ -4,7 +4,7 @@ using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OwGame;
+using OW.Game;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GY2021001BLL
+namespace GuangYuan.GY001.BLL
 {
     /// <summary>
     /// GameCharManager类的配置类。

@@ -4,12 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace OwGame
+namespace OW.Game
 {
     public abstract class OrmObjectBase<TKey>
     {
@@ -462,6 +463,13 @@ namespace OwGame
             var result = innerSeq.First(c => c.Prob >= seed);
             return result.Data;
         }
+
+        //static public string SerializeToJson(object obj, Type type = null)
+        //{
+        //    type ??= obj.GetType();
+        //    JsonSerializer.Serialize(obj, type);
+        //    Assembly.GetAssembly()
+        //}
     }
 
     public static class GameHelper

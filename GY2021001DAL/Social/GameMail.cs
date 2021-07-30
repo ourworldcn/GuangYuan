@@ -1,6 +1,6 @@
 ﻿using Game.EntityFrameworkCore;
 using Game.Social;
-using OwGame;
+using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -33,7 +33,7 @@ namespace GY2021001DAL
         /// </summary>
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
 
-        private List<Guid> _IdsOfMarkDelete;
+        private readonly List<Guid> _IdsOfMarkDelete;
 
         #region 地址相关
 

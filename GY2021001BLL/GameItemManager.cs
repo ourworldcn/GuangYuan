@@ -1,16 +1,16 @@
-﻿using GY2021001BLL.Homeland;
+﻿using GuangYuan.GY001.BLL.Homeland;
 using GY2021001DAL;
 using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using OwGame;
+using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace GY2021001BLL
+namespace GuangYuan.GY001.BLL
 {
     public class GameItemManagerOptions
     {
@@ -1165,6 +1165,7 @@ namespace GY2021001BLL
                         manager.MoveItems(manager.GetContainer(gameItem), c => c.Id == gameItem.Id, destParent, datas.ItemChanges);
                     }
                 }
+                manager.World.CharManager.NotifyChange(datas.GameChar.GameUser);
             }
             catch (Exception err)
             {

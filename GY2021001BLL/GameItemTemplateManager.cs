@@ -1,6 +1,6 @@
 ﻿using Gy2021001Template;
 using Microsoft.EntityFrameworkCore;
-using OwGame;
+using OW.Game;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace GY2021001BLL
+namespace GuangYuan.GY001.BLL
 {
     public class GameItemTemplateManagerOptions
     {

@@ -1,6 +1,6 @@
 ﻿using Gy2021001Template;
-using OwGame;
-using OwGame.Expression;
+using OW.Game;
+using OW.Game.Expression;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -469,41 +469,48 @@ namespace GY2021001DAL
     }
 
     /// <summary>
-    /// 
+    /// 服务器代码使用的通用扩展属性类。
     /// </summary>
     public class ExtendPropertyDescriptor
     {
         /// <summary>
         /// 持久化标志。
-        /// <see cref="GameExtendProperty.StringValue"/>以该字符串开头，且在逗号分隔之后的文本是一个类型的程序集限定名时，
+        /// <see cref="GameExtendProperty.StringValue"/>是该字符串开头，
+        /// 且<see cref="GameExtendProperty.IntValue"/>指定了<see cref="GameExtendProperty.Text"/>，开头多少个字符是类型全名，且后跟一个分号.然后是Json序列化的内容。
         /// 则该<see cref="GameExtendProperty"/>对象会被认为是一个需要持久化的属性。
         /// </summary>
-        public const string Mark = "a88c6717-4fdc-4cb0-b127-e1799ebf3b35";
+        public const string MarkIdString = "a88c6717-4fdc-4cb0-b127-e1799ebf3b35";
 
         /// <summary>
-        /// 试图从<see cref="GameExtendProperty"/>中转化得到<see cref="PersistenceItem"/>对象。
+        /// 试图从<see cref="GameExtendProperty"/>中转化得到<see cref="ExtendPropertyDescriptor"/>对象。
+        /// 特别地，本成员使用了反射，因此程序集改名导致原有数据无法读回。
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="result"></param>
         /// <returns>true成功得到对象，false转化错误。</returns>
         static public bool TryParse(GameExtendProperty obj, out ExtendPropertyDescriptor result)
         {
-            var index = obj.StringValue is null ? -1 : obj.StringValue.IndexOf(',');
-            if (-1 == index || Mark != obj.StringValue[..index])    //若不是特定标记开头
+            if (MarkIdString != obj.StringValue)    //若不是特定标记开头
             {
                 result = null;
                 return false;
             }
-            var fullName = obj.StringValue[(index + 1)..];
+            if (obj.IntValue <= 0 || obj.Text.Length <= obj.IntValue + 1 || obj.Text[obj.IntValue] != ';')   //若格式不正确
+            {
+                result = null;
+                return false;
+            }
+            var fullName = obj.Text[..obj.IntValue];
             var type = Type.GetType(fullName);
-            if (type is null)
+            if (type is null)   //若找不到指定类
             {
                 result = null;
                 return false;
             }
+            var guts = obj.Text[(obj.IntValue + 1)..];
             result = new ExtendPropertyDescriptor()
             {
-                Data = string.IsNullOrWhiteSpace(obj.Text) ? default : JsonSerializer.Deserialize(obj.Text, type),
+                Data = string.IsNullOrWhiteSpace(guts) ? default : JsonSerializer.Deserialize(guts, type),
                 IsPersistence = true,
                 Name = obj.Name,
                 Type = type,
@@ -517,8 +524,10 @@ namespace GY2021001DAL
         /// <param name="obj"></param>
         public void FillTo(GameExtendProperty obj)
         {
-            obj.Text = Data is null ? null : JsonSerializer.Serialize(Data, Type);
-            obj.StringValue = $"{Mark},{Type.AssemblyQualifiedName}";
+            var fullName = Type.AssemblyQualifiedName;
+            obj.IntValue = fullName.Length;
+            obj.Text = $"{fullName};{(Data is null ? null : JsonSerializer.Serialize(Data, Type))}";
+            obj.StringValue = MarkIdString;
             obj.Name = Name;
         }
 
@@ -585,6 +594,7 @@ namespace GY2021001DAL
     /// </summary>
     public class GameExtendProperty
     {
+
         public GameExtendProperty()
         {
 
@@ -603,8 +613,18 @@ namespace GY2021001DAL
         [MaxLength(64)]
         public string Name { get; set; }
 
+        private string _StringValue;
         [MaxLength(256)]
-        public string StringValue { get; set; }
+        public string StringValue
+        {
+            get => _StringValue;
+            set
+            {
+                if (value.Length > 256)
+                    throw new ArgumentException("最长仅能支持256个字符。", nameof(value));
+                _StringValue = value;
+            }
+        }
 
         public int IntValue { get; set; }
 

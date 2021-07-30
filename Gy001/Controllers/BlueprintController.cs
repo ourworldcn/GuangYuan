@@ -1,11 +1,11 @@
-﻿using GY2021001BLL;
+﻿using GuangYuan.GY001.BLL;
 using GY2021001DAL;
 using Gy2021001Template;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using OwGame;
+using OW.Game;
 using System;
 using System.Linq;
 

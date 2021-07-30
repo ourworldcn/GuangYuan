@@ -1,8 +1,8 @@
-﻿using GY2021001BLL;
-using GY2021001BLL.Homeland;
+﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Homeland;
 using GY2021001DAL;
 using Gy2021001Template;
-using OwGame;
+using OW.Game;
 using System;
 using System.Linq;
 using System.Text.Json;
