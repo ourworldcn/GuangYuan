@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace OW.Game
 {
@@ -36,16 +32,27 @@ namespace OW.Game
 
     public abstract class GuidKeyBase
     {
+        /// <summary>
+        /// 构造函数。
+        /// 会自动用<see cref="Guid.NewGuid"/>生成<see cref="Id"/>属性值。
+        /// </summary>
         public GuidKeyBase()
         {
             Id = Guid.NewGuid();
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="id">指定该实体对象的<see cref="Id"/>属性。</param>
         public GuidKeyBase(Guid id)
         {
             Id = id;
         }
 
+        /// <summary>
+        /// 主键。
+        /// </summary>
         [Key, DatabaseGenerated(DatabaseGeneratedOption.None), Column(Order = 0)]
         public Guid Id { get; set; }
 

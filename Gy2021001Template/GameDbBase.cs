@@ -4,31 +4,32 @@
  * */
 
 using Microsoft.EntityFrameworkCore;
-using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
 
-namespace Game.EntityFrameworkCore
+namespace OW.Game
 {
     /// <summary>
     /// 提供一个基类，包含一个编码为字符串的压缩属性。且该字符串可以理解为一个字典的内容。
     /// </summary>
     public abstract class StringKeyDictionaryPropertyBase : GuidKeyBase, IBeforeSave
     {
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
         public StringKeyDictionaryPropertyBase()
         {
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="id"><inheritdoc/></param>
         public StringKeyDictionaryPropertyBase(Guid id) : base(id)
         {
         }
-
-        /// <summary>
-        /// 内部使用的同步锁。
-        /// </summary>
-        public abstract object ThisLocker { get; }
 
         private string _PropertiesString;
 
@@ -47,16 +48,13 @@ namespace Game.EntityFrameworkCore
         [NotMapped]
         public Dictionary<string, object> Properties
         {
-            [MethodImpl(MethodImplOptions.AggressiveOptimization)]
             get
             {
                 if (_Properties is null)
-                    lock (ThisLocker)
-                        if (_Properties is null)
-                        {
-                            _Properties = new Dictionary<string, object>();
-                            OwHelper.AnalysePropertiesString(PropertiesString, _Properties);
-                        }
+                {
+                    _Properties = new Dictionary<string, object>();
+                    OwHelper.AnalysePropertiesString(PropertiesString, _Properties);
+                }
                 return _Properties;
             }
         }
@@ -84,6 +82,5 @@ namespace Game.EntityFrameworkCore
         /// </summary>
         /// <param name="db">该实体类将被保存到的数据库上下文。</param>
         void WillSaving(DbContext db);
-
     }
 }

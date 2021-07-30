@@ -1,5 +1,4 @@
-﻿using Game.EntityFrameworkCore;
-using Game.Social;
+﻿using Game.Social;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -32,8 +31,6 @@ namespace GuangYuan.GY001.UserDb
         /// 获取或设置创建该邮件的时间。UTC时间。
         /// </summary>
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
-
-        private readonly List<Guid> _IdsOfMarkDelete;
 
         #region 地址相关
 
@@ -198,11 +195,5 @@ namespace GuangYuan.GY001.UserDb
         [Column(Order = 1)]
         public Guid ParentId { get; set; }
 
-        private readonly object _ThisLocker = new object();
-
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        public override object ThisLocker => _ThisLocker;
     }
 }
