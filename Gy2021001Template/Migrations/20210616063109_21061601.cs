@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Gy2021001Template.Migrations
+namespace GuangYuan.GY001.TemplateDb.Migrations
 {
     public partial class _21061601 : Migration
     {

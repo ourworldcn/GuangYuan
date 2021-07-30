@@ -1,5 +1,5 @@
-﻿using GY2021001DAL;
-using Gy2021001Template;
+﻿using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -17,8 +17,8 @@ namespace GuangYuan.GY001.BLL
 {
     public class VWorldOptions
     {
-        public DbContextOptions<GY2021001DbContext> UserDbOptions { get; set; }
-        public DbContextOptions<GameTemplateContext> TemplateDbOptions { get; set; }
+        public DbContextOptions<GY001UserContext> UserDbOptions { get; set; }
+        public DbContextOptions<GY001TemplateContext> TemplateDbOptions { get; set; }
     }
 
     /// <summary>
@@ -158,10 +158,10 @@ namespace GuangYuan.GY001.BLL
         /// 调用者需要自行负责清理对象。
         /// </summary>
         /// <returns></returns>
-        public GY2021001DbContext CreateNewUserDbContext()
+        public GY001UserContext CreateNewUserDbContext()
         {
             //DbContextOptionsBuilder.EnableSensitiveDataLogging
-            return new GY2021001DbContext(Options.UserDbOptions);
+            return new GY001UserContext(Options.UserDbOptions);
         }
 
         /// <summary>
@@ -169,9 +169,9 @@ namespace GuangYuan.GY001.BLL
         /// 调用者需要自行负责清理对象。
         /// </summary>
         /// <returns></returns>
-        public GameTemplateContext CreateNewTemplateDbContext()
+        public GY001TemplateContext CreateNewTemplateDbContext()
         {
-            return new GameTemplateContext(Options.TemplateDbOptions);
+            return new GY001TemplateContext(Options.TemplateDbOptions);
         }
 
         public VWorldInfomation GetInfomation()
@@ -289,11 +289,11 @@ namespace GuangYuan.GY001.BLL
             var logger = services.GetRequiredService<ILogger<GameHostedService>>();
             try
             {
-                var tContext = services.GetRequiredService<GameTemplateContext>();
+                var tContext = services.GetRequiredService<GY001TemplateContext>();
                 TemplateMigrateDbInitializer.Initialize(tContext);
                 logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={tContext.Database.GetDbConnection().ConnectionString}");
 
-                var context = services.GetRequiredService<GY2021001DbContext>();
+                var context = services.GetRequiredService<GY001UserContext>();
                 MigrateDbInitializer.Initialize(context);
                 logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={context.Database.GetDbConnection().ConnectionString}");
             }

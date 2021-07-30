@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace GY2021001DAL
+namespace GuangYuan.GY001.UserDb
 {
     /// <summary>
     /// 注销的原因。

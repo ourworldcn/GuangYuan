@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GY2021001DAL
+namespace GuangYuan.GY001.UserDb
 {
     public class GameBlueprint : GameThingBase
     {

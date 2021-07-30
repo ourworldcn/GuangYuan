@@ -1,5 +1,5 @@
-using GY2021001DAL;
-using Gy2021001Template;
+using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.TemplateDb;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,10 +60,10 @@ namespace Gy001
 
                 try
                 {
-                    var tContext = services.GetRequiredService<GameTemplateContext>();
+                    var tContext = services.GetRequiredService<GY001TemplateContext>();
                     TemplateMigrateDbInitializer.Initialize(tContext);
                     logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={tContext.Database.GetDbConnection().ConnectionString}");
-                    var context = services.GetRequiredService<GY2021001DbContext>();
+                    var context = services.GetRequiredService<GY001UserContext>();
                     MigrateDbInitializer.Initialize(context);
                     logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={context.Database.GetDbConnection().ConnectionString}");
                 }

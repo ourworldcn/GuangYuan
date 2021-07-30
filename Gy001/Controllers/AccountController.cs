@@ -10,8 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gy001;
 using GuangYuan.GY001.BLL;
-using GY2021001DAL;
-using Gy2021001Template;
+using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.TemplateDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +43,7 @@ namespace GY2021001WebApi.Controllers
         {
             try
             {
-                var db = HttpContext.RequestServices.GetService<GY2021001DbContext>();
+                var db = HttpContext.RequestServices.GetService<GY001UserContext>();
                 var logger = HttpContext.RequestServices.GetService(typeof(ILogger<AccountController>)) as ILogger<AccountController>;
                 //生成返回值
                 var gcm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;

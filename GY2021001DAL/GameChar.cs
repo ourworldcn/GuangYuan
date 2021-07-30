@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.Json;
 
-namespace GY2021001DAL
+namespace GuangYuan.GY001.UserDb
 {
     public class GameChar : GameThingBase, IDisposable
     {

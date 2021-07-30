@@ -2,16 +2,16 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Gy2021001Template
+namespace GuangYuan.GY001.TemplateDb
 {
-    public class GameTemplateContext : DbContext
+    public class GY001TemplateContext : DbContext
     {
-        public GameTemplateContext()
+        public GY001TemplateContext()
         {
 
         }
 
-        public GameTemplateContext(DbContextOptions options) : base(options)
+        public GY001TemplateContext(DbContextOptions options) : base(options)
         {
 
         }
@@ -40,7 +40,7 @@ namespace Gy2021001Template
 
     public static class TemplateMigrateDbInitializer
     {
-        public static void Initialize(GameTemplateContext context)
+        public static void Initialize(GY001TemplateContext context)
         {
             context.Database.Migrate();
         }

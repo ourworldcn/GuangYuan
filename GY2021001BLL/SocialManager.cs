@@ -1,5 +1,5 @@
 ﻿using Game.Social;
-using GY2021001DAL;
+using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using System;
@@ -51,7 +51,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 管理邮件的。
         /// </summary>
-        private GY2021001DbContext _DbContext;
+        private GY001UserContext _DbContext;
 
         #endregion 构造函数及相关
 

@@ -1,30 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="GY2021001DAL.GameSocialBase">
+  <Class Name="GuangYuan.GY001.UserDb.GameSocialBase">
     <Position X="6.5" Y="1" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAACAAAAEAABAAAAAAAAAAAIAAAAAAAAgAAAACAAA=</HashCode>
       <FileName>Social\SocialBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GY2021001DAL.GameMail">
+  <Class Name="GuangYuan.GY001.UserDb.GameMail">
     <Position X="5.25" Y="4.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AgJAAAAAAAAgCAAAAIIBAKAAAAIIAAAAAAQAABAAAgA=</HashCode>
+      <HashCode>AgBAAAAAAAAgCAAAAIIBAKAAAAIIAAAAAAQAABAAAgA=</HashCode>
       <FileName>Social\GameMail.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
       <Property Name="Attachmentes" />
     </ShowAsCollectionAssociation>
   </Class>
-  <Class Name="GY2021001DAL.GameMailAddress">
+  <Class Name="GuangYuan.GY001.UserDb.GameMailAddress">
     <Position X="2.25" Y="5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAEAAAAABAAAAAAAAAAAAAAAAgAAAAAAAIAQAAAAA=</HashCode>
       <FileName>Social\GameMail.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GY2021001DAL.GameMailAttachment">
+  <Class Name="GuangYuan.GY001.UserDb.GameMailAttachment">
     <Position X="7.5" Y="4.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAQAAAAA=</HashCode>

@@ -235,13 +235,13 @@
             游戏物品，道具，金币，积分等等的对象。
             </summary>
         </member>
-        <member name="M:GY2021001WebApi.Models.GameItemDto.op_Explicit(GY2021001WebApi.Models.GameItemDto)~GY2021001DAL.GameItem">
+        <member name="M:GY2021001WebApi.Models.GameItemDto.op_Explicit(GY2021001WebApi.Models.GameItemDto)~GuangYuan.GY001.UserDb.GameItem">
             <summary>
             从传输对象获取数据对象。
             </summary>
             <param name="obj"></param>
         </member>
-        <member name="M:GY2021001WebApi.Models.GameItemDto.op_Implicit(GY2021001DAL.GameItem)~GY2021001WebApi.Models.GameItemDto">
+        <member name="M:GY2021001WebApi.Models.GameItemDto.op_Implicit(GuangYuan.GY001.UserDb.GameItem)~GY2021001WebApi.Models.GameItemDto">
             <summary>
             从数据对象获取传输对象。
             </summary>
@@ -316,13 +316,13 @@
             角色属性封装类。
             </summary>
         </member>
-        <member name="M:GY2021001WebApi.Models.GameCharDto.op_Explicit(GY2021001WebApi.Models.GameCharDto)~GY2021001DAL.GameChar">
+        <member name="M:GY2021001WebApi.Models.GameCharDto.op_Explicit(GY2021001WebApi.Models.GameCharDto)~GuangYuan.GY001.UserDb.GameChar">
             <summary>
             从传输对象获取数据对象。
             </summary>
             <param name="obj"></param>
         </member>
-        <member name="M:GY2021001WebApi.Models.GameCharDto.op_Explicit(GY2021001DAL.GameChar)~GY2021001WebApi.Models.GameCharDto">
+        <member name="M:GY2021001WebApi.Models.GameCharDto.op_Explicit(GuangYuan.GY001.UserDb.GameChar)~GY2021001WebApi.Models.GameCharDto">
             <summary>
             从数据对象获取传输对象。
             </summary>

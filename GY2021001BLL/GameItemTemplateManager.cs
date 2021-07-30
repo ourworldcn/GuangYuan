@@ -1,4 +1,4 @@
-﻿using Gy2021001Template;
+﻿using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using System;
@@ -54,12 +54,12 @@ namespace GuangYuan.GY001.BLL
 
         #region 属性及相关
 
-        private GameTemplateContext _TemplateContext;
+        private GY001TemplateContext _TemplateContext;
 
         /// <summary>
         /// 使用该上下文加载所有模板对象，以保证其单例性。
         /// </summary>
-        protected GameTemplateContext TemplateContext
+        protected GY001TemplateContext TemplateContext
         {
             get
             {

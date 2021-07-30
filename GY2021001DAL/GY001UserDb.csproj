@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>GY001UserDb</AssemblyName>
+    <RootNamespace>GuangYuan.GY001.UserDb</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gy2021001Template\Gy2021001Template.csproj" />
+    <ProjectReference Include="..\Gy2021001Template\Gy001TemplateDb.csproj" />
     <ProjectReference Include="..\OwGame\OwGameCore.csproj" />
   </ItemGroup>
 

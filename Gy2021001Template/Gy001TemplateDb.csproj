@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>GuangYuan.GY001.TemplateDb</RootNamespace>
+    <AssemblyName>Gy001TemplateDb</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

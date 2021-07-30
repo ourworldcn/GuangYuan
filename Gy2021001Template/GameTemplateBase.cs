@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Gy2021001Template
+namespace GuangYuan.GY001.TemplateDb
 {
     public abstract class GameTemplateBase : GuidKeyBase
     {

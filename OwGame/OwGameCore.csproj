@@ -6,4 +6,8 @@
     <AssemblyName>OwGameCore</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\OW.BaseCore\OW.BaseCore.csproj" />
+  </ItemGroup>
+
 </Project>

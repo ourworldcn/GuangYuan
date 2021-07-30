@@ -1,4 +1,4 @@
-﻿using Gy2021001Template;
+﻿using GuangYuan.GY001.TemplateDb;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace GY2021001DAL
+namespace GuangYuan.GY001.UserDb
 {
     /// <summary>
     /// 游戏中物品，装备，货币，积分的基类。
@@ -230,8 +230,8 @@ namespace GY2021001DAL
         /// <param name="template"></param>
         public void ChangeTemplate(GameItemTemplate template)
         {
-            var keysBoth = Properties.Keys.Intersect(template.Properties.Keys);
-            var keysNew = template.Properties.Keys.Except(keysBoth);
+            var keysBoth = Properties.Keys.Intersect(template.Properties.Keys).ToArray();
+            var keysNew = template.Properties.Keys.Except(keysBoth).ToArray();
             foreach (var key in keysNew)    //新属性
             {
                 var newValue = template.GetPropertyValue(key);

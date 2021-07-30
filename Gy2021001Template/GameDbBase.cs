@@ -65,7 +65,7 @@ namespace Game.EntityFrameworkCore
         /// <inheritdoc/>
         /// </summary>
         /// <param name="db"><inheritdoc/></param>
-        public void Saving(DbContext db)
+        public void WillSaving(DbContext db)
         {
             if (_Properties is null) //若未初始化字典
                 return; //不变更属性
@@ -73,13 +73,17 @@ namespace Game.EntityFrameworkCore
         }
     }
 
+    /// <summary>
+    /// POCO类在被保存前需要调用此接口将一些数据写入可存储的字段中。
+    /// </summary>
     public interface IBeforeSave
     {
         /// <summary>
-        /// 实体类在被保存前需要调用该成员。
+        /// 实体类在被保存前需要调用该成员。应该仅写入自身拥有的直接存储于数据库的简单字段。
+        /// 相对地，不要引用的其他存储于数据库中的实体。
         /// </summary>
         /// <param name="db">该实体类将被保存到的数据库上下文。</param>
-        void Saving(DbContext db);
+        void WillSaving(DbContext db);
 
     }
 }

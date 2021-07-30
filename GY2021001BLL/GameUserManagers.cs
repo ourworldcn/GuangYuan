@@ -1,6 +1,6 @@
 ﻿using Game.Social;
-using GY2021001DAL;
-using Gy2021001Template;
+using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -37,7 +37,7 @@ namespace GuangYuan.GY001.BLL
         /// 默认锁定超时。单位：秒
         /// 在指定时间内无法锁定对象就返回失败。
         /// </summary>
-        public double DefaultLockTimeout { get; set; } = 2;
+        public double DefaultLockTimeout { get; set; } = 3.5;
     }
 
     public class GameCharManager : GameManagerBase<GameCharManagerOptions>
@@ -419,7 +419,7 @@ namespace GuangYuan.GY001.BLL
                 else //未登录
                 {
                     var db = World.CreateNewUserDbContext();
-                    //_Service.GetService(typeof(GY2021001DbContext)) as GY2021001DbContext;
+                    //_Service.GetService(typeof(GY001UserContext)) as GY001UserContext;
                     gu = db.GameUsers.FirstOrDefault(c => c.LoginName == loginName);
                     if (null == gu)    //若未发现指定登录名
                         return null;

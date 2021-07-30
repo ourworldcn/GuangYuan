@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace Gy2021001Template
+namespace GuangYuan.GY001.TemplateDb
 {
     /// <summary>
     /// 掉落限制表。

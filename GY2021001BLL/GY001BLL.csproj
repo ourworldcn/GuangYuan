@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GY2021001DAL\GY2021001DAL.csproj" />
+    <ProjectReference Include="..\GY2021001DAL\GY001UserDb.csproj" />
     <ProjectReference Include="..\OwGame\OwGameCore.csproj" />
   </ItemGroup>
 

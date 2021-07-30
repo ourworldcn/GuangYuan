@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace GY2021001DAL.Migrations
+namespace GuangYuan.GY001.UserDb.Migrations
 {
     public partial class _21070201 : Migration
     {

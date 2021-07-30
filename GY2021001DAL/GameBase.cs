@@ -1,4 +1,4 @@
-﻿using Gy2021001Template;
+﻿using GuangYuan.GY001.TemplateDb;
 using OW.Game;
 using OW.Game.Expression;
 using System;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
-namespace GY2021001DAL
+namespace GuangYuan.GY001.UserDb
 {
     public abstract class GameObjectBase : GuidKeyBase
     {

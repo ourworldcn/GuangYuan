@@ -1,6 +1,6 @@
 ﻿using GuangYuan.GY001.BLL.Homeland;
-using GY2021001DAL;
-using Gy2021001Template;
+using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -801,6 +801,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         private void UpgradeInHomeland(ApplyBlueprintDatas datas)
         {
+            DateTime dt = DateTime.UtcNow;  //尽早确定开始时间
             Guid hlTid = ProjectConstant.HomelandSlotId; //家园Id
             Guid jianzhuBagTid = new Guid("{312612a5-30dd-4e0a-a71d-5074397428fb}");   //建筑背包tid
             GameItem hl = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == hlTid);   //家园对象
@@ -883,7 +884,6 @@ namespace GuangYuan.GY001.BLL
 
             #region 修改属性
 
-            DateTime dt = DateTime.UtcNow;
             if (time > 0) //若需要冷却
             {
                 if (!datas.Verify(worker.GetNumberOfStackRemainder() > 0, "所有建筑工人都在忙", worker.TemplateId))
@@ -895,13 +895,14 @@ namespace GuangYuan.GY001.BLL
                     Name = ProjectConstant.UpgradeTimeName,
                     Tag = ValueTuple.Create(datas.GameChar.Id, gameItem.Id),
                 };
+                Debug.WriteLine($"服务器认为升级开始时间为{dt}");
                 gameItem.Name2FastChangingProperty[ProjectConstant.UpgradeTimeName] = fcpObj;
                 fcpObj.Completed += UpgradeCompleted;
                 //计算可能的完成时间
                 DateTime dtComplate = fcpObj.ComputeComplateDateTime();   //预计完成时间
-                TimeSpan ts = dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.01);
+                TimeSpan ts = dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.02);
                 Timer timer = new Timer(UpgradeComplateCallback, ValueTuple.Create(datas.GameChar.Id, gameItem.Id),
-                    ts, Timeout.InfiniteTimeSpan); timer.DisposeAsync();
+                    ts, Timeout.InfiniteTimeSpan);
                 worker.Count++;
                 datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
             }
@@ -1195,6 +1196,8 @@ namespace GuangYuan.GY001.BLL
             finally
             {
                 cm.Unlock(gu, true);
+                var logger1 = Services.GetRequiredService<ILogger<BlueprintManager>>();
+                logger1.LogInformation($"[{DateTime.UtcNow}]Call UpgradeComplateCallback Complated");
             }
             return;
         }

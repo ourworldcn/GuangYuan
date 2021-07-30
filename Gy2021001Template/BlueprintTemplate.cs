@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
 
-namespace Gy2021001Template
+namespace GuangYuan.GY001.TemplateDb
 {
     /// <summary>
     /// 蓝图模板。

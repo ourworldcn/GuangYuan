@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Gy2021001Template
+namespace GuangYuan.GY001.TemplateDb
 {
     /// <summary>
     /// 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Gy2021001Template
+namespace GuangYuan.GY001.TemplateDb
 {
     public static class CnNames
     {

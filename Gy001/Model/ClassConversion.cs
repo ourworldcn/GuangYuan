@@ -1,7 +1,7 @@
 ﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
-using GY2021001DAL;
-using Gy2021001Template;
+using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.TemplateDb;
 using OW.Game;
 using System;
 using System.Linq;

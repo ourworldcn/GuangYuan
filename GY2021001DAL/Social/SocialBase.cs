@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace GY2021001DAL
+namespace GuangYuan.GY001.UserDb
 {
     public abstract class GameSocialBase : GameObjectBase
     {

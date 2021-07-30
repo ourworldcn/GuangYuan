@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
-namespace GY2021001DAL
+namespace GuangYuan.GY001.UserDb
 {
     public class GameMail : GameSocialBase
     {

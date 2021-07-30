@@ -2,8 +2,8 @@
  * 特定与家园相关的代码
  */
 
-using GY2021001DAL;
-using Gy2021001Template;
+using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

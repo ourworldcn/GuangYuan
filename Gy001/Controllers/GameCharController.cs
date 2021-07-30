@@ -1,6 +1,6 @@
 ﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
-using GY2021001DAL;
+using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -438,11 +438,12 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<GetChangesItemReturnDto> GetChangesItem(GetChangesItemParamsDto model)
         {
+            var logger = HttpContext.RequestServices.GetRequiredService<ILogger<GameCharController>>();
+            logger.LogInformation($"[{DateTime.UtcNow}]Call GetChangesItem");
             var result = new GetChangesItemReturnDto();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
             {
-                var logger = HttpContext.RequestServices.GetRequiredService<ILogger<GameCharController>>();
                 logger.LogWarning("[{dt}]{method}锁定失败。", DateTime.UtcNow, nameof(GetChangesItem));
                 return Unauthorized("令牌无效");
             }
@@ -453,7 +454,7 @@ namespace GY2021001WebApi.Controllers
                 {
                     var fcp = gc.Name2FastChangingProperty.GetValueOrDefault(ProjectConstant.UpgradeTimeName);
                     if (fcp is null)
-                        result.DebugMessage = $"无法找到{ProjectConstant.UpgradeTimeName}夸苏变化属性。";
+                        result.DebugMessage = $"无法找到{ProjectConstant.UpgradeTimeName}快速变化属性。";
                     else
                         result.DebugMessage = $"m={fcp.MaxValue},c={fcp.LastValue},t={fcp.LastDateTime}";
                 }

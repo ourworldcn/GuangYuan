@@ -4,18 +4,18 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GY2021001DAL
+namespace GuangYuan.GY001.UserDb
 {
 
-    public class GY2021001DbContext : DbContext
+    public class GY001UserContext : DbContext
     {
 
-        public GY2021001DbContext()
+        public GY001UserContext()
         {
 
         }
 
-        public GY2021001DbContext(DbContextOptions<GY2021001DbContext> dbContextOptions) : base(dbContextOptions)
+        public GY001UserContext(DbContextOptions<GY001UserContext> dbContextOptions) : base(dbContextOptions)
         {
 
         }
@@ -118,7 +118,7 @@ namespace GY2021001DAL
 
     public static class MigrateDbInitializer
     {
-        public static void Initialize(GY2021001DbContext context)
+        public static void Initialize(GY001UserContext context)
         {
             context.Database.Migrate();
         }

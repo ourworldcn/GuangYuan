@@ -1,5 +1,5 @@
-﻿using GY2021001DAL;
-using Gy2021001Template;
+﻿using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.TemplateDb;
 using System;
 using System.Collections.Generic;
 using System.Linq;

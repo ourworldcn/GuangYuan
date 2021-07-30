@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 
-namespace Gy2021001Template
+namespace GuangYuan.GY001.TemplateDb
 {
     /// <summary>
     /// "属"对象。
