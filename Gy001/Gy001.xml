@@ -1402,6 +1402,12 @@
             <param name="model">Ids中是附件Id的集合。</param>
             <returns>ChangesItems中是收取的物品。</returns>
         </member>
+        <member name="M:Gy001.Controllers.SocialController.Getcoll1">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">
             <summary>
             

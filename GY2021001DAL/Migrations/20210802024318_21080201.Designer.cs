@@ -4,52 +4,22 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    partial class GY2021001DbContextModelSnapshot : ModelSnapshot
+    [Migration("20210802024318_21080201")]
+    partial class _21080201
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.16")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("GuangYuan.GY001.UserDb.GameActionRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ActionId")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.Property<DateTime>("DateTimeUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PropertiesString")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActionId");
-
-                    b.HasIndex("DateTimeUtc");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("ActionRecords");
-                });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameClientExtendProperty", b =>
                 {
@@ -200,20 +170,26 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ObjectId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<short>("Friendliness")
+                    b.Property<short>("FriendlinessLToR")
                         .HasColumnType("smallint");
+
+                    b.Property<short>("FriendlinessRToL")
+                        .HasColumnType("smallint");
+
+                    b.Property<Guid>("LeftId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PropertyString")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id", "ObjectId");
+                    b.Property<Guid>("RightId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.HasIndex("Friendliness");
+                    b.HasKey("Id");
 
-                    b.HasIndex("ObjectId");
+                    b.HasIndex("LeftId");
+
+                    b.HasIndex("RightId");
 
                     b.ToTable("SocialRelationships");
                 });

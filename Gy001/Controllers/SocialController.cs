@@ -108,6 +108,20 @@ namespace Gy001.Controllers
             }
             return result;
         }
+
+        #region 好友相关
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut]
+        public ActionResult<IEnumerable<CharSummary>> Getcoll1()
+        {
+            var result = _World.SocialManager.GetCharSummary();
+            return result.ToList();
+        }
+        #endregion 好友相关
     }
 
 }

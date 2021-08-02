@@ -851,4 +851,41 @@ namespace GuangYuan.GY001.UserDb
 
     }
 
+    /// <summary>
+    /// 关键行为记录类。
+    /// 此类可能放在玩家数据库中也可能放于专用的日志库中，但可能有些游戏内操作需要此数据。
+    /// 当前没有启动第三上下文，暂时放在玩家数据库中。
+    /// </summary>
+    public class GameActionRecord : StringKeyDictionaryPropertyBase
+    {
+        public GameActionRecord()
+        {
+
+        }
+
+        public GameActionRecord(Guid id) : base(id)
+        {
+        }
+
+        /// <summary>
+        /// 主体对象的Id。
+        /// </summary>
+        public Guid ParentId { get; set; }
+
+        /// <summary>
+        /// 行为Id。
+        /// </summary>
+        [MaxLength(64)]
+        public string ActionId { get; set; }
+
+        /// <summary>
+        /// 这个行为发生的时间。
+        /// </summary>
+        public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 一个人眼可读的说明。
+        /// </summary>
+        public string Remark { get; set; }
+    }
 }

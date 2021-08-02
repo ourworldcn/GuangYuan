@@ -39,6 +39,15 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<IdMark>().HasIndex(c => c.ParentId).IsUnique(false);
             modelBuilder.Entity<IdMark>().HasKey(c => new { c.Id, c.ParentId });
 
+            //社交关系
+            modelBuilder.Entity<GameSocialRelationship>().HasKey(c => new { c.Id, c.ObjectId });
+            modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.ObjectId).IsUnique(false);
+            modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.Friendliness).IsUnique(false);
+            //操作记录
+            modelBuilder.Entity<GameActionRecord>().HasIndex(c =>c.DateTimeUtc).IsUnique(false);
+            modelBuilder.Entity<GameActionRecord>().HasIndex(c =>c.ParentId).IsUnique(false);
+            modelBuilder.Entity<GameActionRecord>().HasIndex(c =>c.ActionId).IsUnique(false);
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -90,6 +99,16 @@ namespace GuangYuan.GY001.UserDb
         /// 标记一组Id。
         /// </summary>
         public DbSet<IdMark> IdMarks { get; set; }
+
+        /// <summary>
+        /// 社交关系对象。
+        /// </summary>
+        public DbSet<GameSocialRelationship> SocialRelationships { get; set; }
+
+        /// <summary>
+        /// 操作记录。
+        /// </summary>
+        public DbSet<GameActionRecord> ActionRecords { get; set; }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {

@@ -1,6 +1,6 @@
 ﻿using Game.Social;
-using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -76,6 +76,12 @@ namespace GuangYuan.GY001.BLL
         /// 角色Id到角色对象的字段。
         /// </summary>
         private readonly ConcurrentDictionary<Guid, GameChar> _Id2GameChar = new ConcurrentDictionary<Guid, GameChar>();
+
+        /// <summary>
+        /// 取所有在线玩家的字典，键是Id，值是在线对象（瞬态）。
+        /// </summary>
+        public IReadOnlyDictionary<Guid, GameChar> Id2GameChar { get => _Id2GameChar; }
+
 
         #endregion 字段
 
@@ -394,6 +400,7 @@ namespace GuangYuan.GY001.BLL
         {
             var innerLoginName = _LoginName.GetOrAdd(loginName, loginName);
             GameUser gu = null;
+            List<GameActionRecord> actionRecords = new List<GameActionRecord>();
             lock (innerLoginName)    //锁定该登录名
             {
                 if (!_LoginName.ContainsKey(loginName))  //若被注销了
@@ -443,10 +450,32 @@ namespace GuangYuan.GY001.BLL
                         _LoginName2Token.AddOrUpdate(loginName, token, (c1, c2) => token);
                         _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
                         OnCharLoaded(new CharLoadedEventArgs(gu.CurrentChar));
+                        actionRecords.Add(new GameActionRecord()
+                        {
+                            ActionId = "Login",
+                            ParentId = gc.Id,
+                        });
                     }
                 }
             }
+            if (null != actionRecords && actionRecords.Count > 0)
+                SaveActionRecordsAsync(actionRecords);
             return gu;
+        }
+
+        /// <summary>
+        /// 异步保存<see cref="ActionRecord"/>。
+        /// </summary>
+        /// <param name="actionRecords"></param>
+        /// <returns>执行保存的任务对象。</returns>
+        public Task SaveActionRecordsAsync(IEnumerable<GameActionRecord> actionRecords)
+        {
+            return Task.Run(() =>
+            {
+                using var db = World.CreateNewUserDbContext();
+                db.ActionRecords.AddRange(actionRecords);
+                db.SaveChanges();
+            });
         }
 
         /// <summary>
@@ -587,17 +616,28 @@ namespace GuangYuan.GY001.BLL
                 {
                     if (gu.IsDisposed)   //若已被处置
                         return false;
+                    var actionRecord = new GameActionRecord()   //操做记录对象。
+                    {
+                        ActionId = "Logout",
+                        ParentId = gu.CurrentChar.Id,
+                    };
+                    List<GameActionRecord> actionRecords = new List<GameActionRecord>();
+                    actionRecords.Add(actionRecord);
                     try
                     {
                         gu.InvokeLogouting(reason);
+                        actionRecord.DateTimeUtc = DateTime.UtcNow;
                     }
                     catch (Exception)
                     {
                         //TO DO
                     }
+
                     try
                     {
                         gu.DbContext.SaveChanges();
+                        if (actionRecords.Count > 0)
+                            SaveActionRecordsAsync(actionRecords);
                     }
                     catch (Exception err)
                     {
