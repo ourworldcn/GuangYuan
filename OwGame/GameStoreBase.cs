@@ -12,15 +12,26 @@ namespace OW.Game
     {
         private TKey _Id;
 
+        /// <summary>
+        /// 构造函数。
+        /// 不会给<see cref="Id"/>属性赋值。
+        /// </summary>
         public OrmObjectBase()
         {
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="id">初始化<see cref="Id"/>属性的值。</param>
         public OrmObjectBase(TKey id)
         {
             _Id = id;
         }
 
+        /// <summary>
+        /// Id属性。
+        /// </summary>
         [Key, Column(Order = 0)]
         public TKey Id
         {
@@ -30,13 +41,13 @@ namespace OW.Game
 
     }
 
-    public abstract class GuidKeyBase
+    public abstract class GuidKeyObjectBase
     {
         /// <summary>
         /// 构造函数。
         /// 会自动用<see cref="Guid.NewGuid"/>生成<see cref="Id"/>属性值。
         /// </summary>
-        public GuidKeyBase()
+        public GuidKeyObjectBase()
         {
             Id = Guid.NewGuid();
         }
@@ -45,7 +56,7 @@ namespace OW.Game
         /// 构造函数。
         /// </summary>
         /// <param name="id">指定该实体对象的<see cref="Id"/>属性。</param>
-        public GuidKeyBase(Guid id)
+        public GuidKeyObjectBase(Guid id)
         {
             Id = id;
         }
@@ -258,9 +269,7 @@ namespace OW.Game
                 var guts = item.Split('=', StringSplitOptions.RemoveEmptyEntries);
                 if (2 != guts.Length)
                 {
-                    if (item.IndexOf('=') > 0 && item.Count(c => c == '=') == 1)  //若是xxx= 格式，解释为xxx=null
-                        ;
-                    else
+                    if (item.IndexOf('=')<= 0 || item.Count(c => c == '=') != 1)  //若是xxx= 格式，解释为xxx=null
                         throw new InvalidCastException($"数据格式错误:'{guts}'");   //TO DO
                 }
                 var keyName = string.Intern(guts[0].Trim());

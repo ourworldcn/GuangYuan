@@ -406,5 +406,47 @@ namespace GY2021001WebApi.Models
     public partial class ApplyHomelandStyleReturnDto : ReturnDtoBase
     {
     }
+
     #endregion 家园相关
+
+    #region 社交相关
+
+    public partial class CharSummaryDto
+    {
+        public static implicit operator CharSummaryDto(CharSummary obj)
+        {
+            var result = new CharSummaryDto()
+            {
+                CombatCap = obj.CombatCap,
+                DisplayName = obj.DisplayName,
+                Id = obj.Id.ToBase64String(),
+                LastLogoutDatetime = obj.LastLogoutDatetime,
+                Level = obj.Level,
+            };
+            return result;
+        }
+    }
+
+    public partial class GameSocialRelationshipDto
+    {
+        static public implicit operator GameSocialRelationshipDto(GameSocialRelationship obj)
+        {
+            var result = new GameSocialRelationshipDto()
+            {
+                Friendliness = obj.Friendliness,
+                Id = obj.Id.ToBase64String(),
+                ObjectId = obj.ObjectId.ToBase64String(),
+            };
+            foreach (var item in obj.Properties)
+            {
+                result.Properties[item.Key] = item.Value;
+            }
+            return result;
+        }
+    }
+
+
+    #endregion 社交相关
+
+
 }

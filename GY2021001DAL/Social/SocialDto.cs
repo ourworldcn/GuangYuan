@@ -11,7 +11,7 @@ namespace Game.Social
     public partial class GameSocialBaseDto
     {
         /// <summary>
-        /// Id。
+        /// Id。这个属性指代主体的Id。角色A的Id放在这里，表示这个实体是角色A的。
         /// </summary>
         [DataMember]
         public string Id { get; set; }

@@ -28,8 +28,7 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override object GetValue(object obj, string propertyName, object defaultValue = null)
         {
-            GameItem gameItem = obj as GameItem;
-            if (null == gameItem)
+            if (!(obj is GameItem gameItem))
             {
                 return defaultValue;
             }
@@ -777,7 +776,6 @@ namespace GuangYuan.GY001.BLL
                 datas.HasError = true;
                 return;
             }
-            GameItemManager gim = Services.GetRequiredService<GameItemManager>();
             decimal stc = src.GetNumberOfStackRemainder();  //剩余可堆叠数
             count = Math.Min(count, stc);   //实际移走数量
             if (src.Name2FastChangingProperty.TryGetValue("Count", out FastChangingProperty fcp))    //若有快速变化属性
@@ -1011,7 +1009,7 @@ namespace GuangYuan.GY001.BLL
             var td = datas.Lookup(gc.GameItems, ProjectConstant.TdPveCounterTId);
             if (td is null) //若无塔防对象
                 return;
-            if (!datas.Verify(td.Name2FastChangingProperty.TryGetValue("Count", out var fcp), "找不到自动恢复属性。"))
+            if (!datas.Verify(td.Name2FastChangingProperty.TryGetValue("Count", out _), "找不到自动恢复属性。"))
                 return;
             var lv = td.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
             DateTime dt = DateTime.UtcNow;  //当前时间
@@ -1056,8 +1054,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="e"></param>
         private void UpgradeCompleted(object sender, CompletedEventArgs e)
         {
-            FastChangingProperty fcp = sender as FastChangingProperty;
-            if (fcp is null || fcp.Name != "upgradecd")
+            if (!(sender is FastChangingProperty fcp) || fcp.Name != "upgradecd")
             {
                 return; //忽略
             }

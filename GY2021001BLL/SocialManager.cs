@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
@@ -268,15 +269,49 @@ namespace GuangYuan.GY001.BLL
         #region 社交关系相关
 
         /// <summary>
+        /// 获取一组Id集合，正在申请好友的角色Id集合。这些用户不能申请好友。因为他们是以下情况之一：
+        /// 1.正在申请好友;2.已经是好友;3.将当前用户拉黑。
+        /// </summary>
+        /// <param name="charId">当前角色Id。</param>
+        /// <param name="db">使用的数据库上线文。</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IQueryable<Guid> GetFriendsOrRequestingOrBlackIds(Guid charId, DbContext db) =>
+             db.Set<GameSocialRelationship>().Where(c => (c.Friendliness > 5 || c.Friendliness < -5) && c.ObjectId == charId).Select(c => c.Id);
+
+        /// <summary>
+        /// 获取活跃用户的Id集合。最近登录的用户。最后登录操作信息的用户操作记录第一个返回。
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IOrderedQueryable<GameActionRecord> GetActiveUserIds(DbContext db) =>
+            db.Set<GameActionRecord>().Where(c => c.ActionId == "Login").OrderByDescending(c => c.DateTimeUtc);
+
+        /// <summary>
+        /// 获取活跃用户。
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public IQueryable<GameChar> GetActiveChars(DbContext db) =>
+             db.Set<GameChar>().Join(db.Set<GameActionRecord>(), c => c.Id, c => c.ParentId, (l, r) => new { l, r }).OrderByDescending(c => c.r.DateTimeUtc).Select(c => c.l);
+
+        /// <summary>
         /// 获取一组角色的摘要数据。
         /// </summary>
         /// <returns>一组随机在线角色的信息。</returns>
-        public IEnumerable<CharSummary> GetCharSummary()
+        public IEnumerable<CharSummary> GetCharSummary(GameChar gameChar = null)
         {
             using var db = World.CreateNewUserDbContext();
-            var coll = db.ActionRecords.OrderBy(c => c.DateTimeUtc).Where(c => c.ActionId == "Logout" || c.ActionId == "Login").Select(c => c.ParentId).Distinct().Take(10);
-            var coll1 = db.GameChars.Where(c => coll.Contains(c.Id)).ToArray();
-            var result = coll1.Select(c =>
+            gameChar ??= db.GameChars.First();
+            var gcId = gameChar.Id;
+            var collActive = GetActiveChars(db); //最近活跃用户Id
+            var collBlack = GetFriendsOrRequestingOrBlackIds(gameChar.Id, db); //将此用户拉入黑名单的用户或已经添加好友或正在添加好友
+            var coll2 = from tmp in GetActiveChars(db)
+                        where !collBlack.Contains(tmp.Id) && tmp.Id != gcId
+                        select tmp;
+            Random rnd = new Random();
+            int v = rnd.Next(Math.Max(coll2.Count() - 10, 0));
+            var result = coll2.Skip(v).Take(10).ToArray().Select(c =>
             {
                 var cs = new CharSummary();
                 CharSummary.Fill(c, cs, db.ActionRecords);
@@ -284,6 +319,7 @@ namespace GuangYuan.GY001.BLL
             });
             return result.ToList();
         }
+
 
         /// <summary>
         /// 获取指定字符串开头昵称的角色信息。
@@ -297,7 +333,9 @@ namespace GuangYuan.GY001.BLL
             try
             {
                 db = World.CreateNewUserDbContext();
-                var result = db.GameChars.Where(c => c.DisplayName.StartsWith(displayName)).Take(20).ToArray().
+                var gcId = gameChar.Id;
+                var coll = GetFriendsOrRequestingOrBlackIds(gcId, db);
+                var result = db.GameChars.Where(c => c.DisplayName.StartsWith(displayName) && !coll.Contains(c.Id) && c.Id != gcId).Take(10).ToArray().
                      Select(c =>
                      {
                          var cs = new CharSummary();
@@ -380,15 +418,14 @@ namespace GuangYuan.GY001.BLL
             }
             finally
             {
-                if (null != db)
-                    Task.Delay(1000).ContinueWith((c, dbObj) => (dbObj as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);
+                db?.DisposeAsync();
                 World.CharManager.Unlock(gameChar.GameUser);
             }
             return RequestFriendResult.Success;
         }
 
         /// <summary>
-        /// 获取好友申请列表。😀 👌
+        /// 获取社交关系列表。😀 👌
         /// </summary>
         public IEnumerable<GameSocialRelationship> GetSocialRelationships(GameChar gameChar)
         {
@@ -401,17 +438,64 @@ namespace GuangYuan.GY001.BLL
             try
             {
                 db = World.CreateNewUserDbContext();
-                var result = db.SocialRelationships.AsNoTracking().Where(c => c.Id == gameChar.Id).ToArray();
+                var gcId = gameChar.Id;
+                var coll1 = db.SocialRelationships.Where(c => c.Id == gcId);
+                var str = $"{SocialConstant.ConfirmedFriendPName}=0";
+                var coll2 = db.SocialRelationships.Where(c => c.ObjectId == gcId && c.Friendliness > 5 && c.PropertiesString.Contains(str));    //请求添加
+                var result = coll1.Union(coll2).ToArray();
                 World.CharManager.Nope(gameChar.GameUser);  //重置下线计时器
                 return result;
             }
             finally
             {
                 db?.DisposeAsync();
-                World.CharManager.Unlock(gameChar.GameUser);
+                World.CharManager.Unlock(gameChar.GameUser, true);
             }
         }
 
+        /// <summary>
+        /// 确认或拒绝好友申请。
+        /// </summary>
+        /// <param name="gameChar">当前角色。</param>
+        /// <param name="friendId">申请人Id。</param>
+        /// <param name="rejected">true拒绝好友申请。</param>
+        /// <returns></returns>
+        public bool ConfirmFriend(GameChar gameChar, Guid friendId, bool rejected = false)
+        {
+            if (!World.CharManager.Lock(gameChar.GameUser))
+            {
+                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+                return false;
+            }
+            GY001UserContext db = null;
+            try
+            {
+                var gcId = gameChar.Id;
+                var sr = db.SocialRelationships.Find(gcId, friendId);
+                var nsr = db.SocialRelationships.Find(friendId, gcId);
+                if (nsr is null || nsr.Friendliness <= 5)   //若未申请好友
+                    return false;
+                if (sr is null)  //若未建立关系
+                {
+                    sr = new GameSocialRelationship()
+                    {
+                        Id = gcId,
+                        Friendliness = 6,
+                        ObjectId = friendId,
+                    };
+                    db.SocialRelationships.Add(sr);
+                }
+                sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                nsr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                db.SaveChanges();
+            }
+            finally
+            {
+                db?.DisposeAsync();
+                World.CharManager.Unlock(gameChar.GameUser, true);
+            }
+            return true;
+        }
         #endregion 社交关系相关
     }
 }

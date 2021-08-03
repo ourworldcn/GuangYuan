@@ -37,7 +37,7 @@ namespace GuangYuan.GY001.BLL
         /// 默认锁定超时。单位：秒
         /// 在指定时间内无法锁定对象就返回失败。
         /// </summary>
-        public double DefaultLockTimeout { get; set; } = 3.5;
+        public double DefaultLockTimeout { get; set; } = 3;
     }
 
     public class GameCharManager : GameManagerBase<GameCharManagerOptions>
@@ -748,7 +748,7 @@ namespace GuangYuan.GY001.BLL
                 };
                 mail.Attachmentes.Add(new GameMailAttachment()
                 {
-                    PropertyString = "TName=这是一个测试的附件对象,tid={89A586A8-CD8D-40FF-BDA2-41E68B6EC505},ptid={3D87D1FA-F270-42AB-9241-E30498246947},count=1,desc=tid是送的物品模板id;count是数量;ptid是放入容器的模板Id。",
+                    PropertiesString = "TName=这是一个测试的附件对象,tid={89A586A8-CD8D-40FF-BDA2-41E68B6EC505},ptid={3D87D1FA-F270-42AB-9241-E30498246947},count=1,desc=tid是送的物品模板id;count是数量;ptid是放入容器的模板Id。",
                 });
                 World.SocialManager.SendMail(mail, new Guid[] { result.Id }, SocialConstant.FromSystemId);
             });

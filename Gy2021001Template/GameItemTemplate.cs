@@ -12,18 +12,25 @@ namespace GuangYuan.GY001.TemplateDb
     /// </summary>
     public class GameItemTemplate : GameThingTemplateBase
     {
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
         public GameItemTemplate()
         {
 
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="id"><inheritdoc/></param>
         public GameItemTemplate(Guid id) : base(id)
         {
 
         }
 
         /// <summary>
-        /// 游戏内Id服务器不使用。
+        /// 游戏内Id,代替了复杂的类属机制。
         /// </summary>
         public int? GId { get; set; }
 

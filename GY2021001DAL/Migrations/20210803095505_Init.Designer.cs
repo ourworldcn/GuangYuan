@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    [Migration("20210802092746_21080203")]
-    partial class _21080203
+    [Migration("20210803095505_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -126,7 +126,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<DateTime>("CreateUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PropertyString")
+                    b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Subject")
@@ -174,7 +174,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("MailId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("PropertyString")
+                    b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -208,7 +208,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<short>("Friendliness")
                         .HasColumnType("smallint");
 
-                    b.Property<string>("PropertyString")
+                    b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id", "ObjectId");
@@ -260,6 +260,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
+
+                    b.Property<string>("PropertiesString")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("PwdHash")
                         .HasColumnType("varbinary(max)");

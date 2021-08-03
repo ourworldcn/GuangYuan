@@ -9,17 +9,22 @@ using System.Text.Json;
 
 namespace GuangYuan.GY001.UserDb
 {
-    public class GameChar : GameThingBase, IDisposable
+    public class GameChar : GameThingBase, IBeforeSave, IDisposable
     {
-
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
         public GameChar()
         {
             Id = Guid.NewGuid();
         }
 
-        public GameChar(Guid id)
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="id"><inheritdoc/></param>
+        public GameChar(Guid id) : base(id)
         {
-            Id = id;
         }
 
         /// <summary>
@@ -186,7 +191,7 @@ namespace GuangYuan.GY001.UserDb
             }
         }
 
-        override protected void OnSaving(EventArgs e)
+        public override void PrepareSaving(DbContext db)
         {
             if (null != _GradientProperties)   //若已经生成了渐变属性
             {
@@ -197,8 +202,8 @@ namespace GuangYuan.GY001.UserDb
                     Properties["cpp"] = p.LastDateTime.ToString();
                 }
             }
-            foreach (var item in OwHelper.GetAllSubItemsOfTree(GameItems, c => c.Children).ToArray())
-                item.InvokeSaving(EventArgs.Empty);
+            //foreach (var item in OwHelper.GetAllSubItemsOfTree(GameItems, c => c.Children).ToArray())
+            //    item.PrepareSaving(EventArgs.Empty);
             if (_ChangesItems != null)    //若需要序列化变化属性
             {
                 var exProp = ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);
@@ -206,7 +211,7 @@ namespace GuangYuan.GY001.UserDb
                     exProp = new GameExtendProperty();
                 exProp.Text = JsonSerializer.Serialize(_ChangesItems.Select(c => (ChangesItemSummary)c).ToList());
             }
-            base.OnSaving(e);
+            base.PrepareSaving(db);
         }
 
         private List<ChangesItem> _ChangesItems = new List<ChangesItem>();

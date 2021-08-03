@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="OW.Game.OrmObjectBase&lt;TKey&gt;">
+    <Position X="1.75" Y="0.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>GameStoreBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.GuidKeyObjectBase">
+    <Position X="4.75" Y="0.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameStoreBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.PocoLoadingExtensions">
+    <Position X="3.75" Y="4.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameStoreBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.OwHelper">
+    <Position X="10.75" Y="3.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAAAABQhAAAAACAAAACAAAAIFIAAAQIAAAAQ=</HashCode>
+      <FileName>GameStoreBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.GameHelper">
+    <Position X="0.75" Y="4.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>GameStoreBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.StringDictionaryExtensions">
+    <Position X="6.75" Y="4" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAACAAAAAA=</HashCode>
+      <FileName>GameStoreBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

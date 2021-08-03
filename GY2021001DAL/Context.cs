@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OW.Game;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,9 +46,9 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.ObjectId).IsUnique(false);
             modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.Friendliness).IsUnique(false);
             //操作记录
-            modelBuilder.Entity<GameActionRecord>().HasIndex(c =>c.DateTimeUtc).IsUnique(false);
-            modelBuilder.Entity<GameActionRecord>().HasIndex(c =>c.ParentId).IsUnique(false);
-            modelBuilder.Entity<GameActionRecord>().HasIndex(c =>c.ActionId).IsUnique(false);
+            modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.DateTimeUtc).IsUnique(false);
+            modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.ParentId).IsUnique(false);
+            modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.ActionId).IsUnique(false);
 
             base.OnModelCreating(modelBuilder);
         }
@@ -112,16 +114,27 @@ namespace GuangYuan.GY001.UserDb
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
-            foreach (var item in GameUsers.Local)
-                item.CurrentChar.InvokeSaving(EventArgs.Empty);
+            PrepareSaving();
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
         {
-            foreach (var item in GameUsers.Local)
-                item.CurrentChar.InvokeSaving(EventArgs.Empty);
+            PrepareSaving();
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        private void PrepareSaving()
+        {
+            //foreach (var item in ActionRecords.Local.OfType<IBeforeSave>())
+            //    item.PrepareSaving(this);
+            //foreach (var item in this.Local.OfType<IBeforeSave>())
+            //    item.PrepareSaving(this);
+            var coll = ChangeTracker.Entries().Select(c=>c.Entity).OfType<IBeforeSave>();
+            foreach (var item in coll)
+            {
+                item.PrepareSaving(this);
+            }
         }
 
         public override void Dispose()

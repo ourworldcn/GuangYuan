@@ -14,12 +14,12 @@ namespace OW.Game
     /// <summary>
     /// 提供一个基类，包含一个编码为字符串的压缩属性。且该字符串可以理解为一个字典的内容。
     /// </summary>
-    public abstract class StringKeyDictionaryPropertyBase : GuidKeyBase, IBeforeSave
+    public abstract class SimpleExtendPropertyBase : GuidKeyObjectBase, IBeforeSave
     {
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public StringKeyDictionaryPropertyBase()
+        public SimpleExtendPropertyBase()
         {
         }
 
@@ -27,7 +27,7 @@ namespace OW.Game
         /// <inheritdoc/>
         /// </summary>
         /// <param name="id"><inheritdoc/></param>
-        public StringKeyDictionaryPropertyBase(Guid id) : base(id)
+        public SimpleExtendPropertyBase(Guid id) : base(id)
         {
         }
 
@@ -43,7 +43,7 @@ namespace OW.Game
 
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
-        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，拆箱问题不大，且非核心战斗才会较多的使用该系统。
+        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，拆箱问题不大，且非核心战斗才会较多的使用该属性。
         /// </summary>
         [NotMapped]
         public Dictionary<string, object> Properties
@@ -63,7 +63,7 @@ namespace OW.Game
         /// <inheritdoc/>
         /// </summary>
         /// <param name="db"><inheritdoc/></param>
-        public void WillSaving(DbContext db)
+        public virtual void PrepareSaving(DbContext db)
         {
             if (_Properties is null) //若未初始化字典
                 return; //不变更属性
@@ -78,9 +78,9 @@ namespace OW.Game
     {
         /// <summary>
         /// 实体类在被保存前需要调用该成员。应该仅写入自身拥有的直接存储于数据库的简单字段。
-        /// 相对地，不要引用的其他存储于数据库中的实体。
+        /// 不要引用其他存储于数据库中的实体。否则，需要考虑重载其他实体的该接口方法，保证不会反复提交，或者是有序的保存。
         /// </summary>
         /// <param name="db">该实体类将被保存到的数据库上下文。</param>
-        void WillSaving(DbContext db);
+        void PrepareSaving(DbContext db);
     }
 }

@@ -248,7 +248,7 @@ namespace GY2021001WebApi.Controllers
                 var gim = world.ItemManager;
                 var allDic = gim.GetAllChildrenDictionary(gc);
                 var coll = from tmp in model.Settings
-                           select new { Id = tmp.Id, GItem = allDic.GetValueOrDefault(GameHelper.FromBase64String(tmp.Id), null), tmp.Position, Index = tmp.ForIndex };
+                           select new { tmp.Id, GItem = allDic.GetValueOrDefault(GameHelper.FromBase64String(tmp.Id), null), tmp.Position, Index = tmp.ForIndex };
                 var tmpGi = coll.FirstOrDefault(c => c.GItem == null);
                 if (tmpGi != null)  //若有无效Id
                 {
@@ -311,7 +311,7 @@ namespace GY2021001WebApi.Controllers
                 var gc = gu.CurrentChar;
                 var lst = new List<GameItem>();
                 var coll = from tmp in model.Items
-                           select (Id: GameHelper.FromBase64String(tmp.ItemId), Count: tmp.Count, PId: GameHelper.FromBase64String(tmp.DestContainerId));
+                           select (Id: GameHelper.FromBase64String(tmp.ItemId), tmp.Count, PId: GameHelper.FromBase64String(tmp.DestContainerId));
                 var allGi = gim.GetAllChildrenDictionary(gc);
                 var tmpGi = coll.FirstOrDefault(c => !allGi.ContainsKey(c.Id) || !allGi.ContainsKey(c.PId));
                 if (tmpGi.Id != Guid.Empty)

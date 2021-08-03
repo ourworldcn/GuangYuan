@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace GY2021001WebApi.Models
 {
+#pragma warning disable IDE0074 // 使用复合分配
 
     /// <summary>
     /// 该项目使用的特定常量。
@@ -582,7 +583,7 @@ namespace GY2021001WebApi.Models
             var count = Math.DivRem((now - LastComputerDateTime).Ticks, TimeSpan.FromSeconds(Delay).Ticks, out long remainder);  //跳变次数 和 余数
             var val = Math.Min(count * Increment + LastValue, MaxValue);
             LastValue = val; //计算得到最后值
-            now = now - TimeSpan.FromTicks(remainder);
+            now -= TimeSpan.FromTicks(remainder);
             LastComputerDateTime = now;
             return LastValue;
         }
@@ -1168,6 +1169,7 @@ namespace GY2021001WebApi.Models
 
         /// <summary>
         /// 阵容号，从0开始。
+        /// 推关阵容号是0。
         /// </summary>
         [DataMember]
         public int ForIndex { get; set; }
@@ -1615,6 +1617,108 @@ namespace GY2021001WebApi.Models
         }
     }
 
+    [DataContract]
+    public class GetCharSummaryReturnDto : ReturnDtoBase
+    {
+        [DataMember]
+        public List<CharSummaryDto> CharSummaries { get; set; } = new List<CharSummaryDto>();
+    }
+
+    [DataContract]
+    public partial class CharSummaryDto
+    {
+        public CharSummaryDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 角色的Id。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 角色的昵称。
+        /// </summary>
+        [DataMember]
+        public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 角色等级。
+        /// </summary>
+        [DataMember]
+        public int Level { get; set; }
+
+        /// <summary>
+        /// 角色战力。
+        /// </summary>
+        [DataMember]
+        public decimal CombatCap { get; set; }
+
+        /// <summary>
+        /// 最后一次下线时间。空表示当前在线。
+        /// </summary>
+        [DataMember]
+        public DateTime? LastLogoutDatetime { get; set; }
+    }
+
+    /// <summary>
+    /// RequestFriend 接口返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class RequestFriendReturnDto : ReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// RequestFriend 接口使用的参数封装类。
+    /// </summary>
+    [DataContract]
+    public class RequestFriendParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要添加的好友的角色Id。 从GetCharSummary接口获取。
+        /// </summary>
+        [DataMember]
+        public string FriendId { get; set; }
+    }
+
+    /// <summary>
+    /// GameSocialRelationship 对象的传输封装。
+    /// </summary>
+    [DataContract]
+    public partial class GameSocialRelationshipDto : GameSocialBaseDto
+    {
+        /// <summary>
+        /// 客体实体Id。
+        /// </summary>
+        [DataMember]
+        public string ObjectId { get; set; }
+
+        /// <summary>
+        /// 左看右的友好度。
+        /// 小于-5则是黑名单，大于5是好友。目前这个字段仅使用-6和6两个值。
+        /// </summary>
+        [DataMember]
+        public sbyte Friendliness { get; set; } = 0;
+    }
+
+    /// <summary>
+    ///  GetSocialRelationships 接口的返回数据类。
+    /// </summary>
+    [DataContract]
+    public partial class GetSocialRelationshipsReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 社交关系对象的集合。
+        /// 这个集合中，Id是当前角色Id的，表示好友和黑名单。ObjectId是当前角色Id的，表示有人申请成为好友。
+        /// </summary>
+        [DataMember]
+        public List<GameSocialRelationshipDto> SocialRelationships { get; set; } = new List<GameSocialRelationshipDto>();
+    }
+
     #endregion 社交相关
+#pragma warning restore IDE0074 // 使用复合分配
 
 }

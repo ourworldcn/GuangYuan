@@ -117,7 +117,7 @@ namespace GuangYuan.GY001.UserDb
     /// 表示邮件发件人或收件人的地址。
     /// </summary>
 
-    public class GameMailAddress : GuidKeyBase
+    public class GameMailAddress : GuidKeyObjectBase
     {
         public GameMailAddress()
         {
@@ -179,7 +179,7 @@ namespace GuangYuan.GY001.UserDb
     /// 标记一个Id的通用类。
     /// <see cref="ParentId"/> 和 <see cref="GuidKeyBase.Id"/> 是联合主键，且<see cref="ParentId"/>单独进行了非唯一索引。
     /// </summary>
-    public class IdMark : StringKeyDictionaryPropertyBase
+    public class IdMark : SimpleExtendPropertyBase
     {
         public IdMark()
         {

@@ -292,90 +292,40 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 所有需要额外加入的模板对象。
-        /// </summary>
-        public static List<GameItemTemplate> StoreTemplates = new List<GameItemTemplate>()
-        {
-            new GameItemTemplate(ProjectConstant.ZuojiZuheRongqi)
-            {
-                DisplayName="坐骑组合",
-            },
-            new GameItemTemplate(ProjectConstant.CharTemplateId)
-            {
-                DisplayName="角色的模板",
-                ChildrenTemplateIdString=$"{ProjectConstant.ShenWenSlotId},{ProjectConstant.DaojuBagSlotId},{ProjectConstant.ShoulanSlotId}" +  //通过串联将长字符串文本拆分为较短的字符串，从而提高源代码的可读性。 编译时将这些部分连接到单个字符串中。 无论涉及到多少个字符串，均不产生运行时性能开销。
-                    $",{ProjectConstant.JinbiId},{ProjectConstant.ShouyiSlotId},{ProjectConstant.ZuojiBagSlotId}",
-                PropertiesString="mpp=20,dpp=2,ipp=1",    //最大体力，未测试临时更改 TO DO dpp=300
-            },
-            new GameItemTemplate(ProjectConstant.ShenWenSlotId)
-            {
-                DisplayName="神纹装备槽",
-            },
-            new GameItemTemplate(ProjectConstant.DaojuBagSlotId)
-            {
-                DisplayName="道具背包槽",
-            },
-            new GameItemTemplate(ProjectConstant.ShouyiSlotId)
-            {
-                DisplayName="收益槽",
-            },
-            new  GameItemTemplate(ProjectConstant.ShoulanSlotId)
-            {
-                DisplayName="兽栏槽",
-            },
-            new GameItemTemplate(ProjectConstant.JinbiId)
-            {
-                DisplayName="金币",
-            },
-            new GameItemTemplate(ProjectConstant.MucaiId)
-            {
-                DisplayName="木材",
-            },
-            new GameItemTemplate(ProjectConstant.ZuanshiId)
-            {
-                DisplayName="钻石",
-            },
-            new GameItemTemplate(ProjectConstant.ZuojiBagSlotId)
-            {
-                DisplayName="坐骑背包",
-            },
-        };
-
-        /// <summary>
         /// 所有模板调赴后调用。此处可追加模板。
         /// </summary>
         /// <param name="itemTemplates"></param>
         /// <returns></returns>
         public static bool ItemTemplateLoaded(DbContext itemTemplates)
         {
-            Comparer<GameItemTemplate> comparer = Comparer<GameItemTemplate>.Create((l, r) =>
-            {
-                if (l == r)
-                    return 0;
-                int result = Comparer<Guid>.Default.Compare(l.Id, r.Id);
-                if (0 != result)
-                    return result;
-                return result;
-            });
             bool dbDirty = false;
-            var dbSet = itemTemplates.Set<GameItemTemplate>();
-            foreach (var item in StoreTemplates)
-            {
-                var template = dbSet.Local.FirstOrDefault(c => c.Id == item.Id);
-                if (null == template)
-                {
-                    dbSet.Add(item);
-                    dbDirty = true;
-                }
-                else
-                {
-                    //TO DO 应判断是否脏
-                    template.DisplayName = item.DisplayName;
-                    template.ChildrenTemplateIdString = item.ChildrenTemplateIdString;
-                    template.PropertiesString = item.PropertiesString;
-                    dbDirty = true;
-                }
-            }
+            //Comparer<GameItemTemplate> comparer = Comparer<GameItemTemplate>.Create((l, r) =>
+            //{
+            //    if (l == r)
+            //        return 0;
+            //    int result = Comparer<Guid>.Default.Compare(l.Id, r.Id);
+            //    if (0 != result)
+            //        return result;
+            //    return result;
+            //});
+            //var dbSet = itemTemplates.Set<GameItemTemplate>();
+            //foreach (var item in StoreTemplates)
+            //{
+            //    var template = dbSet.Local.FirstOrDefault(c => c.Id == item.Id);
+            //    if (null == template)
+            //    {
+            //        dbSet.Add(item);
+            //        dbDirty = true;
+            //    }
+            //    else
+            //    {
+            //        //TO DO 应判断是否脏
+            //        template.DisplayName = item.DisplayName;
+            //        template.ChildrenTemplateIdString = item.ChildrenTemplateIdString;
+            //        template.PropertiesString = item.PropertiesString;
+            //        dbDirty = true;
+            //    }
+            //}
             return dbDirty;
         }
 

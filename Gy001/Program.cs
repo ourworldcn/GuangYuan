@@ -53,24 +53,22 @@ namespace Gy001
         private static void CreateDb(IHost host)
         {
 
-            using (var scope = host.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var logger = host.Services.GetService<ILogger<Program>>();
+            using var scope = host.Services.CreateScope();
+            var services = scope.ServiceProvider;
+            var logger = host.Services.GetService<ILogger<Program>>();
 
-                try
-                {
-                    var tContext = services.GetRequiredService<GY001TemplateContext>();
-                    TemplateMigrateDbInitializer.Initialize(tContext);
-                    logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={tContext.Database.GetDbConnection().ConnectionString}");
-                    var context = services.GetRequiredService<GY001UserContext>();
-                    MigrateDbInitializer.Initialize(context);
-                    logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={context.Database.GetDbConnection().ConnectionString}");
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "An error occurred creating the DB——{err.Message}");
-                }
+            try
+            {
+                var tContext = services.GetRequiredService<GY001TemplateContext>();
+                TemplateMigrateDbInitializer.Initialize(tContext);
+                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={tContext.Database.GetDbConnection().ConnectionString}");
+                var context = services.GetRequiredService<GY001UserContext>();
+                MigrateDbInitializer.Initialize(context);
+                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={context.Database.GetDbConnection().ConnectionString}");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred creating the DB——{err.Message}");
             }
         }
 

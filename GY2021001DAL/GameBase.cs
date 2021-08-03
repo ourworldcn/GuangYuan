@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.TemplateDb;
+using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Expression;
 using System;
@@ -13,13 +14,20 @@ using System.Text.Json;
 
 namespace GuangYuan.GY001.UserDb
 {
-    public abstract class GameObjectBase : GuidKeyBase
+    public abstract class GameObjectBase : SimpleExtendPropertyBase
     {
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
         public GameObjectBase()
         {
 
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="id"><inheritdoc/></param>
         public GameObjectBase(Guid id) : base(id)
         {
 
@@ -33,7 +41,7 @@ namespace GuangYuan.GY001.UserDb
     /// <summary>
     /// 游戏内部事物的基类。
     /// </summary>
-    public abstract class GameThingBase : GameObjectBase, IDisposable
+    public abstract class GameThingBase : GameObjectBase, IDisposable, IBeforeSave
     {
         #region 构造函数
 
@@ -48,7 +56,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id"><inheritdoc/></param>
         public GameThingBase(Guid id) : base(id)
         {
 
@@ -65,49 +73,6 @@ namespace GuangYuan.GY001.UserDb
         /// 创建该对象的通用协调时间。
         /// </summary>
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// <see cref="Properties"/>属性的后备字段。
-        /// </summary>
-        private string _PropertiesString;
-
-        /// <summary>
-        /// 属性字符串。
-        /// </summary>
-        public string PropertiesString
-        {
-            get => _PropertiesString;
-            set
-            {
-                if (_PropertiesString != value)
-                {
-                    _PropertiesString = value;
-                    _Properties = null;
-                }
-            }
-        }
-
-        private Dictionary<string, object> _Properties;
-        /// <summary>
-        /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
-        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，拆箱问题不大，且非核心战斗才会较多的使用该系统。
-        /// </summary>
-        [NotMapped]
-        public Dictionary<string, object> Properties
-        {
-            [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-            get
-            {
-                if (null == _Properties)
-                    lock (this)
-                        if (null == _Properties)
-                        {
-                            _Properties = new Dictionary<string, object>();
-                            OwHelper.AnalysePropertiesString(PropertiesString, _Properties);
-                        }
-                return _Properties;
-            }
-        }
 
         /// <summary>
         /// 获取指定名称的属性名。调用<see cref="TryGetPropertyValue(string, out object)"/>来实现。
@@ -325,22 +290,8 @@ namespace GuangYuan.GY001.UserDb
             {
                 Saving?.Invoke(this, e);
             }
-            finally
+            catch
             {
-                if (null != _ExtendPropertyDictionary) //若需要写入
-                {
-                    ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
-                    //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
-                    //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
-                    //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
-                    //foreach (var item in removeItems)
-                    //    ExtendProperties.Remove(item);
-                }
-                foreach (var item in Name2FastChangingProperty)
-                {
-                    FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
-                }
-                PropertiesString = OwHelper.ToPropertiesString(Properties);
             }
         }
 
@@ -351,9 +302,31 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         /// <param name="e"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void InvokeSaving(EventArgs e)
+        public override void PrepareSaving(DbContext db)
         {
-            OnSaving(e);
+            try
+            {
+                OnSaving(EventArgs.Empty);
+            }
+            catch (Exception)
+            {
+                //TO DO
+            }
+            if (null != _ExtendPropertyDictionary) //若需要写入
+            {
+                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
+                //TO DO
+                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
+                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
+                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
+                //foreach (var item in removeItems)
+                //    ExtendProperties.Remove(item);
+            }
+            foreach (var item in Name2FastChangingProperty)
+            {
+                FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
+            }
+            base.PrepareSaving(db);
         }
 
         /// <summary>
@@ -444,7 +417,7 @@ namespace GuangYuan.GY001.UserDb
     /// <summary>
     /// 客户端使用通用扩展属性类。
     /// </summary>
-    public class GameClientExtendProperty : GuidKeyBase
+    public class GameClientExtendProperty : GuidKeyObjectBase
     {
         public GameClientExtendProperty()
         {
@@ -856,7 +829,7 @@ namespace GuangYuan.GY001.UserDb
     /// 此类可能放在玩家数据库中也可能放于专用的日志库中，但可能有些游戏内操作需要此数据。
     /// 当前没有启动第三上下文，暂时放在玩家数据库中。
     /// </summary>
-    public class GameActionRecord : StringKeyDictionaryPropertyBase
+    public class GameActionRecord : SimpleExtendPropertyBase
     {
         public GameActionRecord()
         {

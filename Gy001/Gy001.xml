@@ -685,6 +685,47 @@
              ApplyHomelandStyle 接口返回值封装类。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Id">
+            <summary>
+            角色的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.DisplayName">
+            <summary>
+            角色的昵称。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Level">
+            <summary>
+            角色等级。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.CombatCap">
+            <summary>
+            角色战力。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.LastLogoutDatetime">
+            <summary>
+            最后一次下线时间。空表示当前在线。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GameSocialRelationshipDto">
+            <summary>
+            GameSocialRelationship 对象的传输封装。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSocialRelationshipDto.ObjectId">
+            <summary>
+            客体实体Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSocialRelationshipDto.Friendliness">
+            <summary>
+            左看右的友好度。
+            小于-5则是黑名单，大于5是好友。目前这个字段仅使用-6和6两个值。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。
@@ -1167,6 +1208,7 @@
         <member name="P:GY2021001WebApi.Models.SetLineupItem.ForIndex">
             <summary>
             阵容号，从0开始。
+            推关阵容号是0。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.SetLineupItem.Position">
@@ -1360,6 +1402,32 @@
             获取附件接口使用的返回值封装类。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.RequestFriendReturnDto">
+            <summary>
+            RequestFriend 接口返回值封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.RequestFriendParamsDto">
+            <summary>
+            RequestFriend 接口使用的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RequestFriendParamsDto.FriendId">
+            <summary>
+            要添加的好友的角色Id。 从GetCharSummary接口获取。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetSocialRelationshipsReturnDto">
+            <summary>
+             GetSocialRelationships 接口的返回数据类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetSocialRelationshipsReturnDto.SocialRelationships">
+            <summary>
+            社交关系对象的集合。
+            这个集合中，Id是当前角色Id的，表示好友和黑名单。ObjectId是当前角色Id的，表示有人申请成为好友。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -1394,6 +1462,7 @@
             </summary>
             <param name="model">参见 RemoveMailsParamsDto</param>
             <returns>参见 RemoveMailsRetuenDto</returns>
+            <response code="401">令牌错误。</response>
         </member>
         <member name="M:Gy001.Controllers.SocialController.GetAttachmentes(GY2021001WebApi.Models.GetAttachmentesParamsDto)">
             <summary>
@@ -1401,12 +1470,32 @@
             </summary>
             <param name="model">Ids中是附件Id的集合。</param>
             <returns>ChangesItems中是收取的物品。</returns>
+            <response code="401">令牌错误。</response>
         </member>
-        <member name="M:Gy001.Controllers.SocialController.Getcoll1">
+        <member name="M:Gy001.Controllers.SocialController.GetCharSummary(System.String,System.String)">
             <summary>
-            
+            获取一组角色的摘要信息。以供未来申请好友。
             </summary>
-            <returns></returns>
+            <param name="token">当前角色的令牌。</param>
+            <param name="displayName">指定角色的昵称。如果省略或为null，则不限定昵称而尽量返回活跃用户。</param>
+            <returns>一组可添加为好友的角色摘要集合。如果没有符合条件的数据则返回空集合。</returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.RequestFriend(GY2021001WebApi.Models.RequestFriendParamsDto)">
+            <summary>
+            申请成为另一个角色的好友。
+            </summary>
+            <param name="model">参见 RequestFriendParamsDto。</param>
+            <returns>true成功发送请求 -或- 已经发送过请求 -或- 已经成为好友；false出现错误，参见 DebugMessage 说明。</returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.GetSocialRelationships(System.String)">
+            <summary>
+            获取社交关系信息集合。
+            </summary>
+            <param name="token">令牌。</param>
+            <returns>参见返回值。</returns>
+            <response code="401">令牌错误。</response>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">
             <summary>
