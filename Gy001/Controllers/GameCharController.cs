@@ -430,7 +430,7 @@ namespace GY2021001WebApi.Controllers
                 var list = gc.AllChildren.Where(c => guids.Contains(c.Id)).ToList();
                 list.ForEach(c => c.FcpToProperties());
                 if (model.IncludeChildren)
-                    foreach (var item in OwHelper.GetAllSubItemsOfTree(list, c => c.Children))
+                    foreach (var item in OwHelper.GetAllSubItemsOfTree(list, c => c.Children).ToArray())
                         item.FcpToProperties();
 
                 var coll = list.Select(c => GameItemDto.FromGameItem(c, model.IncludeChildren));
