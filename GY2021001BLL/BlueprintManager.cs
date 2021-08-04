@@ -374,7 +374,7 @@ namespace GuangYuan.GY001.BLL
                 gameItem = obj as GameItem;
             }
             //修改数量
-            if (!Template.CountProbExpression.TryGetValue(env, out object countPropObj) || !OwHelper.TryGetDecimal(countPropObj, out decimal prob)) //若无法获取概率
+            if (!Template.CountProbExpression.TryGetValue(env, out object countPropObj) || !OwHelper.TryGetDecimal(countPropObj, out _)) //若无法获取概率
             {
                 return false;
             }
@@ -480,8 +480,7 @@ namespace GuangYuan.GY001.BLL
             GameItemManager gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
             GameItem gameItem = gim.CreateGameItem(tid);
             string keyName = Template.Id.ToString();
-            GameExpressionBase expr;
-            if (env.Variables.TryGetValue(keyName, out expr) && expr is ConstGExpression)   //若已经存在该变量
+            if (env.Variables.TryGetValue(keyName, out GameExpressionBase expr) && expr is ConstGExpression)   //若已经存在该变量
             {
                 return expr.SetValue(env, gameItem);
             }
@@ -740,12 +739,6 @@ namespace GuangYuan.GY001.BLL
 
             GameItem gameItem = datas.GameItems[0];  //收取的容器
             GameChar gameChar = datas.GameChar;
-            Guid destTId = gameItem.TemplateId switch //收纳对象模板Id
-            {
-                _ when gameItem.TemplateId == ProjectConstant.MucaishuTId => ProjectConstant.MucaiId,   //木材
-                _ when gameItem.TemplateId == ProjectConstant.YumitianTId => ProjectConstant.JinbiId, //玉米
-                _ => Guid.Empty,
-            };
             GameItem hl = datas.Lookup(gameChar.GameItems, ProjectConstant.HomelandSlotId);    //家园
             if (null == hl)
             {
@@ -764,11 +757,12 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
 
-            GameItem destItem = datas.Lookup(gameChar.GameItems, destTId);  //目标对象
-            if (destItem is null)
+            GameItem destItem = gameItem.TemplateId switch // //目标对象
             {
-                return;
-            }
+                _ when gameItem.TemplateId == ProjectConstant.MucaishuTId => gameChar.GetMucai(),   //木材
+                _ when gameItem.TemplateId == ProjectConstant.YumitianTId => gameChar.GetJinbi(), //玉米
+                _ => null,
+            };
 
             if (!src.TryGetPropertyValueWithFcp("Count", DateTime.UtcNow, true, out object countObj, out DateTime dt) || !OwHelper.TryGetDecimal(countObj, out decimal count))
             {
@@ -845,7 +839,7 @@ namespace GuangYuan.GY001.BLL
             GameItem gold = null;
             if (gameItem.TryGetDecimalPropertyValue("lug", out decimal lug)) //若需要金子
             {
-                gold = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.JinbiId);
+                gold = datas.GameChar.GetJinbi();
                 if (!datas.Verify(gold.Count >= lug, $"需要{lug}金币，目前只有{gold.Count}金币。", gold.TemplateId))
                 {
                     return;
@@ -854,7 +848,7 @@ namespace GuangYuan.GY001.BLL
             GameItem wood = null;
             if (gameItem.TryGetDecimalPropertyValue("luw", out decimal luw)) //若需要木头
             {
-                wood = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaiId);
+                wood = datas.GameChar.GetMucai();
                 if (!datas.Verify(wood.Count >= luw, $"需要{luw}木材，目前只有{wood.Count}木材。", wood.TemplateId))
                 {
                     return;
@@ -968,7 +962,7 @@ namespace GuangYuan.GY001.BLL
                 };
                 if (cost > 0)   //若需要钻石
                 {
-                    GameItem dim = datas.Lookup(datas.GameChar.GameItems, ProjectConstant.ZuanshiId);    //钻石
+                    GameItem dim = datas.Lookup(datas.GameChar.GetCurrencyBag().Children, ProjectConstant.ZuanshiId);    //钻石
                     if (dim is null) return;
 
                     if (!datas.Verify(dim.Count >= cost, $"需要{cost}钻石,但只有{dim.Count}钻石。"))
@@ -1006,7 +1000,7 @@ namespace GuangYuan.GY001.BLL
             //5，5，10，10，30,0
             //ltlv 记载最后一次升级的时间
             var gc = datas.GameChar;    //角色对象
-            var td = datas.Lookup(gc.GameItems, ProjectConstant.TdPveCounterTId);
+            var td = datas.Lookup(gc.GameItems, ProjectConstant.PveTCounterTId);
             if (td is null) //若无塔防对象
                 return;
             if (!datas.Verify(td.Name2FastChangingProperty.TryGetValue("Count", out _), "找不到自动恢复属性。"))
@@ -1023,7 +1017,7 @@ namespace GuangYuan.GY001.BLL
                 ltlv = dt;
                 lv = 0;
             }
-            var diam = datas.Lookup(gc.GameItems, ProjectConstant.ZuanshiId);//钻石
+            var diam = datas.Lookup(gc.GetCurrencyBag().Children, ProjectConstant.ZuanshiId);//钻石
             if (diam is null)   //若没有钻石
                 return;
             if (!datas.Verify(td.TryGetDecimalPropertyValue("lud", out var lud), "没有找到升级所需钻石数量。"))
@@ -1382,7 +1376,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             //计算所需钻石
-            GameItem zuanshi = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);    //钻石
+            GameItem zuanshi = datas.GameChar.GetZuanshi();    //钻石
             DateTime dt = DateTime.UtcNow;
             decimal tm = (fcp.MaxValue - fcp.GetCurrentValue(ref dt)) / 60;
             decimal cost;
@@ -1544,12 +1538,14 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void AddTili(ApplyBlueprintDatas datas)
         {
-            if (!datas.Verify(datas.GameChar.GradientProperties.TryGetValue("pp", out FastChangingProperty fcp), "无法找到体力属性"))
+            var tili = datas.GameChar.GetTili();
+            var fcp = tili?.Name2FastChangingProperty.GetValueOrDefault("Count");
+            if (!datas.Verify(fcp != null, "无法找到体力属性"))
             {
                 return;
             }
 
-            GameItem zuanshi = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);
+            GameItem zuanshi = datas.GameChar.GetZuanshi();
             if (!datas.Verify(zuanshi != null, "无法找到钻石对象"))
             {
                 return;
@@ -1560,10 +1556,12 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
 
-            zuanshi.Count -= 20;    //扣除钻石
             fcp.GetCurrentValueWithUtc();
-            fcp.LastValue += 20;    //增加体力
+            fcp.LastValue += 20;    //无视限制增加体力
+            tili.Count = fcp.LastValue; //
+            zuanshi.Count -= 20;    //扣除钻石
             datas.ChangesItem.AddToChanges(datas.GameChar.Id, zuanshi);
+            datas.ChangesItem.AddToChanges(tili);
         }
     }
 

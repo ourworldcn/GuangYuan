@@ -721,6 +721,13 @@ namespace GuangYuan.GY001.BLL
             //调用外部创建委托
             try
             {
+                //初始化木材堆叠问题
+                //var mucai = result.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
+                //var coll = result.AllChildren.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);    //木材仓库
+                //var stc = mucai.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, decimal.Zero);
+                //stc += coll.Sum(c => c.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, decimal.Zero));
+                //mucai.SetPropertyValue("stc", stc);
+                //调用外部初始化
                 result.InitialCreation();
                 var dirty = Options?.CharCreated?.Invoke(Services, result);
             }

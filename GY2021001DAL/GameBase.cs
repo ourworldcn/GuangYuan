@@ -168,6 +168,18 @@ namespace GuangYuan.GY001.UserDb
         }
 
         /// <summary>
+        /// 刷新所有渐变属性，写入<see cref="SimpleExtendPropertyBase.Properties"/>
+        /// </summary>
+        public void FcpToProperties()
+        {
+            foreach (var item in Name2FastChangingProperty) //刷新渐变属性
+            {
+                var tmp = item.Value.GetCurrentValueWithUtc();
+                FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
+            }
+        }
+
+        /// <summary>
         /// 获取属性，且考虑是否刷新并写入快速变化属性。
         /// </summary>
         /// <param name="name">要获取值的属性名。</param>

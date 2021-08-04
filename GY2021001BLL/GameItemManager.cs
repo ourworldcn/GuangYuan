@@ -798,7 +798,7 @@ namespace GuangYuan.GY001.BLL
             if (gameItem.TemplateId == ProjectConstant.MucaiId)  //若是木材
             {
                 var gameCher = parent as GameChar ?? (parent as GameItem)?.GameChar;
-                stcItem = gameCher.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaiId);
+                stcItem = gameCher.GetMucai();
             }
             if (!stcItem.IsStc(out var stc)) //若不可堆叠
             {

@@ -156,6 +156,11 @@ namespace Game.Social
         public static readonly Guid FromSystemId = new Guid("{21B9A80F-9F48-410A-806E-1709AD102520}");
 
         /// <summary>
+        /// 好友槽模板Id。
+        /// </summary>
+        public static readonly Guid FriendSlotTId = new Guid("{7396db31-1d02-43d3-af05-c14f4ca2a5fc}");
+
+        /// <summary>
         /// 邮件动态属性键名，该名的值不为0则说明是系统发送邮件。
         /// </summary>
         public const string FromSystemPNmae = "FromSystem";

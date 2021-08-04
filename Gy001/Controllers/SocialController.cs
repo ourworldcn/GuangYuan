@@ -213,6 +213,35 @@ namespace Gy001.Controllers
             }
         }
         #endregion 好友相关
+
+        /// <summary>
+        /// 确认或拒绝好友申请。
+        /// </summary>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPost]
+        public ActionResult<ConfirmRequestFriendReturnDto> ConfirmRequestFriend(ConfirmRequestFriendParamsDto model)
+        {
+            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("令牌无效");
+            }
+            try
+            {
+                var result = new ConfirmRequestFriendReturnDto();
+                var succ = _World.SocialManager.ConfirmFriend(gu.CurrentChar, GameHelper.FromBase64String(model.FriendId), model.IsRejected);
+                if (!succ)
+                {
+                    result.DebugMessage = VWorld.GetLastErrorMessage();
+                    result.HasError = true;
+                }
+                return result;
+            }
+            finally
+            {
+                _World.CharManager.Unlock(gu, true);
+            }
+        }
     }
 
 }

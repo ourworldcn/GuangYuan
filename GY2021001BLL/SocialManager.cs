@@ -470,6 +470,12 @@ namespace GuangYuan.GY001.BLL
             GY001UserContext db = null;
             try
             {
+                var slot = gameChar.GameItems.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
+                if (slot.GetNumberOfStackRemainder() <= 0)
+                {
+                    VWorld.SetLastErrorMessage("好友位已满。");
+                    return false;
+                }
                 var gcId = gameChar.Id;
                 var sr = db.SocialRelationships.Find(gcId, friendId);
                 var nsr = db.SocialRelationships.Find(friendId, gcId);
@@ -485,8 +491,16 @@ namespace GuangYuan.GY001.BLL
                     };
                     db.SocialRelationships.Add(sr);
                 }
-                sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
-                nsr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                if (rejected)   //若拒绝
+                {
+                    db.SocialRelationships.Remove(sr);
+                    db.SocialRelationships.Remove(nsr);
+                }
+                else
+                {
+                    sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                    nsr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                }
                 db.SaveChanges();
             }
             finally

@@ -438,8 +438,8 @@ namespace GuangYuan.GY001.BLL
             //校验时间
             DateTime dt = gameChar.CombatStartUtc.GetValueOrDefault(DateTime.UtcNow);
             var dtNow = DateTime.UtcNow;
-            var lt = TimeSpan.FromSeconds(Convert.ToDouble(tm.Properties.GetValueOrDefault("tl", decimal.Zero)));   //最短时间
-            lt = TimeSpan.FromSeconds(1);   //TO DO为测试临时更改
+            _ = TimeSpan.FromSeconds(Convert.ToDouble(tm.Properties.GetValueOrDefault("tl", decimal.Zero)));   //最短时间
+            TimeSpan lt = TimeSpan.FromSeconds(1);
             if (dtNow - dt < lt) //若时间过短
             {
                 data.HasError = true;

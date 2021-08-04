@@ -53,7 +53,7 @@ namespace Gy001.Controllers
             };
             var hl = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);
             var goldTId = new Guid("7a00740c-035e-4846-a619-2d0855f60b55");
-            var diam = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ZuanshiId);
+            var diam = gc.GetZuanshi();
             diam.Count += 1000;
             //var gold = hl.AllChildren.FirstOrDefault(c => c.TemplateId == goldTId);
             //applyBluprintDatas.GameItems.Add(new GameItem()

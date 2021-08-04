@@ -83,20 +83,28 @@ namespace GY2021001WebApi.Controllers
         /// <returns>true成功设置,false,指定了删除属性标志，但没有找到指定名子的属性。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPut]
-        public ActionResult<bool> ModifyClientExtendProperty(ModifyClientExtendPropertyParamsDto model)
+        public ActionResult<ModifyClientExtendPropertyReturn> ModifyClientExtendProperty(ModifyClientExtendPropertyParamsDto model)
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
             {
                 return Unauthorized("无效令牌。");
             }
+            var result = new ModifyClientExtendPropertyReturn()
+            {
+                Name = model.Name,
+                Value = model.Value,
+            };
             try
             {
                 var gc = gu.CurrentChar;
                 if (model.IsRemove)
                 {
-                    if (!gc.ClientExtendProperties.Remove(model.Name, out GameClientExtendProperty val))
-                        return false;
+                    if (!gc.ClientExtendProperties.Remove(model.Name, out GameClientExtendProperty val))    //已经移除
+                    {
+                        result.DebugMessage = $"没有找到要移除的键{model.Name}。";
+                        return result;
+                    }
                     gu.DbContext.Set<GameClientExtendProperty>().Remove(val);
                 }
                 else if (gc.ClientExtendProperties.TryGetValue(model.Name, out GameClientExtendProperty gep))
@@ -118,7 +126,7 @@ namespace GY2021001WebApi.Controllers
             {
                 world.CharManager.Unlock(gu);
             }
-            return true;
+            return result;
         }
 
         /// <summary>
@@ -186,7 +194,7 @@ namespace GY2021001WebApi.Controllers
                 else
                 {
                     removes = world.ObjectPoolListGameItem.Get();
-                    var golden = gc.GameItems.First(c => c.TemplateId == ProjectConstant.JinbiId);  //金币
+                    var golden = gc.GetJinbi();  //金币
                     world.ItemManager.RemoveItemsWhere(shoulan, c => sellIds.Contains(c.Id), removes);  //移除所有野兽
                     foreach (var item in removes)   //计算出售所得金币
                     {
@@ -419,7 +427,13 @@ namespace GY2021001WebApi.Controllers
                 var gc = gu.CurrentChar;
                 var result = new GetItemsReturnDto();
                 HashSet<Guid> guids = new HashSet<Guid>(model.Ids.Select(c => GameHelper.FromBase64String(c)));
-                var coll = gc.AllChildren.Where(c => guids.Contains(c.Id)).Select(c => GameItemDto.FromGameItem(c, model.IncludeChildren));
+                var list = gc.AllChildren.Where(c => guids.Contains(c.Id)).ToList();
+                list.ForEach(c => c.FcpToProperties());
+                if (model.IncludeChildren)
+                    foreach (var item in OwHelper.GetAllSubItemsOfTree(list, c => c.Children))
+                        item.FcpToProperties();
+
+                var coll = list.Select(c => GameItemDto.FromGameItem(c, model.IncludeChildren));
                 result.GameItems.AddRange(coll);
                 return result;
             }

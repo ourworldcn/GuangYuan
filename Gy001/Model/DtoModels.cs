@@ -373,14 +373,22 @@ namespace GY2021001WebApi.Models
         [DataMember(Name = nameof(Count))]
         public decimal? Count { get; set; }
 
+        Dictionary<string, object> _Properties;
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
         /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，仅频繁拆箱问题不大(相对于不太频繁的操作而言)。
         /// 属性集合。"Properties":{"atk":102,"qult":500,"catalogId":"shfdkjshfkjskfh=="}
         /// </summary>
         [DataMember(Name = nameof(Properties))]
-        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>(); //"for0=101001"
+        public Dictionary<string, object> Properties
+        {
+            get
+            {
+                return _Properties ?? (_Properties = new Dictionary<string, object>());
+            }//"for0=101001"
 
+            set => _Properties = value;
+        }
         /// <summary>
         /// 所属Id。当前版本下，仅当此物直属于角色对象时，此属性才有值，且是所属角色的id。
         /// </summary>
@@ -543,65 +551,6 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public Dictionary<string, string> ClientExtendProperties { get; } = new Dictionary<string, string>();
 
-    }
-
-    /// <summary>
-    /// 缓慢变化属性的数据传输封装类。
-    /// </summary>
-    public partial class GradientPropertyDto
-    {
-
-        public decimal MaxValue { get; set; }
-
-        /// <summary>
-        /// 获取或设置最后计算的时间。建议一律采用Utc时间。
-        /// </summary>
-        public DateTime LastComputerDateTime { get; set; }
-
-        /// <summary>
-        /// 获取或设置最后计算的结果。
-        /// </summary>
-        public decimal LastValue { get; set; }
-
-        /// <summary>
-        /// 多久计算一次。单位：秒
-        /// </summary>
-        public int Delay { get; set; }
-
-        /// <summary>
-        /// 增量。
-        /// </summary>
-        public decimal Increment { get; set; }
-
-        /// <summary>
-        /// 获取当前值。自动修改LastComputerDateTime和LastValue属性。
-        /// </summary>
-        /// <param name="now">当前时间。返回时可能更改，如果没有正好到跳变时间，则会略微提前到上一次跳变的时间点。</param>
-        /// <returns>当前值。</returns>
-        public decimal GetCurrentValue(ref DateTime now)
-        {
-            var count = Math.DivRem((now - LastComputerDateTime).Ticks, TimeSpan.FromSeconds(Delay).Ticks, out long remainder);  //跳变次数 和 余数
-            var val = Math.Min(count * Increment + LastValue, MaxValue);
-            LastValue = val; //计算得到最后值
-            now -= TimeSpan.FromTicks(remainder);
-            LastComputerDateTime = now;
-            return LastValue;
-        }
-
-        /// <summary>
-        /// 使用当前Utc时间获取当前值。
-        /// </summary>
-        /// <returns></returns>
-        public decimal GetCurrentValueWithUtc()
-        {
-            DateTime now = DateTime.UtcNow;
-            return GetCurrentValue(ref now);
-        }
-
-        /// <summary>
-        /// 一个记录额外信息的属性。本类成员不使用该属性。这里记录的是属性的名字字符串如"pp"
-        /// </summary>
-        public object Tag { get; set; }
     }
 
     /// <summary>
@@ -1021,6 +970,31 @@ namespace GY2021001WebApi.Models
 
         /// <summary>
         /// 值最长8000字符。（一个中文算一个字符）
+        /// </summary>
+        [DataMember]
+        public string Value { get; set; }
+    }
+
+    /// <summary>
+    /// ModifyClientExtendProperty 接口返回值数据封装类。
+    /// </summary>
+    [DataContract]
+    public class ModifyClientExtendPropertyReturn : ReturnDtoBase
+    {
+        public ModifyClientExtendPropertyReturn()
+        {
+
+        }
+        /// <summary>
+        /// 这里返回修改后的字符串。如果删除了则返回null。
+        /// 仅当成功返回时，此成员才有用。
+        /// </summary>
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// 更改对象的Id。
+        /// 仅当成功返回时，此成员才有用。
         /// </summary>
         [DataMember]
         public string Value { get; set; }
@@ -1612,11 +1586,17 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class GetAttachmentesRetuenDto : ChangesReturnDtoBase
     {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
         public GetAttachmentesRetuenDto()
         {
         }
     }
 
+    /// <summary>
+    /// GetCharSummary 接口返回值封装类。
+    /// </summary>
     [DataContract]
     public class GetCharSummaryReturnDto : ReturnDtoBase
     {
@@ -1716,6 +1696,45 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<GameSocialRelationshipDto> SocialRelationships { get; set; } = new List<GameSocialRelationshipDto>();
+    }
+
+    /// <summary>
+    /// ConfirmRequestFriend 接口参数封装类。
+    /// </summary>
+    public class ConfirmRequestFriendParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public ConfirmRequestFriendParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 申请成为自己好友的角色的Id。
+        /// </summary>
+        public string FriendId { get; set; }
+
+        /// <summary>
+        /// 是否拒绝好友申请。
+        /// true拒绝申请，false确认申请。
+        /// </summary>
+        public bool IsRejected { get; set; }
+    }
+
+    /// <summary>
+    ///  ConfirmRequestFriend 接口返回值封装类。
+    /// </summary>
+    public class ConfirmRequestFriendReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public ConfirmRequestFriendReturnDto()
+        {
+
+        }
     }
 
     #endregion 社交相关

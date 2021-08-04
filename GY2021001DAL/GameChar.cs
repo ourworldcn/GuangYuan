@@ -125,33 +125,6 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public DateTime? CombatStartUtc { get; set; }
 
-        private Dictionary<string, FastChangingProperty> _GradientProperties;
-
-        /// <summary>
-        /// 渐变属性字典。
-        /// </summary>
-        [NotMapped]
-        public IReadOnlyDictionary<string, FastChangingProperty> GradientProperties
-        {
-            get
-            {
-                if (null == _GradientProperties)
-                {
-                    _GradientProperties = new Dictionary<string, FastChangingProperty>()
-                    {
-                        {
-                            "pp",
-                            new FastChangingProperty(TimeSpan.FromSeconds(Convert.ToDouble( Properties.GetValueOrDefault("dpp",300m))),(decimal)Properties.GetValueOrDefault("ipp",1m),
-                                (decimal)Properties.GetValueOrDefault("mpp",20m),(decimal)Properties.GetValueOrDefault("pp",20m),DateTime.Parse( Properties.GetValueOrDefault("cpp",DateTime.UtcNow.ToString()) as string))
-                            { Name="pp"}
-                        },
-                    };
-                }
-                return _GradientProperties;
-            }
-        }
-
-
         private readonly Dictionary<string, GameClientExtendProperty> _ClientExtendProperties = new Dictionary<string, GameClientExtendProperty>();
 
         /// <summary>
@@ -193,17 +166,6 @@ namespace GuangYuan.GY001.UserDb
 
         public override void PrepareSaving(DbContext db)
         {
-            if (null != _GradientProperties)   //若已经生成了渐变属性
-            {
-                DateTime dtNow = DateTime.UtcNow;
-                if (_GradientProperties.TryGetValue("pp", out FastChangingProperty p))
-                {
-                    Properties["pp"] = p.GetCurrentValue(ref dtNow);
-                    Properties["cpp"] = p.LastDateTime.ToString();
-                }
-            }
-            //foreach (var item in OwHelper.GetAllSubItemsOfTree(GameItems, c => c.Children).ToArray())
-            //    item.PrepareSaving(EventArgs.Empty);
             if (_ChangesItems != null)    //若需要序列化变化属性
             {
                 var exProp = ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);

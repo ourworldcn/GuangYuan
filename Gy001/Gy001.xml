@@ -40,14 +40,6 @@
             <param name="model">参数</param>
             <returns>true则更改成功，false没有更改成功。</returns>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.AccountController.RefreshGradientProperty(GY2021001WebApi.Models.TokenDtoBase)">
-            <summary>
-            刷新并返回所有缓慢变化属性。
-            </summary>
-            <param name="model">参见 TokenDtoBase</param>
-            <returns>返回缓慢变化属性的集合。</returns>
-            <response code="401">令牌无效。</response>
-        </member>
         <member name="M:GY2021001WebApi.Controllers.AccountController.QuicklyRegisterAndLogin">
             <summary>
             快速注册一个新账号并登录。
@@ -504,49 +496,6 @@
         <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.ChangesItems">
             <summary>
             获取变化物品的数据。仅当结算大关卡时这里才有数据。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.GradientPropertyDto">
-            <summary>
-            缓慢变化属性的数据传输封装类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GradientPropertyDto.LastComputerDateTime">
-            <summary>
-            获取或设置最后计算的时间。建议一律采用Utc时间。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GradientPropertyDto.LastValue">
-            <summary>
-            获取或设置最后计算的结果。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GradientPropertyDto.Delay">
-            <summary>
-            多久计算一次。单位：秒
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GradientPropertyDto.Increment">
-            <summary>
-            增量。
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.GradientPropertyDto.GetCurrentValue(System.DateTime@)">
-            <summary>
-            获取当前值。自动修改LastComputerDateTime和LastValue属性。
-            </summary>
-            <param name="now">当前时间。返回时可能更改，如果没有正好到跳变时间，则会略微提前到上一次跳变的时间点。</param>
-            <returns>当前值。</returns>
-        </member>
-        <member name="M:GY2021001WebApi.Models.GradientPropertyDto.GetCurrentValueWithUtc">
-            <summary>
-            使用当前Utc时间获取当前值。
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GradientPropertyDto.Tag">
-            <summary>
-            一个记录额外信息的属性。本类成员不使用该属性。这里记录的是属性的名字字符串如"pp"
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.VWorldInfomationDto.StartDateTime">
@@ -1144,6 +1093,23 @@
             值最长8000字符。（一个中文算一个字符）
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.ModifyClientExtendPropertyReturn">
+            <summary>
+            ModifyClientExtendProperty 接口返回值数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyClientExtendPropertyReturn.Name">
+            <summary>
+            这里返回修改后的字符串。如果删除了则返回null。
+            仅当成功返回时，此成员才有用。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyClientExtendPropertyReturn.Value">
+            <summary>
+            更改对象的Id。
+            仅当成功返回时，此成员才有用。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.SetCombatMountsParamsDto">
             <summary>
             SetCombatMounts接口的数据模型传输类。
@@ -1402,6 +1368,16 @@
             获取附件接口使用的返回值封装类。
             </summary>
         </member>
+        <member name="M:GY2021001WebApi.Models.GetAttachmentesRetuenDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetCharSummaryReturnDto">
+            <summary>
+            GetCharSummary 接口返回值封装类。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.RequestFriendReturnDto">
             <summary>
             RequestFriend 接口返回值封装类。
@@ -1428,16 +1404,41 @@
             这个集合中，Id是当前角色Id的，表示好友和黑名单。ObjectId是当前角色Id的，表示有人申请成为好友。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.ConfirmRequestFriendParamsDto">
+            <summary>
+            ConfirmRequestFriend 接口参数封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.ConfirmRequestFriendParamsDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmRequestFriendParamsDto.FriendId">
+            <summary>
+            申请成为自己好友的角色的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmRequestFriendParamsDto.IsRejected">
+            <summary>
+            是否拒绝好友申请。
+            true拒绝申请，false确认申请。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ConfirmRequestFriendReturnDto">
+            <summary>
+             ConfirmRequestFriend 接口返回值封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.ConfirmRequestFriendReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
@@ -1495,6 +1496,13 @@
             </summary>
             <param name="token">令牌。</param>
             <returns>参见返回值。</returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.ConfirmRequestFriend(GY2021001WebApi.Models.ConfirmRequestFriendParamsDto)">
+            <summary>
+            确认或拒绝好友申请。
+            </summary>
+            <returns></returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">

@@ -81,15 +81,9 @@ namespace GY2021001WebApi.Models
                 ParentId = obj.ParentId?.ToBase64String(),
                 ClientString = obj.ClientGutsString,
             };
-            foreach (var item in obj.Name2FastChangingProperty)
-            {
-                item.Value.GetCurrentValueWithUtc();
-                FastChangingPropertyExtensions.ToDictionary(item.Value, obj.Properties, item.Key);
-            }
-            foreach (var item in obj.Properties)
-            {
-                result.Properties[item.Key] = item.Value;
-            }
+            if (obj.Name2FastChangingProperty.TryGetValue("Count", out var fcp))
+                result.Count = fcp.LastValue;
+            result._Properties = new System.Collections.Generic.Dictionary<string, object>(obj.Properties);
             if (includeChildren && obj.Children.Count > 0)  //若有孩子需要转换
                 result.Children.AddRange(obj.Children.Select(c => FromGameItem(c, includeChildren)));
             return result;
@@ -155,12 +149,6 @@ namespace GY2021001WebApi.Models
             foreach (var item in obj.Properties)
             {
                 result.Properties[item.Key] = item.Value;
-            }
-
-            foreach (var item in obj.GradientProperties)    //将渐变属性合并到动态属性集合中
-            {
-                DateTime now = DateTime.UtcNow;
-                result.Properties[item.Key] = item.Value.GetCurrentValue(ref now);
             }
             foreach (var item in obj.ClientExtendProperties)    //初始化客户端扩展属性
             {
@@ -249,24 +237,6 @@ namespace GY2021001WebApi.Models
                 DebugMessage = obj.DebugMessage,
             };
             result.ChangesItems.AddRange(obj.ChangesItems.Select(c => (ChangesItemDto)c));
-            return result;
-        }
-
-    }
-
-    public partial class GradientPropertyDto
-    {
-        public static explicit operator GradientPropertyDto(FastChangingProperty obj)
-        {
-            var result = new GradientPropertyDto()
-            {
-                Increment = obj.Increment,
-                LastComputerDateTime = obj.LastDateTime,
-                LastValue = obj.LastValue,
-                MaxValue = obj.MaxValue,
-                Tag = obj.Name,
-                Delay = (int)obj.Delay.TotalSeconds,
-            };
             return result;
         }
 

@@ -85,25 +85,23 @@ namespace OW.Game
         /// <summary>
         /// 获取当前值。自动修改<see cref="LastComputerDateTime"/>和<see cref="LastValue"/>属性。
         /// </summary>
-        /// <param name="now">当前时间。返回时可能更改，如果没有正好到跳变时间，则会略微提前到上一次跳变的时间点。</param>
+        /// <param name="now">当前时间。返回时可能更改，如果没有正好到跳变时间，则会提前到上一次跳变的时间点。</param>
         /// <returns>更改后的值(<see cref="LastValue"/>)。</returns>
         public decimal GetCurrentValue(ref DateTime now)
         {
+            var count = (long)Math.Round((decimal)(now - LastDateTime).Ticks / Delay.Ticks, MidpointRounding.ToNegativeInfinity);   //跳变次数,回调可能多跳一次
+            LastDateTime += Delay * count;
+            now = LastDateTime;
             if (_LastValue >= MaxValue)  //若已经结束
             {
-                LastDateTime = now;
                 return _LastValue;
             }
-            var count = Math.DivRem((now - LastDateTime).Ticks, Delay.Ticks, out long remainder);  //跳变次数 和 余数
-            var val = Math.Min(count * Increment + _LastValue, MaxValue);
-            _LastValue = val; //计算得到最后值
-            now = now - TimeSpan.FromTicks(remainder);
-            LastDateTime = now;
-            if (_LastValue >= MaxValue)
+            else //若尚未结束
             {
-                OnCompleted(new CompletedEventArgs(now));
+                _LastValue = Math.Clamp(_LastValue + count * Increment, decimal.Zero, MaxValue);
+                if (_LastValue >= MaxValue)
+                    OnCompleted(new CompletedEventArgs(now));
             }
-
             return _LastValue;
         }
 

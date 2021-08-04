@@ -88,6 +88,19 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid ShoulanSlotId = new Guid("{1630A0A1-3540-479A-B2C5-10B63E7A5774}");
 
         /// <summary>
+        /// 坐骑背包Id。
+        /// </summary>
+        public static readonly Guid ZuojiBagSlotId = new Guid("{BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5}");
+
+        /// <summary>
+        /// 货币袋模板Id。
+        /// </summary>
+        public static readonly Guid CurrencyBagTId = new Guid("{7066A96D-F514-42C7-A30E-5E7567900AD4}");
+
+        #endregion  角色直属槽及其相关
+
+        #region 货币类模板Id
+        /// <summary>
         /// 金币Id，这个不是槽，它的Count属性直接记录了金币数，目前其子代为空。这个省事，但未来在金币袋上开脑洞，不能保证不变。
         /// </summary>
         public static readonly Guid JinbiId = new Guid("{2B83C942-1E9C-4B45-9816-AD2CBF0E473F}");
@@ -101,11 +114,19 @@ namespace GuangYuan.GY001.BLL
         /// 钻石Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
         /// </summary>
         public static readonly Guid ZuanshiId = new Guid("{3E365BEC-F83D-467D-A58C-9EBA43458682}");
+
         /// <summary>
-        /// 坐骑背包Id。
+        /// 体力Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
         /// </summary>
-        public static readonly Guid ZuojiBagSlotId = new Guid("{BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5}");
-        #endregion  角色直属槽及其相关
+        public static readonly Guid TiliId = new Guid("{99B4CD0D-CBFA-4851-9F6A-0035F4685E77}");
+
+        /// <summary>
+        /// 塔防PVE次数的记录对象模板Id。
+        /// </summary>
+        public static readonly Guid PveTCounterTId = new Guid("{D56E11C8-48AA-4787-822B-CE4EBBFA684D}");
+
+        #endregion  货币类模板Id
+
         /// <summary>
         /// 角色模板Id。当前只有一个模板。
         /// </summary>
@@ -114,6 +135,11 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid LockAtkSlotId = new Guid("{82b18ec6-9190-4804-81b5-33ffa0351ade}");
         public static readonly Guid LockMhpSlotId = new Guid("{b0a92419-6daa-41c8-9074-957175fd9c3b}");
         public static readonly Guid LockQltSlotId = new Guid("{b10c4510-0c8e-40ad-87bb-6f5828273e29}");
+
+        /// <summary>
+        /// 神纹碎片的模板Id。
+        /// </summary>
+        public static readonly Guid RunesId = new Guid("{2B86FF50-0257-4913-8BEC-F5CF3C84B6D5}");
 
         #region 家园及相关
 
@@ -168,23 +194,14 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid HomelandPlanTId = new Guid("{5d374961-a072-4222-ab46-94d72dc394f7}");
 
         /// <summary>
-        /// 塔防PVE次数的记录对象。
-        /// </summary>
-        public static readonly Guid TdPveCounterTId = new Guid("{D56E11C8-48AA-4787-822B-CE4EBBFA684D}");
-
-        /// <summary>
         /// 家园数据存储于家园方案背包对象中 <see cref="GameThingBase.ExtendProperties"/> 属性的名字。
         /// </summary>
         public const string HomelandPlanPropertyName = "d681df0c-73ed-434a-9eb7-5c6c158ea1af";
 
         #endregion 家园及相关
 
-        #endregion 固定模板Id
 
-        /// <summary>
-        /// 神纹碎片的模板Id。
-        /// </summary>
-        public static readonly Guid RunesId = new Guid("{2B86FF50-0257-4913-8BEC-F5CF3C84B6D5}");
+        #endregion 固定模板Id
 
         /// <summary>
         /// 快速变化属性的属性名前缀。
@@ -231,7 +248,10 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public const string ZhenrongPropertyName = "for";
 
-
+        /// <summary>
+        /// 唯一性标识属性名。该属性不存在或为0，表示不需要唯一性验证，否则需要相应模板的物品，在容器内唯一。
+        /// </summary>
+        public const string IsUniquePName = "uni";
         #region 类别号
         /// <summary>
         /// 血量神纹碎片的类别号。
@@ -401,17 +421,16 @@ namespace GuangYuan.GY001.BLL
             if (parent == data.Template || cm.GetNext(parent) == data.Template)  //若是第一关
             {
                 //扣除体力
+                var tili = data.GameChar.GetTili();
+                var fcp = tili.Name2FastChangingProperty.GetValueOrDefault("Count");
                 var pp = (decimal)parent.Properties.GetValueOrDefault("pp", 0m);
-                if (gc.GradientProperties.TryGetValue("pp", out FastChangingProperty gp))
+                if (fcp.GetCurrentValueWithUtc() < pp)
                 {
-                    if (gp.GetCurrentValueWithUtc() < pp)
-                    {
-                        data.HasError = true;
-                        data.DebugMessage = $"体力只有{gp.LastValue},但是需要{pp}";
-                        return false;
-                    }
-                    gp.LastValue -= pp;
+                    data.HasError = true;
+                    data.DebugMessage = $"体力只有{fcp.LastValue},但是需要{pp}";
+                    return false;
                 }
+                fcp.LastValue -= pp;
             }
             return true;
         }
@@ -597,5 +616,65 @@ namespace GuangYuan.GY001.BLL
         /// <returns>如果不能得到正确的模板对象则返回-1。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int GetCatalogNumber(this GameItem gameItem) => gameItem.ItemTemplate?.CatalogNumber ?? -1;
+    }
+
+    /// <summary>
+    /// 项目特定扩展函数。
+    /// </summary>
+    public static class ProjectExtensions
+    {
+        /// <summary>
+        /// 获取货币袋。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetCurrencyBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => ProjectConstant.CurrencyBagTId == c.TemplateId);
+
+        /// <summary>
+        /// 获取金币对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetJinbi(this GameChar gameChar) =>
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.JinbiId);
+
+        /// <summary>
+        /// 获取木材对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetMucai(this GameChar gameChar) =>
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaiId);
+
+        /// <summary>
+        /// 获取钻石对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetZuanshi(this GameChar gameChar) =>
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);
+
+        /// <summary>
+        /// 获取体力对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetTili(this GameChar gameChar) =>
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.TiliId);
+
+        /// <summary>
+        /// 获取Pve次数对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetPveT(this GameChar gameChar) =>
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.PveTCounterTId);
     }
 }
