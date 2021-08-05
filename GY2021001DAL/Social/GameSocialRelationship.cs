@@ -4,6 +4,7 @@ using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 
@@ -67,6 +68,12 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public sbyte Friendliness { get; set; } = 0;
 
+        /// <summary>
+        /// 是否是确定的好友。
+        /// </summary>
+        [NotMapped]
+        public bool IsFriend =>
+             Friendliness > 5 && Properties.GetDecimalOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero) != decimal.Zero;
     }
 
     /// <summary>

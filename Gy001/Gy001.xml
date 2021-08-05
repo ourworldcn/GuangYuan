@@ -1435,6 +1435,57 @@
             构造函数。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.ModifySrReturnDto">
+            <summary>
+            RemoveFriend 接口返回值封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ModifySrParamsDto">
+            <summary>
+            RemoveFriend 接口参数封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.InteractActiveIds">
+            <summary>
+            互动Id封装常量类。
+            Id会逐渐增加。
+            </summary>
+        </member>
+        <member name="F:GY2021001WebApi.Models.InteractActiveIds.PatForTili">
+            <summary>
+            与家园主基地互动获得体力的Id。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.InteractReturnDto">
+            <summary>
+            Interact 接口返回值封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.InteractReturnDto.Changes">
+            <summary>
+            变化的对象集合。这个集合仅包括属于自己的对象。社交行为可能影响对方的属性，不在此属性内返回。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.InteractParamsDto">
+            <summary>
+            Interact 接口参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.InteractParamsDto.ActiveId">
+            <summary>
+            互动的Id。参见 InteractActiveIds 类的说明。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.InteractParamsDto.ObjectId">
+            <summary>
+            互动的对方角色Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.InteractParamsDto.Properties">
+            <summary>
+            附属参数。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -1503,6 +1554,30 @@
             确认或拒绝好友申请。
             </summary>
             <returns></returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.RemoveFriend(GY2021001WebApi.Models.ModifySrParamsDto)">
+            <summary>
+            移除好友。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.SetBlack(GY2021001WebApi.Models.ModifySrParamsDto)">
+            <summary>
+            拉黑其他角色。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.Interact(GY2021001WebApi.Models.InteractParamsDto)">
+            <summary>
+            进行社交互动的通用接口。
+            </summary>
+            <param name="model">参见 InteractParamsDto 说明。</param>
+            <returns>参见 InteractReturnDto 说明。</returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">

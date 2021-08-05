@@ -42,5 +42,19 @@
       <FileName>GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="OW.Game.FastChangingProperty">
+    <Position X="0.75" Y="6.5" Width="4.25" />
+    <TypeIdentifier>
+      <HashCode>JABAAQAUAEAgEAIAIBAAAAQAAAAIAAEAAAAgAAAAAAA=</HashCode>
+      <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.CompletedEventArgs" Collapsed="true">
+    <Position X="2.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />
 </ClassDiagram>

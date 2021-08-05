@@ -1000,7 +1000,7 @@ namespace GuangYuan.GY001.BLL
             //5，5，10，10，30,0
             //ltlv 记载最后一次升级的时间
             var gc = datas.GameChar;    //角色对象
-            var td = datas.Lookup(gc.GameItems, ProjectConstant.PveTCounterTId);
+            var td = datas.Lookup(gc.GetCurrencyBag().Children, ProjectConstant.PveTCounterTId);
             if (td is null) //若无塔防对象
                 return;
             if (!datas.Verify(td.Name2FastChangingProperty.TryGetValue("Count", out _), "找不到自动恢复属性。"))
@@ -1563,6 +1563,10 @@ namespace GuangYuan.GY001.BLL
             datas.ChangesItem.AddToChanges(datas.GameChar.Id, zuanshi);
             datas.ChangesItem.AddToChanges(tili);
         }
+
+        #region 社交相关
+
+        #endregion 社交相关
     }
 
     public static class ApplyBlueprintDatasExtensions

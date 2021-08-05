@@ -1701,6 +1701,7 @@ namespace GY2021001WebApi.Models
     /// <summary>
     /// ConfirmRequestFriend 接口参数封装类。
     /// </summary>
+    [DataContract]
     public class ConfirmRequestFriendParamsDto : TokenDtoBase
     {
         /// <summary>
@@ -1714,18 +1715,21 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 申请成为自己好友的角色的Id。
         /// </summary>
+        [DataMember]
         public string FriendId { get; set; }
 
         /// <summary>
         /// 是否拒绝好友申请。
         /// true拒绝申请，false确认申请。
         /// </summary>
+        [DataMember]
         public bool IsRejected { get; set; }
     }
 
     /// <summary>
     ///  ConfirmRequestFriend 接口返回值封装类。
     /// </summary>
+    [DataContract]
     public class ConfirmRequestFriendReturnDto : ReturnDtoBase
     {
         /// <summary>
@@ -1735,6 +1739,74 @@ namespace GY2021001WebApi.Models
         {
 
         }
+    }
+
+    /// <summary>
+    /// RemoveFriend 接口返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class ModifySrReturnDto : ReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// RemoveFriend 接口参数封装类。
+    /// </summary>
+    [DataContract]
+    public class ModifySrParamsDto : TokenDtoBase
+    {
+        [DataMember]
+        public string FriendId { get; set; }
+    }
+
+    /// <summary>
+    /// 互动Id封装常量类。
+    /// Id会逐渐增加。
+    /// </summary>
+    public static class InteractActiveIds
+    {
+        /// <summary>
+        /// 与家园主基地互动获得体力的Id。
+        /// </summary>
+        static public Guid PatForTili = new Guid("{910FC71A-3E1F-405B-8224-8182C4EC882E}");
+    }
+
+    /// <summary>
+    /// Interact 接口返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class InteractReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 变化的对象集合。这个集合仅包括属于自己的对象。社交行为可能影响对方的属性，不在此属性内返回。
+        /// </summary>
+        [DataMember]
+        public List<ChangesItemDto> Changes { get; set; } = new List<ChangesItemDto>();
+    }
+
+    /// <summary>
+    /// Interact 接口参数封装类。
+    /// </summary>
+    [DataContract]
+    public class InteractParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 互动的Id。参见 InteractActiveIds 类的说明。
+        /// </summary>
+        [DataMember]
+        public string ActiveId { get; set; }
+
+        /// <summary>
+        /// 互动的对方角色Id。
+        /// </summary>
+        [DataMember]
+        public string ObjectId { get; set; }
+
+        /// <summary>
+        /// 附属参数。
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
     }
 
     #endregion 社交相关

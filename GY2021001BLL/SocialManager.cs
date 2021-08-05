@@ -56,6 +56,8 @@ namespace GuangYuan.GY001.BLL
 
         #endregion 构造函数及相关
 
+        #region 邮件及相关
+
         /// <summary>
         /// 获取指定角色的所有有效邮件。
         /// </summary>
@@ -265,8 +267,9 @@ namespace GuangYuan.GY001.BLL
             }
             return true;
         }
+        #endregion  邮件及相关
 
-        #region 社交关系相关
+        #region 黑白名单相关
 
         /// <summary>
         /// 获取一组Id集合，正在申请好友的角色Id集合。这些用户不能申请好友。因为他们是以下情况之一：
@@ -470,12 +473,7 @@ namespace GuangYuan.GY001.BLL
             GY001UserContext db = null;
             try
             {
-                var slot = gameChar.GameItems.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
-                if (slot.GetNumberOfStackRemainder() <= 0)
-                {
-                    VWorld.SetLastErrorMessage("好友位已满。");
-                    return false;
-                }
+                db = World.CreateNewUserDbContext();
                 var gcId = gameChar.Id;
                 var sr = db.SocialRelationships.Find(gcId, friendId);
                 var nsr = db.SocialRelationships.Find(friendId, gcId);
@@ -498,7 +496,60 @@ namespace GuangYuan.GY001.BLL
                 }
                 else
                 {
+                    var slot = gameChar.GameItems.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
+                    if (slot.GetNumberOfStackRemainder() <= 0)
+                    {
+                        VWorld.SetLastErrorMessage("好友位已满。");
+                        return false;
+                    }
                     sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                    nsr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                    slot.Count++;
+                }
+                db.SaveChanges();
+            }
+            finally
+            {
+                db?.DisposeAsync();
+                World.CharManager.Unlock(gameChar.GameUser, true);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 移除好友。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="friendId"></param>
+        /// <returns>true成功移除了好友关系。</returns>
+        public bool RemoveFriend(GameChar gameChar, Guid friendId)
+        {
+            if (!World.CharManager.Lock(gameChar.GameUser))
+            {
+                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+                return false;
+            }
+            GY001UserContext db = null;
+            try
+            {
+                db = World.CreateNewUserDbContext();
+                var gcId = gameChar.Id;
+                var sr = db.SocialRelationships.Find(gcId, friendId);
+                var nsr = db.SocialRelationships.Find(friendId, gcId);
+                if (null != sr)
+                {
+                    if (sr.Friendliness > 5 && sr.Properties.GetDecimalOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero) != decimal.Zero)    //确定是好友关系
+                    {
+                        var slot = gameChar.GameItems.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
+                        slot.Count--;
+                    }
+                    sr.Friendliness = 0;
+                    sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                }
+
+                if (null != nsr)
+                {
+                    nsr.Friendliness = 0;
                     nsr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
                 }
                 db.SaveChanges();
@@ -510,6 +561,177 @@ namespace GuangYuan.GY001.BLL
             }
             return true;
         }
-        #endregion 社交关系相关
+
+        public bool SetFrindless(GameChar gameChar, Guid objId)
+        {
+            if (!World.CharManager.Lock(gameChar.GameUser))
+            {
+                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+                return false;
+            }
+            GY001UserContext db = null;
+            try
+            {
+                db = World.CreateNewUserDbContext();
+                var gcId = gameChar.Id;
+                var sr = db.SocialRelationships.Find(gcId, objId);
+                var nsr = db.SocialRelationships.Find(objId, gcId);
+                if (null != sr)
+                {
+                    sr.Friendliness = -6;
+                    sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                }
+                if (null != nsr)
+                {
+                    nsr.Friendliness = 0;
+                    nsr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                }
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                VWorld.SetLastErrorMessage("并发冲突，请重试一次。");
+                return false;
+            }
+            finally
+            {
+                db?.DisposeAsync();
+                World.CharManager.Unlock(gameChar.GameUser, true);
+            }
+            return true;
+
+        }
+
+        public enum PatForTiliResult
+        {
+            /// <summary>
+            /// 未知错误。
+            /// </summary>
+            Unknow = -1,
+
+            /// <summary>
+            /// 成功。
+            /// </summary>
+            Success = 0,
+
+            /// <summary>
+            /// 访问次数超限。
+            /// </summary>
+            TimesOver,
+
+            /// <summary>
+            /// 已经访问过该角色。
+            /// </summary>
+            Already,
+        }
+
+        /// <summary>
+        /// 去好友家互动以获得体力。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="objectId"></param>
+        public PatForTiliResult PatForTili(GameChar gameChar, Guid objectId)
+        {
+            if (!World.CharManager.Lock(gameChar.GameUser))
+            {
+                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+                return PatForTiliResult.Unknow; //一般不可能。
+            }
+            GY001UserContext db = null;
+            try
+            {
+                db = World.CreateNewUserDbContext();
+                var objChar = db.GameChars.Find(objectId);
+                if (gameChar.Id == objectId || objChar is null)
+                {
+                    VWorld.SetLastErrorMessage("试图访问自己或指定的角色不存在");
+                    return PatForTiliResult.Unknow;
+                }
+                DateTime dtNow = DateTime.UtcNow;   //当前时间
+                var datas = new PatForTiliWrapper(gameChar, dtNow);
+                var dt = dtNow;
+                if (datas.Fcp.GetCurrentValue(ref dt) <= 0) //若已经用完访问次数
+                    return PatForTiliResult.TimesOver;
+                if (datas.Visitors.Any(c => c.Item1 == objectId))    //若访问过了
+                    return PatForTiliResult.Already;
+                //成功抚摸
+                var sr = db.SocialRelationships.Find(objectId, objectId);
+                if (sr is null)
+                {
+                    sr = new GameSocialRelationship()
+                    {
+                        Id = objectId,
+                        ObjectId = objectId,
+                    };
+                    db.SocialRelationships.Add(sr);
+                }
+                var count = sr.Properties.GetDecimalOrDefault("FriendCurrency", decimal.Zero);
+                count += 5;
+                sr.Properties["FriendCurrency"] = count;
+                db.SaveChanges();   //TO DO
+                //成功抚摸
+                datas.Fcp.LastValue--;
+                datas.Visitors.Add((objectId, dtNow));
+                //db.SocialRelationships.dea.Local.Clear();
+                World.CharManager.NotifyChange(gameChar.GameUser);  //通知状态发生了更改
+            }
+            finally
+            {
+                db?.DisposeAsync();
+                World.CharManager.Unlock(gameChar.GameUser, true);
+            }
+            return PatForTiliResult.Success;
+        }
+
+        public class PatForTiliWrapper
+        {
+            private const string key = "patcountVisitors";
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="gameChar"></param>
+            /// <param name="now">按该时间点计算。</param>
+            public PatForTiliWrapper(GameChar gameChar, DateTime now)
+            {
+                _GameChar = gameChar;
+                _Now = now;
+            }
+
+            private readonly GameChar _GameChar;
+            private readonly DateTime _Now;
+
+            public GameItem Tili { get => _GameChar.GetTili(); }
+            public FastChangingProperty Fcp { get => Tili.Name2FastChangingProperty["patcount"]; }
+
+
+            public List<(Guid, DateTime)> Visitors
+            {
+                get
+                {
+                    var result = Tili.ExtendPropertyDictionary.GetOrAdd(key, c => new ExtendPropertyDescriptor()
+                    {
+                        Data = DateTime.UtcNow,
+                        Name = c,
+                        IsPersistence = true,
+                        Type = typeof(List<(Guid, DateTime)>),
+                    }).Data as List<(Guid, DateTime)>;
+                    result.RemoveAll(c => c.Item2.Date != _Now.Date);   //去掉不是今天访问的角色Id
+                    return result;
+                }
+            }
+
+            private void _Visitors_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+            {
+
+            }
+
+            public void Save()
+            {
+
+            }
+        }
+
+        #endregion 黑白名单相关
     }
 }

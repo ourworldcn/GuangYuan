@@ -125,6 +125,10 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public static readonly Guid PveTCounterTId = new Guid("{D56E11C8-48AA-4787-822B-CE4EBBFA684D}");
 
+        /// <summary>
+        /// 友情商店货币。
+        /// </summary>
+        public static readonly Guid FriendCurrencyTId = new Guid("{8DBBFD26-6B4B-4C00-B0B8-BD7A79B21CBA}");
         #endregion  货币类模板Id
 
         /// <summary>
@@ -676,5 +680,16 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetPveT(this GameChar gameChar) =>
             gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.PveTCounterTId);
+
+        /// <summary>
+        /// 获取友情商店货币。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetFriendCurrency(this GameChar gameChar) =>
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.FriendCurrencyTId);
+
+
     }
 }

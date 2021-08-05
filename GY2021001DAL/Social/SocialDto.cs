@@ -10,17 +10,19 @@ namespace Game.Social
     [DataContract]
     public partial class GameSocialBaseDto
     {
+
         /// <summary>
         /// Id。这个属性指代主体的Id。角色A的Id放在这里，表示这个实体是角色A的。
         /// </summary>
         [DataMember]
         public string Id { get; set; }
 
+        private Dictionary<string, object> _Properties;
         /// <summary>
         /// 属性字典。
         /// </summary>
         [DataMember]
-        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, object> Properties { get => _Properties ?? (_Properties = new Dictionary<string, object>()); set => _Properties = value; }
     }
 
     /// <summary>
@@ -196,12 +198,12 @@ namespace Game.Social
         /// <summary>
         /// 一般性未知错误。
         /// </summary>
-        UnknowError=-1,
+        UnknowError = -1,
 
         /// <summary>
         /// 成功添加。
         /// </summary>
-        Success=0,
+        Success = 0,
 
         /// <summary>
         /// 已经是好友。

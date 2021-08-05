@@ -242,6 +242,105 @@ namespace Gy001.Controllers
                 _World.CharManager.Unlock(gu, true);
             }
         }
+
+        /// <summary>
+        /// 移除好友。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpDelete]
+        public ActionResult<ModifySrReturnDto> RemoveFriend(ModifySrParamsDto model)
+        {
+            var result = new ModifySrReturnDto();
+            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("令牌无效");
+            }
+            try
+            {
+                if (!_World.SocialManager.RemoveFriend(gu.CurrentChar, GameHelper.FromBase64String(model.FriendId)))
+                    result.DebugMessage = VWorld.GetLastErrorMessage();
+            }
+            catch (Exception err)
+            {
+                result.DebugMessage = err.Message;
+                result.HasError = true;
+            }
+            finally
+            {
+                _World.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 拉黑其他角色。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPost]
+        public ActionResult<ModifySrReturnDto> SetBlack(ModifySrParamsDto model)
+        {
+            var result = new ModifySrReturnDto();
+            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("令牌无效");
+            }
+            try
+            {
+                if (!_World.SocialManager.SetFrindless(gu.CurrentChar, GameHelper.FromBase64String(model.FriendId)))
+                    result.DebugMessage = VWorld.GetLastErrorMessage();
+            }
+            catch (Exception err)
+            {
+                result.DebugMessage = err.Message;
+                result.HasError = true;
+            }
+            finally
+            {
+                _World.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 进行社交互动的通用接口。
+        /// </summary>
+        /// <param name="model">参见 InteractParamsDto 说明。</param>
+        /// <returns>参见 InteractReturnDto 说明。</returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPost]
+        public ActionResult<InteractReturnDto> Interact(InteractParamsDto model)
+        {
+            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("令牌无效");
+            }
+            InteractReturnDto result = null;
+            try
+            {
+                var actioveId = GameHelper.FromBase64String(model.ActiveId);
+                if (actioveId == InteractActiveIds.PatForTili)
+                {
+                    _World.SocialManager.PatForTili(gu.CurrentChar, GameHelper.FromBase64String(model.ObjectId));
+                }
+                else
+                {
+                    result = new InteractReturnDto()
+                    {
+                        HasError = true,
+                        DebugMessage = $"未知的行为Id={actioveId}",
+                    };
+                }
+            }
+            finally
+            {
+                _World.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
     }
 
 }
