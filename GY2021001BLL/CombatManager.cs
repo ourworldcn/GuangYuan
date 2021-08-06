@@ -54,6 +54,11 @@ namespace GuangYuan.GY001.BLL
         public List<GameItem> GameItems { get; } = new List<GameItem>();
 
         /// <summary>
+        /// 获取或设置一个指示，当这个属性为true时，仅记录收益，并核准。不会试图结束当前关卡。此时忽略其他请求退出的属性。
+        /// </summary>
+        public bool OnlyMark { get; set; }
+
+        /// <summary>
         /// 角色是否退出，true强制在结算后退出当前大关口，false试图继续(如果已经是最后一关则不起作用——必然退出)。
         /// </summary>
         public bool EndRequested { get; set; }
@@ -194,7 +199,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         var gitm = World.ItemTemplateManager;
                         var coll = from tmp in gitm.Id2Template.Values
-                                   where tmp.GenusCode == 7
+                                   where tmp.GenusCode == 7 || tmp.GenusCode == 14
                                    select tmp;
                         _Dungeons = coll.ToList();
                     }
@@ -393,6 +398,11 @@ namespace GuangYuan.GY001.BLL
                 Trace.WriteLineIf(lst.Count > 0, "大事不好东西没放进去。");   //目前是不可能地
 
                 //判断大关卡是否要结束
+                if (data.OnlyMark)   //若仅记录和校验收益
+                {
+                    World.CharManager.NotifyChange(data.GameChar.GameUser);
+                    return;
+                }
                 //下一关数据
                 data.NextTemplate = GetNext(data.Template);
                 if (null == data.NextTemplate || data.EndRequested) //若大关卡已经结束
@@ -460,7 +470,7 @@ namespace GuangYuan.GY001.BLL
         {
             errorString = string.Empty;
             //typ关卡类别=1普通管卡 mis大关数 sec=小关，gold=数金币掉落上限，aml=获得资质野怪的数量，mne=资质和上限，mt=神纹数量上限，wood=木头掉落上限，
-            //tl = 通关最短时限，idt = 道具掉落上限
+            //tl = 通关最短时限，idt = 道具掉落上限,tdt=pve减少pveT的次数，minCE=最低战力要求，
             if (dungeon.TryGetPropertyValue("gold", out var goldObj) && OwHelper.TryGetDecimal(goldObj, out var gold)) //若需要限定金币
             {
                 var tmp = gameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).Sum(c => c.Count.Value);

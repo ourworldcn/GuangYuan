@@ -28,13 +28,6 @@
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GY2021001DAL.GameItem">
-    <Position X="3" Y="9.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAIIAAAAAAAEAAAEQAQAAAAAAAAAAgAAAAAAAAg=</HashCode>
-      <FileName>GameItem.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="GuangYuan.GY001.UserDb.ChangesItem" Collapsed="true">
     <Position X="7.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
@@ -49,16 +42,6 @@
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GY2021001DAL.GameChar">
-    <Position X="6.75" Y="9.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>BAAAEAgAACAAgCAAAIAAAAAAAQAAAAAACAAABJAAAAo=</HashCode>
-      <FileName>GameChar.cs</FileName>
-    </TypeIdentifier>
-    <ShowAsCollectionAssociation>
-      <Property Name="GameItems" />
-    </ShowAsCollectionAssociation>
-  </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameObjectBase" Collapsed="true">
     <Position X="2.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
@@ -66,10 +49,10 @@
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.UserDb.GameThingBase" Collapsed="true">
+  <Class Name="GuangYuan.GY001.UserDb.GameThingBase">
     <Position X="1.5" Y="2" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AABIAACAEGAhABAACAAEAJCAAAEAAAHAAABAIQAEAAA=</HashCode>
+      <HashCode>BABIAACAEGAhABAACAAEAJCAAAEAAAHAAABAIQAEAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -77,33 +60,33 @@
   <Class Name="GuangYuan.GY001.UserDb.ExtendPropertyDescriptor" Collapsed="true">
     <Position X="12.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>CIAAAAAAAAAAAAACABAAAAQAAAAACBAAAQAAAAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.FastChangingPropertyExtensions" Collapsed="true">
     <Position X="7.5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>ABAAAABBAAAAAAAAAQAAAAAAIAAAAAACAAAAAABAgAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameThingBaseExtensions" Collapsed="true">
     <Position X="11" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAIAAAAAAAAAAAAAIAAAAAAAAAAAACAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameActionRecord" Collapsed="true">
     <Position X="9.25" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAACAAAAAAAAAAAAAAAAAAAIAAAAAAAAgAAAAAAAQA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.UserDb.GameItem" Collapsed="true">
-    <Position X="2.75" Y="3.25" Width="1.5" />
+  <Class Name="GuangYuan.GY001.UserDb.GameItem">
+    <Position X="2.75" Y="9" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AIBABAIIAAAAEAAGAAAEQAQAAAAAAAAAIkYAAAAAACg=</HashCode>
       <FileName>GameItem.cs</FileName>
@@ -116,7 +99,7 @@
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.UserDb.GameUser" Collapsed="true">
+  <Class Name="GuangYuan.GY001.UserDb.GameUser">
     <Position X="5" Y="2" Width="1.5" />
     <TypeIdentifier>
       <HashCode>gMBAAAAAgCAgAAgQAAAQABEAAAAAAAAAAQAAAgIAIAI=</HashCode>
@@ -124,10 +107,10 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="GuangYuan.GY001.UserDb.GameChar" Collapsed="true">
-    <Position X="0.5" Y="3.25" Width="1.5" />
+  <Class Name="GuangYuan.GY001.UserDb.GameChar">
+    <Position X="0.5" Y="9" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>BIAAkAgAACAAgCAAAIIAAIAAAQAAAAAACAAABIACAFo=</HashCode>
+      <HashCode>BIAIkAgAACAAgCAAAIIAAAAAAAAAAAAACAAABIACAFg=</HashCode>
       <FileName>GameChar.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />

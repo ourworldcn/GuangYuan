@@ -775,7 +775,6 @@ namespace GuangYuan.GY001.BLL
             if (src.Name2FastChangingProperty.TryGetValue("Count", out FastChangingProperty fcp))    //若有快速变化属性
             {
                 fcp.SetLastValue(fcp.LastValue - count, ref dt);
-                src.Count = fcp.LastValue;
             }
             else
             {
@@ -1028,8 +1027,10 @@ namespace GuangYuan.GY001.BLL
             gim.SetPropertyValue(td, ProjectConstant.LevelPropertyName, lv + 1);    //变更购买价格
             td.SetPropertyValue("ltlv", ltlv.ToString());  //记录购时间
             datas.ChangesItem.AddToChanges(td.ContainerId.Value, td);
+            td.Name2FastChangingProperty["Count"].LastValue++;
             diam.Count -= lud;  //改钻石
-            datas.ChangesItem.AddToChanges(diam.ContainerId.Value, diam);
+            datas.ChangesItem.AddToChanges(diam);
+            datas.ChangesItem.AddToChanges(td);
         }
         #endregion 家园相关
 
@@ -1096,12 +1097,10 @@ namespace GuangYuan.GY001.BLL
                         }
                         if (item.Genus.HasValue)   //若送地块
                         {
-                            IEnumerable<GameItemTemplate> dikuai = World.ItemTemplateManager.GetTemplates(c => c.GenusCode == item.Genus.Value);
-                            foreach (GameItemTemplate subItem in dikuai)
-                            {
-                                GameItem tmp = gim.CreateGameItem(subItem);
-                                gim.AddItem(tmp, parent, null, LastChangesItems);
-                            }
+                            int styleNumber = gameChar.GetCurrentFenggeNumber();   //激活的风格号
+                            var subItem = World.ItemTemplateManager.GetTemplateByNumberAndIndex(styleNumber, item.Genus.Value % 100);
+                            GameItem tmp = gim.CreateGameItem(subItem);
+                            gim.AddItem(tmp, gameChar.GetHomeland(), null, LastChangesItems);
                         }
                     }
                 }
@@ -1648,25 +1647,25 @@ namespace GuangYuan.GY001.BLL
         "3	{b2e4887c-401c-4753-bf15-dcae2a05194f}		{312612a5-30dd-4e0a-a71d-5074397428fb}	回旋炮-1" + "\r\n" +
         "3	{ce188fec-ce1a-4c35-aa8c-c41c65767fcb}		{312612a5-30dd-4e0a-a71d-5074397428fb}	爆炸樱桃-3" + "\r\n" +
         "3	{868a9f60-cf8c-4a81-8a20-8ff92487833c}		{312612a5-30dd-4e0a-a71d-5074397428fb}	弹飞蘑菇-2" + "\r\n" +
-        "3		45	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-1" + "\r\n" +
+        "3		101	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-1" + "\r\n" +
         "4	{6d7e3c66-8be5-44a3-b548-702bf91118b9}		{312612a5-30dd-4e0a-a71d-5074397428fb}	近战炮-2" + "\r\n" +
         "4	{dfe95a1f-e54a-41d0-85cd-5c2d82741e23}		{312612a5-30dd-4e0a-a71d-5074397428fb}	滚石炮-1" + "\r\n" +
         "4	{a1f79ee3-374e-4e21-84a2-f77071444906}		{312612a5-30dd-4e0a-a71d-5074397428fb}	减速荆棘-2" + "\r\n" +
         "5	{24ec8437-f886-4289-9d5d-7e304e7b1974}		{312612a5-30dd-4e0a-a71d-5074397428fb}	回旋炮-2" + "\r\n" +
         "5	{51b4bb51-33fc-4595-a174-52f01b52c72e}		{312612a5-30dd-4e0a-a71d-5074397428fb}	毁灭蘑菇-1" + "\r\n" +
-        "5		46	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-2" + "\r\n" +
+        "5		102	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-2" + "\r\n" +
         "6	{97f6af0d-77ce-4eeb-bad6-78577651e5d1}		{312612a5-30dd-4e0a-a71d-5074397428fb}	直射炮-3" + "\r\n" +
         "6	{c447775c-5079-4524-84df-2130d66a8f64}		{312612a5-30dd-4e0a-a71d-5074397428fb}	导弹炮-1" + "\r\n" +
         "6	{6733f1c6-b5e6-4f57-8011-790e83ea8a96}		{312612a5-30dd-4e0a-a71d-5074397428fb}	弹飞蘑菇-3" + "\r\n" +
         "7	{8b493d6d-3fb4-42e2-92a8-91ba9bf177e4}		{312612a5-30dd-4e0a-a71d-5074397428fb}	近战炮-3" + "\r\n" +
         "7	{e377981a-2501-44cf-a350-6d82255a4f02}		{312612a5-30dd-4e0a-a71d-5074397428fb}	黏着栗子-1" + "\r\n" +
-        "7		47	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-3" + "\r\n" +
+        "7		103	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-3" + "\r\n" +
         "8	{67cbef93-c4f0-4df2-9647-915cb85fce7b}		{312612a5-30dd-4e0a-a71d-5074397428fb}	迫击炮-3" + "\r\n" +
         "8	{fad2355c-6514-42bb-8ca8-101c7c1be06a}		{312612a5-30dd-4e0a-a71d-5074397428fb}	减速荆棘-3" + "\r\n" +
         "8	{bba37f02-c4b1-4bb7-aa2e-d3f35a722cf8}		{312612a5-30dd-4e0a-a71d-5074397428fb}	黏着栗子-2" + "\r\n" +
         "9	{2a9a1e7c-6676-4e97-8726-3062b57a2a6a}		{312612a5-30dd-4e0a-a71d-5074397428fb}	滚石炮-2" + "\r\n" +
         "9	{f9144284-5e50-4643-bb2a-f8ae6e4f3290}		{312612a5-30dd-4e0a-a71d-5074397428fb}	回旋炮-3" + "\r\n" +
-        "9		48	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-4" + "\r\n" +
+        "9		104	{234f8c55-4c3c-4406-ad38-081d29564f20}	地块-4" + "\r\n" +
         "10	{05be07f7-a97a-4cab-85c1-4759daeb17bf}		{312612a5-30dd-4e0a-a71d-5074397428fb}	导弹炮-2" + "\r\n" +
         "10	{d4bd6008-af90-4a38-9c17-7ee961fb4787}		{312612a5-30dd-4e0a-a71d-5074397428fb}	毁灭蘑菇-2";
         #endregion

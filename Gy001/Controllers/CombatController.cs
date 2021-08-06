@@ -63,6 +63,7 @@ namespace GY2021001WebApi.Controllers
                 GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.CurrentChar,
                 Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
                 EndRequested = model.EndRequested,
+                OnlyMark = model.OnlyMark,
             };
             if (null != model.GameItems)
                 result.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
@@ -75,7 +76,7 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<CombatEndReturnDto> Test()
         {
-           
+
             var world = HttpContext.RequestServices.GetService<VWorld>();
             var gitm = world.ItemTemplateManager;
             var gim = world.ItemManager;
@@ -112,7 +113,7 @@ namespace GY2021001WebApi.Controllers
             var bodys = gitm.Id2Template.Values.Where(c => c.GenusCode == 4).ToArray();
             for (int i = rnd.Next(1, 2) - 1; i >= 0; i--)
             {
-                var item = gim.CreateMounts( heads[rnd.Next(heads.Length)], bodys[rnd.Next(bodys.Length)]);
+                var item = gim.CreateMounts(heads[rnd.Next(heads.Length)], bodys[rnd.Next(bodys.Length)]);
                 item.Count = 1;
                 item.Properties["neatk"] = VWorld.WorldRandom.Next(20);
                 item.Properties["neqlt"] = VWorld.WorldRandom.Next(20);

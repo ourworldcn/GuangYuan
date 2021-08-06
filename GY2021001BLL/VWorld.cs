@@ -1,5 +1,5 @@
-﻿using GuangYuan.GY001.UserDb;
-using GuangYuan.GY001.TemplateDb;
+﻿using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,13 +8,15 @@ using Microsoft.Extensions.ObjectPool;
 using OW.Game.Expression;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
 {
+    /// <summary>
+    /// 虚拟世界主控服务的配置类。
+    /// </summary>
     public class VWorldOptions
     {
         public DbContextOptions<GY001UserContext> UserDbOptions { get; set; }
@@ -38,7 +40,9 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
-    /// 游戏世界的服务。
+    /// 游戏世界的服务。目前一个虚拟世界，对应唯一一个本类对象，且一个应用程序域最多支持一个虚拟世界。
+    /// 本质上游戏相关类群使用AOC机制，但不依赖DI，所以，在其所处的应用程序域内，本类的唯一对象（单例）部分的代替了容器。
+    /// 这种设计确实不能去耦，但是使用起来很方便。
     /// </summary>
     public class VWorld : GameManagerBase<VWorldOptions>
     {
@@ -102,7 +106,8 @@ namespace GuangYuan.GY001.BLL
                 if (null == _ObjectPoolListGameItem)
                 {
                     lock (ThisLocker)
-                        _ObjectPoolListGameItem ??= Services.GetService<ObjectPool<List<GameItem>>>() ?? new DefaultObjectPool<List<GameItem>>(new ListGameItemPolicy(), Environment.ProcessorCount * 8);
+                        _ObjectPoolListGameItem ??= (Services.GetService<ObjectPool<List<GameItem>>>() ??
+                            new DefaultObjectPool<List<GameItem>>(new ListGameItemPolicy(), Environment.ProcessorCount * 8));
                 }
                 return _ObjectPoolListGameItem;
             }
@@ -140,10 +145,8 @@ namespace GuangYuan.GY001.BLL
             logger.LogInformation("初始化完毕，开始服务。");
         }
 
-        public TimeSpan GetServiceTime()
-        {
-            return DateTime.UtcNow - StartDateTimeUtc;
-        }
+        public TimeSpan GetServiceTime() =>
+            DateTime.UtcNow - StartDateTimeUtc;
 
         /// <summary>
         /// 通知游戏世界开始下线。
@@ -158,30 +161,30 @@ namespace GuangYuan.GY001.BLL
         /// 调用者需要自行负责清理对象。
         /// </summary>
         /// <returns></returns>
-        public GY001UserContext CreateNewUserDbContext()
-        {
-            //DbContextOptionsBuilder.EnableSensitiveDataLogging
-            return new GY001UserContext(Options.UserDbOptions);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GY001UserContext CreateNewUserDbContext() =>
+            new GY001UserContext(Options.UserDbOptions);
 
         /// <summary>
         /// 创建模板数据库上下文对象。
         /// 调用者需要自行负责清理对象。
         /// </summary>
         /// <returns></returns>
-        public GY001TemplateContext CreateNewTemplateDbContext()
-        {
-            return new GY001TemplateContext(Options.TemplateDbOptions);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public GY001TemplateContext CreateNewTemplateDbContext() =>
+            new GY001TemplateContext(Options.TemplateDbOptions);
 
-        public VWorldInfomation GetInfomation()
-        {
-            return new VWorldInfomation()
+        /// <summary>
+        /// 获取服务器的信息。
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public VWorldInfomation GetInfomation() =>
+            new VWorldInfomation()
             {
                 StartDateTime = StartDateTimeUtc,
                 CurrentDateTime = DateTime.UtcNow,
             };
-        }
 
         /// <summary>
         /// 测试指定概率数值是否命中。
@@ -190,16 +193,14 @@ namespace GuangYuan.GY001.BLL
         /// <param name="random"></param>
         /// <returns>true命中，false未命中。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsHit(double val, Random random = null)
-        {
-            return (random ?? WorldRandom).NextDouble() < val;
-        }
+        public bool IsHit(double val, Random random = null) =>
+            (random ?? WorldRandom).NextDouble() < val;
 
         /// <summary>
-        /// 存储线程最后的错误信息。
+        /// 存储当前线程最后的错误信息。
         /// </summary>
         [ThreadStatic]
-        static internal protected string _LastErrorMessage;
+        private static string _LastErrorMessage;
 
         /// <summary>
         /// 获取最后的错误信息。
@@ -214,6 +215,49 @@ namespace GuangYuan.GY001.BLL
         /// <param name="msg"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void SetLastErrorMessage(string msg) => _LastErrorMessage = msg;
+
+        /// <summary>
+        /// 按既定顺序锁定一组对象。
+        /// </summary>
+        /// <param name="objectes"></param>
+        /// <returns></returns>
+        static public bool Lock<T>(IList<T> objectes, TimeSpan timeout, out int index) where T : class
+        {
+            index = -1;
+            try
+            {
+                DateTime now = DateTime.UtcNow; //起始时间
+                DateTime end = now + timeout;   //结束时间
+                for (int i = 0; i < objectes.Count; i++)
+                {
+                    T obj = objectes[i];
+                    var ts = end - DateTime.UtcNow;
+                    if (!Monitor.TryEnter(obj))
+                    {
+                        index = i;
+                        return false;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+
+            }
+            return true;
+        }
+
+        static public void Unlock<T>(IList<T> objectes, bool pulse = false) where T : class
+        {
+            for (int i = 0; i < objectes.Count; i++)
+            {
+                if (pulse)
+                    Monitor.Pulse(objectes[i]);
+                Monitor.Exit(objectes[i]);
+            }
+        }
     }
 
     /// <summary>

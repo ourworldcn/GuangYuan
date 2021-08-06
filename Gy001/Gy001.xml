@@ -1062,6 +1062,11 @@
             关卡Id。如果是小关Id表示该小关，如果是大关Id则表示整个大关通关。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.OnlyMark">
+            <summary>
+            获取或设置一个指示，当这个属性为true时，仅记录收益，并核准。不会试图结束当前关卡。此时忽略其他请求退出的属性。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.EndRequested">
             <summary>
             角色是否退出，true强制在结算后退出当前大关口，false试图继续(如果已经是最后一关则不起作用——必然退出)。
@@ -1490,6 +1495,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

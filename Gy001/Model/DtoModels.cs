@@ -896,6 +896,12 @@ namespace GY2021001WebApi.Models
         public string DungeonId { get; set; }
 
         /// <summary>
+        /// 获取或设置一个指示，当这个属性为true时，仅记录收益，并核准。不会试图结束当前关卡。此时忽略其他请求退出的属性。
+        /// </summary>
+        [DataMember]
+        public bool OnlyMark { get; set; }
+
+        /// <summary>
         /// 角色是否退出，true强制在结算后退出当前大关口，false试图继续(如果已经是最后一关则不起作用——必然退出)。
         /// </summary>
         [DataMember]
@@ -906,6 +912,8 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
+
+
     }
 
     /// <summary>

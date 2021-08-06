@@ -541,4 +541,5 @@ namespace OW.Game
             dic.TryGetValue(name, out var obj) && OwHelper.TryGetDecimal(obj, out var result) ? result : defaultVal;
 
     }
+
 }

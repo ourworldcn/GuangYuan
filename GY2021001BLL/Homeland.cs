@@ -457,6 +457,21 @@ namespace GuangYuan.GY001.BLL.Homeland
             return result;
         }
 
+        /// <summary>
+        /// 获取当前激活的风格号，若没有激活风格则返回-1。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static int GetActiveStyleNumber(this GameChar gameChar)
+        {
+            foreach (var fengge in gameChar.GetFengges())
+            {
+                if (fengge.Fangans.Any(fangan => fangan.IsActived))
+                    return fengge.Number;
+            }
+            return -1;
+        }
+
         #endregion 方案的缓存与存储
 
     }

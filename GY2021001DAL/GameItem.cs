@@ -37,18 +37,11 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public decimal? Count
         {
-            get => _Count;
+            get => Name2FastChangingProperty.TryGetValue("Count", out var fcp) ? fcp.LastValue : _Count;
             set
             {
-                //if (Name2FastChangingProperty.TryGetValue(nameof(Count), out var obj))
-                //{
-                //    var currentVal = obj.LastValue;
-                //    obj.LastValue = value.Value;
-                //    obj.LastDateTime = DateTime.UtcNow;
-                //    if (currentVal < obj.MaxValue && obj.LastValue >= obj.MaxValue)  //若需要引发事件
-                //        ;// TO DO
-                //}
-                //else
+                if (Name2FastChangingProperty.TryGetValue("Count", out var fcp) && value.HasValue)
+                    fcp.LastValue = value.Value;
                 _Count = value;
             }
         }

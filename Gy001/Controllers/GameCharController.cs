@@ -508,8 +508,8 @@ namespace GY2021001WebApi.Controllers
                 var gitm = world.ItemTemplateManager;
                 var gc = gu.CurrentChar;
                 var fengges = gc.GetFengges();
-                if (fengges.Count == 0) //若未初始化
-                    gc.MergeFangans(fengges, gitm);
+                //if (fengges.Count == 0) //若未初始化
+                gc.MergeFangans(fengges, gitm);
                 result.Plans.AddRange(fengges.Select(c => (HomelandFenggeDto)c));
                 ary = gc.GetHomeland().AllChildren.Where(c => filterTIds.Contains(c.TemplateId)).Select(c => c.Id.ToBase64String()).ToArray(); //排除的容器Id集合
             }

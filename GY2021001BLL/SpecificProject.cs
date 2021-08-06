@@ -422,6 +422,10 @@ namespace GuangYuan.GY001.BLL
             var gc = data.GameChar;
             var cm = world.CombatManager;
             var parent = cm.GetParent(data.Template);   //取大关
+            if (parent.TryGetPropertyValue("minCE", out var minCEObj) && OwHelper.TryGetDecimal(minCEObj, out var minCE))  //若需要校验战力
+            {
+                //TO DO
+            }
             if (parent == data.Template || cm.GetNext(parent) == data.Template)  //若是第一关
             {
                 //扣除体力
@@ -435,6 +439,21 @@ namespace GuangYuan.GY001.BLL
                     return false;
                 }
                 fcp.LastValue -= pp;
+                //扣除次数
+                var tdt = parent.Properties.GetDecimalOrDefault("tdt", 0m);
+                if (tdt > 0)
+                {
+                    var pveT = data.GameChar.GetPveT();
+                    fcp = pveT.Name2FastChangingProperty.GetValueOrDefault("Count");
+                    var count = fcp?.GetCurrentValueWithUtc() ?? pveT.Count.Value;
+                    if (count < tdt)
+                    {
+                        data.HasError = true;
+                        data.DebugMessage = $"允许的进攻次数只有{count},但是需要{tdt}。";
+                        return false;
+                    }
+                    fcp.LastValue-= tdt;
+                }
             }
             return true;
         }

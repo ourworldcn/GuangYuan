@@ -58,10 +58,7 @@ namespace GY2021001WebApi.Models
                 item.Value.GetCurrentValueWithUtc();
                 FastChangingPropertyExtensions.ToDictionary(item.Value, obj.Properties, item.Key);
             }
-            foreach (var item in obj.Properties)
-            {
-                result.Properties[item.Key] = item.Value;
-            }
+            result._Properties = new System.Collections.Generic.Dictionary<string, object>(obj.Properties);
             //特殊处理处理木材堆叠数
             if (ProjectConstant.MucaiId == obj.TemplateId)
                 result.Properties[ProjectConstant.StackUpperLimit] = obj.GetDecimalOrDefault(ProjectConstant.StackUpperLimit);

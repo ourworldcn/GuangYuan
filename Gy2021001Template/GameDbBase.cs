@@ -83,4 +83,9 @@ namespace OW.Game
         /// <param name="db">该实体类将被保存到的数据库上下文。</param>
         void PrepareSaving(DbContext db);
     }
+
+    public class SimpleExtendPropertyBaseExtensions
+    {
+
+    }
 }
