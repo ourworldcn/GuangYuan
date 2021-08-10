@@ -174,7 +174,7 @@ namespace GuangYuan.GY001.UserDb
         {
             foreach (var item in Name2FastChangingProperty) //刷新渐变属性
             {
-                var tmp = item.Value.GetCurrentValueWithUtc();
+                _ = item.Value.GetCurrentValueWithUtc();
                 FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
             }
         }
@@ -287,7 +287,6 @@ namespace GuangYuan.GY001.UserDb
                         if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
                             ExtendPropertyDictionary[tmp.Name] = tmp;
                     }
-                    ExtendPropertyDictionary["LastLoginTime"] = new ExtendPropertyDescriptor(DateTime.UtcNow, "LastLoginTime", true);
                 }
                 return _ExtendPropertyDictionary;
             }
@@ -529,16 +528,16 @@ namespace GuangYuan.GY001.UserDb
                         on src.Name equals dest.Name into g
                         from tmp in g.DefaultIfEmpty()
                         select (src, dest: tmp)).ToArray();
-            foreach (var item in coll)  //更新已有对象
+            foreach (var (src, dest) in coll)  //更新已有对象
             {
-                if (item.dest is null)
+                if (dest is null)
                 {
                     var tmp = new GameExtendProperty();
-                    item.src.FillTo(tmp);
+                    src.FillTo(tmp);
                     dests.Add(tmp);
                 }
                 else
-                    item.src.FillTo(item.dest);
+                    src.FillTo(dest);
             }
         }
 
@@ -551,10 +550,12 @@ namespace GuangYuan.GY001.UserDb
         }
 
         /// <summary>
-        /// 名称，对应<see cref="GameExtendProperty.Name"/>
+        /// 构造函数。
         /// </summary>
-        public string Name { get; set; }
-
+        /// <param name="data"></param>
+        /// <param name="name"></param>
+        /// <param name="isPersistence"></param>
+        /// <param name="type"></param>
         public ExtendPropertyDescriptor(object data, string name, bool isPersistence = false, Type type = null)
         {
             Data = data;
@@ -562,6 +563,11 @@ namespace GuangYuan.GY001.UserDb
             IsPersistence = isPersistence;
             Type = type ?? data.GetType();
         }
+
+        /// <summary>
+        /// 名称，对应<see cref="GameExtendProperty.Name"/>
+        /// </summary>
+        public string Name { get; set; }
 
         /// <summary>
         /// <see cref="Data"/>的实际类型，<see cref="Type.FullName"/>会存储在<see cref="GameExtendProperty.StringValue"/>中。前提是该数据需要持久化。

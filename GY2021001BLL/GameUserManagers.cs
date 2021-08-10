@@ -339,7 +339,7 @@ namespace GuangYuan.GY001.BLL
         public bool Lock(Guid token, out GameUser gameUser)
         {
             gameUser = GetUserFromToken(token);
-            return null == gameUser ? false : Lock(gameUser, TimeSpan.FromSeconds(Options.DefaultLockTimeout));
+            return null != gameUser && Lock(gameUser, TimeSpan.FromSeconds(Options.DefaultLockTimeout));
         }
 
         /// <summary>
@@ -488,12 +488,10 @@ namespace GuangYuan.GY001.BLL
             lock (ThisLocker)
                 if (!_QuicklyRegisterSuffixSeqInit)
                 {
-                    using (var db = World.CreateNewUserDbContext())
-                    {
-                        var maxSeqStr = db.GameUsers.OrderByDescending(c => c.CreateUtc).FirstOrDefault()?.LoginName ?? "000000";
-                        _QuicklyRegisterSuffixSeq = int.Parse(maxSeqStr.Substring(maxSeqStr.Length - 6, 6));
-                        _QuicklyRegisterSuffixSeqInit = true;
-                    }
+                    using var db = World.CreateNewUserDbContext();
+                    var maxSeqStr = db.GameUsers.OrderByDescending(c => c.CreateUtc).FirstOrDefault()?.LoginName ?? "000000";
+                    _QuicklyRegisterSuffixSeq = int.Parse(maxSeqStr.Substring(maxSeqStr.Length - 6, 6));
+                    _QuicklyRegisterSuffixSeqInit = true;
                 }
             return Interlocked.Increment(ref _QuicklyRegisterSuffixSeq);
         }
@@ -569,7 +567,7 @@ namespace GuangYuan.GY001.BLL
         public bool Nope(Guid token)
         {
             var gu = GetUserFromToken(token);
-            return gu == null ? false : Nope(gu);
+            return gu != null && Nope(gu);
         }
 
         /// <summary>
@@ -621,8 +619,10 @@ namespace GuangYuan.GY001.BLL
                         ActionId = "Logout",
                         ParentId = gu.CurrentChar.Id,
                     };
-                    List<GameActionRecord> actionRecords = new List<GameActionRecord>();
-                    actionRecords.Add(actionRecord);
+                    List<GameActionRecord> actionRecords = new List<GameActionRecord>()
+                    {
+                        actionRecord
+                    };
                     try
                     {
                         gu.InvokeLogouting(reason);
@@ -700,8 +700,7 @@ namespace GuangYuan.GY001.BLL
             //初始化属性
             foreach (var item in template.Properties)
             {
-                var seq = item.Value as decimal[];
-                if (null != seq)   //若是属性序列
+                if (item.Value is decimal[] seq)   //若是属性序列
                 {
                     result.Properties[item.Key] = seq[(int)lv];
                 }

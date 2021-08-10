@@ -19,22 +19,21 @@ namespace GuangYuan.GY001.BLL
             var assemblyName = "_" + Guid.NewGuid().ToString("D");
             var syntaxTrees = new SyntaxTree[] { CSharpSyntaxTree.ParseText(text) };
             var compilation = CSharpCompilation.Create(assemblyName, syntaxTrees, references, options);
-            using (var stream = new MemoryStream())
+            using var stream = new MemoryStream();
+            var compilationResult = compilation.Emit(stream);
+            if (compilationResult.Success)
             {
-                var compilationResult = compilation.Emit(stream);
-                if (compilationResult.Success)
-                {
-                    stream.Seek(0, SeekOrigin.Begin);
-                    return Assembly.Load(stream.ToArray());
-                }
-                throw new InvalidOperationException("Compilation error");
+                stream.Seek(0, SeekOrigin.Begin);
+                return Assembly.Load(stream.ToArray());
             }
+            throw new InvalidOperationException("Compilation error");
         }
     }
 
     /// <summary>
     /// 游戏管理类(服务)的基类。
     /// </summary>
+    /// <remarks>派生类如果没有特别说明，非私有成员都应该可以支持多线程并发调用。</remarks>
     public abstract class GameManagerBase<TOptions>
     {
         #region 属性及相关

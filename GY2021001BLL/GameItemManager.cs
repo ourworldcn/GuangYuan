@@ -1,6 +1,6 @@
 ﻿using GuangYuan.GY001.BLL.Homeland;
-using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
@@ -224,7 +224,6 @@ namespace GuangYuan.GY001.BLL
         public (Guid, Guid) GetMountsTIds(GameItem gameItem) => (GetHead(gameItem)?.TemplateId ?? Guid.Empty, GetBody(gameItem)?.TemplateId ?? Guid.Empty);
 
         #endregion 坐骑相关
-
 
         /// <summary>
         /// 获取对象的模板。
@@ -1077,6 +1076,27 @@ namespace GuangYuan.GY001.BLL
         //    container.TemplateId = newContainer.Id;
         //    container.Template = newContainer;
         //}
+
+        /// <summary>
+        /// 获取指定阵容的所有坐骑。
+        /// </summary>
+        /// <param name="number"></param>
+        /// <returns></returns>
+        public IEnumerable<GameItem> GetLineup(GameChar gameChar, int number)
+        {
+            var bag = gameChar.GetZuojiBag();
+            var coll = bag.Children.Where(c =>
+            {
+                return c.Properties.Keys.Any(c1 =>
+                {
+                    if (!c1.StartsWith(ProjectConstant.ZhenrongPropertyName) || c1.Length <= ProjectConstant.ZhenrongPropertyName.Length) return false;
+                    var index = ProjectConstant.ZhenrongPropertyName.Length;
+                    if (!int.TryParse(c1[index..], out var num)) return false;
+                    return num == number;
+                });
+            });
+            return coll;
+        }
     }
 
     public class ActiveStyleDatas
@@ -1178,6 +1198,93 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+        /// <summary>
+        /// 获取坐骑背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        static public GameItem GetZuojiBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);
 
+        /// <summary>
+        /// 获取兽栏对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        static public GameItem GetShoulanBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
+
+        /// <summary>
+        /// 按指定Id获取坐骑。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="id"></param>
+        /// <returns>如果没有找到则返回null。</returns>
+        static public GameItem GetMounetsFromId(this GameChar gameChar, Guid id) =>
+            gameChar.GetZuojiBag()?.Children.FirstOrDefault(c => c.TemplateId == id);
+
+        /// <summary>
+        /// 获取图鉴背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        static public GameItem GetTujianBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.TujianBagTId);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mng"></param>
+        /// <param name="gameChar">角色对象。</param>
+        /// <param name="t1Body">第一个身体模板。</param>
+        /// <param name="t2Body">第二个身体模板。</param>
+        /// <returns>符合要求的模板输出的值元组 (头模板Id,身体模板Id,概率)。没有找到图鉴可能返回空。</returns>
+        static public (Guid, Guid, decimal)? GetTujianResult(this GameItemManager mng, GameChar gameChar, GameItemTemplate t1Body, GameItemTemplate t2Body)
+        {
+            var gitm = mng.Services.GetRequiredService<GameItemTemplateManager>();
+            var tujianBag = gameChar.GetZuojiBag(); //图鉴背包
+            var tujian = tujianBag.Children.FirstOrDefault(c => //图鉴
+            {
+                var bd1 = c.Template.Properties.GetDecimalOrDefault("hbab");
+                var bd2 = c.Template.Properties.GetDecimalOrDefault("hbbb");
+                return bd1 == t1Body.CatalogNumber && bd2 == t2Body.CatalogNumber || bd2 == t1Body.CatalogNumber && bd1 == t2Body.CatalogNumber;
+            });
+            if (tujian is null)
+                return null;
+            var hTId = tujian.Properties.GetGuidOrDefault("outheadtid", Guid.Empty);
+            var bTId = tujian.Properties.GetGuidOrDefault("outbodytid", Guid.Empty);
+            var prob = tujian.Properties.GetDecimalOrDefault("hbsr");
+            return (hTId, bTId, prob);
+        }
+
+        /// <summary>
+        /// 获取物品的头模板。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="item"></param>
+        /// <returns>不是动物则返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public GameItemTemplate GetHeadTemplate(this GameItemManager manager, GameItem item)
+        {
+            var tmp = manager.GetHead(item);
+            if (tmp is null)
+                return null;
+            return manager.GetTemplate(tmp);
+        }
+
+        /// <summary>
+        /// 获取物品的身体模板。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="item"></param>
+        /// <returns>不是动物则返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public GameItemTemplate GetBodyTemplate(this GameItemManager manager, GameItem item)
+        {
+            var tmp = manager.GetBody(item);
+            if (tmp is null)
+                return null;
+            return manager.GetTemplate(tmp);
+        }
     }
 }

@@ -7,6 +7,7 @@ using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static GuangYuan.GY001.BLL.GameSocialManager;
 
 namespace Gy001.Controllers
 {
@@ -318,13 +319,21 @@ namespace Gy001.Controllers
             {
                 return Unauthorized("令牌无效");
             }
-            InteractReturnDto result = null;
+            InteractReturnDto result = new InteractReturnDto();
             try
             {
                 var actioveId = GameHelper.FromBase64String(model.ActiveId);
-                if (actioveId == InteractActiveIds.PatForTili)
+                if (actioveId == InteractActiveIds.PatForTili)  //获取体力
                 {
-                    _World.SocialManager.PatForTili(gu.CurrentChar, GameHelper.FromBase64String(model.ObjectId));
+                    if (PatForTiliResult.Success != _World.SocialManager.PatForTili(gu.CurrentChar, GameHelper.FromBase64String(model.ObjectId)))
+                    {
+                        result.DebugMessage = VWorld.GetLastErrorMessage();
+                        result.HasError = true;
+                    }
+                }
+                else if (InteractActiveIds.PatWithMounts == actioveId)  //与坐骑互动
+                {
+
                 }
                 else
                 {
@@ -334,6 +343,41 @@ namespace Gy001.Controllers
                         DebugMessage = $"未知的行为Id={actioveId}",
                     };
                 }
+            }
+            finally
+            {
+                _World.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 与好友家园的展示坐骑互动。
+        /// </summary>
+        /// <param name="model"><seealso cref="PatWithMountsParamsDto"/></param>
+        /// <returns><seealso cref="PatWithMountsReturnDto"/></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPost]
+        public ActionResult<PatWithMountsReturnDto> PatWithMounts(PatWithMountsParamsDto model)
+        {
+            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("令牌无效");
+            }
+            var result = new PatWithMountsReturnDto();
+            try
+            {
+                var datas = new PatWithMountsDatas()
+                {
+                    CurrentMountsId = GameHelper.FromBase64String(model.CurrentMountsId),
+                    GameChar = gu.CurrentChar,
+                    MountsId = GameHelper.FromBase64String(model.MountsId),
+                };
+                _World.SocialManager.PatWithMounts(datas);
+                result.HasError = datas.HasError;
+                result.DebugMessage = datas.DebugMessage;
+                result.Changes.AddRange(datas.Changes.Select(c => (ChangesItemDto)c));
+                result.MailItems.AddRange(datas.MailItems.Select(c => (ChangesItemDto)c));
             }
             finally
             {

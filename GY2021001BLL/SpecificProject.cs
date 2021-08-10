@@ -97,6 +97,11 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public static readonly Guid CurrencyBagTId = new Guid("{7066A96D-F514-42C7-A30E-5E7567900AD4}");
 
+        /// <summary>
+        /// 图鉴背包模板Id。
+        /// </summary>
+        public static readonly Guid TujianBagTId = new Guid("{6437ce7b-8a03-4e67-9f89-8c9ab7141263}");
+
         #endregion  角色直属槽及其相关
 
         #region 货币类模板Id
@@ -131,6 +136,11 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid FriendCurrencyTId = new Guid("{8DBBFD26-6B4B-4C00-B0B8-BD7A79B21CBA}");
         #endregion  货币类模板Id
 
+        #region 邮件类型Id
+        public static readonly Guid 友情孵化补给动物 = new Guid("b4c30a07-2179-435e-b053-fd4b0c36251b");
+
+
+        #endregion 邮件类型Id
         /// <summary>
         /// 角色模板Id。当前只有一个模板。
         /// </summary>
@@ -429,7 +439,7 @@ namespace GuangYuan.GY001.BLL
             if (parent == data.Template || cm.GetNext(parent) == data.Template)  //若是第一关
             {
                 //扣除体力
-                var tili = data.GameChar.GetTili();
+                var tili = gc.GetTili();
                 var fcp = tili.Name2FastChangingProperty.GetValueOrDefault("Count");
                 var pp = (decimal)parent.Properties.GetValueOrDefault("pp", 0m);
                 if (fcp.GetCurrentValueWithUtc() < pp)
@@ -443,7 +453,7 @@ namespace GuangYuan.GY001.BLL
                 var tdt = parent.Properties.GetDecimalOrDefault("tdt", 0m);
                 if (tdt > 0)
                 {
-                    var pveT = data.GameChar.GetPveT();
+                    var pveT = gc.GetPveT();
                     fcp = pveT.Name2FastChangingProperty.GetValueOrDefault("Count");
                     var count = fcp?.GetCurrentValueWithUtc() ?? pveT.Count.Value;
                     if (count < tdt)
@@ -452,7 +462,7 @@ namespace GuangYuan.GY001.BLL
                         data.DebugMessage = $"允许的进攻次数只有{count},但是需要{tdt}。";
                         return false;
                     }
-                    fcp.LastValue-= tdt;
+                    fcp.LastValue -= tdt;
                 }
             }
             return true;

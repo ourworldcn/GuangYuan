@@ -1,8 +1,10 @@
 ﻿using Game.Social;
+using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -46,13 +48,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         private void Initialize()
         {
-            _DbContext = World.CreateNewUserDbContext();
         }
-
-        /// <summary>
-        /// 管理邮件的。
-        /// </summary>
-        private GY001UserContext _DbContext;
 
         #endregion 构造函数及相关
 
@@ -197,6 +193,40 @@ namespace GuangYuan.GY001.BLL
             mail.Addresses.Add(sender);
             db.Mails.Add(mail);
             db.SaveChangesAsync().ContinueWith((task, dbPara) => (dbPara as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);  //清理
+        }
+
+        /// <summary>
+        /// 用指定的物品作为附件发送邮件。
+        /// </summary>
+        /// <param name="mail">要发送的邮件。</param>
+        /// <param name="tos">收件人列表。</param>
+        /// <param name="senderId">发件人。</param>
+        /// <param name="gameItems">(要发送的物品，父容器模板Id) 要发送的附件，会追加到附加集合中。不会自动销毁这些物品，调用者要自行处理。</param>
+        public void SendMail(GameMail mail, IEnumerable<Guid> tos, Guid senderId, IEnumerable<(GameItem, Guid)> gameItems)
+        {
+            var gim = World.ItemManager;
+            foreach (var item in gameItems)
+            {
+                // TId={物品模板Id},HTId={头模板Id},BTId={身体模板Id},Count=物品数量，PTId=物品所属容器的模板Id,neatk=攻击资质,nemhp=血量资质,neqlt=质量资质。
+                var att = new GameMailAttachment();
+                var gi = item.Item1;
+                if (gim.IsMounts(gi))  //若是动物
+                {
+                    att.Properties["HTId"] = gim.GetHeadTemplate(gi).Id.ToString();
+                    att.Properties["BTId"] = gim.GetBodyTemplate(gi).Id.ToString();
+                    att.Properties["neatk"] = gi.Properties.GetValueOrDefault("neatk");
+                    att.Properties["nemhp"] = gi.Properties.GetValueOrDefault("nemhp");
+                    att.Properties["neqlt"] = gi.Properties.GetValueOrDefault("neqlt");
+                }
+                else
+                {
+                    att.Properties["TId"] = gi.TemplateId.ToString();
+                }
+                att.Properties["Count"] = gi.Count.HasValue ? gi.Count.Value : 1;
+                att.Properties["PTId"] = item.Item2.ToString();
+                mail.Attachmentes.Add(att);
+            }
+            SendMail(mail, tos, senderId);
         }
 
         /// <summary>
@@ -602,28 +632,9 @@ namespace GuangYuan.GY001.BLL
 
         }
 
-        public enum PatForTiliResult
-        {
-            /// <summary>
-            /// 未知错误。
-            /// </summary>
-            Unknow = -1,
+        #endregion 黑白名单相关
 
-            /// <summary>
-            /// 成功。
-            /// </summary>
-            Success = 0,
-
-            /// <summary>
-            /// 访问次数超限。
-            /// </summary>
-            TimesOver,
-
-            /// <summary>
-            /// 已经访问过该角色。
-            /// </summary>
-            Already,
-        }
+        #region 项目特定功能
 
         /// <summary>
         /// 去好友家互动以获得体力。
@@ -687,8 +698,13 @@ namespace GuangYuan.GY001.BLL
         {
             private const string key = "patcountVisitors";
 
+            public PatForTiliWrapper()
+            {
+
+            }
+
             /// <summary>
-            /// 
+            /// 构造函数。
             /// </summary>
             /// <param name="gameChar"></param>
             /// <param name="now">按该时间点计算。</param>
@@ -721,7 +737,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
 
-            private void _Visitors_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+            private void Visitors_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
             {
 
             }
@@ -732,6 +748,264 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
-        #endregion 黑白名单相关
+        /// <summary>
+        /// 与好友坐骑互动。
+        /// </summary>
+        /// <param name="datas">参数及返回值的封装类。</param>
+        public void PatWithMounts(PatWithMountsDatas datas)
+        {
+            var currentMounts = datas.GameChar.GetMounetsFromId(datas.CurrentMountsId);
+            if (currentMounts is null)
+            {
+                datas.HasError = true;
+                datas.DebugMessage = $"找不到当前坐骑，Id={datas.CurrentMountsId}";
+                return;
+            }
+            var view = new PatWithMountsWrapper(datas.GameChar);
+
+            using var db = World.CreateNewUserDbContext();
+            var gameItem = db.GameItems.Find(datas.MountsId);   //要互动的坐骑Id
+            if (gameItem is null)    //若没有找到
+            {
+                datas.HasError = true;
+                datas.DebugMessage = $"找不到要互动的坐骑";
+                return;
+            }
+            if (!World.ItemManager.IsMounts(gameItem))  //若不是坐骑
+            {
+                datas.HasError = true;
+                datas.DebugMessage = $"指定Id不是坐骑";
+                return;
+            }
+            //找到对方Char对象
+            GameItem tmp;
+            for (tmp = gameItem; tmp.Parent != null; tmp = tmp.Parent) ;
+            if (!tmp.OwnerId.HasValue)
+            {
+                datas.HasError = true;
+                datas.DebugMessage = $"数据错误。";
+                return;
+            }
+            var objChar = db.GameChars.Find(tmp.OwnerId.Value);
+            if (objChar is null)
+            {
+                datas.HasError = true;
+                datas.DebugMessage = $"找不到对方所属角色。";
+                return;
+            }
+            DateTime now = DateTime.UtcNow;
+            if (!view.TryVisit(objChar.Id, datas.MountsId, now))    //若失败
+            {
+                datas.HasError = true;
+                datas.DebugMessage = VWorld.GetLastErrorMessage();
+                return;
+            }
+            var vItem = view.Visitors.First(c => c.ItemId == datas.MountsId);
+            if (vItem.Count >= 10)  //若需要合成
+            {
+                var outGameItem = World.BlueprintManager.FuhuaCore(datas.GameChar, currentMounts, gameItem);
+                var shoulanBag = datas.GameChar.GetShoulanBag();
+                var remainder = new List<GameItem>();
+                World.ItemManager.AddItem(outGameItem, shoulanBag, remainder, datas.Changes);
+                if (remainder.Count > 0)
+                {
+                    var t = World.ItemTemplateManager.GetTemplateFromeId(ProjectConstant.友情孵化补给动物);
+                    var mail = new GameMail() { };
+                    mail.Properties["MailTypeId"] = ProjectConstant.友情孵化补给动物.ToString();
+                    SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId,
+                        new ValueTuple<GameItem, Guid>[] { (outGameItem, ProjectConstant.ShoulanSlotId) });
+                    //{b4c30a07-2179-435e-b053-fd4b0c36251b} 友情孵化补给动物
+                    datas.MailItems.AddToAdds(mail.Id, outGameItem);
+                }
+                vItem.Count = 0;
+            }
+            return;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class PatWithMountsDatas
+        {
+            /// <summary>
+            /// 主动方角色。
+            /// </summary>
+            public GameChar GameChar { get; set; }
+
+            /// <summary>
+            /// 要互动的坐骑Id。
+            /// </summary>
+            public Guid MountsId { get; set; }
+
+            /// <summary>
+            /// 如果友好度已满，使用此坐骑与对方坐骑杂交。
+            /// </summary>
+            public Guid CurrentMountsId { get; set; }
+
+            /// <summary>
+            /// 是否有错误。
+            /// </summary>
+            public bool HasError { get; set; }
+
+            /// <summary>
+            /// 错误的提示信息。
+            /// </summary>
+            public string DebugMessage { get; set; }
+
+            /// <summary>
+            /// 通过邮件发送了物品集合。
+            /// Changes属性都可能有数据（部分放入）。
+            /// 其中<see cref="ChangesItem.ContainerId"/>是邮件的Id。
+            /// </summary>
+            public List<ChangesItem> MailItems { get; set; }
+
+            /// <summary>
+            /// 互动产生的野兽。如果条件不具备则是空集合。
+            /// </summary>
+            public List<ChangesItem> Changes { get; set; } = new List<ChangesItem>();
+
+        }
+
+        /// <summary>
+        /// 好友坐骑互动的数据视图。
+        /// </summary>
+        public class PatWithMountsWrapper
+        {
+            /// <summary>
+            /// 计数器的名字。挂在家园对象下。
+            /// </summary>
+            public const string FcpName = "PatWithMountsCounter";
+
+            /// <summary>
+            /// 扩展属性的名字。
+            /// </summary>
+            public const string ExPropName = "PatWithMountsExProp";
+
+            /// <summary>
+            /// 构造函数。
+            /// </summary>
+            /// <param name="gameChar"></param>
+            public PatWithMountsWrapper(GameChar gameChar)
+            {
+                _Counter = gameChar.GetHomeland().Name2FastChangingProperty[FcpName];
+                var epd = gameChar.ExtendPropertyDictionary.GetOrAdd(ExPropName, c => new ExtendPropertyDescriptor(new List<PatWithMountsItem>(), c, true));
+                _Visitors = (List<PatWithMountsItem>)epd.Data;
+            }
+
+            private readonly FastChangingProperty _Counter;
+            /// <summary>
+            /// 剩余次数。
+            /// </summary>
+            public FastChangingProperty Counter => _Counter;
+
+            private readonly List<PatWithMountsItem> _Visitors;
+            /// <summary>
+            /// 详细信息。
+            /// </summary>
+            public List<PatWithMountsItem> Visitors => _Visitors;
+
+            /// <summary>
+            /// 试图与指定玩家的指定座机互动。
+            /// </summary>
+            /// <param name="charId">要互动的坐骑所属的角色Id。</param>
+            /// <param name="itemId">要互动坐骑的Id。</param>
+            /// <param name="now">使用的时间点。</param>
+            /// <returns>true成功互动，false因种种原因没有成功。仅会修改数据，不会有后续连锁动作。</returns>
+            public bool TryVisit(Guid charId, Guid itemId, DateTime now)
+            {
+                var dt = now;
+                if (Counter.GetCurrentValue(ref dt) < 1)
+                {
+                    VWorld.SetLastErrorMessage("访问次数用尽。");
+                    return false;
+                }
+                var dtToday = dt.Date;
+                if (Visitors.Any(c => c.CharId == charId && dtToday == c.LastDateTime.Date))  //若今日互动过的坐骑
+                {
+                    VWorld.SetLastErrorMessage("已经和该角色的宠物互动过。");
+                    return false;
+                }
+                var item = Visitors.FirstOrDefault(c => c.CharId == charId && c.ItemId == itemId);  //访问过的数据项
+                if (item is null)    //若没有访问过该坐骑
+                {
+                    item = new PatWithMountsItem()
+                    {
+                        CharId = charId,
+                        ItemId = itemId,
+                        Count = 1,
+                        LastDateTime = now,
+                    };
+                    Visitors.Add(item);
+                }
+                else
+                {
+                    item.Count++;
+                    item.LastDateTime = now;
+                }
+                //修正数据
+                Counter.LastValue--;
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// 互动坐骑的记录数据项。
+        /// </summary>
+        [Serializable]
+        public class PatWithMountsItem
+        {
+            /// <summary>
+            /// 构造函数。
+            /// </summary>
+            public PatWithMountsItem()
+            {
+
+            }
+
+            /// <summary>
+            /// 对方角色Id。
+            /// </summary>
+            public Guid CharId { get; set; }
+
+            /// <summary>
+            /// 对方坐骑Id。
+            /// </summary>
+            public Guid ItemId { get; set; }
+
+            /// <summary>
+            /// 最后一次访问的时间。
+            /// </summary>
+            public DateTime LastDateTime { get; set; }
+
+            /// <summary>
+            /// 已经访问的次数。
+            /// </summary>
+            public int Count { get; set; }
+        }
+        #endregion  项目特定功能
     }
+
+    public enum PatForTiliResult
+    {
+        /// <summary>
+        /// 未知错误。
+        /// </summary>
+        Unknow = -1,
+
+        /// <summary>
+        /// 成功。
+        /// </summary>
+        Success = 0,
+
+        /// <summary>
+        /// 访问次数超限。
+        /// </summary>
+        TimesOver,
+
+        /// <summary>
+        /// 已经访问过该角色。
+        /// </summary>
+        Already,
+    }
+
 }

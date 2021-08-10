@@ -1461,6 +1461,11 @@
             与家园主基地互动获得体力的Id。
             </summary>
         </member>
+        <member name="F:GY2021001WebApi.Models.InteractActiveIds.PatWithMounts">
+            <summary>
+            与好友家园中的坐骑互动。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.InteractReturnDto">
             <summary>
             Interact 接口返回值封装类。
@@ -1489,6 +1494,38 @@
         <member name="P:GY2021001WebApi.Models.InteractParamsDto.Properties">
             <summary>
             附属参数。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.PatWithMountsParamsDto">
+            <summary>
+            PatWithMounts 接口的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.PatWithMountsParamsDto.MountsId">
+            <summary>
+            要互动的坐骑Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.PatWithMountsParamsDto.CurrentMountsId">
+            <summary>
+            如果友好度已满，使用此坐骑与对方坐骑杂交。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.PatWithMountsReturnDto">
+            <summary>
+            PatWithMounts 接口的返回值封装类
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.PatWithMountsReturnDto.Changes">
+            <summary>
+            互动产生的野兽。如果条件不具备则是空集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.PatWithMountsReturnDto.MailItems">
+            <summary>
+            通过邮件发送了物品集合。如果没有发送邮件则是空集合。
+            Changes属性都可能有数据（部分放入）。
+            其中<see cref="P:GY2021001WebApi.Models.ChangesItemDto.ContainerId"/>是邮件对象的Id。
             </summary>
         </member>
         <member name="T:Gy001.Controllers.BlueprintController">
@@ -1589,6 +1626,14 @@
             </summary>
             <param name="model">参见 InteractParamsDto 说明。</param>
             <returns>参见 InteractReturnDto 说明。</returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.PatWithMounts(GY2021001WebApi.Models.PatWithMountsParamsDto)">
+            <summary>
+            与好友家园的展示坐骑互动。
+            </summary>
+            <param name="model"><seealso cref="T:GY2021001WebApi.Models.PatWithMountsParamsDto"/></param>
+            <returns><seealso cref="T:GY2021001WebApi.Models.PatWithMountsReturnDto"/></returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">

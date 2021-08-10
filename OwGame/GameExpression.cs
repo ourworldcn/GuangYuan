@@ -59,7 +59,6 @@ namespace OW.Game.Expression
         public GameExpressionRuntimeEnvironment(GameExpressionCompileEnvironment env)
         {
             Services = env.Services;
-            var dic = Variables;
             _Variables = new Dictionary<string, GameExpressionBase>(env.Variables);
         }
 
@@ -165,7 +164,7 @@ namespace OW.Game.Expression
     {
         public GameExpressionCompileEnvironment()
         {
-            
+
         }
 
         public IServiceProvider Services { get; set; }
@@ -181,7 +180,7 @@ namespace OW.Game.Expression
         public Dictionary<string, GameExpressionBase> Variables => _Variables;
 
 
-        private Stack<string> _CurrentObjectIds = new Stack<string>();
+        private readonly Stack<string> _CurrentObjectIds = new Stack<string>();
 
         /// <summary>
         /// 设置一个新的当前对象Id。并保存旧Id,在以后可以用<see cref="RestoreCurrentObject(out string)"/>恢复。
@@ -352,10 +351,10 @@ namespace OW.Game.Expression
         /// <returns></returns>
         static public GameExpressionBase CompileVariableInit(GameExpressionCompileEnvironment env, string inputs)
         {
-            GameExpressionBase result = null;
             inputs = inputs.Trim();
             if (string.IsNullOrEmpty(inputs))
                 return ConstGExpression.Null;
+            GameExpressionBase result;
             if (inputs.Contains('|'))    //若可能是数组
                 result = MakeArray(env, inputs);
             else //若是其他简单操作数
@@ -595,7 +594,6 @@ namespace OW.Game.Expression
                     }
                 }
             }
-            return left;
         }
 
         private static int GetPriority(string op)
@@ -677,7 +675,8 @@ namespace OW.Game.Expression
             {
                 case "rnd": //生成[0,1)之间的随机数
                     Debug.WriteIf(Parameters.Count > 0, "rnd函数不需要参数。");
-                    _CacheRandom ??= Convert.ToDecimal(NextDouble());
+                    if (!_CacheRandom.HasValue)
+                        _CacheRandom = Convert.ToDecimal(NextDouble());
                     result = _CacheRandom.Value;
                     succ = true;
                     break;
@@ -1044,7 +1043,7 @@ namespace OW.Game.Expression
             _Elementes.AddRange(elementes);
         }
 
-        private List<GameExpressionBase> _Elementes = new List<GameExpressionBase>();
+        private readonly List<GameExpressionBase> _Elementes = new List<GameExpressionBase>();
         internal List<GameExpressionBase> Elementes { get => _Elementes; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1089,8 +1088,7 @@ namespace OW.Game.Expression
 
         public override bool SetValue(GameExpressionRuntimeEnvironment env, object val)
         {
-            var ary = Array.GetValueOrDefault(env) as ArrayGExpression;
-            if (null == ary)
+            if (!(Array.GetValueOrDefault(env) is ArrayGExpression ary))
                 return false;
             if (!TryGetIndex(env, out var index))
                 return false;
@@ -1288,7 +1286,9 @@ namespace OW.Game.Expression
             return false;
         }
 
+#pragma warning disable IDE0051 // 删除未使用的私有成员
         private string GetDebuggerDisplay()
+#pragma warning restore IDE0051 // 删除未使用的私有成员
         {
             return $"{{{Left} {Operator} {Right}}}";
         }
@@ -1311,7 +1311,7 @@ namespace OW.Game.Expression
             Expressions.AddRange(expressions);
         }
 
-        private List<GameExpressionBase> _Expressions = new List<GameExpressionBase>();
+        private readonly List<GameExpressionBase> _Expressions = new List<GameExpressionBase>();
 
         public List<GameExpressionBase> Expressions { get => _Expressions; }
 

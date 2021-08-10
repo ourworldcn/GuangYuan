@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable IDE0074 // 使用复合分配
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -6,6 +7,7 @@ namespace Game.Social
 {
     /// <summary>
     /// 社交相关对象的传输基类。
+    /// MailTypeId={邮件类型Id},wood=木材数量，gold=金币数量，iswin=是否胜利
     /// </summary>
     [DataContract]
     public partial class GameSocialBaseDto
@@ -23,6 +25,7 @@ namespace Game.Social
         /// </summary>
         [DataMember]
         public Dictionary<string, object> Properties { get => _Properties ?? (_Properties = new Dictionary<string, object>()); set => _Properties = value; }
+
     }
 
     /// <summary>
@@ -129,11 +132,12 @@ namespace Game.Social
 
     /// <summary>
     /// 邮件附件的传输对象。
+    /// 针对本项目，Properties 里的键值说明，
+    /// TId={物品模板Id},HTId={头模板Id},BTId={身体模板Id},Count=物品数量，PTId=物品所属容器的模板Id,neatk=攻击资质,nemhp=血量资质,neqlt=质量资质。
     /// </summary>
     [DataContract]
     public partial class GameMailAttachmentDto : GameSocialBaseDto
     {
-
 
     }
 
@@ -237,3 +241,4 @@ namespace Game.Social
     }
 
 }
+#pragma warning restore IDE0074 // 使用复合分配

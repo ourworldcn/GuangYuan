@@ -133,6 +133,14 @@ namespace GuangYuan.GY001.BLL
             return WorldRandom.NextDouble() * (to - from) + from;
         }
 
+        /// <summary>
+        /// 获取是否命中。支持并发调用。
+        /// </summary>
+        /// <param name="val">命中概率，小于0视同0，永远返回 false,大于或等于1都会永远返回true.</param>
+        /// <returns>是否命中</returns>
+        public static bool IsHit(double val) =>
+            WorldRandom.NextDouble() < val;
+
         #endregion 随机数相关
 
 

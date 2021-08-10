@@ -501,12 +501,12 @@ namespace GuangYuan.GY001.BLL
                 }
                 var mounts = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);    //坐骑包
                 var lookup = mounts.Children.ToLookup(c => gim.GetMountsTIds(c));
-                var coll = aryMounts.Where(c => !lookup.Contains(gim.GetMountsTIds(c)));   //错误的资质怪类型
-                if (coll.Any())
-                {
-                    errorString = $"至少有一个资质怪的类型尚不存在对应坐骑。";
-                    return false;
-                }
+                //var coll = aryMounts.Where(c => !lookup.Contains(gim.GetMountsTIds(c)));   //错误的资质怪类型
+                //if (coll.Any())
+                //{
+                //    errorString = $"至少有一个资质怪的类型尚不存在对应坐骑。";
+                //    return false;
+                //}
             }
             if (dungeon.TryGetPropertyValue("mne", out var mneObj) && OwHelper.TryGetDecimal(mneObj, out var mne)) //若需要限定资质野怪的最高资质
             {
@@ -550,7 +550,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="items"></param>
         /// <param name="errItem"></param>
         /// <returns></returns>
-        private bool Verify<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> limits, IEnumerable<(TKey, TValue)> items, out (TKey, TValue) errItem) where TValue : IComparable<TValue>
+        public bool Verify<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> limits, IEnumerable<(TKey, TValue)> items, out (TKey, TValue) errItem) where TValue : IComparable<TValue>
         {
             foreach (var item in items) //遍历每一项
             {
@@ -671,12 +671,6 @@ namespace GuangYuan.GY001.BLL
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        private static float GetFloatOrDefalut(IDictionary<string, float> dic, string key, float defaultVal = 0f)
-        {
-            return dic.TryGetValue(key, out var result) ? result : defaultVal;
-        }
-
         /// <summary>
         /// 
         /// </summary>
@@ -692,19 +686,19 @@ namespace GuangYuan.GY001.BLL
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddCombatProperties(GameThingBase thing, IDictionary<string, float> dic)
+        public void AddCombatProperties(GameThingBase thing, IReadOnlyDictionary<string, float> dic)
         {
-            dic["atk"] = (float)thing.GetDecimalOrDefault("atk") + GetFloatOrDefalut(dic, "atk");
-            dic["mhp"] = (float)thing.GetDecimalOrDefault("mhp") + GetFloatOrDefalut(dic, "mhp");
-            dic["qlt"] = (float)thing.GetDecimalOrDefault("qlt") + GetFloatOrDefalut(dic, "qlt");
+            thing.Properties["atk"] = (float)thing.Properties.GetDecimalOrDefault("atk") + dic.GetValueOrDefault("atk");
+            thing.Properties["mhp"] = (float)thing.GetDecimalOrDefault("mhp") + dic.GetValueOrDefault("mhp");
+            thing.Properties["qlt"] = (float)thing.GetDecimalOrDefault("qlt") + dic.GetValueOrDefault("qlt");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void MultCombatProperties(GameThingBase thing, IDictionary<string, float> dic)
+        public void MultCombatProperties(GameThingBase thing, IReadOnlyDictionary<string, float> dic)
         {
-            dic["atk"] = (float)thing.GetDecimalOrDefault("atk") * GetFloatOrDefalut(dic, "atk");
-            dic["mhp"] = (float)thing.GetDecimalOrDefault("mhp") * GetFloatOrDefalut(dic, "mhp");
-            dic["qlt"] = (float)thing.GetDecimalOrDefault("qlt") * GetFloatOrDefalut(dic, "qlt");
+            thing.Properties["atk"] = (float)thing.GetDecimalOrDefault("atk") * dic.GetValueOrDefault("atk");
+            thing.Properties["mhp"] = (float)thing.GetDecimalOrDefault("mhp") * dic.GetValueOrDefault("mhp");
+            thing.Properties["qlt"] = (float)thing.GetDecimalOrDefault("qlt") * dic.GetValueOrDefault("qlt");
         }
     }
 }

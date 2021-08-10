@@ -381,7 +381,6 @@ namespace GuangYuan.GY001.BLL
 
             VWorld world = Parent.Parent.Service.GetRequiredService<VWorld>();
             gim = Parent.Parent.Service.GetService<GameItemManager>();
-            decimal count = gameItem.Count.Value;
             if (world.IsHit((double)CountIncrementProb)) //若需要增量
             {
                 decimal inc = CountIncrement;
@@ -390,7 +389,7 @@ namespace GuangYuan.GY001.BLL
                     return false;
                 }
 
-                count = inc + gameItem.Count.Value;
+                var count = inc + gameItem.Count.Value;
                 bool _ = gim.SetPropertyValue(gameItem, "count", count);
                 Debug.Assert(_);
             }
@@ -706,7 +705,7 @@ namespace GuangYuan.GY001.BLL
                         Hecheng(datas);
                         succ = true;
                         break;
-                    case "dd5095f8-929f-45a5-a86c-4a1792e9d9c8":
+                    case "dd5095f8-929f-45a5-a86c-4a1792e9d9c8":    //购买Pve次数
                         BuyPveCount(datas);
                         succ = true;
                         break;
@@ -1402,6 +1401,38 @@ namespace GuangYuan.GY001.BLL
             datas.ChangesItem.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
         }
 
+        /// <summary>
+        /// 孵化的核心算法。
+        /// </summary>
+        /// <param name="gameChar">角色对象。</param>
+        /// <param name="parent1">双亲1。可以不是角色拥有的坐骑。</param>
+        /// <param name="parent2">双亲2。可以不是角色拥有的坐骑。</param>
+        /// <returns>孵化的结果。资质按双亲平均值计算。</returns>
+        public GameItem FuhuaCore(GameChar gameChar, GameItem parent1, GameItem parent2)
+        {
+            var gim = World.ItemManager;
+            var t1BodyT = gim.GetBodyTemplate(parent1);
+            var t2BodyT = gim.GetBodyTemplate(parent2);
+            var tids = gim.GetTujianResult(gameChar, t1BodyT, t2BodyT);
+            GameItemTemplate headT, bodyT;  //输出结果的头和身体模板对象
+            if (null != tids && VWorld.IsHit((double)tids.Value.Item3))  //使用图鉴
+            {
+                headT = gim.GetTemplateFromeId(tids.Value.Item1);
+                bodyT = gim.GetTemplateFromeId(tids.Value.Item2);
+            }
+            else //不用有图鉴
+            {
+                headT = VWorld.IsHit(0.5) ? gim.GetHeadTemplate(parent1) : gim.GetHeadTemplate(parent2);
+                bodyT = VWorld.IsHit(0.5) ? gim.GetBodyTemplate(parent1) : gim.GetBodyTemplate(parent2);
+            }
+
+            GameItem result = gim.CreateMounts(headT, bodyT);
+            result.Properties["neatk"] = Math.Round((parent1.Properties.GetDecimalOrDefault("neatk") + parent2.Properties.GetDecimalOrDefault("neatk")) / 2, MidpointRounding.AwayFromZero);
+            result.Properties["nemhp"] = Math.Round((parent1.Properties.GetDecimalOrDefault("nemhp") + parent2.Properties.GetDecimalOrDefault("nemhp")) / 2, MidpointRounding.AwayFromZero);
+            result.Properties["neqlt"] = Math.Round((parent1.Properties.GetDecimalOrDefault("neqlt") + parent2.Properties.GetDecimalOrDefault("neqlt")) / 2, MidpointRounding.AwayFromZero);
+            return result;
+        }
+
         #endregion 孵化相关
 
         #region 合成相关
@@ -1517,7 +1548,7 @@ namespace GuangYuan.GY001.BLL
         #endregion 合成相关
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool Verify(ApplyBlueprintDatas datas, IEnumerable<GameItem> gameItems, Guid containerTId, Guid itemTId)
+        public bool Verify(ApplyBlueprintDatas datas, IEnumerable<GameItem> gameItems, Guid containerTId, Guid itemTId)
         {
             GameItemTemplateManager gitm = World.ItemTemplateManager;
             GameItemTemplate cTemplate = gitm.GetTemplateFromeId(containerTId);

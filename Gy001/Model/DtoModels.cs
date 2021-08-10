@@ -954,6 +954,7 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public List<ChangesItemDto> ChangesItems { get; set; } = new List<ChangesItemDto>();
 
+
     }
 
     #endregion 战斗相关数据
@@ -1777,6 +1778,11 @@ namespace GY2021001WebApi.Models
         /// 与家园主基地互动获得体力的Id。
         /// </summary>
         static public Guid PatForTili = new Guid("{910FC71A-3E1F-405B-8224-8182C4EC882E}");
+
+        /// <summary>
+        /// 与好友家园中的坐骑互动。
+        /// </summary>
+        static public Guid PatWithMounts = new Guid("{F9E4552F-9CD1-46E8-84E8-E71D946465CA}");
     }
 
     /// <summary>
@@ -1815,6 +1821,48 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+    }
+
+    /// <summary>
+    /// PatWithMounts 接口的参数封装类。
+    /// </summary>
+    [DataContract]
+    public partial class PatWithMountsParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要互动的坐骑Id。
+        /// </summary>
+        [DataMember]
+        public string MountsId { get; set; }
+
+        /// <summary>
+        /// 如果友好度已满，使用此坐骑与对方坐骑杂交。
+        /// </summary>
+        [DataMember]
+        public string CurrentMountsId { get; set; }
+
+    }
+
+    /// <summary>
+    /// PatWithMounts 接口的返回值封装类
+    /// </summary>
+    [DataContract]
+    public partial class PatWithMountsReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 互动产生的野兽。如果条件不具备则是空集合。
+        /// </summary>
+        [DataMember]
+        public List<ChangesItemDto> Changes { get; set; } = new List<ChangesItemDto>();
+
+        /// <summary>
+        /// 通过邮件发送了物品集合。如果没有发送邮件则是空集合。
+        /// Changes属性都可能有数据（部分放入）。
+        /// 其中<see cref="ChangesItemDto.ContainerId"/>是邮件对象的Id。
+        /// </summary>
+        [DataMember]
+        public List<ChangesItemDto> MailItems { get; set; } = new List<ChangesItemDto>();
+
     }
 
     #endregion 社交相关

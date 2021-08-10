@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace GuangYuan.GY001.UserDb
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class GameMail : GameSocialBase
     {
         public GameMail()
@@ -96,8 +99,10 @@ namespace GuangYuan.GY001.UserDb
         {
             get
             {
-                lock (ThisLocker)
-                    return _Attachmentes ??= new List<GameMailAttachment>();
+                if (_Attachmentes is null)
+                    lock (ThisLocker)
+                        _Attachmentes ??= new List<GameMailAttachment>();
+                return _Attachmentes;
             }
         }
 
@@ -159,6 +164,8 @@ namespace GuangYuan.GY001.UserDb
 
     /// <summary>
     /// 邮件附件类。
+    /// 针对本项目，Properties 里的键值说明，
+    /// TId={物品模板Id},HTId={头模板Id},BTId={身体模板Id},Count=物品数量，PTId=物品所属容器的模板Id,neatk=攻击资质,nemhp=血量资质,neqlt=质量资质。
     /// </summary>
     public class GameMailAttachment : GameSocialBase
     {

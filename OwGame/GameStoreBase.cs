@@ -172,11 +172,61 @@ namespace OW.Game
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        static public bool TryGetFloat(object obj, out float result)
+        {
+            if (obj is null)
+            {
+                result = default;
+                return false;
+            }
+            bool succ;
+            switch (Type.GetTypeCode(obj.GetType()))
+            {
+                case TypeCode.Boolean:
+                case TypeCode.SByte:
+                case TypeCode.Byte:
+                case TypeCode.Int16:
+                case TypeCode.UInt16:
+                case TypeCode.Int32:
+                case TypeCode.UInt32:
+                case TypeCode.Int64:
+                case TypeCode.UInt64:
+                case TypeCode.Single:
+                case TypeCode.Double:
+                case TypeCode.Decimal:
+                    result = Convert.ToSingle(obj);
+                    succ = true;
+                    break;
+                case TypeCode.String:
+                    succ = float.TryParse(obj as string, out result);
+                    break;
+                case TypeCode.Object:
+                case TypeCode.Empty:
+                case TypeCode.DBNull:
+                case TypeCode.Char:
+                case TypeCode.DateTime:
+                default:
+                    result = default;
+                    succ = false;
+                    break;
+            }
+            return succ;
+        }
+
+        /// <summary>
         /// 尽可能转换为Guid类型。
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="result"></param>
         /// <returns>true成功转换，false未成功。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         static public bool TryGetGuid(object obj, out Guid result)
         {
 
@@ -269,7 +319,7 @@ namespace OW.Game
                 var guts = item.Split('=', StringSplitOptions.RemoveEmptyEntries);
                 if (2 != guts.Length)
                 {
-                    if (item.IndexOf('=')<= 0 || item.Count(c => c == '=') != 1)  //若是xxx= 格式，解释为xxx=null
+                    if (item.IndexOf('=') <= 0 || item.Count(c => c == '=') != 1)  //若是xxx= 格式，解释为xxx=null
                         throw new InvalidCastException($"数据格式错误:'{guts}'");   //TO DO
                 }
                 var keyName = string.Intern(guts[0].Trim());
@@ -451,7 +501,9 @@ namespace OW.Game
         /// <summary>
         /// 在一组相对概率中选择一个元素。
         /// </summary>
-        /// <param name="seq">所有元素要是非负数。序列不可为空，不可全为0(此时行为未知)</param>
+        /// <typeparam name="TSource"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="getProb">所有元素要是非负数。序列不可为空，不可全为0(此时行为未知)</param>
         /// <param name="rnd">随机数，要在区间[0,1)中。</param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
@@ -476,8 +528,8 @@ namespace OW.Game
                 throw new ArgumentException("序列所有相对概率数都是0。", nameof(source));
             var seed = (decimal)rnd * innerSeq[^1].Prob;
 
-            var result = innerSeq.First(c => c.Prob >= seed);
-            return result.Data;
+            var (Prob, Data) = innerSeq.First(c => c.Prob >= seed);
+            return Data;
         }
 
         //static public string SerializeToJson(object obj, Type type = null)
@@ -514,7 +566,7 @@ namespace OW.Game
 
     }
 
-    public static class StringDictionaryExtensions
+    public static class StringObjectDictionaryExtensions
     {
         /// <summary>
         /// 获取指定键的值，并转换为Guid类型，如果没有指定键或不能转换则返回默认值。
@@ -527,18 +579,35 @@ namespace OW.Game
         {
             if (!dic.TryGetValue(name, out var obj))
                 return defaultVal;
-            return obj switch
-            {
-                null => defaultVal,
-                _ when obj is string str && Guid.TryParse(str, out var guid) => guid,
-                _ when obj is Guid val => val,
-                _ => defaultVal,
-            };
+            if (obj is null)
+                return defaultVal;
+            else if (obj is string str && Guid.TryParse(str, out var guid))
+                return guid;
+            else if (obj is Guid val)
+                return val;
+            else
+                return defaultVal;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public decimal GetDecimalOrDefault(this IReadOnlyDictionary<string, object> dic, string name, decimal defaultVal = default) =>
             dic.TryGetValue(name, out var obj) && OwHelper.TryGetDecimal(obj, out var result) ? result : defaultVal;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public float GetFloatOrDefalut(this IReadOnlyDictionary<string, object> dic, string key, float defaultVal = default)
+        {
+            if (!dic.TryGetValue(key, out var obj))
+                return defaultVal;
+            return OwHelper.TryGetFloat(obj, out var result) ? result : defaultVal;
+        }
+
 
     }
 
