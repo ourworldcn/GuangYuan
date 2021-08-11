@@ -113,7 +113,12 @@
         <member name="M:GY2021001WebApi.Controllers.GameCharController.Sell(GY2021001WebApi.Models.SellParamsDto)">
             <summary>
             出售物品。
+            原子操作——指定物品要么全卖出，要么全没卖出。
             </summary>
+            <param name="model"></param>
+            <returns></returns>
+            <response code="401">令牌错误。</response>
+            <response code="401">参数错误。详情参见说明字符串。</response>
         </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.SetSetLineup(GY2021001WebApi.Models.SetLineupParamsDto)">
             <summary>
@@ -469,7 +474,9 @@
         </member>
         <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
             <summary>
-            结束战斗的返回数据传输类
+            结束战斗的返回数据传输类。
+            变化数据中，角色下弃物槽（TId={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
+            ChangesItems 仅当结算大关卡时这里才有数据。
             </summary>
         </member>
         <member name="M:GY2021001WebApi.Models.CombatEndReturnDto.#ctor">
@@ -481,21 +488,6 @@
             <summary>
             需要进入的下一关的Id。如果已经是最后一关结束或强制要求退出，则这里返回空引用或空字符串(string.IsNullOrEmpty测试为true)。
             如果正常进入下一关，可以不必调用启动战斗的接口。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.HasError">
-            <summary>
-            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.DebugMessage">
-            <summary>
-            调试信息。调试状态下返回时填写。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.ChangesItems">
-            <summary>
-            获取变化物品的数据。仅当结算大关卡时这里才有数据。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.VWorldInfomationDto.StartDateTime">
@@ -511,21 +503,6 @@
         <member name="T:GY2021001WebApi.Models.ApplyBlueprintReturnDto">
             <summary>
             ApplyBluprint接口返回时数据。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.HasError">
-            <summary>
-            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.DebugMessage">
-            <summary>
-            调试信息。调试状态下返回时填写。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.ChangesItems">
-            <summary>
-            获取变化物品的数据。仅当成功返回时有意义。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.SuccCount">
@@ -907,7 +884,7 @@
         </member>
         <member name="P:GY2021001WebApi.Models.ReturnDtoBase.HasError">
             <summary>
-            返回时指示是否有错误。false表示正常完成，true表示有错误发生。
+            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.ReturnDtoBase.DebugMessage">
@@ -923,6 +900,17 @@
         <member name="P:GY2021001WebApi.Models.ChangesReturnDtoBase.ChangesItems">
             <summary>
             获取变化物品的数据。仅当成功返回时有意义。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ChangesAndMailReturnDtoBase">
+            <summary>
+            带变化物品和邮件结果的返回值对象的基类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesAndMailReturnDtoBase.MailIds">
+            <summary>
+            操作导致发送了邮件的Id集合。
+            如果是空集合则表示没有发送邮件。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.QuicklyRegisterReturnDto">
@@ -1032,51 +1020,6 @@
             仅当成功返回时，此成员才有用。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.CombatStartParamsDto">
-            <summary>
-            开始战斗的参数传输类。
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.CombatStartParamsDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatStartParamsDto.DungeonId">
-            <summary>
-            关卡Id。第一个小关卡Id或整个大关卡Id。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.CombatEndParamsDto">
-            <summary>
-            结束战斗的参数传输类。
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.CombatEndParamsDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.DungeonId">
-            <summary>
-            关卡Id。如果是小关Id表示该小关，如果是大关Id则表示整个大关通关。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.OnlyMark">
-            <summary>
-            获取或设置一个指示，当这个属性为true时，仅记录收益，并核准。不会试图结束当前关卡。此时忽略其他请求退出的属性。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.EndRequested">
-            <summary>
-            角色是否退出，true强制在结算后退出当前大关口，false试图继续(如果已经是最后一关则不起作用——必然退出)。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.GameItems">
-            <summary>
-            收益。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.ModifyClientExtendPropertyParamsDto">
             <summary>
             设置客户端扩展属性接口的参数封装类。
@@ -1115,16 +1058,6 @@
             仅当成功返回时，此成员才有用。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.SetCombatMountsParamsDto">
-            <summary>
-            SetCombatMounts接口的数据模型传输类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.SetCombatMountsParamsDto.GameItemDtos">
-            <summary>
-            元素中仅需Id有效即可。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.ApplyBlueprintParamsDto">
             <summary>
             使用蓝图的数据传输对象。
@@ -1159,42 +1092,6 @@
         <member name="T:GY2021001WebApi.Models.SellReturnDto">
             <summary>
             Sell接口返回的数据封装类。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.SetLineupReturnDto">
-            <summary>
-            SetLineup接口返回的数据封装类。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.SetLineupItem">
-            <summary>
-            针对某个坐骑的阵容设置
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.SetLineupItem.Id">
-            <summary>
-            坐骑的Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.SetLineupItem.ForIndex">
-            <summary>
-            阵容号，从0开始。
-            推关阵容号是0。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.SetLineupItem.Position">
-            <summary>
-            -1表示下阵，相应的会删除 forXXX 动态属性键值。其他值会记录在 forXXX=Position。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.SetLineupParamsDto">
-            <summary>
-            SetLineup接口参数使用的数据传输类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.SetLineupParamsDto.Settings">
-            <summary>
-            阵容设置集合，参见 SetLineupItem 说明。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.MoveItemsItemDto">
@@ -1331,6 +1228,97 @@
         <member name="P:GY2021001WebApi.Models.GetHomelandFenggeReturnDto.Plans">
             <summary>
             家园建设方案的集合。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatStartParamsDto">
+            <summary>
+            开始战斗的参数传输类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatStartParamsDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartParamsDto.DungeonId">
+            <summary>
+            关卡Id。第一个小关卡Id或整个大关卡Id。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatEndParamsDto">
+            <summary>
+            结束战斗的参数传输类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatEndParamsDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.DungeonId">
+            <summary>
+            关卡Id。如果是小关Id表示该小关，如果是大关Id则表示整个大关通关。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.OnlyMark">
+            <summary>
+            获取或设置一个指示，当这个属性为true时，仅记录收益，并核准。不会试图结束当前关卡。此时忽略其他请求退出的属性。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.EndRequested">
+            <summary>
+            角色是否退出，true强制在结算后退出当前大关口，false试图继续(如果已经是最后一关则不起作用——必然退出)。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.GameItems">
+            <summary>
+            收益。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SetCombatMountsParamsDto">
+            <summary>
+            SetCombatMounts接口的数据模型传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetCombatMountsParamsDto.GameItemDtos">
+            <summary>
+            元素中仅需Id有效即可。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SetLineupReturnDto">
+            <summary>
+            SetLineup接口返回的数据封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SetLineupItem">
+            <summary>
+            针对某个坐骑的阵容设置
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetLineupItem.Id">
+            <summary>
+            坐骑的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetLineupItem.ForIndex">
+            <summary>
+            阵容号，从0开始。
+            推关阵容号是0。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetLineupItem.Position">
+            <summary>
+            -1表示下阵，相应的会删除 forXXX 动态属性键值。其他值会记录在 forXXX=Position。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SetLineupParamsDto">
+            <summary>
+            SetLineup接口参数使用的数据传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetLineupParamsDto.Settings">
+            <summary>
+            阵容设置集合，参见 SetLineupItem 说明。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetMailsParamsDto">

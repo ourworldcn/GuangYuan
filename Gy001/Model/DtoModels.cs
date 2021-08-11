@@ -1,4 +1,9 @@
-﻿using Game.Social;
+﻿/*
+ * 供Unity使用的SDK文件。
+ * 目前使用C# 7.3版本语法。
+ */
+#pragma warning disable IDE0074 // 使用复合分配
+using Game.Social;
 using GuangYuan.GY001.UserDb;
 using System;
 using System.Collections.Generic;
@@ -9,8 +14,8 @@ using System.Threading.Tasks;
 
 namespace GY2021001WebApi.Models
 {
-#pragma warning disable IDE0074 // 使用复合分配
 
+    #region 基础数据
     /// <summary>
     /// 该项目使用的特定常量。
     /// </summary>
@@ -254,7 +259,6 @@ namespace GY2021001WebApi.Models
 
     }
 
-    #region 基础数据封装类
     /// <summary>
     /// 分页控制数据。
     /// </summary>
@@ -618,7 +622,7 @@ namespace GY2021001WebApi.Models
     public class ReturnDtoBase
     {
         /// <summary>
-        /// 返回时指示是否有错误。false表示正常完成，true表示有错误发生。
+        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
         /// </summary>
         [DataMember]
         public bool HasError { get; set; }
@@ -651,9 +655,30 @@ namespace GY2021001WebApi.Models
         public List<ChangesItemDto> ChangesItems { get => _ChangesItems ?? (_ChangesItems = new List<ChangesItemDto>()); set => _ChangesItems = value; }
     }
 
-    #endregion 基础数据封装类
+    /// <summary>
+    /// 带变化物品和邮件结果的返回值对象的基类。
+    /// </summary>
+    [DataContract]
+    public partial class ChangesAndMailReturnDtoBase : ChangesReturnDtoBase
+    {
+        public ChangesAndMailReturnDtoBase()
+        {
 
-    #region 接口特定数据封装类
+        }
+
+        [IgnoreDataMember]
+        List<string> _MailIds;
+
+        /// <summary>
+        /// 操作导致发送了邮件的Id集合。
+        /// 如果是空集合则表示没有发送邮件。
+        /// </summary>
+        [DataMember]
+        public List<string> MailIds { get => _MailIds ?? (_MailIds = new List<string>()); set => _MailIds = value; }
+    }
+    #endregion 基础数据
+
+    #region 账号管理相关
 
     /// <summary>
     /// 快速隐式注册接口的返回类。
@@ -775,6 +800,9 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string DisplayName { get; set; }
     }
+    #endregion 账号管理相关
+
+    #region 客户端辅助
 
     /// <summary>
     /// 修改客户端字符串的接口参数类。
@@ -820,144 +848,6 @@ namespace GY2021001WebApi.Models
         public string ObjectId { get; set; }
     }
 
-    #region 战斗相关数据
-
-    /// <summary>
-    /// 开始战斗的参数传输类。
-    /// </summary>
-    [DataContract]
-    public partial class CombatStartParamsDto : TokenDtoBase
-    {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public CombatStartParamsDto()
-        {
-
-        }
-
-        /// <summary>
-        /// 关卡Id。第一个小关卡Id或整个大关卡Id。
-        /// </summary>
-        [DataMember]
-        public string DungeonId { get; set; }
-    }
-
-    /// <summary>
-    /// 开始战斗的返回数据传输类
-    /// </summary>
-    [DataContract]
-    public partial class CombatStartReturnDto
-    {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public CombatStartReturnDto()
-        {
-
-        }
-
-        /// <summary>
-        /// 要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
-        /// </summary>
-        [DataMember]
-        public string TemplateId { get; set; }
-
-        /// <summary>
-        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
-        /// </summary>
-        [DataMember]
-        public bool HasError { get; set; }
-
-        /// <summary>
-        /// 调试信息。调试状态下返回时填写。
-        /// </summary>
-        [DataMember]
-        public string DebugMessage { get; set; }
-    }
-
-    /// <summary>
-    /// 结束战斗的参数传输类。
-    /// </summary>
-    [DataContract]
-    public partial class CombatEndParamsDto : TokenDtoBase
-    {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public CombatEndParamsDto()
-        {
-        }
-
-        /// <summary>
-        /// 关卡Id。如果是小关Id表示该小关，如果是大关Id则表示整个大关通关。
-        /// </summary>
-        [DataMember]
-        public string DungeonId { get; set; }
-
-        /// <summary>
-        /// 获取或设置一个指示，当这个属性为true时，仅记录收益，并核准。不会试图结束当前关卡。此时忽略其他请求退出的属性。
-        /// </summary>
-        [DataMember]
-        public bool OnlyMark { get; set; }
-
-        /// <summary>
-        /// 角色是否退出，true强制在结算后退出当前大关口，false试图继续(如果已经是最后一关则不起作用——必然退出)。
-        /// </summary>
-        [DataMember]
-        public bool EndRequested { get; set; }
-
-        /// <summary>
-        /// 收益。
-        /// </summary>
-        [DataMember]
-        public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
-
-
-    }
-
-    /// <summary>
-    /// 结束战斗的返回数据传输类
-    /// </summary>
-    [DataContract]
-    public partial class CombatEndReturnDto
-    {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public CombatEndReturnDto()
-        {
-        }
-
-        /// <summary>
-        /// 需要进入的下一关的Id。如果已经是最后一关结束或强制要求退出，则这里返回空引用或空字符串(string.IsNullOrEmpty测试为true)。
-        /// 如果正常进入下一关，可以不必调用启动战斗的接口。
-        /// </summary>
-        [DataMember]
-        public string NextDungeonId { get; set; }
-
-        /// <summary>
-        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
-        /// </summary>
-        [DataMember]
-        public bool HasError { get; set; }
-
-        /// <summary>
-        /// 调试信息。调试状态下返回时填写。
-        /// </summary>
-        [DataMember]
-        public string DebugMessage { get; set; }
-
-        /// <summary>
-        /// 获取变化物品的数据。仅当结算大关卡时这里才有数据。
-        /// </summary>
-        [DataMember]
-        public List<ChangesItemDto> ChangesItems { get; set; } = new List<ChangesItemDto>();
-
-
-    }
-
-    #endregion 战斗相关数据
 
     /// <summary>
     /// 设置客户端扩展属性接口的参数封装类。
@@ -1009,22 +899,10 @@ namespace GY2021001WebApi.Models
         public string Value { get; set; }
     }
 
-    /// <summary>
-    /// SetCombatMounts接口的数据模型传输类。
-    /// </summary>
-    [DataContract]
-    public class SetCombatMountsParamsDto : TokenDtoBase
-    {
-        public SetCombatMountsParamsDto()
-        {
 
-        }
+    #endregion 客户端辅助
 
-        /// <summary>
-        /// 元素中仅需Id有效即可。
-        /// </summary>
-        public List<GameItemDto> GameItemDtos { get; set; } = new List<GameItemDto>();
-    }
+    #region 物品相关
 
     /// <summary>
     /// 使用蓝图的数据传输对象。
@@ -1056,30 +934,12 @@ namespace GY2021001WebApi.Models
     /// ApplyBluprint接口返回时数据。
     /// </summary>
     [DataContract]
-    public partial class ApplyBlueprintReturnDto
+    public partial class ApplyBlueprintReturnDto : ChangesAndMailReturnDtoBase
     {
         public ApplyBlueprintReturnDto()
         {
 
         }
-
-        /// <summary>
-        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
-        /// </summary>
-        [DataMember]
-        public bool HasError { get; set; }
-
-        /// <summary>
-        /// 调试信息。调试状态下返回时填写。
-        /// </summary>
-        [DataMember]
-        public string DebugMessage { get; set; }
-
-        /// <summary>
-        /// 获取变化物品的数据。仅当成功返回时有意义。
-        /// </summary>
-        [DataMember]
-        public List<ChangesItemDto> ChangesItems { get; set; } = new List<ChangesItemDto>();
 
         /// <summary>
         /// 获取或设置成功执行的次数。
@@ -1128,54 +988,6 @@ namespace GY2021001WebApi.Models
         {
 
         }
-    }
-
-    /// <summary>
-    /// SetLineup接口返回的数据封装类。
-    /// </summary>
-    [DataContract]
-    public class SetLineupReturnDto : ChangesReturnDtoBase
-    {
-    }
-
-    /// <summary>
-    /// 针对某个坐骑的阵容设置
-    /// </summary>
-    [DataContract]
-    public class SetLineupItem
-    {
-        /// <summary>
-        /// 坐骑的Id。
-        /// </summary>
-        [DataMember]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// 阵容号，从0开始。
-        /// 推关阵容号是0。
-        /// </summary>
-        [DataMember]
-        public int ForIndex { get; set; }
-
-        /// <summary>
-        /// -1表示下阵，相应的会删除 forXXX 动态属性键值。其他值会记录在 forXXX=Position。
-        /// </summary>
-        [DataMember]
-        public int Position { get; set; }
-
-    }
-
-    /// <summary>
-    /// SetLineup接口参数使用的数据传输类。
-    /// </summary>
-    [DataContract]
-    public class SetLineupParamsDto : TokenDtoBase
-    {
-        /// <summary>
-        /// 阵容设置集合，参见 SetLineupItem 说明。
-        /// </summary>
-        [DataMember]
-        public List<SetLineupItem> Settings { get; set; }
     }
 
     /// <summary>
@@ -1312,6 +1124,8 @@ namespace GY2021001WebApi.Models
         public List<ChangesItemDto> Changes { get; set; } = new List<ChangesItemDto>();
 
     }
+
+    #endregion 物品相关
 
     #region 家园建设方案
 
@@ -1518,7 +1332,191 @@ namespace GY2021001WebApi.Models
 
     #endregion 家园建设方案
 
-    #endregion 接口特定数据封装类
+    #region 战斗相关
+
+    /// <summary>
+    /// 开始战斗的参数传输类。
+    /// </summary>
+    [DataContract]
+    public partial class CombatStartParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public CombatStartParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 关卡Id。第一个小关卡Id或整个大关卡Id。
+        /// </summary>
+        [DataMember]
+        public string DungeonId { get; set; }
+    }
+
+    /// <summary>
+    /// 开始战斗的返回数据传输类
+    /// </summary>
+    [DataContract]
+    public partial class CombatStartReturnDto
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public CombatStartReturnDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
+        /// </summary>
+        [DataMember]
+        public string TemplateId { get; set; }
+
+        /// <summary>
+        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
+        /// </summary>
+        [DataMember]
+        public bool HasError { get; set; }
+
+        /// <summary>
+        /// 调试信息。调试状态下返回时填写。
+        /// </summary>
+        [DataMember]
+        public string DebugMessage { get; set; }
+    }
+
+    /// <summary>
+    /// 结束战斗的参数传输类。
+    /// </summary>
+    [DataContract]
+    public partial class CombatEndParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public CombatEndParamsDto()
+        {
+        }
+
+        /// <summary>
+        /// 关卡Id。如果是小关Id表示该小关，如果是大关Id则表示整个大关通关。
+        /// </summary>
+        [DataMember]
+        public string DungeonId { get; set; }
+
+        /// <summary>
+        /// 获取或设置一个指示，当这个属性为true时，仅记录收益，并核准。不会试图结束当前关卡。此时忽略其他请求退出的属性。
+        /// </summary>
+        [DataMember]
+        public bool OnlyMark { get; set; }
+
+        /// <summary>
+        /// 角色是否退出，true强制在结算后退出当前大关口，false试图继续(如果已经是最后一关则不起作用——必然退出)。
+        /// </summary>
+        [DataMember]
+        public bool EndRequested { get; set; }
+
+        /// <summary>
+        /// 收益。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
+
+
+    }
+
+    /// <summary>
+    /// 结束战斗的返回数据传输类。
+    /// 变化数据中，角色下弃物槽（TId={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
+    /// ChangesItems 仅当结算大关卡时这里才有数据。
+    /// </summary>
+    [DataContract]
+    public partial class CombatEndReturnDto : ChangesReturnDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public CombatEndReturnDto()
+        {
+        }
+
+        /// <summary>
+        /// 需要进入的下一关的Id。如果已经是最后一关结束或强制要求退出，则这里返回空引用或空字符串(string.IsNullOrEmpty测试为true)。
+        /// 如果正常进入下一关，可以不必调用启动战斗的接口。
+        /// </summary>
+        [DataMember]
+        public string NextDungeonId { get; set; }
+    }
+
+    /// <summary>
+    /// SetCombatMounts接口的数据模型传输类。
+    /// </summary>
+    [DataContract]
+    public class SetCombatMountsParamsDto : TokenDtoBase
+    {
+        public SetCombatMountsParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 元素中仅需Id有效即可。
+        /// </summary>
+        public List<GameItemDto> GameItemDtos { get; set; } = new List<GameItemDto>();
+    }
+
+    /// <summary>
+    /// SetLineup接口返回的数据封装类。
+    /// </summary>
+    [DataContract]
+    public class SetLineupReturnDto : ChangesReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 针对某个坐骑的阵容设置
+    /// </summary>
+    [DataContract]
+    public class SetLineupItem
+    {
+        /// <summary>
+        /// 坐骑的Id。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 阵容号，从0开始。
+        /// 推关阵容号是0。
+        /// </summary>
+        [DataMember]
+        public int ForIndex { get; set; }
+
+        /// <summary>
+        /// -1表示下阵，相应的会删除 forXXX 动态属性键值。其他值会记录在 forXXX=Position。
+        /// </summary>
+        [DataMember]
+        public int Position { get; set; }
+
+    }
+
+    /// <summary>
+    /// SetLineup接口参数使用的数据传输类。
+    /// </summary>
+    [DataContract]
+    public class SetLineupParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 阵容设置集合，参见 SetLineupItem 说明。
+        /// </summary>
+        [DataMember]
+        public List<SetLineupItem> Settings { get; set; }
+    }
+
+    #endregion 战斗相关
 
     #region 社交相关
 
@@ -1866,6 +1864,6 @@ namespace GY2021001WebApi.Models
     }
 
     #endregion 社交相关
-#pragma warning restore IDE0074 // 使用复合分配
 
 }
+#pragma warning restore IDE0074 // 使用复合分配

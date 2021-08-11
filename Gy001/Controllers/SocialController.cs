@@ -96,7 +96,7 @@ namespace Gy001.Controllers
             try
             {
                 var social = _World.SocialManager;
-                var changes = new List<ChangesItem>();
+                var changes = new List<ChangeItem>();
                 social.GetAttachmentes(model.Ids.Select(c => GameHelper.FromBase64String(c)), gu.CurrentChar, changes);
                 result.ChangesItems.AddRange(changes.Select(c => (ChangesItemDto)c));
             }

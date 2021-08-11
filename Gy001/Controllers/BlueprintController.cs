@@ -1,6 +1,6 @@
 ﻿using GuangYuan.GY001.BLL;
-using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +34,7 @@ namespace Gy001.Controllers
         [HttpGet]
         public ActionResult<ApplyBlueprintReturnDto> Test()
         {
-            var world = HttpContext.RequestServices.GetService<VWorld>();   //获取总服务
+            var world = _World;   //获取总服务
             var gitm = world.ItemTemplateManager;
             var gim = world.ItemManager;
             //注册并登录新账号

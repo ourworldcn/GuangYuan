@@ -222,7 +222,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     att.Properties["TId"] = gi.TemplateId.ToString();
                 }
-                att.Properties["Count"] = gi.Count.HasValue ? gi.Count.Value : 1;
+                att.Properties["Count"] = gi.Count ?? 1;
                 att.Properties["PTId"] = item.Item2.ToString();
                 mail.Attachmentes.Add(att);
             }
@@ -235,7 +235,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="attachmentesIds">附件Id集合。</param>
         /// <param name="gameChar"></param>
         /// <param name="changes"></param>
-        public bool GetAttachmentes(IEnumerable<Guid> attachmentesIds, GameChar gameChar, IList<ChangesItem> changes = null)
+        public bool GetAttachmentes(IEnumerable<Guid> attachmentesIds, GameChar gameChar, IList<ChangeItem> changes = null)
         {
             var db = World.CreateNewUserDbContext();
             ValueTuple<Guid, decimal, Guid>[] templates;
@@ -857,12 +857,12 @@ namespace GuangYuan.GY001.BLL
             /// Changes属性都可能有数据（部分放入）。
             /// 其中<see cref="ChangesItem.ContainerId"/>是邮件的Id。
             /// </summary>
-            public List<ChangesItem> MailItems { get; set; }
+            public List<ChangeItem> MailItems { get; set; }
 
             /// <summary>
             /// 互动产生的野兽。如果条件不具备则是空集合。
             /// </summary>
-            public List<ChangesItem> Changes { get; set; } = new List<ChangesItem>();
+            public List<ChangeItem> Changes { get; set; } = new List<ChangeItem>();
 
         }
 

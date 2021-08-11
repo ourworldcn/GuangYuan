@@ -176,12 +176,12 @@ namespace GuangYuan.GY001.UserDb
             base.PrepareSaving(db);
         }
 
-        private List<ChangesItem> _ChangesItems = new List<ChangesItem>();
+        private List<ChangeItem> _ChangesItems = new List<ChangeItem>();
 
         /// <summary>
         /// 保存未能发送给客户端的变化数据。
         /// </summary>
-        public List<ChangesItem> ChangesItems => _ChangesItems;
+        public List<ChangeItem> ChangesItems => _ChangesItems;
 
         /// <summary>
         /// 未发送给客户端的数据保存在<see cref="GameThingBase.ExtendProperties"/>中使用的属性名称。
@@ -232,7 +232,7 @@ namespace GuangYuan.GY001.UserDb
         /// 转换为摘要类。
         /// </summary>
         /// <param name="obj"></param>
-        public static explicit operator ChangesItemSummary(ChangesItem obj)
+        public static explicit operator ChangesItemSummary(ChangeItem obj)
         {
             var result = new ChangesItemSummary()
             {
@@ -251,13 +251,13 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="obj"></param>
         /// <param name="gameChar"></param>
         /// <returns></returns>
-        public static List<ChangesItem> ToChangesItem(IEnumerable<ChangesItemSummary> objs, GameChar gameChar)
+        public static List<ChangeItem> ToChangesItem(IEnumerable<ChangesItemSummary> objs, GameChar gameChar)
         {
-            var results = new List<ChangesItem>();
+            var results = new List<ChangeItem>();
             var dic = gameChar.AllChildren.ToDictionary(c => c.Id);
             foreach (var obj in objs)
             {
-                var result = new ChangesItem()
+                var result = new ChangeItem()
                 {
                     ContainerId = obj.ContainerId,
                     DateTimeUtc = obj.DateTimeUtc

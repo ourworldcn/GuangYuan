@@ -214,7 +214,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public GameItemTemplate GetTemplateByNumberAndIndex(this GameItemTemplateManager manager, int fenggeNumber, int index) =>
-            manager.GetAllDikuai().GetValueOrDefault((index, fenggeNumber), null);
+            manager.GetAllDikuai().GetValueOrDefault((fenggeNumber, index), null);
 
         /// <summary>
         /// 获取模板的风格号，如果没有风格号则返回-1.

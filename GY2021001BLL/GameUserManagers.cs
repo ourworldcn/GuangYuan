@@ -190,7 +190,7 @@ namespace GuangYuan.GY001.BLL
                     lst.AddRange(_DirtyUsers.Distinct());
                     _DirtyUsers.Clear();
                 }
-                GameUser item = null;
+                GameUser item;
                 for (int i = 0; i < lst.Count; i++)
                 {
                     try

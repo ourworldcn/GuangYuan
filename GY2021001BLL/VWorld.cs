@@ -19,6 +19,14 @@ namespace GuangYuan.GY001.BLL
     /// </summary>
     public class VWorldOptions
     {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public VWorldOptions()
+        {
+
+        }
+
         public DbContextOptions<GY001UserContext> UserDbOptions { get; set; }
         public DbContextOptions<GY001TemplateContext> TemplateDbOptions { get; set; }
     }
@@ -332,8 +340,9 @@ namespace GuangYuan.GY001.BLL
             {
                 logger?.LogError($"{DateTime.UtcNow:s}初始化发生异常{err.Message}", err);
             }
-            var bptm = _Services.GetService<BlueprintManager>();
-            var test = _Services.GetService<GamePropertyHelper>();
+
+            _Services.GetService<BlueprintManager>();
+            _Services.GetService<GamePropertyHelper>();
         }
 
         private void CreateDb(IServiceProvider services)

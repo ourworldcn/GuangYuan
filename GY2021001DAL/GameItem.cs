@@ -291,13 +291,13 @@ namespace GuangYuan.GY001.UserDb
     /// 记录虚拟物品、资源变化的类。
     /// </summary>
     [NotMapped]
-    public class ChangesItem
+    public class ChangeItem
     {
         /// <summary>
         /// 按容器Id化简集合。
         /// </summary>
         /// <param name="changes"></param>
-        public static void Reduce(List<ChangesItem> changes)
+        public static void Reduce(List<ChangeItem> changes)
         {
             if (changes is null)
             {
@@ -362,12 +362,12 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public ChangesItem()
+        public ChangeItem()
         {
 
         }
 
-        public ChangesItem(Guid containerId, IEnumerable<GameItem> adds = null, IEnumerable<Guid> removes = null, IEnumerable<GameItem> changes = null)
+        public ChangeItem(Guid containerId, IEnumerable<GameItem> adds = null, IEnumerable<Guid> removes = null, IEnumerable<GameItem> changes = null)
         {
             ContainerId = containerId;
             if (null != adds)
@@ -433,13 +433,13 @@ namespace GuangYuan.GY001.UserDb
         ///// </summary>
         ///// <param name="changes"></param>
         ///// <param name="gameItem">>如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
-        //public void ChangesToAdds(ICollection<ChangesItem> changes, GameItem gameItem)
+        //public void ChangesToAdds(ICollection<ChangeItem> changes, GameItem gameItem)
         //{
         //    var cid = (GetContainer(gameItem)?.Id ?? gameItem.ParentId) ?? Guid.Empty;
         //    var item = changes.FirstOrDefault(c => c.ContainerId == cid);
         //    if (null == item)
         //    {
-        //        item = new ChangesItem() { ContainerId = cid };
+        //        item = new ChangeItem() { ContainerId = cid };
         //        changes.Add(item);
         //    }
         //    item.Adds.Add(gameItem);
@@ -450,13 +450,13 @@ namespace GuangYuan.GY001.UserDb
         ///// </summary>
         ///// <param name="changes"></param>
         ///// <param name="gameItem">如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
-        //public void ChangesToChanges(ICollection<ChangesItem> changes, GameItem gameItem)
+        //public void ChangesToChanges(ICollection<ChangeItem> changes, GameItem gameItem)
         //{
         //    var cid = (GetContainer(gameItem)?.Id ?? gameItem.ParentId) ?? Guid.Empty;
         //    var item = changes.FirstOrDefault(c => c.ContainerId == cid);
         //    if (null == item)
         //    {
-        //        item = new ChangesItem() { ContainerId = cid };
+        //        item = new ChangeItem() { ContainerId = cid };
         //        changes.Add(item);
         //    }
         //    item.Changes.Add(gameItem);
@@ -468,12 +468,12 @@ namespace GuangYuan.GY001.UserDb
         ///// <param name="changes"></param>
         ///// <param name="itemId"></param>
         ///// <param name="containerId"></param>
-        //public void ChangesToRemoves(ICollection<ChangesItem> changes, Guid itemId, Guid containerId)
+        //public void ChangesToRemoves(ICollection<ChangeItem> changes, Guid itemId, Guid containerId)
         //{
         //    var item = changes.FirstOrDefault(c => c.ContainerId == containerId);
         //    if (null == item)
         //    {
-        //        item = new ChangesItem() { ContainerId = containerId };
+        //        item = new ChangeItem() { ContainerId = containerId };
         //        changes.Add(item);
         //    }
         //    item.Removes.Add(itemId);
@@ -488,12 +488,12 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="containerId"></param>
         /// <param name="items">即使没有指定参数，也会增加容器。</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void AddToAdds(this ICollection<ChangesItem> coll, Guid containerId, params GameItem[] items)
+        static public void AddToAdds(this ICollection<ChangeItem> coll, Guid containerId, params GameItem[] items)
         {
             var item = coll.FirstOrDefault(c => c.ContainerId == containerId);
             if (null == item)
             {
-                item = new ChangesItem() { ContainerId = containerId };
+                item = new ChangeItem() { ContainerId = containerId };
                 coll.Add(item);
             }
             for (int i = 0; i < items.Length; i++)
@@ -503,7 +503,7 @@ namespace GuangYuan.GY001.UserDb
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void AddToAdds(this ICollection<ChangesItem> coll, params GameItem[] items)
+        static public void AddToAdds(this ICollection<ChangeItem> coll, params GameItem[] items)
         {
             foreach (var item in items)
                 coll.AddToAdds(item.ContainerId.Value, item);
@@ -516,12 +516,12 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="containerId"></param>
         /// <param name="items"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void AddToRemoves(this ICollection<ChangesItem> coll, Guid containerId, params Guid[] items)
+        static public void AddToRemoves(this ICollection<ChangeItem> coll, Guid containerId, params Guid[] items)
         {
             var item = coll.FirstOrDefault(c => c.ContainerId == containerId);
             if (null == item)
             {
-                item = new ChangesItem() { ContainerId = containerId };
+                item = new ChangeItem() { ContainerId = containerId };
                 coll.Add(item);
             }
             for (int i = 0; i < items.Length; i++)
@@ -537,12 +537,12 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="containerId"></param>
         /// <param name="items"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void AddToChanges(this ICollection<ChangesItem> coll, Guid containerId, params GameItem[] items)
+        static public void AddToChanges(this ICollection<ChangeItem> coll, Guid containerId, params GameItem[] items)
         {
             var item = coll.FirstOrDefault(c => c.ContainerId == containerId);
             if (null == item)
             {
-                item = new ChangesItem() { ContainerId = containerId };
+                item = new ChangeItem() { ContainerId = containerId };
                 coll.Add(item);
             }
             for (int i = 0; i < items.Length; i++)
@@ -552,7 +552,7 @@ namespace GuangYuan.GY001.UserDb
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void AddToChanges(this ICollection<ChangesItem> coll, params GameItem[] items)
+        static public void AddToChanges(this ICollection<ChangeItem> coll, params GameItem[] items)
         {
             //TO DO以后优化
             //var tuples = from item in items

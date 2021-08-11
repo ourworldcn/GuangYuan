@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 
 namespace GuangYuan.GY001.BLL
@@ -492,7 +493,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="changesItems">物品变化信息，null或省略则不生成具体的变化信息。</param>
         /// <returns>true成功移动了物品，false是以下情况的一种或多种：物品现存数量小于要求移动的数量，没有可以移动的物品,目标背包已经满,。</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/>应该大于0</exception>
-        public bool MoveItem(GameItem item, decimal count, GameThingBase destContainer, ICollection<ChangesItem> changesItems = null)
+        public bool MoveItem(GameItem item, decimal count, GameThingBase destContainer, ICollection<ChangeItem> changesItems = null)
         {
             var container = GetChildrenCollection(destContainer);
             //TO DO 不会堆叠
@@ -624,7 +625,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="filter"></param>
         /// <param name="dest"></param>
         /// <param name="changes">变化的数据。可以是null或省略，此时忽略。</param>
-        public void MoveItems(GameThingBase src, Func<GameItem, bool> filter, GameThingBase dest, ICollection<ChangesItem> changes = null)
+        public void MoveItems(GameThingBase src, Func<GameItem, bool> filter, GameThingBase dest, ICollection<ChangeItem> changes = null)
         {
             var tmp = World.ObjectPoolListGameItem.Get();
             var adds = World.ObjectPoolListGameItem.Get();
@@ -637,7 +638,7 @@ namespace GuangYuan.GY001.BLL
                 var removeIds = tmp.Select(c => c.Id).ToArray();  //移除物品的Id集合
                 AddItems(tmp, dest, remainder, changes);
                 //已经增加的物品数据
-                var addChanges = (new ChangesItem()
+                var addChanges = (new ChangeItem()
                 {
                     ContainerId = dest.Id,
                 });
@@ -655,7 +656,7 @@ namespace GuangYuan.GY001.BLL
                     List<(Guid, GameItem)> l_r = new List<(Guid, GameItem)>();
                     removeIds.ApartWithWithRepeated(tmp, c => c, c => c.Id, guids, l_r, adds);
 
-                    var change = new ChangesItem()
+                    var change = new ChangeItem()
                     {
                         ContainerId = src.Id,
                     };
@@ -666,7 +667,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 else //全部移动了
                 {
-                    var _ = new ChangesItem()
+                    var _ = new ChangeItem()
                     {
                         ContainerId = src.Id,
                     };
@@ -693,7 +694,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="remainder">追加不能放入的物品到此集合，可以是null或省略，此时忽略。</param>
         /// <param name="changeItems">变化的数据。可以是null或省略，此时忽略。</param>
         /// 
-        public void AddItems(IEnumerable<GameItem> gameItems, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangesItem> changeItems = null)
+        public void AddItems(IEnumerable<GameItem> gameItems, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
         {
             foreach (var item in gameItems) //TO DO 性能优化未做
             {
@@ -711,7 +712,7 @@ namespace GuangYuan.GY001.BLL
         /// 基于堆叠限制和容量限制，无法放入的部分。实际是<paramref name="gameItem"/>对象或拆分后的对象集合，对于可堆叠对象可能修改了<see cref="GameItem.Count"/>属性。若没有剩余则返回null。
         /// </param>
         /// <returns>放入后的对象，如果是不可堆叠或堆叠后有剩余则是 <paramref name="gameItem"/>和堆叠对象，否则是容器内原有对象。返回空集合，因容量限制没有放入任何物品。</returns>
-        public void AddItem(GameItem gameItem, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangesItem> changeItems = null)
+        public void AddItem(GameItem gameItem, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
         {
             IList<GameItem> children = GetChildrenCollection(parent);
             var stcItem = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId) ?? gameItem;
@@ -758,7 +759,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     var tmp = new List<GameItem>();
                     SplitItem(gameItem, tmp, parent);
-                    var _ = new ChangesItem(parent.Id);
+                    var _ = new ChangeItem(parent.Id);
                     for (int i = tmp.Count - 1; i >= 0; i--)
                     {
                         if (-1 != upper && children.Count >= upper)    //若已经满
@@ -837,22 +838,22 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="gameItem">无视容量限制堆叠规则，不考虑原有容器。</param>
         /// <param name="container">无视容量限制堆叠规则。</param>
-        /// <param name="db">使用的数据库上下文。</param>
+        /// 
         /// <returns>true成功加入.false <paramref name="container"/>不是可以容纳物品的类型。</returns>
-        public bool ForcedAdd(GameItem gameItem, GameThingBase container, DbContext db = null)
+        public bool ForcedAdd(GameItem gameItem, GameThingBase container)
         {
             if (container is GameChar gameChar)  //若容器是角色
             {
                 gameItem.GenerateIdIfEmpty();
                 gameChar.GameItems.Add(gameItem);
-                gameItem.OwnerId ??= gameChar.Id;
+                gameItem.OwnerId = gameChar.Id;
             }
             else if (container is GameItem item)
             {
                 gameItem.GenerateIdIfEmpty();
                 item.Children.Add(gameItem);
-                gameItem.ParentId ??= item.Id;
-                gameItem.Parent ??= item;
+                gameItem.ParentId = item.Id;
+                gameItem.Parent = item;
             }
             else
                 return false;
@@ -1097,6 +1098,89 @@ namespace GuangYuan.GY001.BLL
             });
             return coll;
         }
+
+        /// <summary>
+        /// 卖出物品。
+        /// </summary>
+        /// <param name="datas">工作参数及返回值封装类。<seealso cref="SellDatas"/></param>
+        public void Sell(SellDatas datas)
+        {
+            using var disposer = datas.LockUser(World.CharManager);
+            if (disposer is null) return;
+            var gc = datas.GameChar;
+            var shoulan = gc.GetShoulanBag();
+            var coll = from id in datas.SellIds
+                       join gi in shoulan.Children
+                       on id equals gi.Id
+                       let price = ComputeGoldPrice(gi)
+                       select (gi, price);
+            if (coll.Count() != datas.SellIds.Count)
+            {
+                datas.ResultCode = (int)HttpStatusCode.BadRequest;
+                datas.DebugMessage = "至少一个指定的Id不存在";
+                datas.HasError = true;
+                return;
+            }
+            else if (coll.Any(c => !c.price.HasValue))
+            {
+                datas.ResultCode = (int)HttpStatusCode.BadRequest;
+                datas.DebugMessage = "至少一个指定物品无法计算售价";
+                datas.HasError = true;
+                return;
+            }
+            var gim = World.ItemManager;
+            var qiwu = datas.GameChar.GetQiwuBag(); //回收站
+            var ary = coll.ToArray();
+            //改写物品对象
+            foreach (var (gi, price) in ary)
+            {
+                datas.ChangeItems.AddToRemoves(gi.ContainerId.Value, gi.Id);
+                gim.ForceMove(gi, qiwu);
+                datas.ChangeItems.AddToAdds(gi);
+            }
+            //改写金币
+            var jinbi = datas.GameChar.GetJinbi();
+            jinbi.Count += ary.Sum(c => c.price.Value);
+            datas.ChangeItems.AddToChanges(jinbi);
+        }
+
+        /// <summary>
+        /// 计算某个物品的金币售价。
+        /// </summary>
+        /// <returns>售价，不能出售或无法计算则返回null。</returns>
+        public decimal? ComputeGoldPrice(GameItem item)
+        {
+            if (IsMounts(item))
+            {
+                var totalNe = item.Properties.GetDecimalOrDefault("neatk", 0m) +   //总资质值
+                item.Properties.GetDecimalOrDefault("nemhp", 0m) +
+                item.Properties.GetDecimalOrDefault("neqlt", 0m);
+                totalNe = Math.Round(totalNe, MidpointRounding.AwayFromZero);  //取整，容错
+                decimal mul;
+
+                if (totalNe >= 0 && totalNe <= 60) mul = 1;
+                else if (totalNe >= 61 && totalNe <= 120) mul = 1.5m;
+                else if (totalNe >= 121 && totalNe <= 180) mul = 2;
+                else if (totalNe >= 181 && totalNe <= 240) mul = 3;
+                else if (totalNe >= 241 && totalNe <= 300) mul = 4;
+                else return null;
+                return mul * totalNe;
+            }
+            else
+                return null;
+        }
+
+    }
+
+
+    public class SellDatas : ChangeItemsWorkDatsBase
+    {
+        public SellDatas()
+        {
+        }
+
+        List<Guid> _SellIds;
+        public List<Guid> SellIds => GetOrAdd(nameof(SellIds), ref _SellIds);
     }
 
     public class ActiveStyleDatas
@@ -1110,7 +1194,7 @@ namespace GuangYuan.GY001.BLL
         public string Message { get; set; }
         public bool HasError { get; set; }
 
-        public List<ChangesItem> ItemChanges { get; set; }
+        public List<ChangeItem> ItemChanges { get; set; }
         public GameChar GameChar { get; set; }
     }
 

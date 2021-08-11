@@ -194,7 +194,7 @@ namespace GY2021001WebApi.Models
     public partial class ChangesItemDto
     {
 
-        public static implicit operator ChangesItemDto(ChangesItem obj)
+        public static implicit operator ChangesItemDto(ChangeItem obj)
         {
             var result = new ChangesItemDto()
             {
@@ -267,6 +267,7 @@ namespace GY2021001WebApi.Models
                 result.ChangesItems.AddRange(obj.ChangesItem.Select(c => (ChangesItemDto)c));
                 result.FormulaIds.AddRange(obj.FormulaIds.Select(c => c.ToBase64String()));
                 result.ErrorTIds.AddRange(obj.ErrorItemTIds.Select(c => c.ToBase64String()));
+                result.MailIds.AddRange(obj.MailIds.Select(c => c.ToBase64String()));
             }
             return result;
         }

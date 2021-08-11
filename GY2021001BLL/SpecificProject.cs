@@ -98,6 +98,11 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid CurrencyBagTId = new Guid("{7066A96D-F514-42C7-A30E-5E7567900AD4}");
 
         /// <summary>
+        /// 弃物槽模板Id。
+        /// </summary>
+        public static readonly Guid QiwuBagTId = new Guid("{346A2F55-9CE8-47DE-B0E0-525FFB765A93}");
+
+        /// <summary>
         /// 图鉴背包模板Id。
         /// </summary>
         public static readonly Guid TujianBagTId = new Guid("{6437ce7b-8a03-4e67-9f89-8c9ab7141263}");
@@ -316,6 +321,11 @@ namespace GuangYuan.GY001.BLL
     {
         private readonly IServiceProvider _ServiceProvider;
 
+        /// <summary>
+        /// 获取使用的服务容器。
+        /// </summary>
+        public IServiceProvider Services => _ServiceProvider;
+
         public SpecificProject()
         {
         }
@@ -432,7 +442,7 @@ namespace GuangYuan.GY001.BLL
             var gc = data.GameChar;
             var cm = world.CombatManager;
             var parent = cm.GetParent(data.Template);   //取大关
-            if (parent.TryGetPropertyValue("minCE", out var minCEObj) && OwHelper.TryGetDecimal(minCEObj, out var minCE))  //若需要校验战力
+            if (parent.TryGetPropertyValue("minCE", out var minCEObj) && OwHelper.TryGetDecimal(minCEObj, out _))  //若需要校验战力
             {
                 //TO DO
             }
@@ -546,7 +556,7 @@ namespace GuangYuan.GY001.BLL
             data.NextTemplate = cmbm.GetNext(data.Template);
             if (null == data.NextTemplate || data.EndRequested) //若大关卡已经结束
             {
-                var changes = new List<ChangesItem>();
+                var changes = new List<ChangeItem>();
                 //移动收益槽数据到各自背包。
                 //金币
                 gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar, changes);
@@ -561,7 +571,7 @@ namespace GuangYuan.GY001.BLL
                     return _ >= 15 && _ <= 17;
                 }, shenwenBag, changes);
                 //压缩变化数据
-                ChangesItem.Reduce(changes);
+                ChangeItem.Reduce(changes);
                 data.ChangesItems.AddRange(changes);
             }
 
@@ -656,6 +666,14 @@ namespace GuangYuan.GY001.BLL
     /// </summary>
     public static class ProjectExtensions
     {
+        /// <summary>
+        /// 获取弃物槽对象。
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public GameItem GetQiwuBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => ProjectConstant.QiwuBagTId == c.TemplateId);
+
         /// <summary>
         /// 获取货币袋。
         /// </summary>

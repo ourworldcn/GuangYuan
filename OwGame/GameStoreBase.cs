@@ -434,11 +434,10 @@ namespace OW.Game
             var leftDic = (from tmp in source
                            group tmp by getLeftKey(tmp) into g
                            select (g.Key, g.ToList())).ToDictionary(c => c.Key, c => c.Item2);
-            List<TLeft> leftLst;
             foreach (var item in right)
             {
                 var key = getRightKey(item);    //右序列元素的键
-                if (leftDic.TryGetValue(key, out leftLst))  //若两者皆有
+                if (leftDic.TryGetValue(key, out List<TLeft> leftLst))  //若两者皆有
                 {
                     var tmp = leftLst[^1];
                     leftLst.RemoveAt(leftLst.Count - 1);

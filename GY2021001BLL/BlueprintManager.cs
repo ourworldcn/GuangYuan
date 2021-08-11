@@ -97,7 +97,7 @@ namespace GuangYuan.GY001.BLL
                     }
                 }
             }
-            ChangesItem.Reduce(datas.ChangesItem);
+            ChangeItem.Reduce(datas.ChangesItem);
             return;
         }
 
@@ -541,7 +541,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 应用蓝图后，物品变化数据。
         /// </summary>
-        public List<ChangesItem> ChangesItem { get; } = new List<ChangesItem>();
+        public List<ChangeItem> ChangesItem { get; } = new List<ChangeItem>();
 
         /// <summary>
         /// 是否有错误。
@@ -576,6 +576,13 @@ namespace GuangYuan.GY001.BLL
         /// 获取或设置，出错虚拟物品的模板Id。具体意义根据不同蓝图区别。
         /// </summary>
         public List<Guid> ErrorItemTIds => _ErrorItemTIds ??= new List<Guid>();
+
+        List<Guid> _MailIds;
+
+        /// <summary>
+        /// 执行蓝图导致发送邮件的Id集合。
+        /// </summary>
+        public List<Guid> MailIds => _MailIds ??= new List<Guid>();
     }
 
     /// <summary>
@@ -1034,12 +1041,12 @@ namespace GuangYuan.GY001.BLL
         #endregion 家园相关
 
         [ContextStatic]
-        private static List<ChangesItem> _LastChangesItems;
+        private static List<ChangeItem> _LastChangesItems;
 
         /// <summary>
         /// 暂存自然cd得到的物品。
         /// </summary>
-        public static List<ChangesItem> LastChangesItems => _LastChangesItems ??= new List<ChangesItem>();
+        public static List<ChangeItem> LastChangesItems => _LastChangesItems ??= new List<ChangeItem>();
 
         /// <summary>
         /// 某个物品升级结束。
@@ -1249,12 +1256,12 @@ namespace GuangYuan.GY001.BLL
                         datas.SuccCount++;
                     }
                 }
-                ChangesItem.Reduce(datas.ChangesItem);    //压缩变化数据
+                ChangeItem.Reduce(datas.ChangesItem);    //压缩变化数据
                 switch (datas.Blueprint.Id.ToString("D").ToLower())
                 {
                     case "8b4ac76c-d8cc-4300-95ca-668350149821": //针对孵化蓝图
                         GameItem tmp = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);
-                        ChangesItem slotFh = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == tmp.Id);    //孵化容器
+                        ChangeItem slotFh = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == tmp.Id);    //孵化容器
                         if (slotFh == null)
                         {
                             break;
@@ -1266,7 +1273,7 @@ namespace GuangYuan.GY001.BLL
                             break;
                         }
 
-                        ChangesItem containerMounts = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == gameItem.Id);    //组合容器
+                        ChangeItem containerMounts = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == gameItem.Id);    //组合容器
                         Debug.Assert(containerMounts.Adds.Count == 2);
                         gameItem.Children.AddRange(containerMounts.Adds);
                         datas.ChangesItem.Remove(containerMounts);

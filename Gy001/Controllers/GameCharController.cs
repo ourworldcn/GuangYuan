@@ -168,72 +168,31 @@ namespace GY2021001WebApi.Controllers
 
         /// <summary>
         /// 出售物品。
+        /// 原子操作——指定物品要么全卖出，要么全没卖出。
         /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        /// <response code="401">参数错误。详情参见说明字符串。</response>
         [HttpPost]
         public ActionResult<SellReturnDto> Sell(SellParamsDto model)
         {
-            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            var result = new SellReturnDto();
-            if (0 == model.Ids.Count)
-                return result;
-            List<GameItem> removes = null;
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-                return Unauthorized("令牌无效");
-            try
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
+            //构造调用参数
+            var datas = new SellDatas();
+            using var disposer = datas.SetTokenStringAndLock(model.Token, world.CharManager);
+            if (disposer is null)   //若锁定失败
+                return StatusCode(datas.ResultCode, datas.DebugMessage);
+            datas.SellIds.AddRange(model.Ids.Select(c => GameHelper.FromBase64String(c)));
+            world.ItemManager.Sell(datas);  //调用服务
+            //构造返回参数
+            var result = new SellReturnDto()
             {
-                var gc = gu.CurrentChar;
-                var shoulan = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId); //兽栏
-                HashSet<Guid> ids = new HashSet<Guid>(shoulan.Children.Select(c => c.Id));  //所有兽栏动物Id
-                var sellIds = new HashSet<Guid>(model.Ids.Select(c => GameHelper.FromBase64String(c)));    //要卖的物品Id
-                var errItem = sellIds.FirstOrDefault(c => !ids.Contains(c));
-                if (Guid.Empty != errItem)   //若找不到某个Id
-                {
-                    result.HasError = true;
-                    result.DebugMessage = $"至少有一个对象无法找到，Number={errItem}";
-                }
-                else
-                {
-                    removes = world.ObjectPoolListGameItem.Get();
-                    var golden = gc.GetJinbi();  //金币
-                    world.ItemManager.RemoveItemsWhere(shoulan, c => sellIds.Contains(c.Id), removes);  //移除所有野兽
-                    foreach (var item in removes)   //计算出售所得金币
-                    {
-                        var totalNe = Convert.ToDecimal(item.Properties.GetValueOrDefault("neatk", 0m)) +   //总资质值
-                         Convert.ToDecimal(item.Properties.GetValueOrDefault("nemhp", 0m)) +
-                         Convert.ToDecimal(item.Properties.GetValueOrDefault("neqlt", 0m));
-                        totalNe = Math.Round(totalNe);  //取整，容错
-                        decimal mul;
-
-                        if (totalNe >= 0 && totalNe <= 60) mul = 1;
-                        else if (totalNe >= 61 && totalNe <= 120) mul = 1.5m;
-                        else if (totalNe >= 121 && totalNe <= 180) mul = 2;
-                        else if (totalNe >= 181 && totalNe <= 240) mul = 3;
-                        else if (totalNe >= 241 && totalNe <= 300) mul = 4;
-                        else throw new InvalidOperationException("资质总和过大。");
-                        golden.Count += mul * totalNe;
-                    }
-                    //移除的对象
-                    var chn = new ChangesItemDto()
-                    {
-                        ContainerId = shoulan.Id.ToBase64String(),
-                    };
-                    chn.Removes.AddRange(removes.Select(c => c.Id.ToBase64String()));
-                    result.ChangesItems.Add(chn);
-                    //变化的对象
-                    chn = new ChangesItemDto()
-                    {
-                        ContainerId = gc.Id.ToBase64String(),
-                    };
-                    chn.Changes.Add((GameItemDto)golden);
-                    result.ChangesItems.Add(chn);
-                }
-            }
-            finally
-            {
-                if (null != removes)
-                    world.ObjectPoolListGameItem.Return(removes);
-                world.CharManager.Unlock(gu, true);
-            }
+                HasError = datas.HasError,
+                DebugMessage = datas.DebugMessage,
+            };
+            if (!result.HasError)
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
             return result;
         }
 
@@ -266,7 +225,7 @@ namespace GY2021001WebApi.Controllers
                 else
                 {
                     var slot = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);
-                    var ci = new ChangesItem() { ContainerId = slot.Id };
+                    var ci = new ChangeItem() { ContainerId = slot.Id };
                     foreach (var item in coll)
                     {
                         if (item.Position == -1)    //若去除该阵营出阵位置编号
@@ -279,11 +238,11 @@ namespace GY2021001WebApi.Controllers
                         }
                         ci.Changes.Add(item.GItem);
                     }
-                    var changes = new List<ChangesItem>
+                    var changes = new List<ChangeItem>
                     {
                         ci
                     };
-                    ChangesItem.Reduce(changes);
+                    ChangeItem.Reduce(changes);
                     result.ChangesItems.AddRange(changes.Select(c => (ChangesItemDto)c));
                     world.CharManager.NotifyChange(gu);
                 }
@@ -321,21 +280,21 @@ namespace GY2021001WebApi.Controllers
                 var coll = from tmp in model.Items
                            select (Id: GameHelper.FromBase64String(tmp.ItemId), tmp.Count, PId: GameHelper.FromBase64String(tmp.DestContainerId));
                 var allGi = gim.GetAllChildrenDictionary(gc);
-                var tmpGi = coll.FirstOrDefault(c => !allGi.ContainsKey(c.Id) || !allGi.ContainsKey(c.PId));
-                if (tmpGi.Id != Guid.Empty)
+                var (Id, Count, PId) = coll.FirstOrDefault(c => !allGi.ContainsKey(c.Id) || !allGi.ContainsKey(c.PId));
+                if (Id != Guid.Empty)
                 {
                     result.HasError = true;
-                    result.DebugMessage = $"至少有一个物品没有找到。Number={tmpGi.Id},PId={tmpGi.PId}";
+                    result.DebugMessage = $"至少有一个物品没有找到。Number={Id},PId={PId}";
                     return result;
                 }
                 try
                 {
-                    List<ChangesItem> changesItems = new List<ChangesItem>();
+                    List<ChangeItem> changesItems = new List<ChangeItem>();
                     foreach (var item in coll)
                     {
                         world.ItemManager.MoveItem(allGi[item.Id], item.Count, allGi[item.PId], changesItems);
                     }
-                    ChangesItem.Reduce(changesItems);
+                    ChangeItem.Reduce(changesItems);
                     result.ChangesItems.AddRange(changesItems.Select(c => (ChangesItemDto)c));
                 }
                 catch (Exception)
@@ -389,7 +348,7 @@ namespace GY2021001WebApi.Controllers
                     }
                 }
                 var dic = OwHelper.GetAllSubItemsOfTree(gc.GameItems, c => c.Children).ToDictionary(c => c.Id);
-                List<ChangesItem> changes = new List<ChangesItem>();
+                List<ChangeItem> changes = new List<ChangeItem>();
                 foreach (var item in lst)   //加入
                 {
                     if (item.ParentId.Value == gc.Id)

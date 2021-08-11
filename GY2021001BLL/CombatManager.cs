@@ -81,7 +81,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 获取变化物品的数据。仅当结算大关卡时这里才有数据。
         /// </summary>
-        public List<ChangesItem> ChangesItems { get; set; } = new List<ChangesItem>();
+        public List<ChangeItem> ChangesItems { get; set; } = new List<ChangeItem>();
     }
 
     /// <summary>
@@ -407,7 +407,7 @@ namespace GuangYuan.GY001.BLL
                 data.NextTemplate = GetNext(data.Template);
                 if (null == data.NextTemplate || data.EndRequested) //若大关卡已经结束
                 {
-                    var changes = new List<ChangesItem>();
+                    var changes = new List<ChangeItem>();
                     //移动收益槽数据到各自背包。
                     //金币
                     gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar, changes);
@@ -421,7 +421,7 @@ namespace GuangYuan.GY001.BLL
                         return c.TemplateId != ProjectConstant.JinbiId && c.TemplateId != ProjectConstant.ZuojiZuheRongqi;
                     }, daojuBag, changes);
                     //压缩变化数据
-                    ChangesItem.Reduce(changes);
+                    ChangeItem.Reduce(changes);
                     data.ChangesItems.AddRange(changes);
                 }
                 if (data.EndRequested)
