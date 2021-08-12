@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.BLL.Homeland;
+﻿using Game.Social;
+using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
@@ -1355,7 +1356,18 @@ namespace GuangYuan.GY001.BLL
                 gameItem.Properties["neatk"] = Math.Round(gameItem.GetDecimalOrDefault("neatk"), MidpointRounding.AwayFromZero);
                 gameItem.Properties["nemhp"] = Math.Round(gameItem.GetDecimalOrDefault("nemhp"), MidpointRounding.AwayFromZero);
                 gameItem.Properties["neqlt"] = Math.Round(gameItem.GetDecimalOrDefault("neqlt"), MidpointRounding.AwayFromZero);
-                gim.MoveItem(gameItem, 1, slotSl, datas.ChangesItem);
+                if (!gim.MoveItem(gameItem, 1, slotSl, datas.ChangesItem))   //若无法放入
+                {
+                    //发邮件
+                    var social = World.SocialManager;
+                    var mail = new GameMail()
+                    {
+                    };
+                    mail.Properties["MailTypeId"] = ProjectConstant.孵化补给动物.ToString();
+                    social.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId,
+                        new ValueTuple<GameItem, Guid>[] { (gameItem, ProjectConstant.ShoulanSlotId) });
+                }
+
             }
             else //若尚无同种坐骑
             {

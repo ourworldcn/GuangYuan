@@ -4,10 +4,10 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -982,7 +982,93 @@ namespace GuangYuan.GY001.BLL
             /// </summary>
             public int Count { get; set; }
         }
+
+        /// <summary>
+        /// 获取其他玩家的家园数据。
+        /// </summary>
+        public void GetHomelandData(GetHomelandDataDatas datas)
+        {
+            using var disposer = datas.LockUser(World.CharManager);
+            if (disposer is null)
+                return;
+            var gc = datas.GameChar;
+            var gim = World.ItemManager;
+            using var db = World.CreateNewUserDbContext();
+            try
+            {
+                var objChar = db.GameChars.Find(datas.OtherCharId);
+                if (objChar is null)
+                {
+                    datas.HasError = true;
+                    datas.DebugMessage = $"找不到指定Id的角色，Id{datas.OtherCharId}";
+                    datas.ResultCode = (int)HttpStatusCode.BadRequest;
+                    return;
+                }
+                //构造对象
+                var objUser = db.GameUsers.Find(objChar.GameUserId);
+                objUser.DbContext = db;
+                objUser.CurrentChar = objChar;
+                objChar.GameUser = objUser;
+                var mountsBag = objChar.GetZuojiBag();
+                //获取风格
+                var gitm = World.ItemTemplateManager;
+                var fengges = gc.GetFengges();
+                if (fengges.Count == 0) //若未初始化
+                    gc.MergeFangans(fengges, gitm);
+                var fengge = fengges.FirstOrDefault(c => c.Fangans.Any(c1 => c1.IsActived));
+                if (fengge is null) //若没有指定激活风格
+                    fengge = fengges.First();
+                datas.CurrentFengge = fengge;
+                //获取家园地块数据
+                var hl = objChar.GetHomeland();
+                var dikuais = hl.AllChildren.Where(c => gitm.GetTemplateFromeId(c.TemplateId).CatalogNumber / 100 == 1);  //获取地块
+                datas.Lands.AddRange(dikuais);
+                //获取阵容数据
+                var collMounts = gim.GetLineup(objChar, 10).Union(gim.GetLineup(objChar, 20))
+                     .Union(gim.GetLineup(objChar, 21)).Union(gim.GetLineup(objChar, 22)).Union(gim.GetLineup(objChar, 23)).Union(gim.GetLineup(objChar, 24));
+                datas.Mounts.AddRange(collMounts);
+            }
+            finally
+            {
+                Task.Delay(1000).ContinueWith((task, state) => (state as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);
+            }
+        }
         #endregion  项目特定功能
+    }
+
+    /// <summary>
+    /// <see cref="GameSocialManager.GetHomelandData(GetHomelandDataDatas)"/>使用的工作数据封装类。
+    /// </summary>
+    public class GetHomelandDataDatas : ComplexWorkDatsBase
+    {
+        public GetHomelandDataDatas()
+        {
+        }
+
+        /// <summary>
+        /// 要获取的角色的Id。
+        /// </summary>
+        public Guid OtherCharId { get => Parameters.GetGuidOrDefault(nameof(OtherCharId)); set => Parameters[nameof(OtherCharId)] = value; }
+
+        private HomelandFengge _CurrentFengge;
+
+        /// <summary>
+        /// 当前风格数据，下面仅含激活的方案数据。
+        /// </summary>
+        public HomelandFengge CurrentFengge { get => GetOrAdd(nameof(CurrentFengge), ref _CurrentFengge); set => Result[nameof(CurrentFengge)] = value; }
+
+        private List<GameItem> _Mounts;
+
+        /// <summary>
+        /// 相关坐骑的数据。
+        /// </summary>
+        public List<GameItem> Mounts => GetOrAdd(nameof(Mounts), ref _Mounts);
+
+        private List<GameItem> _Lands;
+        /// <summary>
+        /// 地块信息。
+        /// </summary>
+        public List<GameItem> Lands => GetOrAdd(nameof(Lands), ref _Lands);
     }
 
     public enum PatForTiliResult

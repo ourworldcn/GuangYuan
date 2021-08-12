@@ -24,9 +24,15 @@ namespace GuangYuan.GY001.UserDb
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //
             modelBuilder.Entity<GameUser>().HasIndex(c => c.CreateUtc);
             modelBuilder.Entity<GameUser>().HasIndex(c => c.LoginName).IsUnique();
+            //角色
+            modelBuilder.Entity<GameChar>().HasIndex(c => c.DisplayName).IsUnique(true);
+
+            //物品
             modelBuilder.Entity<GameItem>().HasIndex(c => c.OwnerId);
+
             modelBuilder.Entity<GameClientExtendProperty>().HasIndex(c => c.ParentId);
             //
             modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.ParentId, c.Name });
@@ -118,11 +124,12 @@ namespace GuangYuan.GY001.UserDb
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
 
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
-        {
-            PrepareSaving();
-            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        }
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) =>
+            Task.Run(() =>
+            {
+                PrepareSaving();
+                return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+            });
 
         private void PrepareSaving()
         {
@@ -130,7 +137,7 @@ namespace GuangYuan.GY001.UserDb
             //    item.PrepareSaving(this);
             //foreach (var item in this.Local.OfType<IBeforeSave>())
             //    item.PrepareSaving(this);
-            var coll = ChangeTracker.Entries().Select(c=>c.Entity).OfType<IBeforeSave>();
+            var coll = ChangeTracker.Entries().Select(c => c.Entity).OfType<IBeforeSave>();
             foreach (var item in coll)
             {
                 item.PrepareSaving(this);

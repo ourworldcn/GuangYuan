@@ -1,5 +1,5 @@
-﻿using GuangYuan.GY001.UserDb;
-using GuangYuan.GY001.TemplateDb;
+﻿using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -410,7 +410,8 @@ namespace GuangYuan.GY001.BLL
                     var changes = new List<ChangeItem>();
                     //移动收益槽数据到各自背包。
                     //金币
-                    gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar, changes);
+                    
+                    gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar.GetCurrencyBag(), changes);
                     //野生怪物
                     var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
                     gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi, shoulan, changes);
@@ -423,6 +424,14 @@ namespace GuangYuan.GY001.BLL
                     //压缩变化数据
                     ChangeItem.Reduce(changes);
                     data.ChangesItems.AddRange(changes);
+                    //将剩余未能获取的收益放置于弃物槽中
+                    var qiwu = gameChar.GetQiwuBag();
+                    foreach (var item in shouyiSlot.Children)
+                    {
+                        data.ChangesItems.AddToRemoves(shouyiSlot.Id, item.Id);
+                        gim.ForceMove(item, qiwu);
+                        data.ChangesItems.AddToAdds(item);
+                    }
                 }
                 if (data.EndRequested)
                     data.NextTemplate = null;

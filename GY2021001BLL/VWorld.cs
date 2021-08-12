@@ -48,12 +48,24 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
-    /// 游戏世界的服务。目前一个虚拟世界，对应唯一一个本类对象，且一个应用程序域最多支持一个虚拟世界。
+    /// 游戏世界的服务。目前一个虚拟世界，对应唯一一个本类对象，且一个应用程序域（AppDomain）最多支持一个虚拟世界。
     /// 本质上游戏相关类群使用AOC机制，但不依赖DI，所以，在其所处的应用程序域内，本类的唯一对象（单例）部分的代替了容器。
-    /// 这种设计确实不能去耦，但是使用起来很方便。
+    /// 这种设计确实去耦不彻底，但是使用起来很方便。
     /// </summary>
     public class VWorld : GameManagerBase<VWorldOptions>
     {
+        private static IServiceProvider _RootServices;
+
+        public static IServiceProvider RootServices => _RootServices;
+
+        public static void Initialize(IServiceProvider service)
+        {
+            _RootServices = service;
+        }
+
+        private static VWorld _Default;
+        public VWorld Default => _Default ??= new VWorld(_RootServices, null);
+
         public readonly DateTime StartDateTimeUtc = DateTime.UtcNow;
         private readonly CancellationTokenSource _CancellationTokenSource = new CancellationTokenSource();
 

@@ -31,6 +31,7 @@ namespace GuangYuan.GY001.UserDb
         }
 
         private decimal? _Count;
+
         /// <summary>
         /// 此物品的数量。
         /// 可能没有数量属性，如装备永远是1。对货币类(积分)都使用的是实际值。
@@ -268,6 +269,7 @@ namespace GuangYuan.GY001.UserDb
             TemplateId = template.Id;
             Template = template;
         }
+
 
     }
 

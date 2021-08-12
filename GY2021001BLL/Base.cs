@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -35,7 +36,7 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
-    /// 游戏管理类(服务)的基类。
+    /// 游戏管理类(服务)的基类。原则上派生类应该都是单例生存期的服务。
     /// </summary>
     /// <remarks>派生类如果没有特别说明，非私有成员都应该可以支持多线程并发调用。</remarks>
     public abstract class GameManagerBase<TOptions>
@@ -155,10 +156,11 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public ComplexWorkDatsBase()
         {
-
+            
         }
 
         #region 入参
+
 
         /// <summary>
         /// 登录角色的令牌。

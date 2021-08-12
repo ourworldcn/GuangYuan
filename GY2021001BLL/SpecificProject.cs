@@ -145,6 +145,8 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid 友情孵化补给动物 = new Guid("b4c30a07-2179-435e-b053-fd4b0c36251b");
 
 
+        public static readonly Guid 孵化补给动物 = new Guid("{366ce206-8d17-47ea-a039-9280ddd81bbc}");
+
         #endregion 邮件类型Id
         /// <summary>
         /// 角色模板Id。当前只有一个模板。

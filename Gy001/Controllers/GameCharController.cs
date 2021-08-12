@@ -172,7 +172,6 @@ namespace GY2021001WebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        /// <response code="401">令牌错误。</response>
         /// <response code="401">参数错误。详情参见说明字符串。</response>
         [HttpPost]
         public ActionResult<SellReturnDto> Sell(SellParamsDto model)

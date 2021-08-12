@@ -117,7 +117,6 @@
             </summary>
             <param name="model"></param>
             <returns></returns>
-            <response code="401">令牌错误。</response>
             <response code="401">参数错误。详情参见说明字符串。</response>
         </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.SetSetLineup(GY2021001WebApi.Models.SetLineupParamsDto)">
@@ -1516,6 +1515,36 @@
             其中<see cref="P:GY2021001WebApi.Models.ChangesItemDto.ContainerId"/>是邮件对象的Id。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetHomelandDataReturnDto">
+            <summary>
+            GetHomelandData 接口使用的返回值封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetHomelandDataReturnDto.CurrentFengge">
+            <summary>
+            当前风格数据，下面仅含激活的方案数据。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetHomelandDataReturnDto.Mounts">
+            <summary>
+            相关坐骑的数据。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetHomelandDataReturnDto.Lands">
+            <summary>
+            地块信息。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetHomelandDataParamsDto">
+            <summary>
+            GetHomelandData 接口使用的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetHomelandDataParamsDto.OtherCharId">
+            <summary>
+            要获取家园信息的角色Id。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -1622,6 +1651,14 @@
             </summary>
             <param name="model"><seealso cref="T:GY2021001WebApi.Models.PatWithMountsParamsDto"/></param>
             <returns><seealso cref="T:GY2021001WebApi.Models.PatWithMountsReturnDto"/></returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.GetHomelandData(GY2021001WebApi.Models.GetHomelandDataParamsDto)">
+            <summary>
+            获取指定用户家园数据的接口。
+            </summary>
+            <param name="model"><seealso cref="T:GY2021001WebApi.Models.GetHomelandDataParamsDto"/></param>
+            <returns><seealso cref="T:GY2021001WebApi.Models.GetHomelandDataReturnDto"/> </returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">

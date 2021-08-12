@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
+using Microsoft.Extensions.Options;
+using System.Linq;
 
 namespace Gy001
 {
@@ -32,6 +34,10 @@ namespace Gy001
         [Conditional("DEBUG")]
         private static void Test(IHost host)
         {
+            //using var scope = host.Services.CreateScope();
+            //using var db = scope.ServiceProvider.GetService<GY001UserContext>();
+            //var coll = db.GameUsers.ToList();
+            //var db = host.Services.GetServices<GY001UserContext>();
             //var JsonOptions = new JsonSerializerOptions()
             //{
             //    PropertyNamingPolicy = null,

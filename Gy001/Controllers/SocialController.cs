@@ -3,6 +3,7 @@ using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -382,6 +383,39 @@ namespace Gy001.Controllers
             finally
             {
                 _World.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取指定用户家园数据的接口。
+        /// </summary>
+        /// <param name="model"><seealso cref="GetHomelandDataParamsDto"/></param>
+        /// <returns><seealso cref="GetHomelandDataReturnDto"/> </returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpGet]
+        public ActionResult<GetHomelandDataReturnDto> GetHomelandData([FromQuery]GetHomelandDataParamsDto model)
+        {
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
+            //构造调用参数
+            var datas = new GetHomelandDataDatas();
+            using var disposer = datas.SetTokenStringAndLock(model.Token, world.CharManager);
+            if (disposer is null)   //若锁定失败
+                return StatusCode(datas.ResultCode, datas.DebugMessage);
+            //填写其他参数
+            datas.OtherCharId = GameHelper.FromBase64String(model.OtherCharId);
+            world.SocialManager.GetHomelandData(datas);  //调用服务
+            //构造返回参数
+            var result = new GetHomelandDataReturnDto()
+            {
+                HasError = datas.HasError,
+                DebugMessage = datas.DebugMessage,
+            };
+            if (!result.HasError)
+            {
+                result.CurrentFengge = (HomelandFenggeDto)datas.CurrentFengge;
+                result.Lands.AddRange(datas.Lands.Select(c => (GameItemDto)c));
+                result.Mounts.AddRange(datas.Mounts.Select(c => (GameItemDto)c));
             }
             return result;
         }

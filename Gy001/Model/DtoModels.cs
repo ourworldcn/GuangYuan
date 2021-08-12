@@ -1863,6 +1863,44 @@ namespace GY2021001WebApi.Models
 
     }
 
+    /// <summary>
+    /// GetHomelandData 接口使用的返回值封装类。
+    /// </summary>
+    public class GetHomelandDataReturnDto : ReturnDtoBase
+    {
+        public GetHomelandDataReturnDto()
+        {
+        }
+
+        /// <summary>
+        /// 当前风格数据，下面仅含激活的方案数据。
+        /// </summary>
+        public HomelandFenggeDto CurrentFengge { get; set; }
+
+        /// <summary>
+        /// 相关坐骑的数据。
+        /// </summary>
+        public List<GameItemDto> Mounts { get; set; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 地块信息。
+        /// </summary>
+        public List<GameItemDto> Lands { get; set; } = new List<GameItemDto>();
+
+    }
+
+    /// <summary>
+    /// GetHomelandData 接口使用的参数封装类。
+    /// </summary>
+    public class GetHomelandDataParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要获取家园信息的角色Id。
+        /// </summary>
+        public string OtherCharId { get; set; }
+
+    }
+
     #endregion 社交相关
 
 }

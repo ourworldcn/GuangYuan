@@ -534,6 +534,8 @@ namespace GuangYuan.GY001.BLL
             return result;
         }
 
+        #region 堆叠和容纳
+
         /// <summary>
         /// 获取指定容器数量。
         /// </summary>
@@ -588,6 +590,50 @@ namespace GuangYuan.GY001.BLL
                 _ => Math.Max(max - (GetChildrenCollection(container)?.Count ?? 0), 0), //容错
             };
         }
+
+        /// <summary>
+        /// 获取最大堆叠数量。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>1是不可堆叠或最大堆叠数量本就是1。</returns>
+        public decimal GetMaxStc(GameItem gameItem)
+        {
+            if (ProjectConstant.MucaiId == gameItem.TemplateId && GetChar(gameItem.Parent) is GameChar gameChar)    //若是木材且正确的挂接到了对象树
+            {
+                var stcMucai = gameItem.Properties.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, 1);
+                stcMucai = stcMucai == -1 ? decimal.MaxValue : stcMucai;
+                var hl = gameChar.GetHomeland();
+
+                var coll = hl.AllChildren.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId).Select(c => GetMaxStc(c)).Append(stcMucai);
+                if (coll.Any(c => decimal.MaxValue == c))
+                    return decimal.MaxValue;
+                else
+                    return coll.Sum();
+            }
+            var stc = (int)gameItem.Properties.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, 1); //无属性表示不可堆叠
+            return stc switch
+            {
+                -1 => decimal.MaxValue, //-1表示不限制
+                _ => stc,
+            };
+        }
+
+        /// <summary>
+        /// 获取剩余的可堆叠数量。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>0不可堆叠或没有剩余堆叠数量，<see cref="decimal.MaxValue"/>是无限堆叠。其他值是堆叠剩余值。</returns>
+        public decimal GetFreeStc(GameItem gameItem)
+        {
+            var max = GetMaxStc(gameItem);  //使用这个函数以覆盖木材堆叠问题
+            return max switch
+            {
+                decimal.MaxValue => decimal.MaxValue,
+                _ => Math.Max(0, max - gameItem.Count.Value),
+            };
+        }
+
+        #endregion 堆叠和容纳
 
         #endregion 动态属性相关
 
@@ -1179,7 +1225,7 @@ namespace GuangYuan.GY001.BLL
         {
         }
 
-        List<Guid> _SellIds;
+        private List<Guid> _SellIds;
         public List<Guid> SellIds => GetOrAdd(nameof(SellIds), ref _SellIds);
     }
 
