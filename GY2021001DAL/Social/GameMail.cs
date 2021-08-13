@@ -193,7 +193,7 @@ namespace GuangYuan.GY001.UserDb
     /// TId={物品模板Id},HTId={头模板Id},BTId={身体模板Id},Count=物品数量，PTId=物品所属容器的模板Id,neatk=攻击资质,nemhp=血量资质,neqlt=质量资质。
     /// </summary>
     [Table("MailAttachmentes")]
-    public class GameMailAttachment : GameSocialBase, IBeforeSave
+    public class GameMailAttachment : GameSocialBase
     {
         /// <summary>
         /// 获取或设置此对象所属邮件的Id。

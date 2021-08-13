@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace GuangYuan.GY001.UserDb
 {
-    public class GameChar : GameThingBase, IBeforeSave, IDisposable
+    public class GameChar : GameThingBase,  IDisposable
     {
         /// <summary>
         /// <inheritdoc/>

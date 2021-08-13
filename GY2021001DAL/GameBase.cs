@@ -18,7 +18,7 @@ namespace GuangYuan.GY001.UserDb
     /// <summary>
     /// 游戏内部事物的基类。
     /// </summary>
-    public abstract class GameThingBase : GameObjectBase, IDisposable, IBeforeSave
+    public abstract class GameThingBase : GameObjectBase, IDisposable
     {
         #region 构造函数
 

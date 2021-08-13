@@ -1,59 +1,115 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="OW.Game.OrmObjectBase&lt;TKey&gt;">
-    <Position X="1.75" Y="0.75" Width="2" />
-    <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
-      <FileName>GameStoreBase.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="OW.Game.GuidKeyObjectBase">
-    <Position X="4.75" Y="0.75" Width="2.5" />
-    <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>GameStoreBase.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="OW.Game.PocoLoadingExtensions">
-    <Position X="3.75" Y="4.5" Width="2" />
-    <TypeIdentifier>
-      <HashCode>AAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>GameStoreBase.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="OW.Game.OwHelper">
-    <Position X="10.75" Y="3.25" Width="2.25" />
+  <Class Name="OW.Game.OwHelper" Collapsed="true">
+    <Position X="16.75" Y="3.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>IAAAAAAAAAAABQhAAAAACAAAACAAAAIFIAAAQIAAAAQ=</HashCode>
-      <FileName>GameStoreBase.cs</FileName>
+      <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.GameHelper">
-    <Position X="0.75" Y="4.75" Width="2" />
+  <Class Name="OW.Game.GameHelper" Collapsed="true">
+    <Position X="18.5" Y="2.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
-      <FileName>GameStoreBase.cs</FileName>
+      <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.StringDictionaryExtensions">
-    <Position X="6.75" Y="4" Width="2.5" />
+  <Class Name="OW.Game.StringObjectDictionaryExtensions" Collapsed="true">
+    <Position X="18.5" Y="3.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAACAAAAAA=</HashCode>
-      <FileName>GameStoreBase.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAACAAAAgA=</HashCode>
+      <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.FastChangingProperty">
-    <Position X="0.75" Y="6.5" Width="4.25" />
+  <Class Name="OW.Game.FastChangingProperty" Collapsed="true">
+    <Position X="18.5" Y="1.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>JABAAQAUAEAgEAIAIBAAAAQAAAAIAAEAAAAgAAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.CompletedEventArgs" Collapsed="true">
-    <Position X="2.5" Y="3" Width="1.5" />
+    <Position X="16.75" Y="1.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.GamePropertyHelper" Collapsed="true">
+    <Position X="20.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.GameExpressionRuntimeEnvironment" Collapsed="true">
+    <Position X="16.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAQAAAAAAAAgAABBAAAAABAAAAAAAgAQAEAAAAAA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.GameExpressionCompileEnvironment" Collapsed="true">
+    <Position X="20.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>kAAQACAAAAAAAAAAAgAAAAAAAACAAEAAgAQAAAAAAAA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.GameExpressionBase" Collapsed="true">
+    <Position X="7.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CgAACAYCBABQAgAAAAAAAAAAAEAQFAkWAAAAAIAQCIA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.FunctionCallGExpression" Collapsed="true">
+    <Position X="0.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAgAAAAAAIAQAAAAAAAAAAIAAAAAAAgA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.ConstGExpression" Collapsed="true">
+    <Position X="5.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CIAAAAAAAAAAAhAACAAAAAAAAAAAAAAAAAIgAAAAAAA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.ReferenceGExpression" Collapsed="true">
+    <Position X="9.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>SAAAAAAgAAAAAgAACAAAAAQQAAAAAAAAAAAAAgAAAAA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.ArrayGExpression" Collapsed="true">
+    <Position X="14.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CIAAgAAAAAAAAgAAAAAAAAAAAAAAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.ArrayElementGExpression" Collapsed="true">
+    <Position X="3" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAACgAAAEAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.BinaryGExpression" Collapsed="true">
+    <Position X="7.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>DAAAAAAAAAAAAgAACAAAAAAAAAAAAAAACACAAAAAIAA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.BlockGExpression" Collapsed="true">
+    <Position X="12" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAgAAAAAAgAAAAAAAAAAAAAAAAgAAAAA=</HashCode>
+      <FileName>GameExpression.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />
