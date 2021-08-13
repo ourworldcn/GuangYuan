@@ -1,5 +1,5 @@
-﻿using Game.Social;
-using OW.Game;
+﻿using Microsoft.EntityFrameworkCore;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -7,6 +7,31 @@ using System.Linq;
 
 namespace GuangYuan.GY001.UserDb
 {
+    /// <summary>
+    /// 邮件地址的类型。
+    /// </summary>
+    public enum MailAddressKind
+    {
+        /// <summary>
+        /// 该地址对象是一个发送人的地址。
+        /// </summary>
+        From = 1,
+        /// <summary>
+        /// 该地址对象是一个收件人的地址。
+        /// </summary>
+        To = 2,
+
+        /// <summary>
+        /// 保留未用。
+        /// </summary>
+        CC = 4,
+
+        /// <summary>
+        /// 保留未用。
+        /// </summary>
+        SC = 8,
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -121,7 +146,7 @@ namespace GuangYuan.GY001.UserDb
     /// <summary>
     /// 表示邮件发件人或收件人的地址。
     /// </summary>
-
+    [Table("MailAddresses")]
     public class GameMailAddress : GuidKeyObjectBase
     {
         public GameMailAddress()
@@ -167,7 +192,8 @@ namespace GuangYuan.GY001.UserDb
     /// 针对本项目，Properties 里的键值说明，
     /// TId={物品模板Id},HTId={头模板Id},BTId={身体模板Id},Count=物品数量，PTId=物品所属容器的模板Id,neatk=攻击资质,nemhp=血量资质,neqlt=质量资质。
     /// </summary>
-    public class GameMailAttachment : GameSocialBase
+    [Table("MailAttachmentes")]
+    public class GameMailAttachment : GameSocialBase, IBeforeSave
     {
         /// <summary>
         /// 获取或设置此对象所属邮件的Id。
@@ -180,27 +206,50 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         virtual public GameMail Mail { get; set; }
 
-    }
+        /// <summary>
+        /// 已经领取该附件的角色Id的集合。
+        /// </summary>
+        public byte[] ReceivedCharIds { get; set; } = Array.Empty<byte>();
 
-    /// <summary>
-    /// 标记一个Id的通用类。
-    /// <see cref="ParentId"/> 和 <see cref="GuidKeyBase.Id"/> 是联合主键，且<see cref="ParentId"/>单独进行了非唯一索引。
-    /// </summary>
-    public class IdMark : SimpleExtendPropertyBase
-    {
-        public IdMark()
+        private List<Guid> _RemovedIds;
+        [NotMapped]
+        public List<Guid> RemovedIds
         {
+            get
+            {
+                if (_RemovedIds is null)
+                {
+                    _RemovedIds = new List<Guid>();
+                    var lengthe = 16;
+                    for (int i = 0; i < ReceivedCharIds.Length; i += lengthe)
+                    {
+                        var tmp = ReceivedCharIds[i..(i + lengthe)];
+                        _RemovedIds.Add(new Guid(tmp));
+                    }
+                }
+                return _RemovedIds;
+            }
         }
 
-        public IdMark(Guid id) : base(id)
-        {
-        }
+        public void SetDeleted(Guid charId) =>
+            _IdDeleted = RemovedIds.Contains(charId);
+
+        private bool _IdDeleted;
 
         /// <summary>
-        /// 相关实体Id。这个字段应与<see cref="GuidKeyBase.Id"/>形成联合主键。
+        /// 是否已经删除，这个属性仅在针对特定玩家时才有效。
         /// </summary>
-        [Column(Order = 1)]
-        public Guid ParentId { get; set; }
+        [NotMapped]
+        public bool IdDeleted => _IdDeleted;
 
+        public override void PrepareSaving(DbContext db)
+        {
+            if (null != _RemovedIds)
+            {
+                ReceivedCharIds = _RemovedIds.SelectMany(c => c.ToByteArray()).ToArray();
+            }
+            base.PrepareSaving(db);
+        }
     }
+
 }

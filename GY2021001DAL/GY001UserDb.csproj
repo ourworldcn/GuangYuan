@@ -17,11 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gy2021001Template\Gy001TemplateDb.csproj" />
-    <ProjectReference Include="..\OwGame\OwGameCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Migrations\" />
+    <ProjectReference Include="..\OwGame\OW.GameCore.csproj" />
   </ItemGroup>
 
 </Project>

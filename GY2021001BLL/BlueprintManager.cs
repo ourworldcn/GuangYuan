@@ -578,7 +578,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public List<Guid> ErrorItemTIds => _ErrorItemTIds ??= new List<Guid>();
 
-        List<Guid> _MailIds;
+        private List<Guid> _MailIds;
 
         /// <summary>
         /// 执行蓝图导致发送邮件的Id集合。
@@ -1187,6 +1187,7 @@ namespace GuangYuan.GY001.BLL
                     var work = gc.GetHomeland().Children.First(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);
                     work.Count--;
                     LastChangesItems.AddToChanges(work.ContainerId.Value, work);    //追加工人变化数据
+                    gameItem.RemoveFastChangingProperty(fcp.Name);
                 }
                 gc.ChangesItems.AddRange(LastChangesItems); LastChangesItems.Clear();
             }

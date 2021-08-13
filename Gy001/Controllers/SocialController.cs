@@ -394,7 +394,7 @@ namespace Gy001.Controllers
         /// <returns><seealso cref="GetHomelandDataReturnDto"/> </returns>
         /// <response code="401">令牌错误。</response>
         [HttpGet]
-        public ActionResult<GetHomelandDataReturnDto> GetHomelandData([FromQuery]GetHomelandDataParamsDto model)
+        public ActionResult<GetHomelandDataReturnDto> GetHomelandData([FromQuery] GetHomelandDataParamsDto model)
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
             //构造调用参数

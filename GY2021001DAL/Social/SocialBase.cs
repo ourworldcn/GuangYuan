@@ -1,4 +1,5 @@
 ﻿using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

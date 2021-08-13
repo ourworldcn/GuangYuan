@@ -1,12 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
-  <Class Name="GuangYuan.GY001.TemplateDb.GameTemplateBase">
-    <Position X="2" Y="3.25" Width="1.75" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAABAAAQAAQAAAAAAAAAQA=</HashCode>
-      <FileName>GameTemplateBase.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="Gy2021001Template.GameItemTemplate">
     <Position X="2" Y="11.75" Width="2" />
     <TypeIdentifier>

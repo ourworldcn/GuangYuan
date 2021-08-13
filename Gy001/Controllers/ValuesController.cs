@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GY2021001WebApi.Controllers
 {
+    [SuppressMessage("Style", "IDE0060:删除未使用的参数", Justification = "<挂起>")]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class ValuesController : ControllerBase

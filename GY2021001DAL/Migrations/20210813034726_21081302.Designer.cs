@@ -4,14 +4,16 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    partial class GY001UserContextModelSnapshot : ModelSnapshot
+    [Migration("20210813034726_21081302")]
+    partial class _21081302
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,7 +166,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("ThingId");
 
-                    b.ToTable("MailAddresses");
+                    b.ToTable("MailAddress");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameMailAttachment", b =>
@@ -178,14 +180,11 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte[]>("ReceivedCharIds")
-                        .HasColumnType("varbinary(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("MailId");
 
-                    b.ToTable("MailAttachmentes");
+                    b.ToTable("GameMailAttachment");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameSetting", b =>
@@ -283,6 +282,24 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .IsUnique();
 
                     b.ToTable("GameUsers");
+                });
+
+            modelBuilder.Entity("GuangYuan.GY001.UserDb.IdMark", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PropertiesString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id", "ParentId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("IdMarks");
                 });
 
             modelBuilder.Entity("OW.Game.GameEntityRelationshipBase", b =>

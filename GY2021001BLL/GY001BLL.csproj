@@ -17,8 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GY001SdkWrapper\GY001SdkWrapper.csproj" />
     <ProjectReference Include="..\GY2021001DAL\GY001UserDb.csproj" />
-    <ProjectReference Include="..\OwGame\OwGameCore.csproj" />
+    <ProjectReference Include="..\OwGame\OW.GameCore.csproj" />
   </ItemGroup>
 
 </Project>

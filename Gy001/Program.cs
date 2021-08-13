@@ -9,6 +9,8 @@ using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using System.Linq;
+using System.Runtime;
+using System.IO.Compression;
 
 namespace Gy001
 {

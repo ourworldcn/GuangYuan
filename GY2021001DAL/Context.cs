@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace GuangYuan.GY001.UserDb
 {
 
-    public class GY001UserContext : DbContext
+    public class GY001UserContext : GameUserContext
     {
 
         public GY001UserContext()
@@ -24,7 +25,7 @@ namespace GuangYuan.GY001.UserDb
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //
+            //用户
             modelBuilder.Entity<GameUser>().HasIndex(c => c.CreateUtc);
             modelBuilder.Entity<GameUser>().HasIndex(c => c.LoginName).IsUnique();
             //角色
@@ -44,8 +45,6 @@ namespace GuangYuan.GY001.UserDb
 
             //
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
-            modelBuilder.Entity<IdMark>().HasIndex(c => c.ParentId).IsUnique(false);
-            modelBuilder.Entity<IdMark>().HasKey(c => new { c.Id, c.ParentId });
 
             //社交关系
             modelBuilder.Entity<GameSocialRelationship>().HasKey(c => new { c.Id, c.ObjectId });
@@ -55,6 +54,10 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.DateTimeUtc).IsUnique(false);
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.ParentId).IsUnique(false);
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.ActionId).IsUnique(false);
+
+            //通用关系描述对象
+            modelBuilder.Entity<GameEntityRelationshipBase>().HasKey(c => new { c.Id, c.Id2, c.Flag });
+            modelBuilder.Entity<GameEntityRelationshipBase>().HasIndex(c => c.PropertyString).IsUnique(false);
 
             base.OnModelCreating(modelBuilder);
         }
@@ -99,16 +102,6 @@ namespace GuangYuan.GY001.UserDb
         public DbSet<GameMail> Mails { get; set; }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public DbSet<GameMailAddress> MailAddress { get; set; }
-
-        /// <summary>
-        /// 标记一组Id。
-        /// </summary>
-        public DbSet<IdMark> IdMarks { get; set; }
-
-        /// <summary>
         /// 社交关系对象。
         /// </summary>
         public DbSet<GameSocialRelationship> SocialRelationships { get; set; }
@@ -118,31 +111,10 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public DbSet<GameActionRecord> ActionRecords { get; set; }
 
-        public override int SaveChanges(bool acceptAllChangesOnSuccess)
-        {
-            PrepareSaving();
-            return base.SaveChanges(acceptAllChangesOnSuccess);
-        }
-
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) =>
-            Task.Run(() =>
-            {
-                PrepareSaving();
-                return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-            });
-
-        private void PrepareSaving()
-        {
-            //foreach (var item in ActionRecords.Local.OfType<IBeforeSave>())
-            //    item.PrepareSaving(this);
-            //foreach (var item in this.Local.OfType<IBeforeSave>())
-            //    item.PrepareSaving(this);
-            var coll = ChangeTracker.Entries().Select(c => c.Entity).OfType<IBeforeSave>();
-            foreach (var item in coll)
-            {
-                item.PrepareSaving(this);
-            }
-        }
+        /// <summary>
+        /// 通用的关系描述对象。
+        /// </summary>
+        public DbSet<GameEntityRelationshipBase> EntityRelationship { get; set; }
 
         public override void Dispose()
         {

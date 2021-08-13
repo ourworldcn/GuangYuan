@@ -1,6 +1,7 @@
 ﻿/*物品对象
  */
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,45 +10,6 @@ using System.Runtime.CompilerServices;
 
 namespace GuangYuan.GY001.TemplateDb
 {
-    /// <summary>
-    /// 所有游戏模板类的基类。
-    /// </summary>
-    public abstract class GameTemplateBase : SimpleExtendPropertyBase
-    {
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        public GameTemplateBase()
-        {
-
-        }
-
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <param name="id"><inheritdoc/></param>
-        public GameTemplateBase(Guid id) : base(id)
-        {
-
-        }
-
-        /// <summary>
-        /// 服务器不是用该属性。仅用于人读备注。
-        /// </summary>
-        [Column("备注", Order = 90)]
-        public string Remark { get; set; }
-
-        private IServiceProvider _Service;
-
-        internal protected IServiceProvider Service => _Service;
-
-        public void SetService(IServiceProvider service)
-        {
-            _Service = service;
-        }
-
-    }
-
     /// <summary>
     /// 虚拟事物对象的模板类。
     /// </summary>

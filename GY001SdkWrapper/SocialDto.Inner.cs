@@ -1,5 +1,4 @@
-﻿
-using GuangYuan.GY001.UserDb;
+﻿using GuangYuan.GY001.UserDb;
 using OW.Game;
 using System.Linq;
 
@@ -50,6 +49,7 @@ namespace Game.Social
             var result = new GameMailAttachmentDto()
             {
                 Id = obj.Id.ToBase64String(),
+                IdDeleted = obj.IdDeleted,
             };
             foreach (var item in obj.Properties)
             {

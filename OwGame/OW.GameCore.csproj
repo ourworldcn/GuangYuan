@@ -4,7 +4,14 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>OW.Game</RootNamespace>
     <AssemblyName>OwGameCore</AssemblyName>
+    <Description>封装与游戏数据库相关的类型。</Description>
+    <PackageId>OW.GameCore</PackageId>
+    <Authors>OW</Authors>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.16" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\OW.BaseCore\OW.BaseCore.csproj" />

@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0074 // 使用复合分配
+﻿using GuangYuan.GY001.UserDb;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -12,6 +12,10 @@ namespace Game.Social
     [DataContract]
     public partial class GameSocialBaseDto
     {
+        public GameSocialBaseDto()
+        {
+
+        }
 
         /// <summary>
         /// Id。这个属性指代主体的Id。角色A的Id放在这里，表示这个实体是角色A的。
@@ -26,31 +30,6 @@ namespace Game.Social
         [DataMember]
         public Dictionary<string, object> Properties { get => _Properties ?? (_Properties = new Dictionary<string, object>()); set => _Properties = value; }
 
-    }
-
-    /// <summary>
-    /// 邮件地址的类型。
-    /// </summary>
-    public enum MailAddressKind
-    {
-        /// <summary>
-        /// 该地址对象是一个发送人的地址。
-        /// </summary>
-        From = 1,
-        /// <summary>
-        /// 该地址对象是一个收件人的地址。
-        /// </summary>
-        To = 2,
-
-        /// <summary>
-        /// 保留未用。
-        /// </summary>
-        CC = 4,
-
-        /// <summary>
-        /// 保留未用。
-        /// </summary>
-        SC = 8,
     }
 
     /// <summary>
@@ -138,7 +117,15 @@ namespace Game.Social
     [DataContract]
     public partial class GameMailAttachmentDto : GameSocialBaseDto
     {
+        public GameMailAttachmentDto() : base()
+        {
+        }
 
+        /// <summary>
+        /// 是否已经被删除。true该附件已经被删除。false该附件有效。
+        /// </summary>
+        [DataMember]
+        public bool IdDeleted { get; set; }
     }
 
     /// <summary>
@@ -241,4 +228,3 @@ namespace Game.Social
     }
 
 }
-#pragma warning restore IDE0074 // 使用复合分配

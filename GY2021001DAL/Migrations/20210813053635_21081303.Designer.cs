@@ -4,14 +4,16 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    partial class GY001UserContextModelSnapshot : ModelSnapshot
+    [Migration("20210813053635_21081303")]
+    partial class _21081303
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,7 +166,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("ThingId");
 
-                    b.ToTable("MailAddresses");
+                    b.ToTable("MailAddress");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameMailAttachment", b =>
@@ -185,7 +187,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("MailId");
 
-                    b.ToTable("MailAttachmentes");
+                    b.ToTable("GameMailAttachment");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameSetting", b =>

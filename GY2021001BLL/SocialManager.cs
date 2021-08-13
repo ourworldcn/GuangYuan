@@ -80,13 +80,27 @@ namespace GuangYuan.GY001.BLL
             try
             {
                 var coll = GetMails(gameChar, db);
-                return coll.
-                        //Include(c => c.Addresses).Include(c => c.Attachmentes).
-                        ToList();
+                var result = coll.ToList();
+                FillAttachmentes(gameChar.Id, result.SelectMany(c => c.Attachmentes), db);
+                return result;
             }
             finally
             {
                 Task.Delay(4000).ContinueWith((c, dbObj) => (dbObj as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);
+            }
+        }
+
+        /// <summary>
+        /// 修正附件的一些属性。
+        /// </summary>
+        /// <param name="gcId">角色Id。</param>
+        /// <param name="attachments"></param>
+        /// <param name="db"></param>
+        private void FillAttachmentes(Guid gcId, IEnumerable<GameMailAttachment> attachments, DbContext db)
+        {
+            foreach (var item in attachments)
+            {
+                item.SetDeleted(gcId);
             }
         }
 
@@ -105,7 +119,7 @@ namespace GuangYuan.GY001.BLL
             {
                 gcId = gameChar.Id;
                 var db = World.CreateNewUserDbContext();
-                var coll = db.MailAddress.Where(c => c.ThingId == gcId && c.Kind == MailAddressKind.To).Where(c => mailIds.Contains(c.MailId));
+                var coll = db.Set<GameMailAddress>().Where(c => c.ThingId == gcId && c.Kind == MailAddressKind.To).Where(c => mailIds.Contains(c.MailId));
                 foreach (var addr in coll)
                     addr.IsDeleted = true;
                 db.SaveChangesAsync().ContinueWith((c, dbObj) => (dbObj as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);
@@ -243,28 +257,30 @@ namespace GuangYuan.GY001.BLL
             {
                 //附件Id是IdMark.Id,角色Id是IdMark.ParentId
                 var gcId = gameChar.Id;
-                var coll = GetMails(gameChar, db);  //角色的所有邮件
-                var collIds = coll.Select(c => c.Id);   //邮件Id集合
-                var already = db.IdMarks.Where(c => c.ParentId == gcId && attachmentesIds.Contains(c.Id)).Select(c => c.Id);  //已领取的
-                if (attachmentesIds.Intersect(already).Any())
+                var mails = GetMails(gameChar, db);  //角色的所有邮件
+                var coll = mails.SelectMany(c => c.Attachmentes).ToList();
+                var atts = (from id in attachmentesIds
+                            join att in coll
+                            on id equals att.Id
+                            select att    //所有属于该玩家且被指定的附件
+                ).ToList();
+                if (atts.Count < attachmentesIds.Count())
                 {
-                    VWorld.SetLastErrorMessage("至少有一个附件已经被领取");
+                    VWorld.SetLastErrorMessage("至少有一个附件不属于指定角色。");
+                    return false;
+                };
+                atts.ForEach(c => c.SetDeleted(gcId));
+
+                if (atts.Any(c => c.IdDeleted))
+                {
+                    VWorld.SetLastErrorMessage("至少有一个附件已经被领取。");
                     return false;
                 }
-                var ary = coll.SelectMany(c => c.Attachmentes).Where(c => attachmentesIds.Contains(c.Id)).ToList();   //所有可领取的附件
-                var idMarks = db.IdMarks;
-                foreach (var item in ary)   //标记已经删除
-                {
-                    idMarks.Add(new IdMark()
-                    {
-                        ParentId = gcId,
-                        Id = item.Id,
-                    });
-                }
-                templates = ary.Select(c =>
+                atts.ForEach(c => c.RemovedIds.Add(gcId));  //标记已经删除
+                templates = atts.Select(c =>
                 {
                     return ValueTuple.Create(c.Properties.GetGuidOrDefault(SocialConstant.SentTIdPName, Guid.Empty),
-                     c.Properties.GetDecimalOrDefault(SocialConstant.SentTIdPName, decimal.Zero),
+                     c.Properties.GetDecimalOrDefault(SocialConstant.SentCountPName, decimal.Zero),
                      c.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty));
                 }).ToArray();
             }

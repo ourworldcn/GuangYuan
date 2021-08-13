@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Expression;
+using OW.Game.Store;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,30 +15,6 @@ using System.Text.Json;
 
 namespace GuangYuan.GY001.UserDb
 {
-    public abstract class GameObjectBase : SimpleExtendPropertyBase
-    {
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        public GameObjectBase()
-        {
-
-        }
-
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <param name="id"><inheritdoc/></param>
-        public GameObjectBase(Guid id) : base(id)
-        {
-
-        }
-
-        #region 事件及相关
-
-        #endregion 事件及相关
-    }
-
     /// <summary>
     /// 游戏内部事物的基类。
     /// </summary>
@@ -624,6 +601,8 @@ namespace GuangYuan.GY001.UserDb
         public double DoubleValue { get; set; }
 
         public string Text { get; set; }
+
+        public DateTime DateTimeValue { get; set; }
     }
 
     public class GameThingPropertyHelper : GamePropertyHelper

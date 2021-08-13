@@ -1564,6 +1564,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 要删除的邮件Id集合。
         /// </summary>
+        [DataMember]
         public List<string> Ids { get; set; } = new List<string>();
     }
 
@@ -1584,6 +1585,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 要获取的附件Id集合。
         /// </summary>
+        [DataMember]
         public List<string> Ids { get; set; }
     }
 
@@ -1866,6 +1868,7 @@ namespace GY2021001WebApi.Models
     /// <summary>
     /// GetHomelandData 接口使用的返回值封装类。
     /// </summary>
+    [DataContract]
     public class GetHomelandDataReturnDto : ReturnDtoBase
     {
         public GetHomelandDataReturnDto()
@@ -1875,16 +1878,19 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 当前风格数据，下面仅含激活的方案数据。
         /// </summary>
+        [DataMember]
         public HomelandFenggeDto CurrentFengge { get; set; }
 
         /// <summary>
         /// 相关坐骑的数据。
         /// </summary>
+        [DataMember]
         public List<GameItemDto> Mounts { get; set; } = new List<GameItemDto>();
 
         /// <summary>
         /// 地块信息。
         /// </summary>
+        [DataMember]
         public List<GameItemDto> Lands { get; set; } = new List<GameItemDto>();
 
     }
@@ -1892,11 +1898,13 @@ namespace GY2021001WebApi.Models
     /// <summary>
     /// GetHomelandData 接口使用的参数封装类。
     /// </summary>
+    [DataContract]
     public class GetHomelandDataParamsDto : TokenDtoBase
     {
         /// <summary>
         /// 要获取家园信息的角色Id。
         /// </summary>
+        [DataMember]
         public string OtherCharId { get; set; }
 
     }

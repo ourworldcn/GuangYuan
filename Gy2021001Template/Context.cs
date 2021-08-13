@@ -1,10 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OW.Game.Store;
 using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace GuangYuan.GY001.TemplateDb
 {
-    public class GY001TemplateContext : DbContext
+    /// <summary>
+    /// 游戏模板数据库上下文。
+    /// </summary>
+    public class GY001TemplateContext : GameTemplateContext
     {
         public GY001TemplateContext()
         {
