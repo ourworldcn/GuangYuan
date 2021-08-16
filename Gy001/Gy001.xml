@@ -519,6 +519,56 @@
             存在问题的物品的模板Id。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GameExtendPropertyDto">
+            <summary>
+            通用扩展属性封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GameExtendPropertyDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.Name">
+            <summary>
+            名字，最长64字符。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.StringValue">
+            <summary>
+            字符串值，最长256字符。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.IntValue">
+            <summary>
+            32bit整型值。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.DecimalValue">
+            <summary>
+            大定点数。大致范围±1.0 x 1e28 至 ±7.9228 x 1e28
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.DoubleValue">
+            <summary>
+            双精度浮点数。大致范围±5.0 × 1e−324 到 ±1.7 × 1e308
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.Text">
+            <summary>
+            长字符串。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.DateTimeValue">
+            <summary>
+            日期值。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.ParentId">
+            <summary>
+            所属对象Id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.HomelandFenggeDto">
             <summary>
             HomelandFangan。

@@ -273,6 +273,11 @@ namespace GuangYuan.GY001.BLL
         /// 唯一性标识属性名。该属性不存在或为0，表示不需要唯一性验证，否则需要相应模板的物品，在容器内唯一。
         /// </summary>
         public const string IsUniquePName = "uni";
+
+        /// <summary>
+        /// PVP积分的扩展属性名。
+        /// </summary>
+        public const string PvpScoreName = "PvpScore;public";
         #region 类别号
         /// <summary>
         /// 血量神纹碎片的类别号。

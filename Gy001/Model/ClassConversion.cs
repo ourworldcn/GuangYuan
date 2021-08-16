@@ -1,7 +1,7 @@
 ﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
-using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using OW.Game;
 using System;
 using System.Linq;
@@ -122,6 +122,7 @@ namespace GY2021001WebApi.Models
                         Value = item.Value,
                     };
             }
+            
             return result;
         }
 
@@ -272,6 +273,25 @@ namespace GY2021001WebApi.Models
             return result;
         }
 
+    }
+
+    public partial class GameExtendPropertyDto
+    {
+        public static implicit operator GameExtendPropertyDto(GameExtendProperty obj)
+        {
+            var result = new GameExtendPropertyDto()
+            {
+                DateTimeValue = obj.DateTimeValue,
+                DecimalValue = obj.DecimalValue,
+                DoubleValue = obj.DoubleValue,
+                IntValue = obj.IntValue,
+                Name = obj.Name,
+                StringValue = obj.StringValue,
+                Text = obj.Text,
+                ParentId = obj.ParentId,
+            };
+            return result;
+        }
     }
 
     #region 家园相关

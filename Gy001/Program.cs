@@ -11,6 +11,11 @@ using Microsoft.Extensions.Options;
 using System.Linq;
 using System.Runtime;
 using System.IO.Compression;
+using Microsoft.Extensions.Caching.Memory;
+using System.Threading;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Gy001
 {
@@ -36,15 +41,12 @@ namespace Gy001
         [Conditional("DEBUG")]
         private static void Test(IHost host)
         {
-            //using var scope = host.Services.CreateScope();
-            //using var db = scope.ServiceProvider.GetService<GY001UserContext>();
-            //var coll = db.GameUsers.ToList();
-            //var db = host.Services.GetServices<GY001UserContext>();
-            //var JsonOptions = new JsonSerializerOptions()
-            //{
-            //    PropertyNamingPolicy = null,
-            //    DictionaryKeyPolicy = null,
-            //};
+        }
+
+        static int _Di = 0;
+        static void PostEvictionDelegate(object key, object value, EvictionReason reason, object state)
+        {
+            Debug.WriteLine($"[{DateTime.Now}]PostEvictionDelegate:{key},reason:{reason},total:{Interlocked.Increment(ref _Di)}");
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -69,10 +71,10 @@ namespace Gy001
             {
                 var tContext = services.GetRequiredService<GY001TemplateContext>();
                 TemplateMigrateDbInitializer.Initialize(tContext);
-                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={tContext.Database.GetDbConnection().ConnectionString}");
+                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。");
                 var context = services.GetRequiredService<GY001UserContext>();
                 MigrateDbInitializer.Initialize(context);
-                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={context.Database.GetDbConnection().ConnectionString}");
+                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。");
             }
             catch (Exception ex)
             {

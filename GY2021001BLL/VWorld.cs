@@ -365,11 +365,11 @@ namespace GuangYuan.GY001.BLL
             {
                 var tContext = services.GetRequiredService<GY001TemplateContext>();
                 TemplateMigrateDbInitializer.Initialize(tContext);
-                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={tContext.Database.GetDbConnection().ConnectionString}");
+                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。");
 
                 var context = services.GetRequiredService<GY001UserContext>();
                 MigrateDbInitializer.Initialize(context);
-                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。ConnectionString={context.Database.GetDbConnection().ConnectionString}");
+                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。");
             }
             catch (Exception err)
             {

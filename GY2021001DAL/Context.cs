@@ -59,6 +59,15 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameEntityRelationshipBase>().HasKey(c => new { c.Id, c.Id2, c.Flag });
             modelBuilder.Entity<GameEntityRelationshipBase>().HasIndex(c => c.PropertyString).IsUnique(false);
 
+            //排行榜
+            modelBuilder.Entity<GameRanking>().HasIndex(c => c.State).IsUnique(false);
+            modelBuilder.Entity<GameRanking>().HasIndex(c => c.PveCScore).IsUnique(false);
+            modelBuilder.Entity<GameRanking>().HasIndex(c => c.PvpScore).IsUnique(false);
+            modelBuilder.Entity<GameRanking>().HasIndex(c => c.PveTScore).IsUnique(false);
+            modelBuilder.Entity<GameRanking>().HasIndex(c => c.LastLogout).IsUnique(false);
+            modelBuilder.Entity<GameRanking>().HasIndex(c => c.HomelandShow).IsUnique(false);
+
+            //调用基类方法。
             base.OnModelCreating(modelBuilder);
         }
 
@@ -115,6 +124,11 @@ namespace GuangYuan.GY001.UserDb
         /// 通用的关系描述对象。
         /// </summary>
         public DbSet<GameEntityRelationshipBase> EntityRelationship { get; set; }
+
+        /// <summary>
+        /// 排行榜对象的集合类。
+        /// </summary>
+        public DbSet<GameRanking> Rankings { get; set; }
 
         public override void Dispose()
         {
