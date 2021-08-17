@@ -744,20 +744,6 @@ namespace GuangYuan.GY001.BLL
             //    result.Properties[item.Item1] = item.Item2;
             //}
             //result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
-            Task.Delay(5000).ContinueWith(c =>
-            {
-                //创建欢迎邮件
-                var mail = new GameMail()
-                {
-                    Subject = "欢迎您加入XXX世界",
-                    Body = "此邮件是测试目的，正式版将删除。",
-                };
-                mail.Attachmentes.Add(new GameMailAttachment()
-                {
-                    PropertiesString = "TName=这是一个测试的附件对象,tid={89A586A8-CD8D-40FF-BDA2-41E68B6EC505},ptid={3D87D1FA-F270-42AB-9241-E30498246947},count=1,desc=tid是送的物品模板id;count是数量;ptid是放入容器的模板Id。",
-                });
-                World.SocialManager.SendMail(mail, new Guid[] { result.Id }, SocialConstant.FromSystemId);
-            });
             return result;
         }
 

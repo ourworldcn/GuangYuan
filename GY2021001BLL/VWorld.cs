@@ -140,6 +140,10 @@ namespace GuangYuan.GY001.BLL
         [ThreadStatic]
         private static Random _WorldRandom;
 
+        /// <summary>
+        /// 取当前线程的随机种子。
+        /// 可以并发调用。
+        /// </summary>
         public static Random WorldRandom => _WorldRandom ??= new Random();
 
         /// <summary>

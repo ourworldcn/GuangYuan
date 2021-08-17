@@ -826,11 +826,20 @@ namespace GuangYuan.GY001.UserDb
     /// 此类可能放在玩家数据库中也可能放于专用的日志库中，但可能有些游戏内操作需要此数据。
     /// 当前没有启动第三上下文，暂时放在玩家数据库中。
     /// </summary>
+    /// <remarks>
+    /// <code>
+    /// IQueryable<GameActionRecord> query; //一个查询对象
+    /// DateTime dt = DateTime.UtcNow.Date;
+    /// Guid charId = Guid.NewGuid();
+    /// string actionId = "someThing";
+    /// var coll = query.Where(c => c.DateTimeUtc >= dt && c.ParentId == charId && c.ActionId == actionId);
+    /// </code>
+    /// 索引在此情况下最有用。
+    /// </remarks>
     public class GameActionRecord : SimpleExtendPropertyBase
     {
         public GameActionRecord()
         {
-
         }
 
         public GameActionRecord(Guid id) : base(id)
@@ -851,6 +860,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 这个行为发生的时间。
         /// </summary>
+        /// <value>默认是构造此对象的UTC时间。</value>
         public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>

@@ -150,6 +150,10 @@ namespace OW.Game.Store
     /// <summary>
     /// 描述虚拟世界内对象关系的通用基类。
     /// </summary>
+    /// <remarks>
+    /// 以下建议仅针对，联合主键是前面的更容易引发查找的情况：
+    /// 通常应使用Id属性指代最长查找的实体——即"我"这一方，Id2可以记录关系对象Id。
+    /// </remarks>
     public class GameEntityRelationshipBase : GuidKeyObjectBase
     {
         public GameEntityRelationshipBase()

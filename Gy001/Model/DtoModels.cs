@@ -1489,7 +1489,35 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
 
+        /// <summary>
+        /// 非玩家方或pvp中被动方的战斗战斗损失列表。
+        /// </summary>
+        [DataMember]
+        public List<CombatLossesItemDto> PassiveCombatLosses { get; set; } = new List<CombatLossesItemDto>();
+    }
 
+    /// <summary>
+    /// 战损项类。
+    /// </summary>
+    [DataContract]
+    public class CombatLossesItemDto
+    {
+        public CombatLossesItemDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 可能是唯一Id（如果有），或其模板Id。
+        /// </summary>
+        [DataMember]
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// 数量。
+        /// </summary>
+        [DataMember]
+        public decimal Count { get; set; }
     }
 
     /// <summary>

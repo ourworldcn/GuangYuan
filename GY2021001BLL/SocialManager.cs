@@ -475,6 +475,7 @@ namespace GuangYuan.GY001.BLL
 
         /// <summary>
         /// 获取社交关系列表。😀 👌
+        /// Confirmed。
         /// </summary>
         public IEnumerable<GameSocialRelationship> GetSocialRelationships(GameChar gameChar)
         {

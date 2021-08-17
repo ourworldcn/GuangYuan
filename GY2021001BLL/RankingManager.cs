@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -41,6 +42,7 @@ namespace GuangYuan.GY001.BLL
         protected IMemoryCache Cache => _Cache;
 
         GY001UserContext _UserDB;
+
         protected GY001UserContext UserDB
         {
             get
@@ -53,19 +55,38 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+        public void PostEvictionCallback(object key, object value, EvictionReason reason, object state)
+        {
+        }
+
         public GameRanking FindAndLock(Guid id)
         {
-            Cache.GetOrCreate(id.ToString(), c =>
+            var result = Cache.GetOrCreate(id.ToString(), c =>
             {
+                GameRanking result;
                 lock (UserDB)
-                    return UserDB.Rankings.Find(id);
+                    result = UserDB.Rankings.Find(id);
+                c.SetSlidingExpiration(TimeSpan.FromMinutes(1));
+                c.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration() { EvictionCallback = PostEvictionCallback, State = _Cache });
+                return result;
             });
-            return null;
+            Monitor.Enter(result);
+            return result;
         }
 
         public void Unlock(GameRanking obj)
         {
-            
+            UserDB.SaveChanges();
+            Monitor.Exit(obj);
+        }
+
+        /// <summary>
+        /// 获取该用户的指定指定日期的可pvp对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="now"></param>
+        public void GtePvpChars(GameChar gameChar,ref DateTime now)
+        {
         }
     }
 

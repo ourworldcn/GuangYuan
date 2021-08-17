@@ -1324,6 +1324,26 @@
             收益。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.PassiveCombatLosses">
+            <summary>
+            非玩家方或pvp中被动方的战斗战斗损失列表。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatLossesItemDto">
+            <summary>
+            战损项类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatLossesItemDto.Id">
+            <summary>
+            可能是唯一Id（如果有），或其模板Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatLossesItemDto.Count">
+            <summary>
+            数量。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.SetCombatMountsParamsDto">
             <summary>
             SetCombatMounts接口的数据模型传输类。
@@ -1659,6 +1679,25 @@
         <member name="M:Gy001.Controllers.SocialController.GetSocialRelationships(System.String)">
             <summary>
             获取社交关系信息集合。
+            <code>
+                        GameSocialRelationship sr;
+                        if(sr.Friendliness&lt;-5)  //若是黑名单
+                        {
+                        }
+                        else
+                        {
+                            var confirmed = sr.Properties.GetValueOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero);
+                            if (confirmed == decimal.Zero) //若在申请好友中
+                            {
+                            }
+                            else if(sr.Friendliness>5)//若已经是好友
+                            {
+                            }
+                            else    //一般关系，不是黑白名单，但两人可能曾经是有社交关系的，此项通常可以忽略。未来有复杂社交关系时，此处有更多判断和意义
+                            {
+                            }
+                        }
+            </code>
             </summary>
             <param name="token">令牌。</param>
             <returns>参见返回值。</returns>

@@ -11,25 +11,6 @@ namespace GuangYuan.GY001.UserDb
     /// 本对象的Id是主体Id。
     /// 主体和客体对象是联合主键。
     /// 当前以如下方法判断具体状态:
-    /// <code>
-    ///             GameSocialRelationship sr;
-    ///             if(sr.Friendliness<-5)  //若是黑名单
-    ///             {
-    ///             }
-    ///             else
-    ///             {
-    ///                 var confirmed = sr.Properties.GetValueOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero);
-    ///                 if (confirmed == decimal.Zero) //若在申请好友中
-    ///                 {
-    ///                 }
-    ///                 else if(sr.Friendliness>5)//若已经是好友
-    ///                 {
-    ///                 }
-    ///                 else    //一般关系，不是黑白名单，但两人可能曾经是有社交关系的，此项通常可以忽略。未来有复杂社交关系时，此处有更多判断和意义
-    ///                 {
-    ///                 }
-    ///             }
-    /// </code>
     /// </summary>
     public class GameSocialRelationship : GameSocialBase
     {

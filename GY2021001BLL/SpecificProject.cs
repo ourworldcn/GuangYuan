@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Game.Social;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -139,6 +141,13 @@ namespace GuangYuan.GY001.BLL
         /// 友情商店货币。
         /// </summary>
         public static readonly Guid FriendCurrencyTId = new Guid("{8DBBFD26-6B4B-4C00-B0B8-BD7A79B21CBA}");
+
+        /// <summary>
+        /// PVP数据记录对象的模板Id。
+        /// 这也是一种货币。
+        /// </summary>
+        public static readonly Guid PvpObjectTId = new Guid("{D1A2750B-9300-4C57-A407-941EC1024B1C}");
+
         #endregion  货币类模板Id
 
         #region 邮件类型Id
@@ -422,6 +431,37 @@ namespace GuangYuan.GY001.BLL
             //    else
             //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, stcs.Sum() + stcMucai);
             //}
+            //将坐骑羊放入展示宠物
+            var sheepBodyTId = new Guid("BBC9FE07-29BD-486D-8AD6-B99DB0BD07D6");
+            var gim = service.GetRequiredService<GameItemManager>();
+            var dic = gameChar.GetZuojiBag().Children.FirstOrDefault(c => sheepBodyTId == gim.GetBody(c)?.TemplateId)?.Properties;
+            if (dic != null)
+                dic["for10"] = 0;
+            //发送测试邮件
+            Task.Delay(5000).ContinueWith(c =>
+            {
+                //创建欢迎邮件
+                var mail = new GameMail()
+                {
+                    Subject = "欢迎您加入XXX世界",
+                    Body = "此邮件是测试目的，正式版将删除。",
+                };
+                mail.Attachmentes.Add(new GameMailAttachment()
+                {
+                    PropertiesString = "TName=这是一个测试的附件对象,tid={89A586A8-CD8D-40FF-BDA2-41E68B6EC505},ptid={3D87D1FA-F270-42AB-9241-E30498246947},count=1,desc=tid是送的物品模板id;count是数量;ptid是放入容器的模板Id。",
+                });
+                world.SocialManager.SendMail(mail, new Guid[] { gameChar.Id }, SocialConstant.FromSystemId);
+                for (int i = VWorld.WorldRandom.Next(2) + 1; i >= 0; i--)
+                {
+                    var mail2 = new GameMail()
+                    {
+                        Subject = "测试邮件" + i,
+                        Body = "此邮件是测试目的，正式版将删除。",
+                    };
+                    world.SocialManager.SendMail(mail2, new Guid[] { gameChar.Id }, SocialConstant.FromSystemId);
+                }
+            });
+
             return result;
         }
 
@@ -744,6 +784,14 @@ namespace GuangYuan.GY001.BLL
         public static GameItem GetFriendCurrency(this GameChar gameChar) =>
             gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.FriendCurrencyTId);
 
-
+        /// <summary>
+        /// 获取PVP数据记录对象。
+        /// 这也是一种货币对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetPvpObject(this GameChar gameChar) =>
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.PvpObjectTId);
     }
 }

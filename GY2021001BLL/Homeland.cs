@@ -356,6 +356,7 @@ namespace GuangYuan.GY001.BLL.Homeland
 
         #endregion 基础功能
 
+        #region 方案的缓存与存储
         /// <summary>
         /// 设置家园的建设方案。
         /// </summary>
@@ -433,8 +434,6 @@ namespace GuangYuan.GY001.BLL.Homeland
         public static IEnumerable<int> GetFenggeNumbersWithFree(this GameItemTemplateManager manager) =>
            manager.GetAllDikuai().Where(c => c.Value.CatalogNumber == 100 && c.Value.IsFree()) //免费的
                 .Select(c => c.Value.GetFenggeNumber()).Distinct();
-
-        #region 方案的缓存与存储
 
         /// <summary>
         /// 获取家园风格对象。

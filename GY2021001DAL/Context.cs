@@ -50,9 +50,10 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameSocialRelationship>().HasKey(c => new { c.Id, c.ObjectId });
             modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.ObjectId).IsUnique(false);
             modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.Friendliness).IsUnique(false);
+
             //操作记录
-            modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.DateTimeUtc).IsUnique(false);
-            modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.ParentId).IsUnique(false);
+            modelBuilder.Entity<GameActionRecord>().HasIndex(c => new { c.DateTimeUtc, c.ParentId, c.ActionId }).IsUnique(false);
+            modelBuilder.Entity<GameActionRecord>().HasIndex(c => new { c.ParentId, c.ActionId }).IsUnique(false);
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.ActionId).IsUnique(false);
 
             //通用关系描述对象
