@@ -154,9 +154,13 @@ namespace OW.Game.Store
     /// 以下建议仅针对，联合主键是前面的更容易引发查找的情况：
     /// 通常应使用Id属性指代最长查找的实体——即"我"这一方，Id2可以记录关系对象Id。
     /// </remarks>
-    public class GameEntityRelationshipBase : GuidKeyObjectBase
+    public class GameEntityRelationshipBase : SimpleExtendPropertyBase
     {
         public GameEntityRelationshipBase()
+        {
+        }
+
+        public GameEntityRelationshipBase(Guid id) : base(id)
         {
         }
 
@@ -166,6 +170,9 @@ namespace OW.Game.Store
             Flag = flag;
         }
 
+        /// <summary>
+        /// 客体实体Id。
+        /// </summary>
         public Guid Id2 { get; set; }
 
         public long Flag { get; set; }

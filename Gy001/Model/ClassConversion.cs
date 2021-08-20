@@ -9,6 +9,26 @@ using System.Text.Json;
 
 namespace GY2021001WebApi.Models
 {
+    #region 基础数据
+    public partial class GameActionRecordDto
+    {
+        public static implicit operator GameActionRecordDto(GameActionRecord obj)
+        {
+            var result = new GameActionRecordDto
+            {
+                ActionId = obj.ActionId,
+                DateTimeUtc = obj.DateTimeUtc,
+                ParentId = obj.ParentId.ToBase64String(),
+                Remark = obj.Remark,
+            };
+            foreach (var item in obj.Properties)
+            {
+                result.Properties[item.Key] = item.Value;
+            }
+            return result;
+        }
+    }
+
     public partial class GameItemDto
     {
         /// <summary>
@@ -110,19 +130,6 @@ namespace GY2021001WebApi.Models
             {
                 result.Properties[item.Key] = item.Value;
             }
-            foreach (var item in obj.ClientExtendProperties)    //初始化客户端扩展属性
-            {
-                if (result.ClientExtendProperties.TryGetValue(item.Key, out GameClientExtendProperty gep))
-                    gep.Value = item.Value;
-                else
-                    result.ClientExtendProperties[item.Key] = new GameClientExtendProperty()
-                    {
-                        ParentId = result.Id,
-                        Name = item.Key,
-                        Value = item.Value,
-                    };
-            }
-            
             return result;
         }
 
@@ -148,9 +155,9 @@ namespace GY2021001WebApi.Models
             {
                 result.Properties[item.Key] = item.Value;
             }
-            foreach (var item in obj.ClientExtendProperties)    //初始化客户端扩展属性
+            foreach (var item in obj.ExtendProperties.Where(c => c.Name == GameExtendProperty.ClientPropertyName))    //初始化客户端扩展属性
             {
-                result.ClientExtendProperties[item.Key] = item.Value.Value;
+                result.ClientExtendProperties[item.StringValue] = item.Text;
             }
             return result;
         }
@@ -210,6 +217,39 @@ namespace GY2021001WebApi.Models
 
     }
 
+    public partial class VWorldInfomationDto
+    {
+        public static implicit operator VWorldInfomationDto(VWorldInfomation obj)
+        {
+            var result = new VWorldInfomationDto()
+            {
+                CurrentDateTime = obj.CurrentDateTime,
+                StartDateTime = obj.StartDateTime,
+            };
+            return result;
+        }
+    }
+
+    public partial class GameExtendPropertyDto
+    {
+        public static implicit operator GameExtendPropertyDto(GameExtendProperty obj)
+        {
+            var result = new GameExtendPropertyDto()
+            {
+                DateTimeValue = obj.DateTimeValue,
+                DecimalValue = obj.DecimalValue,
+                DoubleValue = obj.DoubleValue,
+                IntValue = obj.IntValue,
+                Name = obj.Name,
+                StringValue = obj.StringValue,
+                Text = obj.Text,
+                ParentId = obj.ParentId,
+            };
+            return result;
+        }
+    }
+    #endregion 基础数据
+
     public partial class CombatStartReturnDto
     {
         public static explicit operator CombatStartReturnDto(StartCombatData obj)
@@ -240,18 +280,6 @@ namespace GY2021001WebApi.Models
 
     }
 
-    public partial class VWorldInfomationDto
-    {
-        public static implicit operator VWorldInfomationDto(VWorldInfomation obj)
-        {
-            var result = new VWorldInfomationDto()
-            {
-                CurrentDateTime = obj.CurrentDateTime,
-                StartDateTime = obj.StartDateTime,
-            };
-            return result;
-        }
-    }
 
     public partial class ApplyBlueprintReturnDto
     {
@@ -275,24 +303,6 @@ namespace GY2021001WebApi.Models
 
     }
 
-    public partial class GameExtendPropertyDto
-    {
-        public static implicit operator GameExtendPropertyDto(GameExtendProperty obj)
-        {
-            var result = new GameExtendPropertyDto()
-            {
-                DateTimeValue = obj.DateTimeValue,
-                DecimalValue = obj.DecimalValue,
-                DoubleValue = obj.DoubleValue,
-                IntValue = obj.IntValue,
-                Name = obj.Name,
-                StringValue = obj.StringValue,
-                Text = obj.Text,
-                ParentId = obj.ParentId,
-            };
-            return result;
-        }
-    }
 
     #region 家园相关
 
@@ -423,7 +433,7 @@ namespace GY2021001WebApi.Models
             {
                 Friendliness = obj.Friendliness,
                 Id = obj.Id.ToBase64String(),
-                ObjectId = obj.ObjectId.ToBase64String(),
+                ObjectId = obj.Id2.ToBase64String(),
             };
             foreach (var item in obj.Properties)
             {

@@ -3,6 +3,7 @@ using OW.Game;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -10,7 +11,8 @@ using System.Text.Json;
 
 namespace GuangYuan.GY001.UserDb
 {
-    public class GameChar : GameThingBase,  IDisposable
+    [Table("GameChars")]
+    public class GameChar : GameThingBase, IDisposable
     {
         /// <summary>
         /// <inheritdoc/>
@@ -45,8 +47,8 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public void InitialCreation()
         {
-            foreach (var item in GameItems)
-                item.GameChar = this;
+            //foreach (var item in GameItems)
+            //    item.GameChar = this;
         }
 
         private List<GameItem> _GameItems;
@@ -113,8 +115,9 @@ namespace GuangYuan.GY001.UserDb
         public virtual GameUser GameUser { get; set; }
 
         /// <summary>
-        /// 角色显示用的名字。
+        /// 角色显示用的名字。就是昵称，不可重复。
         /// </summary>
+        [MaxLength(64)]
         public string DisplayName { get; set; }
 
         /// <summary>
@@ -127,15 +130,6 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public DateTime? CombatStartUtc { get; set; }
 
-        private readonly Dictionary<string, GameClientExtendProperty> _ClientExtendProperties = new Dictionary<string, GameClientExtendProperty>();
-
-        /// <summary>
-        /// 客户端使用的扩展属性集合，服务器不使用该属性，仅帮助保存和传回。
-        /// 键最长64字符，值最长8000字符。（一个中文算一个字符）
-        /// </summary>
-        [NotMapped]
-        public IDictionary<string, GameClientExtendProperty> ClientExtendProperties { get => _ClientExtendProperties; }
-
         /// <summary>
         /// 在基础数据加载到内存后调用。
         /// </summary>
@@ -147,12 +141,6 @@ namespace GuangYuan.GY001.UserDb
             foreach (var item in _GameItems)
             {
                 item.GameChar = this;
-            }
-            //加载客户端属性
-            var coll = db.Set<GameClientExtendProperty>().Where(c => c.ParentId == Id);
-            foreach (var item in coll)
-            {
-                ClientExtendProperties[item.Name] = item;
             }
             foreach (var item in AllChildren)
             {
@@ -189,6 +177,12 @@ namespace GuangYuan.GY001.UserDb
         /// 未发送给客户端的数据保存在<see cref="GameThingBase.ExtendProperties"/>中使用的属性名称。
         /// </summary>
         public const string ChangesItemExPropertyName = "{BAD410C8-6393-44B4-9EB1-97F91ED11C12}";
+
+        /// <summary>
+        /// 角色对象的扩展属性的导航属性。
+        /// </summary>
+        [ForeignKey(nameof(Id))]
+        public virtual CharSpecificExpandProperty SpecificExpandProperties { get; set; }
 
         #region IDisposable接口相关
 

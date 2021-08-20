@@ -403,33 +403,6 @@ namespace GuangYuan.GY001.UserDb
     }
 
     /// <summary>
-    /// 客户端使用通用扩展属性类。
-    /// </summary>
-    public class GameClientExtendProperty : GuidKeyObjectBase
-    {
-        public GameClientExtendProperty()
-        {
-
-        }
-
-        /// <summary>
-        /// 获取或设置所属对象Id。
-        /// </summary>
-        public Guid ParentId { get; set; }
-
-        /// <summary>
-        /// 获取或设置键的名字，同一个所属对象下不能有多个同名设置，否则，行为未知。
-        /// </summary>
-        [StringLength(64)]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// 获取或设置值。
-        /// </summary>
-        public string Value { get; set; }
-    }
-
-    /// <summary>
     /// 服务器代码使用的通用扩展属性类。
     /// </summary>
     public class ExtendPropertyDescriptor
@@ -559,9 +532,15 @@ namespace GuangYuan.GY001.UserDb
 
     /// <summary>
     /// 服务器内部使用的通用扩展属性。
+    /// <see cref="ParentId"/> 和 <see cref="Name"/> 组成联合主键。
     /// </summary>
     public class GameExtendProperty
     {
+        /// <summary>
+        /// 客户端属性使用的键名。
+        /// <see cref="Name"/>是该值的，表示由客户端使用，服务器不会使用该对象。
+        /// </summary>
+        public const string ClientPropertyName = "d51b3d58-2dec-4d24-b85d-a57aafe10dd7";
 
         public GameExtendProperty()
         {
@@ -576,12 +555,22 @@ namespace GuangYuan.GY001.UserDb
         [ForeignKey(nameof(GameThing))]
         public Guid ParentId { get; set; }
 
+        /// <summary>
+        /// 导航属性。
+        /// </summary>
         public virtual GameThingBase GameThing { get; set; }
 
+        /// <summary>
+        /// 属性的名称。
+        /// </summary>
         [MaxLength(64)]
         public string Name { get; set; }
 
         private string _StringValue;
+
+        /// <summary>
+        /// 短文本属性，可以索引加速查找。
+        /// </summary>
         [MaxLength(256)]
         public string StringValue
         {
@@ -600,6 +589,9 @@ namespace GuangYuan.GY001.UserDb
 
         public double DoubleValue { get; set; }
 
+        /// <summary>
+        /// 长文本属性，无法索引。
+        /// </summary>
         public string Text { get; set; }
 
         public DateTime DateTimeValue { get; set; }

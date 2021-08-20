@@ -226,6 +226,42 @@
             <param name="sex">0是传统意义上的女性，1是传统意义上的男性。未来可能添加多元性别，目前未得到此需求。</param>
             <returns>一个随机的中文名。</returns>
         </member>
+        <member name="T:GY2021001WebApi.Models.GameActionRecordDto">
+            <summary>
+            行为简要记录的数据封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GameActionRecordDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameActionRecordDto.ParentId">
+            <summary>
+            主体对象的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameActionRecordDto.ActionId">
+            <summary>
+            行为Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameActionRecordDto.DateTimeUtc">
+            <summary>
+            这个行为发生的时间。
+            </summary>
+            <value>默认是构造此对象的UTC时间。</value>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameActionRecordDto.Remark">
+            <summary>
+            一个人眼可读的说明。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameActionRecordDto.Properties">
+            <summary>
+            简单扩展属性的字典。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GameItemDto">
             <summary>
             游戏物品，道具，金币，积分等等的对象。
@@ -446,49 +482,6 @@
             变化的数据。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
-            <summary>
-            开始战斗的返回数据传输类
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.CombatStartReturnDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.TemplateId">
-            <summary>
-            要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.HasError">
-            <summary>
-            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.DebugMessage">
-            <summary>
-            调试信息。调试状态下返回时填写。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
-            <summary>
-            结束战斗的返回数据传输类。
-            变化数据中，角色下弃物槽（TId={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
-            ChangesItems 仅当结算大关卡时这里才有数据。
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.CombatEndReturnDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.NextDungeonId">
-            <summary>
-            需要进入的下一关的Id。如果已经是最后一关结束或强制要求退出，则这里返回空引用或空字符串(string.IsNullOrEmpty测试为true)。
-            如果正常进入下一关，可以不必调用启动战斗的接口。
-            </summary>
-        </member>
         <member name="P:GY2021001WebApi.Models.VWorldInfomationDto.StartDateTime">
             <summary>
             服务器的本次启动Utc时间。
@@ -497,26 +490,6 @@
         <member name="P:GY2021001WebApi.Models.VWorldInfomationDto.CurrentDateTime">
             <summary>
             服务器的当前时间。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.ApplyBlueprintReturnDto">
-            <summary>
-            ApplyBluprint接口返回时数据。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.SuccCount">
-            <summary>
-            获取或设置成功执行的次数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.FormulaIds">
-            <summary>
-            返回命中公式的Id集合。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.ErrorTIds">
-            <summary>
-            存在问题的物品的模板Id。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GameExtendPropertyDto">
@@ -567,6 +540,69 @@
         <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.ParentId">
             <summary>
             所属对象Id。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
+            <summary>
+            开始战斗的返回数据传输类
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatStartReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.TemplateId">
+            <summary>
+            要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.HasError">
+            <summary>
+            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.DebugMessage">
+            <summary>
+            调试信息。调试状态下返回时填写。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
+            <summary>
+            结束战斗的返回数据传输类。
+            变化数据中，角色下弃物槽（TId={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
+            ChangesItems 仅当结算大关卡时这里才有数据。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatEndReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.NextDungeonId">
+            <summary>
+            需要进入的下一关的Id。如果已经是最后一关结束或强制要求退出，则这里返回空引用或空字符串(string.IsNullOrEmpty测试为true)。
+            如果正常进入下一关，可以不必调用启动战斗的接口。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ApplyBlueprintReturnDto">
+            <summary>
+            ApplyBluprint接口返回时数据。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.SuccCount">
+            <summary>
+            获取或设置成功执行的次数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.FormulaIds">
+            <summary>
+            返回命中公式的Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.ErrorTIds">
+            <summary>
+            存在问题的物品的模板Id。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.HomelandFenggeDto">
@@ -1339,6 +1375,16 @@
             可能是唯一Id（如果有），或其模板Id。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CombatLossesItemDto.HeadTId">
+            <summary>
+            保留未用。将来可能用于保存野怪/坐骑的头模板Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatLossesItemDto.BodyTId">
+            <summary>
+            保留未用。将来可能用于保存野怪/坐骑的身体模板Id。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.CombatLossesItemDto.Count">
             <summary>
             数量。
@@ -1440,9 +1486,29 @@
             GetCharSummary 接口返回值封装类。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetCharSummaryParamsDto">
+            <summary>
+            GetCharSummary接口使用的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetCharSummaryParamsDto.BodyTIds">
+            <summary>
+            坐骑身体的模板Id集合。如果这里有数据则好友展示的坐骑要包含这种坐骑才会返回。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetCharSummaryParamsDto.DisplayName">
+            <summary>
+            指定角色的昵称。如果省略或为null，则不限定昵称而尽量返回活跃用户。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.RequestFriendReturnDto">
             <summary>
             RequestFriend 接口返回值封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RequestFriendReturnDto.Details">
+            <summary>
+            请求结果的详细情况，参见 RequestFriendResult 的说明。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.RequestFriendParamsDto">
@@ -1615,6 +1681,13 @@
             要获取家园信息的角色Id。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.PvpList">
+            <summary>
+            pvp对象数据。每个元素是一个可以或已经pvp对象。
+            <see cref="P:GY2021001WebApi.Models.GameActionRecordDto.ParentId"/>是对方的角色Id。
+            <see cref="P:GY2021001WebApi.Models.GameActionRecordDto.Properties"/>中存在done且不为0则说明已经战斗过，否则是可战斗的对象。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -1659,12 +1732,11 @@
             <returns>ChangesItems中是收取的物品。</returns>
             <response code="401">令牌错误。</response>
         </member>
-        <member name="M:Gy001.Controllers.SocialController.GetCharSummary(System.String,System.String)">
+        <member name="M:Gy001.Controllers.SocialController.GetCharSummary(GY2021001WebApi.Models.GetCharSummaryParamsDto)">
             <summary>
             获取一组角色的摘要信息。以供未来申请好友。
             </summary>
-            <param name="token">当前角色的令牌。</param>
-            <param name="displayName">指定角色的昵称。如果省略或为null，则不限定昵称而尽量返回活跃用户。</param>
+            <param name="model">参见<seealso cref="T:GY2021001WebApi.Models.GetCharSummaryParamsDto"/>。</param>
             <returns>一组可添加为好友的角色摘要集合。如果没有符合条件的数据则返回空集合。</returns>
             <response code="401">令牌错误。</response>
         </member>
@@ -1748,6 +1820,14 @@
             </summary>
             <param name="model"><seealso cref="T:GY2021001WebApi.Models.GetHomelandDataParamsDto"/></param>
             <returns><seealso cref="T:GY2021001WebApi.Models.GetHomelandDataReturnDto"/> </returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.GetPvpList(GY2021001WebApi.Models.GetPvpListParamsDto)">
+            <summary>
+            获取可以或已经pvp的角色的列表。
+            </summary>
+            <param name="model"><seealso cref="T:GY2021001WebApi.Models.GetPvpListParamsDto"/></param>
+            <returns><seealso cref="T:GY2021001WebApi.Models.GetPvpListReturnDto"/></returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">

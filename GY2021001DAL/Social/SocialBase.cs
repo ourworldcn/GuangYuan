@@ -7,14 +7,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GuangYuan.GY001.UserDb
 {
-    public abstract class GameSocialBase : GameObjectBase
+    public abstract class GameSocialBase : GameEntityRelationshipBase
     {
+        
         public GameSocialBase()
         {
 
         }
 
         public GameSocialBase(Guid id) : base(id)
+        {
+        }
+
+        protected GameSocialBase(Guid id, Guid id2, long flag) : base(id, id2, flag)
         {
         }
 

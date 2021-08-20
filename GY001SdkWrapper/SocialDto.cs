@@ -175,7 +175,7 @@ namespace Game.Social
 
         /// <summary>
         /// 双方是否已经确认该关系。附属在社交关系对象上。
-        /// 0申请中，非0，已经确认。
+        /// 0申请中，1已经确认。
         /// </summary>
         public const string ConfirmedFriendPName = "Confirmed";
 
@@ -184,46 +184,55 @@ namespace Game.Social
     /// <summary>
     /// 请求添加好友的返回值。
     /// </summary>
+    [DataContract]
     public enum RequestFriendResult
     {
         /// <summary>
         /// 一般性未知错误。
         /// </summary>
+        [DataMember]
         UnknowError = -1,
 
         /// <summary>
         /// 成功添加。
         /// </summary>
+        [DataMember]
         Success = 0,
 
         /// <summary>
         /// 已经是好友。
         /// </summary>
+        [DataMember]
         Already,
 
         /// <summary>
         /// 已经在请求中。
         /// </summary>
+        [DataMember]
         Doing,
 
         /// <summary>
         /// 指定玩家不存在。
         /// </summary>
+        [DataMember]
         NotFoundThisChar,
 
         /// <summary>
         /// 要添加为好友的用户不存在。
         /// </summary>
+        [DataMember]
         NotFoundObjectChar,
 
         /// <summary>
         /// 对方已经将你拖入黑名单。
         /// </summary>
+        [DataMember]
         BlackList,
 
         /// <summary>
         /// 自己将对方已经拖入黑名单。
         /// </summary>
+        [DataMember]
         AlreadyBlack,
     }
 

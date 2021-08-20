@@ -98,27 +98,27 @@ namespace GY2021001WebApi.Controllers
             try
             {
                 var gc = gu.CurrentChar;
+                var cep = gc.ExtendProperties.Where(c => c.Name == GameExtendProperty.ClientPropertyName).FirstOrDefault(c => c.StringValue == model.Name); //获取指定的属性
                 if (model.IsRemove)
                 {
-                    if (!gc.ClientExtendProperties.Remove(model.Name, out GameClientExtendProperty val))    //已经移除
+                    if (cep is null || !gc.ExtendProperties.Remove(cep))    //已经移除
                     {
                         result.DebugMessage = $"没有找到要移除的键{model.Name}。";
                         return result;
                     }
-                    gu.DbContext.Set<GameClientExtendProperty>().Remove(val);
                 }
-                else if (gc.ClientExtendProperties.TryGetValue(model.Name, out GameClientExtendProperty gep))
-                    gep.Value = model.Value;
-                else
+                else if (null != cep)   //若已经存在
+                    cep.Text = model.Value;    //修改属性值
+                else //若尚不存在
                 {
-                    gep = new GameClientExtendProperty()
+                    cep = new GameExtendProperty()
                     {
-                        Name = model.Name,
-                        Value = model.Value,
+                        Name = GameExtendProperty.ClientPropertyName,
+                        StringValue = model.Name,
+                        Text = model.Value,
                         ParentId = gc.Id,
                     };
-                    gu.DbContext.Set<GameClientExtendProperty>().Add(gep);
-                    gc.ClientExtendProperties[gep.Name] = gep;
+                    gc.ExtendProperties.Add(cep);
                 }
                 world.CharManager.Nope(gu);
             }

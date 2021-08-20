@@ -11,6 +11,7 @@ namespace GuangYuan.GY001.UserDb
     /// <summary>
     /// 游戏中物品，装备，货币，积分的基类。
     /// </summary>
+    [Table("GameItems")]
     public class GameItem : GameThingBase
     {
         /// <summary>

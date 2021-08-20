@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GuangYuan.GY001.UserDb.Migrations
 {
-    public partial class Init : Migration
+    public partial class _21081901 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -24,17 +24,20 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ClientExtendProperties",
+                name: "GameEntityRelationshipBase",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    ParentId = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(maxLength: 64, nullable: true),
-                    Value = table.Column<string>(nullable: true)
+                    Id2 = table.Column<Guid>(nullable: false),
+                    Flag = table.Column<long>(nullable: false),
+                    PropertiesString = table.Column<string>(nullable: true),
+                    PropertyString = table.Column<string>(maxLength: 64, nullable: true),
+                    Discriminator = table.Column<string>(nullable: false),
+                    Friendliness = table.Column<short>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ClientExtendProperties", x => x.Id);
+                    table.PrimaryKey("PK_GameEntityRelationshipBase", x => new { x.Id, x.Id2, x.Flag });
                 });
 
             migrationBuilder.CreateTable(
@@ -66,19 +69,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "IdMarks",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    ParentId = table.Column<Guid>(nullable: false),
-                    PropertiesString = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_IdMarks", x => new { x.Id, x.ParentId });
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Mails",
                 columns: table => new
                 {
@@ -94,17 +84,46 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SocialRelationships",
+                name: "MailAddresses",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    ObjectId = table.Column<Guid>(nullable: false),
                     PropertiesString = table.Column<string>(nullable: true),
-                    Friendliness = table.Column<short>(nullable: false)
+                    DisplayName = table.Column<string>(nullable: true),
+                    ThingId = table.Column<Guid>(nullable: false),
+                    MailId = table.Column<Guid>(nullable: false),
+                    Kind = table.Column<int>(nullable: false),
+                    IsDeleted = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SocialRelationships", x => new { x.Id, x.ObjectId });
+                    table.PrimaryKey("PK_MailAddresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MailAddresses_Mails_MailId",
+                        column: x => x.MailId,
+                        principalTable: "Mails",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MailAttachmentes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    PropertiesString = table.Column<string>(nullable: true),
+                    MailId = table.Column<Guid>(nullable: false),
+                    ReceivedCharIds = table.Column<byte[]>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MailAttachmentes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MailAttachmentes_Mails_MailId",
+                        column: x => x.MailId,
+                        principalTable: "Mails",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -118,9 +137,10 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     TemplateId = table.Column<Guid>(nullable: false),
                     Discriminator = table.Column<string>(nullable: false),
                     GameUserId = table.Column<Guid>(nullable: true),
-                    DisplayName = table.Column<string>(nullable: true),
+                    DisplayName = table.Column<string>(maxLength: 64, nullable: true),
                     CurrentDungeonId = table.Column<Guid>(nullable: true),
                     CombatStartUtc = table.Column<DateTime>(nullable: true),
+                    SpecificExpandPropertiesId = table.Column<Guid>(nullable: true),
                     Count = table.Column<decimal>(nullable: true),
                     ParentId = table.Column<Guid>(nullable: true),
                     OwnerId = table.Column<Guid>(nullable: true)
@@ -143,42 +163,26 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GameMailAttachment",
+                name: "CharSpecificExpandProperty",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
                     PropertiesString = table.Column<string>(nullable: true),
-                    MailId = table.Column<Guid>(nullable: false)
+                    CharLevel = table.Column<int>(nullable: false),
+                    PvpScore = table.Column<int>(nullable: false),
+                    LastPvpScore = table.Column<int>(nullable: false),
+                    PveTScore = table.Column<int>(nullable: false),
+                    PveCScore = table.Column<int>(nullable: false),
+                    State = table.Column<string>(maxLength: 64, nullable: true),
+                    LastLogout = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GameMailAttachment", x => x.Id);
+                    table.PrimaryKey("PK_CharSpecificExpandProperty", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_GameMailAttachment_Mails_MailId",
-                        column: x => x.MailId,
-                        principalTable: "Mails",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "MailAddress",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    DisplayName = table.Column<string>(nullable: true),
-                    ThingId = table.Column<Guid>(nullable: false),
-                    MailId = table.Column<Guid>(nullable: false),
-                    Kind = table.Column<int>(nullable: false),
-                    IsDeleted = table.Column<bool>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_MailAddress", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_MailAddress_Mails_MailId",
-                        column: x => x.MailId,
-                        principalTable: "Mails",
+                        name: "FK_CharSpecificExpandProperty_GameThingBase_Id",
+                        column: x => x.Id,
+                        principalTable: "GameThingBase",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -193,7 +197,8 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     IntValue = table.Column<int>(nullable: false),
                     DecimalValue = table.Column<decimal>(nullable: false),
                     DoubleValue = table.Column<double>(nullable: false),
-                    Text = table.Column<string>(nullable: true)
+                    Text = table.Column<string>(nullable: true),
+                    DateTimeValue = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -212,54 +217,66 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 column: "ActionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ActionRecords_DateTimeUtc",
+                name: "IX_ActionRecords_ParentId_ActionId",
                 table: "ActionRecords",
-                column: "DateTimeUtc");
+                columns: new[] { "ParentId", "ActionId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ActionRecords_ParentId",
+                name: "IX_ActionRecords_DateTimeUtc_ParentId_ActionId",
                 table: "ActionRecords",
-                column: "ParentId");
+                columns: new[] { "DateTimeUtc", "ParentId", "ActionId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ClientExtendProperties_ParentId",
-                table: "ClientExtendProperties",
-                column: "ParentId");
+                name: "IX_CharSpecificExpandProperty_LastLogout",
+                table: "CharSpecificExpandProperty",
+                column: "LastLogout");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExtendProperties_DecimalValue",
-                table: "ExtendProperties",
-                column: "DecimalValue");
+                name: "IX_CharSpecificExpandProperty_PveCScore",
+                table: "CharSpecificExpandProperty",
+                column: "PveCScore");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExtendProperties_DoubleValue",
-                table: "ExtendProperties",
-                column: "DoubleValue");
+                name: "IX_CharSpecificExpandProperty_PveTScore",
+                table: "CharSpecificExpandProperty",
+                column: "PveTScore");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExtendProperties_IntValue",
-                table: "ExtendProperties",
-                column: "IntValue");
+                name: "IX_CharSpecificExpandProperty_PvpScore",
+                table: "CharSpecificExpandProperty",
+                column: "PvpScore");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExtendProperties_Name",
-                table: "ExtendProperties",
-                column: "Name");
+                name: "IX_CharSpecificExpandProperty_State",
+                table: "CharSpecificExpandProperty",
+                column: "State");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExtendProperties_StringValue",
-                table: "ExtendProperties",
-                column: "StringValue");
+                name: "IX_GameEntityRelationshipBase_Friendliness",
+                table: "GameEntityRelationshipBase",
+                column: "Friendliness");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GameMailAttachment_MailId",
-                table: "GameMailAttachment",
-                column: "MailId");
+                name: "IX_GameEntityRelationshipBase_PropertyString",
+                table: "GameEntityRelationshipBase",
+                column: "PropertyString");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GameThingBase_DisplayName",
+                table: "GameThingBase",
+                column: "DisplayName",
+                unique: true,
+                filter: "[DisplayName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameThingBase_GameUserId",
                 table: "GameThingBase",
                 column: "GameUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GameThingBase_SpecificExpandPropertiesId",
+                table: "GameThingBase",
+                column: "SpecificExpandPropertiesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameThingBase_OwnerId",
@@ -270,6 +287,11 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 name: "IX_GameThingBase_ParentId",
                 table: "GameThingBase",
                 column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GameThingBase_TemplateId",
+                table: "GameThingBase",
+                column: "TemplateId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameUsers_CreateUtc",
@@ -283,65 +305,64 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_IdMarks_ParentId",
-                table: "IdMarks",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MailAddress_MailId",
-                table: "MailAddress",
+                name: "IX_MailAddresses_MailId",
+                table: "MailAddresses",
                 column: "MailId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MailAddress_ThingId",
-                table: "MailAddress",
+                name: "IX_MailAddresses_ThingId",
+                table: "MailAddresses",
                 column: "ThingId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SocialRelationships_Friendliness",
-                table: "SocialRelationships",
-                column: "Friendliness");
+                name: "IX_MailAttachmentes_MailId",
+                table: "MailAttachmentes",
+                column: "MailId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_SocialRelationships_ObjectId",
-                table: "SocialRelationships",
-                column: "ObjectId");
+            migrationBuilder.AddForeignKey(
+                name: "FK_GameThingBase_CharSpecificExpandProperty_SpecificExpandPropertiesId",
+                table: "GameThingBase",
+                column: "SpecificExpandPropertiesId",
+                principalTable: "CharSpecificExpandProperty",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "ActionRecords");
+            migrationBuilder.DropForeignKey(
+                name: "FK_CharSpecificExpandProperty_GameThingBase_Id",
+                table: "CharSpecificExpandProperty");
 
             migrationBuilder.DropTable(
-                name: "ClientExtendProperties");
+                name: "ActionRecords");
 
             migrationBuilder.DropTable(
                 name: "ExtendProperties");
 
             migrationBuilder.DropTable(
-                name: "GameMailAttachment");
+                name: "GameEntityRelationshipBase");
 
             migrationBuilder.DropTable(
                 name: "GameSettings");
 
             migrationBuilder.DropTable(
-                name: "IdMarks");
+                name: "MailAddresses");
 
             migrationBuilder.DropTable(
-                name: "MailAddress");
-
-            migrationBuilder.DropTable(
-                name: "SocialRelationships");
-
-            migrationBuilder.DropTable(
-                name: "GameThingBase");
+                name: "MailAttachmentes");
 
             migrationBuilder.DropTable(
                 name: "Mails");
 
             migrationBuilder.DropTable(
+                name: "GameThingBase");
+
+            migrationBuilder.DropTable(
                 name: "GameUsers");
+
+            migrationBuilder.DropTable(
+                name: "CharSpecificExpandProperty");
         }
     }
 }

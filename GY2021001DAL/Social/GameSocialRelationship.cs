@@ -1,5 +1,6 @@
 ﻿using OW.Game;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
@@ -34,9 +35,14 @@ namespace GuangYuan.GY001.UserDb
         }
 
         /// <summary>
-        /// 客体实体Id。
+        /// 构造函数。
         /// </summary>
-        public Guid ObjectId { get; set; }
+        /// <param name="id"></param>
+        /// <param name="id2"></param>
+        /// <param name="flag"></param>
+        public GameSocialRelationship(Guid id, Guid id2, long flag) : base(id, id2, flag)
+        {
+        }
 
         /// <summary>
         /// 左看右的友好度。
@@ -100,6 +106,11 @@ namespace GuangYuan.GY001.UserDb
         /// 最后一次下线时间。空表示当前在线。
         /// </summary>
         public DateTime? LastLogoutDatetime { get; set; }
+
+        /// <summary>
+        /// 家园内展示动物的集合。
+        /// </summary>
+        public List<GameItem> HomelandShows { get; set; }
     }
 
     /// <summary>

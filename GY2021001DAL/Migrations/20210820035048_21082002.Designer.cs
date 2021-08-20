@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    [Migration("20210812093317_21081201")]
-    partial class _21081201
+    [Migration("20210820035048_21082002")]
+    partial class _21082002
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,6 +20,57 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 .HasAnnotation("ProductVersion", "3.1.16")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("GuangYuan.GY001.UserDb.CharSpecificExpandProperty", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CharLevel")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FrinedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FrinedMaxCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastLogoutUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LastPvpScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PropertiesString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PveCScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PveTScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PvpScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("State")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LastLogoutUtc");
+
+                    b.HasIndex("PveCScore");
+
+                    b.HasIndex("PveTScore");
+
+                    b.HasIndex("PvpScore");
+
+                    b.HasIndex("State");
+
+                    b.ToTable("CharSpecificExpandProperty");
+                });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameActionRecord", b =>
                 {
@@ -46,33 +97,11 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("ActionId");
 
-                    b.HasIndex("DateTimeUtc");
+                    b.HasIndex("ParentId", "ActionId");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("DateTimeUtc", "ParentId", "ActionId");
 
                     b.ToTable("ActionRecords");
-                });
-
-            modelBuilder.Entity("GuangYuan.GY001.UserDb.GameClientExtendProperty", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("ClientExtendProperties");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameExtendProperty", b =>
@@ -83,6 +112,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
+
+                    b.Property<DateTime>("DateTimeValue")
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("DecimalValue")
                         .HasColumnType("decimal(18,2)");
@@ -101,16 +133,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ParentId", "Name");
-
-                    b.HasIndex("DecimalValue");
-
-                    b.HasIndex("DoubleValue");
-
-                    b.HasIndex("IntValue");
-
-                    b.HasIndex("Name");
-
-                    b.HasIndex("StringValue");
 
                     b.ToTable("ExtendProperties");
                 });
@@ -154,6 +176,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("MailId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("PropertiesString")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("ThingId")
                         .HasColumnType("uniqueidentifier");
 
@@ -163,7 +188,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("ThingId");
 
-                    b.ToTable("MailAddress");
+                    b.ToTable("MailAddresses");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameMailAttachment", b =>
@@ -177,11 +202,14 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<byte[]>("ReceivedCharIds")
+                        .HasColumnType("varbinary(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MailId");
 
-                    b.ToTable("GameMailAttachment");
+                    b.ToTable("MailAttachmentes");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameSetting", b =>
@@ -195,29 +223,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.HasKey("Name");
 
                     b.ToTable("GameSettings");
-                });
-
-            modelBuilder.Entity("GuangYuan.GY001.UserDb.GameSocialRelationship", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ObjectId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<short>("Friendliness")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("PropertiesString")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id", "ObjectId");
-
-                    b.HasIndex("Friendliness");
-
-                    b.HasIndex("ObjectId");
-
-                    b.ToTable("SocialRelationships");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameThingBase", b =>
@@ -242,6 +247,8 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TemplateId");
 
                     b.ToTable("GameThingBase");
 
@@ -281,22 +288,35 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.ToTable("GameUsers");
                 });
 
-            modelBuilder.Entity("GuangYuan.GY001.UserDb.IdMark", b =>
+            modelBuilder.Entity("OW.Game.Store.GameEntityRelationshipBase", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ParentId")
+                    b.Property<Guid>("Id2")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("Flag")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id", "ParentId");
+                    b.Property<string>("PropertyString")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
 
-                    b.HasIndex("ParentId");
+                    b.HasKey("Id", "Id2", "Flag");
 
-                    b.ToTable("IdMarks");
+                    b.HasIndex("PropertyString");
+
+                    b.ToTable("GameEntityRelationshipBase");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("GameEntityRelationshipBase");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameChar", b =>
@@ -310,9 +330,13 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("DisplayName")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
 
                     b.Property<Guid>("GameUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("SpecificExpandPropertiesId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasIndex("DisplayName")
@@ -320,6 +344,10 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .HasFilter("[DisplayName] IS NOT NULL");
 
                     b.HasIndex("GameUserId");
+
+                    b.HasIndex("SpecificExpandPropertiesId");
+
+                    b.ToTable("GameChars");
 
                     b.HasDiscriminator().HasValue("GameChar");
                 });
@@ -341,7 +369,30 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("ParentId");
 
+                    b.ToTable("GameItems");
+
                     b.HasDiscriminator().HasValue("GameItem");
+                });
+
+            modelBuilder.Entity("GuangYuan.GY001.UserDb.GameSocialRelationship", b =>
+                {
+                    b.HasBaseType("OW.Game.Store.GameEntityRelationshipBase");
+
+                    b.Property<short>("Friendliness")
+                        .HasColumnType("smallint");
+
+                    b.HasIndex("Friendliness");
+
+                    b.HasDiscriminator().HasValue("GameSocialRelationship");
+                });
+
+            modelBuilder.Entity("GuangYuan.GY001.UserDb.CharSpecificExpandProperty", b =>
+                {
+                    b.HasOne("GuangYuan.GY001.UserDb.GameChar", "GameChar")
+                        .WithMany()
+                        .HasForeignKey("Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameExtendProperty", b =>
@@ -378,6 +429,10 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .HasForeignKey("GameUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("GuangYuan.GY001.UserDb.CharSpecificExpandProperty", "SpecificExpandProperties")
+                        .WithMany()
+                        .HasForeignKey("SpecificExpandPropertiesId");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameItem", b =>

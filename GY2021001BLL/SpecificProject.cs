@@ -417,7 +417,7 @@ namespace GuangYuan.GY001.BLL
             {
                 world.ItemManager.ForcedAdd(item, runseSlot);
             }
-            gameChar.DisplayName ??= CnNames.GetName(true);
+            gameChar.DisplayName ??= CnNames.GetName(VWorld.IsHit(0.5));
             result = true;
             //修正木材存贮最大量
             //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);

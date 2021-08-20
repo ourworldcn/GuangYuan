@@ -1,3 +1,4 @@
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.AspNetCore.Hosting;
@@ -43,13 +44,16 @@ namespace Gy001
         [Conditional("DEBUG")]
         private static void Test(IHost host)
         {
-        }
+            var cache = host.Services.GetService<IMemoryCache>();
 
-        private static int _Di = 0;
+            //const string pvpChar = "PvpChar";
+            var world = host.Services.GetRequiredService<VWorld>();
+            var db = world.CreateNewUserDbContext();
+            var gim = host.Services.GetRequiredService<GameItemManager>();
+            var gitm = host.Services.GetRequiredService<GameItemTemplateManager>();
+            var bodyIds = gitm.GetTemplates(c => c.CatalogNumber == 4).Select(c => c.Id).ToArray(); //身体Id集合
+            var query = gim.GetBodiesQuery(db, bodyIds).Take(5).ToArray();
 
-        private static void PostEvictionDelegate(object key, object value, EvictionReason reason, object state)
-        {
-            Debug.WriteLine($"[{DateTime.Now}]PostEvictionDelegate:{key},reason:{reason},total:{Interlocked.Increment(ref _Di)}");
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -110,7 +114,7 @@ namespace Gy001
             public string SnapshotDefine { get; internal set; }
         }
 
-        private Task<ModelSnapshot> CreateModelSnapshot(string codedefine,DbContext db=null)
+        private Task<ModelSnapshot> CreateModelSnapshot(string codedefine, DbContext db = null)
         {
             var ModuleDbContext = db.GetType();
             var ContextAssembly = ModuleDbContext.Assembly.FullName;

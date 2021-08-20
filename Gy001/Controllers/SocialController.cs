@@ -3,6 +3,7 @@ using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using System;
@@ -118,14 +119,13 @@ namespace Gy001.Controllers
         /// <summary>
         /// 获取一组角色的摘要信息。以供未来申请好友。
         /// </summary>
-        /// <param name="token">当前角色的令牌。</param>
-        /// <param name="displayName">指定角色的昵称。如果省略或为null，则不限定昵称而尽量返回活跃用户。</param>
+        /// <param name="model">参见<seealso cref="GetCharSummaryParamsDto"/>。</param>
         /// <returns>一组可添加为好友的角色摘要集合。如果没有符合条件的数据则返回空集合。</returns>
         /// <response code="401">令牌错误。</response>
-        [HttpGet]
-        public ActionResult<GetCharSummaryReturnDto> GetCharSummary(string token, string displayName = null)
+        [HttpPut]
+        public ActionResult<GetCharSummaryReturnDto> GetCharSummary(GetCharSummaryParamsDto model)
         {
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(token), out GameUser gu))
+            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
             {
                 return Unauthorized("令牌无效");
             }
@@ -133,10 +133,11 @@ namespace Gy001.Controllers
             {
                 var result = new GetCharSummaryReturnDto();
                 IEnumerable<CharSummary> coll;
-                if (string.IsNullOrWhiteSpace(displayName))
-                    coll = _World.SocialManager.GetCharSummary(gu.CurrentChar);
+                var tids = model.BodyTIds is null || model.BodyTIds.Count <= 0 ? Array.Empty<Guid>() : model.BodyTIds.Select(c => GameHelper.FromBase64String(c));
+                if (string.IsNullOrWhiteSpace(model.DisplayName))
+                    coll = _World.SocialManager.GetCharSummary(gu.CurrentChar,null,tids);
                 else
-                    coll = _World.SocialManager.GetCharSummary(gu.CurrentChar, displayName);
+                    coll = _World.SocialManager.GetCharSummary(gu.CurrentChar, model.DisplayName,tids);
                 result.CharSummaries.AddRange(coll.Select(c => (CharSummaryDto)c));
                 return result;
             }
@@ -435,6 +436,38 @@ namespace Gy001.Controllers
                 result.CurrentFengge = (HomelandFenggeDto)datas.CurrentFengge;
                 result.Lands.AddRange(datas.Lands.Select(c => (GameItemDto)c));
                 result.Mounts.AddRange(datas.Mounts.Select(c => (GameItemDto)c));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取可以或已经pvp的角色的列表。
+        /// </summary>
+        /// <param name="model"><seealso cref="GetPvpListParamsDto"/></param>
+        /// <returns><seealso cref="GetPvpListReturnDto"/></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpGet]
+        public ActionResult<GetPvpListReturnDto> GetPvpList([FromQuery] GetPvpListParamsDto model)
+        {
+            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("令牌无效");
+            }
+            GetPvpListReturnDto result = null;
+            try
+            {
+                result = new GetPvpListReturnDto();
+                var returnData = _World.SocialManager.GetPvpChars(gu.CurrentChar, DateTime.UtcNow);
+                result.PvpList.AddRange(returnData.Select(c => (GameActionRecordDto)c));
+            }
+            catch (Exception err)
+            {
+                result.HasError = true;
+                result.DebugMessage = err.Message;
+            }
+            finally
+            {
+                _World.CharManager.Unlock(gu);
             }
             return result;
         }

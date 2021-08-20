@@ -4,13 +4,10 @@
  */
 #pragma warning disable IDE0074 // 使用复合分配
 using Game.Social;
-using GuangYuan.GY001.UserDb;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace GY2021001WebApi.Models
 {
@@ -377,7 +374,7 @@ namespace GY2021001WebApi.Models
         [DataMember(Name = nameof(Count))]
         public decimal? Count { get; set; }
 
-        Dictionary<string, object> _Properties;
+        private Dictionary<string, object> _Properties;
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
         /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，仅频繁拆箱问题不大(相对于不太频繁的操作而言)。
@@ -667,7 +664,7 @@ namespace GY2021001WebApi.Models
         }
 
         [IgnoreDataMember]
-        List<string> _MailIds;
+        private List<string> _MailIds;
 
         /// <summary>
         /// 操作导致发送了邮件的Id集合。
@@ -740,6 +737,51 @@ namespace GY2021001WebApi.Models
         public Guid ParentId { get; private set; }
     }
 
+    /// <summary>
+    /// 行为简要记录的数据封装类。
+    /// </summary>
+    [DataContract]
+    public partial class GameActionRecordDto
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public GameActionRecordDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 主体对象的Id。
+        /// </summary>
+        [DataMember]
+        public string ParentId { get; set; }
+
+        /// <summary>
+        /// 行为Id。
+        /// </summary>
+        [DataMember]
+        public string ActionId { get; set; }
+
+        /// <summary>
+        /// 这个行为发生的时间。
+        /// </summary>
+        /// <value>默认是构造此对象的UTC时间。</value>
+        [DataMember]
+        public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 一个人眼可读的说明。
+        /// </summary>
+        [DataMember]
+        public string Remark { get; set; }
+
+        /// <summary>
+        /// 简单扩展属性的字典。
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+    }
     #endregion 基础数据
 
     #region 账号管理相关
@@ -1085,7 +1127,7 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class MoveItemsParamsDto : TokenDtoBase
     {
-        List<MoveItemsItemDto> _Items;
+        private List<MoveItemsItemDto> _Items;
 
         /// <summary>
         /// 要移动的物品的详细数据。
@@ -1514,6 +1556,18 @@ namespace GY2021001WebApi.Models
         public Guid Id { get; set; }
 
         /// <summary>
+        /// 保留未用。将来可能用于保存野怪/坐骑的头模板Id。
+        /// </summary>
+        [DataMember]
+        public Guid HeadTId { get; set; }
+
+        /// <summary>
+        /// 保留未用。将来可能用于保存野怪/坐骑的身体模板Id。
+        /// </summary>
+        [DataMember]
+        public Guid BodyTId { get; set; }
+
+        /// <summary>
         /// 数量。
         /// </summary>
         [DataMember]
@@ -1705,6 +1759,28 @@ namespace GY2021001WebApi.Models
         public List<CharSummaryDto> CharSummaries { get; set; } = new List<CharSummaryDto>();
     }
 
+    /// <summary>
+    /// GetCharSummary接口使用的参数封装类。
+    /// </summary>
+    [DataContract]
+    public class GetCharSummaryParamsDto : TokenDtoBase
+    {
+        public GetCharSummaryParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 坐骑身体的模板Id集合。如果这里有数据则好友展示的坐骑要包含这种坐骑才会返回。
+        /// </summary>
+        public List<string> BodyTIds { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 指定角色的昵称。如果省略或为null，则不限定昵称而尽量返回活跃用户。
+        /// </summary>
+        public string DisplayName { get; set; }
+    }
+
     [DataContract]
     public partial class CharSummaryDto
     {
@@ -1750,6 +1826,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class RequestFriendReturnDto : ReturnDtoBase
     {
+        /// <summary>
+        /// 请求结果的详细情况，参见 RequestFriendResult 的说明。
+        /// </summary>
+        [DataMember]
+        public RequestFriendResult Details { get; set; }
     }
 
     /// <summary>
@@ -1999,6 +2080,23 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string OtherCharId { get; set; }
 
+    }
+
+    [DataContract]
+    public class GetPvpListParamsDto : TokenDtoBase
+    {
+    }
+
+    [DataContract]
+    public class GetPvpListReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// pvp对象数据。每个元素是一个可以或已经pvp对象。
+        /// <see cref="GameActionRecordDto.ParentId"/>是对方的角色Id。
+        /// <see cref="GameActionRecordDto.Properties"/>中存在done且不为0则说明已经战斗过，否则是可战斗的对象。
+        /// </summary>
+        [DataMember]
+        public List<GameActionRecordDto> PvpList { get; set; } = new List<GameActionRecordDto>();
     }
 
     #endregion 社交相关

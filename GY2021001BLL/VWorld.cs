@@ -9,6 +9,7 @@ using OW.Game.Expression;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -331,9 +332,75 @@ namespace GuangYuan.GY001.BLL
             var result = Task.Factory.StartNew(c =>
             {
                 //CreateDb((IServiceProvider)c);
-                //Task.Run(() => LoadCache());
+                Thread thread = new Thread(CreateNewUserAndChar)
+                {
+                    IsBackground = true,
+                    Priority = ThreadPriority.Lowest,
+                };
+#if DEBUG
+#else
+               thread.Start();
+#endif
             }, _Services, cancellationToken);
             return result;
+        }
+
+        void CreateNewUserAndChar()
+        {
+            var world = _Services.GetRequiredService<VWorld>();
+            var logger = _Services.GetService<ILogger<GameHostedService>>();
+            using var db = world.CreateNewUserDbContext();
+            var loginNames = db.GameUsers.Where(c => c.LoginName.StartsWith("test")).Select(c => c.LoginName).ToArray();
+            var suffs = loginNames.Select(c =>
+              {
+                  return int.TryParse(c.Replace("test", string.Empty), out var suff) ? suff : 0;
+              }).OrderBy(c => c).ToArray();
+            int start = 1;
+            for (int i = 0; i < suffs.Length; i++)
+            {
+                if (suffs[i] != i + 1)
+                    break;
+                start = i + 1;
+            }
+            try
+            {
+                for (int i = start; i < 25000; i++)
+                {
+                    try
+                    {
+                        var pwd = "test" + i.ToString();
+                        var loginName = "test" + i;
+                        if (db.GameUsers.Any(c => c.LoginName == loginName))
+                        {
+                            continue;
+                        }
+                        world.CharManager.QuicklyRegister(ref pwd, loginName);
+                        if (i % 100 == 0)
+                        {
+                            logger.LogDebug($"[{DateTime.UtcNow:s}]已经创建了{i}个账号。");
+                            Thread.Sleep(1);
+                        }
+#if DEBUG
+                        Thread.Sleep(1);
+
+#else
+                            Thread.Sleep(1000);
+#endif
+                    }
+                    catch (DbUpdateException err)
+                    {
+                        logger.LogWarning($"创建账号出错已重试——{err.Message}");
+                        Thread.Sleep(1);
+                        i--;
+                    }
+                    Thread.Yield();
+                }
+
+            }
+            catch (Exception err)
+            {
+                logger.LogWarning($"创建账号时出现未处理错误，将停止创建。——{err.Message}");
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

@@ -7,17 +7,10 @@
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.UserDb.GameClientExtendProperty" Collapsed="true">
-    <Position X="0.5" Y="11" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAgAgAAAAAAA=</HashCode>
-      <FileName>GameBase.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameExtendProperty">
-    <Position X="1.5" Y="0.5" Width="1.5" />
+    <Position X="1.5" Y="0.5" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>EAAAAAAAAAAAAAAEAEQAAAQAAAAAAEIgAgAACAAAAAA=</HashCode>
+      <HashCode>EABAAAAAAAAAAAAEAEQAAAQAAAAAAEIgAgAACAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -43,14 +36,14 @@
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameThingBase">
-    <Position X="4.5" Y="2.25" Width="1.5" />
+    <Position X="4.5" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BABIAACAEGAhABAACAAEAJCAAAEAAAHAAABAIQAEAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
-      <Property Name="ExtendProperties" />
       <Property Name="Name2FastChangingProperty" />
+      <Property Name="ExtendProperties" />
       <Property Name="ExtendPropertyDictionary" />
     </ShowAsCollectionAssociation>
     <Lollipop Position="0.2" />
@@ -84,7 +77,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameItem">
-    <Position X="5.75" Y="8.75" Width="1.5" />
+    <Position X="5.75" Y="9" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AIBABAIIAAAAEAAGAAAEQAQAAAAAAAAAIkYAAAAAACg=</HashCode>
       <FileName>GameItem.cs</FileName>
@@ -98,7 +91,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameUser">
-    <Position X="8" Y="2.25" Width="1.5" />
+    <Position X="8" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>gMBAAAAAgCAgAAgQAAAQABEAAAAAAAAAAQAAAgIAIAI=</HashCode>
       <FileName>GameUser.cs</FileName>
@@ -109,13 +102,15 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameChar">
-    <Position X="3.5" Y="8.75" Width="1.5" />
+    <Position X="3.5" Y="9" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>BIAIkAgAACAAgCAAAIIAAAAAAAAAAAAACAAABIACAFg=</HashCode>
+      <HashCode>BIAIkAgAACAAgCAAAAIAAAAgAAAAAAAACAAABIACAFg=</HashCode>
       <FileName>GameChar.cs</FileName>
     </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="SpecificExpandProperties" />
+    </ShowAsAssociation>
     <ShowAsCollectionAssociation>
-      <Property Name="ClientExtendProperties" />
       <Property Name="GameItems" />
     </ShowAsCollectionAssociation>
     <Lollipop Position="0.2" />
@@ -128,18 +123,18 @@
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameObjectBase" Collapsed="true">
-    <Position X="5.75" Y="0.75" Width="1.5" />
+    <Position X="5.75" Y="1" Width="1.5" />
     <TypeIdentifier />
   </Class>
   <Class Name="OW.Game.FastChangingProperty" Collapsed="true">
     <Position X="1.5" Y="5" Width="1.5" />
     <TypeIdentifier />
   </Class>
-  <Class Name="GuangYuan.GY001.UserDb.GameRanking">
-    <Position X="8.75" Y="7.5" Width="1.5" />
+  <Class Name="GuangYuan.GY001.UserDb.CharSpecificExpandProperty">
+    <Position X="0.5" Y="11" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAIAAAAAAAAAAIAAAACAAAAAAAAAQAAAAAAJAAAAAA=</HashCode>
-      <FileName>GameRanking.cs</FileName>
+      <HashCode>AIAIAAAAAAAAAAAAAAAAAAAAIAAABQAAAAAAJAAAAAI=</HashCode>
+      <FileName>CharSpecificExpandProperty.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Interface Name="GuangYuan.GY001.UserDb.IGameThingHelper" Collapsed="true">

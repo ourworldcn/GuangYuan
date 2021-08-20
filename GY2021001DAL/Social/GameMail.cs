@@ -33,9 +33,9 @@ namespace GuangYuan.GY001.UserDb
     }
 
     /// <summary>
-    /// 
+    /// 游戏内邮件对象。
     /// </summary>
-    public class GameMail : GameSocialBase
+    public class GameMail : GameObjectBase
     {
         public GameMail()
         {
@@ -44,6 +44,9 @@ namespace GuangYuan.GY001.UserDb
         public GameMail(Guid id) : base(id)
         {
         }
+
+        private readonly object _ThisLocker = new object();
+        public object ThisLocker => _ThisLocker;
 
         /// <summary>
         /// 获取或设置此邮件的主题行。
@@ -147,7 +150,7 @@ namespace GuangYuan.GY001.UserDb
     /// 表示邮件发件人或收件人的地址。
     /// </summary>
     [Table("MailAddresses")]
-    public class GameMailAddress : GuidKeyObjectBase
+    public class GameMailAddress : GameObjectBase
     {
         public GameMailAddress()
         {
@@ -193,7 +196,7 @@ namespace GuangYuan.GY001.UserDb
     /// TId={物品模板Id},HTId={头模板Id},BTId={身体模板Id},Count=物品数量，PTId=物品所属容器的模板Id,neatk=攻击资质,nemhp=血量资质,neqlt=质量资质。
     /// </summary>
     [Table("MailAttachmentes")]
-    public class GameMailAttachment : GameSocialBase
+    public class GameMailAttachment : GameObjectBase
     {
         /// <summary>
         /// 获取或设置此对象所属邮件的Id。

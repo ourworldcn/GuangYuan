@@ -33,22 +33,19 @@ namespace GuangYuan.GY001.UserDb
 
             //物品
             modelBuilder.Entity<GameItem>().HasIndex(c => c.OwnerId);
+            modelBuilder.Entity<GameThingBase>().HasIndex(c => c.TemplateId).IsUnique(false);
 
-            modelBuilder.Entity<GameClientExtendProperty>().HasIndex(c => c.ParentId);
-            //
-            modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.ParentId, c.Name });
-            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.Name).IsUnique(false);
-            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.DecimalValue).IsUnique(false);
-            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.DoubleValue).IsUnique(false);
-            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.IntValue).IsUnique(false);
-            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.StringValue).IsUnique(false);
+            //通用扩展属性
+            modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.ParentId,c.Name});
 
-            //
+            //通用关系描述对象
+            modelBuilder.Entity<GameEntityRelationshipBase>().HasKey(c => new { c.Id, c.Id2, c.Flag });
+            modelBuilder.Entity<GameEntityRelationshipBase>().HasIndex(c => c.PropertyString).IsUnique(false);
+
+            //邮件相关
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
 
             //社交关系
-            modelBuilder.Entity<GameSocialRelationship>().HasKey(c => new { c.Id, c.ObjectId });
-            modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.ObjectId).IsUnique(false);
             modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.Friendliness).IsUnique(false);
 
             //操作记录
@@ -56,17 +53,12 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => new { c.ParentId, c.ActionId }).IsUnique(false);
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.ActionId).IsUnique(false);
 
-            //通用关系描述对象
-            modelBuilder.Entity<GameEntityRelationshipBase>().HasKey(c => new { c.Id, c.Id2, c.Flag });
-            modelBuilder.Entity<GameEntityRelationshipBase>().HasIndex(c => c.PropertyString).IsUnique(false);
-
-            //排行榜
-            modelBuilder.Entity<GameRanking>().HasIndex(c => c.State).IsUnique(false);
-            modelBuilder.Entity<GameRanking>().HasIndex(c => c.PveCScore).IsUnique(false);
-            modelBuilder.Entity<GameRanking>().HasIndex(c => c.PvpScore).IsUnique(false);
-            modelBuilder.Entity<GameRanking>().HasIndex(c => c.PveTScore).IsUnique(false);
-            modelBuilder.Entity<GameRanking>().HasIndex(c => c.LastLogout).IsUnique(false);
-            modelBuilder.Entity<GameRanking>().HasIndex(c => c.HomelandShow).IsUnique(false);
+            //角色特定的扩展属性
+            modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.State).IsUnique(false);
+            modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.PveCScore).IsUnique(false);
+            modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.PvpScore).IsUnique(false);
+            modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.PveTScore).IsUnique(false);
+            modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.LastLogoutUtc).IsUnique(false);
 
             //调用基类方法。
             base.OnModelCreating(modelBuilder);
@@ -97,11 +89,6 @@ namespace GuangYuan.GY001.UserDb
         public DbSet<GameSetting> GameSettings { get; set; }
 
         /// <summary>
-        /// 客户端通用扩展属性记录的表。
-        /// </summary>
-        public DbSet<GameClientExtendProperty> ClientExtendProperties { get; set; }
-
-        /// <summary>
         /// 游戏服务器用通用属性记录表。
         /// </summary>
         public DbSet<GameExtendProperty> ExtendProperties { get; set; }
@@ -120,16 +107,6 @@ namespace GuangYuan.GY001.UserDb
         /// 操作记录。
         /// </summary>
         public DbSet<GameActionRecord> ActionRecords { get; set; }
-
-        /// <summary>
-        /// 通用的关系描述对象。
-        /// </summary>
-        public DbSet<GameEntityRelationshipBase> EntityRelationship { get; set; }
-
-        /// <summary>
-        /// 排行榜对象的集合类。
-        /// </summary>
-        public DbSet<GameRanking> Rankings { get; set; }
 
         public override void Dispose()
         {

@@ -56,6 +56,11 @@ namespace GuangYuan.GY001.BLL.Homeland
         public Guid Id { get; set; } = Guid.NewGuid();
 
         /// <summary>
+        /// 方案号。 TO DO
+        /// </summary>
+        public int OrderNumber { get; set; }
+
+        /// <summary>
         /// 下属具体加载物品及其位置信息
         /// </summary>
         public List<HomelandFanganItem> FanganItems { get; set; } = new List<HomelandFanganItem>();

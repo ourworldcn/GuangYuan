@@ -326,15 +326,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IQueryable<Guid> GetFriendsOrRequestingOrBlackIds(Guid charId, DbContext db) =>
-             db.Set<GameSocialRelationship>().Where(c => (c.Friendliness > 5 || c.Friendliness < -5) && c.ObjectId == charId).Select(c => c.Id);
-
-        /// <summary>
-        /// 获取活跃用户的Id集合。最近登录的用户。最后登录操作信息的用户操作记录第一个返回。
-        /// </summary>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IOrderedQueryable<GameActionRecord> GetActiveUserIds(DbContext db) =>
-            db.Set<GameActionRecord>().Where(c => c.ActionId == "Login").OrderByDescending(c => c.DateTimeUtc);
+             db.Set<GameSocialRelationship>().Where(c => (c.Friendliness > 5 || c.Friendliness < -5) && c.Id2 == charId).Select(c => c.Id);
 
         /// <summary>
         /// 获取活跃用户。
@@ -369,21 +361,26 @@ namespace GuangYuan.GY001.BLL
             return result.ToList();
         }
 
-
         /// <summary>
         /// 获取指定字符串开头昵称的角色信息。
         /// </summary>
         /// <param name="gameChar"></param>
         /// <param name="displayName"></param>
         /// <returns>目前最多返回20条。</returns>
-        public IEnumerable<CharSummary> GetCharSummary(GameChar gameChar, string displayName)
+        public IEnumerable<CharSummary> GetCharSummary(GameChar gameChar, string displayName, IEnumerable<Guid> bodyTIds = null)
         {
-            GY001UserContext db = null;
+            using GY001UserContext db = World.CreateNewUserDbContext();
+            var s = RefreshFriends(db, gameChar, bodyTIds).ToArray();
             try
             {
-                db = World.CreateNewUserDbContext();
+                var activeChars = World.CharManager.GetActiveUserIdsQuery(db);  //活跃用户
+                var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
+                if (null != bodyTIds && bodyTIds.Any())    //若按身体模板Id过滤
+                {
+                    //var query = World.ItemManager.GetBodiesQuery(db, bodyTIds).OrderByDescending(c => c.Count()).Select(c => c.Key);
+                }
                 var gcId = gameChar.Id;
-                var coll = GetFriendsOrRequestingOrBlackIds(gcId, db);
+                var coll = GetFriendsOrRequestingOrBlackIds(gcId, db);  //已经是好友或黑名单
                 var result = db.GameChars.Where(c => c.DisplayName.StartsWith(displayName) && !coll.Contains(c.Id) && c.Id != gcId).Take(10).ToArray().
                      Select(c =>
                      {
@@ -397,6 +394,42 @@ namespace GuangYuan.GY001.BLL
             {
                 db?.DisposeAsync();
             }
+        }
+
+        /// <summary>
+        /// 刷新可加好友的列表并返回。
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="gameChar"></param>
+        /// <param name="bodyTIds">家园中展示动物的身体模板Id。</param>
+        /// <returns></returns>
+        public IEnumerable<Guid> RefreshFriends(GY001UserContext db, GameChar gameChar, IEnumerable<Guid> bodyTIds = null)
+        {
+            IQueryable<Guid> result;
+            var activeChars = db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);  //活跃用户
+            var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
+            var tmpStr1 = $"{SocialConstant.ConfirmedFriendPName}=0";
+            var frees = db.Set<GameSocialRelationship>().Where(c => c.PropertiesString.Contains(tmpStr1)).GroupBy(c => c.Id).Where(c => c.Count() >= 20).Select(c => c.Key); //未处理好友申请数量>20
+            if (null != bodyTIds && bodyTIds.Any())    //若按身体模板Id过滤
+            {
+                //var coll = from tmp1 in World.ItemManager.GetBodiesQuery(db, bodyTIds)
+                //           join tmp2 in db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc)
+                //           on tmp1 equals tmp2.Id
+                //           //orderby tmp1.Count() descending, tmp2.LastLogoutUtc descending
+                //           select tmp1;
+                //var lst = coll.ToArray();
+                result = from tmp in World.ItemManager.GetBodiesQuery(db, bodyTIds)
+                         //join act in db.Set<CharSpecificExpandProperty>()
+                         //on tmp equals act.Id
+                         where tmp != gameChar.Id
+                         where allows.Any(c => c.Id == tmp) && !frees.Any(c => c == tmp)
+                         select tmp;
+            }
+            else
+                result = activeChars.Where(c => c.Id != gameChar.Id).Select(c => c.Id).Where(c => allows.Any(c1 => c1.Id == c) && !frees.Any(c1 => c1 == c));
+
+            result = result.Where(c => allows.Any(c1 => c1.Id == c) && !frees.Any(c1 => c1 == c));
+            return result.Take(5);
         }
 
         /// <summary>
@@ -433,7 +466,7 @@ namespace GuangYuan.GY001.BLL
                     sr = new GameSocialRelationship()
                     {
                         Id = gameChar.Id,
-                        ObjectId = friendId,
+                        Id2 = friendId,
                         Friendliness = 6,
                     };
                     sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.Zero;
@@ -491,7 +524,7 @@ namespace GuangYuan.GY001.BLL
                 var gcId = gameChar.Id;
                 var coll1 = db.SocialRelationships.Where(c => c.Id == gcId);
                 var str = $"{SocialConstant.ConfirmedFriendPName}=0";
-                var coll2 = db.SocialRelationships.Where(c => c.ObjectId == gcId && c.Friendliness > 5 && c.PropertiesString.Contains(str));    //请求添加
+                var coll2 = db.SocialRelationships.Where(c => c.Id2 == gcId && c.Friendliness > 5 && c.PropertiesString.Contains(str));    //请求添加
                 var result = coll1.Union(coll2).ToArray();
                 World.CharManager.Nope(gameChar.GameUser);  //重置下线计时器
                 return result;
@@ -532,7 +565,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         Id = gcId,
                         Friendliness = 6,
-                        ObjectId = friendId,
+                        Id2 = friendId,
                     };
                     db.SocialRelationships.Add(sr);
                 }
@@ -689,7 +722,7 @@ namespace GuangYuan.GY001.BLL
                     sr = new GameSocialRelationship()
                     {
                         Id = objectId,
-                        ObjectId = objectId,
+                        Id2 = objectId,
                     };
                     db.SocialRelationships.Add(sr);
                 }
@@ -1050,6 +1083,98 @@ namespace GuangYuan.GY001.BLL
                 Task.Delay(1000).ContinueWith((task, state) => (state as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);
             }
         }
+
+        /// <summary>
+        /// 获取该用户的指定指定日期的可pvp对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="now">utc时间，取其指定日期部分。</param>
+        /// <returns>返回当前的pvp对象Id列表。如果没有则自动生成。</returns>
+        public IEnumerable<GameActionRecord> GetPvpChars(GameChar gameChar, DateTime now)
+        {
+            const string pvpChar = "PvpChar";
+            using var db = World.CreateNewUserDbContext();
+            var dt = now.Date;
+            var dt1 = dt + TimeSpan.FromDays(1);
+            var coll = from tmp in db.ActionRecords
+                       where tmp.DateTimeUtc >= dt.Date && tmp.DateTimeUtc < dt1 && tmp.ParentId == gameChar.Id && tmp.ActionId == pvpChar
+                       select tmp;  //获取今日已经出现在列表中的数据。
+            var lst = coll.ToList();
+            List<GameActionRecord> result = new List<GameActionRecord>();
+            var rankings = db.Set<CharSpecificExpandProperty>();
+            if (lst.Count <= 0)    //若该日没有生成pvp对象数据
+            {
+                var count = 3;  //一次刷的数量
+                var ranking = rankings.Find(gameChar.Id);
+                var lv = gameChar.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+                var newColl = (from tmp in rankings
+                               where tmp.PvpScore > ranking.PvpScore && tmp.CharLevel > lv && tmp.Id != gameChar.Id  //取上手
+                               orderby tmp.PvpScore
+                               select tmp).Take(count).Union(
+                    (from tmp in rankings
+                     where tmp.PvpScore >= ranking.PvpScore && tmp.Id != gameChar.Id
+                     orderby tmp.PvpScore
+                     select tmp).Take(count)).Union(
+                    (from tmp in rankings
+                     where tmp.PvpScore <= ranking.PvpScore && tmp.Id != gameChar.Id
+                     orderby tmp.PvpScore descending
+                     select tmp).Take(count)).Union(
+                    (from tmp in rankings
+                     where tmp.PvpScore < ranking.PvpScore && tmp.CharLevel < lv && tmp.Id != gameChar.Id    //取下手
+                     orderby tmp.PvpScore descending
+                     select tmp).Take(count));
+                var lstResult = newColl.OrderBy(c => c.PveCScore).ThenBy(c => c.CharLevel).ToList(); //排行榜集合
+
+                //获取下手
+                if (lstResult.Count == 0)   //若没有角色
+                    return result;
+                var addItem = lstResult.FirstOrDefault(c => c.PveCScore < ranking.PveCScore && c.CharLevel < lv) ?? lstResult.First();
+                result.Add(new GameActionRecord()
+                {
+                    ActionId = pvpChar,
+                    DateTimeUtc = now,
+                    ParentId = gameChar.Id,
+                    PropertiesString = $"Id2={addItem.Id}"
+                });
+                lstResult.Remove(addItem);
+                //获取平手
+                if (lstResult.Count == 0)   //若已无角色
+                    goto save;
+                addItem = (lstResult.FirstOrDefault(c => c.PveCScore == ranking.PveCScore && c.CharLevel == lv) ?? lstResult.FirstOrDefault(c => c.PveCScore == ranking.PveCScore))
+                    ?? lstResult.First();   //获取一个尽量相等的
+                result.Add(new GameActionRecord()
+                {
+                    ActionId = pvpChar,
+                    DateTimeUtc = now,
+                    ParentId = gameChar.Id,
+                    PropertiesString = $"Id2={addItem.Id}"
+                });
+                lstResult.Remove(addItem);
+                //获取上手
+                if (lstResult.Count == 0)   //若已无角色
+                    goto save;
+                addItem = (lstResult.LastOrDefault(c => c.PveCScore > ranking.PveCScore && c.CharLevel > lv) ?? lstResult.LastOrDefault(c => c.PveCScore > ranking.PveCScore))
+                    ?? lstResult.Last();   //获取一个尽量相等的
+                result.Add(new GameActionRecord()
+                {
+                    ActionId = pvpChar,
+                    DateTimeUtc = now,
+                    ParentId = gameChar.Id,
+                    PropertiesString = $"Id2={addItem.Id}"
+                });
+            //lstResult.Remove(addItem);
+            //追加新生成的数据
+            save:
+                db.ActionRecords.AddRange(result);
+                db.SaveChanges();
+            }
+            else //若已经生成
+            {
+                result.AddRange(lst);
+            }
+            return result;
+        }
+
         #endregion  项目特定功能
     }
 

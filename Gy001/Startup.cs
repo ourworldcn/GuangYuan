@@ -125,7 +125,6 @@ namespace Gy001
 
             services.AddSingleton(c => new GameSocialManager(c, new SocialManagerOptions()));
 
-            services.AddSingleton(c => new RankingManager(c, new RankingOptions()));
             #endregion 配置游戏专用服务
         }
 

@@ -443,6 +443,7 @@ namespace GuangYuan.GY001.BLL
                         gu.Services = Services;
                         gu.CurrentChar = gu.GameChars[0];
                         gu.LastModifyDateTimeUtc = DateTime.UtcNow;
+                        NotifyChange(gu);
 
                         //加入全局列表
                         var gc = gu.CurrentChar;
@@ -450,7 +451,8 @@ namespace GuangYuan.GY001.BLL
                         _LoginName2Token.AddOrUpdate(loginName, token, (c1, c2) => token);
                         _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
                         OnCharLoaded(new CharLoadedEventArgs(gu.CurrentChar));
-                        actionRecords.Add(new GameActionRecord()
+                        gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = new DateTime(9999, 1, 1);   //标记在线
+                        actionRecords.Add(new GameActionRecord()    //写入登录日志
                         {
                             ActionId = "Login",
                             ParentId = gc.Id,
@@ -489,7 +491,7 @@ namespace GuangYuan.GY001.BLL
                 if (!_QuicklyRegisterSuffixSeqInit)
                 {
                     using var db = World.CreateNewUserDbContext();
-                    var maxSeqStr = db.GameUsers.OrderByDescending(c => c.CreateUtc).FirstOrDefault()?.LoginName ?? "000000";
+                    var maxSeqStr = db.GameUsers.Where(c => c.LoginName.StartsWith("gy")).OrderByDescending(c => c.CreateUtc).FirstOrDefault()?.LoginName ?? "000000";
                     _QuicklyRegisterSuffixSeq = int.Parse(maxSeqStr.Substring(maxSeqStr.Length - 6, 6));
                     _QuicklyRegisterSuffixSeqInit = true;
                 }
@@ -553,7 +555,19 @@ namespace GuangYuan.GY001.BLL
                 gu.GameChars.Add(gc);
                 gu.CurrentChar = gu.GameChars[0];
                 db.GameUsers.Add(gu);
-                db.SaveChanges();
+                //生成缓存数据
+                var sep = new CharSpecificExpandProperty
+                {
+                    CharLevel = (int)gc.GetDecimalOrDefault(ProjectConstant.LevelPropertyName),
+                    LastPvpScore = 1000,
+                    PvpScore = 1000,
+                    Id = gc.Id,
+                    FrinedCount = 0,
+                    FrinedMaxCount = 10,
+                    LastLogoutUtc = DateTime.UtcNow,
+                };
+                db.Add(sep);
+            db.SaveChanges();
             }
             return result;
         }
@@ -623,6 +637,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         actionRecord
                     };
+                    gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = DateTime.UtcNow;   //记录下线时间
                     try
                     {
                         gu.InvokeLogouting(reason);
@@ -708,7 +723,7 @@ namespace GuangYuan.GY001.BLL
                     result.Properties[item.Key] = item.Value;
             }
             result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
-            //建立关联
+                                                                                        //建立关联
             result.GameUser = user;
             result.GameUserId = user.Id;
             //初始化容器
@@ -716,6 +731,12 @@ namespace GuangYuan.GY001.BLL
             var ary = template.ChildrenTemplateIds.Select(c => gim.CreateGameItem(c, result.Id)).ToArray();
             user.DbContext.Set<GameItem>().AddRange(ary);
             result.GameItems.AddRange(ary);
+            user.DbContext.Add(new GameActionRecord
+            {
+                ParentId = result.Id,
+                ActionId = "Created",
+                PropertiesString = $"CreateBy=CreateChar",
+            });
 
             //调用外部创建委托
             try
@@ -787,6 +808,16 @@ namespace GuangYuan.GY001.BLL
             return true;
         }
 
+        /// <summary>
+        /// 获取活跃用户的Id集合。
+        /// </summary>
+        /// <returns>返回的是延迟查询。在线用户在最前方，随后是下线时间降序排序的。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IQueryable<CharSpecificExpandProperty> GetActiveUserIdsQuery(DbContext db)
+        {
+            return db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);
+        }
+
         #endregion 公共方法
 
         #region 事件及相关
@@ -802,6 +833,8 @@ namespace GuangYuan.GY001.BLL
             }
             try
             {
+                //加载扩展属性
+                e.GameChar.SpecificExpandProperties = e.GameChar.GameUser.DbContext.Set<CharSpecificExpandProperty>().Find(e.GameChar.Id);
                 //补足角色的槽
                 var tt = World.ItemTemplateManager.GetTemplateFromeId(e.GameChar.TemplateId);
                 List<Guid> ids = new List<Guid>();
