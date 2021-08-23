@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GuangYuan.GY001.UserDb
 {
-    public class GameBlueprint : GameThingBase
+    public class GameBlueprint : OW.Game.Store.GameObjectBase
     {
         public GameBlueprint()
         {

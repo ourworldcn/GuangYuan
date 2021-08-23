@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GuangYuan.GY001.UserDb.Migrations
 {
-    public partial class _21081901 : Migration
+    public partial class _21082301 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -174,7 +174,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     PveTScore = table.Column<int>(nullable: false),
                     PveCScore = table.Column<int>(nullable: false),
                     State = table.Column<string>(maxLength: 64, nullable: true),
-                    LastLogout = table.Column<DateTime>(nullable: true)
+                    LastLogoutUtc = table.Column<DateTime>(nullable: false),
+                    FrinedMaxCount = table.Column<int>(nullable: false),
+                    FrinedCount = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -227,9 +229,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 columns: new[] { "DateTimeUtc", "ParentId", "ActionId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_CharSpecificExpandProperty_LastLogout",
+                name: "IX_CharSpecificExpandProperty_LastLogoutUtc",
                 table: "CharSpecificExpandProperty",
-                column: "LastLogout");
+                column: "LastLogoutUtc");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CharSpecificExpandProperty_PveCScore",

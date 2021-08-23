@@ -246,29 +246,6 @@ namespace GuangYuan.GY001.UserDb
             return result;
         }
 
-        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
-
-        /// <summary>
-        /// 扩展属性的封装字典。
-        /// </summary>
-        [NotMapped]
-        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
-        {
-            get
-            {
-                if (_ExtendPropertyDictionary is null)
-                {
-                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
-                    foreach (var item in ExtendProperties)
-                    {
-                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
-                            ExtendPropertyDictionary[tmp.Name] = tmp;
-                    }
-                }
-                return _ExtendPropertyDictionary;
-            }
-        }
-
         #endregion 扩展属性相关
 
         #region 事件及相关
@@ -299,16 +276,6 @@ namespace GuangYuan.GY001.UserDb
             catch (Exception)
             {
                 //TO DO
-            }
-            if (null != _ExtendPropertyDictionary) //若需要写入
-            {
-                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
-                //TO DO
-                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
-                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
-                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
-                //foreach (var item in removeItems)
-                //    ExtendProperties.Remove(item);
             }
             foreach (var item in Name2FastChangingProperty)
             {
@@ -370,7 +337,6 @@ namespace GuangYuan.GY001.UserDb
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                _ExtendPropertyDictionary = null;
                 _IsDisposed = true;
             }
         }

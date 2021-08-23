@@ -1,6 +1,8 @@
 ﻿using GuangYuan.GY001.TemplateDb;
+using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -12,7 +14,7 @@ namespace GuangYuan.GY001.UserDb
     /// 游戏中物品，装备，货币，积分的基类。
     /// </summary>
     [Table("GameItems")]
-    public class GameItem : GameThingBase
+    public class GameItem : GameItemBase
     {
         /// <summary>
         /// 构造函数。
@@ -577,4 +579,51 @@ namespace GuangYuan.GY001.UserDb
         public GameChar GetChar(GameItem item);
     }
 
+    public abstract class GameItemBase : GameThingBase
+    {
+        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
+        protected GameItemBase()
+        {
+        }
+
+        protected GameItemBase(Guid id) : base(id)
+        {
+        }
+
+        /// <summary>
+        /// 扩展属性的封装字典。
+        /// </summary>
+        [NotMapped]
+        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
+        {
+            get
+            {
+                if (_ExtendPropertyDictionary is null)
+                {
+                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
+                    foreach (var item in ExtendProperties)
+                    {
+                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
+                            ExtendPropertyDictionary[tmp.Name] = tmp;
+                    }
+                }
+                return _ExtendPropertyDictionary;
+            }
+        }
+
+        public override void PrepareSaving(DbContext db)
+        {
+            if (null != _ExtendPropertyDictionary) //若需要写入
+            {
+                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
+                //TO DO
+                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
+                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
+                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
+                //foreach (var item in removeItems)
+                //    ExtendProperties.Remove(item);
+            }
+            base.PrepareSaving(db);
+        }
+    }
 }
