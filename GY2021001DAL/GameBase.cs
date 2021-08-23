@@ -16,348 +16,6 @@ using System.Text.Json;
 namespace GuangYuan.GY001.UserDb
 {
     /// <summary>
-    /// 游戏内部事物的基类。
-    /// </summary>
-    public abstract class GameThingBase : GameObjectBase, IDisposable
-    {
-        #region 构造函数
-
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public GameThingBase()
-        {
-
-        }
-
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        /// <param name="id"><inheritdoc/></param>
-        public GameThingBase(Guid id) : base(id)
-        {
-
-        }
-
-        #endregion 构造函数
-
-        /// <summary>
-        /// 客户端要记录的一些属性，这个属性客户端可以随意更改，服务器不使用。
-        /// </summary>
-        public string ClientGutsString { get; set; }
-
-        /// <summary>
-        /// 创建该对象的通用协调时间。
-        /// </summary>
-        public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// 获取指定名称的属性名。调用<see cref="TryGetPropertyValue(string, out object)"/>来实现。
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <param name="defaultVal"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object GetPropertyValueOrDefault(string propertyName, object defaultVal = default) =>
-            TryGetPropertyValue(propertyName, out var result) ? result : defaultVal;
-
-        /// <summary>
-        /// 获取指定属性名称的属性值。
-        /// </summary>
-        /// <param name="propertyName">动态属性的名称。</param>
-        /// <param name="result">动态属性的值。</param>
-        /// <returns>true成功返回属性，false未找到属性。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public virtual bool TryGetPropertyValue(string propertyName, out object result)
-        {
-            bool succ;
-            switch (propertyName)
-            {
-                default:
-                    if (Name2FastChangingProperty.TryGetValue(propertyName, out var fcp))   //若存在渐变属性
-                    {
-                        succ = true;
-                        result = fcp.GetCurrentValueWithUtc();
-                    }
-                    else
-                    {
-                        succ = Properties.TryGetValue(propertyName, out result);
-                        if (!succ && null != Template)
-                            succ = Template.TryGetPropertyValue(propertyName, out result);
-                    }
-                    break;
-            }
-            return succ;
-        }
-
-        /// <summary>
-        /// 设置一个属性。
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <param name="val"></param>
-        /// <returns>true，如果属性名存在或确实应该有(基于某种需要)，且设置成功。false，设置成功一个不存在且不认识的属性。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public virtual bool SetPropertyValue(string propertyName, object val)
-        {
-            bool succ;
-            switch (propertyName)
-            {
-                default:
-                    succ = TryGetPropertyValue(propertyName, out var oldVal);
-                    if (!succ || !Equals(oldVal, val))
-                    {
-                        Properties[propertyName] = val;
-                        succ = true;
-                    }
-                    break;
-            }
-            return succ;
-        }
-
-        #region 快速变化属性相关
-
-        private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
-
-        /// <summary>
-        /// 快速变化属性。
-        /// </summary>
-        [NotMapped]
-        public Dictionary<string, FastChangingProperty> Name2FastChangingProperty
-        {
-            get
-            {
-                if (_Name2FastChangingProperty is null)
-                {
-                    lock (this)
-                        if (_Name2FastChangingProperty is null)
-                        {
-                            var list = FastChangingPropertyExtensions.FromGameThing(this);
-                            var charId = (this as GameItem)?.GameChar?.Id ?? Guid.Empty;
-                            foreach (var item in list)
-                            {
-                                item.Tag = (charId, Id);    //设置Tag
-                            }
-                            _Name2FastChangingProperty = list.ToDictionary(c => c.Name);
-                        }
-                }
-                return _Name2FastChangingProperty;
-            }
-        }
-
-        /// <summary>
-        /// 刷新所有渐变属性，写入<see cref="SimpleExtendPropertyBase.Properties"/>
-        /// </summary>
-        public void FcpToProperties()
-        {
-            foreach (var item in Name2FastChangingProperty) //刷新渐变属性
-            {
-                _ = item.Value.GetCurrentValueWithUtc();
-                FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
-            }
-        }
-
-        /// <summary>
-        /// 获取属性，且考虑是否刷新并写入快速变化属性。
-        /// </summary>
-        /// <param name="name">要获取值的属性名。</param>
-        /// <param name="refreshDate">当有快速变化属性时，刷新时间，如果为null则不刷新。</param>
-        /// <param name="writeDictionary">当有快速变化属性时，是否写入<see cref="Properties"/>属性。</param>
-        /// <param name="result">属性的当前返回值。对快速变化属性是其<see cref="FastChangingProperty.LastValue"/>,是否在之前刷新取决于<paramref name="refresh"/>参数。</param>
-        /// <param name="refreshDatetime">如果是快速变化属性且需要刷新，则此处返回实际的计算时间。
-        /// 如果找到的不是快速渐变属性返回<see cref="DateTime.MinValue"/></param>
-        /// <returns>true成功找到属性。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public virtual bool TryGetPropertyValueWithFcp(string name, DateTime? refreshDate, bool writeDictionary, out object result, out DateTime refreshDatetime)
-        {
-            bool succ;
-            if (Name2FastChangingProperty.TryGetValue(name, out var fcp)) //若找到快速变化属性
-            {
-                if (refreshDate.HasValue) //若需要刷新
-                {
-                    refreshDatetime = refreshDate.Value;
-                    result = fcp.GetCurrentValue(ref refreshDatetime);
-                }
-                else
-                {
-                    refreshDatetime = DateTime.MinValue;
-                    result = fcp.LastValue;
-                }
-                if (writeDictionary)
-                    fcp.ToGameThing(this);
-                succ = true;
-            }
-            else //若是其他属性
-            {
-                refreshDatetime = DateTime.MinValue;
-                succ = Properties.TryGetValue(name, out result);
-            }
-            return succ;
-        }
-
-        /// <summary>
-        ///  获取属性，若是快速变化属性时会自动用当前时间刷新且写入<see cref="Properties"/>。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetPropertyValueWithFcp(string name, out object result)
-        {
-            DateTime dt = DateTime.UtcNow;
-            return TryGetPropertyValueWithFcp(name, dt, true, out result, out _);
-        }
-
-        /// <summary>
-        /// 移除一个渐变属性。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns>移除的渐变属性对象，如果没有找到指定名称的渐变属性对象则返回null。</returns>
-        public FastChangingProperty RemoveFastChangingProperty(string name)
-        {
-            if (Name2FastChangingProperty.Remove(name, out var result))
-                FastChangingPropertyExtensions.Clear(Properties, name);
-            return result;
-        }
-        #endregion 快速变化属性相关
-
-        #region 扩展属性相关
-
-        /// <summary>
-        /// 服务器用通用扩展属性集合。
-        /// </summary>
-        public virtual List<GameExtendProperty> ExtendProperties { get; } = new List<GameExtendProperty>();
-
-        /// <summary>
-        /// 获取或创建一个指定名称的<see cref="GameExtendProperty"/>对象。
-        /// </summary>
-        /// <param name="name">对象名称。</param>
-        /// <param name="creator">创建器。</param>
-        /// <returns>获取或创建的对象。返回时创建的对象已经被加入了集合，且设置了必要导航属性。</returns>
-        public GameExtendProperty GetOrAddExtendProperty(string name, Func<string, GameExtendProperty> creator)
-        {
-            var result = ExtendProperties.FirstOrDefault(c => c.Name == name);
-            if (result is null)
-            {
-                result = creator(name);
-                result.GameThing = this;
-                result.ParentId = Id;
-                ExtendProperties.Add(result);
-            }
-            return result;
-        }
-
-        #endregion 扩展属性相关
-
-        #region 事件及相关
-        protected virtual void OnSaving(EventArgs e)
-        {
-            try
-            {
-                Saving?.Invoke(this, e);
-            }
-            catch
-            {
-            }
-        }
-
-        public event EventHandler Saving;
-
-        /// <summary>
-        /// 通知该实例，即将保存到数据库。
-        /// </summary>
-        /// <param name="e"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void PrepareSaving(DbContext db)
-        {
-            try
-            {
-                OnSaving(EventArgs.Empty);
-            }
-            catch (Exception)
-            {
-                //TO DO
-            }
-            foreach (var item in Name2FastChangingProperty)
-            {
-                FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
-            }
-            base.PrepareSaving(db);
-        }
-
-        /// <summary>
-        /// 该对象自身数据已经加载到内存中进行调用。
-        /// </summary>
-        /// <param name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
-        public void InvokeLoading(IServiceProvider services)
-        {
-            var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
-            Template = helper.GetTemplateFromeId(TemplateId);
-        }
-
-        /// <summary>
-        /// 引发<see cref="Created"/>事件。
-        /// </summary>
-        /// <param name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void InvokeCreated(IServiceProvider services)
-        {
-            var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
-            Template = helper.GetTemplateFromeId(TemplateId);
-        }
-
-        #endregion 事件及相关
-
-        /// <summary>
-        /// 模板对象。
-        /// </summary>
-        [NotMapped]
-        public GameThingTemplateBase Template { get; set; }
-
-        /// <summary>
-        /// 模板Id。
-        /// </summary>
-        public Guid TemplateId { get; set; }
-
-        #region IDisposable接口相关
-
-        private bool _IsDisposed;
-
-        /// <summary>
-        /// 对象是否已经被处置。
-        /// </summary>
-        protected bool IsDisposed => _IsDisposed;
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_IsDisposed)
-            {
-                if (disposing)
-                {
-                    // TODO: 释放托管状态(托管对象)
-                }
-
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
-                _IsDisposed = true;
-            }
-        }
-
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~GameThingBase()
-        // {
-        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion IDisposable接口相关
-    }
-
-    /// <summary>
     /// 存储设置的模型类。
     /// </summary>
     public class GameSetting
@@ -524,7 +182,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 导航属性。
         /// </summary>
-        public virtual GameThingBase GameThing { get; set; }
+        public virtual GameItemBase GameThing { get; set; }
 
         /// <summary>
         /// 属性的名称。
@@ -575,7 +233,7 @@ namespace GuangYuan.GY001.UserDb
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override object GetValue(object obj, string propertyName, object defaultValue = default)
         {
-            var _ = obj as GameThingBase;
+            var _ = obj as GameItemBase;
             var dic = _?.Properties;
             return dic == null ? defaultValue : dic.GetValueOrDefault(propertyName, defaultValue);
         }
@@ -590,7 +248,7 @@ namespace GuangYuan.GY001.UserDb
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool SetValue(object obj, string propertyName, object val)
         {
-            var _ = obj as GameThingBase;
+            var _ = obj as GameItemBase;
             var dic = _?.Properties;
             dic[propertyName] = val;
             return true;
@@ -657,7 +315,7 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="obj"></param>
         /// <param name="thing"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void ToGameThing(this FastChangingProperty obj, GameThingBase thing)
+        static public void ToGameThing(this FastChangingProperty obj, GameItemBase thing)
         {
             obj.ToDictionary(thing.Properties, obj.Name);
         }
@@ -687,7 +345,7 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="thing"></param>
         /// <param name="classPrefix"></param>
         /// <returns></returns>
-        static public IEnumerable<FastChangingProperty> FromGameThing(GameThingBase thing, string classPrefix = DefaultClassPrefix)
+        static public IEnumerable<FastChangingProperty> FromGameThing(GameObjectBase thing, string classPrefix = DefaultClassPrefix)
         {
             var dic = thing.Properties;
             var startIndex = classPrefix.Length + 1;
@@ -726,7 +384,7 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="result"></param>
         /// <returns>true指定属性存在且能转换为数值形式；否则返回false。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public bool TryGetDecimalPropertyValue(this GameThingBase obj, string propertyName, out decimal result)
+        static public bool TryGetDecimalPropertyValue(this GameItemBase obj, string propertyName, out decimal result)
         {
             if (obj.TryGetPropertyValue(propertyName, out var tmp) && OwHelper.TryGetDecimal(tmp, out result))
                 return true;
@@ -743,7 +401,7 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="defaultVal"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public decimal GetDecimalOrDefault(this GameThingBase obj, string propertyName, decimal defaultVal = decimal.Zero) =>
+        static public decimal GetDecimalOrDefault(this GameItemBase obj, string propertyName, decimal defaultVal = decimal.Zero) =>
             obj.TryGetPropertyValue(propertyName, out var stcObj) && OwHelper.TryGetDecimal(stcObj, out var dec) ? dec : defaultVal;
 
         /// <summary>
@@ -752,7 +410,7 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="obj"></param>
         /// <returns><see cref="decimal.MaxValue"/>如果不可堆叠则为1.无限制是<see cref="decimal.MaxValue"/>。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public decimal GetStc(this GameThingBase obj)
+        static public decimal GetStc(this GameItemBase obj)
         {
             var stc = obj.GetDecimalOrDefault("stc", 1);
             return stc == -1 ? decimal.MaxValue : stc;
@@ -765,7 +423,7 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="result">如果是可堆叠对象则返回堆叠最大数量。-1是不受限制。</param>
         /// <returns>true可堆叠，false不可堆叠。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public bool IsStc(this GameThingBase obj, out decimal result) =>
+        static public bool IsStc(this GameItemBase obj, out decimal result) =>
             obj.TryGetDecimalPropertyValue("stc", out result);
 
     }
@@ -825,5 +483,37 @@ namespace GuangYuan.GY001.UserDb
         /// 一个人眼可读的说明。
         /// </summary>
         public string Remark { get; set; }
+    }
+
+    public abstract class GameThingBase : GameObjectBase
+    {
+        protected GameThingBase()
+        {
+        }
+
+        protected GameThingBase(Guid id) : base(id)
+        {
+        }
+
+        /// <summary>
+        /// 客户端要记录的一些属性，这个属性客户端可以随意更改，服务器不使用。
+        /// </summary>
+        public string ClientGutsString { get; set; }
+
+        /// <summary>
+        /// 创建该对象的通用协调时间。
+        /// </summary>
+        public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 模板Id。
+        /// </summary>
+        public Guid TemplateId { get; set; }
+
+        /// <summary>
+        /// 模板对象。
+        /// </summary>
+        [NotMapped]
+        public GameThingTemplateBase Template { get; set; }
     }
 }

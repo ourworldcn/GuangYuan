@@ -33,7 +33,7 @@ namespace GuangYuan.GY001.UserDb
 
             //物品
             modelBuilder.Entity<GameItem>().HasIndex(c => c.OwnerId);
-            modelBuilder.Entity<GameThingBase>().HasIndex(c => c.TemplateId).IsUnique(false);
+            modelBuilder.Entity<GameItem>().HasIndex(c => c.TemplateId).IsUnique(false);
 
             //通用扩展属性
             modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.ParentId,c.Name});
@@ -83,6 +83,7 @@ namespace GuangYuan.GY001.UserDb
         /// 物品/道具表
         /// </summary>
         public DbSet<GameItem> GameItems { get; set; }
+
         /// <summary>
         /// 全局动态设置表。
         /// </summary>

@@ -3,6 +3,7 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -301,7 +302,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     var gameItem = gim.CreateGameItem(item.Item1);  //物品管理器
                     gameItem.Count = item.Item2;
-                    GameThingBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == item.Item3);
+                    GameObjectBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == item.Item3);
                     parent ??= gameChar;
                     gim.AddItem(gameItem, parent, null, changes);
                 }
@@ -1106,7 +1107,7 @@ namespace GuangYuan.GY001.BLL
             {
                 var count = 3;  //一次刷的数量
                 var ranking = rankings.Find(gameChar.Id);
-                var lv = gameChar.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+                var lv = gameChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
                 var newColl = (from tmp in rankings
                                where tmp.PvpScore > ranking.PvpScore && tmp.CharLevel > lv && tmp.Id != gameChar.Id  //取上手
                                orderby tmp.PvpScore

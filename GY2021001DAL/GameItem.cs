@@ -1,6 +1,7 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,6 +11,304 @@ using System.Runtime.CompilerServices;
 
 namespace GuangYuan.GY001.UserDb
 {
+    /// <summary>
+    /// 游戏内部事物的基类。
+    /// </summary>
+    [NotMapped]
+    public abstract class GameItemBase : GameThingBase, IDisposable
+    {
+        #region 构造函数
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public GameItemBase()
+        {
+
+        }
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="id"><inheritdoc/></param>
+        public GameItemBase(Guid id) : base(id)
+        {
+
+        }
+
+        #endregion 构造函数
+
+        /// <summary>
+        /// 获取指定名称的属性名。调用<see cref="TryGetPropertyValue(string, out object)"/>来实现。
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public object GetPropertyValueOrDefault(string propertyName, object defaultVal = default) =>
+            TryGetPropertyValue(propertyName, out var result) ? result : defaultVal;
+
+        /// <summary>
+        /// 获取指定属性名称的属性值。
+        /// </summary>
+        /// <param name="propertyName">动态属性的名称。</param>
+        /// <param name="result">动态属性的值。</param>
+        /// <returns>true成功返回属性，false未找到属性。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public virtual bool TryGetPropertyValue(string propertyName, out object result)
+        {
+            bool succ;
+            switch (propertyName)
+            {
+                default:
+                    if (Name2FastChangingProperty.TryGetValue(propertyName, out var fcp))   //若存在渐变属性
+                    {
+                        succ = true;
+                        result = fcp.GetCurrentValueWithUtc();
+                    }
+                    else
+                    {
+                        succ = Properties.TryGetValue(propertyName, out result);
+                        if (!succ && null != Template)
+                            succ = Template.TryGetPropertyValue(propertyName, out result);
+                    }
+                    break;
+            }
+            return succ;
+        }
+
+        /// <summary>
+        /// 设置一个属性。
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="val"></param>
+        /// <returns>true，如果属性名存在或确实应该有(基于某种需要)，且设置成功。false，设置成功一个不存在且不认识的属性。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public virtual bool SetPropertyValue(string propertyName, object val)
+        {
+            bool succ;
+            switch (propertyName)
+            {
+                default:
+                    succ = TryGetPropertyValue(propertyName, out var oldVal);
+                    if (!succ || !Equals(oldVal, val))
+                    {
+                        Properties[propertyName] = val;
+                        succ = true;
+                    }
+                    break;
+            }
+            return succ;
+        }
+
+        #region 快速变化属性相关
+
+        private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
+
+        /// <summary>
+        /// 快速变化属性。
+        /// </summary>
+        [NotMapped]
+        public Dictionary<string, FastChangingProperty> Name2FastChangingProperty
+        {
+            get
+            {
+                if (_Name2FastChangingProperty is null)
+                {
+                    lock (this)
+                        if (_Name2FastChangingProperty is null)
+                        {
+                            var list = FastChangingPropertyExtensions.FromGameThing(this);
+                            var charId = (this as GameItem)?.GameChar?.Id ?? Guid.Empty;
+                            foreach (var item in list)
+                            {
+                                item.Tag = (charId, Id);    //设置Tag
+                            }
+                            _Name2FastChangingProperty = list.ToDictionary(c => c.Name);
+                        }
+                }
+                return _Name2FastChangingProperty;
+            }
+        }
+
+        /// <summary>
+        /// 刷新所有渐变属性，写入<see cref="SimpleExtendPropertyBase.Properties"/>
+        /// </summary>
+        public void FcpToProperties()
+        {
+            foreach (var item in Name2FastChangingProperty) //刷新渐变属性
+            {
+                _ = item.Value.GetCurrentValueWithUtc();
+                FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
+            }
+        }
+
+        /// <summary>
+        /// 获取属性，且考虑是否刷新并写入快速变化属性。
+        /// </summary>
+        /// <param name="name">要获取值的属性名。</param>
+        /// <param name="refreshDate">当有快速变化属性时，刷新时间，如果为null则不刷新。</param>
+        /// <param name="writeDictionary">当有快速变化属性时，是否写入<see cref="Properties"/>属性。</param>
+        /// <param name="result">属性的当前返回值。对快速变化属性是其<see cref="FastChangingProperty.LastValue"/>,是否在之前刷新取决于<paramref name="refresh"/>参数。</param>
+        /// <param name="refreshDatetime">如果是快速变化属性且需要刷新，则此处返回实际的计算时间。
+        /// 如果找到的不是快速渐变属性返回<see cref="DateTime.MinValue"/></param>
+        /// <returns>true成功找到属性。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public virtual bool TryGetPropertyValueWithFcp(string name, DateTime? refreshDate, bool writeDictionary, out object result, out DateTime refreshDatetime)
+        {
+            bool succ;
+            if (Name2FastChangingProperty.TryGetValue(name, out var fcp)) //若找到快速变化属性
+            {
+                if (refreshDate.HasValue) //若需要刷新
+                {
+                    refreshDatetime = refreshDate.Value;
+                    result = fcp.GetCurrentValue(ref refreshDatetime);
+                }
+                else
+                {
+                    refreshDatetime = DateTime.MinValue;
+                    result = fcp.LastValue;
+                }
+                if (writeDictionary)
+                    fcp.ToGameThing(this);
+                succ = true;
+            }
+            else //若是其他属性
+            {
+                refreshDatetime = DateTime.MinValue;
+                succ = Properties.TryGetValue(name, out result);
+            }
+            return succ;
+        }
+
+        /// <summary>
+        ///  获取属性，若是快速变化属性时会自动用当前时间刷新且写入<see cref="Properties"/>。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetPropertyValueWithFcp(string name, out object result)
+        {
+            DateTime dt = DateTime.UtcNow;
+            return TryGetPropertyValueWithFcp(name, dt, true, out result, out _);
+        }
+
+        /// <summary>
+        /// 移除一个渐变属性。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>移除的渐变属性对象，如果没有找到指定名称的渐变属性对象则返回null。</returns>
+        public FastChangingProperty RemoveFastChangingProperty(string name)
+        {
+            if (Name2FastChangingProperty.Remove(name, out var result))
+                FastChangingPropertyExtensions.Clear(Properties, name);
+            return result;
+        }
+        #endregion 快速变化属性相关
+
+        #region 扩展属性相关
+
+        #endregion 扩展属性相关
+
+        #region 事件及相关
+        protected virtual void OnSaving(EventArgs e)
+        {
+            try
+            {
+                Saving?.Invoke(this, e);
+            }
+            catch
+            {
+            }
+        }
+
+        public event EventHandler Saving;
+
+        /// <summary>
+        /// 通知该实例，即将保存到数据库。
+        /// </summary>
+        /// <param name="e"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override void PrepareSaving(DbContext db)
+        {
+            try
+            {
+                OnSaving(EventArgs.Empty);
+            }
+            catch (Exception)
+            {
+                //TO DO
+            }
+            foreach (var item in Name2FastChangingProperty)
+            {
+                FastChangingPropertyExtensions.ToDictionary(item.Value, Properties, item.Key);
+            }
+            base.PrepareSaving(db);
+        }
+
+        /// <summary>
+        /// 该对象自身数据已经加载到内存中进行调用。
+        /// </summary>
+        /// <param name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
+        public void InvokeLoading(IServiceProvider services)
+        {
+            var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
+            Template = helper.GetTemplateFromeId(TemplateId);
+        }
+
+        /// <summary>
+        /// 引发<see cref="Created"/>事件。
+        /// </summary>
+        /// <param name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void InvokeCreated(IServiceProvider services)
+        {
+            var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
+            Template = helper.GetTemplateFromeId(TemplateId);
+        }
+
+        #endregion 事件及相关
+
+        #region IDisposable接口相关
+
+        private bool _IsDisposed;
+
+        /// <summary>
+        /// 对象是否已经被处置。
+        /// </summary>
+        protected bool IsDisposed => _IsDisposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_IsDisposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _IsDisposed = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~GameItemBase()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion IDisposable接口相关
+    }
+
     /// <summary>
     /// 游戏中物品，装备，货币，积分的基类。
     /// </summary>
@@ -272,6 +571,49 @@ namespace GuangYuan.GY001.UserDb
             TemplateId = template.Id;
             Template = template;
         }
+
+        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
+
+        /// <summary>
+        /// 扩展属性的封装字典。
+        /// </summary>
+        [NotMapped]
+        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
+        {
+            get
+            {
+                if (_ExtendPropertyDictionary is null)
+                {
+                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
+                    foreach (var item in ExtendProperties)
+                    {
+                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
+                            ExtendPropertyDictionary[tmp.Name] = tmp;
+                    }
+                }
+                return _ExtendPropertyDictionary;
+            }
+        }
+
+        public override void PrepareSaving(DbContext db)
+        {
+            if (null != _ExtendPropertyDictionary) //若需要写入
+            {
+                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
+                //TO DO
+                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
+                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
+                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
+                //foreach (var item in removeItems)
+                //    ExtendProperties.Remove(item);
+            }
+            base.PrepareSaving(db);
+        }
+
+        /// <summary>
+        /// 服务器用通用扩展属性集合。
+        /// </summary>
+        public virtual List<GameExtendProperty> ExtendProperties { get; } = new List<GameExtendProperty>();
 
 
     }
@@ -579,51 +921,4 @@ namespace GuangYuan.GY001.UserDb
         public GameChar GetChar(GameItem item);
     }
 
-    public abstract class GameItemBase : GameThingBase
-    {
-        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
-        protected GameItemBase()
-        {
-        }
-
-        protected GameItemBase(Guid id) : base(id)
-        {
-        }
-
-        /// <summary>
-        /// 扩展属性的封装字典。
-        /// </summary>
-        [NotMapped]
-        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
-        {
-            get
-            {
-                if (_ExtendPropertyDictionary is null)
-                {
-                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
-                    foreach (var item in ExtendProperties)
-                    {
-                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
-                            ExtendPropertyDictionary[tmp.Name] = tmp;
-                    }
-                }
-                return _ExtendPropertyDictionary;
-            }
-        }
-
-        public override void PrepareSaving(DbContext db)
-        {
-            if (null != _ExtendPropertyDictionary) //若需要写入
-            {
-                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
-                //TO DO
-                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
-                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
-                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
-                //foreach (var item in removeItems)
-                //    ExtendProperties.Remove(item);
-            }
-            base.PrepareSaving(db);
-        }
-    }
 }

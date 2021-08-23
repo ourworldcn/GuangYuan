@@ -686,7 +686,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="thing"></param>
         /// <param name="dic"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void GetCombatProperties(GameThingBase thing, IEnumerable<string> propertyNames, IDictionary<string, float> dic)
+        public void GetCombatProperties(GameItemBase thing, IEnumerable<string> propertyNames, IDictionary<string, float> dic)
         {
             foreach (var name in propertyNames)
             {
@@ -695,7 +695,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddCombatProperties(GameThingBase thing, IReadOnlyDictionary<string, float> dic)
+        public void AddCombatProperties(GameItemBase thing, IReadOnlyDictionary<string, float> dic)
         {
             thing.Properties["atk"] = (float)thing.Properties.GetDecimalOrDefault("atk") + dic.GetValueOrDefault("atk");
             thing.Properties["mhp"] = (float)thing.GetDecimalOrDefault("mhp") + dic.GetValueOrDefault("mhp");
@@ -703,7 +703,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void MultCombatProperties(GameThingBase thing, IReadOnlyDictionary<string, float> dic)
+        public void MultCombatProperties(GameItemBase thing, IReadOnlyDictionary<string, float> dic)
         {
             thing.Properties["atk"] = (float)thing.GetDecimalOrDefault("atk") * dic.GetValueOrDefault("atk");
             thing.Properties["mhp"] = (float)thing.GetDecimalOrDefault("mhp") * dic.GetValueOrDefault("mhp");

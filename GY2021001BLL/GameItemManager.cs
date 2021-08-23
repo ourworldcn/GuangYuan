@@ -4,6 +4,7 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -232,7 +233,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameObject"></param>
         /// <returns>如果无效的模板Id，则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameItemTemplate GetTemplate(GameThingBase gameObject)
+        public GameItemTemplate GetTemplate(GameItemBase gameObject)
         {
             return ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
         }
@@ -493,7 +494,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="changesItems">物品变化信息，null或省略则不生成具体的变化信息。</param>
         /// <returns>true成功移动了物品，false是以下情况的一种或多种：物品现存数量小于要求移动的数量，没有可以移动的物品,目标背包已经满,。</returns>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/>应该大于0</exception>
-        public bool MoveItem(GameItem item, decimal count, GameThingBase destContainer, ICollection<ChangeItem> changesItems = null)
+        public bool MoveItem(GameItem item, decimal count, GameItemBase destContainer, ICollection<ChangeItem> changesItems = null)
         {
             var container = GetChildrenCollection(destContainer);
             //TO DO 不会堆叠
@@ -542,7 +543,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameItem"></param>
         /// <returns>如果不是容器将返回null,-1表示没有容量限制。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public decimal? GetCapacity(GameThingBase container)
+        public decimal? GetCapacity(GameObjectBase container)
         {
 
             if (!container.Properties.TryGetValue(ProjectConstant.ContainerCapacity, out object obj))   //若没有属性
@@ -561,7 +562,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="container"></param>
         /// <returns>不是容器则返回0。不限定容量则返回<see cref="int.MaxValue"/></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetMaxCapacity(GameThingBase container)
+        public int GetMaxCapacity(GameItemBase container)
         {
             if (!container.Properties.TryGetValue(ProjectConstant.ContainerCapacity, out object obj))   //若没有属性,视同非容器
                 return 0;
@@ -580,7 +581,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="container"></param>
         /// <returns>0非容器或容器已满，<see cref="int.MaxValue"/>表示无限制。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetFreeCapacity(GameThingBase container)
+        public int GetFreeCapacity(GameItemBase container)
         {
             var max = GetMaxCapacity(container);
             return max switch
@@ -645,7 +646,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="parent"></param>
         /// <param name="filter"></param>
         /// <param name="removes">变化的数据。可以是null或省略，此时忽略。</param>
-        public void RemoveItemsWhere(GameThingBase parent, Func<GameItem, bool> filter, ICollection<GameItem> removes = null)
+        public void RemoveItemsWhere(GameObjectBase parent, Func<GameItem, bool> filter, ICollection<GameItem> removes = null)
         {
             IList<GameItem> lst = (parent as GameItem)?.Children;
             lst ??= (parent as GameChar)?.GameItems;
@@ -671,7 +672,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="filter"></param>
         /// <param name="dest"></param>
         /// <param name="changes">变化的数据。可以是null或省略，此时忽略。</param>
-        public void MoveItems(GameThingBase src, Func<GameItem, bool> filter, GameThingBase dest, ICollection<ChangeItem> changes = null)
+        public void MoveItems(GameObjectBase src, Func<GameItem, bool> filter, GameObjectBase dest, ICollection<ChangeItem> changes = null)
         {
             var tmp = World.ObjectPoolListGameItem.Get();
             var adds = World.ObjectPoolListGameItem.Get();
@@ -740,7 +741,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="remainder">追加不能放入的物品到此集合，可以是null或省略，此时忽略。</param>
         /// <param name="changeItems">变化的数据。可以是null或省略，此时忽略。</param>
         /// 
-        public void AddItems(IEnumerable<GameItem> gameItems, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
+        public void AddItems(IEnumerable<GameItem> gameItems, GameObjectBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
         {
             foreach (var item in gameItems) //TO DO 性能优化未做
             {
@@ -758,7 +759,7 @@ namespace GuangYuan.GY001.BLL
         /// 基于堆叠限制和容量限制，无法放入的部分。实际是<paramref name="gameItem"/>对象或拆分后的对象集合，对于可堆叠对象可能修改了<see cref="GameItem.Count"/>属性。若没有剩余则返回null。
         /// </param>
         /// <returns>放入后的对象，如果是不可堆叠或堆叠后有剩余则是 <paramref name="gameItem"/>和堆叠对象，否则是容器内原有对象。返回空集合，因容量限制没有放入任何物品。</returns>
-        public void AddItem(GameItem gameItem, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
+        public void AddItem(GameItem gameItem, GameObjectBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
         {
             IList<GameItem> children = GetChildrenCollection(parent);
             var stcItem = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId) ?? gameItem;
@@ -838,7 +839,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="results">拆分后的物品。可能包含<paramref name="gameItem"/>，且其<see cref="GameItem.Count"/>属性被修正。
         /// <paramref name="gameItem"/>总是被放在第一个位置上。</param>
         /// <param name="parent">父对象。</param>
-        public void SplitItem(GameItem gameItem, ICollection<GameItem> results, GameThingBase parent = null)
+        public void SplitItem(GameItem gameItem, ICollection<GameItem> results, GameObjectBase parent = null)
         {
             var stcItem = gameItem;
             if (gameItem.TemplateId == ProjectConstant.MucaiId)  //若是木材
@@ -886,7 +887,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="container">无视容量限制堆叠规则。</param>
         /// 
         /// <returns>true成功加入.false <paramref name="container"/>不是可以容纳物品的类型。</returns>
-        public bool ForcedAdd(GameItem gameItem, GameThingBase container)
+        public bool ForcedAdd(GameItem gameItem, GameObjectBase container)
         {
             if (container is GameChar gameChar)  //若容器是角色
             {
@@ -913,7 +914,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="container"></param>
         /// <returns>true成功移动，false未知原因没有移动成功。当前不可能失败。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ForceMove(GameItem gameItem, GameThingBase container)
+        public bool ForceMove(GameItem gameItem, GameItemBase container)
         {
             return ForceRemove(gameItem) && ForcedAdd(gameItem, container);
         }
@@ -991,7 +992,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="parent">仅在这个对象的直接或间接子代中搜索，如果指定一个角色对象可以搜寻角色下所有物品。</param>
         /// <returns>true所有指定Id均被获取，false,至少有一个物品没有找到，</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool GetItems(IEnumerable<Guid> ids, ICollection<GameItem> items, GameThingBase parent)
+        public bool GetItems(IEnumerable<Guid> ids, ICollection<GameItem> items, GameObjectBase parent)
         {
             return GetItems(ids, items, GetAllChildren(parent).Join(ids, c => c.Id, c => c, (l, r) => l));
         }
@@ -1052,9 +1053,9 @@ namespace GuangYuan.GY001.BLL
         /// <returns>返回父容器可能是另一个物品或角色对象，没有找到则返回null。</returns>
         /// <exception cref="ArgumentNullException"><paramref name="gameItem"/>是null。</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameThingBase GetContainer(GameItem gameItem)
+        public GameObjectBase GetContainer(GameItem gameItem)
         {
-            return gameItem.Parent as GameThingBase ?? (gameItem.OwnerId is null ? null : World.CharManager.GetCharFromId(gameItem.OwnerId.Value));
+            return gameItem.Parent as GameObjectBase ?? (gameItem.OwnerId is null ? null : World.CharManager.GetCharFromId(gameItem.OwnerId.Value));
         }
 
         /// <summary>
@@ -1063,7 +1064,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameThing">容器对象。</param>
         /// <returns>子代容器的接口，null表示没有找到。特别地，当参数是null时也会返回null而不引发异常。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IList<GameItem> GetChildrenCollection(GameThingBase gameThing)
+        public IList<GameItem> GetChildrenCollection(GameObjectBase gameThing)
         {
             var children = (gameThing as GameItem)?.Children;
             return children ?? (gameThing as GameChar)?.GameItems;
@@ -1075,7 +1076,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameThing"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<GameItem> GetAllChildren(GameThingBase gameThing)
+        public IEnumerable<GameItem> GetAllChildren(GameObjectBase gameThing)
         {
             var _ = GetChildrenCollection(gameThing);
             return OwHelper.GetAllSubItemsOfTree(_, c => c.Children);

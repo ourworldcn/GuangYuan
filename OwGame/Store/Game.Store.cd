@@ -15,7 +15,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.SimpleExtendPropertyBase" Collapsed="true">
-    <Position X="3.75" Y="1.75" Width="1.5" />
+    <Position X="2.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAIAAAAAAAAABAAAAAAABAAAAAAAAAAAAgAAAACAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
@@ -29,8 +29,8 @@
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.Store.GameEntityRelationshipBase" Collapsed="true">
-    <Position X="0.5" Y="1.75" Width="1.5" />
+  <Class Name="OW.Game.Store.GameEntityRelationshipBase">
+    <Position X="0.5" Y="3.25" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAACAAIAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>

@@ -13,7 +13,7 @@ using System.Text.Json;
 namespace GuangYuan.GY001.UserDb
 {
     [Table("GameChars")]
-    public class GameChar : GameCharBase, IDisposable
+    public class GameChar : GameCharBase
     {
         /// <summary>
         /// <inheritdoc/>
@@ -157,6 +157,16 @@ namespace GuangYuan.GY001.UserDb
 
         public override void PrepareSaving(DbContext db)
         {
+            if (null != _ExtendPropertyDictionary) //若需要写入
+            {
+                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
+                //TO DO
+                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
+                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
+                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
+                //foreach (var item in removeItems)
+                //    ExtendProperties.Remove(item);
+            }
             if (_ChangesItems != null)    //若需要序列化变化属性
             {
                 var exProp = ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);
@@ -182,7 +192,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 角色对象的扩展属性的导航属性。
         /// </summary>
-        [ForeignKey(nameof(Id))]
+        //[ForeignKey(nameof(Id))]
         public virtual CharSpecificExpandProperty SpecificExpandProperties { get; set; }
 
         #region IDisposable接口相关
@@ -211,6 +221,34 @@ namespace GuangYuan.GY001.UserDb
         /// 对象已经被处置。
         /// </summary>
         public event EventHandler Disposed;
+
+        /// <summary>
+        /// 服务器用通用扩展属性集合。
+        /// </summary>
+        public virtual List<GameExtendProperty> ExtendProperties { get; } = new List<GameExtendProperty>();
+
+        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
+
+        /// <summary>
+        /// 扩展属性的封装字典。
+        /// </summary>
+        [NotMapped]
+        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
+        {
+            get
+            {
+                if (_ExtendPropertyDictionary is null)
+                {
+                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
+                    foreach (var item in ExtendProperties)
+                    {
+                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
+                            ExtendPropertyDictionary[tmp.Name] = tmp;
+                    }
+                }
+                return _ExtendPropertyDictionary;
+            }
+        }
 
         // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~GameChar()
@@ -283,9 +321,12 @@ namespace GuangYuan.GY001.UserDb
         public DateTime DateTimeUtc { get; set; }
     }
 
-    public abstract class GameCharBase : GameThingBase
+    public abstract class GameCharBase : GameThingBase, IDisposable
     {
-        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
+
+        private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
+        private bool disposedValue;
+
         protected GameCharBase()
         {
         }
@@ -295,39 +336,63 @@ namespace GuangYuan.GY001.UserDb
         }
 
         /// <summary>
-        /// 扩展属性的封装字典。
+        /// 对象是否已经被处置。
+        /// </summary>
+        protected bool IsDisposed => disposedValue;
+
+        /// <summary>
+        /// 快速变化属性。
         /// </summary>
         [NotMapped]
-        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
+        public Dictionary<string, FastChangingProperty> Name2FastChangingProperty
         {
             get
             {
-                if (_ExtendPropertyDictionary is null)
+                if (_Name2FastChangingProperty is null)
                 {
-                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
-                    foreach (var item in ExtendProperties)
-                    {
-                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
-                            ExtendPropertyDictionary[tmp.Name] = tmp;
-                    }
+                    lock (this)
+                        if (_Name2FastChangingProperty is null)
+                        {
+                            var list = FastChangingPropertyExtensions.FromGameThing(this);
+                            var charId = Id;
+                            foreach (var item in list)
+                            {
+                                item.Tag = (charId, Id);    //设置Tag
+                            }
+                            _Name2FastChangingProperty = list.ToDictionary(c => c.Name);
+                        }
                 }
-                return _ExtendPropertyDictionary;
+                return _Name2FastChangingProperty;
             }
         }
 
-        public override void PrepareSaving(DbContext db)
+        protected virtual void Dispose(bool disposing)
         {
-            if (null != _ExtendPropertyDictionary) //若需要写入
+            if (!disposedValue)
             {
-                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
-                //TO DO
-                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
-                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
-                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
-                //foreach (var item in removeItems)
-                //    ExtendProperties.Remove(item);
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                disposedValue = true;
             }
-            base.PrepareSaving(db);
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~GameCharBase()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

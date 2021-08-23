@@ -558,7 +558,7 @@ namespace GuangYuan.GY001.BLL
                 //生成缓存数据
                 var sep = new CharSpecificExpandProperty
                 {
-                    CharLevel = (int)gc.GetDecimalOrDefault(ProjectConstant.LevelPropertyName),
+                    CharLevel = (int)gc.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName),
                     LastPvpScore = 1000,
                     PvpScore = 1000,
                     Id = gc.Id,
