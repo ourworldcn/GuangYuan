@@ -37,7 +37,6 @@ namespace GuangYuan.GY001.UserDb
         }
 
         #endregion 构造函数
-
         /// <summary>
         /// 获取指定名称的属性名。调用<see cref="TryGetPropertyValue(string, out object)"/>来实现。
         /// </summary>

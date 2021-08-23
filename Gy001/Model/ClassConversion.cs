@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.BLL;
+﻿using Game.Social;
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
@@ -431,7 +432,7 @@ namespace GY2021001WebApi.Models
         {
             var result = new GameSocialRelationshipDto()
             {
-                Friendliness = obj.Friendliness,
+                Friendliness = (sbyte)(obj.Flag - SocialConstant.MinFriendliness - 10),
                 Id = obj.Id.ToBase64String(),
                 ObjectId = obj.Id2.ToBase64String(),
             };

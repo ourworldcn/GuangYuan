@@ -319,6 +319,34 @@ namespace GuangYuan.GY001.BLL
         #region 黑白名单相关
 
         /// <summary>
+        /// 获取指定角色与其他角色之间关系的对象集合的延迟查询。
+        /// </summary>
+        /// <param name="charId"></param>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public IQueryable<GameSocialRelationship> GetCharRelationship(Guid charId, DbContext db) =>
+            db.Set<GameSocialRelationship>().Where(c => c.Flag >= SocialConstant.MinFriendliness && c.Flag <= SocialConstant.MaxFriendliness && c.Id == charId);
+
+        /// <summary>
+        /// 获取与指定id为目标客体的所有角色关系集合。
+        /// </summary>
+        /// <param name="charId"></param>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public IQueryable<GameSocialRelationship> GetCharRelationshipToMe(Guid charId, DbContext db) =>
+           db.Set<GameSocialRelationship>().Where(c => c.Id2 == charId && c.Flag >= SocialConstant.MinFriendliness && c.Flag <= SocialConstant.MaxFriendliness);
+
+        /// <summary>
+        /// 获取正在申请成为好友的关系对象集合的延迟查询。
+        /// </summary>
+        /// <param name="charId"></param>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public IQueryable<GameSocialRelationship> GetRequestingToMe(Guid charId, DbContext db) =>
+            GetCharRelationshipToMe(charId, db).Where(c => c.Flag > SocialConstant.MiddleFriendliness + 5 &&
+            c.PropertiesString.Contains($"{SocialConstant.ConfirmedFriendPName}=0"));
+
+        /// <summary>
         /// 获取一组Id集合，正在申请好友的角色Id集合。这些用户不能申请好友。因为他们是以下情况之一：
         /// 1.正在申请好友;2.已经是好友;3.将当前用户拉黑。
         /// </summary>
@@ -327,7 +355,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IQueryable<Guid> GetFriendsOrRequestingOrBlackIds(Guid charId, DbContext db) =>
-             db.Set<GameSocialRelationship>().Where(c => (c.Friendliness > 5 || c.Friendliness < -5) && c.Id2 == charId).Select(c => c.Id);
+             GetCharRelationshipToMe(charId, db).Where(c => c.Flag > SocialConstant.MiddleFriendliness + 5 && c.Flag < SocialConstant.MiddleFriendliness - 5).Select(c => c.Id);
 
         /// <summary>
         /// 获取活跃用户。
@@ -420,8 +448,8 @@ namespace GuangYuan.GY001.BLL
                 //           select tmp1;
                 //var lst = coll.ToArray();
                 result = from tmp in World.ItemManager.GetBodiesQuery(db, bodyTIds)
-                         //join act in db.Set<CharSpecificExpandProperty>()
-                         //on tmp equals act.Id
+                             //join act in db.Set<CharSpecificExpandProperty>()
+                             //on tmp equals act.Id
                          where tmp != gameChar.Id
                          where allows.Any(c => c.Id == tmp) && !frees.Any(c => c == tmp)
                          select tmp;
@@ -460,7 +488,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 var sr = db.SocialRelationships.Find(gameChar.Id, objChar.Id);  //关系对象
                 var nsr = db.SocialRelationships.Find(objChar.Id, gameChar.Id); //对方的关系对象
-                if (nsr != null && nsr.Friendliness < -5) //若对方已经把当前用户加入黑名单
+                if (nsr != null && nsr.IsBlack()) //若对方已经把当前用户加入黑名单
                     return RequestFriendResult.BlackList;
                 if (sr is null) //若尚无该关系对象
                 {
@@ -468,26 +496,26 @@ namespace GuangYuan.GY001.BLL
                     {
                         Id = gameChar.Id,
                         Id2 = friendId,
-                        Friendliness = 6,
                     };
+                    sr.SetFriend();
                     sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.Zero;
                     db.SocialRelationships.Add(sr);
                 }
                 else //若是已经存在的对象
                 {
-                    if (sr.Friendliness < -5)  //黑名单
+                    if (sr.IsBlack())  //黑名单
                         return RequestFriendResult.AlreadyBlack;
                     else
                     {
                         var alreay = sr.Properties.GetDecimalOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero);
                         if (alreay == 0m)   //正在申请
                             return RequestFriendResult.Doing;
-                        else if (sr.Friendliness > 5) //已经是好友
+                        else if (sr.IsFriendOrRequesting()) //已经是好友
                             return RequestFriendResult.Already;
                     }
                     //其他状况
                     sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.Zero;
-                    sr.Friendliness = 6;
+                    sr.SetFriend();    //设置好友关系
                 }
                 try
                 {
@@ -524,8 +552,7 @@ namespace GuangYuan.GY001.BLL
                 db = World.CreateNewUserDbContext();
                 var gcId = gameChar.Id;
                 var coll1 = db.SocialRelationships.Where(c => c.Id == gcId);
-                var str = $"{SocialConstant.ConfirmedFriendPName}=0";
-                var coll2 = db.SocialRelationships.Where(c => c.Id2 == gcId && c.Friendliness > 5 && c.PropertiesString.Contains(str));    //请求添加
+                var coll2 = GetRequestingToMe(gcId, db);    //请求添加
                 var result = coll1.Union(coll2).ToArray();
                 World.CharManager.Nope(gameChar.GameUser);  //重置下线计时器
                 return result;
@@ -558,16 +585,16 @@ namespace GuangYuan.GY001.BLL
                 var gcId = gameChar.Id;
                 var sr = db.SocialRelationships.Find(gcId, friendId);
                 var nsr = db.SocialRelationships.Find(friendId, gcId);
-                if (nsr is null || nsr.Friendliness <= 5)   //若未申请好友
+                if (nsr is null || nsr.IsFriendOrRequesting())   //若未申请好友
                     return false;
                 if (sr is null)  //若未建立关系
                 {
                     sr = new GameSocialRelationship()
                     {
                         Id = gcId,
-                        Friendliness = 6,
                         Id2 = friendId,
                     };
+                    sr.SetFriend();
                     db.SocialRelationships.Add(sr);
                 }
                 if (rejected)   //若拒绝
@@ -619,18 +646,18 @@ namespace GuangYuan.GY001.BLL
                 var nsr = db.SocialRelationships.Find(friendId, gcId);
                 if (null != sr)
                 {
-                    if (sr.Friendliness > 5 && sr.Properties.GetDecimalOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero) != decimal.Zero)    //确定是好友关系
+                    if (sr.IsFriend())    //确定是好友关系
                     {
                         var slot = gameChar.GameItems.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
                         slot.Count--;
                     }
-                    sr.Friendliness = 0;
+                    sr.SetNeutrally();
                     sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
                 }
 
                 if (null != nsr)
                 {
-                    nsr.Friendliness = 0;
+                    nsr.SetNeutrally();
                     nsr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
                 }
                 db.SaveChanges();
@@ -659,12 +686,12 @@ namespace GuangYuan.GY001.BLL
                 var nsr = db.SocialRelationships.Find(objId, gcId);
                 if (null != sr)
                 {
-                    sr.Friendliness = -6;
+                    sr.SetBlack();
                     sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
                 }
                 if (null != nsr)
                 {
-                    nsr.Friendliness = 0;
+                    nsr.SetNeutrally();
                     nsr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
                 }
                 db.SaveChanges();

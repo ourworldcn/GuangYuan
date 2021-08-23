@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.BLL.Homeland;
+﻿using Game.Social;
+using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
@@ -1256,6 +1257,52 @@ namespace GuangYuan.GY001.BLL
                          orderby tmp.Count() descending, tmp.Key.LastLogoutUtc descending
                          select tmp.Key.Value;
             return result;
+        }
+
+        /// <summary>
+        /// 设置阵容号，或取消阵容设置。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="mountsId"></param>
+        /// <param name="number"></param>
+        /// <param name="position">位置号，-1表示取消该坐骑在该阵容中的设置。</param>
+        public void SetLineup(GameChar gameChar, Guid mountsId, int number, decimal position)
+        {
+            var mounts = gameChar.GetMounetsFromId(mountsId);
+            var key = $"{ProjectConstant.ZhenrongPropertyName}{number}";
+            if (position != -1)  //若设置阵容
+            {
+                mounts.Properties[key] = position;
+                if (number == 10)  //若是家园展示
+                {
+                    var db = gameChar.GameUser.DbContext;
+                    var sr = db.Set<GameSocialRelationship>().Find(gameChar.Id, mountsId, SocialConstant.HomelandShowFlag);
+                    if (sr is null)
+                    {
+                        sr = new GameSocialRelationship
+                        {
+                            Id = gameChar.Id,
+                            Id2 = mountsId,
+                            Flag = SocialConstant.HomelandShowFlag,
+                        };
+                        db.Add(sr);
+                    }
+                }
+            }
+            else //若取消阵容设置
+            {
+                mounts.Properties.Remove(key);
+                if (number == 10)  //若是家园展示
+                {
+                    var db = gameChar.GameUser.DbContext;
+                    var sr = db.Set<GameSocialRelationship>().Find(gameChar.Id, mountsId, SocialConstant.HomelandShowFlag);
+                    if (null != sr)
+                    {
+                        db.Remove(sr);
+                    }
+                }
+            }
+            World.CharManager.NotifyChange(gameChar.GameUser);
         }
     }
 

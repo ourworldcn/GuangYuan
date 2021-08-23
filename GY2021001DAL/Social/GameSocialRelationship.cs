@@ -16,7 +16,6 @@ namespace GuangYuan.GY001.UserDb
     public class GameSocialRelationship : GameSocialBase
     {
         #region 扩展属性名称定义
-
         #endregion 扩展属性名称定义
 
         /// <summary>
@@ -43,12 +42,6 @@ namespace GuangYuan.GY001.UserDb
         public GameSocialRelationship(Guid id, Guid id2, long flag) : base(id, id2, flag)
         {
         }
-
-        /// <summary>
-        /// 左看右的友好度。
-        /// 小于-5则是黑名单，大于5是好友。目前这个字段仅使用-6和6两个值。
-        /// </summary>
-        public sbyte Friendliness { get; set; } = 0;
 
     }
 

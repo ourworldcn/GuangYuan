@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
   <Class Name="GuangYuan.GY001.UserDb.GameSocialBase">
-    <Position X="3.75" Y="0.75" Width="1.5" />
+    <Position X="0.75" Y="3.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAACAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Social\SocialBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameMail">
-    <Position X="0.5" Y="3.75" Width="1.75" />
+    <Position X="10.75" Y="4.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AgBAAAAAAAAgAAAAAIIBAKAAAAIIAAAAAAQAABAAAgA=</HashCode>
+      <HashCode>AgBAACAAAAEgAAAAAIIBAKAAAAIIAAAAAAQAABAAAgA=</HashCode>
       <FileName>Social\GameMail.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
@@ -18,51 +18,57 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameMailAddress" Collapsed="true">
-    <Position X="19.5" Y="0.75" Width="1.5" />
+    <Position X="13.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAEAAAAABAAAAAAAAAAAAAAAAgAAAAAAAIAQAAAAA=</HashCode>
       <FileName>Social\GameMail.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameMailAttachment">
-    <Position X="3" Y="3.75" Width="3.25" />
+    <Position X="6" Y="5.5" Width="3.25" />
     <TypeIdentifier>
       <HashCode>AAAIAAAAAAgAAAABAAABgAAAAEAgAAAAAAAAAQAAQAA=</HashCode>
       <FileName>Social\GameMail.cs</FileName>
     </TypeIdentifier>
-    <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameSocialRelationship">
-    <Position X="7" Y="3.75" Width="2.25" />
+    <Position X="0.5" Y="7" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>QAAAAAAAAEAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Social\GameSocialRelationship.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.CharSummary" Collapsed="true">
-    <Position X="4.5" Y="7.75" Width="1.5" />
+    <Position X="1.75" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAACEAAAAAAAAAAAAAAAAAAAAAAACAABAAQAAIAAAAA=</HashCode>
+      <HashCode>AAACUAAAAAAAAAAAAAAAAAAAAAAACAABAAQAAIAAAAA=</HashCode>
       <FileName>Social\GameSocialRelationship.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.FrientSummary" Collapsed="true">
-    <Position X="3.25" Y="9" Width="1.5" />
+    <Position X="0.5" Y="2" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAA=</HashCode>
       <FileName>Social\GameSocialRelationship.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.RequestingSummary" Collapsed="true">
-    <Position X="5.5" Y="9" Width="1.5" />
+    <Position X="2.75" Y="2" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Social\GameSocialRelationship.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Interface Name="System.ICloneable" Collapsed="true">
-    <Position X="19.5" Y="3" Width="1.5" />
+    <Position X="13.5" Y="2" Width="1.5" />
     <TypeIdentifier />
   </Interface>
+  <Enum Name="GuangYuan.GY001.UserDb.MailAddressKind" Collapsed="true">
+    <Position X="13.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAEAAQAAAAAAAAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Social\GameMail.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
   <Font Name="Microsoft YaHei UI" Size="9" />
 </ClassDiagram>

@@ -49,7 +49,10 @@ namespace Gy001
             //const string pvpChar = "PvpChar";
             var world = host.Services.GetRequiredService<VWorld>();
             var db = world.CreateNewUserDbContext();
-            var user = db.GameUsers.Include(c=>c.GameChars).FirstOrDefault();
+
+            var user = db.GameChars.FirstOrDefault();
+            var tmp1 = user.SpecificExpandProperties;
+
             var gim = host.Services.GetRequiredService<GameItemManager>();
             var gitm = host.Services.GetRequiredService<GameItemTemplateManager>();
             var bodyIds = gitm.GetTemplates(c => c.CatalogNumber == 4).Select(c => c.Id).ToArray(); //身体Id集合

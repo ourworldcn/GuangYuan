@@ -36,17 +36,16 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameItem>().HasIndex(c => c.TemplateId).IsUnique(false);
 
             //通用扩展属性
-            modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.ParentId,c.Name});
-
-            //通用关系描述对象
-            modelBuilder.Entity<GameEntityRelationshipBase>().HasKey(c => new { c.Id, c.Id2, c.Flag });
-            modelBuilder.Entity<GameEntityRelationshipBase>().HasIndex(c => c.PropertyString).IsUnique(false);
+            modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.ParentId, c.Name });
 
             //邮件相关
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
 
             //社交关系
-            modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.Friendliness).IsUnique(false);
+            modelBuilder.Entity<GameSocialRelationship>().HasKey(c => new { c.Id, c.Id2, c.Flag });
+            modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.Flag).IsUnique(false);
+            modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.PropertyString).IsUnique(false);
+
 
             //操作记录
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => new { c.DateTimeUtc, c.ParentId, c.ActionId }).IsUnique(false);
