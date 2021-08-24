@@ -85,7 +85,7 @@ namespace OW.Game.Store
     /// <summary>
     /// 提供一个基类，包含一个编码为字符串的压缩属性。且该字符串可以理解为一个字典的内容。
     /// </summary>
-    public abstract class SimpleExtendPropertyBase : GuidKeyObjectBase, IBeforeSave
+    public abstract class SimpleExtendPropertyBase : GuidKeyObjectBase, IBeforeSave, IDisposable
     {
         /// <summary>
         /// <inheritdoc/>
@@ -111,6 +111,7 @@ namespace OW.Game.Store
         public string PropertiesString { get => _PropertiesString; set => _PropertiesString = value; }
 
         private Dictionary<string, object> _Properties;
+        private bool disposedValue;
 
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
@@ -139,6 +140,40 @@ namespace OW.Game.Store
             if (_Properties is null) //若未初始化字典
                 return; //不变更属性
             PropertiesString = OwHelper.ToPropertiesString(Properties);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _Properties = null;
+                _PropertiesString = null;
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~SimpleExtendPropertyBase()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        /// <summary>
+        /// 处置对象。
+        /// </summary>
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 

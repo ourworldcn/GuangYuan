@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
+  <Class Name="GuangYuan.GY001.BLL.GameItemManagerOptions" Collapsed="true">
+    <Position X="1.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>GameItem\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.GameItemManager" BaseTypeListCollapsed="true">
+    <Position X="6.5" Y="0.5" Width="5.5" />
+    <TypeIdentifier>
+      <HashCode>gAgUARQAEliggQAAUAjQACBKgIAABwMAAEAAEIEACAA=</HashCode>
+      <FileName>GameItem\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.SellDatas" Collapsed="true">
+    <Position X="3.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>GameItem\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.ActiveStyleDatas" Collapsed="true">
+    <Position X="1.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIABAAAAAAAAAAAAAAAAAAAAAAAAAAAoAAAAIAAAAAA=</HashCode>
+      <FileName>GameItem\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.GameItemManagerExtensions" Collapsed="true">
+    <Position X="5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QACAAAAAAAAEAAAAQIAgAEAAoAAAAAEAAAAAAAAAAAA=</HashCode>
+      <FileName>GameItem\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

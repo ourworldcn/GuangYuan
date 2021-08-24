@@ -504,6 +504,33 @@ namespace OW.Game
             dic.TryGetValue(name, out var obj) && OwHelper.TryGetDecimal(obj, out var result) ? result : defaultVal;
 
         /// <summary>
+        /// 获取指定键值，并尽可能转换为日期。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="name"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public DateTime GetDateTimeOrDefault(this IReadOnlyDictionary<string, object> dic, string name, DateTime defaultVal = default)
+        {
+            if (!dic.TryGetValue(name, out var obj))
+                return defaultVal;
+            if (obj is DateTime result)
+                return result;
+            return obj is string str && DateTime.TryParse(str, out result) ? result : defaultVal;
+        }
+
+        /// <summary>
+        /// 获取指定键值的值，或转换为字符串。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="name"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        static public string GetStringOrDefault(this IReadOnlyDictionary<string, object> dic, string name, string defaultVal = default) =>
+            dic.TryGetValue(name, out var obj) && obj is string result ? result : defaultVal;
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="dic"></param>

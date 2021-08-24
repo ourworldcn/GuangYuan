@@ -204,51 +204,25 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<SetLineupReturnDto> SetSetLineup(SetLineupParamsDto model)
         {
+            SetLineupDatas datas = new SetLineupDatas
+            {
+            };
+            datas.Settings.AddRange(model.Settings.Select(c => (GameHelper.FromBase64String(c.Id), c.ForIndex, (decimal)c.Position)));
             SetLineupReturnDto result = new SetLineupReturnDto();
-            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-                return Unauthorized("令牌无效");
+            using var disposer = datas.SetTokenStringAndLock(model.Token, HttpContext.RequestServices.GetRequiredService<GameCharManager>());
+            if (disposer is null)
+                return StatusCode(datas.ResultCode, datas.DebugMessage);
             try
             {
-                var gc = gu.CurrentChar;
-                var gim = world.ItemManager;
-                var allDic = gim.GetAllChildrenDictionary(gc);
-                var coll = from tmp in model.Settings
-                           select new { tmp.Id, GItem = allDic.GetValueOrDefault(GameHelper.FromBase64String(tmp.Id), null), tmp.Position, Index = tmp.ForIndex };
-                var tmpGi = coll.FirstOrDefault(c => c.GItem == null);
-                if (tmpGi != null)  //若有无效Id
-                {
-                    result.HasError = true;
-                    result.DebugMessage = $"至少有一个坐骑Id无效:Number={tmpGi.Id}";
-                }
-                else
-                {
-                    var slot = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);
-                    var ci = new ChangeItem() { ContainerId = slot.Id };
-                    foreach (var item in coll)
-                    {
-                        if (item.Position == -1)    //若去除该阵营出阵位置编号
-                        {
-                            item.GItem.Properties.Remove($"{ProjectConstant.ZhenrongPropertyName}{item.Index}");
-                        }
-                        else //设置出阵
-                        {
-                            item.GItem.Properties[$"{ProjectConstant.ZhenrongPropertyName}{item.Index}"] = (decimal)item.Position;
-                        }
-                        ci.Changes.Add(item.GItem);
-                    }
-                    var changes = new List<ChangeItem>
-                    {
-                        ci
-                    };
-                    ChangeItem.Reduce(changes);
-                    result.ChangesItems.AddRange(changes.Select(c => (ChangesItemDto)c));
-                    world.CharManager.NotifyChange(gu);
-                }
+                var gim = HttpContext.RequestServices.GetRequiredService<GameItemManager>();
+                gim.SetLineup(datas);
+                result.HasError = datas.HasError;
+                result.DebugMessage = datas.DebugMessage;
             }
-            finally
+            catch (Exception err)
             {
-                world.CharManager.Unlock(gu, true);
+                result.DebugMessage = err.Message;
+                result.HasError = true;
             }
             return result;
         }

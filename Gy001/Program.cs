@@ -1,3 +1,4 @@
+using Game.Social;
 using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
@@ -50,13 +51,12 @@ namespace Gy001
             var world = host.Services.GetRequiredService<VWorld>();
             var db = world.CreateNewUserDbContext();
 
-            var user = db.GameChars.FirstOrDefault();
-            var tmp1 = user.SpecificExpandProperties;
+            var gc = db.GameChars.FirstOrDefault();
 
-            var gim = host.Services.GetRequiredService<GameItemManager>();
             var gitm = host.Services.GetRequiredService<GameItemTemplateManager>();
             var bodyIds = gitm.GetTemplates(c => c.CatalogNumber == 4).Select(c => c.Id).ToArray(); //身体Id集合
-            var query = gim.GetBodiesQuery(db, bodyIds).Take(5).ToArray();
+            //var ary = world.SocialManager.RefreshFriends(db, gc, bodyIds).Take(5).ToArray();
+            //var ary = world.SocialManager.Test(db, gc, bodyIds).ToArray();
 
         }
 
@@ -142,13 +142,11 @@ namespace Gy001
 
             return Task.Run(() =>
             {
-                using (var stream = new MemoryStream())
-                {
-                    var compileResult = compilation.Emit(stream);
-                    return compileResult.Success
-                        ? Assembly.Load(stream.GetBuffer()).CreateInstance(ContextAssembly + "." + SnapshotName) as ModelSnapshot
-                        : null;
-                }
+                using var stream = new MemoryStream();
+                var compileResult = compilation.Emit(stream);
+                return compileResult.Success
+                    ? Assembly.Load(stream.GetBuffer()).CreateInstance(ContextAssembly + "." + SnapshotName) as ModelSnapshot
+                    : null;
             });
         }
 

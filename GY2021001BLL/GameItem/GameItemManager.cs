@@ -1262,47 +1262,61 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 设置阵容号，或取消阵容设置。
         /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="mountsId"></param>
-        /// <param name="number"></param>
-        /// <param name="position">位置号，-1表示取消该坐骑在该阵容中的设置。</param>
-        public void SetLineup(GameChar gameChar, Guid mountsId, int number, decimal position)
+        /// <param name="datas"><see cref="SetLineupDatas"/></param>
+        public void SetLineup(SetLineupDatas datas)
         {
-            var mounts = gameChar.GetMounetsFromId(mountsId);
-            var key = $"{ProjectConstant.ZhenrongPropertyName}{number}";
-            if (position != -1)  //若设置阵容
+            using var disposer = datas.LockUser(World.CharManager);
+            if (disposer is null)
+                return;
+
+            var gc = datas.GameChar;
+            var srs = new HashSet<Guid>(gc.GetZuojiBag().Children.Select(c => c.Id));
+            if (!srs.IsSupersetOf(datas.Settings.Select(c => c.Item1)))
             {
-                mounts.Properties[key] = position;
-                if (number == 10)  //若是家园展示
+                datas.DebugMessage = "至少一个指定的坐骑Id不存在。";
+                datas.HasError = true;
+                datas.ResultCode = (int)HttpStatusCode.BadRequest;
+                return;
+            }
+            var db = gc.GameUser.DbContext;
+            foreach (var item in datas.Settings)    //逐个设置
+            {
+                var mounts = gc.GetMounetsFromId(item.Item1);
+                var key = $"{ProjectConstant.ZhenrongPropertyName}{item.Item2}";
+                if (item.Item3 != -1)  //若设置阵容
                 {
-                    var db = gameChar.GameUser.DbContext;
-                    var sr = db.Set<GameSocialRelationship>().Find(gameChar.Id, mountsId, SocialConstant.HomelandShowFlag);
-                    if (sr is null)
+                    mounts.Properties[key] = item.Item3;
+                    if (item.Item2 == 10)  //若是家园展示
                     {
-                        sr = new GameSocialRelationship
+                        var tid = World.ItemManager.GetBody(mounts).TemplateId; //身体的模板Id
+                        var sr = db.Set<GameSocialRelationship>().Find(gc.Id, tid, SocialConstant.HomelandShowFlag);
+                        if (sr is null)
                         {
-                            Id = gameChar.Id,
-                            Id2 = mountsId,
-                            Flag = SocialConstant.HomelandShowFlag,
-                        };
-                        db.Add(sr);
+                            sr = new GameSocialRelationship
+                            {
+                                Id = gc.Id,
+                                Id2 = tid,
+                                Flag = SocialConstant.HomelandShowFlag,
+                            };
+                            db.Add(sr);
+                        }
                     }
                 }
-            }
-            else //若取消阵容设置
-            {
-                mounts.Properties.Remove(key);
-                if (number == 10)  //若是家园展示
+                else //若取消阵容设置
                 {
-                    var db = gameChar.GameUser.DbContext;
-                    var sr = db.Set<GameSocialRelationship>().Find(gameChar.Id, mountsId, SocialConstant.HomelandShowFlag);
-                    if (null != sr)
+                    mounts.Properties.Remove(key);
+                    if (item.Item2 == 10)  //若是家园展示
                     {
-                        db.Remove(sr);
+                        var tid = World.ItemManager.GetBody(mounts).TemplateId; //身体的模板Id
+                        var sr = db.Set<GameSocialRelationship>().Find(gc.Id, tid, SocialConstant.HomelandShowFlag);
+                        if (null != sr)
+                        {
+                            db.Remove(sr);
+                        }
                     }
                 }
             }
-            World.CharManager.NotifyChange(gameChar.GameUser);
+            World.CharManager.NotifyChange(gc.GameUser);
         }
     }
 
@@ -1315,6 +1329,23 @@ namespace GuangYuan.GY001.BLL
 
         private List<Guid> _SellIds;
         public List<Guid> SellIds => GetOrAdd(nameof(SellIds), ref _SellIds);
+    }
+
+    /// <summary>
+    /// <see cref="GameItemManager.SetLineup(SetLineupDatas)"/>使用的参数和返回值封装类。
+    /// </summary>
+    public class SetLineupDatas : ComplexWorkDatsBase
+    {
+        public SetLineupDatas()
+        {
+        }
+
+        List<(Guid, int, decimal)> _Settings;
+
+        /// <summary>
+        /// Item3是位置号，-1表示取消该坐骑在该阵容中的设置。
+        /// </summary>
+        public List<(Guid, int, decimal)> Settings => GetOrAdd(nameof(Settings), ref _Settings);
     }
 
     public class ActiveStyleDatas
@@ -1433,13 +1464,13 @@ namespace GuangYuan.GY001.BLL
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
 
         /// <summary>
-        /// 按指定Id获取坐骑。
+        /// 按指定Id获取坐骑。仅从坐骑包中获取。
         /// </summary>
         /// <param name="gameChar"></param>
-        /// <param name="id"></param>
+        /// <param name="id">坐骑的唯一Id。</param>
         /// <returns>如果没有找到则返回null。</returns>
         static public GameItem GetMounetsFromId(this GameChar gameChar, Guid id) =>
-            gameChar.GetZuojiBag()?.Children.FirstOrDefault(c => c.TemplateId == id);
+            gameChar.GetZuojiBag()?.Children.FirstOrDefault(c => c.Id == id);
 
         /// <summary>
         /// 获取图鉴背包。

@@ -432,33 +432,40 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <param name="bodyTIds">家园中展示动物的身体模板Id。</param>
         /// <returns></returns>
-        public IEnumerable<Guid> RefreshFriends(GY001UserContext db, GameChar gameChar, IEnumerable<Guid> bodyTIds = null)
+        public IQueryable<Guid> RefreshFriends(GY001UserContext db, GameChar gameChar, IEnumerable<Guid> bodyTIds = null)
         {
             IQueryable<Guid> result;
+            var shows = db.Set<GameSocialRelationship>().Where(c => bodyTIds.Contains(c.Id2) && c.Flag == SocialConstant.HomelandShowFlag);  //展示坐骑
             var activeChars = db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);  //活跃用户
             var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
             var tmpStr1 = $"{SocialConstant.ConfirmedFriendPName}=0";
             var frees = db.Set<GameSocialRelationship>().Where(c => c.PropertiesString.Contains(tmpStr1)).GroupBy(c => c.Id).Where(c => c.Count() >= 20).Select(c => c.Key); //未处理好友申请数量>20
-            if (null != bodyTIds && bodyTIds.Any())    //若按身体模板Id过滤
-            {
-                //var coll = from tmp1 in World.ItemManager.GetBodiesQuery(db, bodyTIds)
-                //           join tmp2 in db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc)
-                //           on tmp1 equals tmp2.Id
-                //           //orderby tmp1.Count() descending, tmp2.LastLogoutUtc descending
-                //           select tmp1;
-                //var lst = coll.ToArray();
-                result = from tmp in World.ItemManager.GetBodiesQuery(db, bodyTIds)
-                             //join act in db.Set<CharSpecificExpandProperty>()
-                             //on tmp equals act.Id
-                         where tmp != gameChar.Id
-                         where allows.Any(c => c.Id == tmp) && !frees.Any(c => c == tmp)
-                         select tmp;
-            }
-            else
-                result = activeChars.Where(c => c.Id != gameChar.Id).Select(c => c.Id).Where(c => allows.Any(c1 => c1.Id == c) && !frees.Any(c1 => c1 == c));
+            var coll = from chars in activeChars
+                       join tmp in shows
+                       on chars.Id equals tmp.Id
+                       where allows.Any(c => c.Id == chars.Id) && !frees.Any(c => c == chars.Id)
+                       group chars by tmp.Id into g
+                       orderby g.Count() descending
+                       select g.Key;
+            return coll;
 
             result = result.Where(c => allows.Any(c1 => c1.Id == c) && !frees.Any(c1 => c1 == c));
             return result.Take(5);
+        }
+
+        public IQueryable<Guid> Test(GY001UserContext db, GameChar gameChar, IEnumerable<Guid> bodyTIds = null)
+        {
+            var coll = from body in db.Set<GameItem>().Where(c => bodyTIds.Contains(c.TemplateId))
+                       join mount in db.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi)
+                       on body.ParentId.Value equals mount.Id
+                       join bag in db.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId)
+                       on mount.ParentId.Value equals bag.Id
+                       group mount by bag.OwnerId.Value into g
+                       orderby g.Count() descending
+                       select g.Key;
+
+            var result = coll.Take(5);
+            return result;
         }
 
         /// <summary>

@@ -36,7 +36,7 @@ namespace GuangYuan.GY001.UserDb
         #region IDisposable 接口相关
         private bool disposedValue;
 
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
@@ -52,7 +52,9 @@ namespace GuangYuan.GY001.UserDb
                 CurrentChar = null;
                 _GameChars = null;
                 disposedValue = true;
+                base.Dispose(disposing);
             }
+
         }
 
         // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
@@ -62,12 +64,6 @@ namespace GuangYuan.GY001.UserDb
         //     Dispose(disposing: false);
         // }
 
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
         #endregion IDisposable 接口相关
 
         /// <summary>

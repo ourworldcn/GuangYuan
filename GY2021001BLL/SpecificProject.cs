@@ -417,7 +417,11 @@ namespace GuangYuan.GY001.BLL
             {
                 world.ItemManager.ForcedAdd(item, runseSlot);
             }
-            gameChar.DisplayName ??= CnNames.GetName(VWorld.IsHit(0.5));
+            var db = gameChar.GameUser.DbContext;
+            string displayName;
+            for (displayName = CnNames.GetName(VWorld.IsHit(0.5)); db.Set<GameChar>().Any(c => c.DisplayName == displayName); displayName = CnNames.GetName(VWorld.IsHit(0.5)))
+                ;
+            gameChar.DisplayName ??= displayName;
             result = true;
             //修正木材存贮最大量
             //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
@@ -434,9 +438,17 @@ namespace GuangYuan.GY001.BLL
             //将坐骑羊放入展示宠物
             var sheepBodyTId = new Guid("BBC9FE07-29BD-486D-8AD6-B99DB0BD07D6");
             var gim = service.GetRequiredService<GameItemManager>();
-            var dic = gameChar.GetZuojiBag().Children.FirstOrDefault(c => sheepBodyTId == gim.GetBody(c)?.TemplateId)?.Properties;
+            var showMount = gameChar.GetZuojiBag().Children.FirstOrDefault();
+            var dic = showMount?.Properties;
             if (dic != null)
                 dic["for10"] = 0;
+            GameSocialRelationship gsr = new GameSocialRelationship()
+            {
+                Id = gameChar.Id,
+                Id2 = gim.GetBody(showMount).TemplateId,
+                Flag = SocialConstant.HomelandShowFlag,
+            };
+            db.Add(gsr);
             //发送测试邮件
             Task.Delay(5000).ContinueWith(c =>
             {

@@ -543,18 +543,16 @@ namespace GuangYuan.GY001.BLL
                 //存储角色信息
                 var hash = Services.GetService<HashAlgorithm>();
                 var pwdHash = hash.ComputeHash(Encoding.UTF8.GetBytes(pwd));
-                var gu = new GameUser()
-                {
-                    LoginName = result.LoginName,
-                    PwdHash = pwdHash,
-                    DbContext = db,
-                };
+                result.LoginName = result.LoginName;
+                result.PwdHash = pwdHash;
+                result.DbContext = db;
+
                 var vw = World;
                 var charTemplate = ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
-                var gc = CreateChar(charTemplate, gu);
-                gu.GameChars.Add(gc);
-                gu.CurrentChar = gu.GameChars[0];
-                db.GameUsers.Add(gu);
+                var gc = CreateChar(charTemplate, result);
+                result.GameChars.Add(gc);
+                result.CurrentChar = result.GameChars[0];
+                db.GameUsers.Add(result);
                 //生成缓存数据
                 var sep = new CharSpecificExpandProperty
                 {
@@ -567,7 +565,7 @@ namespace GuangYuan.GY001.BLL
                     LastLogoutUtc = DateTime.UtcNow,
                 };
                 db.Add(sep);
-            db.SaveChanges();
+                db.SaveChanges();
             }
             return result;
         }
@@ -730,6 +728,7 @@ namespace GuangYuan.GY001.BLL
             var gim = World.ItemManager;
             var ary = template.ChildrenTemplateIds.Select(c => gim.CreateGameItem(c, result.Id)).ToArray();
             user.DbContext.Set<GameItem>().AddRange(ary);
+            //user.DbContext.Set<GameItem>().Where(c => c.OwnerId == ).Include(c => c.Children).ThenInclude(c => c.Children).ToList();
             result.GameItems.AddRange(ary);
             user.DbContext.Add(new GameActionRecord
             {
@@ -765,6 +764,7 @@ namespace GuangYuan.GY001.BLL
             //    result.Properties[item.Item1] = item.Item2;
             //}
             //result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
+            var gi = result.GameItems;
             return result;
         }
 

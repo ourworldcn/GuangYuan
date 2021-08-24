@@ -338,6 +338,7 @@ namespace GuangYuan.GY001.BLL
                     Priority = ThreadPriority.Lowest,
                 };
 #if DEBUG
+                thread.Start();
 #else
                thread.Start();
 #endif
@@ -374,7 +375,13 @@ namespace GuangYuan.GY001.BLL
                         {
                             continue;
                         }
-                        world.CharManager.QuicklyRegister(ref pwd, loginName);
+                        var gu = world.CharManager.QuicklyRegister(ref pwd, loginName);
+                        if (gu is null)
+                        {
+                            i--;
+                            continue;
+                        }
+                        Task.Factory.StartNew(c => (c as IDisposable)?.Dispose(), gu);
                         if (i % 100 == 0)
                         {
                             logger.LogDebug($"[{DateTime.UtcNow:s}]已经创建了{i}个账号。");

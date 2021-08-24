@@ -15,7 +15,7 @@ namespace GuangYuan.GY001.UserDb
     /// 游戏内部事物的基类。
     /// </summary>
     [NotMapped]
-    public abstract class GameItemBase : GameThingBase, IDisposable
+    public abstract class GameItemBase : GameThingBase
     {
         #region 构造函数
 
@@ -269,43 +269,6 @@ namespace GuangYuan.GY001.UserDb
 
         #endregion 事件及相关
 
-        #region IDisposable接口相关
-
-        private bool _IsDisposed;
-
-        /// <summary>
-        /// 对象是否已经被处置。
-        /// </summary>
-        protected bool IsDisposed => _IsDisposed;
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_IsDisposed)
-            {
-                if (disposing)
-                {
-                    // TODO: 释放托管状态(托管对象)
-                }
-
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
-                _IsDisposed = true;
-            }
-        }
-
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~GameItemBase()
-        // {
-        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion IDisposable接口相关
     }
 
     /// <summary>
@@ -614,6 +577,41 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public virtual List<GameExtendProperty> ExtendProperties { get; } = new List<GameExtendProperty>();
 
+        #region IDisposable接口相关
+
+        private bool _IsDisposed;
+
+        /// <summary>
+        /// 对象是否已经被处置。
+        /// </summary>
+        protected bool IsDisposed => _IsDisposed;
+        protected override void Dispose(bool disposing)
+        {
+            if (!_IsDisposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    Children.ForEach(c => c.Dispose());
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                Parent = null;
+                _GameChar = null;
+                _IsDisposed = true;
+                base.Dispose(disposing);
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~GameItemBase()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        #endregion IDisposable接口相关
 
     }
 
