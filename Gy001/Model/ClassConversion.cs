@@ -244,7 +244,7 @@ namespace GY2021001WebApi.Models
                 Name = obj.Name,
                 StringValue = obj.StringValue,
                 Text = obj.Text,
-                ParentId = obj.ParentId,
+                ParentId = obj.Id,
             };
             return result;
         }
@@ -412,6 +412,7 @@ namespace GY2021001WebApi.Models
 
     public partial class CharSummaryDto
     {
+
         public static implicit operator CharSummaryDto(CharSummary obj)
         {
             var result = new CharSummaryDto()
@@ -422,6 +423,7 @@ namespace GY2021001WebApi.Models
                 LastLogoutDatetime = obj.LastLogoutDatetime,
                 Level = obj.Level,
             };
+            result.HomelandShows.AddRange(obj.HomelandShows.Select(c => (GameItemDto)c));
             return result;
         }
     }

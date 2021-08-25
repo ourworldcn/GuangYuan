@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using OW.Game;
+using Game.Social;
 
 namespace GuangYuan.GY001.BLL.Social
 {
@@ -12,6 +13,15 @@ namespace GuangYuan.GY001.BLL.Social
     /// </summary>
     public class FriendDatas
     {
+        public const string TotalRflKey = "totalRfl";
+        public const string LastRflKey = "lastRfl";
+        public const string RflDateTimeKey = "timeRfl";
+
+        /// <summary>
+        /// 分隔符。用于记录Id字符串数组的分隔符。
+        /// </summary>
+        public const char Separator = '/';
+
         public FriendDatas(VWorld world, GameChar gameChar, DateTime todayUtc)
         {
             World = world;
@@ -26,17 +36,13 @@ namespace GuangYuan.GY001.BLL.Social
         /// <summary>
         /// 校准的时间点。
         /// </summary>
-        public DateTime TodayUtc => _TodayUtc;
+        public DateTime TodayUtc { get => _TodayUtc; set => _TodayUtc = value; }
 
         public DateTime Today0 => TodayUtc.Date;
 
         public DateTime Tomorrow0 => Today0 + TimeSpan.FromDays(1);
 
         public GameChar GameChar { get; }
-
-        const string TotalRflKey = "totalRfl";
-        const string LastRflKey = "lastRfl";
-        const string RflDateTimeKey = "timeRfl";
 
         /// <summary>
         /// 今日刷了数据否。
@@ -55,7 +61,7 @@ namespace GuangYuan.GY001.BLL.Social
                 {
                     if (HasData)    //若有今天刷新数据
                     {
-                        _LastListIds = GameChar.Properties.GetStringOrDefault(LastRflKey).Split(';', StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
+                        _LastListIds = GameChar.Properties.GetStringOrDefault(LastRflKey).Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
                     }
                     else
                     {
@@ -76,18 +82,69 @@ namespace GuangYuan.GY001.BLL.Social
             {
                 if (_TodayIds is null)
                 {
-
+                    if (HasData)    //若有今天刷新数据
+                    {
+                        _TodayIds = GameChar.Properties.GetStringOrDefault(TotalRflKey).Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
+                    }
+                    else
+                    {
+                        _TodayIds = new List<Guid>();
+                    }
                 }
                 return _TodayIds;
             }
         }
 
         /// <summary>
-        /// 刷新最后一次的名单。
+        /// 获取新的可申请好友名单。
         /// </summary>
-        public void RefreshLastList()
+        /// <param name="bodyTIds">按展示坐骑身体模板Id过滤，如果是空则不过滤。</param>
+        public IQueryable<Guid> RefreshLastList(IEnumerable<Guid> bodyTIds)
         {
+            IQueryable<Guid> result;
+            var db = World.CreateNewUserDbContext();
+            IQueryable<GameSocialRelationship> shows;
+            shows = db.Set<GameSocialRelationship>().Where(c => bodyTIds.Contains(c.Id2) && c.Flag == SocialConstant.HomelandShowFlag);  //展示坐骑
 
+            var activeChars = db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);  //活跃用户
+            var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
+            var todayList = TodayIds;   //今日已经刷过的用户
+            var notAllows = World.SocialManager.GetFriendsOrRequestingOrBlackIds(GameChar.Id, db);  //好友或黑名单
+            var tmpStr1 = $"{SocialConstant.ConfirmedFriendPName}=0";
+            var frees = db.Set<GameSocialRelationship>().Where(c => c.PropertiesString.Contains(tmpStr1)).GroupBy(c => c.Id).Where(c => c.Count() >= 20).Select(c => c.Key); //未处理好友申请数量>20
+            if (bodyTIds.Any())
+                result = from chars in activeChars
+                         where chars.Id != GameChar.Id
+                         join tmp in shows
+                         on chars.Id equals tmp.Id
+                         where allows.Any(c => c.Id == chars.Id) && !frees.Any(c => c == chars.Id) && !TodayIds.Contains(chars.Id) && !notAllows.Contains(chars.Id)
+                         group chars by tmp.Id into g
+                         orderby g.Count() descending
+                         select g.Key;
+            else
+                result = from chars in activeChars
+                         where allows.Any(c => c.Id == chars.Id) && !frees.Any(c => c == chars.Id) && !TodayIds.Contains(chars.Id) && !notAllows.Contains(chars.Id)
+                         group chars by chars.Id into g
+                         select g.Key;
+            return result;
+        }
+
+        /// <summary>
+        /// 保存数据。
+        /// </summary>
+        public void Save()
+        {
+            var db = GameChar.GameUser.DbContext;
+            if (null != _LastListIds)
+            {
+                GameChar.Properties[LastRflKey] = string.Join(Separator, _LastListIds.Select(c => c.ToString()));
+            }
+            if (null != _TodayIds || null != _LastListIds) //若今日刷新过的列表不空或最后一次刷新的列表不空
+            {
+                _TodayIds = TodayIds.Union(LastListIds).ToList(); //合并列表
+                GameChar.Properties[TotalRflKey] = string.Join(Separator, TodayIds.Select(c => c.ToString()));
+
+            }
         }
     }
 

@@ -84,7 +84,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<DateTime>("DateTimeUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("ParentId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PropertiesString")
@@ -97,9 +97,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("ActionId");
 
-                    b.HasIndex("ParentId", "ActionId");
+                    b.HasIndex("Id", "ActionId");
 
-                    b.HasIndex("DateTimeUtc", "ParentId", "ActionId");
+                    b.HasIndex("DateTimeUtc", "Id", "ActionId");
 
                     b.ToTable("ActionRecords");
                 });
@@ -147,7 +147,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameExtendProperty", b =>
                 {
-                    b.Property<Guid>("ParentId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
@@ -179,7 +179,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ParentId", "Name");
+                    b.HasKey("Id", "Name");
 
                     b.HasIndex("GameCharId");
 
@@ -205,7 +205,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid?>("OwnerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ParentId")
+                    b.Property<Guid?>("Id")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PropertiesString")
@@ -218,7 +218,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("Id");
 
                     b.HasIndex("TemplateId");
 
@@ -422,7 +422,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 {
                     b.HasOne("GuangYuan.GY001.UserDb.GameItem", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("Id");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameMailAddress", b =>

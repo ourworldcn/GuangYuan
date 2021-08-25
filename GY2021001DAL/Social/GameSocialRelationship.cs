@@ -28,7 +28,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param name="id">指定Id。</param>
+        /// <param _Name="id">指定Id。</param>
         public GameSocialRelationship(Guid id) : base(id)
         {
         }
@@ -36,9 +36,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="id2"></param>
-        /// <param name="flag"></param>
+        /// <param _Name="id"></param>
+        /// <param _Name="id2"></param>
+        /// <param _Name="flag"></param>
         public GameSocialRelationship(Guid id, Guid id2, long flag) : base(id, id2, flag)
         {
         }
@@ -61,9 +61,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 用指定角色填充角色摘要信息。
         /// </summary>
-        /// <param name="gameChar">角色对象。</param>
-        /// <param name="charSummary">角色摘要对象。</param>
-        /// <param name="records">查询操作记录的接口。</param>
+        /// <param _Name="gameChar">角色对象。</param>
+        /// <param _Name="charSummary">角色摘要对象。</param>
+        /// <param _Name="records">查询操作记录的接口。</param>
         public static void Fill(GameChar gameChar, CharSummary charSummary, IQueryable<GameActionRecord> records)
         {
             charSummary.Id = gameChar.Id;
@@ -103,7 +103,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 家园内展示动物的集合。
         /// </summary>
-        public List<GameItem> HomelandShows { get; set; }
+        public List<GameItem> HomelandShows { get; } = new List<GameItem>();
     }
 
     /// <summary>
@@ -121,9 +121,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 用指定角色填充好友摘要信息。
         /// </summary>
-        /// <param name="gameChar">角色对象。</param>
-        /// <param name="charSummary">好友摘要对象。</param>
-        /// <param name="records">查询操作记录的接口。</param>
+        /// <param _Name="gameChar">角色对象。</param>
+        /// <param _Name="charSummary">好友摘要对象。</param>
+        /// <param _Name="records">查询操作记录的接口。</param>
         public static void Fill(GameChar gameChar, FrientSummary charSummary, IQueryable<GameActionRecord> records)
         {
             CharSummary.Fill(gameChar, charSummary, records);

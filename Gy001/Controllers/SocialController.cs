@@ -122,29 +122,40 @@ namespace Gy001.Controllers
         /// <param name="model">参见<seealso cref="GetCharSummaryParamsDto"/>。</param>
         /// <returns>一组可添加为好友的角色摘要集合。如果没有符合条件的数据则返回空集合。</returns>
         /// <response code="401">令牌错误。</response>
+        /// <response code="500">参数错误。</response>
         [HttpPut]
         public ActionResult<GetCharSummaryReturnDto> GetCharSummary(GetCharSummaryParamsDto model)
         {
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            using var data = new GetCharIdsForRequestFriendDatas()
             {
-                return Unauthorized("令牌无效");
+            };
+            data.BodyTIds.AddRange(model.BodyTIds.Select(c => GameHelper.FromBase64String(c)));
+            using var disposer = data.SetTokenStringAndLock(model.Token, _World.CharManager);
+            if (disposer is null)
+            {
+                return StatusCode(data.ResultCode, data.DebugMessage);
             }
+            var result = new GetCharSummaryReturnDto();
             try
             {
-                var result = new GetCharSummaryReturnDto();
-                IEnumerable<CharSummary> coll;
-                var tids = model.BodyTIds is null || model.BodyTIds.Count <= 0 ? Array.Empty<Guid>() : model.BodyTIds.Select(c => GameHelper.FromBase64String(c));
-                if (string.IsNullOrWhiteSpace(model.DisplayName))
-                    coll = _World.SocialManager.GetCharSummary(gu.CurrentChar,null,tids);
-                else
-                    coll = _World.SocialManager.GetCharSummary(gu.CurrentChar, model.DisplayName,tids);
+                data.BodyTIds.AddRange(model.BodyTIds.Select(c => GameHelper.FromBase64String(c)));
+                data.DbContext = _World.CreateNewUserDbContext();
+                _World.SocialManager.GetCharIdsForRequestFriend(data);
+                if (data.HasError)
+                {
+                    result.HasError = true;
+                    result.DebugMessage = data.DebugMessage;
+                    return result;
+                }
+                var coll = _World.SocialManager.GetCharSummary(data.CharIds, data.DbContext);
                 result.CharSummaries.AddRange(coll.Select(c => (CharSummaryDto)c));
-                return result;
             }
-            finally
+            catch (Exception err)
             {
-                _World.CharManager.Unlock(gu);
+                result.HasError = true;
+                result.DebugMessage = err.Message;
             }
+            return result;
         }
 
         /// <summary>

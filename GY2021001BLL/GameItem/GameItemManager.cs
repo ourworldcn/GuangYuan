@@ -1315,6 +1315,7 @@ namespace GuangYuan.GY001.BLL
                         }
                     }
                 }
+                datas.ChangeItems.AddToChanges(mounts);
             }
             World.CharManager.NotifyChange(gc.GameUser);
         }
@@ -1334,7 +1335,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// <see cref="GameItemManager.SetLineup(SetLineupDatas)"/>使用的参数和返回值封装类。
     /// </summary>
-    public class SetLineupDatas : ComplexWorkDatsBase
+    public class SetLineupDatas : ChangeItemsWorkDatsBase
     {
         public SetLineupDatas()
         {

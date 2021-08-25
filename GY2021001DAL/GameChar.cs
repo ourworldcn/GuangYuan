@@ -26,7 +26,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <param name="id"><inheritdoc/></param>
+        /// <param _Name="id"><inheritdoc/></param>
         public GameChar(Guid id) : base(id)
         {
         }
@@ -34,7 +34,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。用于延迟加载。
         /// </summary>
-        /// <param name="lazyLoader">延迟加载器。</param>
+        /// <param _Name="lazyLoader">延迟加载器。</param>
         //private GameChar(Action<object, string> lazyLoader)
         //{
         //    LazyLoader = lazyLoader;
@@ -253,6 +253,9 @@ namespace GuangYuan.GY001.UserDb
             }
         }
 
+        [NotMapped]
+        public override DbContext DbContext => GameUser.DbContext;
+
         // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~GameChar()
         // {
@@ -269,7 +272,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 转换为摘要类。
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param _Name="obj"></param>
         public static explicit operator ChangesItemSummary(ChangeItem obj)
         {
             var result = new ChangesItemSummary()
@@ -286,8 +289,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 从摘要类恢复完整对象。
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="gameChar"></param>
+        /// <param _Name="obj"></param>
+        /// <param _Name="gameChar"></param>
         /// <returns></returns>
         public static List<ChangeItem> ToChangesItem(IEnumerable<ChangesItemSummary> objs, GameChar gameChar)
         {

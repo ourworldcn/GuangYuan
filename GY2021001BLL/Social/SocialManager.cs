@@ -1,5 +1,6 @@
 ﻿using Game.Social;
 using GuangYuan.GY001.BLL.Homeland;
+using GuangYuan.GY001.BLL.Social;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
@@ -256,7 +257,7 @@ namespace GuangYuan.GY001.BLL
             ValueTuple<Guid, decimal, Guid>[] templates;
             try
             {
-                //附件Id是IdMark.Id,角色Id是IdMark.ParentId
+                //附件Id是IdMark.Id,角色Id是IdMark.Id
                 var gcId = gameChar.Id;
                 var mails = GetMails(gameChar, db);  //角色的所有邮件
                 var coll = mails.SelectMany(c => c.Attachmentes).ToList();
@@ -358,7 +359,7 @@ namespace GuangYuan.GY001.BLL
              GetCharRelationshipToMe(charId, db).Where(c => c.Flag > SocialConstant.MiddleFriendliness + 5 && c.Flag < SocialConstant.MiddleFriendliness - 5).Select(c => c.Id);
 
         /// <summary>
-        /// 获取活跃用户。
+        /// 获取活跃用户的延迟查询。
         /// </summary>
         /// <param name="db"></param>
         /// <returns></returns>
@@ -368,104 +369,61 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 获取一组角色的摘要数据。
         /// </summary>
-        /// <returns>一组随机在线角色的信息。</returns>
-        public IEnumerable<CharSummary> GetCharSummary(GameChar gameChar = null)
+        /// <param name="ids">要获得摘要信息的角色Id集合。</param>
+        /// <param name="db">使用的用户数据库上下文。</param>
+        /// <returns>指定的角色摘要信息。</returns>
+        /// <exception cref="ArgumentException">至少一个指定的Id不是有效角色Id。</exception>
+        public IEnumerable<CharSummary> GetCharSummary(IEnumerable<Guid> ids, DbContext db)
         {
-            using var db = World.CreateNewUserDbContext();
-            gameChar ??= db.GameChars.First();
-            var gcId = gameChar.Id;
-            var collActive = GetActiveChars(db); //最近活跃用户Id
-            var collBlack = GetFriendsOrRequestingOrBlackIds(gameChar.Id, db); //将此用户拉入黑名单的用户或已经添加好友或正在添加好友
-            var coll2 = from tmp in GetActiveChars(db)
-                        where !collBlack.Contains(tmp.Id) && tmp.Id != gcId
-                        select tmp;
-            Random rnd = new Random();
-            int v = rnd.Next(Math.Max(coll2.Count() - 10, 0));
-            var result = coll2.Skip(v).Take(10).ToArray().Select(c =>
+            var gameChars = db.Set<GameChar>().Where(c => ids.Contains(c.Id)).ToArray();
+            if (gameChars.Length != ids.Count())
+                throw new ArgumentException("至少一个指定的Id不是有效角色Id。",nameof(ids));
+            var result = gameChars.Select(c =>
             {
                 var cs = new CharSummary();
-                CharSummary.Fill(c, cs, db.ActionRecords);
+                FillCharSummary(c, cs, db);
                 return cs;
             });
             return result.ToList();
         }
 
         /// <summary>
-        /// 获取指定字符串开头昵称的角色信息。
+        /// 获取一组可以申请好友的角色信息。
         /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="displayName"></param>
-        /// <returns>目前最多返回20条。</returns>
-        public IEnumerable<CharSummary> GetCharSummary(GameChar gameChar, string displayName, IEnumerable<Guid> bodyTIds = null)
+        /// <param name="datas"></param>
+        /// <returns>目前最多返回5条。</returns>
+        public void GetCharIdsForRequestFriend(GetCharIdsForRequestFriendDatas datas)
         {
-            using GY001UserContext db = World.CreateNewUserDbContext();
-            var s = RefreshFriends(db, gameChar, bodyTIds).ToArray();
-            try
+            datas.DbContext ??= World.CreateNewUserDbContext();
+            var db = datas.DbContext;
+            var data = new FriendDatas(World, datas.GameChar, DateTime.UtcNow);
+            IEnumerable<Guid> result;
+            if (!string.IsNullOrWhiteSpace(datas.DisplayName))   //若需要按角色昵稱过滤
             {
-                var activeChars = World.CharManager.GetActiveUserIdsQuery(db);  //活跃用户
-                var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
-                if (null != bodyTIds && bodyTIds.Any())    //若按身体模板Id过滤
-                {
-                    //var query = World.ItemManager.GetBodiesQuery(db, bodyTIds).OrderByDescending(c => c.Count()).Select(c => c.Key);
-                }
-                var gcId = gameChar.Id;
-                var coll = GetFriendsOrRequestingOrBlackIds(gcId, db);  //已经是好友或黑名单
-                var result = db.GameChars.Where(c => c.DisplayName.StartsWith(displayName) && !coll.Contains(c.Id) && c.Id != gcId).Take(10).ToArray().
-                     Select(c =>
-                     {
-                         var cs = new CharSummary();
-                         CharSummary.Fill(c, cs, db.ActionRecords);
-                         return cs;
-                     });
-                return result.ToList();
+                result = db.Set<GameChar>().Where(c => c.DisplayName == datas.DisplayName).Select(c => c.Id).Take(5).ToList();
             }
-            finally
+            else //若需要按身体模板Id过滤或不限制
             {
-                db?.DisposeAsync();
+                if (data.HasData && datas.DonotRefresh)  //若不需要刷新数据
+                    result = data.LastListIds;
+                else
+                    result = data.RefreshLastList(datas.BodyTIds).Take(5);
+                data.TodayIds.AddRange(result);
             }
+            data.Save();
+            datas.CharIds.AddRange(result);
         }
 
-        /// <summary>
-        /// 刷新可加好友的列表并返回。
-        /// </summary>
-        /// <param name="db"></param>
-        /// <param name="gameChar"></param>
-        /// <param name="bodyTIds">家园中展示动物的身体模板Id。</param>
-        /// <returns></returns>
-        public IQueryable<Guid> RefreshFriends(GY001UserContext db, GameChar gameChar, IEnumerable<Guid> bodyTIds = null)
+        public void FillCharSummary(GameChar gameChar, CharSummary summary, DbContext db)
         {
-            IQueryable<Guid> result;
-            var shows = db.Set<GameSocialRelationship>().Where(c => bodyTIds.Contains(c.Id2) && c.Flag == SocialConstant.HomelandShowFlag);  //展示坐骑
-            var activeChars = db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);  //活跃用户
-            var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
-            var tmpStr1 = $"{SocialConstant.ConfirmedFriendPName}=0";
-            var frees = db.Set<GameSocialRelationship>().Where(c => c.PropertiesString.Contains(tmpStr1)).GroupBy(c => c.Id).Where(c => c.Count() >= 20).Select(c => c.Key); //未处理好友申请数量>20
-            var coll = from chars in activeChars
-                       join tmp in shows
-                       on chars.Id equals tmp.Id
-                       where allows.Any(c => c.Id == chars.Id) && !frees.Any(c => c == chars.Id)
-                       group chars by tmp.Id into g
-                       orderby g.Count() descending
-                       select g.Key;
-            return coll;
-
-            result = result.Where(c => allows.Any(c1 => c1.Id == c) && !frees.Any(c1 => c1 == c));
-            return result.Take(5);
-        }
-
-        public IQueryable<Guid> Test(GY001UserContext db, GameChar gameChar, IEnumerable<Guid> bodyTIds = null)
-        {
-            var coll = from body in db.Set<GameItem>().Where(c => bodyTIds.Contains(c.TemplateId))
-                       join mount in db.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi)
-                       on body.ParentId.Value equals mount.Id
-                       join bag in db.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId)
-                       on mount.ParentId.Value equals bag.Id
-                       group mount by bag.OwnerId.Value into g
-                       orderby g.Count() descending
-                       select g.Key;
-
-            var result = coll.Take(5);
-            return result;
+            summary.Id = gameChar.Id;
+            summary.DisplayName = gameChar.DisplayName;
+            summary.Level = (int)gameChar.Properties.GetDecimalOrDefault("lv", decimal.Zero);
+            summary.CombatCap = 4000;
+            summary.LastLogoutDatetime = gameChar.SpecificExpandProperties.LastLogoutUtc == new DateTime(9999, 1, 1) ? new DateTime?() : gameChar.SpecificExpandProperties.LastLogoutUtc;
+            var collMountIds = db.Set<GameSocialRelationship>().Where(c => c.Id == gameChar.Id && c.Flag == SocialConstant.HomelandShowFlag).Select(c => c.Id2);
+            var coll = db.Set<GameItem>().Where(c => collMountIds.Contains(c.Id));
+            summary.HomelandShows.AddRange(coll);
         }
 
         /// <summary>
@@ -1269,6 +1227,67 @@ namespace GuangYuan.GY001.BLL
         /// 已经访问过该角色。
         /// </summary>
         Already,
+    }
+
+    public class GetCharIdsForRequestFriendDatas : ComplexWorkDatsBase
+    {
+
+        string _DisplayName;
+
+        /// <summary>
+        /// 指定搜索角色的昵称。为空表示不限定角色名。
+        /// </summary>
+        public string DisplayName
+        {
+            get => _DisplayName;
+            set => _DisplayName = value;
+        }
+
+        /// <summary>
+        /// 指定家园展示坐骑的身体模板Id。空集合表示限定。
+        /// </summary>
+        public List<Guid> BodyTIds { get; } = new List<Guid>();
+
+        /// <summary>
+        /// 返回的角色Id集合。
+        /// </summary>
+        public List<Guid> CharIds { get; } = new List<Guid>();
+
+        /// <summary>
+        /// 所使用的数据库上下文。
+        /// </summary>
+        public DbContext DbContext { get; set; }
+
+        /// <summary>
+        /// 仅当按身体模板过滤时，此属性才有效。
+        /// false若今天曾经刷新过数据则返回该数据，true强制刷新数据返回。
+        /// </summary>
+        public bool DonotRefresh { get; set; }
+
+        bool disposedValue;
+
+        public GetCharIdsForRequestFriendDatas()
+        {
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    DbContext?.Dispose();
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                DbContext = null;
+
+                disposedValue = true;
+                base.Dispose(disposing);
+            }
+        }
     }
 
 }

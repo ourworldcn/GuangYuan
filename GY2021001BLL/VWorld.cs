@@ -365,7 +365,7 @@ namespace GuangYuan.GY001.BLL
             }
             try
             {
-                for (int i = start; i < 25000; i++)
+                for (int i = start; i < 5000; i++)
                 {
                     try
                     {

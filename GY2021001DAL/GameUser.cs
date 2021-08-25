@@ -151,7 +151,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 引发 Logouting 事件。
         /// </summary>
-        /// <param name="e"></param>
+        /// <param _Name="e"></param>
         public void InvokeLogouting(LogoutReason e)
         {
             OnLogouting(e);

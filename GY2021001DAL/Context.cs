@@ -36,7 +36,7 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameItem>().HasIndex(c => c.TemplateId).IsUnique(false);
 
             //通用扩展属性
-            modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.ParentId, c.Name });
+            modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.Id, c.Name });
 
             //邮件相关
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);

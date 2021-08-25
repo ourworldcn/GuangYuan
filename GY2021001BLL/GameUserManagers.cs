@@ -571,6 +571,18 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// TO DO
+        /// </summary>
+        /// <param name="loginName"></param>
+        /// <param name="pwd"></param>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public Task CreateGameUserAsync(string loginName, string pwd, DbContext db)
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// 发送一个空操作以保证闲置下线重新开始计时。
         /// </summary>
         /// <param name="token"></param>
@@ -753,18 +765,6 @@ namespace GuangYuan.GY001.BLL
             catch (Exception)
             {
             }
-            //累计属性
-            //var allProps = OwHelper.GetAllSubItemsOfTree(result.GameItems, c => c.Children).SelectMany(c => c.Properties);
-            //var coll = from tmp in allProps
-            //           where tmp.Value is decimal && tmp.Key != ProjectConstant.LevelPropertyName   //避免累加级别属性
-            //           group (decimal)tmp.Value by tmp.Key into g
-            //           select ValueTuple.Create(g.Key, g.Sum());
-            //foreach (var item in coll)
-            //{
-            //    result.Properties[item.Item1] = item.Item2;
-            //}
-            //result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
-            var gi = result.GameItems;
             return result;
         }
 

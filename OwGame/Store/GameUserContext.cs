@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -69,6 +70,41 @@ namespace OW.Game.Store
         public GameObjectBase(Guid id) : base(id)
         {
 
+        }
+
+        private string _IdString;
+
+        /// <summary>
+        /// 获取或设置Id的字符串表现形式。
+        /// </summary>
+        [NotMapped]
+        public string IdString
+        {
+            get
+            {
+                return _IdString ??= Id.ToString();
+            }
+            set
+            {
+                Id = Guid.Parse(value);
+                _IdString = null;
+            }
+        }
+
+        private string _Base64IdString;
+
+        /// <summary>
+        /// 获取或设置Id的Base64字符串表现形式。
+        /// </summary>
+        [NotMapped]
+        public string Base64IdString
+        {
+            get { return _Base64IdString ??= Id.ToBase64String(); }
+            set
+            {
+                Id = GameHelper.FromBase64String(value);
+                _Base64IdString = value;
+            }
         }
 
         #region 事件及相关

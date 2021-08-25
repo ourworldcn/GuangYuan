@@ -1483,7 +1483,7 @@
         </member>
         <member name="T:GY2021001WebApi.Models.GetCharSummaryReturnDto">
             <summary>
-            GetCharSummary 接口返回值封装类。
+            GetCharIdsForRequestFriend 接口返回值封装类。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetCharSummaryParamsDto">
@@ -1739,6 +1739,7 @@
             <param name="model">参见<seealso cref="T:GY2021001WebApi.Models.GetCharSummaryParamsDto"/>。</param>
             <returns>一组可添加为好友的角色摘要集合。如果没有符合条件的数据则返回空集合。</returns>
             <response code="401">令牌错误。</response>
+            <response code="500">参数错误。</response>
         </member>
         <member name="M:Gy001.Controllers.SocialController.RequestFriend(GY2021001WebApi.Models.RequestFriendParamsDto)">
             <summary>

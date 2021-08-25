@@ -116,7 +116,7 @@ namespace GY2021001WebApi.Controllers
                         Name = GameExtendProperty.ClientPropertyName,
                         StringValue = model.Name,
                         Text = model.Value,
-                        ParentId = gc.Id,
+                        Id = gc.Id,
                     };
                     gc.ExtendProperties.Add(cep);
                 }
@@ -218,6 +218,10 @@ namespace GY2021001WebApi.Controllers
                 gim.SetLineup(datas);
                 result.HasError = datas.HasError;
                 result.DebugMessage = datas.DebugMessage;
+                if(!result.HasError)
+                {
+                    result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                }
             }
             catch (Exception err)
             {

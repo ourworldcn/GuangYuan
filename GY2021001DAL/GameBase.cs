@@ -6,6 +6,7 @@ using OW.Game.Store;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
@@ -43,8 +44,8 @@ namespace GuangYuan.GY001.UserDb
         /// 试图从<see cref="GameExtendProperty"/>中转化得到<see cref="ExtendPropertyDescriptor"/>对象。
         /// 特别地，本成员使用了反射，因此程序集改名导致原有数据无法读回。
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="result"></param>
+        /// <param _Name="obj"></param>
+        /// <param _Name="result"></param>
         /// <returns>true成功得到对象，false转化错误。</returns>
         static public bool TryParse(GameExtendProperty obj, out ExtendPropertyDescriptor result)
         {
@@ -79,7 +80,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 将当前对象内容填写到指定的<see cref="GameExtendProperty"/>对象中。
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param _Name="obj"></param>
         public void FillTo(GameExtendProperty obj)
         {
             var fullName = Type.AssemblyQualifiedName;
@@ -92,8 +93,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 更新或追加对象。
         /// </summary>
-        /// <param name="srcs"></param>
-        /// <param name="dests"></param>
+        /// <param _Name="srcs"></param>
+        /// <param _Name="dests"></param>
         static public void Fill(IEnumerable<ExtendPropertyDescriptor> srcs, ICollection<GameExtendProperty> dests)
         {
             var coll = (from src in srcs
@@ -126,10 +127,10 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="name"></param>
-        /// <param name="isPersistence"></param>
-        /// <param name="type"></param>
+        /// <param _Name="data"></param>
+        /// <param _Name="name"></param>
+        /// <param _Name="isPersistence"></param>
+        /// <param _Name="type"></param>
         public ExtendPropertyDescriptor(object data, string name, bool isPersistence = false, Type type = null)
         {
             Data = data;
@@ -154,81 +155,14 @@ namespace GuangYuan.GY001.UserDb
         public bool IsPersistence { get; set; }
     }
 
-    /// <summary>
-    /// 服务器内部使用的通用扩展属性。
-    /// <see cref="ParentId"/> 和 <see cref="Name"/> 组成联合主键。
-    /// </summary>
-    public class GameExtendProperty
-    {
-        /// <summary>
-        /// 客户端属性使用的键名。
-        /// <see cref="Name"/>是该值的，表示由客户端使用，服务器不会使用该对象。
-        /// </summary>
-        public const string ClientPropertyName = "d51b3d58-2dec-4d24-b85d-a57aafe10dd7";
-
-        public GameExtendProperty()
-        {
-
-        }
-
-        public GameExtendProperty(string name)
-        {
-            Name = name;
-        }
-
-        [ForeignKey(nameof(GameThing))]
-        public Guid ParentId { get; set; }
-
-        /// <summary>
-        /// 导航属性。
-        /// </summary>
-        public virtual GameItemBase GameThing { get; set; }
-
-        /// <summary>
-        /// 属性的名称。
-        /// </summary>
-        [MaxLength(64)]
-        public string Name { get; set; }
-
-        private string _StringValue;
-
-        /// <summary>
-        /// 短文本属性，可以索引加速查找。
-        /// </summary>
-        [MaxLength(256)]
-        public string StringValue
-        {
-            get => _StringValue;
-            set
-            {
-                if (value.Length > 256)
-                    throw new ArgumentException("最长仅能支持256个字符。", nameof(value));
-                _StringValue = value;
-            }
-        }
-
-        public int IntValue { get; set; }
-
-        public decimal DecimalValue { get; set; }
-
-        public double DoubleValue { get; set; }
-
-        /// <summary>
-        /// 长文本属性，无法索引。
-        /// </summary>
-        public string Text { get; set; }
-
-        public DateTime DateTimeValue { get; set; }
-    }
-
     public class GameThingPropertyHelper : GamePropertyHelper
     {
         /// <summary>
         /// 获取对象的属性、
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="propertyName"></param>
-        /// <param name="defaultValue"></param>
+        /// <param _Name="obj"></param>
+        /// <param _Name="propertyName"></param>
+        /// <param _Name="defaultValue"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override object GetValue(object obj, string propertyName, object defaultValue = default)
@@ -241,9 +175,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 设置对象的属性。
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="propertyName"></param>
-        /// <param name="val"></param>
+        /// <param _Name="obj"></param>
+        /// <param _Name="propertyName"></param>
+        /// <param _Name="val"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool SetValue(object obj, string propertyName, object val)
@@ -278,8 +212,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 按指定的主名称和类前缀名称返回所有键的名称。
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="classPrefix"></param>
+        /// <param _Name="name"></param>
+        /// <param _Name="classPrefix"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<string> GetKeyNames(string name, string classPrefix = DefaultClassPrefix)
@@ -295,10 +229,10 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 将当前值写入字典，不会自己计算更新属性。
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="dic"></param>
-        /// <param name="name">主名称</param>
-        /// <param name="classPrefix"></param>
+        /// <param _Name="obj"></param>
+        /// <param _Name="dic"></param>
+        /// <param _Name="name">主名称</param>
+        /// <param _Name="classPrefix"></param>
         static public void ToDictionary(this FastChangingProperty obj, IDictionary<string, object> dic, string name, string classPrefix = DefaultClassPrefix)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(name));
@@ -312,8 +246,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="thing"></param>
+        /// <param _Name="obj"></param>
+        /// <param _Name="thing"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void ToGameThing(this FastChangingProperty obj, GameItemBase thing)
         {
@@ -323,8 +257,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 从属性集合生成渐变属性对象。
         /// </summary>
-        /// <param name="dic">至少要有fcpiXXX,fcpdXXX,fcpmXXX三个属性才能生成。</param>
-        /// <param name="name">主名称，XXX,不带fcpi等前缀。</param>
+        /// <param _Name="dic">至少要有fcpiXXX,fcpdXXX,fcpmXXX三个属性才能生成。</param>
+        /// <param _Name="name">主名称，XXX,不带fcpi等前缀。</param>
         /// <returns>渐变属性对象，如果没有足够属性生成则返回null。</returns>
         static public FastChangingProperty FromDictionary(IReadOnlyDictionary<string, object> dic, string name, string classPrefix = DefaultClassPrefix)
         {
@@ -342,8 +276,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="thing"></param>
-        /// <param name="classPrefix"></param>
+        /// <param _Name="thing"></param>
+        /// <param _Name="classPrefix"></param>
         /// <returns></returns>
         static public IEnumerable<FastChangingProperty> FromGameThing(GameObjectBase thing, string classPrefix = DefaultClassPrefix)
         {
@@ -358,8 +292,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 从属性列表中清楚渐变属性涉及到的属性。
         /// </summary>
-        /// <param name="dic"></param>
-        /// <param name="name"></param>
+        /// <param _Name="dic"></param>
+        /// <param _Name="name"></param>
         static public void Clear(IDictionary<string, object> dic, string name, string classPrefix = DefaultClassPrefix)
         {
             dic.Remove($"{classPrefix}i{name}");
@@ -379,9 +313,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 获取指定属性的数值形式。
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="propertyName"></param>
-        /// <param name="result"></param>
+        /// <param _Name="obj"></param>
+        /// <param _Name="propertyName"></param>
+        /// <param _Name="result"></param>
         /// <returns>true指定属性存在且能转换为数值形式；否则返回false。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool TryGetDecimalPropertyValue(this GameItemBase obj, string propertyName, out decimal result)
@@ -396,9 +330,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 获取指定的属性值并转换为<see cref="decimal"/>,如果找不到，或不能转换则返回指定默认值。
         /// </summary>
-        /// <param name="propertyName" >
+        /// <param _Name="propertyName" >
         /// </param>
-        /// <param name="defaultVal"></param>
+        /// <param _Name="defaultVal"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public decimal GetDecimalOrDefault(this GameItemBase obj, string propertyName, decimal defaultVal = decimal.Zero) =>
@@ -407,7 +341,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 获取堆叠上限。
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param _Name="obj"></param>
         /// <returns><see cref="decimal.MaxValue"/>如果不可堆叠则为1.无限制是<see cref="decimal.MaxValue"/>。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public decimal GetStc(this GameItemBase obj)
@@ -419,8 +353,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 是否可堆叠。
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="result">如果是可堆叠对象则返回堆叠最大数量。-1是不受限制。</param>
+        /// <param _Name="obj"></param>
+        /// <param _Name="result">如果是可堆叠对象则返回堆叠最大数量。-1是不受限制。</param>
         /// <returns>true可堆叠，false不可堆叠。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public bool IsStc(this GameItemBase obj, out decimal result) =>
@@ -448,7 +382,7 @@ namespace GuangYuan.GY001.UserDb
     /// DateTime dt = DateTime.UtcNow.Date;
     /// Guid charId = Guid.NewGuid();
     /// string actionId = "someThing";
-    /// var coll = query.Where(c => c.DateTimeUtc >= dt && c.ParentId == charId && c.ActionId == actionId);
+    /// var coll = query.Where(c => c.DateTimeUtc >= dt && c.Id == charId && c.ActionId == actionId);
     /// </code>
     /// 索引在此情况下最有用。
     /// </remarks>
@@ -510,10 +444,49 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public Guid TemplateId { get; set; }
 
+        [NotMapped]
+        public abstract DbContext DbContext { get; }
+
         /// <summary>
         /// 模板对象。
         /// </summary>
         [NotMapped]
         public GameThingTemplateBase Template { get; set; }
+
+        ObservableCollection<GameExtendProperty> _GameExtendProperties;
+
+        [NotMapped]
+        public ObservableCollection<GameExtendProperty> GameExtendProperties
+        {
+            get
+            {
+                if (_GameExtendProperties is null)
+                {
+                    var coll = DbContext.Set<GameExtendProperty>().Where(c => c.Id == Id);
+                    _GameExtendProperties = new ObservableCollection<GameExtendProperty>(coll);
+                    _GameExtendProperties.CollectionChanged += _GameExtendPropertiesCollectionChanged;
+                }
+                return _GameExtendProperties;
+            }
+        }
+
+        private void _GameExtendPropertiesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }

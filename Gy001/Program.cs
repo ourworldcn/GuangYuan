@@ -1,5 +1,6 @@
 using Game.Social;
 using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Social;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.AspNetCore.Hosting;
@@ -45,19 +46,13 @@ namespace Gy001
         [Conditional("DEBUG")]
         private static void Test(IHost host)
         {
-            var cache = host.Services.GetService<IMemoryCache>();
-
-            //const string pvpChar = "PvpChar";
             var world = host.Services.GetRequiredService<VWorld>();
             var db = world.CreateNewUserDbContext();
+            var templates = world.ItemTemplateManager.GetTemplates(c => c.CatalogNumber == 4);
+            var gu = world.CharManager.Login("test101", "test101", "test");
 
-            var gc = db.GameChars.FirstOrDefault();
-
-            var gitm = host.Services.GetRequiredService<GameItemTemplateManager>();
-            var bodyIds = gitm.GetTemplates(c => c.CatalogNumber == 4).Select(c => c.Id).ToArray(); //身体Id集合
-            //var ary = world.SocialManager.RefreshFriends(db, gc, bodyIds).Take(5).ToArray();
-            //var ary = world.SocialManager.Test(db, gc, bodyIds).ToArray();
-
+            var data = new FriendDatas(world, gu.CurrentChar, DateTime.UtcNow);
+            var list = data.RefreshLastList(templates.Select(c => c.Id)).ToList();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

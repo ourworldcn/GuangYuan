@@ -5,6 +5,7 @@ using OW.Game.Store;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -30,7 +31,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param name="id"><inheritdoc/></param>
+        /// <param _Name="id"><inheritdoc/></param>
         public GameItemBase(Guid id) : base(id)
         {
 
@@ -40,8 +41,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 获取指定名称的属性名。调用<see cref="TryGetPropertyValue(string, out object)"/>来实现。
         /// </summary>
-        /// <param name="propertyName"></param>
-        /// <param name="defaultVal"></param>
+        /// <param _Name="propertyName"></param>
+        /// <param _Name="defaultVal"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object GetPropertyValueOrDefault(string propertyName, object defaultVal = default) =>
@@ -50,8 +51,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 获取指定属性名称的属性值。
         /// </summary>
-        /// <param name="propertyName">动态属性的名称。</param>
-        /// <param name="result">动态属性的值。</param>
+        /// <param _Name="propertyName">动态属性的名称。</param>
+        /// <param _Name="result">动态属性的值。</param>
         /// <returns>true成功返回属性，false未找到属性。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public virtual bool TryGetPropertyValue(string propertyName, out object result)
@@ -79,8 +80,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 设置一个属性。
         /// </summary>
-        /// <param name="propertyName"></param>
-        /// <param name="val"></param>
+        /// <param _Name="propertyName"></param>
+        /// <param _Name="val"></param>
         /// <returns>true，如果属性名存在或确实应该有(基于某种需要)，且设置成功。false，设置成功一个不存在且不认识的属性。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public virtual bool SetPropertyValue(string propertyName, object val)
@@ -145,11 +146,11 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 获取属性，且考虑是否刷新并写入快速变化属性。
         /// </summary>
-        /// <param name="name">要获取值的属性名。</param>
-        /// <param name="refreshDate">当有快速变化属性时，刷新时间，如果为null则不刷新。</param>
-        /// <param name="writeDictionary">当有快速变化属性时，是否写入<see cref="Properties"/>属性。</param>
-        /// <param name="result">属性的当前返回值。对快速变化属性是其<see cref="FastChangingProperty.LastValue"/>,是否在之前刷新取决于<paramref name="refresh"/>参数。</param>
-        /// <param name="refreshDatetime">如果是快速变化属性且需要刷新，则此处返回实际的计算时间。
+        /// <param _Name="name">要获取值的属性名。</param>
+        /// <param _Name="refreshDate">当有快速变化属性时，刷新时间，如果为null则不刷新。</param>
+        /// <param _Name="writeDictionary">当有快速变化属性时，是否写入<see cref="Properties"/>属性。</param>
+        /// <param _Name="result">属性的当前返回值。对快速变化属性是其<see cref="FastChangingProperty.LastValue"/>,是否在之前刷新取决于<paramref _Name="refresh"/>参数。</param>
+        /// <param _Name="refreshDatetime">如果是快速变化属性且需要刷新，则此处返回实际的计算时间。
         /// 如果找到的不是快速渐变属性返回<see cref="DateTime.MinValue"/></param>
         /// <returns>true成功找到属性。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -183,8 +184,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         ///  获取属性，若是快速变化属性时会自动用当前时间刷新且写入<see cref="Properties"/>。
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="result"></param>
+        /// <param _Name="name"></param>
+        /// <param _Name="result"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetPropertyValueWithFcp(string name, out object result)
@@ -196,7 +197,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 移除一个渐变属性。
         /// </summary>
-        /// <param name="name"></param>
+        /// <param _Name="name"></param>
         /// <returns>移除的渐变属性对象，如果没有找到指定名称的渐变属性对象则返回null。</returns>
         public FastChangingProperty RemoveFastChangingProperty(string name)
         {
@@ -227,7 +228,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 通知该实例，即将保存到数据库。
         /// </summary>
-        /// <param name="e"></param>
+        /// <param _Name="e"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void PrepareSaving(DbContext db)
         {
@@ -249,7 +250,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 该对象自身数据已经加载到内存中进行调用。
         /// </summary>
-        /// <param name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
+        /// <param _Name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
         public void InvokeLoading(IServiceProvider services)
         {
             var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
@@ -259,7 +260,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 引发<see cref="Created"/>事件。
         /// </summary>
-        /// <param name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
+        /// <param _Name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void InvokeCreated(IServiceProvider services)
         {
@@ -288,11 +289,14 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param name="id">指定Id。</param>
+        /// <param _Name="id">指定Id。</param>
         public GameItem(Guid id) : base(id)
         {
 
         }
+
+        [NotMapped]
+        public override DbContext DbContext => GameChar.DbContext;
 
         private decimal? _Count;
 
@@ -419,8 +423,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <param name="propertyName"><inheritdoc/></param>
-        /// <param name="result"><inheritdoc/></param>
+        /// <param _Name="propertyName"><inheritdoc/></param>
+        /// <param _Name="result"><inheritdoc/></param>
         /// <returns><inheritdoc/></returns>
         public override bool TryGetPropertyValue(string propertyName, out object result)
         {
@@ -466,7 +470,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 获取指定属性的当前级别索引值。
         /// </summary>
-        /// <param name="name"></param>
+        /// <param _Name="name"></param>
         /// <returns>如果不是序列属性或索引属性值不是数值类型则返回-1。如果没有找到索引属性返回0。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetIndexPropertyValue(string name)
@@ -485,7 +489,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 换新模板。
         /// </summary>
-        /// <param name="template"></param>
+        /// <param _Name="template"></param>
         public void ChangeTemplate(GameItemTemplate template)
         {
             var keysBoth = Properties.Keys.Intersect(template.Properties.Keys).ToArray();
@@ -569,6 +573,7 @@ namespace GuangYuan.GY001.UserDb
                 //foreach (var item in removeItems)
                 //    ExtendProperties.Remove(item);
             }
+
             base.PrepareSaving(db);
         }
 
@@ -620,7 +625,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param _Name="obj"></param>
         /// <returns>堆叠空余数量，不可堆叠将返回0，不限制将返回<see cref="decimal.MaxValue"/></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public decimal GetNumberOfStackRemainder(this GameItem obj)
@@ -640,7 +645,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 按容器Id化简集合。
         /// </summary>
-        /// <param name="changes"></param>
+        /// <param _Name="changes"></param>
         public static void Reduce(List<ChangeItem> changes)
         {
             if (changes is null)
@@ -775,11 +780,11 @@ namespace GuangYuan.GY001.UserDb
         ///// <summary>
         ///// 
         ///// </summary>
-        ///// <param name="changes"></param>
-        ///// <param name="gameItem">>如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
+        ///// <param _Name="changes"></param>
+        ///// <param _Name="gameItem">>如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
         //public void ChangesToAdds(ICollection<ChangeItem> changes, GameItem gameItem)
         //{
-        //    var cid = (GetContainer(gameItem)?.Id ?? gameItem.ParentId) ?? Guid.Empty;
+        //    var cid = (GetContainer(gameItem)?.Id ?? gameItem.Id) ?? Guid.Empty;
         //    var item = changes.FirstOrDefault(c => c.ContainerId == cid);
         //    if (null == item)
         //    {
@@ -792,11 +797,11 @@ namespace GuangYuan.GY001.UserDb
         ///// <summary>
         ///// 
         ///// </summary>
-        ///// <param name="changes"></param>
-        ///// <param name="gameItem">如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
+        ///// <param _Name="changes"></param>
+        ///// <param _Name="gameItem">如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
         //public void ChangesToChanges(ICollection<ChangeItem> changes, GameItem gameItem)
         //{
-        //    var cid = (GetContainer(gameItem)?.Id ?? gameItem.ParentId) ?? Guid.Empty;
+        //    var cid = (GetContainer(gameItem)?.Id ?? gameItem.Id) ?? Guid.Empty;
         //    var item = changes.FirstOrDefault(c => c.ContainerId == cid);
         //    if (null == item)
         //    {
@@ -809,9 +814,9 @@ namespace GuangYuan.GY001.UserDb
         ///// <summary>
         ///// 
         ///// </summary>
-        ///// <param name="changes"></param>
-        ///// <param name="itemId"></param>
-        ///// <param name="containerId"></param>
+        ///// <param _Name="changes"></param>
+        ///// <param _Name="itemId"></param>
+        ///// <param _Name="containerId"></param>
         //public void ChangesToRemoves(ICollection<ChangeItem> changes, Guid itemId, Guid containerId)
         //{
         //    var item = changes.FirstOrDefault(c => c.ContainerId == containerId);
@@ -856,9 +861,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 追加物品到移除数据中。
         /// </summary>
-        /// <param name="coll"></param>
-        /// <param name="containerId"></param>
-        /// <param name="items"></param>
+        /// <param _Name="coll"></param>
+        /// <param _Name="containerId"></param>
+        /// <param _Name="items"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void AddToRemoves(this ICollection<ChangeItem> coll, Guid containerId, params Guid[] items)
         {
@@ -877,9 +882,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 追加物品到变化数据中。
         /// </summary>
-        /// <param name="coll"></param>
-        /// <param name="containerId"></param>
-        /// <param name="items"></param>
+        /// <param _Name="coll"></param>
+        /// <param _Name="containerId"></param>
+        /// <param _Name="items"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void AddToChanges(this ICollection<ChangeItem> coll, Guid containerId, params GameItem[] items)
         {

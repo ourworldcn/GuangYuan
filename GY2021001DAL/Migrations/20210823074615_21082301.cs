@@ -242,12 +242,12 @@ namespace GuangYuan.GY001.UserDb.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ActionRecords_ParentId_ActionId",
                 table: "ActionRecords",
-                columns: new[] { "ParentId", "ActionId" });
+                columns: new[] { "Id", "ActionId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_ActionRecords_DateTimeUtc_ParentId_ActionId",
                 table: "ActionRecords",
-                columns: new[] { "DateTimeUtc", "ParentId", "ActionId" });
+                columns: new[] { "DateTimeUtc", "Id", "ActionId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CharSpecificExpandProperty_LastLogoutUtc",
@@ -314,7 +314,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_GameItems_ParentId",
                 table: "GameItems",
-                column: "ParentId");
+                column: "Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GameItems_TemplateId",

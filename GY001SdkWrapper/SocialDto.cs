@@ -83,6 +83,32 @@ namespace Game.Social
     }
 
     /// <summary>
+    /// 邮件地址的类型。
+    /// </summary>
+    public enum MailAddressKindDto
+    {
+        /// <summary>
+        /// 该地址对象是一个发送人的地址。
+        /// </summary>
+        From = 1,
+        /// <summary>
+        /// 该地址对象是一个收件人的地址。
+        /// </summary>
+        To = 2,
+
+        /// <summary>
+        /// 保留未用。
+        /// </summary>
+        CC = 4,
+
+        /// <summary>
+        /// 保留未用。
+        /// </summary>
+        SC = 8,
+    }
+
+
+    /// <summary>
     /// 邮件地址的传输对象。
     /// </summary>
     [DataContract]
@@ -107,7 +133,7 @@ namespace Game.Social
         /// 这个地址的类型。
         /// </summary>
         [DataMember]
-        public MailAddressKind Kind { get; set; }
+        public MailAddressKindDto Kind { get; set; }
     }
 
     /// <summary>
@@ -259,63 +285,4 @@ namespace Game.Social
         AlreadyBlack,
     }
 
-    /// <summary>
-    /// 关系对象扩展方法封装类。
-    /// </summary>
-    public static class GameSocialRelationshipExtensions
-    {
-        /// <summary>
-        /// 获取指示，该对象是否是一个黑名单。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        static public bool IsBlack(this GameSocialRelationship obj) =>
-             obj.Flag < SocialConstant.MiddleFriendliness - 5 && obj.Flag >= SocialConstant.MinFriendliness;
-
-        /// <summary>
-        /// 获取指示，该对象是否指示了一个好友。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        static public bool IsFriendOrRequesting(this GameSocialRelationship obj) =>
-             obj.Flag > SocialConstant.MiddleFriendliness + 5 && obj.Flag <= SocialConstant.MaxFriendliness;
-
-        /// <summary>
-        /// 获取指示，该对象是否是一个已经确定的好友。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        static public bool IsFriend(this GameSocialRelationship obj) =>
-             obj.IsFriendOrRequesting() && obj.Properties.GetDecimalOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero) != decimal.Zero;
-
-        /// <summary>
-        /// 设置该对象表示好友关系。
-        /// </summary>
-        /// <param name="obj"></param>
-        static public void SetFriend(this GameSocialRelationship obj) => obj.Flag = SocialConstant.MiddleFriendliness + 6;
-
-        /// <summary>
-        /// 设置该对象指示，中立关系。
-        /// </summary>
-        /// <param name="obj"></param>
-        static public void SetNeutrally(this GameSocialRelationship obj) => obj.Flag = SocialConstant.MiddleFriendliness;
-
-        /// <summary>
-        /// 设置该对象指示，黑名单关系。
-        /// </summary>
-        /// <param name="obj"></param>
-        static public void SetBlack(this GameSocialRelationship obj) => obj.Flag = SocialConstant.MiddleFriendliness - 6;
-
-        /// <summary>
-        /// 设置正在申请标志。
-        /// </summary>
-        /// <param name="obj"></param>
-        static public void SetRequesting(this GameSocialRelationship obj) => obj.Properties[SocialConstant.ConfirmedFriendPName] = decimal.Zero;
-
-        /// <summary>
-        /// 设置确定标志。
-        /// </summary>
-        /// <param name="obj"></param>
-        static public void SetConfirmed(this GameSocialRelationship obj) => obj.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
-    }
 }

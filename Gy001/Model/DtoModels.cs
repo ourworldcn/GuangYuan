@@ -1750,7 +1750,7 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// GetCharSummary 接口返回值封装类。
+    /// GetCharIdsForRequestFriend 接口返回值封装类。
     /// </summary>
     [DataContract]
     public class GetCharSummaryReturnDto : ReturnDtoBase
@@ -1818,6 +1818,10 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public DateTime? LastLogoutDatetime { get; set; }
+
+        [DataMember]
+        public List<GameItemDto> HomelandShows { get;  set; } = new List<GameItemDto>();
+
     }
 
     /// <summary>

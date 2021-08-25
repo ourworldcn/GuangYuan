@@ -435,7 +435,7 @@ namespace GuangYuan.GY001.BLL
             //    else
             //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, stcs.Sum() + stcMucai);
             //}
-            //将坐骑羊放入展示宠物
+            //将坐骑入展示宠物
             var sheepBodyTId = new Guid("BBC9FE07-29BD-486D-8AD6-B99DB0BD07D6");
             var gim = service.GetRequiredService<GameItemManager>();
             var showMount = gameChar.GetZuojiBag().Children.FirstOrDefault();
