@@ -53,7 +53,7 @@ namespace OW.Game.Store
     /// <summary>
     /// 玩家数据对象的基类。
     /// </summary>
-    public abstract class GameObjectBase : SimpleExtendPropertyBase
+    public abstract class GameObjectBase : SimpleExtendPropertyBase, IDisposable
     {
         /// <summary>
         /// <inheritdoc/>
@@ -107,6 +107,26 @@ namespace OW.Game.Store
             }
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _Base64IdString = null;
+                _IdString = null;
+                base.Dispose(disposing);
+            }
+        }
         #region 事件及相关
 
         #endregion 事件及相关

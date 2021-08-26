@@ -82,7 +82,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<DateTime>("DateTimeUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("ParentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PropertiesString")
@@ -95,9 +95,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("ActionId");
 
-                    b.HasIndex("Id", "ActionId");
+                    b.HasIndex("ParentId", "ActionId");
 
-                    b.HasIndex("DateTimeUtc", "Id", "ActionId");
+                    b.HasIndex("DateTimeUtc", "ParentId", "ActionId");
 
                     b.ToTable("ActionRecords");
                 });
@@ -161,14 +161,14 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<double>("DoubleValue")
                         .HasColumnType("float");
 
-                    b.Property<Guid?>("GameCharId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("GameItemId")
+                    b.Property<Guid?>("GuidValue")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("IntValue")
                         .HasColumnType("int");
+
+                    b.Property<string>("PropertiesString")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("StringValue")
                         .HasColumnType("nvarchar(256)")
@@ -178,10 +178,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id", "Name");
-
-                    b.HasIndex("GameCharId");
-
-                    b.HasIndex("GameItemId");
 
                     b.ToTable("ExtendProperties");
                 });
@@ -203,7 +199,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid?>("OwnerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("Id")
+                    b.Property<Guid?>("ParentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PropertiesString")
@@ -216,7 +212,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.HasIndex("Id");
+                    b.HasIndex("ParentId");
 
                     b.HasIndex("TemplateId");
 
@@ -389,22 +385,11 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("GuangYuan.GY001.UserDb.GameExtendProperty", b =>
-                {
-                    b.HasOne("GuangYuan.GY001.UserDb.GameChar", null)
-                        .WithMany("ExtendProperties")
-                        .HasForeignKey("GameCharId");
-
-                    b.HasOne("GuangYuan.GY001.UserDb.GameItem", null)
-                        .WithMany("ExtendProperties")
-                        .HasForeignKey("GameItemId");
-                });
-
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameItem", b =>
                 {
                     b.HasOne("GuangYuan.GY001.UserDb.GameItem", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("Id");
+                        .HasForeignKey("ParentId");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameMailAddress", b =>

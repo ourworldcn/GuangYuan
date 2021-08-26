@@ -339,6 +339,40 @@ namespace Gy001.Controllers
         }
 
         /// <summary>
+        /// 移除黑名单。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpDelete]
+        public ActionResult<RemoveBlackReturnDto> RemoveBlack(RemoveBlackParamsDto model)
+        {
+            var result = new RemoveBlackReturnDto();
+            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            {
+                return Unauthorized("令牌无效");
+            }
+            try
+            {
+                if (!_World.SocialManager.RemoveBlack(gu.CurrentChar, GameHelper.FromBase64String(model.CharId)))
+                {
+                    result.HasError = true;
+                    result.DebugMessage = VWorld.GetLastErrorMessage();
+                }
+            }
+            catch (Exception err)
+            {
+                result.HasError = true;
+                result.DebugMessage = err.Message;
+            }
+            finally
+            {
+                _World.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 进行社交互动的通用接口。
         /// </summary>
         /// <param name="model">参见 InteractParamsDto 说明。</param>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
@@ -33,38 +34,6 @@ namespace GuangYuan.GY001.UserDb
 
         }
 
-        #region IDisposable 接口相关
-        private bool disposedValue;
-
-        protected override void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: 释放托管状态(托管对象)
-                    CurrentChar?.Dispose();
-                    DbContext?.Dispose();
-                }
-
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
-                CurrentChar = null;
-                _GameChars = null;
-                disposedValue = true;
-                base.Dispose(disposing);
-            }
-
-        }
-
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~GameUser()
-        // {
-        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-        //     Dispose(disposing: false);
-        // }
-
-        #endregion IDisposable 接口相关
 
         /// <summary>
         /// 登录名。
@@ -111,12 +80,6 @@ namespace GuangYuan.GY001.UserDb
         public DateTime LastModifyDateTimeUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// 该对象是否有效。
-        /// </summary>
-        [NotMapped]
-        public bool IsDisposed { get => disposedValue; }
-
-        /// <summary>
         /// 管理该用户数据存储的上下文。
         /// </summary>
         [NotMapped]
@@ -137,6 +100,43 @@ namespace GuangYuan.GY001.UserDb
 
         #endregion 非数据库属性
 
+        #region IDisposable 接口相关
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    CurrentChar?.Dispose();
+                    DbContext?.Dispose();
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                CurrentChar = null;
+                _GameChars = null;
+                DbContext = null;
+                Services = null;
+                base.Dispose(disposing);
+            }
+
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~GameUser()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        #endregion IDisposable 接口相关
+
         #region 事件
 
         /// <summary>
@@ -155,6 +155,26 @@ namespace GuangYuan.GY001.UserDb
         public void InvokeLogouting(LogoutReason e)
         {
             OnLogouting(e);
+        }
+
+        /// <summary>
+        /// 从数据库中加载到内存后调用。
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="context"></param>
+        public void InvokeLoaded(IServiceProvider service, DbContext context)
+        {
+        }
+
+        /// <summary>
+        /// 首次创建后调用。
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="context"></param>
+        public void InvokeCreated(IServiceProvider service, DbContext context)
+        {
+            Services = service;
+            DbContext = context;
         }
         #endregion 事件
     }

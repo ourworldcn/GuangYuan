@@ -1,6 +1,8 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -72,6 +74,11 @@ namespace GuangYuan.GY001.BLL
         private readonly CancellationTokenSource _CancellationTokenSource = new CancellationTokenSource();
 
         /// <summary>
+        /// 此标志发出信号表示虚拟世界已经因为某种原因请求退出。
+        /// </summary>
+        public CancellationTokenSource CancellationTokenSource => _CancellationTokenSource;
+
+        /// <summary>
         /// 该游戏世界因为种种原因已经请求卸载。
         /// </summary>
         public CancellationToken RequestShutdown;
@@ -91,6 +98,76 @@ namespace GuangYuan.GY001.BLL
         #endregion 构造函数
 
         #region 属性及相关
+
+
+        GameUserContext _UserContext;
+
+        /// <summary>
+        /// 一个公用的数据库上下文。
+        /// 特别地！使用之前必须锁定该对象，且一旦释放，应假设有后台线程会立即试图保存，然后清空所有跟踪对象！
+        /// 对此对象调用<see cref="Monitor.PulseAll(object)"/>可以加速保存线程获取锁。
+        /// </summary>
+        public GameUserContext UserContext
+        {
+            get
+            {
+                if (_UserContext is null)
+                    lock (this)
+                        if (_UserContext is null)
+                        {
+                            _UserContext = CreateNewUserDbContext();
+                            Thread thread = new Thread(DbSaveFunc)
+                            {
+                                IsBackground = false,
+                                Priority = ThreadPriority.Lowest
+                            };
+                            thread.Start();
+                        }
+                return _UserContext;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        private void DbSaveFunc(object obj)
+        {
+            var ct = CancellationTokenSource.Token;
+            var logger = Services.GetService<ILogger<VWorld>>();
+            logger.LogDebug($"[{DateTime.UtcNow:s}]DbSaveFunc启动");
+            lock (_UserContext)
+            {
+                while (!CancellationTokenSource.IsCancellationRequested)
+                {
+                    try
+                    {
+                        if (Monitor.Wait(_UserContext, 2000) /*|| IsHit(0.2)*/)
+                        {
+                            var xx = _UserContext.Set<GameItem>().FirstOrDefault();
+                            _UserContext.SaveChanges();
+                            ClearDb(_UserContext);
+                        }
+                    }
+                    catch (Exception err)
+                    {
+                        logger.LogError($"公用用户数据库上下文保存数据时出错——{err.Message}");
+                    }
+                }
+            }
+        }
+
+        void ClearDb(DbContext db)
+        {
+            var coll = db.ChangeTracker.Entries().ToArray();
+            foreach (var item in coll)
+            {
+                var obj = db.Entry(item.Entity);
+                obj.State = EntityState.Detached;
+            }
+            db.SaveChanges();
+        }
+
         private GameItemTemplateManager _ItemTemplateManager;
         public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= Services.GetRequiredService<GameItemTemplateManager>(); }
 
@@ -365,7 +442,7 @@ namespace GuangYuan.GY001.BLL
             }
             try
             {
-                for (int i = start; i < 5000; i++)
+                for (int i = start; i < 15000; i++)
                 {
                     try
                     {
@@ -375,23 +452,22 @@ namespace GuangYuan.GY001.BLL
                         {
                             continue;
                         }
-                        var gu = world.CharManager.QuicklyRegister(ref pwd, loginName);
+                        using var gu = world.CharManager.QuicklyRegister(ref pwd, loginName);
                         if (gu is null)
                         {
                             i--;
                             continue;
                         }
-                        Task.Factory.StartNew(c => (c as IDisposable)?.Dispose(), gu);
                         if (i % 100 == 0)
                         {
                             logger.LogDebug($"[{DateTime.UtcNow:s}]已经创建了{i}个账号。");
                             Thread.Sleep(1);
                         }
 #if DEBUG
-                        Thread.Sleep(1);
+                        Thread.Sleep(500);
 
 #else
-                            Thread.Sleep(1000);
+                        Thread.Sleep(1000);
 #endif
                     }
                     catch (DbUpdateException err)

@@ -1,65 +1,65 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="GuangYuan.GY001.UserDb.GameSetting" Collapsed="true">
-    <Position X="13.25" Y="2.5" Width="1.5" />
+    <Position X="16" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAACAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameThingPropertyHelper" Collapsed="true">
-    <Position X="16.75" Y="2.5" Width="1.5" />
+    <Position X="19.5" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAIAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.ChangeItem" Collapsed="true">
-    <Position X="13.25" Y="0.5" Width="1.5" />
+    <Position X="16" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AIBAAAAAABAAAAgCgAICAAAAIAAgAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.ChangesItemExtensions" Collapsed="true">
-    <Position X="15" Y="0.5" Width="1.5" />
+    <Position X="17.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACBAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAA=</HashCode>
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.ExtendPropertyDescriptor" Collapsed="true">
-    <Position X="18.5" Y="0.5" Width="1.5" />
+    <Position X="21.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>CIAAAAAAAAAAAAACABAAAAQAAAAACBAAAQAAAAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.FastChangingPropertyExtensions" Collapsed="true">
-    <Position X="15" Y="1.5" Width="1.5" />
+    <Position X="17.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>ABAAAABBAAAAAAAAAQAAAAAAIAAAAAACAAAAAABAgAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameThingBaseExtensions" Collapsed="true">
-    <Position X="15" Y="2.5" Width="1.5" />
+    <Position X="17.75" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAIAAAAAAAAAAAAAIAAAAAAAAAAAACAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameActionRecord" Collapsed="true">
-    <Position X="16.75" Y="1.5" Width="1.5" />
+    <Position X="19.5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAACAAAAAAAAAAAAAAAAAAAIAAAAAAAAgAAAAAAAQA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameItem">
-    <Position X="3" Y="10.5" Width="2" />
+    <Position X="4.25" Y="12.75" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AIBIBAKIACABEAAGAAAEQBQAAAAAAACAIkYAIAAAACg=</HashCode>
+      <HashCode>AIBABAKIACAAEAAGAAAEQBUAAAAAAAAAIkYAAAAAACg=</HashCode>
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -67,20 +67,19 @@
     </ShowAsAssociation>
     <ShowAsCollectionAssociation>
       <Property Name="Children" />
-      <Property Name="ExtendProperties" />
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameItemExtensions" Collapsed="true">
-    <Position X="18.5" Y="1.5" Width="1.5" />
+    <Position X="21.25" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameUser">
-    <Position X="10.75" Y="2.5" Width="1.5" />
+    <Position X="13" Y="3" Width="2" />
     <TypeIdentifier>
-      <HashCode>gMBAAAAAgCAgAAgQAAAQABEAAAAAAAAAAQAAAgIAIAI=</HashCode>
+      <HashCode>gMBAAAAAgCAgAAgQAAAQAAEAAAAAAAAAAQAAAAIAIAI=</HashCode>
       <FileName>GameUser.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
@@ -89,9 +88,9 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameChar">
-    <Position X="5.75" Y="8.75" Width="2" />
+    <Position X="7.5" Y="11" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>BIAIkAgAACABgCAAAAIAAAAgAAAAAACACAAAJIACAFg=</HashCode>
+      <HashCode>BIAIkAgAACAAgCAAAAIAAAEgAAAAAAAACAAABIACABg=</HashCode>
       <FileName>GameChar.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -100,83 +99,83 @@
     </ShowAsAssociation>
     <ShowAsCollectionAssociation>
       <Property Name="GameItems" />
-      <Property Name="ExtendProperties" />
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.ChangesItemSummary" Collapsed="true">
-    <Position X="16.75" Y="0.5" Width="1.5" />
+    <Position X="19.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAGAAAAAAAAIACAAAAAAAAgAAAAIBA=</HashCode>
       <FileName>GameChar.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameObjectBase">
-    <Position X="5.25" Y="0.5" Width="2.25" />
+    <Position X="6.75" Y="0.5" Width="2.25" />
     <TypeIdentifier />
   </Class>
   <Class Name="OW.Game.FastChangingProperty" Collapsed="true">
-    <Position X="13.25" Y="1.5" Width="1.5" />
+    <Position X="16" Y="1.5" Width="1.5" />
     <TypeIdentifier />
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.CharSpecificExpandProperty">
-    <Position X="8.75" Y="9.75" Width="2" />
+    <Position X="11.25" Y="11.75" Width="3" />
     <TypeIdentifier>
       <HashCode>AIAIAAAAAAAAAAAAAAAIAAAAIAAABSAAAAAAJAAAAAI=</HashCode>
       <FileName>CharSpecificExpandProperty.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.UserDb.GameCharBase">
-    <Position X="6" Y="5.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAACAAAAAAAAAEABAAAAAAAAAAAAAAIgAAAAA=</HashCode>
-      <FileName>GameChar.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" />
-  </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameBlueprint">
-    <Position X="8.5" Y="2.5" Width="1.5" />
+    <Position X="10.75" Y="3" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
       <FileName>Blueprint.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameItemBase">
-    <Position X="3.25" Y="5.5" Width="1.5" />
+    <Position X="3.75" Y="7.5" Width="3" />
     <TypeIdentifier>
       <HashCode>BABIAAAAEAAAABAACAAEAICAAAAAAAEAAAAAIQAEAAA=</HashCode>
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameThingBase">
-    <Position X="4.5" Y="2.5" Width="1.5" />
+    <Position X="5.25" Y="3" Width="3.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAEAgAAAAAAAAAAAAAAAAAABAAABAAAAAAAA=</HashCode>
+      <HashCode>AAAIAAAAAEAxAAAAAAAAAAEAAAACAADAAABAIAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
+    <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameExtendProperty">
-    <Position X="0.5" Y="2.5" Width="1.75" />
+    <Position X="0.5" Y="3" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AABAAAAAAAAAAAAEAESAIAQAAAAAAEIgAAAACAAAAAA=</HashCode>
       <FileName>GameExtendProperty.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="GuangYuan.GY001.UserDb.GameCharBase">
+    <Position X="8" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAAAEABAAAAAAAAAAAAAAIgAAAAA=</HashCode>
+      <FileName>GameChar.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
   <Interface Name="GuangYuan.GY001.UserDb.IGameThingHelper" Collapsed="true">
-    <Position X="15" Y="3.75" Width="1.5" />
+    <Position X="17.75" Y="3.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="GuangYuan.GY001.UserDb.IGameItemHelper" Collapsed="true">
-    <Position X="13.25" Y="3.75" Width="1.5" />
+    <Position X="16" Y="3.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Enum Name="GuangYuan.GY001.UserDb.LogoutReason" Collapsed="true">
-    <Position X="13.25" Y="4.75" Width="1.5" />
+    <Position X="16" Y="4.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>gAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIAAAAAAAAAAAA=</HashCode>
       <FileName>GameUser.cs</FileName>

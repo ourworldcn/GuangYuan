@@ -419,7 +419,7 @@ namespace GuangYuan.GY001.UserDb
         public string Remark { get; set; }
     }
 
-    public abstract class GameThingBase : GameObjectBase
+    public abstract class GameThingBase : GameObjectBase, IBeforeSave, IDisposable
     {
         protected GameThingBase()
         {
@@ -447,45 +447,115 @@ namespace GuangYuan.GY001.UserDb
         [NotMapped]
         public abstract DbContext DbContext { get; }
 
+        #region 通用扩展属性及相关
+        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
+
+        /// <summary>
+        /// 扩展属性的封装字典。
+        /// </summary>
+        [NotMapped]
+        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
+        {
+            get
+            {
+                if (_ExtendPropertyDictionary is null)
+                {
+                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
+                    foreach (var item in ExtendProperties)
+                    {
+                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
+                            ExtendPropertyDictionary[tmp.Name] = tmp;
+                    }
+                }
+                return _ExtendPropertyDictionary;
+            }
+        }
+
         /// <summary>
         /// 模板对象。
         /// </summary>
         [NotMapped]
         public GameThingTemplateBase Template { get; set; }
 
-        ObservableCollection<GameExtendProperty> _GameExtendProperties;
+        ObservableCollection<GameExtendProperty> _ExtendProperties;
 
         [NotMapped]
-        public ObservableCollection<GameExtendProperty> GameExtendProperties
+        public ObservableCollection<GameExtendProperty> ExtendProperties
         {
             get
             {
-                if (_GameExtendProperties is null)
+                if (_ExtendProperties is null)
                 {
                     var coll = DbContext.Set<GameExtendProperty>().Where(c => c.Id == Id);
-                    _GameExtendProperties = new ObservableCollection<GameExtendProperty>(coll);
-                    _GameExtendProperties.CollectionChanged += _GameExtendPropertiesCollectionChanged;
+                    _ExtendProperties = new ObservableCollection<GameExtendProperty>(coll);
+                    _ExtendProperties.CollectionChanged += GameExtendPropertiesCollectionChanged;
                 }
-                return _GameExtendProperties;
+                return _ExtendProperties;
             }
         }
 
-        private void _GameExtendPropertiesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void GameExtendPropertiesCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    DbContext.Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    DbContext.Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
+                    DbContext.Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
+                    DbContext.Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    DbContext.Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
+                    DbContext.Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
                     break;
                 default:
                     break;
+            }
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="db"></param>
+        public override void PrepareSaving(DbContext db)
+        {
+            if (null != _ExtendPropertyDictionary) //若需要写入
+            {
+                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
+                //TO DO
+                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
+                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
+                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
+                //foreach (var item in removeItems)
+                //    ExtendProperties.Remove(item);
+            }
+
+            base.PrepareSaving(db);
+        }
+
+        #endregion 通用扩展属性及相关
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _ExtendPropertyDictionary = null;
+                _ExtendProperties = null;
+                Template = null;
+                base.Dispose(disposing);
             }
         }
     }

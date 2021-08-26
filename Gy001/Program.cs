@@ -47,12 +47,12 @@ namespace Gy001
         private static void Test(IHost host)
         {
             var world = host.Services.GetRequiredService<VWorld>();
-            var db = world.CreateNewUserDbContext();
-            var templates = world.ItemTemplateManager.GetTemplates(c => c.CatalogNumber == 4);
-            var gu = world.CharManager.Login("test101", "test101", "test");
+            //var db = world.CreateNewUserDbContext();
+            //var templates = world.ItemTemplateManager.GetTemplates(c => c.CatalogNumber == 4);
+            //var gu = world.CharManager.Login("test101", "test101", "test");
 
-            var data = new FriendDatas(world, gu.CurrentChar, DateTime.UtcNow);
-            var list = data.RefreshLastList(templates.Select(c => c.Id)).ToList();
+            //var data = new FriendDatas(world, gu.CurrentChar, DateTime.UtcNow);
+            //var list = data.RefreshLastList(templates.Select(c => c.Id)).ToList();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

@@ -145,70 +145,76 @@ namespace GuangYuan.GY001.BLL
         {
             Trace.Assert(cc is null && sc is null);
             var db = World.CreateNewUserDbContext();
-            mail.GenerateIdIfEmpty();
-            IEnumerable<GameMailAddress> tos;
-            if (to.Contains(SocialConstant.ToAllId)) //若是所有人群发所有人
+            try
             {
-                tos = from gc in db.GameChars
-                      select new GameMailAddress()
-                      {
-                          ThingId = gc.Id,
-                          DisplayName = gc.DisplayName,
-                          Kind = MailAddressKind.To,
-                          IsDeleted = false,
-                          Mail = mail,
-                          MailId = mail.Id,
-                      };
-            }
-            else //若是逐个群发
-            {
-                tos = from gc in db.GameChars
-                      where to.Contains(gc.Id)
-                      select new GameMailAddress()
-                      {
-                          ThingId = gc.Id,
-                          DisplayName = gc.DisplayName,
-                          Kind = MailAddressKind.To,
-                          IsDeleted = false,
-                          Mail = mail,
-                          MailId = mail.Id,
-                      };
-            }
-            GameMailAddress sender;
-            if (SocialConstant.FromSystemId == sendId)  //若是系统发送
-            {
-                sender = new GameMailAddress()
+                mail.GenerateIdIfEmpty();
+                IEnumerable<GameMailAddress> tos;
+                if (to.Contains(SocialConstant.ToAllId)) //若是所有人群发所有人
                 {
-                    ThingId = SocialConstant.FromSystemId,
-                    DisplayName = "System",
-                    Kind = MailAddressKind.From,
-                    IsDeleted = false,
-                    Mail = mail,
-                    MailId = mail.Id,
-                };
-                mail.Properties[SocialConstant.FromSystemPNmae] = decimal.One;
-            }
-            else
-            {
-                var tmpChar = db.GameChars.Find(sendId);
-                if (tmpChar is null)
-                    throw new ArgumentException("找不到指定Id的角色。", nameof(sendId));
-                sender = new GameMailAddress()
+                    tos = from gc in db.GameChars
+                          select new GameMailAddress()
+                          {
+                              ThingId = gc.Id,
+                              DisplayName = gc.DisplayName,
+                              Kind = MailAddressKind.To,
+                              IsDeleted = false,
+                              Mail = mail,
+                              MailId = mail.Id,
+                          };
+                }
+                else //若是逐个群发
                 {
-                    ThingId = sendId,
-                    DisplayName = tmpChar.DisplayName,
-                    Kind = MailAddressKind.From,
-                    IsDeleted = false,
-                    Mail = mail,
-                    MailId = mail.Id,
-                };
-                mail.Properties[SocialConstant.FromSystemPNmae] = decimal.Zero;
+                    tos = from gc in db.GameChars
+                          where to.Contains(gc.Id)
+                          select new GameMailAddress()
+                          {
+                              ThingId = gc.Id,
+                              DisplayName = gc.DisplayName,
+                              Kind = MailAddressKind.To,
+                              IsDeleted = false,
+                              Mail = mail,
+                              MailId = mail.Id,
+                          };
+                }
+                GameMailAddress sender;
+                if (SocialConstant.FromSystemId == sendId)  //若是系统发送
+                {
+                    sender = new GameMailAddress()
+                    {
+                        ThingId = SocialConstant.FromSystemId,
+                        DisplayName = "System",
+                        Kind = MailAddressKind.From,
+                        IsDeleted = false,
+                        Mail = mail,
+                        MailId = mail.Id,
+                    };
+                    mail.Properties[SocialConstant.FromSystemPNmae] = decimal.One;
+                }
+                else
+                {
+                    var tmpChar = db.GameChars.Find(sendId);
+                    if (tmpChar is null)
+                        throw new ArgumentException("找不到指定Id的角色。", nameof(sendId));
+                    sender = new GameMailAddress()
+                    {
+                        ThingId = sendId,
+                        DisplayName = tmpChar.DisplayName,
+                        Kind = MailAddressKind.From,
+                        IsDeleted = false,
+                        Mail = mail,
+                        MailId = mail.Id,
+                    };
+                    mail.Properties[SocialConstant.FromSystemPNmae] = decimal.Zero;
+                }
+                //追加相关人
+                mail.Addresses.AddRange(tos);
+                mail.Addresses.Add(sender);
+                db.Mails.Add(mail);
             }
-            //追加相关人
-            mail.Addresses.AddRange(tos);
-            mail.Addresses.Add(sender);
-            db.Mails.Add(mail);
-            db.SaveChangesAsync().ContinueWith((task, dbPara) => (dbPara as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);  //清理
+            finally
+            {
+                db.SaveChangesAsync().ContinueWith((task, dbPara) => (dbPara as DbContext)?.Dispose(), db, TaskContinuationOptions.ExecuteSynchronously);  //清理
+            }
         }
 
         /// <summary>
@@ -377,7 +383,7 @@ namespace GuangYuan.GY001.BLL
         {
             var gameChars = db.Set<GameChar>().Where(c => ids.Contains(c.Id)).ToArray();
             if (gameChars.Length != ids.Count())
-                throw new ArgumentException("至少一个指定的Id不是有效角色Id。",nameof(ids));
+                throw new ArgumentException("至少一个指定的Id不是有效角色Id。", nameof(ids));
             var result = gameChars.Select(c =>
             {
                 var cs = new CharSummary();
@@ -602,10 +608,9 @@ namespace GuangYuan.GY001.BLL
                 VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
                 return false;
             }
-            GY001UserContext db = null;
+            using var db = World.CreateNewUserDbContext();
             try
             {
-                db = World.CreateNewUserDbContext();
                 var gcId = gameChar.Id;
                 var sr = db.SocialRelationships.Find(gcId, friendId);
                 var nsr = db.SocialRelationships.Find(friendId, gcId);
@@ -629,7 +634,6 @@ namespace GuangYuan.GY001.BLL
             }
             finally
             {
-                db?.DisposeAsync();
                 World.CharManager.Unlock(gameChar.GameUser, true);
             }
             return true;
@@ -642,10 +646,9 @@ namespace GuangYuan.GY001.BLL
                 VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
                 return false;
             }
-            GY001UserContext db = null;
+            using var db = World.CreateNewUserDbContext();
             try
             {
-                db = World.CreateNewUserDbContext();
                 var gcId = gameChar.Id;
                 var sr = db.SocialRelationships.Find(gcId, objId);
                 var nsr = db.SocialRelationships.Find(objId, gcId);
@@ -668,13 +671,48 @@ namespace GuangYuan.GY001.BLL
             }
             finally
             {
-                db?.DisposeAsync();
                 World.CharManager.Unlock(gameChar.GameUser, true);
             }
             return true;
 
         }
 
+        /// <summary>
+        /// 移除黑名单。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="objId"></param>
+        /// <returns>true成功移除，false指定角色Id不是黑名单角色。</returns>
+        public bool RemoveBlack(GameChar gameChar, Guid objId)
+        {
+            if (!World.CharManager.Lock(gameChar.GameUser))
+            {
+                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+                return false;
+            }
+            using var db = World.CreateNewUserDbContext();
+            try
+            {
+                var gcId = gameChar.Id;
+                var sr = db.SocialRelationships.Find(gcId, objId);
+                var nsr = db.SocialRelationships.Find(objId, gcId);
+                if (!sr.IsBlack() || !nsr.IsBlack())
+                    return false;
+                sr.SetNeutrally();
+                nsr.SetNeutrally();
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                VWorld.SetLastErrorMessage("并发冲突，请重试一次。");
+                return false;
+            }
+            finally
+            {
+                World.CharManager.Unlock(gameChar.GameUser, true);
+            }
+            return true;
+        }
         #endregion 黑白名单相关
 
         #region 项目特定功能

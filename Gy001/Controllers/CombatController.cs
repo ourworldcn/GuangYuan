@@ -76,53 +76,7 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<CombatEndReturnDto> Test()
         {
-
-            var world = HttpContext.RequestServices.GetService<VWorld>();
-            var gitm = world.ItemTemplateManager;
-            var gim = world.ItemManager;
-            string pwd = "123456";
-            var loginName = world.CharManager.QuicklyRegister(ref pwd).LoginName;
-            var gu = world.CharManager.Login(loginName, pwd, "");
-            var sd = new StartCombatData()
-            {
-                GameChar = gu.CurrentChar,
-                Template = world.ItemTemplateManager.Id2Template.Values.First(c => Convert.ToInt32(c.Properties.GetValueOrDefault("sec", -2m)) == -1),
-            };
-            world.CombatManager.StartCombat(sd);
-
-            EndCombatData endCombatData = new EndCombatData()
-            {
-                GameChar = gu.CurrentChar,
-                EndRequested = true,
-                Template = sd.Template,
-            };
-            var rnd = new Random();
-            //生成金币
-            var gold = gim.CreateGameItem(gitm.GetTemplateFromeId(ProjectConstant.JinbiId));
-            gold.Count = rnd.Next(100);
-            endCombatData.GameItems.Add(gold);
-            //生成符文
-            var shenwen = gitm.Id2Template.Values.Where(c => c.GenusCode >= 15 && c.GenusCode <= 17).ToArray();
-            for (int i = rnd.Next(0, 2) - 1; i >= 0; i--)
-            {
-                var item = gim.CreateGameItem(shenwen[rnd.Next(shenwen.Length)]); item.Count = 2;
-                endCombatData.GameItems.Add(item);
-            }
-            //生成坐骑
-            var heads = gitm.Id2Template.Values.Where(c => c.GenusCode == 3).ToArray();
-            var bodys = gitm.Id2Template.Values.Where(c => c.GenusCode == 4).ToArray();
-            for (int i = rnd.Next(1, 2) - 1; i >= 0; i--)
-            {
-                var item = gim.CreateMounts(heads[rnd.Next(heads.Length)], bodys[rnd.Next(bodys.Length)]);
-                item.Count = 1;
-                item.Properties["neatk"] = VWorld.WorldRandom.Next(20);
-                item.Properties["neqlt"] = VWorld.WorldRandom.Next(20);
-                item.Properties["nemhp"] = VWorld.WorldRandom.Next(20);
-                endCombatData.GameItems.Add(item);
-            }
-            Thread.Sleep(1001);
-            world.CombatManager.EndCombat(endCombatData);
-            return (CombatEndReturnDto)endCombatData;
+            return null;
         }
 #endif
     }

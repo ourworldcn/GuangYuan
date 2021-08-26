@@ -106,7 +106,7 @@ namespace GuangYuan.GY001.BLL
             result.Count ??= template.TryGetPropertyValue(ProjectConstant.StackUpperLimit, out _) ? 0 : 1;
             if (result.Properties.Count > 0)    //若需要改写属性字符串。
                 result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
-            //递归初始化容器
+            //递归初始化子对象
             result.Children.AddRange(template.ChildrenTemplateIds.Select(c => CreateGameItem(c)));
             try
             {

@@ -1688,6 +1688,11 @@
             <see cref="P:GY2021001WebApi.Models.GameActionRecordDto.Properties"/>中存在done且不为0则说明已经战斗过，否则是可战斗的对象。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.RemoveBlackParamsDto.CharId">
+            <summary>
+            要移除的黑名单的角色Id。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -1794,6 +1799,14 @@
         <member name="M:Gy001.Controllers.SocialController.SetBlack(GY2021001WebApi.Models.ModifySrParamsDto)">
             <summary>
             拉黑其他角色。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.RemoveBlack(GY2021001WebApi.Models.RemoveBlackParamsDto)">
+            <summary>
+            移除黑名单。
             </summary>
             <param name="model"></param>
             <returns></returns>

@@ -111,7 +111,7 @@ namespace OW.Game.Store
         public string PropertiesString { get => _PropertiesString; set => _PropertiesString = value; }
 
         private Dictionary<string, object> _Properties;
-        private bool disposedValue;
+        private bool _IsDisposed;
 
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
@@ -132,6 +132,16 @@ namespace OW.Game.Store
         }
 
         /// <summary>
+        /// 对象是否已经被处置。
+        /// </summary>
+        [NotMapped]
+        public bool IsDisposed
+        {
+            get => _IsDisposed;
+            protected set => _IsDisposed = value;
+        }
+
+        /// <summary>
         /// <inheritdoc/>
         /// </summary>
         /// <param name="db"><inheritdoc/></param>
@@ -142,9 +152,13 @@ namespace OW.Game.Store
             PropertiesString = OwHelper.ToPropertiesString(Properties);
         }
 
+        /// <summary>
+        /// 实际处置当前对象的方法。
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_IsDisposed)
             {
                 if (disposing)
                 {
@@ -155,7 +169,7 @@ namespace OW.Game.Store
                 // TODO: 将大型字段设置为 null
                 _Properties = null;
                 _PropertiesString = null;
-                disposedValue = true;
+                _IsDisposed = true;
             }
         }
 

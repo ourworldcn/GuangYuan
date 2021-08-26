@@ -16,7 +16,7 @@ namespace GuangYuan.GY001.UserDb
     /// 游戏内部事物的基类。
     /// </summary>
     [NotMapped]
-    public abstract class GameItemBase : GameThingBase
+    public abstract class GameItemBase : GameThingBase, IDisposable
     {
         #region 构造函数
 
@@ -212,19 +212,6 @@ namespace GuangYuan.GY001.UserDb
         #endregion 扩展属性相关
 
         #region 事件及相关
-        protected virtual void OnSaving(EventArgs e)
-        {
-            try
-            {
-                Saving?.Invoke(this, e);
-            }
-            catch
-            {
-            }
-        }
-
-        public event EventHandler Saving;
-
         /// <summary>
         /// 通知该实例，即将保存到数据库。
         /// </summary>
@@ -234,7 +221,6 @@ namespace GuangYuan.GY001.UserDb
         {
             try
             {
-                OnSaving(EventArgs.Empty);
             }
             catch (Exception)
             {
@@ -270,13 +256,32 @@ namespace GuangYuan.GY001.UserDb
 
         #endregion 事件及相关
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _Name2FastChangingProperty = null;
+                base.Dispose(disposing);
+            }
+        }
     }
 
     /// <summary>
     /// 游戏中物品，装备，货币，积分的基类。
     /// </summary>
     [Table("GameItems")]
-    public class GameItem : GameItemBase
+    public class GameItem : GameItemBase, IDisposable
     {
         /// <summary>
         /// 构造函数。
@@ -538,61 +543,15 @@ namespace GuangYuan.GY001.UserDb
             Template = template;
         }
 
-        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
-
-        /// <summary>
-        /// 扩展属性的封装字典。
-        /// </summary>
-        [NotMapped]
-        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
-        {
-            get
-            {
-                if (_ExtendPropertyDictionary is null)
-                {
-                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
-                    foreach (var item in ExtendProperties)
-                    {
-                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
-                            ExtendPropertyDictionary[tmp.Name] = tmp;
-                    }
-                }
-                return _ExtendPropertyDictionary;
-            }
-        }
-
-        public override void PrepareSaving(DbContext db)
-        {
-            if (null != _ExtendPropertyDictionary) //若需要写入
-            {
-                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
-                //TO DO
-                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
-                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
-                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
-                //foreach (var item in removeItems)
-                //    ExtendProperties.Remove(item);
-            }
-
-            base.PrepareSaving(db);
-        }
-
-        /// <summary>
-        /// 服务器用通用扩展属性集合。
-        /// </summary>
-        public virtual List<GameExtendProperty> ExtendProperties { get; } = new List<GameExtendProperty>();
-
         #region IDisposable接口相关
 
-        private bool _IsDisposed;
-
         /// <summary>
-        /// 对象是否已经被处置。
+        /// <inheritdoc/>
         /// </summary>
-        protected bool IsDisposed => _IsDisposed;
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
-            if (!_IsDisposed)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {
@@ -604,7 +563,6 @@ namespace GuangYuan.GY001.UserDb
                 // TODO: 将大型字段设置为 null
                 Parent = null;
                 _GameChar = null;
-                _IsDisposed = true;
                 base.Dispose(disposing);
             }
         }

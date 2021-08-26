@@ -2103,6 +2103,29 @@ namespace GY2021001WebApi.Models
         public List<GameActionRecordDto> PvpList { get; set; } = new List<GameActionRecordDto>();
     }
 
+    public class RemoveBlackParamsDto : TokenDtoBase
+    {
+        public RemoveBlackParamsDto()
+        {
+        }
+
+        public RemoveBlackParamsDto(string token) : base(token)
+        {
+        }
+
+        /// <summary>
+        /// 要移除的黑名单的角色Id。
+        /// </summary>
+        public string CharId { get; set; }
+    }
+
+    public class RemoveBlackReturnDto : ReturnDtoBase
+    {
+        public RemoveBlackReturnDto()
+        {
+        }
+    }
+
     #endregion 社交相关
 
 }

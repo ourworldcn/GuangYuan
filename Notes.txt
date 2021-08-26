@@ -1,5 +1,5 @@
-Add-Migration 21042501 -Context GY001TemplateContext
-Add-Migration 21042501 -Context GY001UserContext
+Add-Migration 21082501 -Context GY001TemplateContext
+Add-Migration 21082501 -Context GY001UserContext
 
 select * from master.dbo.sysprocesses where dbid = DB_ID('GY2021001Dev') --取活动链接数量
 

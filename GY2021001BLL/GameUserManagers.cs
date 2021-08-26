@@ -216,11 +216,11 @@ namespace GuangYuan.GY001.BLL
                     }
                     catch (DbUpdateConcurrencyException err)
                     {
-                        Trace.WriteLine($"保存数据时出现未知错误{err.Message}");
+                        Trace.WriteLine($"保存数据时出现未知错误——{err.Message}");
                     }
                     catch (Exception err)
                     {
-                        Trace.WriteLine($"保存数据时出现未知错误{err.Message}");
+                        Trace.WriteLine($"保存数据时出现未知错误——{err.Message}");
                         //var coll = OwHelper.GetAllSubItemsOfTree(item.CurrentChar.GameItems, c => c.Children);
                         //var coll2 = coll.Where(c => c.Number == Guid.Empty).ToArray();
                     }
@@ -577,9 +577,9 @@ namespace GuangYuan.GY001.BLL
         /// <param name="pwd"></param>
         /// <param name="db"></param>
         /// <returns></returns>
-        public Task CreateGameUserAsync(string loginName, string pwd, DbContext db)
+        public GameUser CreateGameUserAsync(string loginName, string pwd, string displayName, DbContext db)
         {
-            return Task.CompletedTask;
+            return null;
         }
 
         /// <summary>
@@ -732,10 +732,11 @@ namespace GuangYuan.GY001.BLL
                 else
                     result.Properties[item.Key] = item.Value;
             }
+            result.InitialCreated(user, template);
             result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
                                                                                         //建立关联
-            result.GameUser = user;
-            result.GameUserId = user.Id;
+            //result.GameUser = user;
+            //result.GameUserId = user.Id;
             //初始化容器
             var gim = World.ItemManager;
             var ary = template.ChildrenTemplateIds.Select(c => gim.CreateGameItem(c, result.Id)).ToArray();
@@ -759,7 +760,6 @@ namespace GuangYuan.GY001.BLL
                 //stc += coll.Sum(c => c.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, decimal.Zero));
                 //mucai.SetPropertyValue("stc", stc);
                 //调用外部初始化
-                result.InitialCreation();
                 var dirty = Options?.CharCreated?.Invoke(Services, result);
             }
             catch (Exception)

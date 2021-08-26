@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GuangYuan.GY001.TemplateDb;
+using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Store;
 using System;
@@ -46,8 +47,23 @@ namespace GuangYuan.GY001.UserDb
         /// 一个角色初始创建时被调用。
         /// 通常这里预制一些道具，装备。
         /// </summary>
-        public void InitialCreation()
+        /// <param name="user">一个已经初始化完毕的用户对象，新建的角色属于该用户。</param>
+        /// <param name="template">使用这个模板初始化角色。</param>
+        public void InitialCreated(GameUser user,GameItemTemplate template)
         {
+            //初始化用户导航
+            user.GameChars.Add(this);
+            GameUserId = user.Id;
+            GameUser = user;
+            //初始化模板导航
+            TemplateId = template.Id;
+            Template = template;
+            //初始化子对象
+            //var ary = template.ChildrenTemplateIds.Select(c => gim.CreateGameItem(c, result.Id)).ToArray();
+            //_GameItems.AddRange();
+            //user.DbContext.Set<GameItem>().AddRange(ary);
+
+            //template.ChildrenTemplateIds
             //foreach (var item in GameItems)
             //    item.GameChar = this;
         }
@@ -92,16 +108,6 @@ namespace GuangYuan.GY001.UserDb
                         yield return item2;
                 }
             }
-        }
-
-        /// <summary>
-        /// 获取该物品直接或间接下属对象的枚举数。广度优先。
-        /// </summary>
-        /// <returns>枚举数。不包含自己。枚举过程中不能更改树节点的关系。</returns>
-        [NotMapped]
-        public IEnumerable<GameItem> AllChildrenWithBfs
-        {
-            get => OwHelper.GetAllSubItemsOfTreeWithBfs(c => c.Children, GameItems.ToArray());
         }
 
         /// <summary>
@@ -155,18 +161,12 @@ namespace GuangYuan.GY001.UserDb
             }
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="db"></param>
         public override void PrepareSaving(DbContext db)
         {
-            if (null != _ExtendPropertyDictionary) //若需要写入
-            {
-                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
-                //TO DO
-                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Name).Except(
-                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
-                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Name)).ToArray();
-                //foreach (var item in removeItems)
-                //    ExtendProperties.Remove(item);
-            }
             if (_ChangesItems != null)    //若需要序列化变化属性
             {
                 var exProp = ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);
@@ -197,6 +197,10 @@ namespace GuangYuan.GY001.UserDb
 
         #region IDisposable接口相关
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             if (!IsDisposed)
@@ -204,55 +208,21 @@ namespace GuangYuan.GY001.UserDb
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    _GameItems.ForEach(c => c.Dispose());
+                    _GameItems?.ForEach(c => (c as IDisposable)?.Dispose());  //对独占拥有的子对象调用处置
                 }
-                OnDisposed(EventArgs.Empty);
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
                 _GameItems = null;
                 _ChangesItems = null;
+                GameUser = null;
+                SpecificExpandProperties = null;
                 base.Dispose(disposing);
             }
         }
 
-        virtual protected void OnDisposed(EventArgs e)
-        {
-            Disposed?.Invoke(this, e);
-        }
-
         /// <summary>
-        /// 对象已经被处置。
+        /// 获取此对象所处的用户数据库上下文对象。
         /// </summary>
-        public event EventHandler Disposed;
-
-        /// <summary>
-        /// 服务器用通用扩展属性集合。
-        /// </summary>
-        public virtual List<GameExtendProperty> ExtendProperties { get; } = new List<GameExtendProperty>();
-
-        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
-
-        /// <summary>
-        /// 扩展属性的封装字典。
-        /// </summary>
-        [NotMapped]
-        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
-        {
-            get
-            {
-                if (_ExtendPropertyDictionary is null)
-                {
-                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
-                    foreach (var item in ExtendProperties)
-                    {
-                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
-                            ExtendPropertyDictionary[tmp.Name] = tmp;
-                    }
-                }
-                return _ExtendPropertyDictionary;
-            }
-        }
-
         [NotMapped]
         public override DbContext DbContext => GameUser.DbContext;
 
@@ -327,11 +297,13 @@ namespace GuangYuan.GY001.UserDb
         public DateTime DateTimeUtc { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public abstract class GameCharBase : GameThingBase, IDisposable
     {
 
         private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
-        private bool disposedValue;
 
         protected GameCharBase()
         {
@@ -340,11 +312,6 @@ namespace GuangYuan.GY001.UserDb
         protected GameCharBase(Guid id) : base(id)
         {
         }
-
-        /// <summary>
-        /// 对象是否已经被处置。
-        /// </summary>
-        protected bool IsDisposed => disposedValue;
 
         /// <summary>
         /// 快速变化属性。
@@ -374,7 +341,7 @@ namespace GuangYuan.GY001.UserDb
 
         protected override void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {
@@ -383,7 +350,7 @@ namespace GuangYuan.GY001.UserDb
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                disposedValue = true;
+                _Name2FastChangingProperty = null;
                 base.Dispose(disposing);
             }
         }
