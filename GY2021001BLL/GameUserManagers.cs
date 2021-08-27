@@ -29,11 +29,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 角色被创建后调用。
-        /// </summary>
-        public Func<IServiceProvider, GameChar, bool> CharCreated { get; set; }
-
-        /// <summary>
         /// 默认锁定超时。单位：秒
         /// 在指定时间内无法锁定对象就返回失败。
         /// </summary>
@@ -515,15 +510,14 @@ namespace GuangYuan.GY001.BLL
                 //生成返回值
                 var rnd = new Random();
                 var dt = DateTime.Now;
-                if (string.IsNullOrEmpty(loginName)) //若需要生成登录名
+                if (string.IsNullOrWhiteSpace(loginName)) //若需要生成登录名
                 {
-                    result.LoginName = $"gy{dt.Year % 100:00}{dt.Month:00}{dt.Day:00}{GetQuicklyRegisterSuffixSeq() % 1000000:000000}";
+                    loginName = $"gy{dt.Year % 100:00}{dt.Month:00}{dt.Day:00}{GetQuicklyRegisterSuffixSeq() % 1000000:000000}";
                 }
                 else
                 {
                     if (db.GameUsers.Any(c => c.LoginName == result.LoginName))
                         return null;
-                    result.LoginName = loginName;
                 }
                 if (string.IsNullOrEmpty(pwd))   //若需要生成密码
                 {
@@ -541,30 +535,7 @@ namespace GuangYuan.GY001.BLL
                     pwd = sb.ToString();
                 }
                 //存储角色信息
-                var hash = Services.GetService<HashAlgorithm>();
-                var pwdHash = hash.ComputeHash(Encoding.UTF8.GetBytes(pwd));
-                result.LoginName = result.LoginName;
-                result.PwdHash = pwdHash;
-                result.DbContext = db;
-
-                var vw = World;
-                var charTemplate = ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
-                var gc = CreateChar(charTemplate, result);
-                result.GameChars.Add(gc);
-                result.CurrentChar = result.GameChars[0];
-                db.GameUsers.Add(result);
-                //生成缓存数据
-                var sep = new CharSpecificExpandProperty
-                {
-                    CharLevel = (int)gc.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName),
-                    LastPvpScore = 1000,
-                    PvpScore = 1000,
-                    Id = gc.Id,
-                    FrinedCount = 0,
-                    FrinedMaxCount = 10,
-                    LastLogoutUtc = DateTime.UtcNow,
-                };
-                db.Add(sep);
+                result.Initialize(Services, loginName, pwd, db);
                 db.SaveChanges();
             }
             return result;
@@ -698,74 +669,6 @@ namespace GuangYuan.GY001.BLL
                 _DirtyUsers.Enqueue(gu);
             }
             return true;
-        }
-
-        /// <summary>
-        /// 创建一个角色对象。此对象没有加入上下文，调用者需要自己存储。
-        /// 特别地，GameChar.Children中的元素需要额外加入，这个属性当前不是自动导航属性。
-        /// </summary>
-        /// <param name="template"></param>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        public GameChar CreateChar(GameItemTemplate template, GameUser user)
-        {
-            var result = new GameChar()
-            {
-                TemplateId = template.Id,
-            };
-            //初始化级别
-            decimal lv;
-            if (!result.Properties.TryGetValue(ProjectConstant.LevelPropertyName, out object lvObj))
-            {
-                lv = 0;
-                result.Properties[ProjectConstant.LevelPropertyName] = lv;
-            }
-            else
-                lv = (decimal)lvObj;
-            //初始化属性
-            foreach (var item in template.Properties)
-            {
-                if (item.Value is decimal[] seq)   //若是属性序列
-                {
-                    result.Properties[item.Key] = seq[(int)lv];
-                }
-                else
-                    result.Properties[item.Key] = item.Value;
-            }
-            result.InitialCreated(user, template);
-            result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
-                                                                                        //建立关联
-            //result.GameUser = user;
-            //result.GameUserId = user.Id;
-            //初始化容器
-            var gim = World.ItemManager;
-            var ary = template.ChildrenTemplateIds.Select(c => gim.CreateGameItem(c, result.Id)).ToArray();
-            user.DbContext.Set<GameItem>().AddRange(ary);
-            //user.DbContext.Set<GameItem>().Where(c => c.OwnerId == ).Include(c => c.Children).ThenInclude(c => c.Children).ToList();
-            result.GameItems.AddRange(ary);
-            user.DbContext.Add(new GameActionRecord
-            {
-                ParentId = result.Id,
-                ActionId = "Created",
-                PropertiesString = $"CreateBy=CreateChar",
-            });
-
-            //调用外部创建委托
-            try
-            {
-                //初始化木材堆叠问题
-                //var mucai = result.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
-                //var coll = result.AllChildren.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);    //木材仓库
-                //var stc = mucai.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, decimal.Zero);
-                //stc += coll.Sum(c => c.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, decimal.Zero));
-                //mucai.SetPropertyValue("stc", stc);
-                //调用外部初始化
-                var dirty = Options?.CharCreated?.Invoke(Services, result);
-            }
-            catch (Exception)
-            {
-            }
-            return result;
         }
 
         /// <summary>

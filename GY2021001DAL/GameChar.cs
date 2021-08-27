@@ -43,32 +43,53 @@ namespace GuangYuan.GY001.UserDb
 
         //public Action<object,string> LazyLoader { get; set; }
 
-        /// <summary>
-        /// 一个角色初始创建时被调用。
-        /// 通常这里预制一些道具，装备。
-        /// </summary>
-        /// <param name="user">一个已经初始化完毕的用户对象，新建的角色属于该用户。</param>
-        /// <param name="template">使用这个模板初始化角色。</param>
-        public void InitialCreated(GameUser user,GameItemTemplate template)
-        {
-            //初始化用户导航
-            user.GameChars.Add(this);
-            GameUserId = user.Id;
-            GameUser = user;
-            //初始化模板导航
-            TemplateId = template.Id;
-            Template = template;
-            //初始化子对象
-            //var ary = template.ChildrenTemplateIds.Select(c => gim.CreateGameItem(c, result.Id)).ToArray();
-            //_GameItems.AddRange();
-            //user.DbContext.Set<GameItem>().AddRange(ary);
-
-            //template.ChildrenTemplateIds
-            //foreach (var item in GameItems)
-            //    item.GameChar = this;
-        }
-
         private List<GameItem> _GameItems;
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="parameters"><inheritdoc/>。另外额外需要user指定其所属的用户对象。</param>
+        /// <exception cref="InvalidOperationException">缺少键值指定该对象所属的<see cref="GameUser"/>对象。</exception>
+        protected override void InitializeCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
+        {
+            base.InitializeCore(service, parameters);
+            //初始化本类型特殊数据
+            if (parameters.TryGetValue("user", out var obj) && obj is GameUser gu)
+            {
+                GameUserId = gu.Id;
+                GameUser = gu;
+            }
+            else
+                throw new InvalidOperationException($"缺少键值指定该对象所属的{nameof(GameUser)}对象。");
+            var db = DbContext;
+            //追加子对象
+            if (Template.ChildrenTemplateIds.Count > 0)
+            {
+                Dictionary<string, object> dic = new Dictionary<string, object>()
+                {
+                    {"owner",this },
+                };
+                _GameItems ??= new List<GameItem>();
+                _GameItems.AddRange(Template.ChildrenTemplateIds.Select(c =>
+                {
+                    dic["tid"] = c;
+                    GameItem gameItem = new GameItem();
+                    gameItem.Initialize(service, dic);
+                    return gameItem;
+                }));
+                db.AddRange(_GameItems); //将直接孩子加入数据库
+            }
+            db.Add(new GameActionRecord
+            {
+                ParentId = Id,
+                ActionId = "Created",
+                PropertiesString = $"CreateBy=CreateChar",
+            });
+            //调用项目初始化函数
+            var init = service.GetService(typeof(IGameObjectInitializer)) as IGameObjectInitializer;
+            init?.Created(this);
+        }
 
         /// <summary>
         /// 直接拥有的事物。
@@ -81,7 +102,7 @@ namespace GuangYuan.GY001.UserDb
             {
                 if (null == _GameItems)
                 {
-                    _GameItems = GameUser.DbContext.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ToList();
+                    _GameItems = DbContext.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ToList();
                     _GameItems.ForEach(c => c.GameChar = this);
                 }
                 return _GameItems;
@@ -144,7 +165,7 @@ namespace GuangYuan.GY001.UserDb
         {
             var db = GameUser.DbContext;
             //加载所属物品对象
-            _GameItems ??= db.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ThenInclude(c => c.Children).Include(c => c.ExtendProperties).ToList();
+            _GameItems ??= db.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ThenInclude(c => c.Children).ToList();
             foreach (var item in _GameItems)
             {
                 item.GameChar = this;

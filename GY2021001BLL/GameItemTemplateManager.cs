@@ -113,7 +113,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>null如果没有找到指定的<paramref name="seqPropName"/>名称的属性或，该属性不是序列属性。</returns>
         public string GetIndexPropName(GameItemTemplate template, string seqPropName)
         {
-            if (!template.Properties.TryGetValue(seqPropName, out object obj) || !(obj is decimal[] seq))
+            if (!template.Properties.TryGetValue(seqPropName, out object obj) || !(obj is decimal[] ))
                 return null;
             var pn = $"{ProjectConstant.LevelPropertyName}{seqPropName}";
             if (template.Properties.ContainsKey(pn))

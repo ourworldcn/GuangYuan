@@ -118,7 +118,7 @@ namespace GuangYuan.GY001.BLL
 #if DEBUG
             result.Properties["tname"] = template.DisplayName;
 #endif
-            result.InvokeCreated(Services);
+            //result.InvokeCreated(Services);
             return result;
         }
 

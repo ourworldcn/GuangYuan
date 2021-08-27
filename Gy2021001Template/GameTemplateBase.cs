@@ -167,6 +167,7 @@ namespace GuangYuan.GY001.TemplateDb
             var tmp = Id.ToString();
             return $"{DisplayName}(Properties.Count = {Properties.Count}, Id = {{{tmp[0..4]}...{tmp[^4..^0]}}})";
         }
+
     }
 
     static public class GameThingTemplateBaseExtensons
@@ -231,6 +232,23 @@ namespace GuangYuan.GY001.TemplateDb
             result = ary[level];
             return true;
         }
+
+        /// <summary>
+        /// 获取指定名字序列属性的索引属性名，如果没有找到则考虑使用lv。
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="seqPropName">序列属性的名称。</param>
+        /// <returns></returns>
+        public static string GetIndexPropName(this GameThingTemplateBase template, string seqPropName)
+        {
+            if (!template.Properties.TryGetValue(seqPropName, out object obj) || !(obj is decimal[]))
+                return null;
+            var pn = $"{GameThingTemplateBase.LevelPrefix}{seqPropName}";
+            if (template.Properties.ContainsKey(pn))
+                return pn;
+            return GameThingTemplateBase.LevelPrefix;
+        }
+
 
     }
 }

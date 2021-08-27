@@ -243,17 +243,6 @@ namespace GuangYuan.GY001.UserDb
             Template = helper.GetTemplateFromeId(TemplateId);
         }
 
-        /// <summary>
-        /// 引发<see cref="Created"/>事件。
-        /// </summary>
-        /// <param _Name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void InvokeCreated(IServiceProvider services)
-        {
-            var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
-            Template = helper.GetTemplateFromeId(TemplateId);
-        }
-
         #endregion 事件及相关
 
         /// <summary>
@@ -576,6 +565,66 @@ namespace GuangYuan.GY001.UserDb
 
         #endregion IDisposable接口相关
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="tid"></param>
+        /// <param name="parent">省略则不指定父对象。</param>
+        public void Initialize(IServiceProvider service, Guid tid, GameThingBase parent = null)
+        {
+            var dic = new Dictionary<string, object>
+            {
+                {"tid",tid },
+            };
+            if (parent is GameItem gi)
+                dic["parent"] = gi;
+            else if (null != parent)
+                dic["owner"] = parent;
+            Initialize(service, dic);
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="service"><inheritdoc/></param>
+        /// <param name="parameters"><inheritdoc/>。另外可以用parent或owner键指定其父对象。若都没有则不设置父的导航关系。
+        /// owner可以是<see cref="GuidKeyObjectBase"/>的派生类，也可以是一个<see cref="Guid"/>对象</param>
+        protected override void InitializeCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
+        {
+            base.InitializeCore(service, parameters);
+            //设置本类型特有属性
+            Count ??= Template.Properties.ContainsKey(StackUpperLimit) ? 0 : 1;
+            if (parameters.TryGetValue("parent", out var obj) && obj is GameItem gi)
+            {
+                ParentId = gi.Id;
+                Parent = gi;
+            }
+            else if (parameters.TryGetValue("owner", out obj))
+            {
+                OwnerId = obj switch
+                {
+                    _ when obj is GuidKeyObjectBase guidObj => guidObj.Id,
+                    _ when obj is Guid id => id,
+                    _ => throw new ArgumentException($"键值owner的对象只能是{typeof(Guid)}或{typeof(GuidKeyObjectBase)}的派生类。", nameof(parameters)),
+                };
+            }
+            //追加子对象
+            if (Template.ChildrenTemplateIds.Count > 0)
+            {
+                Dictionary<string, object> dic = new Dictionary<string, object>()
+                {
+                    { "parent", this},
+                };
+                Children.AddRange(Template.ChildrenTemplateIds.Select(c =>
+                {
+                    dic["tid"] = c;
+                    var r = new GameItem();
+                    r.Initialize(service, dic);
+                    return r;
+                }));
+            }
+        }
     }
 
     public static class GameItemExtensions

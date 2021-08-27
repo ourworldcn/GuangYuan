@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -47,7 +48,7 @@ namespace Gy001
         private static void Test(IHost host)
         {
             var world = host.Services.GetRequiredService<VWorld>();
-            //var db = world.CreateNewUserDbContext();
+                //var db = world.CreateNewUserDbContext();
             //var templates = world.ItemTemplateManager.GetTemplates(c => c.CatalogNumber == 4);
             //var gu = world.CharManager.Login("test101", "test101", "test");
 

@@ -331,6 +331,188 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
+    /// 项目特定的初始化。
+    /// </summary>
+    public class Gy001Initializer : GameManagerBase<Gy001InitializerOptions>, IGameObjectInitializer
+    {
+        public Gy001Initializer()
+        {
+
+        }
+
+        public Gy001Initializer(IServiceProvider service) : base(service)
+        {
+        }
+
+        public Gy001Initializer(IServiceProvider service, Gy001InitializerOptions options) : base(service, options)
+        {
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="obj"></param>
+        public bool Created(object obj)
+        {
+            if (obj is GameItem gi)
+            {
+
+            }
+            else if (obj is GameChar gc)
+            {
+                return InitializerChar(gc);
+            }
+            else if (obj is GameUser gu)
+            {
+                InitializerUser(gu);
+            }
+            else
+                return false;
+            return true;
+        }
+
+        public bool Loaded(object obj, DbContext context)
+        {
+            if (obj is GameItem gi)
+            {
+
+            }
+            else if (obj is GameChar gc)
+            {
+
+            }
+            else if (obj is GameUser gu)
+            {
+
+            }
+            else
+                return false;
+            return true;
+        }
+
+        public bool InitializerUser(GameUser user)
+        {
+            var gc = new GameChar();
+            user.GameChars.Add(gc);
+            user.CurrentChar = gc;
+            gc.Initialize(Services, new Dictionary<string, object>()
+                {
+                    { "tid",ProjectConstant.CharTemplateId},
+                    { "user",user},
+                });
+            //生成缓存数据
+            var sep = new CharSpecificExpandProperty
+            {
+                CharLevel = (int)gc.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName),
+                LastPvpScore = 1000,
+                PvpScore = 1000,
+                Id = gc.Id,
+                GameChar = gc,
+                FrinedCount = 0,
+                FrinedMaxCount = 10,
+                LastLogoutUtc = DateTime.UtcNow,
+            };
+            gc.SpecificExpandProperties = sep;
+            return true;
+        }
+        /// <summary>
+        /// 角色创建后被调用。
+        /// </summary>
+        /// <param name="gameChar">已经创建的对象。</param>
+        /// 
+        /// <returns></returns>
+        public bool InitializerChar(GameChar gameChar)
+        {
+            var world = World;
+            var gitm = world.ItemTemplateManager;
+            var result = false;
+            //增加坐骑
+            var mountsBagSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);   //坐骑背包槽
+            for (int i = 3001; i < 3002; i++)   //仅增加羊坐骑
+            {
+                var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == i);
+                var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 1000 + i);
+                var mounts = world.ItemManager.CreateMounts(headTemplate, bodyTemplate);
+                world.ItemManager.ForcedAdd(mounts, mountsBagSlot);
+            }
+            //增加神纹
+            var runseSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShenWenSlotId);   //神纹装备槽
+            var templates = world.ItemTemplateManager.Id2Template.Values.Where(c => c.GenusCode == 10);
+            var shenwens = templates.Select(c => world.ItemManager.CreateGameItem(c));
+            foreach (var item in shenwens)
+            {
+                world.ItemManager.ForcedAdd(item, runseSlot);
+            }
+            var db = gameChar.GameUser.DbContext;
+            string displayName;
+            for (displayName = CnNames.GetName(VWorld.IsHit(0.5)); db.Set<GameChar>().Any(c => c.DisplayName == displayName); displayName = CnNames.GetName(VWorld.IsHit(0.5)))
+                ;
+            gameChar.DisplayName ??= displayName;
+            result = true;
+            //修正木材存贮最大量
+            //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
+            //var stcMucai = mucai.GetStc();
+            //if (stcMucai < decimal.MaxValue)
+            //{
+            //    var mucaiStore = gameChar.GetHomeland().Children.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);
+            //    var stcs = mucaiStore.Select(c => c.GetStc());
+            //    if (stcs.Any(c => c == decimal.MaxValue))   //若有任何仓库是最大堆叠
+            //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, -1);
+            //    else
+            //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, stcs.Sum() + stcMucai);
+            //}
+            //将坐骑入展示宠物
+            var sheepBodyTId = new Guid("BBC9FE07-29BD-486D-8AD6-B99DB0BD07D6");
+            var gim = world.ItemManager;
+            var showMount = gameChar.GetZuojiBag().Children.FirstOrDefault();
+            var dic = showMount?.Properties;
+            if (dic != null)
+                dic["for10"] = 0;
+            GameSocialRelationship gsr = new GameSocialRelationship()
+            {
+                Id = gameChar.Id,
+                Id2 = gim.GetBody(showMount).TemplateId,
+                Flag = SocialConstant.HomelandShowFlag,
+            };
+            db.Add(gsr);
+            //发送测试邮件
+            Task.Delay(5000).ContinueWith(c =>
+            {
+                //创建欢迎邮件
+                var mail = new GameMail()
+                {
+                    Subject = "欢迎您加入XXX世界",
+                    Body = "此邮件是测试目的，正式版将删除。",
+                };
+                mail.Attachmentes.Add(new GameMailAttachment()
+                {
+                    PropertiesString = "TName=这是一个测试的附件对象,tid={89A586A8-CD8D-40FF-BDA2-41E68B6EC505},ptid={3D87D1FA-F270-42AB-9241-E30498246947},count=1,desc=tid是送的物品模板id;count是数量;ptid是放入容器的模板Id。",
+                });
+                world.SocialManager.SendMail(mail, new Guid[] { gameChar.Id }, SocialConstant.FromSystemId);
+                for (int i = VWorld.WorldRandom.Next(2) + 1; i >= 0; i--)
+                {
+                    var mail2 = new GameMail()
+                    {
+                        Subject = "测试邮件" + i,
+                        Body = "此邮件是测试目的，正式版将删除。",
+                    };
+                    world.SocialManager.SendMail(mail2, new Guid[] { gameChar.Id }, SocialConstant.FromSystemId);
+                }
+            });
+
+            return result;
+        }
+    }
+
+    public class Gy001InitializerOptions
+    {
+        public Gy001InitializerOptions()
+        {
+
+        }
+    }
+
+    /// <summary>
     /// 封装项目特定逻辑。
     /// </summary>
     public class SpecificProject
@@ -389,93 +571,6 @@ namespace GuangYuan.GY001.BLL
             return dbDirty;
         }
 
-        /// <summary>
-        /// 角色创建后被调用。
-        /// </summary>
-        /// <param name="service">服务提供者。</param>
-        /// <param name="gameChar">已经创建的对象。</param>
-        /// <returns></returns>
-        public static bool CharCreated(IServiceProvider service, GameChar gameChar)
-        {
-            var gitm = service.GetService<GameItemTemplateManager>();
-            var world = service.GetService<VWorld>();
-            var result = false;
-            //增加坐骑
-            var mountsBagSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);   //坐骑背包槽
-            for (int i = 3001; i < 3002; i++)   //仅增加羊坐骑
-            {
-                var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == i);
-                var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 1000 + i);
-                var mounts = world.ItemManager.CreateMounts(headTemplate, bodyTemplate);
-                world.ItemManager.ForcedAdd(mounts, mountsBagSlot);
-            }
-            //增加神纹
-            var runseSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShenWenSlotId);   //神纹装备槽
-            var templates = world.ItemTemplateManager.Id2Template.Values.Where(c => c.GenusCode == 10);
-            var shenwens = templates.Select(c => world.ItemManager.CreateGameItem(c));
-            foreach (var item in shenwens)
-            {
-                world.ItemManager.ForcedAdd(item, runseSlot);
-            }
-            var db = gameChar.GameUser.DbContext;
-            string displayName;
-            for (displayName = CnNames.GetName(VWorld.IsHit(0.5)); db.Set<GameChar>().Any(c => c.DisplayName == displayName); displayName = CnNames.GetName(VWorld.IsHit(0.5)))
-                ;
-            gameChar.DisplayName ??= displayName;
-            result = true;
-            //修正木材存贮最大量
-            //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
-            //var stcMucai = mucai.GetStc();
-            //if (stcMucai < decimal.MaxValue)
-            //{
-            //    var mucaiStore = gameChar.GetHomeland().Children.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);
-            //    var stcs = mucaiStore.Select(c => c.GetStc());
-            //    if (stcs.Any(c => c == decimal.MaxValue))   //若有任何仓库是最大堆叠
-            //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, -1);
-            //    else
-            //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, stcs.Sum() + stcMucai);
-            //}
-            //将坐骑入展示宠物
-            var sheepBodyTId = new Guid("BBC9FE07-29BD-486D-8AD6-B99DB0BD07D6");
-            var gim = service.GetRequiredService<GameItemManager>();
-            var showMount = gameChar.GetZuojiBag().Children.FirstOrDefault();
-            var dic = showMount?.Properties;
-            if (dic != null)
-                dic["for10"] = 0;
-            GameSocialRelationship gsr = new GameSocialRelationship()
-            {
-                Id = gameChar.Id,
-                Id2 = gim.GetBody(showMount).TemplateId,
-                Flag = SocialConstant.HomelandShowFlag,
-            };
-            db.Add(gsr);
-            //发送测试邮件
-            Task.Delay(5000).ContinueWith(c =>
-            {
-                //创建欢迎邮件
-                var mail = new GameMail()
-                {
-                    Subject = "欢迎您加入XXX世界",
-                    Body = "此邮件是测试目的，正式版将删除。",
-                };
-                mail.Attachmentes.Add(new GameMailAttachment()
-                {
-                    PropertiesString = "TName=这是一个测试的附件对象,tid={89A586A8-CD8D-40FF-BDA2-41E68B6EC505},ptid={3D87D1FA-F270-42AB-9241-E30498246947},count=1,desc=tid是送的物品模板id;count是数量;ptid是放入容器的模板Id。",
-                });
-                world.SocialManager.SendMail(mail, new Guid[] { gameChar.Id }, SocialConstant.FromSystemId);
-                for (int i = VWorld.WorldRandom.Next(2) + 1; i >= 0; i--)
-                {
-                    var mail2 = new GameMail()
-                    {
-                        Subject = "测试邮件" + i,
-                        Body = "此邮件是测试目的，正式版将删除。",
-                    };
-                    world.SocialManager.SendMail(mail2, new Guid[] { gameChar.Id }, SocialConstant.FromSystemId);
-                }
-            });
-
-            return result;
-        }
 
         /// <summary>
         /// 当一个虚拟事物创建后调用。

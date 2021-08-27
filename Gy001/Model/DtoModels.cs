@@ -1773,11 +1773,13 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 坐骑身体的模板Id集合。如果这里有数据则好友展示的坐骑要包含这种坐骑才会返回。
         /// </summary>
+        [DataMember]
         public List<string> BodyTIds { get; set; } = new List<string>();
 
         /// <summary>
         /// 指定角色的昵称。如果省略或为null，则不限定昵称而尽量返回活跃用户。
         /// </summary>
+        [DataMember]
         public string DisplayName { get; set; }
     }
 

@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -126,6 +128,27 @@ namespace OW.Game.Store
                 _IdString = null;
                 base.Dispose(disposing);
             }
+        }
+
+        /// <summary>
+        /// 在新建一个对象后调用此方法初始化其内容。
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="parameters">初始化用到的附属参数。</param>
+        public void Initialize(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
+        {
+            InitializeCore(service, parameters);
+        }
+
+        /// <summary>
+        /// 新建对象后此方法被<see cref="Initialize(IServiceProvider, IReadOnlyDictionary{string, object})"/>调用以实际初始化本对象。
+        /// </summary>
+        /// <param name="service">服务容器。</param>
+        /// <param name="parameters">初始化用到的附属参数。</param>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        protected virtual void InitializeCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
+        {
+
         }
         #region 事件及相关
 

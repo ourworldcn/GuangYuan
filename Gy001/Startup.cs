@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
+using OW.Game;
 
 namespace Gy001
 {
@@ -90,7 +91,7 @@ namespace Gy001
             #endregion 配置Swagger
 
             #region 配置游戏专用服务
-            services.AddTransient<HashAlgorithm>(c => SHA256.Create());
+            services.AddTransient<HashAlgorithm>(c => SHA512.Create());
             //services.AddTransient(options => new GY001UserContext(new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
             //services.AddSingleton(UserDbOptions => new GY001TemplateContext(new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
 
@@ -109,7 +110,6 @@ namespace Gy001
             }));
             services.AddSingleton(c => new GameCharManager(c, new GameCharManagerOptions()
             {
-                CharCreated = SpecificProject.CharCreated,
             }));
             services.AddSingleton(c => new CombatManager(c, new CombatManagerOptions()
             {
@@ -124,6 +124,8 @@ namespace Gy001
             services.AddSingleton<IGameThingHelper>(c => c.GetService<GameItemManager>());
 
             services.AddSingleton(c => new GameSocialManager(c, new SocialManagerOptions()));
+
+            services.AddSingleton<IGameObjectInitializer>(c => new Gy001Initializer(c, new Gy001InitializerOptions()));
 
             #endregion 配置游戏专用服务
         }
