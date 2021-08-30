@@ -128,6 +128,7 @@ namespace Gy001.Controllers
         {
             using var data = new GetCharIdsForRequestFriendDatas()
             {
+                DisplayName = model.DisplayName,
             };
             data.BodyTIds.AddRange(model.BodyTIds.Select(c => GameHelper.FromBase64String(c)));
             using var disposer = data.SetTokenStringAndLock(model.Token, _World.CharManager);

@@ -99,53 +99,6 @@ namespace GuangYuan.GY001.BLL
 
     }
 
-    public class LockUserHelper : IDisposable
-    {
-        private bool disposedValue;
-
-        public LockUserHelper(GameCharManager manager, GameUser user)
-        {
-            Manager = manager;
-            User = user;
-        }
-
-        public GameCharManager Manager { get; set; }
-
-        public GameUser User { get; set; }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: 释放托管状态(托管对象)
-                    Manager?.Unlock(User);
-                }
-
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
-                User = null;
-                Manager = null;
-                disposedValue = true;
-            }
-        }
-
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~LockUserHelper()
-        // {
-        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-    }
-
     /// <summary>
     /// 复杂工作的参数返回值封装类的基类。
     /// </summary>
@@ -156,7 +109,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public ComplexWorkDatsBase()
         {
-            
+
         }
 
         #region 入参
@@ -231,7 +184,7 @@ namespace GuangYuan.GY001.BLL
         /// 是否有错误。
         /// false没有错误，true有错误。
         /// </summary>
-        public bool HasError { get;  set; }
+        public bool HasError { get; set; }
 
         /// <summary>
         /// 返回码。当前版本默认使用<see cref="HttpStatusCode"/>。如果派生类不打算使用，则需要自行定义说明。
@@ -279,7 +232,7 @@ namespace GuangYuan.GY001.BLL
             if (manager.Lock(Token, out _GameUser))
             {
                 _Manager = manager;
-                return new LockUserHelper(manager, _GameUser);
+                return new DisposerWrapper(() => manager.Unlock(_GameUser));
             }
             else
             {

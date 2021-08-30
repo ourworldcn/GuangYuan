@@ -37,7 +37,6 @@ namespace Gy001
             var host = CreateHostBuilder(args).Build();
             _Host = host;
             CreateDb(_Host);
-            Test(_Host);
             _Host.Run();
         }
 
@@ -48,12 +47,15 @@ namespace Gy001
         private static void Test(IHost host)
         {
             var world = host.Services.GetRequiredService<VWorld>();
-                //var db = world.CreateNewUserDbContext();
+
+            //var db = world.CreateNewUserDbContext();
             //var templates = world.ItemTemplateManager.GetTemplates(c => c.CatalogNumber == 4);
             //var gu = world.CharManager.Login("test101", "test101", "test");
 
-            //var data = new FriendDatas(world, gu.CurrentChar, DateTime.UtcNow);
+            //var data = new FriendDataView(world, gu.CurrentChar, DateTime.UtcNow);
             //var list = data.RefreshLastList(templates.Select(c => c.Id)).ToList();
+            using var dw = new DisposerWrapper(() => { });
+            return;
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -90,7 +92,7 @@ namespace Gy001
             }
         }
 
-        private void test(DbContext dbContext)
+        private void CreateDbTest(DbContext dbContext)
         {
             dbContext.Database.EnsureCreated();
             IModel lastModel = null;

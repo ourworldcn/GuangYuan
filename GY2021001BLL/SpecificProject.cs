@@ -486,7 +486,7 @@ namespace GuangYuan.GY001.BLL
                 };
                 mail.Attachmentes.Add(new GameMailAttachment()
                 {
-                    PropertiesString = "TName=这是一个测试的附件对象,tid={89A586A8-CD8D-40FF-BDA2-41E68B6EC505},ptid={3D87D1FA-F270-42AB-9241-E30498246947},count=1,desc=tid是送的物品模板id;count是数量;ptid是放入容器的模板Id。",
+                    PropertiesString = "TName=这是一个测试的附件对象,tid={ac7d593c-ce82-4642-97a3-14025da633e4},ptid={2BAA3FCD-2BE8-4096-916A-FF2D47E084EF},count=3,desc=tid是送的物品模板id count是数量 ptid是放入容器的模板Id。",
                 });
                 world.SocialManager.SendMail(mail, new Guid[] { gameChar.Id }, SocialConstant.FromSystemId);
                 for (int i = VWorld.WorldRandom.Next(2) + 1; i >= 0; i--)

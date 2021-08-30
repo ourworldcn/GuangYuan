@@ -211,7 +211,28 @@ namespace GuangYuan.GY001.BLL
                 return _ObjectPoolListGameItem;
             }
         }
+
         #region 随机数相关
+
+        ObjectPool<Dictionary<string, object>> _StringObjectDictionaryPool;
+        public ObjectPool<Dictionary<string, object>> StringObjectDictionaryPool
+        {
+            get
+            {
+                if (_StringObjectDictionaryPool is null)
+                    lock (ThisLocker)
+                        if (_StringObjectDictionaryPool is null)
+                        {
+                            _StringObjectDictionaryPool = Services.GetService<ObjectPool<Dictionary<string, object>>>();
+                            if (_StringObjectDictionaryPool is null)
+                            {
+                                _StringObjectDictionaryPool = new DefaultObjectPool<Dictionary<string, object>>(new StringObjectDictionaryPooledPolicy(), Environment.ProcessorCount * 16);
+                            }
+                        }
+                return _StringObjectDictionaryPool;
+            }
+        }
+
         /// <summary>
         /// 公用随机数生成器。
         /// </summary>
@@ -223,6 +244,7 @@ namespace GuangYuan.GY001.BLL
         /// 可以并发调用。
         /// </summary>
         public static Random WorldRandom => _WorldRandom ??= new Random();
+
 
         /// <summary>
         /// 获取两个数之间的一个随机数。支持并发调用。
@@ -392,6 +414,19 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
+    public class StringObjectDictionaryPooledPolicy : DefaultPooledObjectPolicy<Dictionary<string, object>>
+    {
+        public StringObjectDictionaryPooledPolicy()
+        {
+        }
+
+        public override bool Return(Dictionary<string, object> obj)
+        {
+            obj.Clear();
+            return true;
+        }
+    }
+
     /// <summary>
     /// 游戏的服务主机。
     /// </summary>
@@ -464,10 +499,10 @@ namespace GuangYuan.GY001.BLL
                             Thread.Sleep(1);
                         }
 #if DEBUG
-                        Thread.Sleep(500);
+                        Thread.Sleep(i / 20);
 
 #else
-                        Thread.Sleep(1000);
+                        Thread.Sleep(i/20);
 #endif
                     }
                     catch (DbUpdateException err)

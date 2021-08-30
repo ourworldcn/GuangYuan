@@ -1,5 +1,7 @@
 ﻿using GuangYuan.GY001.UserDb;
 using OW.Game;
+using OW.Game.Store;
+using System;
 using System.Linq;
 
 namespace Game.Social
@@ -64,6 +66,7 @@ namespace Game.Social
     /// </summary>
     public static class GameSocialRelationshipExtensions
     {
+
         /// <summary>
         /// 获取指示，该对象是否是一个黑名单。
         /// </summary>
@@ -98,7 +101,12 @@ namespace Game.Social
         /// 设置该对象指示，中立关系。
         /// </summary>
         /// <param name="obj"></param>
-        static public void SetNeutrally(this GameSocialRelationship obj) => obj.Flag = SocialConstant.MiddleFriendliness;
+        static public void SetNeutrally(this GameSocialRelationship obj)
+        {
+            obj.Flag = SocialConstant.MiddleFriendliness;
+            obj.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+        }
+
 
         /// <summary>
         /// 设置该对象指示，黑名单关系。

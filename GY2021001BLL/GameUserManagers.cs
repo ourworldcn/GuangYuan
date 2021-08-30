@@ -338,6 +338,21 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 按票据锁定指定用户对象，返回一个用于解锁的的<see cref="IDisposable"/>接口。
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="gameUser"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IDisposable Lock(string token, out GameUser gameUser)
+        {
+            var gu = gameUser = GetUserFromToken(GameHelper.FromBase64String(token));
+            if (gameUser is null || !Lock(gameUser, TimeSpan.FromSeconds(Options.DefaultLockTimeout)))
+                return null;
+            return new DisposerWrapper(() => Unlock(gu));
+        }
+
+        /// <summary>
         /// 解锁用户。与<seealso cref="Lock(GameUser, int)"/>配对使用。
         /// </summary>
         /// <param name="user">用户对象。</param>

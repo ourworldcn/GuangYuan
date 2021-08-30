@@ -479,6 +479,7 @@ namespace GuangYuan.GY001.BLL
             }
             GameItemManager gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
             GameItem gameItem = gim.CreateGameItem(tid);
+            
             string keyName = Template.Id.ToString();
             if (env.Variables.TryGetValue(keyName, out GameExpressionBase expr) && expr is ConstGExpression)   //若已经存在该变量
             {

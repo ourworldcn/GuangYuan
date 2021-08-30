@@ -300,7 +300,13 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public decimal? Count
         {
-            get => Name2FastChangingProperty.TryGetValue("Count", out var fcp) ? fcp.LastValue : _Count;
+            get
+            {
+                if (Name2FastChangingProperty is null)
+                    return _Count;
+                return Name2FastChangingProperty.TryGetValue("Count", out var fcp) ? fcp.LastValue : _Count;
+            }
+
             set
             {
                 if (Name2FastChangingProperty.TryGetValue("Count", out var fcp) && value.HasValue)
