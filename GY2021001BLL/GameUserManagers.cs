@@ -43,11 +43,6 @@ namespace GuangYuan.GY001.BLL
         private Timer _LogoutTimer;
 
         /// <summary>
-        /// 登录、注销时刻锁定的登录名存储对象。
-        /// </summary>
-        private readonly ConcurrentDictionary<string, string> _LoginName = new ConcurrentDictionary<string, string>();
-
-        /// <summary>
         /// 登录名到令牌的转换字典。
         /// </summary>
         private readonly ConcurrentDictionary<string, Guid> _LoginName2Token = new ConcurrentDictionary<string, Guid>();
@@ -134,24 +129,21 @@ namespace GuangYuan.GY001.BLL
 
             foreach (var item in _Token2User.Values)
             {
-                if (_LoginName.TryGetValue(item.LoginName, out string loginName))
+                var loginName = item.LoginName;
+                if (world.LockString(ref loginName, TimeSpan.Zero)) //若锁定用户名成功
                 {
-                    if (!Monitor.TryEnter(loginName))   //若锁定用户名失败
-                        continue;
                     try
                     {
-                        if (!Monitor.TryEnter(item))    //若锁定用户失败
+                        if (!Lock(item, TimeSpan.Zero))    //若锁定用户失败
                             continue;
                         try
                         {
-                            if (item.IsDisposed) //若已被处置
-                                continue;
                             if (DateTime.UtcNow - item.LastModifyDateTimeUtc > TimeSpan.FromMinutes(15))
                                 Logout(item, LogoutReason.Timeout);
                         }
                         finally
                         {
-                            Monitor.Exit(item);
+                            Unlock(item);
                         }
                     }
                     catch (Exception err)
@@ -161,7 +153,7 @@ namespace GuangYuan.GY001.BLL
                     }
                     finally
                     {
-                        Monitor.Exit(loginName);
+                        world.UnlockString(loginName);
                     }
                 }
                 if (Environment.HasShutdownStarted && world.RequestShutdown.IsCancellationRequested)
@@ -394,7 +386,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>true是，false密码错误。</returns>
         public bool IsPwd(GameUser user, string pwd)
         {
-            var hashAlgorithm = Services.GetService<HashAlgorithm>();
+            using var hashAlgorithm = Services.GetService<HashAlgorithm>();
             var hash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(pwd));
             return Enumerable.SequenceEqual(hash, user.PwdHash);
         }
@@ -408,66 +400,63 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         public GameUser Login(string loginName, string pwd, string region)
         {
-            var innerLoginName = _LoginName.GetOrAdd(loginName, loginName);
+            var innerLoginName = loginName;
+            using var dwLoginName = World.LockString(ref innerLoginName);   //锁定用户名
+            Trace.Assert(null != dwLoginName);  //锁定该登录名不可失败
             GameUser gu = null;
             List<GameActionRecord> actionRecords = new List<GameActionRecord>();
-            lock (innerLoginName)    //锁定该登录名
+            if (_LoginName2Token.TryGetValue(innerLoginName, out Guid token))    //若已经登录
             {
-                if (!_LoginName.ContainsKey(loginName))  //若被注销了
-                    return null;    //TO DO当作服务器忙处理
-                if (_LoginName2Token.TryGetValue(innerLoginName, out Guid token))    //若已经登录
+                _Token2User.TryGetValue(token, out gu);   //获取用户对象
+                token = Guid.NewGuid(); //换新令牌
+                lock (gu)
                 {
-                    _Token2User.TryGetValue(token, out gu);   //获取用户对象
-                    token = Guid.NewGuid(); //换新令牌
-                    lock (gu)
-                    {
-                        if (gu.IsDisposed)   //若已经并发处置
-                            return null;    //TO DO视同没有
-                        if (!IsPwd(gu, pwd))   //若密码错误
-                            return null;
-                        gu.CurrentToken = token;
-                        _LoginName2Token.TryRemove(loginName, out Guid oldToken);
-                        _LoginName2Token.AddOrUpdate(loginName, token, (c1, c2) => token);
-                        _Token2User.TryRemove(oldToken, out GameUser oldGu);
-                        _Token2User.TryAdd(token, gu);
-                        Nope(token);
-                    }
-                }
-                else //未登录
-                {
-                    var db = World.CreateNewUserDbContext();
-                    //_Service.GetService(typeof(GY001UserContext)) as GY001UserContext;
-                    gu = db.GameUsers.FirstOrDefault(c => c.LoginName == loginName);
-                    if (null == gu)    //若未发现指定登录名
+                    if (gu.IsDisposed)   //若已经并发处置
+                        return null;    //TO DO视同没有
+                    if (!IsPwd(gu, pwd))   //若密码错误
                         return null;
-                    lock (gu)
-                    {
-                        if (gu.IsDisposed)   //若已经并发处置
-                            return null;    //TO DO视同没有
-                        if (!IsPwd(gu, pwd))   //若密码错误
-                            return null;
-                        //初始化属性
-                        token = Guid.NewGuid();
-                        gu.CurrentToken = token;
-                        gu.DbContext = db;
-                        gu.Services = Services;
-                        gu.CurrentChar = gu.GameChars[0];
-                        gu.LastModifyDateTimeUtc = DateTime.UtcNow;
-                        NotifyChange(gu);
+                    gu.CurrentToken = token;
+                    _LoginName2Token.TryRemove(innerLoginName, out Guid oldToken);
+                    _LoginName2Token.AddOrUpdate(innerLoginName, token, (c1, c2) => token);
+                    _Token2User.TryRemove(oldToken, out GameUser oldGu);
+                    _Token2User.TryAdd(token, gu);
+                    Nope(token);
+                }
+            }
+            else //未登录
+            {
+                var db = World.CreateNewUserDbContext();
+                //_Service.GetService(typeof(GY001UserContext)) as GY001UserContext;
+                gu = db.GameUsers.FirstOrDefault(c => c.LoginName == innerLoginName);
+                if (null == gu)    //若未发现指定登录名
+                    return null;
+                lock (gu)
+                {
+                    if (gu.IsDisposed)   //若已经并发处置
+                        return null;    //TO DO视同没有
+                    if (!IsPwd(gu, pwd))   //若密码错误
+                        return null;
+                    //初始化属性
+                    token = Guid.NewGuid();
+                    gu.CurrentToken = token;
+                    gu.DbContext = db;
+                    gu.Services = Services;
+                    gu.CurrentChar = gu.GameChars[0];
+                    gu.LastModifyDateTimeUtc = DateTime.UtcNow;
+                    NotifyChange(gu);
 
-                        //加入全局列表
-                        var gc = gu.CurrentChar;
-                        _Id2GameChar[gc.Id] = gc;
-                        _LoginName2Token.AddOrUpdate(loginName, token, (c1, c2) => token);
-                        _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
-                        OnCharLoaded(new CharLoadedEventArgs(gu.CurrentChar));
-                        gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = new DateTime(9999, 1, 1);   //标记在线
-                        actionRecords.Add(new GameActionRecord()    //写入登录日志
-                        {
-                            ActionId = "Login",
-                            ParentId = gc.Id,
-                        });
-                    }
+                    //加入全局列表
+                    var gc = gu.CurrentChar;
+                    _Id2GameChar[gc.Id] = gc;
+                    _LoginName2Token.AddOrUpdate(innerLoginName, token, (c1, c2) => token);
+                    _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
+                    OnCharLoaded(new CharLoadedEventArgs(gu.CurrentChar));
+                    gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = new DateTime(9999, 1, 1);   //标记在线
+                    actionRecords.Add(new GameActionRecord()    //写入登录日志
+                    {
+                        ActionId = "Login",
+                        ParentId = gc.Id,
+                    });
                 }
             }
             if (null != actionRecords && actionRecords.Count > 0)
@@ -608,60 +597,55 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         public bool Logout(GameUser gu, LogoutReason reason)
         {
-            if (!_LoginName.TryGetValue(gu.LoginName, out string loginName))    //若没有登录
-                return false;
-            lock (loginName)
+            var loginName = gu.LoginName;
+            if (!_LoginName2Token.TryGetValue(loginName, out Guid token)) //若未知情况
             {
-                if (!_LoginName2Token.TryGetValue(loginName, out Guid token)) //若未知情况
-                {
-                    return false;   //TO DO
-                }
-                if (!_Token2User.TryGetValue(token, out gu)) //若未知情况
-                {
-                    return false;   //TO DO
-                }
-                lock (gu)
-                {
-                    if (gu.IsDisposed)   //若已被处置
-                        return false;
-                    var actionRecord = new GameActionRecord()   //操做记录对象。
-                    {
-                        ActionId = "Logout",
-                        ParentId = gu.CurrentChar.Id,
-                    };
-                    List<GameActionRecord> actionRecords = new List<GameActionRecord>()
+                return false;   //TO DO
+            }
+            using var dwLoginName = World.LockString(ref loginName);
+            Trace.Assert(null != dwLoginName);
+            if (!_Token2User.TryGetValue(token, out gu)) //若未知情况
+            {
+                return false;   //TO DO
+            }
+            if (!Lock(gu))  //若已被处置
+                return false;
+
+            var actionRecord = new GameActionRecord()   //操做记录对象。
+            {
+                ActionId = "Logout",
+                ParentId = gu.CurrentChar.Id,
+            };
+            List<GameActionRecord> actionRecords = new List<GameActionRecord>()
                     {
                         actionRecord
                     };
-                    gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = DateTime.UtcNow;   //记录下线时间
-                    try
-                    {
-                        gu.InvokeLogouting(reason);
-                        actionRecord.DateTimeUtc = DateTime.UtcNow;
-                    }
-                    catch (Exception)
-                    {
-                        //TO DO
-                    }
-
-                    try
-                    {
-                        gu.DbContext.SaveChanges();
-                        if (actionRecords.Count > 0)
-                            SaveActionRecordsAsync(actionRecords);
-                    }
-                    catch (Exception err)
-                    {
-                        var logger = Services.GetService<ILogger<GameChar>>();
-                        logger?.LogError("保存用户(Number={Number})信息时发生错误。——{err}", gu.Id, err);
-                    }
-                    _Token2User.TryRemove(token, out _);
-                    _LoginName2Token.TryRemove(loginName, out _);
-                    _Id2GameChar.Remove(gu.CurrentChar.Id, out _); //去除角色Id
-                    _LoginName.Remove(loginName, out _);    //去除登录名
-                    gu.Dispose();
-                }
+            gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = DateTime.UtcNow;   //记录下线时间
+            try
+            {
+                gu.InvokeLogouting(reason);
+                actionRecord.DateTimeUtc = DateTime.UtcNow;
             }
+            catch (Exception)
+            {
+                //TO DO
+            }
+
+            try
+            {
+                gu.DbContext.SaveChanges();
+                if (actionRecords.Count > 0)
+                    SaveActionRecordsAsync(actionRecords);
+            }
+            catch (Exception err)
+            {
+                var logger = Services.GetService<ILogger<GameChar>>();
+                logger?.LogError("保存用户(Number={Number})信息时发生错误。——{err}", gu.Id, err);
+            }
+            _Token2User.TryRemove(token, out _);
+            _LoginName2Token.TryRemove(loginName, out _);
+            _Id2GameChar.Remove(gu.CurrentChar.Id, out _); //去除角色Id
+            gu.Dispose();
             return true;
         }
 
@@ -679,7 +663,7 @@ namespace GuangYuan.GY001.BLL
             {
                 if (gu.IsDisposed)   //若已经无效
                     return false;
-                var ha = Services.GetService<HashAlgorithm>();
+                using var ha = Services.GetService<HashAlgorithm>();
                 gu.PwdHash = ha.ComputeHash(Encoding.UTF8.GetBytes(newPwd));
                 _DirtyUsers.Enqueue(gu);
             }
@@ -805,5 +789,44 @@ namespace GuangYuan.GY001.BLL
         public GameChar GameChar { get; set; }
     }
 
+    public static class GameCharManagerExtensions
+    {
+        /// <summary>
+        /// 锁定用户。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="user"></param>
+        /// <param name="timeout"></param>
+        /// <returns>返回解锁的处置接口，该接口处置时，自动解锁。如果锁定失败则返回null。</returns>
+        public static IDisposable LockAndReturnDispose(this GameCharManager obj, GameUser user, TimeSpan timeout)
+        {
+            if (!obj.Lock(user, timeout))
+                return null;
+            return new DisposerWrapper(() => obj.Unlock(user));
+        }
 
+        /// <summary>
+        /// 使用默认超时试图锁定用户。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="user"></param>
+        /// <returns>null无效的令牌或锁定超时。返回处置接口用于解锁。</returns>
+        public static IDisposable LockAndReturnDispose(this GameCharManager obj, GameUser user) => obj.LockAndReturnDispose(user, TimeSpan.FromSeconds(obj.Options.DefaultLockTimeout));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="token"></param>
+        /// <param name="user"></param>
+        /// <returns>null无效的令牌或锁定超时。返回处置接口用于解锁。</returns>
+        public static IDisposable LockAndReturnDispose(this GameCharManager obj, Guid token, out GameUser user)
+        {
+            if (!obj.Lock(token, out user))
+                return null;
+            var tmp = user;
+            return new DisposerWrapper(() => obj.Unlock(tmp));
+        }
+
+    }
 }

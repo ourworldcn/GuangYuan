@@ -1532,6 +1532,27 @@
             这个集合中，Id是当前角色Id的，表示好友和黑名单。ObjectId是当前角色Id的，表示有人申请成为好友。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetSocialRelationshipsReturnDto.Summary">
+            <summary>
+            相关角色的摘要信息。用Id链接。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.ConfirmRequestFriendItemDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmRequestFriendItemDto.FriendId">
+            <summary>
+            申请成为自己好友的角色的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmRequestFriendItemDto.IsRejected">
+            <summary>
+            是否拒绝好友申请。
+            true拒绝申请，false确认申请。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.ConfirmRequestFriendParamsDto">
             <summary>
             ConfirmRequestFriend 接口参数封装类。
@@ -1542,16 +1563,21 @@
             构造函数。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.ConfirmRequestFriendParamsDto.FriendId">
+        <member name="P:GY2021001WebApi.Models.ConfirmRequestFriendParamsDto.Items">
             <summary>
-            申请成为自己好友的角色的Id。
+            参见 ConfirmRequestFriendItemDto。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.ConfirmRequestFriendParamsDto.IsRejected">
+        <member name="P:GY2021001WebApi.Models.ConfirmRequestFriendReturnItemDto.Id">
             <summary>
-            是否拒绝好友申请。
-            true拒绝申请，false确认申请。
+            朋友的角色Id。
             </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmRequestFriendReturnItemDto.Result">
+            <summary>
+            申请的结果。参见 ConfirmFriendResult。
+            </summary>
+            <remarks></remarks>
         </member>
         <member name="T:GY2021001WebApi.Models.ConfirmRequestFriendReturnDto">
             <summary>
@@ -1561,6 +1587,11 @@
         <member name="M:GY2021001WebApi.Models.ConfirmRequestFriendReturnDto.#ctor">
             <summary>
             构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmRequestFriendReturnDto.Results">
+            <summary>
+            参见 ConfirmRequestFriendReturnItemDto
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.ModifySrReturnDto">
@@ -1698,12 +1729,6 @@
             外围系统。
             </summary>
         </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
             使用蓝图制造或升级物品。
@@ -1712,6 +1737,18 @@
             <returns>物品变化数据。</returns>
             <response code="401">令牌错误。</response>
             <response code="400">参数错误。</response>
+        </member>
+        <member name="F:Gy001.Controllers.SocialController._UserContext">
+            <summary>
+            范围性的用户数据库上下文。
+            </summary>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.#ctor(GuangYuan.GY001.BLL.VWorld,GuangYuan.GY001.UserDb.GY001UserContext)">
+            <summary>
+            构造函数，用于DI。
+            </summary>
+            <param name="world"></param>
+            <param name="userContext">对于社交类功能，大概率需要范围的数据库上下文。</param>
         </member>
         <member name="M:Gy001.Controllers.SocialController.GetMails(GY2021001WebApi.Models.GetMailsParamsDto)">
             <summary>

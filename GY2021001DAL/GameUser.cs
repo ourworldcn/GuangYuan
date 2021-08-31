@@ -199,7 +199,7 @@ namespace GuangYuan.GY001.UserDb
 
             LoginName = (string)parameters["uid"];
             var pwd = (string)parameters["pwd"];
-            var hash = (HashAlgorithm)service.GetService(typeof(HashAlgorithm));
+            using var hash = (HashAlgorithm)service.GetService(typeof(HashAlgorithm));
             var pwdHash = hash.ComputeHash(Encoding.UTF8.GetBytes(pwd));
             PwdHash = pwdHash;
 

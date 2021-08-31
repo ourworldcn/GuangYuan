@@ -235,7 +235,7 @@ namespace OW.Game
                         throw new InvalidCastException($"数据格式错误:'{guts}'");   //TO DO
                 }
                 var keyName = string.Intern(guts[0].Trim());
-                var val = guts?[1]?.Trim();
+                var val = guts.Length < 2 ? null : guts?[1]?.Trim();
                 if (val is null)
                 {
                     props[keyName] = null;
@@ -279,7 +279,7 @@ namespace OW.Game
                 }
                 else //字符串
                 {
-                    result.Append(item.Value as string).Append(',');
+                    result.Append(item.Value?.ToString()).Append(',');
                 }
             }
             if (result.Length > 0 && result[^1] == ',')   //若尾部是逗号

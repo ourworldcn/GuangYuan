@@ -107,6 +107,36 @@ namespace Game.Social
         SC = 8,
     }
 
+    /// <summary>
+    /// 确认添加好友，返回的标志。
+    /// </summary>
+    public enum ConfirmFriendResult
+    {
+        /// <summary>
+        /// 成功确定。
+        /// </summary>
+        Success,
+
+        /// <summary>
+        /// 未知错误。
+        /// </summary>
+        Unknown,
+
+        /// <summary>
+        /// 自身好友位置已满。
+        /// </summary>
+        CharFriendFull,
+
+        /// <summary>
+        /// 对方好友位置已满。
+        /// </summary>
+        OtherFriendFull,
+
+        /// <summary>
+        /// 对方将自己拉入黑名单。
+        /// </summary>
+        Blacked,
+    }
 
     /// <summary>
     /// 邮件地址的传输对象。

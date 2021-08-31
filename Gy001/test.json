@@ -1,0 +1,174 @@
+{
+  "SocialRelationships": [
+    {
+      "ObjectId": "t7n52NvTr0uYOkcq/H/ySg==",
+      "Friendliness": 0,
+      "Id": "ccND1bDnEUiZruRJcsUnyg==",
+      "Properties": {}
+    },
+    {
+      "ObjectId": "ccND1bDnEUiZruRJcsUnyg==",
+      "Friendliness": 6,
+      "Id": "t7n52NvTr0uYOkcq/H/ySg==",
+      "Properties": { "Confirmed": 0 }
+    }
+  ],
+  "Summary": [
+    {
+      "Id": "t7n52NvTr0uYOkcq/H/ySg==",
+      "DisplayName": "蓬信健",
+      "Level": 0,
+      "CombatCap": 4000,
+      "LastLogoutDatetime": null,
+      "HomelandShows": [
+        {
+          "Id": "l8VbVdSq0UCXnemMl/QfQQ==",
+          "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
+          "CreateUtc": "2021-08-30T06:37:15.0866984",
+          "Count": 1.00,
+          "Properties": {
+            "nemhp": 10,
+            "neatk": 10,
+            "neqlt": 10,
+            "cap": -1,
+            "tname": "坐骑组合",
+            "for10": 0
+          },
+          "OwnerId": null,
+          "Children": [
+            {
+              "Id": "yiRJ1kPmdEWCCw5YUyZKgw==",
+              "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
+              "CreateUtc": "2021-08-30T06:37:15.0894472",
+              "Count": 1.00,
+              "Properties": {
+                "alt": 4,
+                "ms": 6,
+                "eng": 30,
+                "crp": 0,
+                "crv": 2,
+                "aha": 60,
+                "at": 1,
+                "bt": 0.3,
+                "csr": 5,
+                "ssr": 7,
+                "rci": 1,
+                "SK": 1001,
+                "nm": 1501,
+                "hi": 3001,
+                "mhp": 1000,
+                "atk": 100,
+                "qlt": 100,
+                "lug": -50,
+                "sg": 200,
+                "lv": 0,
+                "tname": "羊身体"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "l8VbVdSq0UCXnemMl/QfQQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "MOoRsQi9G06Dp9ETDrTe/g==",
+              "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
+              "CreateUtc": "2021-08-30T06:37:15.0888568",
+              "Count": 1.00,
+              "Properties": {
+                "nm": 1501,
+                "ps": 5001,
+                "js": 2001,
+                "tname": "羊头"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "l8VbVdSq0UCXnemMl/QfQQ==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": "2HZjtZQTlkydUyRvkazwYA==",
+          "ClientString": null
+        }
+      ]
+    },
+    {
+      "Id": "ccND1bDnEUiZruRJcsUnyg==",
+      "DisplayName": "雷逍霞",
+      "Level": 0,
+      "CombatCap": 4000,
+      "LastLogoutDatetime": "2021-08-31T09:57:26.8987644",
+      "HomelandShows": [
+        {
+          "Id": "RNqppYc55kOrH453dPssUQ==",
+          "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
+          "CreateUtc": "2021-08-30T06:37:20.3376539",
+          "Count": 1.00,
+          "Properties": {
+            "nemhp": 10,
+            "neatk": 10,
+            "neqlt": 10,
+            "cap": -1,
+            "tname": "坐骑组合",
+            "for10": 0
+          },
+          "OwnerId": null,
+          "Children": [
+            {
+              "Id": "WRW8eR8BfUmaO6k7yjR6vA==",
+              "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
+              "CreateUtc": "2021-08-30T06:37:20.3376932",
+              "Count": 1.00,
+              "Properties": {
+                "nm": 1501,
+                "ps": 5001,
+                "js": 2001,
+                "tname": "羊头"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "RNqppYc55kOrH453dPssUQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "11pXXZ4YkUy9yt49tutu3w==",
+              "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
+              "CreateUtc": "2021-08-30T06:37:20.3377035",
+              "Count": 1.00,
+              "Properties": {
+                "alt": 4,
+                "ms": 6,
+                "eng": 30,
+                "crp": 0,
+                "crv": 2,
+                "aha": 60,
+                "at": 1,
+                "bt": 0.3,
+                "csr": 5,
+                "ssr": 7,
+                "rci": 1,
+                "SK": 1001,
+                "nm": 1501,
+                "hi": 3001,
+                "mhp": 1000,
+                "atk": 100,
+                "qlt": 100,
+                "lug": -50,
+                "sg": 200,
+                "lv": 0,
+                "tname": "羊身体"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "RNqppYc55kOrH453dPssUQ==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": "ySUvcAzYVkmET3If97e7Vg==",
+          "ClientString": null
+        }
+      ]
+    }
+  ],
+  "HasError": false,
+  "DebugMessage": null
+}

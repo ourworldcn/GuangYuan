@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Store;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -251,6 +252,10 @@ namespace GuangYuan.GY001.BLL
             SendMail(mail, tos, senderId);
         }
 
+        //public class GetAttachmentesWork
+        //{
+
+        //}
         /// <summary>
         /// 领取附件。
         /// </summary>
@@ -341,7 +346,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="db"></param>
         /// <returns></returns>
         public IQueryable<GameSocialRelationship> GetCharRelationshipToMe(Guid charId, DbContext db) =>
-           db.Set<GameSocialRelationship>().Where(c => c.Id2 == charId && c.Flag >= SocialConstant.MinFriendliness && c.Flag <= SocialConstant.MaxFriendliness);
+           GetCharRelationship(charId, db).Where(c => c.Id2 == charId && c.Flag >= SocialConstant.MinFriendliness && c.Flag <= SocialConstant.MaxFriendliness);
 
         /// <summary>
         /// 获取正在申请成为好友的关系对象集合的延迟查询。
@@ -474,7 +479,7 @@ namespace GuangYuan.GY001.BLL
             }
             using var dwChar = new DisposerWrapper(() => World.CharManager.Unlock(gameChar.GameUser));
             using GameUserContext db = World.CreateNewUserDbContext();
-            var objChar = db.Set<GameChar>().Find(friendId);  //要请求的角色对象。
+            var objChar = db.Set<GameChar>().AsNoTracking().FirstOrDefault(c => c.Id == friendId);  //要请求的角色对象。
             if (objChar is null)
             {
                 VWorld.SetLastErrorMessage($"找不到指定角色的角色，Id={friendId}。");
@@ -489,8 +494,7 @@ namespace GuangYuan.GY001.BLL
                 return RequestFriendResult.AlreadyBlack;
             else
             {
-                var alreay = sr.Properties.GetDecimalOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero);
-                if (alreay == 0m)   //正在申请
+                if (sr.Properties.TryGetValue(SocialConstant.ConfirmedFriendPName, out var obj) && obj is decimal deci && deci == 0) //若正在申请
                     return RequestFriendResult.Doing;
                 else if (sr.IsFriendOrRequesting()) //已经是好友
                     return RequestFriendResult.Already;
@@ -514,6 +518,8 @@ namespace GuangYuan.GY001.BLL
         /// 获取社交关系列表。😀 👌
         /// Confirmed。
         /// </summary>
+        /// <param name="gameChar">己方角色对象。</param>
+        /// <returns></returns>
         public IEnumerable<GameSocialRelationship> GetSocialRelationships(GameChar gameChar)
         {
             if (!World.CharManager.Lock(gameChar.GameUser))
@@ -521,21 +527,19 @@ namespace GuangYuan.GY001.BLL
                 VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
                 return null;
             }
-            GY001UserContext db = null;
+            using var dwChar = new DisposerWrapper(() => World.CharManager.Unlock(gameChar.GameUser, true));
+            using var db = World.CreateNewUserDbContext();
             try
             {
-                db = World.CreateNewUserDbContext();
                 var gcId = gameChar.Id;
-                var coll1 = db.SocialRelationships.Where(c => c.Id == gcId);
-                var coll2 = GetRequestingToMe(gcId, db);    //请求添加
-                var result = coll1.Union(coll2).ToArray();
+                var coll1 = GetSocialRelationshipQuery(db).Where(c => c.Id == gcId || c.Id2 == gcId);   //自己添加 和 对方请求添加的
+                var result = coll1.ToArray();
                 World.CharManager.Nope(gameChar.GameUser);  //重置下线计时器
                 return result;
             }
-            finally
+            catch (Exception err)
             {
-                db?.DisposeAsync();
-                World.CharManager.Unlock(gameChar.GameUser, true);
+                throw err;
             }
         }
 
@@ -569,7 +573,7 @@ namespace GuangYuan.GY001.BLL
             var result = GetSrOrDefault(context, charId, otherId);
             if (result is null)
             {
-                result = new GameSocialRelationship() { Id = charId, Id2 = otherId, Flag = SocialConstant.MiddleFriendliness };
+                result = new GameSocialRelationship() { Id = charId, Id2 = otherId, Flag = SocialConstant.MiddleFriendliness, };
                 context.Add(result);
             }
             return result;
@@ -609,39 +613,41 @@ namespace GuangYuan.GY001.BLL
         /// <param name="friendId">申请人Id。</param>
         /// <param name="rejected">true拒绝好友申请。</param>
         /// <returns></returns>
-        public bool ConfirmFriend(GameChar gameChar, Guid friendId, bool rejected = false)
+        public ConfirmFriendResult ConfirmFriend(GameChar gameChar, Guid friendId, bool rejected = false)
         {
             if (!World.CharManager.Lock(gameChar.GameUser))
             {
                 VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
-                return false;
+                return ConfirmFriendResult.Unknown;
             }
             using var dwChar = new DisposerWrapper(() => World.CharManager.Unlock(gameChar.GameUser));
             using var db = World.CreateNewUserDbContext();
             var gcId = gameChar.Id;
             var sr = GetSrOrAdd(db, gcId, friendId);
             var nsr = GetNSrOrAdd(db, gcId, friendId);
-            if (nsr.IsFriendOrRequesting())   //若未申请好友
-                return false;
+            if (!nsr.IsRequesting())   //若未申请好友
+                return ConfirmFriendResult.Unknown;
             if (rejected)   //若拒绝
             {
-                sr.SetNeutrally();
-                nsr.SetNeutrally();
+                sr.SetNeutrally(); sr.SetConfirmed();
+                nsr.SetNeutrally(); nsr.SetConfirmed();
             }
-            else
+            else //接受
             {
                 var slot = gameChar.AllChildren.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
                 if (slot.GetNumberOfStackRemainder() <= 0)
                 {
                     VWorld.SetLastErrorMessage("好友位已满。");
-                    return false;
+                    return ConfirmFriendResult.CharFriendFull;
                 }
+                sr.SetFriend();
                 sr.SetConfirmed();
+                nsr.SetFriend();
                 nsr.SetConfirmed();
                 slot.Count++;
             }
             db.SaveChanges();
-            return true;
+            return ConfirmFriendResult.Success;
         }
 
         /// <summary>

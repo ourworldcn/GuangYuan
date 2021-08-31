@@ -11,6 +11,7 @@ using OW.Game.Expression;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -391,6 +392,44 @@ namespace GuangYuan.GY001.BLL
                 Monitor.Exit(objectes[i]);
             }
         }
+
+        #region 锁定字符串
+        //按每个字符串平均占用64字节计算，10万个字符串实质占用6.4MB内存,可以接受。
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        public bool LockString(ref string str, TimeSpan timeout)
+        {
+            str = string.Intern(str);
+            return Monitor.TryEnter(str, timeout);
+        }
+
+        /// <summary>
+        /// 锁定指定字符串在字符串拘留池中的实例。
+        /// </summary>
+        /// <param name="str">返回时指向字符串拘留池中的实例。</param>
+        /// <param name="isPulse">在解锁是是否发出脉冲信号。</param>
+        /// <returns>解锁的包装，如果没有成功锁定则为null。</returns>
+        public IDisposable LockString(ref string str, bool isPulse = false)
+        {
+            if (!LockString(ref str, Timeout.InfiniteTimeSpan))
+                return null;
+            var tmp = str;
+            return new DisposerWrapper(() => UnlockString(tmp, isPulse));
+        }
+
+        public void UnlockString(string str, bool isPulse = false)
+        {
+            if (isPulse)
+                Monitor.Pulse(str);
+            Monitor.Exit(str);
+        }
+        #endregion 锁定字符串
     }
 
     /// <summary>
@@ -450,7 +489,7 @@ namespace GuangYuan.GY001.BLL
                     Priority = ThreadPriority.Lowest,
                 };
 #if DEBUG
-                thread.Start();
+                //thread.Start();
 #else
                thread.Start();
 #endif
@@ -477,7 +516,7 @@ namespace GuangYuan.GY001.BLL
             }
             try
             {
-                for (int i = start; i < 5000; i++)
+                for (int i = start; i < 20000; i++)
                 {
                     try
                     {
@@ -496,13 +535,12 @@ namespace GuangYuan.GY001.BLL
                         if (i % 100 == 0)
                         {
                             logger.LogDebug($"[{DateTime.UtcNow:s}]已经创建了{i}个账号。");
-                            Thread.Sleep(1);
                         }
 #if DEBUG
-                        Thread.Sleep(i / 20);
+                        Thread.Sleep(i / 10);
 
 #else
-                        Thread.Sleep(i/20);
+                        Thread.Sleep(i/10);
 #endif
                     }
                     catch (DbUpdateException err)

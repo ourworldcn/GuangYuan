@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +19,30 @@ namespace Gy001.Controllers
     public class SocialController : ControllerBase
     {
         private readonly VWorld _World;
-        public SocialController(VWorld world)
+
+        /// <summary>
+        /// 范围性的用户数据库上下文。
+        /// </summary>
+        private readonly GY001UserContext _UserContext;
+
+        /// <summary>
+        /// 构造函数，用于DI。
+        /// </summary>
+        /// <param name="world"></param>
+        /// <param name="userContext">对于社交类功能，大概率需要范围的数据库上下文。</param>
+        public SocialController(VWorld world, GY001UserContext userContext)
         {
             _World = world;
+            _UserContext = userContext;
         }
+
+#if DEBUG
+        [HttpGet]
+        public ActionResult<bool> Test()
+        {
+            return true;
+        }
+#endif //DEBUG
 
         /// <summary>
         /// 获取指定用户的所有邮件。
@@ -234,11 +255,15 @@ namespace Gy001.Controllers
             {
                 return Unauthorized("令牌无效");
             }
+            using var db = _World.CreateNewUserDbContext();
             try
             {
                 var result = new GetSocialRelationshipsReturnDto();
                 var coll = _World.SocialManager.GetSocialRelationships(gu.CurrentChar);
                 result.SocialRelationships.AddRange(coll.Select(c => (GameSocialRelationshipDto)c));
+                var ids = coll.Select(c => c.Id).Union(coll.Select(c => c.Id2)).Distinct();
+                var summs = _World.SocialManager.GetCharSummary(ids, db);
+                result.Summary.AddRange(summs.Select(c => (CharSummaryDto)c));
                 return result;
             }
             finally
@@ -260,21 +285,27 @@ namespace Gy001.Controllers
             {
                 return Unauthorized("令牌无效");
             }
+            using var dwChar = new DisposerWrapper(() => _World.CharManager.Unlock(gu, true));
+            var result = new ConfirmRequestFriendReturnDto();
             try
             {
-                var result = new ConfirmRequestFriendReturnDto();
-                var succ = _World.SocialManager.ConfirmFriend(gu.CurrentChar, GameHelper.FromBase64String(model.FriendId), model.IsRejected);
-                if (!succ)
+                foreach (var item in model.Items)
                 {
-                    result.DebugMessage = VWorld.GetLastErrorMessage();
-                    result.HasError = true;
+                    var succ = _World.SocialManager.ConfirmFriend(gu.CurrentChar, GameHelper.FromBase64String(item.FriendId), item.IsRejected);
+                    var resultItem = new ConfirmRequestFriendReturnItemDto()
+                    {
+                        Id = item.FriendId,
+                        Result = succ,
+                    };
+                    result.Results.Add(resultItem);
                 }
-                return result;
             }
-            finally
+            catch (Exception err)
             {
-                _World.CharManager.Unlock(gu, true);
+                result.DebugMessage = err.Message;
+                result.HasError = true;
             }
+            return result;
         }
 
         /// <summary>

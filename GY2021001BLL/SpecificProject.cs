@@ -148,6 +148,11 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public static readonly Guid PvpObjectTId = new Guid("{D1A2750B-9300-4C57-A407-941EC1024B1C}");
 
+        /// <summary>
+        /// PVP大关卡模板Id。
+        /// </summary>
+        public static readonly Guid PvpTId = new Guid("{4805434E-605E-4479-B426-9A27C083D7D4}");
+
         #endregion  货币类模板Id
 
         #region 邮件类型Id

@@ -434,9 +434,10 @@ namespace GY2021001WebApi.Models
         {
             var result = new GameSocialRelationshipDto()
             {
-                Friendliness = (sbyte)(obj.Flag - SocialConstant.MinFriendliness - 10),
+                Friendliness = (sbyte)(obj.Flag - SocialConstant.MiddleFriendliness),
                 Id = obj.Id.ToBase64String(),
                 ObjectId = obj.Id2.ToBase64String(),
+
             };
             foreach (var item in obj.Properties)
             {

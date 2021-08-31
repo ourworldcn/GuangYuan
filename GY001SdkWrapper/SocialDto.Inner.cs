@@ -76,12 +76,26 @@ namespace Game.Social
              obj.Flag < SocialConstant.MiddleFriendliness - 5 && obj.Flag >= SocialConstant.MinFriendliness;
 
         /// <summary>
-        /// 获取指示，该对象是否指示了一个好友。
+        /// 获取指示，该对象是否指示了一个好友或正在申请好友。
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
         static public bool IsFriendOrRequesting(this GameSocialRelationship obj) =>
              obj.Flag > SocialConstant.MiddleFriendliness + 5 && obj.Flag <= SocialConstant.MaxFriendliness;
+
+        /// <summary>
+        /// 是否是正在申请好友。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        static public bool IsRequesting(this GameSocialRelationship obj)
+        {
+            if (!obj.IsFriendOrRequesting())
+                return false;
+            if (obj.Properties.TryGetValue(SocialConstant.ConfirmedFriendPName, out var confObj) && confObj is decimal deci && deci == 0)
+                return true;
+            return false;
+        }
 
         /// <summary>
         /// 获取指示，该对象是否是一个已经确定的好友。
@@ -92,7 +106,7 @@ namespace Game.Social
              obj.IsFriendOrRequesting() && obj.Properties.GetDecimalOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero) != decimal.Zero;
 
         /// <summary>
-        /// 设置该对象表示好友关系。
+        /// 设置该对象表示好友关系。但不会设置确定标志。
         /// </summary>
         /// <param name="obj"></param>
         static public void SetFriend(this GameSocialRelationship obj) => obj.Flag = SocialConstant.MiddleFriendliness + 6;

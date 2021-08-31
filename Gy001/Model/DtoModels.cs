@@ -1822,7 +1822,7 @@ namespace GY2021001WebApi.Models
         public DateTime? LastLogoutDatetime { get; set; }
 
         [DataMember]
-        public List<GameItemDto> HomelandShows { get;  set; } = new List<GameItemDto>();
+        public List<GameItemDto> HomelandShows { get; set; } = new List<GameItemDto>();
 
     }
 
@@ -1870,6 +1870,7 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public sbyte Friendliness { get; set; } = 0;
+
     }
 
     /// <summary>
@@ -1884,18 +1885,22 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<GameSocialRelationshipDto> SocialRelationships { get; set; } = new List<GameSocialRelationshipDto>();
+
+        /// <summary>
+        /// 相关角色的摘要信息。用Id链接。
+        /// </summary>
+        [DataMember]
+        public List<CharSummaryDto> Summary { get; set; } = new List<CharSummaryDto>();
+
     }
 
-    /// <summary>
-    /// ConfirmRequestFriend 接口参数封装类。
-    /// </summary>
     [DataContract]
-    public class ConfirmRequestFriendParamsDto : TokenDtoBase
+    public class ConfirmRequestFriendItemDto
     {
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public ConfirmRequestFriendParamsDto()
+        public ConfirmRequestFriendItemDto()
         {
 
         }
@@ -1915,6 +1920,42 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
+    /// ConfirmRequestFriend 接口参数封装类。
+    /// </summary>
+    [DataContract]
+    public class ConfirmRequestFriendParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public ConfirmRequestFriendParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 参见 ConfirmRequestFriendItemDto。
+        /// </summary>
+        [DataMember]
+        public List<ConfirmRequestFriendItemDto> Items { get; set; } = new List<ConfirmRequestFriendItemDto>();
+    }
+
+    [DataContract]
+    public class ConfirmRequestFriendReturnItemDto
+    {
+        /// <summary>
+        /// 朋友的角色Id。
+        /// </summary>
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 申请的结果。参见 ConfirmFriendResult。
+        /// </summary>
+        /// <remarks></remarks>
+        public ConfirmFriendResult Result { get; set; }
+    }
+
+    /// <summary>
     ///  ConfirmRequestFriend 接口返回值封装类。
     /// </summary>
     [DataContract]
@@ -1927,6 +1968,11 @@ namespace GY2021001WebApi.Models
         {
 
         }
+
+        /// <summary>
+        /// 参见 ConfirmRequestFriendReturnItemDto
+        /// </summary>
+        public List<ConfirmRequestFriendReturnItemDto> Results { get; set; } = new List<ConfirmRequestFriendReturnItemDto>();
     }
 
     /// <summary>

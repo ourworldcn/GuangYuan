@@ -170,7 +170,7 @@ namespace GuangYuan.GY001.BLL.Social
             result = from tmp in activeChars
                      join gameChar in db.Set<GameChar>()
                      on tmp.Id equals gameChar.Id
-                     where tmp.Id != GameChar.Id && gameChar.DisplayName == displayName
+                     where gameChar.DisplayName == displayName
                      where allows.Any(c => c.Id == tmp.Id) && !frees.Any(c => c == tmp.Id) && !notAllows.Contains(tmp.Id)
                      orderby tmp.LastLogoutUtc descending
                      select tmp.Id;

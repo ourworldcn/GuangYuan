@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,19 +15,12 @@ namespace System
     [DebuggerNonUserCode()]
     public class DisposerWrapper : IDisposable
     {
-
-        public Action DisposeAction
-        {
-            get;
-            set;
-        }
-
         public DisposerWrapper(Action disposeAction)
         {
             DisposeAction = disposeAction;
         }
 
-        public DisposerWrapper(Action<object> action,object state)
+        public DisposerWrapper(Action<object> action, object state)
         {
             DisposeAction = () => action(state);
         }
@@ -36,9 +30,21 @@ namespace System
             DisposeAction = () => disposeAction?.Invoke();
         }
 
+        public Action DisposeAction
+        {
+            get;
+            set;
+        }
+
+        bool _Disposed;
+
         public void Dispose()
         {
-            DisposeAction?.Invoke();
+            if (!_Disposed)
+            {
+                DisposeAction?.Invoke();
+                _Disposed = true;
+            }
         }
 
     }

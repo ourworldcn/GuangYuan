@@ -407,10 +407,14 @@ namespace GuangYuan.GY001.BLL
                 data.NextTemplate = GetNext(data.Template);
                 if (null == data.NextTemplate || data.EndRequested) //若大关卡已经结束
                 {
+                    if (GetParent(data.Template).Id == ProjectConstant.PvpTId)    //若是pvp
+                    {
+
+                    }
                     var changes = new List<ChangeItem>();
                     //移动收益槽数据到各自背包。
                     //金币
-                    
+
                     gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar.GetCurrencyBag(), changes);
                     //野生怪物
                     var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
