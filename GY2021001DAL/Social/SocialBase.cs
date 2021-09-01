@@ -19,7 +19,7 @@ namespace GuangYuan.GY001.UserDb
         {
         }
 
-        protected GameSocialBase(Guid id, Guid id2, long flag) : base(id, id2, flag)
+        protected GameSocialBase(Guid id, Guid id2, int keyType, int flag) : base(id, id2, keyType, flag)
         {
         }
 

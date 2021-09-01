@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GY2021001WebApi.Controllers
@@ -23,7 +27,6 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<string> Get(int id)
         {
             return "value";
-
         }
 
         // POST api/values
@@ -45,6 +48,8 @@ namespace GY2021001WebApi.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public void Delete(int id)
         {
+            
         }
     }
+
 }

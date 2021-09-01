@@ -39,7 +39,8 @@ namespace GuangYuan.GY001.UserDb
         /// <param _Name="id"></param>
         /// <param _Name="id2"></param>
         /// <param _Name="flag"></param>
-        public GameSocialRelationship(Guid id, Guid id2, long flag) : base(id, id2, flag)
+        /// <param name="keyType"></param>
+        public GameSocialRelationship(Guid id, Guid id2,int keyType, int flag) : base(id, id2, keyType, flag)
         {
         }
 

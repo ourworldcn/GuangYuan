@@ -244,10 +244,13 @@ namespace GuangYuan.GY001.BLL
         }
         #region IDisposable接口
 
-        private bool disposedValue;
+        private bool _Disposed;
+
+        protected bool Disposed => _Disposed;
+
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_Disposed)
             {
                 if (disposing)
                 {
@@ -256,7 +259,7 @@ namespace GuangYuan.GY001.BLL
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                disposedValue = true;
+                _Disposed = true;
             }
         }
 

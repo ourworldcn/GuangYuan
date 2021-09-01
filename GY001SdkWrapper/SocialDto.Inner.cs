@@ -3,6 +3,7 @@ using OW.Game;
 using OW.Game.Store;
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Game.Social
 {
@@ -66,6 +67,8 @@ namespace Game.Social
     /// </summary>
     public static class GameSocialRelationshipExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsFrindSocialRelationship(this GameSocialRelationship obj) => obj.KeyType == SocialConstant.FriendKeyType;
 
         /// <summary>
         /// 获取指示，该对象是否是一个黑名单。
@@ -73,7 +76,7 @@ namespace Game.Social
         /// <param name="obj"></param>
         /// <returns></returns>
         static public bool IsBlack(this GameSocialRelationship obj) =>
-             obj.Flag < SocialConstant.MiddleFriendliness - 5 && obj.Flag >= SocialConstant.MinFriendliness;
+            obj.IsFrindSocialRelationship() && obj.Flag < SocialConstant.MiddleFriendliness - 5 && obj.Flag >= SocialConstant.MinFriendliness;
 
         /// <summary>
         /// 获取指示，该对象是否指示了一个好友或正在申请好友。
@@ -81,7 +84,7 @@ namespace Game.Social
         /// <param name="obj"></param>
         /// <returns></returns>
         static public bool IsFriendOrRequesting(this GameSocialRelationship obj) =>
-             obj.Flag > SocialConstant.MiddleFriendliness + 5 && obj.Flag <= SocialConstant.MaxFriendliness;
+           obj.IsFrindSocialRelationship() && obj.Flag > SocialConstant.MiddleFriendliness + 5 && obj.Flag <= SocialConstant.MaxFriendliness;
 
         /// <summary>
         /// 是否是正在申请好友。

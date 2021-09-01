@@ -10,3 +10,6 @@ fcptfhcd=2021-6-1 1:0:0	×îºó¼ÆËãµÄÊ±¼äµã,Õâ¸ö×Ö·û´®»á±ä¸ñÊ½£¬ÓÃDateTime.Parse·ÖÎ
 fcpmfhcd=25400	·õ»¯cd×î´óÖµ
 
 DateTime.UtcNow.ToString("");
+
+AÏòBÉêÇëºÃÓÑ£¬Ôò GameSocialRelationshipDto ¶ÔÏóÖĞ£¬Id=AId,ObjectId=BId,Friendliness=6,Confirmed=0
+Friendliness=6,Confirmed=0 ±êÊ¶ÕâÊÇÒ»¸öºÃÓÑÉêÇëµÄÌõÄ¿£¬IdÊÇÌá³öÉêÇëµÄÒ»·½£¬ObjectIdÊÇ±»ÑûÇëµÄÒ»·½¡£Õâ¸öÌõÄ¿¼ÇÂ¼ÁËÒ»¸ö¶¯×÷£¬IdÊÇ¶¯×÷µÄÖ÷Ìå¡£

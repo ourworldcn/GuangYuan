@@ -42,7 +42,8 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
 
             //社交关系
-            modelBuilder.Entity<GameSocialRelationship>().HasKey(c => new { c.Id, c.Id2, c.Flag });
+            modelBuilder.Entity<GameSocialRelationship>().HasKey(c => new { c.Id, c.Id2, c.KeyType });
+            modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.KeyType).IsUnique(false);
             modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.Flag).IsUnique(false);
             modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.PropertyString).IsUnique(false);
 

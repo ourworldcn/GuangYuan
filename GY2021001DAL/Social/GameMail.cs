@@ -214,15 +214,15 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public byte[] ReceivedCharIds { get; set; } = Array.Empty<byte>();
 
-        private List<Guid> _RemovedIds;
+        private HashSet<Guid> _RemovedIds;
         [NotMapped]
-        public List<Guid> RemovedIds
+        public HashSet<Guid> RemovedIds
         {
             get
             {
                 if (_RemovedIds is null)
                 {
-                    _RemovedIds = new List<Guid>();
+                    _RemovedIds = new HashSet<Guid>();
                     var lengthe = 16;
                     for (int i = 0; i < ReceivedCharIds.Length; i += lengthe)
                     {

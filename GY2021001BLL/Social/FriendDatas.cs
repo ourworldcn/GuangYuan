@@ -132,7 +132,7 @@ namespace GuangYuan.GY001.BLL.Social
             IQueryable<Guid> result;
             var db = DbCoutext;
             IQueryable<GameSocialRelationship> shows;
-            shows = db.Set<GameSocialRelationship>().Where(c => bodyTIds.Contains(c.Id2) && c.Flag == SocialConstant.HomelandShowFlag);  //展示坐骑
+            shows = db.Set<GameSocialRelationship>().Where(c => bodyTIds.Contains(c.Id2) && c.KeyType == SocialConstant.HomelandShowKeyType);  //展示坐骑
 
             var activeChars = db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);  //活跃用户
             var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户

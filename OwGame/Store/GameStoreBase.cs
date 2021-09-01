@@ -208,17 +208,32 @@ namespace OW.Game.Store
     [NotMapped]
     public class GameEntityRelationshipBase : SimpleExtendPropertyBase
     {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
         public GameEntityRelationshipBase()
         {
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="id">实体Id,用于标识主体Id。</param>
         public GameEntityRelationshipBase(Guid id) : base(id)
         {
         }
 
-        public GameEntityRelationshipBase(Guid id, Guid id2, long flag) : base(id)
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="id">实体Id,用于标识主体Id。</param>
+        /// <param name="id2"><seealso cref="Id2"/></param>
+        /// <param name="keyType"><seealso cref="KeyType"/></param>
+        /// <param name="flag"><seealso cref="Flag"/></param>
+        public GameEntityRelationshipBase(Guid id, Guid id2, int keyType, int flag) : base(id)
         {
             Id2 = id2;
+            KeyType = keyType;
             Flag = flag;
         }
 
@@ -227,11 +242,22 @@ namespace OW.Game.Store
         /// </summary>
         public Guid Id2 { get; set; }
 
-        public long Flag { get; set; }
+        /// <summary>
+        /// 与Id Id2组成联合主键。且有自己的单独重复索引。
+        /// </summary>
+        public int KeyType { get; set; }
 
+        /// <summary>
+        /// 一个标志位，具体区别该对象标识的物品或关系状态，具有单独重复索引。
+        /// </summary>
+        public int Flag { get; set; }
+
+        /// <summary>
+        /// 记录额外信息，最长64字符，且有单独重复索引。
+        /// </summary>
         [MaxLength(64)]
         public string PropertyString { get; set; }
-
+        
     }
 
     public static class PocoLoadingExtensions

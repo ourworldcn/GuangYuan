@@ -5,6 +5,7 @@ using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using OW.Game;
 using OW.Game.Store;
 using System;
@@ -116,12 +117,15 @@ namespace Gy001.Controllers
             {
                 return Unauthorized("令牌无效");
             }
+            var results = new List<(Guid, GetAttachmenteItemResult)>();
+            var db = _UserContext;
             try
             {
                 var social = _World.SocialManager;
                 var changes = new List<ChangeItem>();
-                social.GetAttachmentes(model.Ids.Select(c => GameHelper.FromBase64String(c)), gu.CurrentChar, changes);
+                social.GetAttachmentes(model.Ids.Select(c => GameHelper.FromBase64String(c)), gu.CurrentChar, db, changes, results);
                 result.ChangesItems.AddRange(changes.Select(c => (ChangesItemDto)c));
+                result.Results.AddRange(results.Select(c => (c.Item1.ToBase64String(), c.Item2)));
             }
             catch (Exception err)
             {
@@ -255,11 +259,11 @@ namespace Gy001.Controllers
             {
                 return Unauthorized("令牌无效");
             }
-            using var db = _World.CreateNewUserDbContext();
+            var db = _UserContext;
             try
             {
                 var result = new GetSocialRelationshipsReturnDto();
-                var coll = _World.SocialManager.GetSocialRelationships(gu.CurrentChar);
+                var coll = _World.SocialManager.GetSocialRelationships(gu.CurrentChar, db).AsEnumerable().Where(c => c.Flag != SocialConstant.MiddleFriendliness); //过滤掉中立玩家
                 result.SocialRelationships.AddRange(coll.Select(c => (GameSocialRelationshipDto)c));
                 var ids = coll.Select(c => c.Id).Union(coll.Select(c => c.Id2)).Distinct();
                 var summs = _World.SocialManager.GetCharSummary(ids, db);
@@ -317,7 +321,7 @@ namespace Gy001.Controllers
         [HttpDelete]
         public ActionResult<ModifySrReturnDto> RemoveFriend(ModifySrParamsDto model)
         {
-            var result = new ModifySrReturnDto();
+            var result = new ModifySrReturnDto() { FriendId = model.FriendId };
             if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
             {
                 return Unauthorized("令牌无效");
@@ -326,6 +330,7 @@ namespace Gy001.Controllers
             {
                 if (!_World.SocialManager.RemoveFriend(gu.CurrentChar, GameHelper.FromBase64String(model.FriendId)))
                     result.DebugMessage = VWorld.GetLastErrorMessage();
+
             }
             catch (Exception err)
             {
@@ -494,8 +499,11 @@ namespace Gy001.Controllers
         public ActionResult<GetHomelandDataReturnDto> GetHomelandData([FromQuery] GetHomelandDataParamsDto model)
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
-            //构造调用参数
-            var datas = new GetHomelandDataDatas();
+                                                                                    //构造调用参数
+            using var datas = new GetHomelandDataDatas()
+            {
+                Context = _UserContext,
+            };
             using var disposer = datas.SetTokenStringAndLock(model.Token, world.CharManager);
             if (disposer is null)   //若锁定失败
                 return StatusCode(datas.ResultCode, datas.DebugMessage);

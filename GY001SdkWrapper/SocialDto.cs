@@ -239,23 +239,28 @@ namespace Game.Social
         /// <summary>
         /// 角色之间关系的最小值。
         /// </summary>
-        public const long MinFriendliness = 1000;
+        public const int MinFriendliness = -10;
 
         /// <summary>
         /// 角色之间关系的最大值。
         /// </summary>
-        public const long MaxFriendliness = 1020;
+        public const int MaxFriendliness = 10;
 
         /// <summary>
         /// 角色之间关系的中间值。
         /// </summary>
-        public const long MiddleFriendliness = 1010;
+        public const int MiddleFriendliness = 0;
+
+        /// <summary>
+        /// 标志这个条目是角色之间社交关系的条目。
+        /// </summary>
+        public const int FriendKeyType = 10;
+
 
         /// <summary>
         /// 标志这个条目是指定角色家园展示坐骑。
         /// </summary>
-        public const long HomelandShowFlag = 10000;
-
+        public const int HomelandShowKeyType = 10000;
 
 
     }
@@ -313,6 +318,32 @@ namespace Game.Social
         /// </summary>
         [DataMember]
         AlreadyBlack,
+    }
+
+    /// <summary>
+    /// 获取邮件附件后， 每个附件的获取结果。
+    /// </summary>
+    public enum GetAttachmenteItemResult
+    {
+        /// <summary>
+        /// 成功。
+        /// </summary>
+        Success,
+
+        /// <summary>
+        /// 未知的数据格式错误。
+        /// </summary>
+        Unknow,
+
+        /// <summary>
+        /// 该项无法放入指定容器。
+        /// </summary>
+        Full,
+
+        /// <summary>
+        /// 该项已被领取。
+        /// </summary>
+        Done,
     }
 
 

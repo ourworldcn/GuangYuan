@@ -1288,14 +1288,14 @@ namespace GuangYuan.GY001.BLL
                     if (item.Item2 == 10)  //若是家园展示
                     {
                         var tid = World.ItemManager.GetBody(mounts).TemplateId; //身体的模板Id
-                        var sr = db.Set<GameSocialRelationship>().Find(gc.Id, tid, SocialConstant.HomelandShowFlag);
+                        var sr = db.Set<GameSocialRelationship>().Find(gc.Id, tid, SocialConstant.HomelandShowKeyType);
                         if (sr is null)
                         {
                             sr = new GameSocialRelationship
                             {
                                 Id = gc.Id,
                                 Id2 = tid,
-                                Flag = SocialConstant.HomelandShowFlag,
+                                KeyType = SocialConstant.HomelandShowKeyType,
                             };
                             db.Add(sr);
                         }
@@ -1307,7 +1307,7 @@ namespace GuangYuan.GY001.BLL
                     if (item.Item2 == 10)  //若是家园展示
                     {
                         var tid = World.ItemManager.GetBody(mounts).TemplateId; //身体的模板Id
-                        var sr = db.Set<GameSocialRelationship>().Find(gc.Id, tid, SocialConstant.HomelandShowFlag);
+                        var sr = db.Set<GameSocialRelationship>().Find(gc.Id, tid, SocialConstant.HomelandShowKeyType);
                         if (null != sr)
                         {
                             db.Remove(sr);

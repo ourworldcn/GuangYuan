@@ -430,14 +430,15 @@ namespace GY2021001WebApi.Models
 
     public partial class GameSocialRelationshipDto
     {
+
         static public implicit operator GameSocialRelationshipDto(GameSocialRelationship obj)
         {
             var result = new GameSocialRelationshipDto()
             {
-                Friendliness = (sbyte)(obj.Flag - SocialConstant.MiddleFriendliness),
                 Id = obj.Id.ToBase64String(),
                 ObjectId = obj.Id2.ToBase64String(),
-
+                KeyType=obj.KeyType,
+                Friendliness = (sbyte)obj.Flag,
             };
             foreach (var item in obj.Properties)
             {

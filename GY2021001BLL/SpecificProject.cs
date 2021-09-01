@@ -477,7 +477,7 @@ namespace GuangYuan.GY001.BLL
             {
                 Id = gameChar.Id,
                 Id2 = gim.GetBody(showMount).TemplateId,
-                Flag = SocialConstant.HomelandShowFlag,
+                KeyType = SocialConstant.HomelandShowKeyType,
             };
             db.Add(gsr);
             //发送测试邮件

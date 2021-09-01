@@ -1747,6 +1747,12 @@ namespace GY2021001WebApi.Models
         public GetAttachmentesRetuenDto()
         {
         }
+
+        /// <summary>
+        /// 每个附件获取的结果集合。
+        /// </summary>
+        [DataMember]
+        public List<(string, GetAttachmenteItemResult)> Results { get; set; } = new List<(string, GetAttachmenteItemResult)>();
     }
 
     /// <summary>
@@ -1864,6 +1870,9 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string ObjectId { get; set; }
 
+        [DataMember]
+        public int KeyType { get; private set; }
+
         /// <summary>
         /// 左看右的友好度。
         /// 小于-5则是黑名单，大于5是好友。目前这个字段仅使用-6和6两个值。
@@ -1946,12 +1955,14 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 朋友的角色Id。
         /// </summary>
+        [DataMember]
         public string Id { get; set; }
 
         /// <summary>
         /// 申请的结果。参见 ConfirmFriendResult。
         /// </summary>
         /// <remarks></remarks>
+        [DataMember]
         public ConfirmFriendResult Result { get; set; }
     }
 
@@ -1972,6 +1983,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 参见 ConfirmRequestFriendReturnItemDto
         /// </summary>
+        [DataMember]
         public List<ConfirmRequestFriendReturnItemDto> Results { get; set; } = new List<ConfirmRequestFriendReturnItemDto>();
     }
 
@@ -1981,6 +1993,13 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class ModifySrReturnDto : ReturnDtoBase
     {
+        public ModifySrReturnDto()
+        {
+
+        }
+
+        [DataMember]
+        public string FriendId { get; set; }
     }
 
     /// <summary>

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -252,77 +253,78 @@ namespace GuangYuan.GY001.BLL
             SendMail(mail, tos, senderId);
         }
 
-        //public class GetAttachmentesWork
-        //{
-
-        //}
         /// <summary>
         /// 领取附件。
         /// </summary>
         /// <param name="attachmentesIds">附件Id集合。</param>
         /// <param name="gameChar"></param>
+        /// <param name="db">访问公共数据使用的数据库上下文对象。</param>
         /// <param name="changes"></param>
-        public bool GetAttachmentes(IEnumerable<Guid> attachmentesIds, GameChar gameChar, IList<ChangeItem> changes = null)
+        /// <param name="results">每一项的获取结果。</param>
+        public bool GetAttachmentes(IEnumerable<Guid> attachmentesIds, GameChar gameChar, DbContext db, IList<ChangeItem> changes = null, ICollection<(Guid, GetAttachmenteItemResult)> results = null)
         {
-            var db = World.CreateNewUserDbContext();
-            ValueTuple<Guid, decimal, Guid>[] templates;
-            try
+            using var dwChar = World.CharManager.LockAndReturnDispose(gameChar.GameUser);
+            //附件Id是IdMark.Id,角色Id是IdMark.Id
+            var gcId = gameChar.Id;
+            var mails = GetMails(gameChar, db);  //角色的所有邮件
+            var coll = mails.SelectMany(c => c.Attachmentes).ToList();
+            var atts = (from id in attachmentesIds
+                        join att in coll
+                        on id equals att.Id
+                        select att    //所有属于该玩家且被指定的附件
+            ).ToList();
+            if (atts.Count < attachmentesIds.Count())
             {
-                //附件Id是IdMark.Id,角色Id是IdMark.Id
-                var gcId = gameChar.Id;
-                var mails = GetMails(gameChar, db);  //角色的所有邮件
-                var coll = mails.SelectMany(c => c.Attachmentes).ToList();
-                var atts = (from id in attachmentesIds
-                            join att in coll
-                            on id equals att.Id
-                            select att    //所有属于该玩家且被指定的附件
-                ).ToList();
-                if (atts.Count < attachmentesIds.Count())
-                {
-                    VWorld.SetLastErrorMessage("至少有一个附件不属于指定角色。");
-                    return false;
-                };
-                atts.ForEach(c => c.SetDeleted(gcId));
-
-                if (atts.Any(c => c.IdDeleted))
-                {
-                    VWorld.SetLastErrorMessage("至少有一个附件已经被领取。");
-                    return false;
-                }
-                atts.ForEach(c => c.RemovedIds.Add(gcId));  //标记已经删除
-                templates = atts.Select(c =>
-                {
-                    return ValueTuple.Create(c.Properties.GetGuidOrDefault(SocialConstant.SentTIdPName, Guid.Empty),
-                     c.Properties.GetDecimalOrDefault(SocialConstant.SentCountPName, decimal.Zero),
-                     c.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty));
-                }).ToArray();
-            }
-            finally
-            {
-                Task.Delay(1000).ContinueWith((c, dbObj) => (dbObj as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);
-            }
-            //修正玩家数据
-            if (!World.CharManager.Lock(gameChar.GameUser))
-            {
-                VWorld.SetLastErrorMessage("无法锁定玩家。");
+                VWorld.SetLastErrorMessage("至少有一个附件不属于指定角色。");
                 return false;
-            }
-            try
+            };
+            var gim = World.ItemManager;
+            bool dirty = false;
+            foreach (var item in atts)  //遍历附件
             {
-                var gim = World.ItemManager;
-                foreach (var item in templates) //遍历需要追加的物品
+                try
                 {
-                    var gameItem = gim.CreateGameItem(item.Item1);  //物品管理器
-                    gameItem.Count = item.Item2;
-                    GameObjectBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == item.Item3);
-                    parent ??= gameChar;
-                    gim.AddItem(gameItem, parent, null, changes);
+                    if (!item.RemovedIds.Add(gcId))  //若已经被领取
+                    {
+                        results?.Add((item.Id, GetAttachmenteItemResult.Done));
+                        continue;
+                    }
+                    var tid = item.Properties.GetGuidOrDefault(SocialConstant.SentTIdPName, Guid.Empty);
+                    var count = item.Properties.GetDecimalOrDefault(SocialConstant.SentCountPName, decimal.Zero);
+                    var ptid = item.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty);
+                    var gameItem = gim.CreateGameItem(tid);  //物品
+                    gameItem.Count = count;
+                    GameObjectBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
+                    if (parent is null)
+                    {
+                        if (ptid == ProjectConstant.CharTemplateId)
+                            parent = gameChar;
+                        else
+                        {
+                            results?.Add((item.Id, GetAttachmenteItemResult.Unknow));
+                            continue;
+                        }
+                    }
+                    gim.AddItem(gameItem, parent, null, changes);   //TO DO
+                    dirty = true;
                 }
-                World.CharManager.NotifyChange(gameChar.GameUser);
+                catch (Exception)
+                {
+                    results.Add((item.Id, GetAttachmenteItemResult.Unknow));
+                }
             }
-            finally
+            if (dirty)  //若数据发生了变化
             {
-                World.CharManager.Unlock(gameChar.GameUser, true);
+                try
+                {
+                    db.SaveChanges();    //修正玩家数据
+                    World.CharManager.NotifyChange(gameChar.GameUser);
+                }
+                catch (Exception err)
+                {
+                    VWorld.SetLastErrorMessage($"发生未知错误——{err.Message}");
+                    return false;
+                }
             }
             return true;
         }
@@ -337,7 +339,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="db"></param>
         /// <returns></returns>
         public IQueryable<GameSocialRelationship> GetCharRelationship(Guid charId, DbContext db) =>
-            db.Set<GameSocialRelationship>().Where(c => c.Flag >= SocialConstant.MinFriendliness && c.Flag <= SocialConstant.MaxFriendliness && c.Id == charId);
+            db.Set<GameSocialRelationship>().Where(c => c.Id == charId && c.KeyType == SocialConstant.FriendKeyType);
 
         /// <summary>
         /// 获取与指定id为目标客体的所有角色关系集合。
@@ -384,7 +386,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="db">使用的用户数据库上下文。</param>
         /// <returns>指定的角色摘要信息。</returns>
         /// <exception cref="ArgumentException">至少一个指定的Id不是有效角色Id。</exception>
-        public IEnumerable<CharSummary> GetCharSummary(IEnumerable<Guid> ids, DbContext db)
+        public IEnumerable<CharSummary> GetCharSummary(IEnumerable<Guid> ids, [NotNull] DbContext db)
         {
             var gameChars = db.Set<GameChar>().Where(c => ids.Contains(c.Id)).ToArray();
             if (gameChars.Length != ids.Count())
@@ -519,8 +521,9 @@ namespace GuangYuan.GY001.BLL
         /// Confirmed。
         /// </summary>
         /// <param name="gameChar">己方角色对象。</param>
+        /// <param name="db"></param>
         /// <returns></returns>
-        public IEnumerable<GameSocialRelationship> GetSocialRelationships(GameChar gameChar)
+        public IEnumerable<GameSocialRelationship> GetSocialRelationships(GameChar gameChar,DbContext db)
         {
             if (!World.CharManager.Lock(gameChar.GameUser))
             {
@@ -528,7 +531,6 @@ namespace GuangYuan.GY001.BLL
                 return null;
             }
             using var dwChar = new DisposerWrapper(() => World.CharManager.Unlock(gameChar.GameUser, true));
-            using var db = World.CreateNewUserDbContext();
             try
             {
                 var gcId = gameChar.Id;
@@ -549,7 +551,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="context"></param>
         /// <returns></returns>
         protected IQueryable<GameSocialRelationship> GetSocialRelationshipQuery(DbContext context) =>
-            context.Set<GameSocialRelationship>().Where(c => c.Flag >= SocialConstant.MinFriendliness && c.Flag <= SocialConstant.MaxFriendliness);
+            context.Set<GameSocialRelationship>().Where(c => c.KeyType == SocialConstant.FriendKeyType);
 
         /// <summary>
         /// 获取自己与对方的关系对象。
@@ -573,7 +575,7 @@ namespace GuangYuan.GY001.BLL
             var result = GetSrOrDefault(context, charId, otherId);
             if (result is null)
             {
-                result = new GameSocialRelationship() { Id = charId, Id2 = otherId, Flag = SocialConstant.MiddleFriendliness, };
+                result = new GameSocialRelationship() { Id = charId, Id2 = otherId, KeyType = SocialConstant.FriendKeyType, Flag = SocialConstant.MiddleFriendliness, };
                 context.Add(result);
             }
             return result;
@@ -601,7 +603,7 @@ namespace GuangYuan.GY001.BLL
             var result = GetNSrOrDefault(context, charId, otherId);
             if (result is null)
             {
-                result = new GameSocialRelationship() { Id = otherId, Id2 = charId, Flag = SocialConstant.MiddleFriendliness };
+                result = new GameSocialRelationship() { Id = otherId, Id2 = charId, KeyType = SocialConstant.FriendKeyType, Flag = SocialConstant.MiddleFriendliness };
                 context.Add(result);
             }
             return result;
@@ -672,10 +674,10 @@ namespace GuangYuan.GY001.BLL
             {
                 var slot = gameChar.GameItems.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
                 slot.Count--;
-                sr.SetNeutrally();
+                sr.SetNeutrally(); sr.SetConfirmed();
             }
 
-            nsr.SetNeutrally();
+            nsr.SetNeutrally(); nsr.SetConfirmed();
             db.SaveChanges();
             return true;
         }
@@ -1109,10 +1111,10 @@ namespace GuangYuan.GY001.BLL
                 return;
             var gc = datas.GameChar;
             var gim = World.ItemManager;
-            using var db = World.CreateNewUserDbContext();
+            var db = datas.Context;
             try
             {
-                var objChar = db.GameChars.Find(datas.OtherCharId);
+                var objChar = db.Set<GameChar>().Find(datas.OtherCharId);
                 if (objChar is null)
                 {
                     datas.HasError = true;
@@ -1121,7 +1123,7 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
                 //构造对象
-                var objUser = db.GameUsers.Find(objChar.GameUserId);
+                var objUser = db.Set<GameUser>().Find(objChar.GameUserId);
                 objUser.DbContext = db;
                 objUser.CurrentChar = objChar;
                 objChar.GameUser = objUser;
@@ -1144,9 +1146,9 @@ namespace GuangYuan.GY001.BLL
                      .Union(gim.GetLineup(objChar, 21)).Union(gim.GetLineup(objChar, 22)).Union(gim.GetLineup(objChar, 23)).Union(gim.GetLineup(objChar, 24));
                 datas.Mounts.AddRange(collMounts);
             }
-            finally
+            catch (Exception)
             {
-                Task.Delay(1000).ContinueWith((task, state) => (state as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);
+
             }
         }
 
@@ -1277,6 +1279,20 @@ namespace GuangYuan.GY001.BLL
         /// 地块信息。
         /// </summary>
         public List<GameItem> Lands => GetOrAdd(nameof(Lands), ref _Lands);
+
+        public DbContext Context { get; set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    //Context?.DisposeAsync();
+                }
+                base.Dispose(disposing);
+            }
+        }
     }
 
     public enum PatForTiliResult

@@ -4,14 +4,16 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    partial class GY001UserContextModelSnapshot : ModelSnapshot
+    [Migration("20210901022841_21090101")]
+    partial class _21090101
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -331,8 +333,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.HasKey("Id", "Id2", "KeyType");
 
                     b.HasIndex("Flag");
-
-                    b.HasIndex("KeyType");
 
                     b.HasIndex("PropertyString");
 
