@@ -1676,6 +1676,12 @@ namespace GY2021001WebApi.Models
         {
 
         }
+
+        /// <summary>
+        /// 指定邮件Id的集合，空集合表示取所有邮件。
+        /// </summary>
+        [DataMember]
+        public List<string> Ids { get; set; } = new List<string>();
     }
 
     /// <summary>
@@ -1735,6 +1741,27 @@ namespace GY2021001WebApi.Models
         public List<string> Ids { get; set; }
     }
 
+    [DataContract]
+   public class GetAttachmentesResultItemDto
+    {
+        public GetAttachmentesResultItemDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 附件Id。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 取得该附件的结果。
+        /// </summary>
+        [DataMember]
+        public GetAttachmenteItemResult Result { get; set; }
+    }
+
     /// <summary>
     /// 获取附件接口使用的返回值封装类。
     /// </summary>
@@ -1752,7 +1779,7 @@ namespace GY2021001WebApi.Models
         /// 每个附件获取的结果集合。
         /// </summary>
         [DataMember]
-        public List<(string, GetAttachmenteItemResult)> Results { get; set; } = new List<(string, GetAttachmenteItemResult)>();
+        public List<GetAttachmentesResultItemDto> Results { get; set; } = new List<GetAttachmentesResultItemDto>();
     }
 
     /// <summary>
@@ -1843,6 +1870,9 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public RequestFriendResult Details { get; set; }
+
+        [DataMember]
+        public string FriendId { get; set; }
     }
 
     /// <summary>

@@ -176,32 +176,32 @@ namespace GuangYuan.GY001.BLL
 #endif
 
         private GameItemTemplateManager _ItemTemplateManager;
-        public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= Services.GetRequiredService<GameItemTemplateManager>(); }
+        public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= Service.GetRequiredService<GameItemTemplateManager>(); }
 
         private GameCharManager _GameCharManager;
-        public GameCharManager CharManager { get => _GameCharManager ??= Services.GetRequiredService<GameCharManager>(); }
+        public GameCharManager CharManager { get => _GameCharManager ??= Service.GetRequiredService<GameCharManager>(); }
 
         private CombatManager _CombatManager;
-        public CombatManager CombatManager { get => _CombatManager ??= Services.GetRequiredService<CombatManager>(); }
+        public CombatManager CombatManager { get => _CombatManager ??= Service.GetRequiredService<CombatManager>(); }
 
         private GameItemManager _GameItemManager;
         /// <summary>
         /// 虚拟事物管理器。
         /// </summary>
-        public GameItemManager ItemManager { get => _GameItemManager ??= Services.GetRequiredService<GameItemManager>(); }
+        public GameItemManager ItemManager { get => _GameItemManager ??= Service.GetRequiredService<GameItemManager>(); }
 
         private GameSocialManager _SocialManager;
         /// <summary>
         /// 社交管理器。
         /// </summary>
-        public GameSocialManager SocialManager => _SocialManager ??= Services.GetRequiredService<GameSocialManager>();
+        public GameSocialManager SocialManager => _SocialManager ??= Service.GetRequiredService<GameSocialManager>();
 
 
         private BlueprintManager _BlueprintManager;
         /// <summary>
         /// 资源转换管理器。
         /// </summary>
-        public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Services.GetRequiredService<BlueprintManager>(); }
+        public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Service.GetRequiredService<BlueprintManager>(); }
 
         private ObjectPool<List<GameItem>> _ObjectPoolListGameItem;
 
@@ -212,7 +212,7 @@ namespace GuangYuan.GY001.BLL
                 if (null == _ObjectPoolListGameItem)
                 {
                     lock (ThisLocker)
-                        _ObjectPoolListGameItem ??= (Services.GetService<ObjectPool<List<GameItem>>>() ??
+                        _ObjectPoolListGameItem ??= (Service.GetService<ObjectPool<List<GameItem>>>() ??
                             new DefaultObjectPool<List<GameItem>>(new ListGameItemPolicy(), Environment.ProcessorCount * 8));
                 }
                 return _ObjectPoolListGameItem;
@@ -230,7 +230,7 @@ namespace GuangYuan.GY001.BLL
                     lock (ThisLocker)
                         if (_StringObjectDictionaryPool is null)
                         {
-                            _StringObjectDictionaryPool = Services.GetService<ObjectPool<Dictionary<string, object>>>();
+                            _StringObjectDictionaryPool = Service.GetService<ObjectPool<Dictionary<string, object>>>();
                             if (_StringObjectDictionaryPool is null)
                             {
                                 _StringObjectDictionaryPool = new DefaultObjectPool<Dictionary<string, object>>(new StringObjectDictionaryPooledPolicy(), Environment.ProcessorCount * 16);
@@ -281,7 +281,7 @@ namespace GuangYuan.GY001.BLL
         private void Initialize()
         {
             RequestShutdown = _CancellationTokenSource.Token;
-            var logger = Services.GetRequiredService<ILogger<VWorld>>();
+            var logger = Service.GetRequiredService<ILogger<VWorld>>();
             logger.LogInformation("初始化完毕，开始服务。");
         }
 

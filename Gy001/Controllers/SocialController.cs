@@ -63,7 +63,13 @@ namespace Gy001.Controllers
                 var result = new GetMailsReturnDto();
                 var social = _World.SocialManager;
                 var coll = social.GetMails(gu.CurrentChar);
-                result.Mails.AddRange(coll.Select(c => (GameMailDto)c));
+                if (model.Ids is null || model.Ids.Count <= 0)  //若取所有邮件
+                    result.Mails.AddRange(coll.Select(c => (GameMailDto)c));
+                else
+                {
+                    result.Mails.AddRange(coll.Select(c => (GameMailDto)c));    //TO DO效率低下
+                    result.Mails.RemoveAll(c => !model.Ids.Contains(c.Id));
+                }
                 return result;
 
             }
@@ -125,7 +131,11 @@ namespace Gy001.Controllers
                 var changes = new List<ChangeItem>();
                 social.GetAttachmentes(model.Ids.Select(c => GameHelper.FromBase64String(c)), gu.CurrentChar, db, changes, results);
                 result.ChangesItems.AddRange(changes.Select(c => (ChangesItemDto)c));
-                result.Results.AddRange(results.Select(c => (c.Item1.ToBase64String(), c.Item2)));
+                result.Results.AddRange(results.Select(c => new GetAttachmentesResultItemDto
+                {
+                    Id = c.Item1.ToBase64String(),
+                    Result = c.Item2,
+                }));
             }
             catch (Exception err)
             {
@@ -199,7 +209,10 @@ namespace Gy001.Controllers
             }
             try
             {
-                var result = new RequestFriendReturnDto();
+                var result = new RequestFriendReturnDto()
+                {
+                    FriendId = model.FriendId,
+                };
                 var hr = _World.SocialManager.RequestFriend(gu.CurrentChar, GameHelper.FromBase64String(model.FriendId));
                 switch (hr)
                 {
@@ -542,7 +555,7 @@ namespace Gy001.Controllers
             try
             {
                 result = new GetPvpListReturnDto();
-                var returnData = _World.SocialManager.GetPvpChars(gu.CurrentChar, DateTime.UtcNow);
+                var returnData = _World.SocialManager.GetPvpChars(gu.CurrentChar, DateTime.UtcNow, _UserContext);
                 result.PvpList.AddRange(returnData.Select(c => (GameActionRecordDto)c));
             }
             catch (Exception err)

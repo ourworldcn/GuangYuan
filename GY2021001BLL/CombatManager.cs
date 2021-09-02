@@ -315,7 +315,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 try
                 {
-                    if (!Options?.CombatStart?.Invoke(Services, data) ?? true)
+                    if (!Options?.CombatStart?.Invoke(Service, data) ?? true)
                     {
                         data.HasError = true;
                         return;
@@ -448,6 +448,11 @@ namespace GuangYuan.GY001.BLL
                 gcm.Unlock(data.GameChar.GameUser);
             }
             return;
+        }
+
+        public void EndCombatPvp(EndCombatPvpWorkData datats)
+        {
+
         }
 
         /// <summary>
@@ -713,5 +718,22 @@ namespace GuangYuan.GY001.BLL
             thing.Properties["mhp"] = (float)thing.GetDecimalOrDefault("mhp") * dic.GetValueOrDefault("mhp");
             thing.Properties["qlt"] = (float)thing.GetDecimalOrDefault("qlt") * dic.GetValueOrDefault("qlt");
         }
+    }
+
+    public class EndCombatPvpWorkData : ComplexWorkDatsBase
+    {
+        public EndCombatPvpWorkData()
+        {
+        }
+
+        /// <summary>
+        /// 关卡Id
+        /// </summary>
+        public Guid DungeonId { get; set; }
+
+        /// <summary>
+        /// 被攻击的角色Id。
+        /// </summary>
+        public Guid PassiveCharId { get; set; }
     }
 }

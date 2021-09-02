@@ -148,7 +148,7 @@ namespace GuangYuan.GY001.BLL
                     }
                     catch (Exception err)
                     {
-                        var logger = Services.GetRequiredService<ILogger<GameCharManager>>();
+                        var logger = Service.GetRequiredService<ILogger<GameCharManager>>();
                         logger.LogError($"{err.Message}{Environment.NewLine}@{err.StackTrace}");
                     }
                     finally
@@ -386,7 +386,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>true是，false密码错误。</returns>
         public bool IsPwd(GameUser user, string pwd)
         {
-            using var hashAlgorithm = Services.GetService<HashAlgorithm>();
+            using var hashAlgorithm = Service.GetService<HashAlgorithm>();
             var hash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(pwd));
             return Enumerable.SequenceEqual(hash, user.PwdHash);
         }
@@ -440,7 +440,7 @@ namespace GuangYuan.GY001.BLL
                     token = Guid.NewGuid();
                     gu.CurrentToken = token;
                     gu.DbContext = db;
-                    gu.Services = Services;
+                    gu.Services = Service;
                     gu.CurrentChar = gu.GameChars[0];
                     gu.LastModifyDateTimeUtc = DateTime.UtcNow;
                     NotifyChange(gu);
@@ -539,7 +539,7 @@ namespace GuangYuan.GY001.BLL
                     pwd = sb.ToString();
                 }
                 //存储角色信息
-                result.Initialize(Services, loginName, pwd, db);
+                result.Initialize(Service, loginName, pwd, db);
                 db.SaveChanges();
             }
             return result;
@@ -639,7 +639,7 @@ namespace GuangYuan.GY001.BLL
             }
             catch (Exception err)
             {
-                var logger = Services.GetService<ILogger<GameChar>>();
+                var logger = Service.GetService<ILogger<GameChar>>();
                 logger?.LogError("保存用户(Number={Number})信息时发生错误。——{err}", gu.Id, err);
             }
             _Token2User.TryRemove(token, out _);
@@ -663,7 +663,7 @@ namespace GuangYuan.GY001.BLL
             {
                 if (gu.IsDisposed)   //若已经无效
                     return false;
-                using var ha = Services.GetService<HashAlgorithm>();
+                using var ha = Service.GetService<HashAlgorithm>();
                 gu.PwdHash = ha.ComputeHash(Encoding.UTF8.GetBytes(newPwd));
                 _DirtyUsers.Enqueue(gu);
             }
@@ -752,7 +752,7 @@ namespace GuangYuan.GY001.BLL
                 //通知所属物品加载完毕
                 var coll = OwHelper.GetAllSubItemsOfTree(e.GameChar.GameItems, c => c.Children).ToArray();
                 foreach (var item in coll)
-                    item.InvokeLoading(Services);
+                    item.InvokeLoading(Service);
                 //清除锁定属性槽内物品，放回道具背包中
                 var gim = World.ItemManager;
                 var daojuBag = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包

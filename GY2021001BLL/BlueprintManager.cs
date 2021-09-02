@@ -1151,7 +1151,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 else   //TO DO 致命问题，但目前不知道如何才会引发(大概率发生了死锁)，暂无解决方法
                 {
-                    ILogger<BlueprintManager> logger = Services.GetService<ILogger<BlueprintManager>>();
+                    ILogger<BlueprintManager> logger = Service.GetService<ILogger<BlueprintManager>>();
                     logger?.LogError($"长期无法锁定在线用户，Number={gu.Id}。");
                     return;
                 }
@@ -1195,7 +1195,7 @@ namespace GuangYuan.GY001.BLL
             finally
             {
                 cm.Unlock(gu, true);
-                var logger1 = Services.GetRequiredService<ILogger<BlueprintManager>>();
+                var logger1 = Service.GetRequiredService<ILogger<BlueprintManager>>();
                 logger1.LogInformation($"[{DateTime.UtcNow}]Call UpgradeComplateCallback Complated");
             }
             return;
@@ -1234,7 +1234,7 @@ namespace GuangYuan.GY001.BLL
                 datas.GameItems.AddRange(tmpList);
                 if (!Dispatch(datas))
                 {
-                    BlueprintData data = new BlueprintData(Services, datas.Blueprint);
+                    BlueprintData data = new BlueprintData(Service, datas.Blueprint);
                     for (int i = 0; i < datas.Count; i++)
                     {
                         data.Match(datas);

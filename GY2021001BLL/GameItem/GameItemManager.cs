@@ -9,6 +9,7 @@ using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -110,7 +111,7 @@ namespace GuangYuan.GY001.BLL
             result.Children.AddRange(template.ChildrenTemplateIds.Select(c => CreateGameItem(c)));
             try
             {
-                var dirty = Options?.ItemCreated?.Invoke(Services, result) ?? false;
+                var dirty = Options?.ItemCreated?.Invoke(Service, result) ?? false;
             }
             catch (Exception)
             {
@@ -1395,7 +1396,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         static public void ActiveStyle(this GameItemManager manager, ActiveStyleDatas datas)
         {
-            var gcManager = manager.Services.GetRequiredService<GameCharManager>();
+            var gcManager = manager.Service.GetRequiredService<GameCharManager>();
             if (!gcManager.Lock(datas.GameChar.GameUser))
             {
                 datas.HasError = true;
@@ -1403,7 +1404,7 @@ namespace GuangYuan.GY001.BLL
             }
             try
             {
-                var gitm = manager.Services.GetRequiredService<GameItemTemplateManager>();
+                var gitm = manager.Service.GetRequiredService<GameItemTemplateManager>();
                 var hl = datas.GameChar.GetHomeland();
                 var builderBag = hl.Children.First(c => c.TemplateId == ProjectConstant.HomelandBuilderBagTId);
                 var dic = datas.Fangan.FanganItems.SelectMany(c => c.ItemIds).Distinct().Join(hl.AllChildren, c => c, c => c.Id, (l, r) => r).ToDictionary(c => c.Id);
@@ -1490,7 +1491,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>符合要求的模板输出的值元组 (头模板Id,身体模板Id,概率)。没有找到图鉴可能返回空。</returns>
         static public (Guid, Guid, decimal)? GetTujianResult(this GameItemManager mng, GameChar gameChar, GameItemTemplate t1Body, GameItemTemplate t2Body)
         {
-            var gitm = mng.Services.GetRequiredService<GameItemTemplateManager>();
+            var gitm = mng.Service.GetRequiredService<GameItemTemplateManager>();
             var tujianBag = gameChar.GetZuojiBag(); //图鉴背包
             var tujian = tujianBag.Children.FirstOrDefault(c => //图鉴
             {
@@ -1535,8 +1536,22 @@ namespace GuangYuan.GY001.BLL
                 return null;
             return manager.GetTemplate(tmp);
         }
+    }
 
 
+    public abstract class GameItemViewBase : DataViewBase
+    {
+        public const string Separator = "`";
+
+        protected GameItemViewBase([NotNull] IServiceProvider service, [NotNull] GameItem gameItem) : base(service)
+        {
+            _GameItem = gameItem;
+        }
+
+        private readonly GameItem _GameItem;
+
+        public GameItem GameItem => _GameItem;
 
     }
+
 }

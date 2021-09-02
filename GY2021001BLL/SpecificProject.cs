@@ -400,7 +400,7 @@ namespace GuangYuan.GY001.BLL
             var gc = new GameChar();
             user.GameChars.Add(gc);
             user.CurrentChar = gc;
-            gc.Initialize(Services, new Dictionary<string, object>()
+            gc.Initialize(Service, new Dictionary<string, object>()
                 {
                     { "tid",ProjectConstant.CharTemplateId},
                     { "user",user},

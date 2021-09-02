@@ -37,6 +37,7 @@ namespace Gy001
             var host = CreateHostBuilder(args).Build();
             _Host = host;
             CreateDb(_Host);
+            Test(_Host);
             _Host.Run();
         }
 
@@ -47,14 +48,21 @@ namespace Gy001
         private static void Test(IHost host)
         {
             var world = host.Services.GetRequiredService<VWorld>();
+            using var db = world.CreateNewUserDbContext();
+            var gi = db.Set<GameItem>().First(c => c.TemplateId == ProjectConstant.PvpObjectTId);
+            gi.Properties["TodayIds"] = gi.Id.ToString() + "`" + gi.Id.ToString();
+            using CharPvpDataView view = new CharPvpDataView(world.Service, gi) { UserContext = db };
+            var coll = view.RefreshList();
 
-            //var db = world.CreateNewUserDbContext();
+            //var coll1 = db.GameItems.Where(c => c.Count < 1000).OrderByDescending(c => c.Count).Take(10);
+            //var coll2 = db.GameItems.Where(c => c.Count > 1000).OrderBy(c => c.Count).Take(10);
+            //var r = coll1.Concat(coll2).ToArray();
             //var templates = world.ItemTemplateManager.GetTemplates(c => c.CatalogNumber == 4);
             //var gu = world.CharManager.Login("test101", "test101", "test");
 
             //var data = new FriendDataView(world, gu.CurrentChar, DateTime.UtcNow);
             //var list = data.RefreshLastList(templates.Select(c => c.Id)).ToList();
-            using var dw = new DisposerWrapper(() => { });
+            //using var dw = new DisposerWrapper(() => { });
             return;
         }
 

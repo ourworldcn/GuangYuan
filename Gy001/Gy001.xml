@@ -1441,6 +1441,11 @@
             获取邮件接口参数封装类数据。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetMailsParamsDto.Ids">
+            <summary>
+            指定邮件Id的集合，空集合表示取所有邮件。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetMailsReturnDto">
             <summary>
             获取邮件接口返回值封装数据类。
@@ -1469,6 +1474,16 @@
         <member name="P:GY2021001WebApi.Models.GetAttachmentesParamsDto.Ids">
             <summary>
             要获取的附件Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetAttachmentesResultItemDto.Id">
+            <summary>
+            附件Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetAttachmentesResultItemDto.Result">
+            <summary>
+            取得该附件的结果。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetAttachmentesRetuenDto">
@@ -1733,12 +1748,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

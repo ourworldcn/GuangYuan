@@ -306,6 +306,8 @@ namespace GuangYuan.GY001.BLL
                         }
                     }
                     gim.AddItem(gameItem, parent, null, changes);   //TO DO
+                    results?.Add((item.Id, GetAttachmenteItemResult.Success));
+
                     dirty = true;
                 }
                 catch (Exception)
@@ -523,7 +525,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar">己方角色对象。</param>
         /// <param name="db"></param>
         /// <returns></returns>
-        public IEnumerable<GameSocialRelationship> GetSocialRelationships(GameChar gameChar,DbContext db)
+        public IEnumerable<GameSocialRelationship> GetSocialRelationships(GameChar gameChar, DbContext db)
         {
             if (!World.CharManager.Lock(gameChar.GameUser))
             {
@@ -1152,13 +1154,15 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+
         /// <summary>
         /// 获取该用户的指定指定日期的可pvp对象。
         /// </summary>
         /// <param name="gameChar"></param>
         /// <param name="now">utc时间，取其指定日期部分。</param>
+        /// <param name="context"></param>
         /// <returns>返回当前的pvp对象Id列表。如果没有则自动生成。</returns>
-        public IEnumerable<GameActionRecord> GetPvpChars(GameChar gameChar, DateTime now)
+        public IEnumerable<GameActionRecord> GetPvpChars(GameChar gameChar, DateTime now, DbContext context)
         {
             const string pvpChar = "PvpChar";
             using var db = World.CreateNewUserDbContext();
@@ -1245,6 +1249,104 @@ namespace GuangYuan.GY001.BLL
 
         #endregion  项目特定功能
     }
+
+    public class CharPvpDataView : GameItemViewBase
+    {
+
+        public CharPvpDataView([NotNull] IServiceProvider service, [NotNull] GameItem gameItem) : base(service, gameItem)
+        {
+        }
+
+        public GameChar GameChar { get; set; }
+
+        private List<Guid> _TodayIds;
+        /// <summary>
+        /// 今日刷到过的对手角色Id集合。
+        /// </summary>
+        public List<Guid> TodayIds
+        {
+            get
+            {
+                if (_TodayIds is null)
+                {
+                    var str = GameItem.Properties.GetStringOrDefault("TodayIds");
+                    if (string.IsNullOrWhiteSpace(str))
+                        _TodayIds = new List<Guid>();
+                    else
+                        _TodayIds = str.Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
+                }
+                return _TodayIds;
+            }
+        }
+
+        private List<Guid> _LastIds;
+        /// <summary>
+        /// 最后一次刷新且可用的Id集合。每打过一个Id将删除。这个数据生成时就应合并到<see cref="TodayIds"/>中。
+        /// </summary>
+        public List<Guid> LastIds
+        {
+            get
+            {
+                if (_LastIds is null)
+                {
+                    var str = GameItem.Properties.GetStringOrDefault("LastIds");
+                    if (string.IsNullOrWhiteSpace(str))
+                        _LastIds = new List<Guid>();
+                    else
+                        _LastIds = str.Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
+                }
+                return _LastIds;
+            }
+        }
+
+        /// <summary>
+        /// 新获取一组pvp目标角色Id集合。
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Guid> RefreshList()
+        {
+            //var result = from gi in UserContext.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.PvpObjectTId)
+            //             join bag in UserContext.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.CurrencyBagTId && c.OwnerId.HasValue)
+            //             on gi.ParentId equals bag.Id
+            //             select gi;
+            var bags = UserContext.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.CurrencyBagTId && c.OwnerId.HasValue);
+
+            var gis = UserContext.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.PvpObjectTId && c.Id != GameItem.Id);
+            var collLow = from gi in gis
+                          where gi.Count < GameItem.Count && !TodayIds.Contains(bags.First(c => c.Id == gi.ParentId).OwnerId.Value)
+                          orderby gi.Count descending
+                          select gi;
+            var collEqual = from gi in gis
+                            where gi.Count == GameItem.Count && !TodayIds.Contains(bags.First(c => c.Id == gi.ParentId).OwnerId.Value)
+                            select gi;
+            var collHigh = from gi in gis
+                           where gi.Count > GameItem.Count && !TodayIds.Contains(bags.First(c => c.Id == gi.ParentId).OwnerId.Value)
+                           orderby gi.Count
+                           select gi;
+            var collTotal = collEqual.Take(3).Concat(collLow.Take(3)).Concat(collHigh.Take(3)).Include(c => c.Parent).ToList();
+
+            var tmpList = new List<GameItem>();
+            var low = collTotal.FirstOrDefault(c => c.Count < GameItem.Count);  //取一个较低的
+            if (null != low)
+                tmpList.Add(low);
+            var equals = collTotal.Where(c => c.Count == GameItem.Count).Take(2 - tmpList.Count);   //取相等的
+            tmpList.AddRange(equals);
+            var highs = collTotal.Where(c => c.Count > GameItem.Count).Take(3 - tmpList.Count);
+            tmpList.AddRange(highs);
+            if (tmpList.Count < 3)
+            {
+                var _ = collTotal.Where(c => !tmpList.Contains(c)).Take(3 - tmpList.Count);
+                tmpList.AddRange(_);
+            }
+            return tmpList.Select(c => c.Parent.OwnerId.Value).ToList();
+        }
+
+        public override void Save()
+        {
+
+        }
+    }
+
 
     /// <summary>
     /// <see cref="GameSocialManager.GetHomelandData(GetHomelandDataDatas)"/>使用的工作数据封装类。

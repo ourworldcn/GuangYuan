@@ -3,9 +3,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -44,7 +46,7 @@ namespace GuangYuan.GY001.BLL
         #region 属性及相关
 
         private readonly IServiceProvider _Services;
-        public IServiceProvider Services => _Services;
+        public IServiceProvider Service => _Services;
 
         private readonly TOptions _Options;
         public TOptions Options => _Options;
@@ -316,4 +318,94 @@ namespace GuangYuan.GY001.BLL
         public List<Guid> MailIds => GetOrAdd(nameof(MailIds), ref _MailIds);
 
     }
+
+    public abstract class DataViewBase : IDisposable
+    {
+
+
+        protected DataViewBase([NotNull] IServiceProvider service)
+        {
+            _Service = service;
+        }
+
+        private IServiceProvider _Service;
+        /// <summary>
+        /// 获取服务提供者接口。
+        /// </summary>
+        public IServiceProvider Service => _Service;
+
+        private VWorld _VWorld;
+
+        /// <summary>
+        /// 获取世界服务。
+        /// </summary>
+        public VWorld World => _VWorld ??= (VWorld)_Service.GetService(typeof(VWorld));
+
+        bool _UserContextOwner;
+
+        GameUserContext _UserContext;
+
+        /// <summary>
+        /// 获取用户数据库上下文。
+        /// 如果是自动生成的，将在<see cref="Dispose"/>调用时自动处置。
+        /// 如果设置该值，调用者需要自己处置上线文。
+        /// </summary>
+        public GameUserContext UserContext
+        {
+            get
+            {
+                if (_UserContext is null)
+                {
+                    _UserContext = World.CreateNewUserDbContext();
+                    _UserContextOwner = true;
+                }
+                return _UserContext;
+            }
+
+            set
+            {
+                if (_UserContext != value && _UserContextOwner) _UserContext?.Dispose();
+                _UserContext = value;
+                _UserContextOwner = false;
+            }
+        }
+
+        public abstract void Save();
+        protected bool Disposed { get => _Disposed; }
+
+
+        private bool _Disposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_Disposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    if (_UserContextOwner) _UserContext?.Dispose();
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _UserContext = null;
+                _Service = null;
+                _Disposed = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~GameItemViewBase()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+    }
+
 }
