@@ -14,6 +14,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -49,10 +50,15 @@ namespace Gy001
         {
             var world = host.Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            var gi = db.Set<GameItem>().First(c => c.TemplateId == ProjectConstant.PvpObjectTId);
-            gi.Properties["TodayIds"] = gi.Id.ToString() + "`" + gi.Id.ToString();
-            using CharPvpDataView view = new CharPvpDataView(world.Service, gi) { UserContext = db };
-            var coll = view.RefreshList();
+            //var gi = db.Set<GameItem>().First(c => c.TemplateId == ProjectConstant.PvpObjectTId);
+            //gi.Properties["TodayIds"] = gi.Id.ToString() + "`" + gi.Id.ToString();
+            //using CharPvpDataView view = new CharPvpDataView(world.Service, gi) { UserContext = db };
+            //var coll = view.GetNewList();
+            //DefaultObjectPoolProvider opp = new DefaultObjectPoolProvider();
+            //var pool = opp.CreateStringBuilderPool();
+            //var pool2 = opp.CreateStringBuilderPool();
+            //var pool3 = opp.Create<Dictionary<string,object>>();
+            //var pool4 = opp.Create<Dictionary<string,object>>();
 
             //var coll1 = db.GameItems.Where(c => c.Count < 1000).OrderByDescending(c => c.Count).Take(10);
             //var coll2 = db.GameItems.Where(c => c.Count > 1000).OrderBy(c => c.Count).Take(10);

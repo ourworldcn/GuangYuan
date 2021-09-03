@@ -1,7 +1,9 @@
 ﻿using GuangYuan.GY001.UserDb;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Store;
 using System;
@@ -14,6 +16,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -234,7 +237,7 @@ namespace GuangYuan.GY001.BLL
             if (manager.Lock(Token, out _GameUser))
             {
                 _Manager = manager;
-                return new DisposerWrapper(() => manager.Unlock(_GameUser));
+                return DisposerWrapper.Create(() => manager.Unlock(_GameUser));
             }
             else
             {
@@ -319,11 +322,26 @@ namespace GuangYuan.GY001.BLL
 
     }
 
-    public abstract class DataViewBase : IDisposable
+    /// <summary>
+    /// 提供基类，用于在类群之间传递数据的基类。
+    /// </summary>
+    public abstract class WorkDataBase : IDisposable
     {
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="world"></param>
+        protected WorkDataBase([NotNull] VWorld world)
+        {
+            _World = world;
+        }
 
-        protected DataViewBase([NotNull] IServiceProvider service)
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="service"></param>
+        protected WorkDataBase([NotNull] IServiceProvider service)
         {
             _Service = service;
         }
@@ -334,12 +352,12 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public IServiceProvider Service => _Service;
 
-        private VWorld _VWorld;
+        private VWorld _World;
 
         /// <summary>
         /// 获取世界服务。
         /// </summary>
-        public VWorld World => _VWorld ??= (VWorld)_Service.GetService(typeof(VWorld));
+        public VWorld World => _World ??= (VWorld)_Service.GetService(typeof(VWorld));
 
         bool _UserContextOwner;
 
@@ -347,8 +365,8 @@ namespace GuangYuan.GY001.BLL
 
         /// <summary>
         /// 获取用户数据库上下文。
-        /// 如果是自动生成的，将在<see cref="Dispose"/>调用时自动处置。
-        /// 如果设置该值，调用者需要自己处置上线文。
+        /// 如果是自动生成的(未赋值第一次读取时自动生成)，将在<see cref="Dispose"/>调用时自动处置。
+        /// 如果设置该值，调用者需要自己处置上下文。
         /// </summary>
         public GameUserContext UserContext
         {
@@ -364,17 +382,19 @@ namespace GuangYuan.GY001.BLL
 
             set
             {
-                if (_UserContext != value && _UserContextOwner) _UserContext?.Dispose();
+                if (_UserContext != value && _UserContextOwner) //若需要处置原有的对象。
+                    _UserContext?.Dispose();
                 _UserContext = value;
                 _UserContextOwner = false;
             }
         }
 
         public abstract void Save();
+
+        private bool _Disposed;
         protected bool Disposed { get => _Disposed; }
 
 
-        private bool _Disposed;
         protected virtual void Dispose(bool disposing)
         {
             if (!_Disposed)
@@ -388,13 +408,14 @@ namespace GuangYuan.GY001.BLL
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
                 _UserContext = null;
+                _World = null;
                 _Service = null;
                 _Disposed = true;
             }
         }
 
         // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~GameItemViewBase()
+        // ~WorkDataViewBase()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
         //     Dispose(disposing: false);
@@ -406,6 +427,60 @@ namespace GuangYuan.GY001.BLL
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+        //public async ValueTask DisposeAsync()
+        //{
+        //    await DisposeAsyncCore();
+
+        //    Dispose(disposing: false);
+        //    GC.SuppressFinalize(this);
+        //}
+
+        //protected virtual async ValueTask DisposeAsyncCore()
+        //{
+        //     Dispose();
+        //}
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public abstract class WorkDataViewBase : WorkDataBase
+    {
+        public const string Separator = "`";
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="gameChar"></param>
+        protected WorkDataViewBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service)
+        {
+            _GameChar = gameChar;
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="world"></param>
+        /// <param name="gameChar"></param>
+        protected WorkDataViewBase([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world)
+        {
+            _GameChar = gameChar;
+        }
+
+        protected WorkDataViewBase([NotNull] VWorld world, [NotNull] string token) : base(world)
+        {
+            _GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(token)).CurrentChar;
+
+        }
+
+        private readonly GameChar _GameChar;
+        public GameChar GameChar => _GameChar;
+
+        public IDisposable LockChar()
+        {
+            return World.CharManager.LockAndReturnDispose(GameChar.GameUser);
+        }
+    }
 }

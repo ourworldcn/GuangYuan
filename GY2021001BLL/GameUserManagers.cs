@@ -341,7 +341,7 @@ namespace GuangYuan.GY001.BLL
             var gu = gameUser = GetUserFromToken(GameHelper.FromBase64String(token));
             if (gameUser is null || !Lock(gameUser, TimeSpan.FromSeconds(Options.DefaultLockTimeout)))
                 return null;
-            return new DisposerWrapper(() => Unlock(gu));
+            return  DisposerWrapper.Create(() => Unlock(gu));
         }
 
         /// <summary>
@@ -802,7 +802,7 @@ namespace GuangYuan.GY001.BLL
         {
             if (!obj.Lock(user, timeout))
                 return null;
-            return new DisposerWrapper(() => obj.Unlock(user));
+            return  DisposerWrapper.Create(() => obj.Unlock(user));
         }
 
         /// <summary>
@@ -825,7 +825,7 @@ namespace GuangYuan.GY001.BLL
             if (!obj.Lock(token, out user))
                 return null;
             var tmp = user;
-            return new DisposerWrapper(() => obj.Unlock(tmp));
+            return  DisposerWrapper.Create(() => obj.Unlock(tmp));
         }
 
     }

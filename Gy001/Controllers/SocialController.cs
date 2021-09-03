@@ -31,10 +31,11 @@ namespace Gy001.Controllers
         /// </summary>
         /// <param name="world"></param>
         /// <param name="userContext">对于社交类功能，大概率需要范围的数据库上下文。</param>
+        /// 
         public SocialController(VWorld world, GY001UserContext userContext)
         {
-            _World = world;
             _UserContext = userContext;
+            _World = world;
         }
 
 #if DEBUG
@@ -302,7 +303,7 @@ namespace Gy001.Controllers
             {
                 return Unauthorized("令牌无效");
             }
-            using var dwChar = new DisposerWrapper(() => _World.CharManager.Unlock(gu, true));
+            using var dwChar = DisposerWrapper.Create(() => _World.CharManager.Unlock(gu, true));
             var result = new ConfirmRequestFriendReturnDto();
             try
             {

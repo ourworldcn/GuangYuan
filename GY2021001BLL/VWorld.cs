@@ -356,6 +356,7 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void SetLastErrorMessage(string msg) => _LastErrorMessage = msg;
 
+
         /// <summary>
         /// 按既定顺序锁定一组对象。
         /// </summary>
@@ -426,7 +427,7 @@ namespace GuangYuan.GY001.BLL
             if (!LockString(ref str, Timeout.InfiniteTimeSpan))
                 return null;
             var tmp = str;
-            return new DisposerWrapper(() => UnlockString(tmp, isPulse));
+            return DisposerWrapper.Create(() => UnlockString(tmp, isPulse));
         }
 
         public void UnlockString(string str, bool isPulse = false)

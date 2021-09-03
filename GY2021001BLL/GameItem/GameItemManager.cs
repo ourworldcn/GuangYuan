@@ -1321,7 +1321,9 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
-
+    /// <summary>
+    /// 
+    /// </summary>
     public class SellDatas : ChangeItemsWorkDatsBase
     {
         public SellDatas()
@@ -1537,21 +1539,4 @@ namespace GuangYuan.GY001.BLL
             return manager.GetTemplate(tmp);
         }
     }
-
-
-    public abstract class GameItemViewBase : DataViewBase
-    {
-        public const string Separator = "`";
-
-        protected GameItemViewBase([NotNull] IServiceProvider service, [NotNull] GameItem gameItem) : base(service)
-        {
-            _GameItem = gameItem;
-        }
-
-        private readonly GameItem _GameItem;
-
-        public GameItem GameItem => _GameItem;
-
-    }
-
 }

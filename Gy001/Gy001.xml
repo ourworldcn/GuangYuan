@@ -1749,6 +1749,12 @@
             外围系统。
             </summary>
         </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
             使用蓝图制造或升级物品。
@@ -1769,6 +1775,7 @@
             </summary>
             <param name="world"></param>
             <param name="userContext">对于社交类功能，大概率需要范围的数据库上下文。</param>
+            
         </member>
         <member name="M:Gy001.Controllers.SocialController.GetMails(GY2021001WebApi.Models.GetMailsParamsDto)">
             <summary>
