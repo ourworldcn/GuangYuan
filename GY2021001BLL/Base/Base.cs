@@ -107,23 +107,21 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 复杂工作的参数返回值封装类的基类。
     /// </summary>
-    public abstract class ComplexWorkDatsBase : IDisposable
+    public abstract class ComplexWorkDatasBase : GameCharWorkDataBase
     {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public ComplexWorkDatsBase()
+        protected ComplexWorkDatasBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
+        }
 
+        protected ComplexWorkDatasBase([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        protected ComplexWorkDatasBase([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
         }
 
         #region 入参
-
-
-        /// <summary>
-        /// 登录角色的令牌。
-        /// </summary>
-        public Guid Token { get; set; }
 
         /// <summary>
         /// 要求进行工作的Id。
@@ -155,13 +153,6 @@ namespace GuangYuan.GY001.BLL
             return cache;
         }
 
-        private GameUser _GameUser;
-
-        /// <summary>
-        /// 当前角色对象。
-        /// 成功调用<see cref="LockUser(GameCharManager)"/>之后才能获取有效对象，否则返回 <see cref="null"/>。
-        /// </summary>
-        public GameChar GameChar => _GameUser.CurrentChar;
         #endregion 入参
 
         #region 出参
@@ -198,128 +189,9 @@ namespace GuangYuan.GY001.BLL
 
         #endregion 出参
 
-        /// <summary>
-        /// 设置令牌并试图锁定。
-        /// </summary>
-        /// <param name="tokenString"></param>
-        /// <param name="manager"></param>
-        /// <returns>清理锁定的帮助器，如果失败则返回null。</returns>
-        public IDisposable SetTokenStringAndLock(string tokenString, GameCharManager manager)
-        {
-            try
-            {
-                Token = GameHelper.FromBase64String(tokenString);
-                return LockUser(manager);
-            }
-            catch (FormatException)
-            {
-                HasError = true;
-                DebugMessage = $"令牌格式错误，TokenString={tokenString}";
-                ResultCode = (int)HttpStatusCode.BadRequest;
-                return null;
-            }
-        }
-
-        private GameCharManager _Manager;
-
-        /// <summary>
-        /// 获取使用的角色管理器。
-        /// </summary>
-        public GameCharManager Manager => _Manager;
-
-        /// <summary>
-        /// 试图锁定用户。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <returns>返回释放器，如果锁定失败则返回null,并填写必要的错误信息。</returns>
-        public IDisposable LockUser(GameCharManager manager)
-        {
-            if (manager.Lock(Token, out _GameUser))
-            {
-                _Manager = manager;
-                return DisposerWrapper.Create(() => manager.Unlock(_GameUser));
-            }
-            else
-            {
-                DebugMessage = $"无法锁定用户，Token={Token}";
-                HasError = true;
-                ResultCode = (int)HttpStatusCode.Unauthorized;
-                return null;
-            }
-        }
         #region IDisposable接口
 
-        private bool _Disposed;
-
-        protected bool Disposed => _Disposed;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_Disposed)
-            {
-                if (disposing)
-                {
-                    // TODO: 释放托管状态(托管对象)
-                }
-
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
-                _Disposed = true;
-            }
-        }
-
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~ComplexWorkDatsBase()
-        // {
-        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
         #endregion IDisposable接口
-    }
-
-    /// <summary>
-    /// 带变化物品返回值的类的接口。
-    /// </summary>
-    public abstract class ChangeItemsWorkDatsBase : ComplexWorkDatsBase
-    {
-        public ChangeItemsWorkDatsBase()
-        {
-
-        }
-
-        private List<ChangeItem> _ChangeItems;
-
-        /// <summary>
-        /// 工作后，物品变化数据。
-        /// 不同操作自行定义该属性内的内容。
-        /// </summary>
-        public List<ChangeItem> ChangeItems => GetOrAdd(nameof(_ChangeItems), ref _ChangeItems);
-    }
-
-    /// <summary>
-    /// 带变化物品和发送邮件返回值的类的接口
-    /// </summary>
-    public abstract class ChangeItemsAndMailWorkDatsBase : ChangeItemsWorkDatsBase
-    {
-        public ChangeItemsAndMailWorkDatsBase()
-        {
-
-        }
-
-        private List<Guid> _MailIds;
-
-        /// <summary>
-        /// 工作后发送邮件的邮件Id。
-        /// </summary>
-        public List<Guid> MailIds => GetOrAdd(nameof(MailIds), ref _MailIds);
-
     }
 
     /// <summary>
@@ -389,9 +261,11 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
-        public abstract void Save();
-
         private bool _Disposed;
+
+        /// <summary>
+        /// 是否已经被处置。
+        /// </summary>
         protected bool Disposed { get => _Disposed; }
 
 
@@ -415,7 +289,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~WorkDataViewBase()
+        // ~GameCharWorkDataBase()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
         //     Dispose(disposing: false);
@@ -445,40 +319,57 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 
     /// </summary>
-    public abstract class WorkDataViewBase : WorkDataBase
+    public abstract class GameCharWorkDataBase : WorkDataBase
     {
         public const string Separator = "`";
 
         /// <summary>
-        /// <inheritdoc/>
+        /// 构造函数。
         /// </summary>
         /// <param name="service"></param>
         /// <param name="gameChar"></param>
-        protected WorkDataViewBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service)
+        protected GameCharWorkDataBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service)
         {
             _GameChar = gameChar;
         }
 
         /// <summary>
-        /// <inheritdoc/>
+        /// 构造函数。
         /// </summary>
         /// <param name="world"></param>
         /// <param name="gameChar"></param>
-        protected WorkDataViewBase([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world)
+        protected GameCharWorkDataBase([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world)
         {
             _GameChar = gameChar;
         }
 
-        protected WorkDataViewBase([NotNull] VWorld world, [NotNull] string token) : base(world)
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="world"></param>
+        /// <param name="token"></param>
+        protected GameCharWorkDataBase([NotNull] VWorld world, [NotNull] string token) : base(world)
         {
-            _GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(token)).CurrentChar;
-
+            Token = GameHelper.FromBase64String(token);
         }
 
-        private readonly GameChar _GameChar;
-        public GameChar GameChar => _GameChar;
+        private GameChar _GameChar;
 
-        public IDisposable LockChar()
+        /// <summary>
+        /// 当前角色。
+        /// </summary>
+        public GameChar GameChar => _GameChar ??= World.CharManager.GetUserFromToken(Token).CurrentChar;
+
+        /// <summary>
+        /// 登录角色的令牌。
+        /// </summary>
+        public Guid Token { get; set; }
+
+        /// <summary>
+        /// 使用默认超时试图锁定用户。
+        /// </summary>
+        /// <returns></returns>
+        public IDisposable LockUser()
         {
             return World.CharManager.LockAndReturnDispose(GameChar.GameUser);
         }

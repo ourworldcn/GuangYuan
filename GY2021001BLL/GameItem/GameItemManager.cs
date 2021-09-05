@@ -1153,7 +1153,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas">工作参数及返回值封装类。<seealso cref="SellDatas"/></param>
         public void Sell(SellDatas datas)
         {
-            using var disposer = datas.LockUser(World.CharManager);
+            using var disposer = datas.LockUser();
             if (disposer is null) return;
             var gc = datas.GameChar;
             var shoulan = gc.GetShoulanBag();
@@ -1265,7 +1265,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"><see cref="SetLineupDatas"/></param>
         public void SetLineup(SetLineupDatas datas)
         {
-            using var disposer = datas.LockUser(World.CharManager);
+            using var disposer = datas.LockUser();
             if (disposer is null)
                 return;
 
@@ -1326,7 +1326,15 @@ namespace GuangYuan.GY001.BLL
     /// </summary>
     public class SellDatas : ChangeItemsWorkDatsBase
     {
-        public SellDatas()
+        public SellDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public SellDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public SellDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
         }
 
@@ -1339,7 +1347,15 @@ namespace GuangYuan.GY001.BLL
     /// </summary>
     public class SetLineupDatas : ChangeItemsWorkDatsBase
     {
-        public SetLineupDatas()
+        public SetLineupDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public SetLineupDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public SetLineupDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
         }
 
@@ -1539,4 +1555,31 @@ namespace GuangYuan.GY001.BLL
             return manager.GetTemplate(tmp);
         }
     }
+
+    /// <summary>
+    /// 带变化物品返回值的类的接口。
+    /// </summary>
+    public abstract class ChangeItemsWorkDatsBase : ComplexWorkDatasBase
+    {
+        protected ChangeItemsWorkDatsBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        protected ChangeItemsWorkDatsBase([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        protected ChangeItemsWorkDatsBase([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        private List<ChangeItem> _ChangeItems;
+
+        /// <summary>
+        /// 工作后，物品变化数据。
+        /// 不同操作自行定义该属性内的内容。
+        /// </summary>
+        public List<ChangeItem> ChangeItems => GetOrAdd(nameof(_ChangeItems), ref _ChangeItems);
+    }
+
 }

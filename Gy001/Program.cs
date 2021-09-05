@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -50,6 +51,10 @@ namespace Gy001
         {
             var world = host.Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
+            MemoryCache cache = new MemoryCache(new MemoryCacheOptions() { });
+            cache.Set(Guid.NewGuid().ToString(), new object());
+            cache.Compact(1);
+            
             //var gi = db.Set<GameItem>().First(c => c.TemplateId == ProjectConstant.PvpObjectTId);
             //gi.Properties["TodayIds"] = gi.Id.ToString() + "`" + gi.Id.ToString();
             //using CharPvpDataView view = new CharPvpDataView(world.Service, gi) { UserContext = db };

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.ObjectPool;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace System
 {
@@ -44,6 +45,7 @@ namespace System
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DisposerWrapper Create(Action<object> action, object state) =>
              Create(() => action(state));
 

@@ -1110,7 +1110,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public void GetHomelandData(GetHomelandDataDatas datas)
         {
-            using var disposer = datas.LockUser(World.CharManager);
+            using var disposer = datas.LockUser();
             if (disposer is null)
                 return;
             var gc = datas.GameChar;
@@ -1252,7 +1252,7 @@ namespace GuangYuan.GY001.BLL
         #endregion  项目特定功能
     }
 
-    public class CharPvpDataView : WorkDataViewBase
+    public class CharPvpDataView : GameCharWorkDataBase
     {
         /// <summary>
         /// <inheritdoc/>
@@ -1344,7 +1344,7 @@ namespace GuangYuan.GY001.BLL
         /// <value>默认值是构造对象的Utc时间。</value>
         public DateTime Today { get; set; } = DateTime.UtcNow;
 
-        public override void Save()
+        public  void Save()
         {
             if (null != _LastIds)
                 GameItem.Properties["LastIds"] = string.Join(Separator, _LastIds.Select(c => c.ToString()));
@@ -1471,9 +1471,17 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// <see cref="GameSocialManager.GetHomelandData(GetHomelandDataDatas)"/>使用的工作数据封装类。
     /// </summary>
-    public class GetHomelandDataDatas : ComplexWorkDatsBase
+    public class GetHomelandDataDatas : ComplexWorkDatasBase
     {
-        public GetHomelandDataDatas()
+        public GetHomelandDataDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public GetHomelandDataDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public GetHomelandDataDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
         }
 
@@ -1543,8 +1551,19 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 工作函数数据封装类。
     /// </summary>
-    public class GetCharIdsForRequestFriendDatas : ComplexWorkDatsBase
+    public class GetCharIdsForRequestFriendDatas : ComplexWorkDatasBase
     {
+        public GetCharIdsForRequestFriendDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public GetCharIdsForRequestFriendDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public GetCharIdsForRequestFriendDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
 
         string _DisplayName;
 
@@ -1580,10 +1599,6 @@ namespace GuangYuan.GY001.BLL
 
         bool disposedValue;
 
-        public GetCharIdsForRequestFriendDatas()
-        {
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -1604,4 +1619,30 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
+    /// <summary>
+    /// 带变化物品和发送邮件返回值的类的接口
+    /// </summary>
+    public abstract class ChangeItemsAndMailWorkDatsBase : ChangeItemsWorkDatsBase
+    {
+
+        public ChangeItemsAndMailWorkDatsBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public ChangeItemsAndMailWorkDatsBase([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public ChangeItemsAndMailWorkDatsBase([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        private List<Guid> _MailIds;
+
+        /// <summary>
+        /// 工作后发送邮件的邮件Id。
+        /// </summary>
+        public List<Guid> MailIds => GetOrAdd(nameof(MailIds), ref _MailIds);
+
+    }
 }

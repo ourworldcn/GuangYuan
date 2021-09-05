@@ -4,6 +4,7 @@ using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -720,9 +721,17 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
-    public class EndCombatPvpWorkData : ComplexWorkDatsBase
+    public class EndCombatPvpWorkData : ComplexWorkDatasBase
     {
-        public EndCombatPvpWorkData()
+        public EndCombatPvpWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
         }
 

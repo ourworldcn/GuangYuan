@@ -178,8 +178,8 @@ namespace GY2021001WebApi.Controllers
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
             //构造调用参数
-            var datas = new SellDatas();
-            using var disposer = datas.SetTokenStringAndLock(model.Token, world.CharManager);
+            var datas = new SellDatas(world,model.Token);
+            using var disposer = datas.LockUser();
             if (disposer is null)   //若锁定失败
                 return StatusCode(datas.ResultCode, datas.DebugMessage);
             datas.SellIds.AddRange(model.Ids.Select(c => GameHelper.FromBase64String(c)));
@@ -204,12 +204,12 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<SetLineupReturnDto> SetSetLineup(SetLineupParamsDto model)
         {
-            SetLineupDatas datas = new SetLineupDatas
+            SetLineupDatas datas = new SetLineupDatas(HttpContext.RequestServices.GetRequiredService<VWorld>(),model.Token)
             {
             };
             datas.Settings.AddRange(model.Settings.Select(c => (GameHelper.FromBase64String(c.Id), c.ForIndex, (decimal)c.Position)));
             SetLineupReturnDto result = new SetLineupReturnDto();
-            using var disposer = datas.SetTokenStringAndLock(model.Token, HttpContext.RequestServices.GetRequiredService<GameCharManager>());
+            using var disposer = datas.LockUser();
             if (disposer is null)
                 return StatusCode(datas.ResultCode, datas.DebugMessage);
             try

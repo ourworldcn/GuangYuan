@@ -162,12 +162,12 @@ namespace Gy001.Controllers
         [HttpPut]
         public ActionResult<GetCharSummaryReturnDto> GetCharSummary(GetCharSummaryParamsDto model)
         {
-            using var data = new GetCharIdsForRequestFriendDatas()
+            using var data = new GetCharIdsForRequestFriendDatas(_World,model.Token)
             {
                 DisplayName = model.DisplayName,
             };
             data.BodyTIds.AddRange(model.BodyTIds.Select(c => GameHelper.FromBase64String(c)));
-            using var disposer = data.SetTokenStringAndLock(model.Token, _World.CharManager);
+            using var disposer = data.LockUser();
             if (disposer is null)
             {
                 return StatusCode(data.ResultCode, data.DebugMessage);
@@ -514,11 +514,11 @@ namespace Gy001.Controllers
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
                                                                                     //构造调用参数
-            using var datas = new GetHomelandDataDatas()
+            using var datas = new GetHomelandDataDatas(_World,model.Token)
             {
                 Context = _UserContext,
             };
-            using var disposer = datas.SetTokenStringAndLock(model.Token, world.CharManager);
+            using var disposer = datas.LockUser();
             if (disposer is null)   //若锁定失败
                 return StatusCode(datas.ResultCode, datas.DebugMessage);
             //填写其他参数

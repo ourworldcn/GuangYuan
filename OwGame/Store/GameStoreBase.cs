@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace OW.Game.Store
@@ -80,7 +81,6 @@ namespace OW.Game.Store
             Id = Guid.NewGuid();
             return true;
         }
-
     }
 
     /// <summary>
@@ -257,7 +257,7 @@ namespace OW.Game.Store
         /// </summary>
         [MaxLength(64)]
         public string PropertyString { get; set; }
-        
+
     }
 
     public static class PocoLoadingExtensions

@@ -102,6 +102,7 @@ namespace GuangYuan.GY001.BLL
         #region 属性及相关
 
 #if NETCOREAPP5_0_OR_GREATER
+//NET5_0_OR_GREATER
         #region 复用数据库上下文
 
         GameUserContext _UserContext;
@@ -220,25 +221,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         #region 随机数相关
-
-        ObjectPool<Dictionary<string, object>> _StringObjectDictionaryPool;
-        public ObjectPool<Dictionary<string, object>> StringObjectDictionaryPool
-        {
-            get
-            {
-                if (_StringObjectDictionaryPool is null)
-                    lock (ThisLocker)
-                        if (_StringObjectDictionaryPool is null)
-                        {
-                            _StringObjectDictionaryPool = Service.GetService<ObjectPool<Dictionary<string, object>>>();
-                            if (_StringObjectDictionaryPool is null)
-                            {
-                                _StringObjectDictionaryPool = new DefaultObjectPool<Dictionary<string, object>>(new StringObjectDictionaryPooledPolicy(), Environment.ProcessorCount * 16);
-                            }
-                        }
-                return _StringObjectDictionaryPool;
-            }
-        }
 
         /// <summary>
         /// 公用随机数生成器。
@@ -454,19 +436,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         public override bool Return(List<GameItem> obj)
-        {
-            obj.Clear();
-            return true;
-        }
-    }
-
-    public class StringObjectDictionaryPooledPolicy : DefaultPooledObjectPolicy<Dictionary<string, object>>
-    {
-        public StringObjectDictionaryPooledPolicy()
-        {
-        }
-
-        public override bool Return(Dictionary<string, object> obj)
         {
             obj.Clear();
             return true;

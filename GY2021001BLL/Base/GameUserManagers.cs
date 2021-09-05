@@ -72,7 +72,6 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public IReadOnlyDictionary<Guid, GameChar> Id2GameChar { get => _Id2GameChar; }
 
-
         #endregion 字段
 
         #region 构造函数
@@ -798,6 +797,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="user"></param>
         /// <param name="timeout"></param>
         /// <returns>返回解锁的处置接口，该接口处置时，自动解锁。如果锁定失败则返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IDisposable LockAndReturnDispose(this GameCharManager obj, GameUser user, TimeSpan timeout)
         {
             if (!obj.Lock(user, timeout))
@@ -811,6 +811,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="obj"></param>
         /// <param name="user"></param>
         /// <returns>null无效的令牌或锁定超时。返回处置接口用于解锁。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IDisposable LockAndReturnDispose(this GameCharManager obj, GameUser user) => obj.LockAndReturnDispose(user, TimeSpan.FromSeconds(obj.Options.DefaultLockTimeout));
 
         /// <summary>
@@ -820,6 +821,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="token"></param>
         /// <param name="user"></param>
         /// <returns>null无效的令牌或锁定超时。返回处置接口用于解锁。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IDisposable LockAndReturnDispose(this GameCharManager obj, Guid token, out GameUser user)
         {
             if (!obj.Lock(token, out user))
