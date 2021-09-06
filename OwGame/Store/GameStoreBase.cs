@@ -155,6 +155,11 @@ namespace OW.Game.Store
         }
 
         /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        public virtual bool SuppressSave { get; set; }
+
+        /// <summary>
         /// 实际处置当前对象的方法。
         /// </summary>
         /// <param name="disposing"></param>
@@ -287,6 +292,12 @@ namespace OW.Game.Store
         /// </summary>
         /// <param name="db">该实体类将被保存到的数据库上下文。</param>
         void PrepareSaving(DbContext db);
+
+        /// <summary>
+        /// 是否取消<see cref="PrepareSaving"/>的调用。
+        /// </summary>
+        /// <value>true不会调用保存方法，false(默认值)在保存前调用保存方法。</value>
+        bool SuppressSave => false;
     }
 
     /// <summary>

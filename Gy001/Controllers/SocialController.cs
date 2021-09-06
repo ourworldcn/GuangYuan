@@ -11,6 +11,7 @@ using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using static GuangYuan.GY001.BLL.GameSocialManager;
 
 namespace Gy001.Controllers
@@ -162,7 +163,7 @@ namespace Gy001.Controllers
         [HttpPut]
         public ActionResult<GetCharSummaryReturnDto> GetCharSummary(GetCharSummaryParamsDto model)
         {
-            using var data = new GetCharIdsForRequestFriendDatas(_World,model.Token)
+            using var data = new GetCharIdsForRequestFriendDatas(_World, model.Token)
             {
                 DisplayName = model.DisplayName,
             };
@@ -289,6 +290,42 @@ namespace Gy001.Controllers
                 _World.CharManager.Unlock(gu, true);
             }
         }
+
+        /// <summary>
+        /// 通用获取关系数据集合接口。此接口数据用时再刷，不要缓存。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// 返回集合中，每个元素的KeyType属性标识了该数据的类型：
+        /// 如等于 SocialKeyTypes.PatWithMounts 就是指定了签约坐骑，进一步 其Id等于自己角色Id，则此时 Id2是对方坐骑的唯一Id。
+        /// <code>
+        ///             IEnumerable&lt;GameSocialRelationshipDto&gt; srds = null;   //返回的关系集合
+        ///             string myCharIdString = "获取当前角色Id";  //己方角色唯一Id
+        ///             var result = srds.Where(c => c.KeyType == (int)SocialKeyTypes.PatWithMounts &amp;&amp; c.Id == myCharIdString);    //所有签约坐骑关系数据
+        ///             var mountsIds = result.Select(c => c.ObjectId); //所有签约坐骑的Id集合
+        /// </code>
+        /// </returns>
+        [HttpPut]
+        public ActionResult<GetSocialRelationshipsReturnDto> GetSocialRelationships(GetSocialRelationshipsParamsDto model)
+        {
+            var gu = _World.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token));
+            var gc = gu.CurrentChar;
+            IEnumerable<GameSocialRelationship> coll;
+            if (model.KeyTypes.Count > 0)  //若按键类型过滤
+            {
+                coll = _UserContext.SocialRelationships.Where(c => c.Id == gc.Id && model.KeyTypes.Contains(c.KeyType)).Concat(
+                    _UserContext.SocialRelationships.Where(c => c.Id2 == gc.Id && model.KeyTypes.Contains(c.KeyType))).ToArray();
+            }
+            else //获取所有类型关系数据
+            {
+                coll = _UserContext.SocialRelationships.Where(c => model.KeyTypes.Contains(c.KeyType)).ToArray();
+            }
+            var result = new GetSocialRelationshipsReturnDto();
+            result.SocialRelationships.AddRange(coll.Select(c => (GameSocialRelationshipDto)c));
+            return result;
+        }
+
+
         #endregion 好友相关
 
         /// <summary>
@@ -474,31 +511,32 @@ namespace Gy001.Controllers
         /// <param name="model"><seealso cref="PatWithMountsParamsDto"/></param>
         /// <returns><seealso cref="PatWithMountsReturnDto"/></returns>
         /// <response code="401">令牌错误。</response>
+        /// <response code="400">其他异常错误。</response>
         [HttpPost]
         public ActionResult<PatWithMountsReturnDto> PatWithMounts(PatWithMountsParamsDto model)
         {
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-            {
-                return Unauthorized("令牌无效");
-            }
             var result = new PatWithMountsReturnDto();
             try
             {
-                var datas = new PatWithMountsDatas()
+                using var datas = new PatWithMountsDatas(_World, model.Token, GameHelper.FromBase64String(model.MountsId), DateTime.UtcNow)
                 {
-                    CurrentMountsId = GameHelper.FromBase64String(model.CurrentMountsId),
-                    GameChar = gu.CurrentChar,
-                    MountsId = GameHelper.FromBase64String(model.MountsId),
+                    UserContext = _UserContext,
                 };
+                using var dwChar = datas.LockUser();
+                if (dwChar is null)
+                    return Unauthorized("令牌无效");
+
                 _World.SocialManager.PatWithMounts(datas);
                 result.HasError = datas.HasError;
                 result.DebugMessage = datas.DebugMessage;
-                result.Changes.AddRange(datas.Changes.Select(c => (ChangesItemDto)c));
+                result.Changes.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
                 result.MailItems.AddRange(datas.MailItems.Select(c => (ChangesItemDto)c));
             }
-            finally
+            catch (Exception err)
             {
-                _World.CharManager.Unlock(gu, true);
+                result.HasError = true;
+                result.DebugMessage = err.Message;
+                return BadRequest(err.Message);
             }
             return result;
         }
@@ -514,7 +552,7 @@ namespace Gy001.Controllers
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
                                                                                     //构造调用参数
-            using var datas = new GetHomelandDataDatas(_World,model.Token)
+            using var datas = new GetHomelandDataDatas(_World, model.Token)
             {
                 Context = _UserContext,
             };

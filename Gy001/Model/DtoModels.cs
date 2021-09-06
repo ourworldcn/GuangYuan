@@ -1067,6 +1067,22 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
+    /// SellParamsDto的详细项。
+    /// </summary>
+    public class SellParamsItemDto
+    {
+        /// <summary>
+        /// 要卖物品的唯一Id。
+        /// </summary>
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 售卖的数量。不可堆叠物品的数量一定是1。堆叠物品指定数量要么全正好能卖出去，要么，一个也卖不出。
+        /// </summary>
+        public decimal Count { get; set; }
+    }
+
+    /// <summary>
     /// Sell接口使用的参数封装类。
     /// </summary>
     [DataContract]
@@ -1081,7 +1097,7 @@ namespace GY2021001WebApi.Models
         /// 要出售物品的Id。这是一个事物操作，任何一个Id指定的物品无法成功卖出，将导致没有一个物品卖出。
         /// </summary>
         [DataMember]
-        public List<string> Ids { get; set; } = new List<string>();
+        public List<SellParamsItemDto> Ids { get; set; } = new List<SellParamsItemDto>();
     }
 
     /// <summary>
@@ -1359,7 +1375,13 @@ namespace GY2021001WebApi.Models
         public string Id { get; set; }
 
         /// <summary>
-        /// 下属具体加载物品及其位置信息
+        /// 方案号。
+        /// </summary>
+        [DataMember]
+        public int OrderNumber { get; set; }
+
+        /// <summary>
+        /// 下属具体加载物品及其位置信息。
         /// </summary>
         [DataMember]
         public List<HomelandFanganItemDto> FanganItems { get; set; } = new List<HomelandFanganItemDto>();
@@ -1742,7 +1764,7 @@ namespace GY2021001WebApi.Models
     }
 
     [DataContract]
-   public class GetAttachmentesResultItemDto
+    public class GetAttachmentesResultItemDto
     {
         public GetAttachmentesResultItemDto()
         {
@@ -2221,6 +2243,20 @@ namespace GY2021001WebApi.Models
         public RemoveBlackReturnDto()
         {
         }
+    }
+
+    /// <summary>
+    /// GetSocialRelationship接口使用的数据类。
+    /// </summary>
+    [DataContract]
+    public class GetSocialRelationshipsParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 按此类型键值过滤，如果是空集合则返回所有类型键值的条目，这可能数据较多。
+        /// 最好使用枚举 SocialKeyTypes 类型的值填充此集合。
+        /// </summary>
+        [DataMember]
+        public List<int> KeyTypes { get; set; } = new List<int>();
     }
 
     #endregion 社交相关

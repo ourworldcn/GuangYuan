@@ -349,6 +349,7 @@ namespace GY2021001WebApi.Models
                 ClientString = obj.ClientString,
                 Id = obj.Id.ToBase64String(),
                 IsActived = obj.IsActived,
+                OrderNumber=obj.OrderNumber,
             };
             result.FanganItems.AddRange(obj.FanganItems.Select(c => (HomelandFanganItemDto)c));
             return result;
@@ -361,6 +362,7 @@ namespace GY2021001WebApi.Models
                 ClientString = obj.ClientString,
                 Id = GameHelper.FromBase64String(obj.Id),
                 IsActived = obj.IsActived,
+                OrderNumber=obj.OrderNumber,
             };
             result.FanganItems.AddRange(obj.FanganItems.Select(c => (HomelandFanganItem)c));
             return result;

@@ -1157,46 +1157,70 @@ namespace GuangYuan.GY001.BLL
             if (disposer is null) return;
             var gc = datas.GameChar;
             var shoulan = gc.GetShoulanBag();
-            var coll = from id in datas.SellIds
-                       join gi in shoulan.Children
-                       on id equals gi.Id
-                       let price = ComputeGoldPrice(gi)
-                       select (gi, price);
-            if (coll.Count() != datas.SellIds.Count)
+            if (datas.SellIds.Select(c => c.Item1).Distinct().Count() != datas.SellIds.Count)
             {
                 datas.ResultCode = (int)HttpStatusCode.BadRequest;
-                datas.DebugMessage = "至少一个指定的Id不存在";
+                datas.DebugMessage = "物品Id重复。";
                 datas.HasError = true;
                 return;
             }
-            else if (coll.Any(c => !c.price.HasValue))
+            var coll = (from sellItem in datas.SellIds
+                        join gi in datas.GameChar.AllChildren
+                        on sellItem.Item1 equals gi.Id
+                        select (gi, sellItem.Item2));
+
+            List<(GameItem, decimal, decimal, decimal)> list = new List<(GameItem, decimal, decimal, decimal)>();
+            var totalGold = 0m; var totalDia = 0m;  //总计价格
+            foreach (var item in coll)
+            {
+                if (ComputeGoldPrice(item.gi, out var gold, out var dia))
+                {
+                    totalGold += gold;
+                    totalDia += dia;
+                    list.Add((item.gi, item.Item2, dia, gold));
+                }
+            }
+            if (list.Count != datas.SellIds.Count)
             {
                 datas.ResultCode = (int)HttpStatusCode.BadRequest;
-                datas.DebugMessage = "至少一个指定物品无法计算售价";
+                datas.DebugMessage = "至少一个指定的Id不存在或不能出售。";
                 datas.HasError = true;
                 return;
             }
             var gim = World.ItemManager;
             var qiwu = datas.GameChar.GetQiwuBag(); //回收站
-            var ary = coll.ToArray();
+
             //改写物品对象
-            foreach (var (gi, price) in ary)
+            foreach (var item in list)
             {
-                datas.ChangeItems.AddToRemoves(gi.ContainerId.Value, gi.Id);
-                gim.ForceMove(gi, qiwu);
-                datas.ChangeItems.AddToAdds(gi);
+                //datas.ChangeItems.AddToRemoves(item.Item1.ContainerId.Value, item.Item1.Id);
+                gim.MoveItem(item.Item1, item.Item2, qiwu, datas.ChangeItems);
+                //datas.ChangeItems.AddToAdds(qiwu.Id, item.Item1);
             }
             //改写金币
-            var jinbi = datas.GameChar.GetJinbi();
-            jinbi.Count += ary.Sum(c => c.price.Value);
-            datas.ChangeItems.AddToChanges(jinbi);
+            if (totalGold != 0)
+            {
+                var jinbi = datas.GameChar.GetJinbi();
+                jinbi.Count += totalGold;
+                datas.ChangeItems.AddToChanges(jinbi);
+
+            }
+            //改写钻石
+            if (totalDia != 0)
+            {
+                var zuanshi = datas.GameChar.GetZuanshi();
+                zuanshi.Count += totalDia;
+                datas.ChangeItems.AddToChanges(zuanshi);
+            }
         }
 
         /// <summary>
         /// 计算某个物品的金币售价。
         /// </summary>
-        /// <returns>售价，不能出售或无法计算则返回null。</returns>
-        public decimal? ComputeGoldPrice(GameItem item)
+        /// <param name="gold">金币售价。</param>
+        /// <param name="dia">钻石售价。</param>
+        /// <returns>true表示可以出售，false表示不可出售物品。</returns>
+        public bool ComputeGoldPrice(GameItem item, out decimal gold, out decimal dia)
         {
             if (IsMounts(item))
             {
@@ -1211,11 +1235,16 @@ namespace GuangYuan.GY001.BLL
                 else if (totalNe >= 121 && totalNe <= 180) mul = 2;
                 else if (totalNe >= 181 && totalNe <= 240) mul = 3;
                 else if (totalNe >= 241 && totalNe <= 300) mul = 4;
-                else return null;
-                return mul * totalNe;
+                else mul = 0;
+                gold = mul * totalNe;
+                dia = 0;
             }
             else
-                return null;
+            {
+                gold = item.GetDecimalOrDefault("sg");
+                dia = item.GetDecimalOrDefault("sd");
+            }
+            return true;
         }
 
         /// <summary>
@@ -1338,8 +1367,8 @@ namespace GuangYuan.GY001.BLL
         {
         }
 
-        private List<Guid> _SellIds;
-        public List<Guid> SellIds => GetOrAdd(nameof(SellIds), ref _SellIds);
+        private List<(Guid, decimal)> _SellIds;
+        public List<(Guid, decimal)> SellIds => GetOrAdd(nameof(SellIds), ref _SellIds);
     }
 
     /// <summary>
@@ -1465,6 +1494,14 @@ namespace GuangYuan.GY001.BLL
                 gcManager.Unlock(datas.GameChar.GameUser, true);
             }
         }
+
+        /// <summary>
+        /// 获取道具背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        static public GameItem GetItemBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);
 
         /// <summary>
         /// 获取坐骑背包。

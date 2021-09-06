@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -338,6 +339,22 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void SetLastErrorMessage(string msg) => _LastErrorMessage = msg;
 
+        [ThreadStatic]
+        private static int _LastError;
+
+        /// <summary>
+        /// 获取最后发生错误的错误码。
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetLastError() => _LastError;
+
+        /// <summary>
+        /// 设置最后一次错误的错误码。
+        /// </summary>
+        /// <param name="errorCode"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetLastError(int errorCode) => _LastError = errorCode;
 
         /// <summary>
         /// 按既定顺序锁定一组对象。

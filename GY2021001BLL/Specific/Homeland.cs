@@ -313,11 +313,12 @@ namespace GuangYuan.GY001.BLL.Homeland
                     };
                     fenggeItems.Add(fengge);
                 }
-                while (fengge.Fangans.Count < 2)   //若方案不足
-                {
-                    var fangan = new HomelandFangan();
-                    fengge.Fangans.Add(fangan);
-                }
+                if (fengge.Fangans.Count < 2)   //若方案不足
+                    for (int i = 0; i < 2; i++)
+                    {
+                        var fangan = new HomelandFangan() { OrderNumber = i };
+                        fengge.Fangans.Add(fangan);
+                    }
                 foreach (var fangan in fengge.Fangans)  //遍历方案
                 {
                     fangan.FanganItems.MergeContainer(hl, number, manager); //合并方案项
@@ -457,7 +458,7 @@ namespace GuangYuan.GY001.BLL.Homeland
                      Type = typeof(List<HomelandFengge>),
                  });
             var result = descriptor.Data as List<HomelandFengge>;
-            
+
             return result;
         }
 

@@ -641,9 +641,14 @@
             唯一Id，暂时无用，但一旦生成则保持不变。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.HomelandFanganDto.OrderNumber">
+            <summary>
+            方案号。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.HomelandFanganDto.FanganItems">
             <summary>
-            下属具体加载物品及其位置信息
+            下属具体加载物品及其位置信息。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.HomelandFanganDto.IsActived">
@@ -1162,6 +1167,21 @@
         <member name="P:GY2021001WebApi.Models.ApplyBlueprintParamsDto.Count">
             <summary>
             执行蓝图的次数，当前版本未实现该功能，保留为1(默认)。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SellParamsItemDto">
+            <summary>
+            SellParamsDto的详细项。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SellParamsItemDto.Id">
+            <summary>
+            要卖物品的唯一Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SellParamsItemDto.Count">
+            <summary>
+            售卖的数量。不可堆叠物品的数量一定是1。堆叠物品指定数量要么全正好能卖出去，要么，一个也卖不出。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.SellParamsDto">
@@ -1744,6 +1764,17 @@
             要移除的黑名单的角色Id。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetSocialRelationshipsParamsDto">
+            <summary>
+            GetSocialRelationship接口使用的数据类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetSocialRelationshipsParamsDto.KeyTypes">
+            <summary>
+            按此类型键值过滤，如果是空集合则返回所有类型键值的条目，这可能数据较多。
+            最好使用枚举 SocialKeyTypes 类型的值填充此集合。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -1845,6 +1876,22 @@
             <returns>参见返回值。</returns>
             <response code="401">令牌错误。</response>
         </member>
+        <member name="M:Gy001.Controllers.SocialController.GetSocialRelationships(GY2021001WebApi.Models.GetSocialRelationshipsParamsDto)">
+            <summary>
+            通用获取关系数据集合接口。此接口数据用时再刷，不要缓存。
+            </summary>
+            <param name="model"></param>
+            <returns>
+            返回集合中，每个元素的KeyType属性标识了该数据的类型：
+            如等于 SocialKeyTypes.PatWithMounts 就是指定了签约坐骑，进一步 其Id等于自己角色Id，则此时 Id2是对方坐骑的唯一Id。
+            <code>
+                        IEnumerable&lt;GameSocialRelationshipDto&gt; srds = null;   //返回的关系集合
+                        string myCharIdString = "获取当前角色Id";  //己方角色唯一Id
+                        var result = srds.Where(c => c.KeyType == (int)SocialKeyTypes.PatWithMounts &amp;&amp; c.Id == myCharIdString);    //所有签约坐骑关系数据
+                        var mountsIds = result.Select(c => c.ObjectId); //所有签约坐骑的Id集合
+            </code>
+            </returns>
+        </member>
         <member name="M:Gy001.Controllers.SocialController.ConfirmRequestFriend(GY2021001WebApi.Models.ConfirmRequestFriendParamsDto)">
             <summary>
             确认或拒绝好友申请。
@@ -1891,6 +1938,7 @@
             <param name="model"><seealso cref="T:GY2021001WebApi.Models.PatWithMountsParamsDto"/></param>
             <returns><seealso cref="T:GY2021001WebApi.Models.PatWithMountsReturnDto"/></returns>
             <response code="401">令牌错误。</response>
+            <response code="400">其他异常错误。</response>
         </member>
         <member name="M:Gy001.Controllers.SocialController.GetHomelandData(GY2021001WebApi.Models.GetHomelandDataParamsDto)">
             <summary>

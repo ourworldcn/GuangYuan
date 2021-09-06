@@ -42,7 +42,7 @@ namespace OW.Game.Store
         /// </summary>
         private void PrepareSaving()
         {
-            var coll = ChangeTracker.Entries().Select(c => c.Entity).OfType<IBeforeSave>();
+            var coll = ChangeTracker.Entries().Select(c => c.Entity).OfType<IBeforeSave>().Where(c => !c.SuppressSave);
             foreach (var item in coll)
             {
                 item.PrepareSaving(this);

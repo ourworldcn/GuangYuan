@@ -7,6 +7,17 @@ using System.Runtime.Serialization;
 namespace Game.Social
 {
     /// <summary>
+    /// <see cref="GameSocialRelationship"/>中<see cref="GameEntityRelationshipBase.KeyType"/>使用的值，这里使用枚举类型以便使用。
+    /// </summary>
+    public enum SocialKeyTypes
+    {
+        /// <summary>
+        /// 与家园展示坐骑互动的KeyType值。
+        /// </summary>
+        PatWithMounts = 20000,
+    }
+
+    /// <summary>
     /// 社交相关对象的传输基类。
     /// MailTypeId={邮件类型Id},wood=木材数量，gold=金币数量，iswin=是否胜利
     /// </summary>
@@ -345,6 +356,5 @@ namespace Game.Social
         /// </summary>
         Done,
     }
-
 
 }

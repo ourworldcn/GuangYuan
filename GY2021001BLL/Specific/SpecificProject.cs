@@ -179,6 +179,11 @@ namespace GuangYuan.GY001.BLL
         #region 家园及相关
 
         /// <summary>
+        /// 家园坐骑互动结果卡。
+        /// </summary>
+        public static readonly Guid HomelandPatCard = new Guid("{8BA64889-63D4-4CCE-A7CC-9CF29ECE73ED}");
+
+        /// <summary>
         /// 家园模板Id。
         /// </summary>
         public static readonly Guid HomelandSlotId = new Guid("{3a855606-a5ee-459b-b1ed-76e9b5847d7d}");

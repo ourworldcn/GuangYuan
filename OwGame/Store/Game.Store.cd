@@ -17,7 +17,7 @@
   <Class Name="OW.Game.Store.SimpleExtendPropertyBase" Collapsed="true">
     <Position X="2.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAIAAAAAAAAABAAAAAAABAAAAAAAAAAAAgAAAACAAA=</HashCode>
+      <HashCode>AAAIAACAACAAABAAAACAABAAAAAAAAAAAAgAAAACAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -32,7 +32,7 @@
   <Class Name="OW.Game.Store.GameEntityRelationshipBase">
     <Position X="0.5" Y="3.25" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAAAAAACAAIAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAACAAIAQAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -75,14 +75,15 @@
   <Class Name="OW.Game.Store.GameObjectBase">
     <Position X="5.25" Y="3.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAEAAACAAAQAQAQAAAAAABAAAAAAAEAAAAAAAAAA=</HashCode>
       <FileName>Store\GameUserContext.cs</FileName>
     </TypeIdentifier>
+    <Lollipop Position="0.2" />
   </Class>
-  <Interface Name="OW.Game.Store.IBeforeSave" Collapsed="true">
+  <Interface Name="OW.Game.Store.IBeforeSave">
     <Position X="7.75" Y="2.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAIAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Interface>

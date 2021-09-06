@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -340,7 +341,7 @@ namespace GuangYuan.GY001.BLL
             var gu = gameUser = GetUserFromToken(GameHelper.FromBase64String(token));
             if (gameUser is null || !Lock(gameUser, TimeSpan.FromSeconds(Options.DefaultLockTimeout)))
                 return null;
-            return  DisposerWrapper.Create(() => Unlock(gu));
+            return DisposerWrapper.Create(() => Unlock(gu));
         }
 
         /// <summary>
@@ -802,7 +803,7 @@ namespace GuangYuan.GY001.BLL
         {
             if (!obj.Lock(user, timeout))
                 return null;
-            return  DisposerWrapper.Create(() => obj.Unlock(user));
+            return DisposerWrapper.Create(() => obj.Unlock(user));
         }
 
         /// <summary>
@@ -827,7 +828,7 @@ namespace GuangYuan.GY001.BLL
             if (!obj.Lock(token, out user))
                 return null;
             var tmp = user;
-            return  DisposerWrapper.Create(() => obj.Unlock(tmp));
+            return DisposerWrapper.Create(() => obj.Unlock(tmp));
         }
 
     }

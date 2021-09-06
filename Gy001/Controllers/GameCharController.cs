@@ -178,11 +178,8 @@ namespace GY2021001WebApi.Controllers
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
             //构造调用参数
-            var datas = new SellDatas(world,model.Token);
-            using var disposer = datas.LockUser();
-            if (disposer is null)   //若锁定失败
-                return StatusCode(datas.ResultCode, datas.DebugMessage);
-            datas.SellIds.AddRange(model.Ids.Select(c => GameHelper.FromBase64String(c)));
+            var datas = new SellDatas(world, model.Token);
+            datas.SellIds.AddRange(model.Ids.Select(c => (GameHelper.FromBase64String(c.Id), c.Count)));
             world.ItemManager.Sell(datas);  //调用服务
             //构造返回参数
             var result = new SellReturnDto()
@@ -204,7 +201,7 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<SetLineupReturnDto> SetSetLineup(SetLineupParamsDto model)
         {
-            SetLineupDatas datas = new SetLineupDatas(HttpContext.RequestServices.GetRequiredService<VWorld>(),model.Token)
+            SetLineupDatas datas = new SetLineupDatas(HttpContext.RequestServices.GetRequiredService<VWorld>(), model.Token)
             {
             };
             datas.Settings.AddRange(model.Settings.Select(c => (GameHelper.FromBase64String(c.Id), c.ForIndex, (decimal)c.Position)));
@@ -218,7 +215,7 @@ namespace GY2021001WebApi.Controllers
                 gim.SetLineup(datas);
                 result.HasError = datas.HasError;
                 result.DebugMessage = datas.DebugMessage;
-                if(!result.HasError)
+                if (!result.HasError)
                 {
                     result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
                 }

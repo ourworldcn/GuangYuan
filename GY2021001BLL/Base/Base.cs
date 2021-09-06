@@ -369,9 +369,6 @@ namespace GuangYuan.GY001.BLL
         /// 使用默认超时试图锁定用户。
         /// </summary>
         /// <returns></returns>
-        public IDisposable LockUser()
-        {
-            return World.CharManager.LockAndReturnDispose(GameChar.GameUser);
-        }
+        public IDisposable LockUser() => World.CharManager.LockAndReturnDispose(GameChar.GameUser);
     }
 }
