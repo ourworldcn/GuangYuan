@@ -157,7 +157,8 @@ namespace OW.Game.Store
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public virtual bool SuppressSave { get; set; }
+        [NotMapped]
+        public bool SuppressSave { get; set; }
 
         /// <summary>
         /// 实际处置当前对象的方法。

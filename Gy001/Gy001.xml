@@ -119,6 +119,14 @@
             <returns></returns>
             <response code="401">参数错误。详情参见说明字符串。</response>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.UseItems(GY2021001WebApi.Models.UseItemsParamsDto)">
+            <summary>
+            使用道具。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+            <response code="401">参数错误。详情参见说明字符串。</response>
+        </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.SetSetLineup(GY2021001WebApi.Models.SetLineupParamsDto)">
             <summary>
             设置阵容。
@@ -1148,6 +1156,51 @@
             仅当成功返回时，此成员才有用。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.UseItemsParamsItemDto">
+            <summary>
+            使用物品的具体项。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.UseItemsParamsItemDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.UseItemsParamsItemDto.Id">
+            <summary>
+            使用物品的唯一Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.UseItemsParamsItemDto.Count">
+            <summary>
+            使用物品的数量，对非堆叠物品总设置1。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.UseItemsParamsDto">
+            <summary>
+            UseItems 接口使用的参数封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.UseItemsParamsDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.UseItemsParamsDto.Items">
+            <summary>
+            使用物品。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.UseItemsReturnDto">
+            <summary>
+            UseItems接口使用的返回数据封装类。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.UseItemsReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.ApplyBlueprintParamsDto">
             <summary>
             使用蓝图的数据传输对象。
@@ -1779,12 +1832,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

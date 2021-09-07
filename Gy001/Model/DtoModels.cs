@@ -1011,6 +1011,67 @@ namespace GY2021001WebApi.Models
     #region 物品相关
 
     /// <summary>
+    /// 使用物品的具体项。
+    /// </summary>
+    [DataContract]
+    public class UseItemsParamsItemDto
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public UseItemsParamsItemDto()
+        {
+
+        }
+        /// <summary>
+        /// 使用物品的唯一Id。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 使用物品的数量，对非堆叠物品总设置1。
+        /// </summary>
+        [DataMember]
+        public decimal Count { get; set; }
+    }
+
+    /// <summary>
+    /// UseItems 接口使用的参数封装类。
+    /// </summary>
+    [DataContract]
+    public class UseItemsParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public UseItemsParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 使用物品。
+        /// </summary>
+        [DataMember]
+        public List<UseItemsParamsItemDto> Items { get; set; } = new List<UseItemsParamsItemDto>();
+    }
+
+    /// <summary>
+    /// UseItems接口使用的返回数据封装类。
+    /// </summary>
+    [DataContract]
+    public class UseItemsReturnDto : ChangesReturnDtoBase
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public UseItemsReturnDto()
+        {
+        }
+    }
+
+    /// <summary>
     /// 使用蓝图的数据传输对象。
     /// </summary>
     [DataContract]

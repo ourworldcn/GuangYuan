@@ -908,8 +908,8 @@ namespace GuangYuan.GY001.BLL
             if (++sr.Flag >= 7)  //若此次互动有了结果
             {
                 sr.Flag = 0;
-                GameItem sendGi = new GameItem();
-                sendGi.Initialize(datas.World.Service, ProjectConstant.HomelandPatCard);
+                var gameItem = datas.UserContext.Set<GameItem>().Include(c => c.Children).ThenInclude(c => c.Children).AsNoTracking().Single(c => c.Id == sr.Id2);
+                GameItem sendGi = World.ItemManager.CloneMounts(gameItem, ProjectConstant.HomelandPatCard); //创建幻影
                 World.ItemManager.AddItem(sendGi, datas.GameChar.GetItemBag(), null, datas.ChangeItems); //放入道具背包
             }
             //删除其他签约坐骑

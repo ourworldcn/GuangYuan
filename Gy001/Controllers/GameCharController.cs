@@ -193,6 +193,38 @@ namespace GY2021001WebApi.Controllers
         }
 
         /// <summary>
+        /// 使用道具。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <response code="401">参数错误。详情参见说明字符串。</response>
+        [HttpPost]
+        public ActionResult<UseItemsReturnDto> UseItems(UseItemsParamsDto model)
+        {
+            var result = new UseItemsReturnDto();
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            using var datas = new UseItemsWorkDatas(world, model.Token) { UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>() };
+            datas.ItemIds.AddRange(model.Items.Select(c => (GameHelper.FromBase64String(c.Id), c.Count)));
+            try
+            {
+                world.ItemManager.UseItems(datas);
+                if (datas.HasError && datas.ResultCode == 401)
+                    return Unauthorized("令牌无效。");
+                else
+                {
+                    result.HasError = datas.HasError;
+                    result.DebugMessage = datas.DebugMessage;
+                }
+            }
+            catch (Exception err)
+            {
+                result.DebugMessage = err.Message;
+                result.HasError = true;
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 设置阵容。
         /// </summary>
         /// <param name="model"></param>
@@ -309,7 +341,7 @@ namespace GY2021001WebApi.Controllers
                     GameItem gi = (GameItem)item;
                     if (gim.IsMounts(gi))  //若要创建坐骑
                     {
-                        var mounts = gim.CreateMounts(gi);
+                        var mounts = gim.CreateMounts(gi,ProjectConstant.ZuojiZuheRongqi);
                         mounts.ParentId = gi.ParentId;
                         lst.Add(mounts);
                     }

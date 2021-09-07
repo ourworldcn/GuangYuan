@@ -479,7 +479,7 @@ namespace GuangYuan.GY001.BLL
             }
             GameItemManager gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
             GameItem gameItem = gim.CreateGameItem(tid);
-            
+
             string keyName = Template.Id.ToString();
             if (env.Variables.TryGetValue(keyName, out GameExpressionBase expr) && expr is ConstGExpression)   //若已经存在该变量
             {
@@ -686,6 +686,10 @@ namespace GuangYuan.GY001.BLL
             {
                 switch (idStr)
                 {
+                    case "8b4ac76c-d8cc-4300-95ca-668350149821":    //若是孵化
+                        Fuhua(datas);
+                        succ = true;
+                        break;
                     case "7f35cda3-316d-4be6-9ccf-c348bb7dd28b":    //若是取蛋
                         GetFhResult(datas);
                         succ = true;
@@ -1260,30 +1264,30 @@ namespace GuangYuan.GY001.BLL
                     }
                 }
                 ChangeItem.Reduce(datas.ChangesItem);    //压缩变化数据
-                switch (datas.Blueprint.Id.ToString("D").ToLower())
-                {
-                    case "8b4ac76c-d8cc-4300-95ca-668350149821": //针对孵化蓝图
-                        GameItem tmp = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);
-                        ChangeItem slotFh = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == tmp.Id);    //孵化容器
-                        if (slotFh == null)
-                        {
-                            break;
-                        }
+                //switch (datas.Blueprint.Id.ToString("D").ToLower())
+                //{
+                //    case "8b4ac76c-d8cc-4300-95ca-668350149821": //针对孵化蓝图
+                //        GameItem tmp = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);  //孵化槽
+                //        ChangeItem slotFh = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == tmp.Id);    //孵化容器变化数据
+                //        if (slotFh == null)
+                //        {
+                //            break;
+                //        }
 
-                        GameItem gameItem = slotFh.Adds.FirstOrDefault();    //孵化的组合
-                        if (gameItem == null)
-                        {
-                            break;
-                        }
+                //        GameItem gameItem = slotFh.Adds.FirstOrDefault();    //孵化的组合
+                //        if (gameItem == null)
+                //        {
+                //            break;
+                //        }
 
-                        ChangeItem containerMounts = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == gameItem.Id);    //组合容器
-                        Debug.Assert(containerMounts.Adds.Count == 2);
-                        gameItem.Children.AddRange(containerMounts.Adds);
-                        datas.ChangesItem.Remove(containerMounts);
-                        break;
-                    default:
-                        break;
-                }
+                //        ChangeItem containerMounts = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == gameItem.Id);    //组合容器
+                //        Debug.Assert(containerMounts.Adds.Count == 2);
+                //        gameItem.Children.AddRange(containerMounts.Adds);
+                //        datas.ChangesItem.Remove(containerMounts);
+                //        break;
+                //    default:
+                //        break;
+                //}
                 World.CharManager.NotifyChange(gu);
             }
             catch (Exception err)
@@ -1423,6 +1427,44 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 孵化坐骑/动物。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void Fuhua(ApplyBlueprintDatas datas)
+        {
+            if (!datas.Verify(datas.GameItems.Count == 2, "必须指定双亲"))
+                return;
+            var jinyinTId = new Guid("{ac7d593c-ce82-4642-97a3-14025da633e4}");
+            var jiyin = datas.GameChar.GetItemBag().Children.First(c => c.TemplateId == jinyinTId); //基因蛋
+            if (!datas.Verify(null != jiyin && jiyin.Count > 0, "没有基因蛋", jinyinTId))
+                return;
+            var gim = World.ItemManager;
+            var fuhuaSlot = datas.GameChar.GetFuhuaSlot();
+            var renCout = gim.GetFreeCapacity(fuhuaSlot);
+            if (!datas.Verify(renCout > 0, "孵化槽已经满", fuhuaSlot.TemplateId))
+                return;
+            var parent1 = datas.GameItems[0];
+            var parent2 = datas.GameItems[1];
+            var child = FuhuaCore(datas.GameChar, parent1, parent2);
+            gim.AddItem(child, fuhuaSlot, null, datas.ChangesItem); //放入孵化槽
+            var qiwu = datas.GameChar.GetQiwuBag();
+            if (jiyin.Count > 1)    //若尚有剩余基因蛋
+            {
+                jiyin.Count--;
+                datas.ChangesItem.AddToChanges(jiyin);
+            }
+            else //若基因蛋用完
+            {
+                gim.MoveItem(jiyin, 1, qiwu, datas.ChangesItem);
+            }
+
+            if (parent1.TemplateId == ProjectConstant.HomelandPatCard) //若是卡片
+                gim.MoveItem(parent1, 1, qiwu, datas.ChangesItem);
+            if (parent2.TemplateId == ProjectConstant.HomelandPatCard) //若是卡片
+                gim.MoveItem(parent2, 1, qiwu, datas.ChangesItem);
+        }
+
+        /// <summary>
         /// 孵化的核心算法。
         /// </summary>
         /// <param name="gameChar">角色对象。</param>
@@ -1443,17 +1485,66 @@ namespace GuangYuan.GY001.BLL
             }
             else //不用有图鉴
             {
-                headT = VWorld.IsHit(0.5) ? gim.GetHeadTemplate(parent1) : gim.GetHeadTemplate(parent2);
-                bodyT = VWorld.IsHit(0.5) ? gim.GetBodyTemplate(parent1) : gim.GetBodyTemplate(parent2);
+                if (VWorld.IsHit(0.2))   //若出纯种生物
+                {
+                    if (VWorld.IsHit(0.5))   //若出a头
+                    {
+                        headT = gim.GetHeadTemplate(parent1);
+                        bodyT = gim.GetHeadTemplate(parent1);
+                    }
+                    else //若出b头
+                    {
+                        headT = gim.GetHeadTemplate(parent2);
+                        bodyT = gim.GetHeadTemplate(parent2);
+                    }
+
+                }
+                else //出杂交生物
+                {
+                    if (VWorld.IsHit(0.5))   //若出a头
+                    {
+                        headT = gim.GetHeadTemplate(parent1);
+                        bodyT = gim.GetHeadTemplate(parent2);
+                    }
+                    else //若出b头
+                    {
+                        headT = gim.GetHeadTemplate(parent2);
+                        bodyT = gim.GetHeadTemplate(parent1);
+                    }
+                }
             }
 
             GameItem result = gim.CreateMounts(headT, bodyT);
-            result.Properties["neatk"] = Math.Round((parent1.Properties.GetDecimalOrDefault("neatk") + parent2.Properties.GetDecimalOrDefault("neatk")) / 2, MidpointRounding.AwayFromZero);
-            result.Properties["nemhp"] = Math.Round((parent1.Properties.GetDecimalOrDefault("nemhp") + parent2.Properties.GetDecimalOrDefault("nemhp")) / 2, MidpointRounding.AwayFromZero);
-            result.Properties["neqlt"] = Math.Round((parent1.Properties.GetDecimalOrDefault("neqlt") + parent2.Properties.GetDecimalOrDefault("neqlt")) / 2, MidpointRounding.AwayFromZero);
+            SetNe(result, parent1, parent2);    //设置天赋值
             return result;
         }
 
+        /// <summary>
+        /// 设置杂交后的天赋。
+        /// </summary>
+        /// <param name="child">要设置的对象。</param>
+        /// <param name="parent1">双亲1。</param>
+        /// <param name="parent1">双亲2。</param>
+        void SetNe(GameItem child, GameItem parent1, GameItem parent2)
+        {
+            var rank1 = parent1.Properties.GetDecimalOrDefault("nerank");
+            var rank2 = parent2.Properties.GetDecimalOrDefault("nerank");
+
+            var ne1 = parent1.Properties.GetDecimalOrDefault("neatk");
+            var ne2 = parent2.Properties.GetDecimalOrDefault("neatk");
+            var atk = Math.Max(0, (ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-5, 6));
+
+            ne1 = parent1.Properties.GetDecimalOrDefault("nemhp");
+            ne2 = parent2.Properties.GetDecimalOrDefault("nemhp");
+            var mhp = Math.Max(0, (ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-5, 6));
+
+            ne1 = parent1.Properties.GetDecimalOrDefault("neqlt");
+            ne2 = parent2.Properties.GetDecimalOrDefault("neqlt");
+            var qlt = Math.Max(0, (ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-5, 6));
+            child.Properties["atk"] = atk;
+            child.Properties["mhp"] = mhp;
+            child.Properties["qlt"] = qlt;
+        }
         #endregion 孵化相关
 
         #region 合成相关

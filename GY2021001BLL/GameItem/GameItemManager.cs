@@ -122,112 +122,6 @@ namespace GuangYuan.GY001.BLL
             return result;
         }
 
-        #region 坐骑相关
-
-        /// <summary>
-        /// 创建一个坐骑或野生动物。
-        /// </summary>
-        /// <param name="head"></param>
-        /// <param name="body"></param>
-        /// <returns></returns>
-        public GameItem CreateMounts(GameItemTemplate headTemplate, GameItemTemplate bodyTemplate)
-        {
-            var result = CreateGameItem(ProjectConstant.ZuojiZuheRongqi);
-            result.Count = 1;
-            var head = CreateGameItem(headTemplate);
-            head.Count = 1;
-            SetHead(result, head);
-            var body = CreateGameItem(bodyTemplate);
-            body.Count = 1;
-            SetBody(result, body);
-            return result;
-        }
-
-        /// <summary>
-        /// 按现有对象的信息创建一个坐骑。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <returns>要创建的坐骑。</returns>
-        public GameItem CreateMounts(GameItem gameItem)
-        {
-            var result = CreateGameItem(ProjectConstant.ZuojiZuheRongqi);
-            var head = CreateGameItem(GetHead(gameItem).TemplateId); head.Count = 1;
-            SetHead(result, head);
-            var body = CreateGameItem(GetBody(gameItem).TemplateId); body.Count = 1;
-            SetBody(result, body);
-            foreach (var item in gameItem.Properties)   //复制属性
-            {
-                result.Properties[item.Key] = item.Value;
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// 物品是否是一个坐骑。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsMounts(GameItem gameItem) => gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi;
-
-        /// <summary>
-        /// 获取头对象。
-        /// </summary>
-        /// <param name="mounts"></param>
-        /// <returns>返回头对象，如果没有则返回null。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameItem GetHead(GameItem mounts)
-        {
-            var result = mounts.Children.FirstOrDefault(c => World.ItemTemplateManager.GetTemplateFromeId(c.TemplateId).GenusCode == 3);
-#pragma warning disable CS0618 // 类型或成员已过时
-            return result ?? mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheTou)?.Children?.FirstOrDefault();
-#pragma warning restore CS0618 // 类型或成员已过时
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool SetHead(GameItem mounts, GameItem head)
-        {
-#pragma warning disable CS0618 // 类型或成员已过时
-            var slot = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheTou);
-#pragma warning restore CS0618 // 类型或成员已过时
-            return null != slot ? ForcedAdd(head, slot) : ForcedAdd(head, mounts);
-        }
-
-        /// <summary>
-        /// 获取身体对象。
-        /// </summary>
-        /// <param name="mounts"></param>
-        /// <returns>身体对象，不是坐骑或没有身体则返回null。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameItem GetBody(GameItem mounts)
-        {
-            var result = mounts.Children.FirstOrDefault(c => World.ItemTemplateManager.GetTemplateFromeId(c.TemplateId).GenusCode == 4);
-#pragma warning disable CS0618 // 类型或成员已过时
-            return result ?? mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti)?.Children?.FirstOrDefault();
-#pragma warning restore CS0618 // 类型或成员已过时
-
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool SetBody(GameItem mounts, GameItem body)
-        {
-#pragma warning disable CS0618 // 类型或成员已过时
-            var slot = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti);
-#pragma warning restore CS0618 // 类型或成员已过时
-            return null != slot ? ForcedAdd(body, slot) : ForcedAdd(body, mounts);
-        }
-
-        /// <summary>
-        /// 返回坐骑头和身体的模板Id。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="gim"></param>
-        /// <returns>返回(头模板Id,身体模板Id),若不是坐骑则返回(<see cref="Guid.Empty"/>,<see cref="Guid.Empty"/>)。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public (Guid, Guid) GetMountsTIds(GameItem gameItem) => (GetHead(gameItem)?.TemplateId ?? Guid.Empty, GetBody(gameItem)?.TemplateId ?? Guid.Empty);
-
-        #endregion 坐骑相关
-
         /// <summary>
         /// 获取对象的模板。
         /// </summary>
@@ -1222,7 +1116,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>true表示可以出售，false表示不可出售物品。</returns>
         public bool ComputeGoldPrice(GameItem item, out decimal gold, out decimal dia)
         {
-            if (IsMounts(item))
+            if (this.IsMounts(item))
             {
                 var totalNe = item.Properties.GetDecimalOrDefault("neatk", 0m) +   //总资质值
                 item.Properties.GetDecimalOrDefault("nemhp", 0m) +
@@ -1348,6 +1242,118 @@ namespace GuangYuan.GY001.BLL
             }
             World.CharManager.NotifyChange(gc.GameUser);
         }
+
+        /// <summary>
+        /// 使用道具。
+        /// </summary>
+        public void UseItems(UseItemsWorkDatas datas)
+        {
+            using var dwChar = datas.LockUser();
+            if (dwChar is null)
+            {
+                datas.ResultCode = (int)HttpStatusCode.Unauthorized;
+                datas.HasError = true;
+                return;
+            }
+            var gim = World.ItemManager;
+            var qiwuBag = datas.GameChar.GetQiwuBag();
+            var bpMng = datas.World.BlueprintManager;
+            for (int i = 0; i < datas.Items.Count; i++)
+            {
+                var item = datas.Items[i];
+                GameItem gi = item.Item1;
+                var bpid = gi.Properties.GetGuidOrDefault("usebpid", Guid.Empty);
+                if (bpid != Guid.Empty)    //若指定了蓝图
+                {
+                    var template = bpMng.GetTemplateFromId(bpid) as BlueprintTemplate;
+                    ApplyBlueprintDatas bpDatas = new ApplyBlueprintDatas()
+                    {
+                        Count = 1,
+                        Blueprint = template,
+                        GameChar = datas.GameChar,
+                    };
+                    bpDatas.GameItems.Add(gi);
+                    //TO DO
+                }
+                else //若无蓝图
+                {
+                    //准备数据
+                    var tid = gi.Properties.GetGuidOrDefault("usetid", Guid.Empty);
+                    var ptid = gi.Properties.GetGuidOrDefault("useptid", Guid.Empty);
+                    if (tid == Guid.Empty || ptid == Guid.Empty || !gi.Properties.ContainsKey("usercount"))  //若数据不齐
+                    {
+                        //TO DO
+                        continue;
+                    }
+                    var count = gi.Properties.GetDecimalOrDefault("usecount", 0);
+                    //校验结构
+                    var parent = tid == ProjectConstant.CharTemplateId ? datas.GameChar as GameThingBase : datas.GameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
+                    if (parent is null)  //若找不到容器
+                    {
+                        //TO DO
+                        continue;
+                    }
+                    //生成新物品
+                    var giAdd = new GameItem();
+                    giAdd.Initialize(World.Service, tid);
+                    giAdd.Count = count * item.Item2;
+                    //修改数据
+                    gim.AddItem(giAdd, parent, null, datas.ChangeItems);    //加入新物品
+                    gim.MoveItem(gi, item.Item2, qiwuBag, datas.ChangeItems);
+                }
+            }
+        }
+    }
+
+    public class UseItemsWorkDatas : ChangeItemsWorkDatsBase
+    {
+        public UseItemsWorkDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public UseItemsWorkDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public UseItemsWorkDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        List<(Guid, decimal)> _ItemIds;
+
+        /// <summary>
+        /// 要使用物品的唯一Id集合。
+        /// </summary>
+        public List<(Guid, decimal)> ItemIds => _ItemIds ??= new List<(Guid, decimal)>();
+
+        private List<(GameItem, decimal)> _Items;
+
+        /// <summary>
+        /// 要使用的物品。
+        /// </summary>
+        public List<(GameItem, decimal)> Items
+        {
+            get
+            {
+                if (ItemIds.Select(c => c.Item1).Distinct().Count() != ItemIds.Count)
+                {
+                    throw new ArgumentException("有重复的物品Id。");
+                }
+                if (_Items is null)
+                {
+                    var coll = from gi in GameChar.AllChildren
+                               join id in ItemIds
+                               on gi.Id equals id.Item1
+                               select (gi, id.Item2);
+                    var list = coll.ToList();
+                    if (list.Count != _ItemIds.Count)
+                        throw new ArgumentException("至少有一个Id不是有效物品。");
+                    _Items = list;
+                }
+                return _Items;
+            }
+        }
+
     }
 
     /// <summary>
@@ -1496,6 +1502,14 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 获取孵化槽。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        static public GameItem GetFuhuaSlot(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);
+
+        /// <summary>
         /// 获取道具背包。
         /// </summary>
         /// <param name="gameChar"></param>
@@ -1537,7 +1551,7 @@ namespace GuangYuan.GY001.BLL
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.TujianBagTId);
 
         /// <summary>
-        /// 
+        /// 获取指定双亲符合条件的图鉴。
         /// </summary>
         /// <param name="mng"></param>
         /// <param name="gameChar">角色对象。</param>
@@ -1562,35 +1576,6 @@ namespace GuangYuan.GY001.BLL
             return (hTId, bTId, prob);
         }
 
-        /// <summary>
-        /// 获取物品的头模板。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="item"></param>
-        /// <returns>不是动物则返回null。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public GameItemTemplate GetHeadTemplate(this GameItemManager manager, GameItem item)
-        {
-            var tmp = manager.GetHead(item);
-            if (tmp is null)
-                return null;
-            return manager.GetTemplate(tmp);
-        }
-
-        /// <summary>
-        /// 获取物品的身体模板。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="item"></param>
-        /// <returns>不是动物则返回null。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public GameItemTemplate GetBodyTemplate(this GameItemManager manager, GameItem item)
-        {
-            var tmp = manager.GetBody(item);
-            if (tmp is null)
-                return null;
-            return manager.GetTemplate(tmp);
-        }
     }
 
     /// <summary>
