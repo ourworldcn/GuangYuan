@@ -345,15 +345,27 @@ namespace GuangYuan.GY001.BLL
     /// </summary>
     public class Gy001Initializer : GameManagerBase<Gy001InitializerOptions>, IGameObjectInitializer
     {
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
         public Gy001Initializer()
         {
 
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="service"><inheritdoc/></param>
         public Gy001Initializer(IServiceProvider service) : base(service)
         {
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="service"><inheritdoc/></param>
+        /// <param name="options"><inheritdoc/></param>
         public Gy001Initializer(IServiceProvider service, Gy001InitializerOptions options) : base(service, options)
         {
         }
@@ -389,11 +401,20 @@ namespace GuangYuan.GY001.BLL
             }
             else if (obj is GameChar gc)
             {
-
+                //清除锁定属性槽内物品，放回道具背包中
+                var gim = World.ItemManager;
+                var daojuBag = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包
+                var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockAtkSlotId); //锁定槽
+                gim.MoveItems(slot, c => true, daojuBag);
+                slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockMhpSlotId); //锁定槽
+                gim.MoveItems(slot, c => true, daojuBag);
+                slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockQltSlotId); //锁定槽
+                gim.MoveItems(slot, c => true, daojuBag);
             }
             else if (obj is GameUser gu)
             {
-
+                gu.CurrentChar = gu.GameChars[0];   //项目特定:一个用户有且仅有一个角色
+                gu.CurrentChar.Loaded(gu.Services, gu.DbContext);
             }
             else
                 return false;

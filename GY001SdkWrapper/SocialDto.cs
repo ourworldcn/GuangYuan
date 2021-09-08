@@ -12,6 +12,11 @@ namespace Game.Social
     public enum SocialKeyTypes
     {
         /// <summary>
+        /// 允许pvp攻击的对象,列表中包含的对象，而非协助反击的对象。
+        /// </summary>
+        AllowPvpAttack = 10001,
+
+        /// <summary>
         /// 与家园展示坐骑互动的KeyType值。
         /// </summary>
         PatWithMounts = 20000,
@@ -329,6 +334,12 @@ namespace Game.Social
         /// </summary>
         [DataMember]
         AlreadyBlack,
+
+        /// <summary>
+        /// 超次数限制。
+        /// </summary>
+        [DataMember]
+        OverCount,
     }
 
     /// <summary>

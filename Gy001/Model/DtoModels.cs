@@ -964,6 +964,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 是否移除指定属性。true移除Name中指定的属性，false追加或修改属性。
         /// </summary>
+        [DataMember]
         public bool IsRemove { get; set; }
 
         /// <summary>
@@ -1306,6 +1307,25 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public List<ChangesItemDto> Changes { get; set; } = new List<ChangesItemDto>();
 
+    }
+
+    /// <summary>
+    /// Id和数量的封装。通常用于其他对象中。
+    /// </summary>
+    [DataContract]
+    public partial class IdAndCountDto
+    {
+        /// <summary>
+        /// Id。根据具体所属对象解释其含义。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 数量。根据具体所属对象解释其含义。
+        /// </summary>
+        [DataMember]
+        public decimal Count { get; set; }
     }
 
     #endregion 物品相关
@@ -1991,7 +2011,7 @@ namespace GY2021001WebApi.Models
         /// 小于-5则是黑名单，大于5是好友。目前这个字段仅使用-6和6两个值。
         /// </summary>
         [DataMember]
-        public sbyte Friendliness { get; set; } = 0;
+        public int Friendliness { get; set; } = 0;
 
     }
 
@@ -2192,12 +2212,6 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string MountsId { get; set; }
 
-        /// <summary>
-        /// 如果友好度已满，使用此坐骑与对方坐骑杂交。
-        /// </summary>
-        [DataMember]
-        public string CurrentMountsId { get; set; }
-
     }
 
     /// <summary>
@@ -2219,6 +2233,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<ChangesItemDto> MailItems { get; set; } = new List<ChangesItemDto>();
+
+        /// <summary>
+        /// 与互动坐骑的关系数据结构。
+        /// </summary>
+        [DataMember]
+        public GameSocialRelationshipDto Relationship { get; set; }
 
     }
 

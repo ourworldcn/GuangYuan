@@ -8,6 +8,7 @@ using OW.Game;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -83,7 +84,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param name="service"></param>
+        /// <param name="service">配置数据。</param>
         public GameManagerBase(IServiceProvider service)
         {
             _Services = service;
@@ -92,8 +93,8 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param name="service"></param>
-        /// <param name="options"></param>
+        /// <param name="service">使用的服务容器。</param>
+        /// <param name="options">配置数据。</param>
         public GameManagerBase(IServiceProvider service, TOptions options)
         {
             _Services = service;
@@ -370,5 +371,135 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <returns></returns>
         public IDisposable LockUser() => World.CharManager.LockAndReturnDispose(GameChar.GameUser);
+    }
+
+    /// <summary>
+    /// Id集合的帮助器类。
+    /// 场景，经常遇到要记录一组Id，且这些Id要记录最后刷新时间。
+    /// 当日可能更改，非当日将导致会清理后更改。
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public sealed class CounterWrapper<T> : IDisposable
+    {
+        /// <summary>
+        /// 最后一次刷新结果的键名后缀。
+        /// </summary>
+        public const string LastValuesKeySuffix = "LastValues";
+
+        /// <summary>
+        /// 当日刷新的所有值的键名后缀。
+        /// </summary>
+        public const string TodayValuesKeySuffix = "TodayValues";
+
+        /// <summary>
+        /// 最后一次刷新日期键名后缀。
+        /// </summary>
+        public const string LastDateKeySuffix = "LastDate";
+
+        /// <summary>
+        /// 分隔符。
+        /// </summary>
+        public const string Separator = "`";
+
+        public static CounterWrapper<T> Create([NotNull] SimpleExtendPropertyBase entity, [NotNull] string prefix, DateTime now)
+        {
+            return new CounterWrapper<T>(entity, prefix, now);
+        }
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="gameThing">保存在该对象的<see cref="SimpleExtendPropertyBase.Properties"/>属性中。</param>
+        /// <param name="prefix">记录这些属性的前缀。</param>
+        /// <param name="now">当前日期时间。</param>
+        CounterWrapper([NotNull] SimpleExtendPropertyBase entity, [NotNull] string prefix, DateTime now)
+        {
+            _Entity = entity;
+            _Prefix = prefix;
+            _Now = now;
+        }
+
+        SimpleExtendPropertyBase _Entity;
+        string _Prefix;
+        DateTime _Now;
+
+        /// <summary>
+        /// 记录最后一次值的键名。
+        /// </summary>
+        public string LastValuesKey => $"{_Prefix}{LastValuesKeySuffix}";
+
+        /// <summary>
+        /// 记录当日值的键名。
+        /// </summary>
+        public string TodayValuesKey => $"{_Prefix}{TodayValuesKeySuffix}";
+
+        /// <summary>
+        /// 最后刷新时间键名。
+        /// </summary>
+        public string LastDateKey => $"{_Prefix}{LastDateKeySuffix}";
+
+        List<T> _TodayValues;
+        /// <summary>
+        /// 今日所有数据。
+        /// </summary>
+        public List<T> TodayValues
+        {
+            get
+            {
+                if (_TodayValues is null)
+                    if (!_Entity.Properties.ContainsKey(LastDateKey) || _Entity.Properties.GetDateTimeOrDefault(LastDateKey) != _Now)  //若已经需要刷新
+                    {
+                        _TodayValues = new List<T>();
+                    }
+                    else
+                    {
+                        string val = _Entity.Properties.GetStringOrDefault(TodayValuesKey);
+                        if (string.IsNullOrWhiteSpace(val))  //若没有值
+                            _TodayValues = new List<T>();
+                        else
+                        {
+                            var converter = TypeDescriptor.GetConverter(typeof(T));
+                            _TodayValues = val.Split(Separator).Select(c => (T)converter.ConvertFrom(c)).ToList();
+                        }
+                    }
+                return _TodayValues;
+            }
+        }
+
+        #region IDisposable接口及相关
+
+        private bool _Disposed;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void Dispose(bool disposing)
+        {
+            if (!_Disposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _Disposed = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~CounterWrapper()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion IDisposable接口及相关
     }
 }

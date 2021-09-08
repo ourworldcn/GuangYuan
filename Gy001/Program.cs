@@ -51,26 +51,6 @@ namespace Gy001
         {
             var world = host.Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            Random rnd=new Random();
-            //var gi = db.Set<GameItem>().First(c => c.TemplateId == ProjectConstant.PvpObjectTId);
-            //gi.Properties["TodayIds"] = gi.Id.ToString() + "`" + gi.Id.ToString();
-            //using CharPvpDataView view = new CharPvpDataView(world.Service, gi) { UserContext = db };
-            //var coll = view.GetNewList();
-            //DefaultObjectPoolProvider opp = new DefaultObjectPoolProvider();
-            //var pool = opp.CreateStringBuilderPool();
-            //var pool2 = opp.CreateStringBuilderPool();
-            //var pool3 = opp.Create<Dictionary<string,object>>();
-            //var pool4 = opp.Create<Dictionary<string,object>>();
-
-            //var coll1 = db.GameItems.Where(c => c.Count < 1000).OrderByDescending(c => c.Count).Take(10);
-            //var coll2 = db.GameItems.Where(c => c.Count > 1000).OrderBy(c => c.Count).Take(10);
-            //var r = coll1.Concat(coll2).ToArray();
-            //var templates = world.ItemTemplateManager.GetTemplates(c => c.CatalogNumber == 4);
-            //var gu = world.CharManager.Login("test101", "test101", "test");
-
-            //var data = new FriendDataView(world, gu.CurrentChar, DateTime.UtcNow);
-            //var list = data.RefreshLastList(templates.Select(c => c.Id)).ToList();
-            //using var dw = new DisposerWrapper(() => { });
             return;
         }
 

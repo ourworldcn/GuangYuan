@@ -234,6 +234,21 @@
             <param name="sex">0是传统意义上的女性，1是传统意义上的男性。未来可能添加多元性别，目前未得到此需求。</param>
             <returns>一个随机的中文名。</returns>
         </member>
+        <member name="T:GY2021001WebApi.Models.IdAndCountDto">
+            <summary>
+            Id和数量的封装。通常用于其他对象中。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.IdAndCountDto.Id">
+            <summary>
+            Id。根据具体所属对象解释其含义。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.IdAndCountDto.Count">
+            <summary>
+            数量。根据具体所属对象解释其含义。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GameActionRecordDto">
             <summary>
             行为简要记录的数据封装类。
@@ -1753,11 +1768,6 @@
             要互动的坐骑Id。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.PatWithMountsParamsDto.CurrentMountsId">
-            <summary>
-            如果友好度已满，使用此坐骑与对方坐骑杂交。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.PatWithMountsReturnDto">
             <summary>
             PatWithMounts 接口的返回值封装类
@@ -1773,6 +1783,11 @@
             通过邮件发送了物品集合。如果没有发送邮件则是空集合。
             Changes属性都可能有数据（部分放入）。
             其中<see cref="P:GY2021001WebApi.Models.ChangesItemDto.ContainerId"/>是邮件对象的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.PatWithMountsReturnDto.Relationship">
+            <summary>
+            与互动坐骑的关系数据结构。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetHomelandDataReturnDto">
@@ -1832,6 +1847,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

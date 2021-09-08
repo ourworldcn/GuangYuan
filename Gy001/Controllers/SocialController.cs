@@ -531,6 +531,7 @@ namespace Gy001.Controllers
                 result.DebugMessage = datas.DebugMessage;
                 result.Changes.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
                 result.MailItems.AddRange(datas.MailItems.Select(c => (ChangesItemDto)c));
+                result.Relationship = datas.GetOrAddSr();
             }
             catch (Exception err)
             {

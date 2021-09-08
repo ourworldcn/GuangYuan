@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 
 namespace GuangYuan.GY001.BLL
@@ -451,9 +452,38 @@ namespace GuangYuan.GY001.BLL
             return;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="datats"></param>
         public void EndCombatPvp(EndCombatPvpWorkData datats)
         {
+            using var dwChar = datats.LockUser();
+            if (dwChar is null)
+                return;
+            var dv = new CharPvpDataView(datats.World.Service, datats.GameChar);
+            if (!dv.LastIds.Contains(datats.OtherCharId))   //若是非法攻击的对象。TO DO要测试反击 和 协助的Id
+            {
+                datats.HasError = true;
+                datats.ResultCode = (int)HttpStatusCode.BadRequest;
+                datats.DebugMessage = "不可攻击的对象。";
+                return;
+            }
+            if (false)   //若免战
+            {
 
+            }
+            
+            //修改数据
+            var db = datats.UserContext;
+            //清理自身可攻击id
+            dv.LastIds.Remove(datats.OtherCharId);
+            //加入反击数据
+            var sr = new GameSocialRelationship { };
+            db.Set<GameSocialRelationship>().Add(sr);
+            //保存
+            db.SaveChanges();
+            dv.Save();
         }
 
         /// <summary>
@@ -721,6 +751,9 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
+    /// <summary>
+    /// pvp结束战斗调用接口的数据封装类。
+    /// </summary>
     public class EndCombatPvpWorkData : ComplexWorkDatasBase
     {
         public EndCombatPvpWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
@@ -743,6 +776,39 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 被攻击的角色Id。
         /// </summary>
-        public Guid PassiveCharId { get; set; }
+        public Guid OtherCharId { get; set; }
+
+        /// <summary>
+        /// 是否胜利了。
+        /// </summary>
+        public bool IsWin { get; set; }
+
+        /// <summary>
+        /// 战利品的原始数据。
+        /// </summary>
+        public List<(Guid, decimal)> TIdAndCounts { get; } = new List<(Guid, decimal)>();
+
+        List<GameItem> _GameItems;
+
+        /// <summary>
+        /// 战利品。
+        /// </summary>
+        public List<GameItem> GameItems
+        {
+            get
+            {
+                if (_GameItems is null)
+                {
+                    _GameItems = TIdAndCounts.Select(c =>
+                    {
+                        var result = new GameItem();
+                        result.Initialize(World.Service, c.Item1);
+                        result.Count = c.Item2;
+                        return result;
+                    }).ToList();
+                }
+                return _GameItems;
+            }
+        }
     }
 }

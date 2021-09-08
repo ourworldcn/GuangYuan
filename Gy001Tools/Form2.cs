@@ -16,42 +16,31 @@ namespace Gy001Tools
         {
             InitializeComponent();
         }
-        private readonly string comparePattern = @"(?<left>[^\+\-\*\/\=]+)(?<op>[\+\-\*\/\=]+)(?<right>\d+)[\,，]?";
+        //private readonly string comparePattern = @"(?<left>[^\+\-\*\/\=]+)(?<op>[\+\-\*\/\=]+)(?<right>\d+)[\,，]?";
         [ThreadStatic]
         private static Random _WorldRandom;
         public static Random WorldRandom => _WorldRandom ?? (_WorldRandom = new Random());
 
         private void button1_Click(object sender, EventArgs e)
         {
-            var id = new Guid("06AC47A4A0F046E0AE0DD7D8D55BEB2A");
-            var matches = Regex.Matches(textBox1.Text, comparePattern);
+            //var matches = Regex.Matches(textBox1.Text, comparePattern);
             StringBuilder sb = new StringBuilder();
-            foreach (var item in matches.OfType<Match>())
-            {
-                var ary = item.Groups["op"];
-                //sb.AppendLine(string.Join(",", );
-            }
+            //foreach (var item in matches.OfType<Match>())
+            //{
+            //    //sb.AppendLine(string.Join(",", );
+            //}
             textBox2.Text = sb.ToString();
         }
         private void Form2_Load(object sender, EventArgs e)
         {
-            IEnumerable<string> coll = new string[] { string.Empty, "", "ds", null, " " };
-            var ary = coll.OfType<string>().ToArray();
-            var str = decimal.MaxValue.ToString();
-            var d1 = Math.Round(3.5, MidpointRounding.AwayFromZero);
-            var d2 = Math.Round(-3.5, MidpointRounding.AwayFromZero);
-            var d3 = Math.Round(-3.45, MidpointRounding.AwayFromZero);
-            test();
+            //IEnumerable<string> coll = new string[] { string.Empty, "", "ds", null, " " };
+            //var ary = coll.OfType<string>().ToArray();
+            Test();
         }
 
-        private void test()
+        private void Test()
         {
 
-        }
-
-        private void Callback(object state)
-        {
-            Debug.WriteLine("Run:{0}", DateTime.UtcNow);
         }
 
         private readonly string left = "k1";

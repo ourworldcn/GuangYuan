@@ -159,15 +159,6 @@ namespace GuangYuan.GY001.UserDb
             OnLogouting(e);
         }
 
-        /// <summary>
-        /// 从数据库中加载到内存后调用。
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="context"></param>
-        public void InvokeLoaded(IServiceProvider service, DbContext context)
-        {
-        }
-
         public void Initialize(IServiceProvider service, string loginName, string pwd, DbContext db)
         {
             var dic = new Dictionary<string, object>
@@ -203,12 +194,17 @@ namespace GuangYuan.GY001.UserDb
             var pwdHash = hash.ComputeHash(Encoding.UTF8.GetBytes(pwd));
             PwdHash = pwdHash;
 
-            //调用项目特定的创建函数。
-            var init = service.GetService(typeof(IGameObjectInitializer)) as IGameObjectInitializer;
-            init.Created(this);
             DbContext.Add(this);
         }
 
+        protected override void LoadedCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
+        {
+            base.LoadedCore(service, parameters);
+            //初始化本类型的数据
+            Services = service;
+            DbContext = parameters["db"] as DbContext;
+            CurrentToken = Guid.NewGuid();
+        }
         #endregion 事件
     }
 }

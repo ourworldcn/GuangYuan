@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
-  <Class Name="GuangYuan.GY001.BLL.GameItemManagerOptions" Collapsed="true">
-    <Position X="1.5" Y="1.5" Width="1.5" />
+  <Class Name="GuangYuan.GY001.BLL.GameItemManagerOptions">
+    <Position X="1.25" Y="1.5" Width="2" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
       <FileName>GameItem\GameItemManager.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.BLL.GameItemManager" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="3.25" Y="0.5" Width="1.5" />
+  <Class Name="GuangYuan.GY001.BLL.GameItemManager" BaseTypeListCollapsed="true">
+    <Position X="6" Y="1.5" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>gAgUARQAEliggQAAUAjQACBKgIAABwMAAEAAEIEACAA=</HashCode>
+      <HashCode>AAgUAAQAEliggQAAUAjQACBKgIAABwMAAEAAAIAAAAA=</HashCode>
       <FileName>GameItem\GameItemManager.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" Collapsed="true" />
   </Class>
   <Class Name="GuangYuan.GY001.BLL.SellDatas" Collapsed="true">
-    <Position X="3.25" Y="1.5" Width="1.5" />
+    <Position X="3.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
       <FileName>GameItem\GameItemManager.cs</FileName>
@@ -32,7 +32,7 @@
   <Class Name="GuangYuan.GY001.BLL.GameItemManagerExtensions" Collapsed="true">
     <Position X="5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>QACAAAAAAAAEAAAAQIAgAEAAoAAAAAEAAAAAAAAAAAA=</HashCode>
+      <HashCode>QACAAAAAAAAUAAAAQIAiAEAAgAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>GameItem\GameItemManager.cs</FileName>
     </TypeIdentifier>
   </Class>

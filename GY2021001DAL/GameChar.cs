@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.Json;
@@ -86,9 +87,37 @@ namespace GuangYuan.GY001.UserDb
                 ActionId = "Created",
                 PropertiesString = $"CreateBy=CreateChar",
             });
-            //调用项目初始化函数
-            var init = service.GetService(typeof(IGameObjectInitializer)) as IGameObjectInitializer;
-            init?.Created(this);
+        }
+
+        protected override void LoadedCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
+        {
+            base.LoadedCore(service, parameters);
+            Debug.Assert(GameUser != null && GameUser.DbContext != null);
+            //未发送给客户端的数据
+            var exProp = ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);
+            if (null != exProp)    //若有需要反序列化的对象
+            {
+                var tmp = JsonSerializer.Deserialize<List<ChangesItemSummary>>(exProp.Text);
+                _ChangesItems = ChangesItemSummary.ToChangesItem(tmp, this);
+            }
+
+            //加载扩展属性
+            SpecificExpandProperties = DbContext.Set<CharSpecificExpandProperty>().Find(Id);
+            ////补足角色的槽
+            //var tt = World.ItemTemplateManager.GetTemplateFromeId(e.GameChar.TemplateId);
+            //List<Guid> ids = new List<Guid>();
+            //tt.ChildrenTemplateIds.ApartWithWithRepeated(e.GameChar.GameItems, c => c, c => c.TemplateId, ids, null, null);
+            //foreach (var item in ids.Select(c => World.ItemTemplateManager.GetTemplateFromeId(c)))
+            //{
+            //    var gameItem = World.ItemManager.CreateGameItem(item, e.GameChar.Id);
+            //    e.GameChar.GameUser.DbContext.Set<GameItem>().Add(gameItem);
+            //    e.GameChar.GameItems.Add(gameItem);
+            //}
+            ////补足所属物品的槽
+            //World.ItemManager.Normalize(e.GameChar.GameItems);
+            //通知直接所属物品加载完毕
+            var list = GameItems.ToList();
+            list.ForEach(c => c.Loaded(service, DbContext));
         }
 
         /// <summary>
@@ -159,30 +188,6 @@ namespace GuangYuan.GY001.UserDb
         public DateTime? CombatStartUtc { get; set; }
 
         /// <summary>
-        /// 在基础数据加载到内存后调用。
-        /// </summary>
-        public void InvokeLoaded()
-        {
-            var db = GameUser.DbContext;
-            //加载所属物品对象
-            _GameItems ??= db.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ThenInclude(c => c.Children).ToList();
-            foreach (var item in _GameItems)
-            {
-                item.GameChar = this;
-            }
-            foreach (var item in AllChildren)
-            {
-
-            }
-            var exProp = ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);
-            if (null != exProp)    //若有需要反序列化的对象
-            {
-                var tmp = JsonSerializer.Deserialize<List<ChangesItemSummary>>(exProp.Text);
-                _ChangesItems = ChangesItemSummary.ToChangesItem(tmp, this);
-            }
-        }
-
-        /// <summary>
         /// <inheritdoc/>
         /// </summary>
         /// <param name="db"></param>
@@ -216,6 +221,23 @@ namespace GuangYuan.GY001.UserDb
         //[ForeignKey(nameof(Id))]
         public virtual CharSpecificExpandProperty SpecificExpandProperties { get; set; }
 
+        /// <summary>
+        /// 客户端的属性。
+        /// </summary>
+        [NotMapped]
+        public Dictionary<string, string> ClientProperties
+        {
+            get
+            {
+                return ExtendPropertyDictionary.GetOrAdd(GameExtendProperty.ClientPropertyName, c => new ExtendPropertyDescriptor()
+                {
+                    Name = GameExtendProperty.ClientPropertyName,
+                    Data = new Dictionary<string, string>(),
+                    Type = typeof(Dictionary<string, string>),
+                    IsPersistence = true,
+                }).Data as Dictionary<string, string>;
+            }
+        }
         #region IDisposable接口相关
 
         /// <summary>

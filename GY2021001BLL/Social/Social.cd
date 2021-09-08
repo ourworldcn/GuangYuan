@@ -1,50 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
-  <Class Name="GuangYuan.GY001.BLL.SocialManagerOptions">
-    <Position X="3" Y="2.5" Width="2.5" />
+  <Class Name="GuangYuan.GY001.BLL.SocialManagerOptions" Collapsed="true">
+    <Position X="2.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Social\SocialManager.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.BLL.GameSocialManager">
-    <Position X="6.5" Y="0.75" Width="5.5" />
-    <NestedTypes>
-      <Class Name="GuangYuan.GY001.BLL.GameSocialManager.PatForTiliWrapper" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Social\SocialManager.cs</NewMemberFileName>
-        </TypeIdentifier>
-      </Class>
-      <Class Name="GuangYuan.GY001.BLL.GameSocialManager.PatWithMountsDatas" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Social\SocialManager.cs</NewMemberFileName>
-        </TypeIdentifier>
-      </Class>
-      <Class Name="GuangYuan.GY001.BLL.GameSocialManager.PatWithMountsWrapper" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Social\SocialManager.cs</NewMemberFileName>
-        </TypeIdentifier>
-      </Class>
-      <Class Name="GuangYuan.GY001.BLL.GameSocialManager.PatWithMountsItem" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Social\SocialManager.cs</NewMemberFileName>
-        </TypeIdentifier>
-      </Class>
-    </NestedTypes>
+  <Class Name="GuangYuan.GY001.BLL.GameSocialManager" Collapsed="true">
+    <Position X="2.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>ASAAAAEAAAASAYAxAAAAAABAAAAAAAwAAAAYgoACAEA=</HashCode>
+      <HashCode>ASAAAAEAAAQSAYAxAAQAAABAAAAAQAwAAACYgoECiAA=</HashCode>
       <FileName>Social\SocialManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GetHomelandDataDatas" Collapsed="true">
-    <Position X="1.25" Y="0.75" Width="2.5" />
+    <Position X="0.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAQAAAAAAAggAAAAAAAAAAAAAAACAAAUAAAAAEAAAA=</HashCode>
+      <HashCode>AAAQAAAAAiAggAAAAAAAAAAAAAAACAAAUAAAAAEAAAA=</HashCode>
       <FileName>Social\SocialManager.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="GuangYuan.GY001.BLL.CharPvpDataView">
+    <Position X="5" Y="0.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>BAAAAIBAEwgAAAABAAAAAACgAoAAAIgAAAAAAAAAACA=</HashCode>
+      <FileName>Social\Pvp.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Enum Name="GuangYuan.GY001.BLL.PatForTiliResult" Collapsed="true">
-    <Position X="3" Y="3.75" Width="1.5" />
+    <Position X="0.75" Y="3" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AQAAAAAAAAAAAAAAAAAAAABAAgAQAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Social\SocialManager.cs</FileName>

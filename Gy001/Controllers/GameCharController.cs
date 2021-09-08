@@ -98,27 +98,17 @@ namespace GY2021001WebApi.Controllers
             try
             {
                 var gc = gu.CurrentChar;
-                var cep = gc.ExtendProperties.Where(c => c.Name == GameExtendProperty.ClientPropertyName).FirstOrDefault(c => c.StringValue == model.Name); //获取指定的属性
                 if (model.IsRemove)
                 {
-                    if (cep is null || !gc.ExtendProperties.Remove(cep))    //已经移除
+                    if (!gc.ClientProperties.Remove(model.Name))    //已经移除
                     {
                         result.DebugMessage = $"没有找到要移除的键{model.Name}。";
                         return result;
                     }
                 }
-                else if (null != cep)   //若已经存在
-                    cep.Text = model.Value;    //修改属性值
                 else //若尚不存在
                 {
-                    cep = new GameExtendProperty()
-                    {
-                        Name = GameExtendProperty.ClientPropertyName,
-                        StringValue = model.Name,
-                        Text = model.Value,
-                        Id = gc.Id,
-                    };
-                    gc.ExtendProperties.Add(cep);
+                    gc.ClientProperties[model.Name] = model.Value;
                 }
                 world.CharManager.Nope(gu);
             }
@@ -341,7 +331,7 @@ namespace GY2021001WebApi.Controllers
                     GameItem gi = (GameItem)item;
                     if (gim.IsMounts(gi))  //若要创建坐骑
                     {
-                        var mounts = gim.CreateMounts(gi,ProjectConstant.ZuojiZuheRongqi);
+                        var mounts = gim.CreateMounts(gi, ProjectConstant.ZuojiZuheRongqi);
                         mounts.ParentId = gi.ParentId;
                         lst.Add(mounts);
                     }

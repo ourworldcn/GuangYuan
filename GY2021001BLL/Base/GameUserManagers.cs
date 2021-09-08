@@ -408,18 +408,16 @@ namespace GuangYuan.GY001.BLL
             if (_LoginName2Token.TryGetValue(innerLoginName, out Guid token))    //若已经登录
             {
                 _Token2User.TryGetValue(token, out gu);   //获取用户对象
-                token = Guid.NewGuid(); //换新令牌
                 lock (gu)
                 {
                     if (gu.IsDisposed)   //若已经并发处置
                         return null;    //TO DO视同没有
                     if (!IsPwd(gu, pwd))   //若密码错误
                         return null;
-                    gu.CurrentToken = token;
-                    _LoginName2Token.TryRemove(innerLoginName, out Guid oldToken);
-                    _LoginName2Token.AddOrUpdate(innerLoginName, token, (c1, c2) => token);
-                    _Token2User.TryRemove(oldToken, out GameUser oldGu);
-                    _Token2User.TryAdd(token, gu);
+                    gu.CurrentToken = Guid.NewGuid(); //换新令牌
+                    _LoginName2Token.AddOrUpdate(innerLoginName, gu.CurrentToken, (lName, tk) => gu.CurrentToken);
+                    _Token2User.TryRemove(token, out GameUser oldGu);
+                    _Token2User.TryAdd(gu.CurrentToken, gu);
                     Nope(token);
                 }
             }
@@ -437,26 +435,22 @@ namespace GuangYuan.GY001.BLL
                     if (!IsPwd(gu, pwd))   //若密码错误
                         return null;
                     //初始化属性
-                    token = Guid.NewGuid();
-                    gu.CurrentToken = token;
-                    gu.DbContext = db;
-                    gu.Services = Service;
-                    gu.CurrentChar = gu.GameChars[0];
+                    gu.Loaded(Service, db);
                     gu.LastModifyDateTimeUtc = DateTime.UtcNow;
-                    NotifyChange(gu);
 
                     //加入全局列表
                     var gc = gu.CurrentChar;
                     _Id2GameChar[gc.Id] = gc;
-                    _LoginName2Token.AddOrUpdate(innerLoginName, token, (c1, c2) => token);
-                    _Token2User.AddOrUpdate(token, gu, (c1, c2) => gu);
-                    OnCharLoaded(new CharLoadedEventArgs(gu.CurrentChar));
+                    _LoginName2Token.AddOrUpdate(innerLoginName, gu.CurrentToken, (c1, c2) => gu.CurrentToken);
+                    _Token2User.AddOrUpdate(gu.CurrentToken, gu, (c1, c2) => gu);
+
                     gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = new DateTime(9999, 1, 1);   //标记在线
                     actionRecords.Add(new GameActionRecord()    //写入登录日志
                     {
                         ActionId = "Login",
                         ParentId = gc.Id,
                     });
+                    NotifyChange(gu);
                 }
             }
             if (null != actionRecords && actionRecords.Count > 0)
@@ -723,54 +717,6 @@ namespace GuangYuan.GY001.BLL
         #endregion 公共方法
 
         #region 事件及相关
-        public event EventHandler<CharLoadedEventArgs> CharLoaded;
-        protected virtual void OnCharLoaded(CharLoadedEventArgs e)
-        {
-            try
-            {
-                e.GameChar.InvokeLoaded();
-            }
-            catch (Exception)
-            {
-            }
-            try
-            {
-                //加载扩展属性
-                e.GameChar.SpecificExpandProperties = e.GameChar.GameUser.DbContext.Set<CharSpecificExpandProperty>().Find(e.GameChar.Id);
-                //补足角色的槽
-                var tt = World.ItemTemplateManager.GetTemplateFromeId(e.GameChar.TemplateId);
-                List<Guid> ids = new List<Guid>();
-                tt.ChildrenTemplateIds.ApartWithWithRepeated(e.GameChar.GameItems, c => c, c => c.TemplateId, ids, null, null);
-                foreach (var item in ids.Select(c => World.ItemTemplateManager.GetTemplateFromeId(c)))
-                {
-                    var gameItem = World.ItemManager.CreateGameItem(item, e.GameChar.Id);
-                    e.GameChar.GameUser.DbContext.Set<GameItem>().Add(gameItem);
-                    e.GameChar.GameItems.Add(gameItem);
-                }
-                //补足所属物品的槽
-                World.ItemManager.Normalize(e.GameChar.GameItems);
-                //通知所属物品加载完毕
-                var coll = OwHelper.GetAllSubItemsOfTree(e.GameChar.GameItems, c => c.Children).ToArray();
-                foreach (var item in coll)
-                    item.InvokeLoading(Service);
-                //清除锁定属性槽内物品，放回道具背包中
-                var gim = World.ItemManager;
-                var daojuBag = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包
-                var slot = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockAtkSlotId); //锁定槽
-                gim.MoveItems(slot, c => true, daojuBag);
-                slot = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockMhpSlotId); //锁定槽
-                gim.MoveItems(slot, c => true, daojuBag);
-                slot = e.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockQltSlotId); //锁定槽
-                gim.MoveItems(slot, c => true, daojuBag);
-
-            }
-            catch (Exception)
-            {
-            }
-            CharLoaded?.Invoke(this, e);
-
-        }
-
 
         #endregion 事件及相关
     }

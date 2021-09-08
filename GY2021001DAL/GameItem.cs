@@ -233,16 +233,6 @@ namespace GuangYuan.GY001.UserDb
             base.PrepareSaving(db);
         }
 
-        /// <summary>
-        /// 该对象自身数据已经加载到内存中进行调用。
-        /// </summary>
-        /// <param _Name="services">服务容器，必须有<see cref="IGameThingHelper"/>服务。</param>
-        public void InvokeLoading(IServiceProvider services)
-        {
-            var helper = services.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
-            Template = helper.GetTemplateFromeId(TemplateId);
-        }
-
         #endregion 事件及相关
 
         /// <summary>
@@ -631,6 +621,20 @@ namespace GuangYuan.GY001.UserDb
                 }));
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="parameters"></param>
+        protected override void LoadedCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
+        {
+            base.LoadedCore(service, parameters);
+            //通知直接所属物品加载完毕
+            var list = Children.ToList();
+            list.ForEach(c => c.Loaded(service, DbContext));
+        }
+
     }
 
     public static class GameItemExtensions

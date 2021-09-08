@@ -11,6 +11,16 @@ using System.Text.Json;
 namespace GY2021001WebApi.Models
 {
     #region 基础数据
+
+    public partial class IdAndCountDto
+    {
+        public static implicit operator ValueTuple<Guid, decimal>(IdAndCountDto obj) =>
+            (GameHelper.FromBase64String(obj.Id), obj.Count);
+
+        public static implicit operator IdAndCountDto(ValueTuple<Guid, decimal> obj) =>
+            new IdAndCountDto { Id = obj.Item1.ToBase64String(), Count = obj.Item2 };
+    }
+
     public partial class GameActionRecordDto
     {
         public static implicit operator GameActionRecordDto(GameActionRecord obj)
@@ -349,7 +359,7 @@ namespace GY2021001WebApi.Models
                 ClientString = obj.ClientString,
                 Id = obj.Id.ToBase64String(),
                 IsActived = obj.IsActived,
-                OrderNumber=obj.OrderNumber,
+                OrderNumber = obj.OrderNumber,
             };
             result.FanganItems.AddRange(obj.FanganItems.Select(c => (HomelandFanganItemDto)c));
             return result;
@@ -362,7 +372,7 @@ namespace GY2021001WebApi.Models
                 ClientString = obj.ClientString,
                 Id = GameHelper.FromBase64String(obj.Id),
                 IsActived = obj.IsActived,
-                OrderNumber=obj.OrderNumber,
+                OrderNumber = obj.OrderNumber,
             };
             result.FanganItems.AddRange(obj.FanganItems.Select(c => (HomelandFanganItem)c));
             return result;
@@ -439,7 +449,7 @@ namespace GY2021001WebApi.Models
             {
                 Id = obj.Id.ToBase64String(),
                 ObjectId = obj.Id2.ToBase64String(),
-                KeyType=obj.KeyType,
+                KeyType = obj.KeyType,
                 Friendliness = (sbyte)obj.Flag,
             };
             foreach (var item in obj.Properties)

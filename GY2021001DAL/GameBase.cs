@@ -309,6 +309,9 @@ namespace GuangYuan.GY001.UserDb
 
         ObservableCollection<GameExtendProperty> _ExtendProperties;
 
+        /// <summary>
+        /// 通用扩展属性。
+        /// </summary>
         [NotMapped]
         public ObservableCollection<GameExtendProperty> ExtendProperties
         {
@@ -420,6 +423,14 @@ namespace GuangYuan.GY001.UserDb
 #if DEBUG
             Properties["tname"] = Template.DisplayName;
 #endif
+
+        }
+
+        protected override void LoadedCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
+        {
+            base.LoadedCore(service, parameters);
+            var helper = service.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
+            Template = helper?.GetTemplateFromeId(TemplateId);
 
         }
     }
