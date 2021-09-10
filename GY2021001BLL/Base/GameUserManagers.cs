@@ -47,10 +47,11 @@ namespace GuangYuan.GY001.BLL
 
             public VWorld World => _World ??= _Service.GetService<VWorld>();
 
-            private ConcurrentDictionary<Guid, GameUser> _Token2Users = new ConcurrentDictionary<Guid, GameUser>();
+            internal ConcurrentDictionary<Guid, GameUser> _Token2Users = new ConcurrentDictionary<Guid, GameUser>();
             internal ConcurrentDictionary<string, GameUser> _LoginName2Users = new ConcurrentDictionary<string, GameUser>();
             internal ConcurrentDictionary<Guid, GameUser> _Id2Users = new ConcurrentDictionary<Guid, GameUser>();
-            internal ConcurrentDictionary<Guid, GameChar> _Token2GChars = new ConcurrentDictionary<Guid, GameChar>();
+            internal ConcurrentDictionary<Guid, GameChar> _Id2GChars = new ConcurrentDictionary<Guid, GameChar>();
+
             private bool disposedValue;
 
             public bool Add(GameUser user)
@@ -58,13 +59,14 @@ namespace GuangYuan.GY001.BLL
                 bool succ = _Token2Users.TryAdd(user.CurrentToken, user);
                 succ = _LoginName2Users.TryAdd(user.LoginName, user) && succ;
                 succ = _Id2Users.TryAdd(user.Id, user) && succ;
-                succ = _Token2GChars.TryAdd(user.CurrentChar.Id, user.CurrentChar) && succ;
+                if (null != user.CurrentChar)   //若有当前用户
+                    succ = _Id2GChars.TryAdd(user.CurrentChar.Id, user.CurrentChar) && succ;
                 if (!succ)
                 {
                     _Token2Users.TryRemove(user.CurrentToken, out _);
                     _LoginName2Users.TryRemove(user.LoginName, out _);
                     _Id2Users.TryRemove(user.Id, out _);
-                    _Token2GChars.TryRemove(user.CurrentChar.Id, out _);
+                    _Id2GChars.TryRemove(user.CurrentChar.Id, out _);
                 }
                 return succ;
             }
@@ -74,15 +76,27 @@ namespace GuangYuan.GY001.BLL
                 bool succ = _Token2Users.TryRemove(user.CurrentToken, out _);
                 succ = _LoginName2Users.TryRemove(user.LoginName, out _) && succ;
                 succ = _Id2Users.TryRemove(user.Id, out _) && succ;
-                succ = _Token2GChars.TryRemove(user.CurrentChar.Id, out _) && succ;
+                succ = _Id2GChars.TryRemove(user.CurrentChar.Id, out _) && succ;
                 if (!succ)
                 {
                     _Token2Users.TryAdd(user.CurrentToken, user);
                     _LoginName2Users.TryAdd(user.LoginName, user);
                     _Id2Users.TryAdd(user.Id, user);
-                    _Token2GChars.TryAdd(user.CurrentChar.Id, user.CurrentChar);
+                    _Id2GChars.TryAdd(user.CurrentChar.Id, user.CurrentChar);
                 }
                 return succ;
+            }
+
+            /// <summary>
+            /// 变换令牌。
+            /// </summary>
+            /// <param name="user"></param>
+            /// <param name="oldToken">旧令牌</param>
+            /// <returns></returns>
+            public GameUser ChangeToken(GameUser user, Guid oldToken)
+            {
+                _Token2Users.TryRemove(oldToken, out _);
+                return _Token2Users.AddOrUpdate(user.CurrentToken, user, (p1, p2) => user);
             }
 
             protected virtual void Dispose(bool disposing)
@@ -99,7 +113,7 @@ namespace GuangYuan.GY001.BLL
                     _Token2Users = null;
                     _LoginName2Users = null;
                     _Id2Users = null;
-                    _Token2GChars = null;
+                    _Id2GChars = null;
 
                     disposedValue = true;
                 }
@@ -122,21 +136,14 @@ namespace GuangYuan.GY001.BLL
 
         #region 字段
 
-        GameUserStore _Stroe = new GameUserStore();
+        /// <summary>
+        /// 使用多个字典索引共同的存储对象。
+        /// </summary>
+        private readonly GameUserStore _Store = new GameUserStore();
 
         private bool _QuicklyRegisterSuffixSeqInit = false;
         private int _QuicklyRegisterSuffixSeq;
         private Timer _LogoutTimer;
-
-        /// <summary>
-        /// 登录名到令牌的转换字典。
-        /// </summary>
-        private readonly ConcurrentDictionary<string, Guid> _LoginName2Token = new ConcurrentDictionary<string, Guid>();
-
-        /// <summary>
-        /// 存储令牌到用户对象的转换对象。
-        /// </summary>
-        private readonly ConcurrentDictionary<Guid, GameUser> _Token2User = new ConcurrentDictionary<Guid, GameUser>();
 
         /// <summary>
         /// 提示一些对象已经处于"脏"状态，后台线程应尽快保存。
@@ -149,14 +156,9 @@ namespace GuangYuan.GY001.BLL
         private Thread _SaveThread;
 
         /// <summary>
-        /// 角色Id到角色对象的字段。
-        /// </summary>
-        private readonly ConcurrentDictionary<Guid, GameChar> _Id2GameChar = new ConcurrentDictionary<Guid, GameChar>();
-
-        /// <summary>
         /// 取所有在线玩家的字典，键是Id，值是在线对象（瞬态）。
         /// </summary>
-        public IReadOnlyDictionary<Guid, GameChar> Id2GameChar { get => _Id2GameChar; }
+        public IReadOnlyDictionary<Guid, GameChar> Id2GameChar { get => _Store._Id2GChars; }
 
         #endregion 字段
 
@@ -212,7 +214,7 @@ namespace GuangYuan.GY001.BLL
         {
             VWorld world = World;
 
-            foreach (var item in _Token2User.Values)
+            foreach (var item in _Store._Token2Users.Values)
             {
                 var loginName = item.LoginName;
                 if (world.LockString(ref loginName, TimeSpan.Zero)) //若锁定用户名成功
@@ -312,8 +314,8 @@ namespace GuangYuan.GY001.BLL
             }
             //服务终止
             Thread.CurrentThread.Priority = ThreadPriority.Normal;
-            while (_Token2User.Count > 0)   //把所有还在线的用户强制注销
-                foreach (var item in _Token2User.Values)
+            while (_Store._Token2Users.Count > 0)   //把所有还在线的用户强制注销
+                foreach (var item in _Store._Token2Users.Values)
                 {
                     try
                     {
@@ -333,7 +335,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 获取在线人数。
         /// </summary>
-        public int OnlineCount => _Token2User.Count;
+        public int OnlineCount => _Store._Token2Users.Count;
 
         private GameItemTemplateManager _ItemTemplateManager;
 
@@ -354,7 +356,7 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameChar GetCharFromId(Guid id)
         {
-            return _Id2GameChar.GetValueOrDefault(id, null);
+            return _Store._Id2GChars.GetValueOrDefault(id, null);
         }
 
         /// <summary>
@@ -365,7 +367,7 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameUser GetUserFromToken(Guid token)
         {
-            return _Token2User.TryGetValue(token, out GameUser result) ? result : null;
+            return _Store._Token2Users.TryGetValue(token, out GameUser result) ? result : null;
         }
 
         /// <summary>
@@ -490,19 +492,19 @@ namespace GuangYuan.GY001.BLL
             Trace.Assert(null != dwLoginName);  //锁定该登录名不可失败
             GameUser gu = null;
             List<GameActionRecord> actionRecords = new List<GameActionRecord>();
-            if (_LoginName2Token.TryGetValue(loginName, out Guid token))    //若已经登录
+            if (_Store._LoginName2Users.TryGetValue(loginName, out gu))    //若已经登录
             {
-                _Token2User.TryGetValue(token, out gu);   //获取用户对象
+                var token = gu.CurrentToken;
+                _Store._Token2Users.TryGetValue(token, out gu);   //获取用户对象
                 lock (gu)
                 {
                     if (gu.IsDisposed)   //若已经并发处置
                         return null;    //TO DO视同没有
                     if (!IsPwd(gu, pwd))   //若密码错误
                         return null;
+                    var oldToken = gu.CurrentToken;
                     gu.CurrentToken = Guid.NewGuid(); //换新令牌
-                    _LoginName2Token.AddOrUpdate(loginName, gu.CurrentToken, (lName, tk) => gu.CurrentToken);
-                    _Token2User.TryRemove(token, out GameUser oldGu);
-                    _Token2User.TryAdd(gu.CurrentToken, gu);
+                    _Store.ChangeToken(gu, oldToken);
                     Nope(token);
                 }
             }
@@ -525,9 +527,8 @@ namespace GuangYuan.GY001.BLL
 
                     //加入全局列表
                     var gc = gu.CurrentChar;
-                    _Id2GameChar[gc.Id] = gc;
-                    _LoginName2Token.AddOrUpdate(loginName, gu.CurrentToken, (c1, c2) => gu.CurrentToken);
-                    _Token2User.AddOrUpdate(gu.CurrentToken, gu, (c1, c2) => gu);
+                    var tmp = _Store.Add(gu);
+                    Trace.Assert(tmp);
 
                     gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = new DateTime(9999, 1, 1);   //标记在线
                     actionRecords.Add(new GameActionRecord()    //写入登录日志
@@ -662,13 +663,14 @@ namespace GuangYuan.GY001.BLL
         public bool Logout(GameUser gu, LogoutReason reason)
         {
             var loginName = gu.LoginName;
-            if (!_LoginName2Token.TryGetValue(loginName, out Guid token)) //若未知情况
+            if (!_Store._LoginName2Users.TryGetValue(loginName, out gu)) //若未知情况
             {
                 return false;   //TO DO
             }
+            var token = gu.CurrentToken;
             using var dwLoginName = World.LockString(ref loginName);    //锁定用户名
             Trace.Assert(null != dwLoginName);
-            if (!_Token2User.TryGetValue(token, out gu)) //若未知情况
+            if (!_Store._Token2Users.TryGetValue(token, out gu)) //若未知情况
             {
                 return false;   //TO DO
             }
@@ -706,9 +708,9 @@ namespace GuangYuan.GY001.BLL
                 var logger = Service.GetService<ILogger<GameChar>>();
                 logger?.LogError("保存用户(Number={Number})信息时发生错误。——{err}", gu.Id, err);
             }
-            _Token2User.TryRemove(token, out _);
-            _LoginName2Token.TryRemove(loginName, out _);
-            _Id2GameChar.Remove(gu.CurrentChar.Id, out _); //去除角色Id
+            _Store._Token2Users.TryRemove(token, out _);
+            _Store._LoginName2Users.TryRemove(loginName, out _);
+            _Store._Id2GChars.Remove(gu.CurrentChar.Id, out _); //去除角色Id
             gu.Dispose();
             return true;
         }
@@ -721,7 +723,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         public bool ChangePwd(Guid token, string newPwd)
         {
-            if (!_Token2User.TryGetValue(token, out GameUser gu)) //若没找到登录用户
+            if (!_Store._Token2Users.TryGetValue(token, out GameUser gu)) //若没找到登录用户
                 return false;
             lock (gu)
             {
@@ -849,7 +851,7 @@ namespace GuangYuan.GY001.BLL
             using var dwLoginName = DisposerWrapper.Create(c => World.UnlockString(c, true), loginName);  //保证解除锁定
             IDisposable result; //返回值
             GameUser gu = null;
-            if (_LoginName2Token.TryGetValue(loginName, out var token) && _Token2User.TryGetValue(token, out gu))   //若找到用户
+            if (_Store._LoginName2Users.TryGetValue(loginName, out gu))   //若找到用户
             {
                 user = gu;
                 result = this.LockAndReturnDispose(gu, timeout);
@@ -872,17 +874,13 @@ namespace GuangYuan.GY001.BLL
                 return null;
             }
             //此时应不存在已加载的对象
-            Trace.Assert(!_LoginName2Token.ContainsKey(loginName));
+            Trace.Assert(!_Store._LoginName2Users.ContainsKey(loginName));
             gu.Loaded(World.Service, context);  //初始化
             if (!Monitor.TryEnter(gu) || gu.IsDisposed)
                 throw new InvalidOperationException("异常的锁定失败。");
             result = DisposerWrapper.Create(c => World.CharManager.Unlock(c as GameUser), gu);
             //加入
-            _Token2User.TryAdd(gu.CurrentToken, gu);
-            _LoginName2Token.TryAdd(gu.LoginName, gu.CurrentToken);
-            var gc = gu.CurrentChar;    //当前用户
-            if (null != gc)    //若有当前用户
-                _Id2GameChar.TryAdd(gc.Id, gc);
+            _Store.Add(gu);
             user = gu;
             return result;
         }

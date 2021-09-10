@@ -735,7 +735,7 @@ namespace GY2021001WebApi.Models
         /// 所属对象Id。
         /// </summary>
         [DataMember]
-        public Guid ParentId { get; private set; }
+        public Guid ParentId { get; set; }
     }
 
     /// <summary>
@@ -2005,7 +2005,7 @@ namespace GY2021001WebApi.Models
         public string ObjectId { get; set; }
 
         [DataMember]
-        public int KeyType { get; private set; }
+        public int KeyType { get; set; }
 
         /// <summary>
         /// 左看右的友好度。
