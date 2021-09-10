@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.ObjectPool;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -8,6 +9,7 @@ namespace System
     /// 调用<see cref="IDisposable.Dispose"/>。
     /// 应配合 C#8.0 using语法使用。
     /// 对象本身就支持对象池，不要将此对象放在其他池中。
+    /// 若无特别说明，本类非私有成员支持多线程并发调用。
     /// </summary>
     [DebuggerNonUserCode()]
     public sealed class DisposerWrapper : IDisposable
@@ -17,6 +19,7 @@ namespace System
         /// </summary>
         private class DisposerWrapperPolicy : PooledObjectPolicy<DisposerWrapper>
         {
+
             public DisposerWrapperPolicy()
             {
             }
@@ -48,6 +51,25 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DisposerWrapper Create(Action<object> action, object state) =>
              Create(() => action(state));
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DisposerWrapper Create<T>(Action<T> action, T state) => Create(() => action(state));
+
+        public static DisposerWrapper Create(IEnumerable<IDisposable> disposers) =>
+            Create(c =>
+            {
+                foreach (var item in (IEnumerable<IDisposable>)c)
+                {
+                    try
+                    {
+                        item.Dispose();
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }, disposers);
 
         /// <summary>
         /// 构造函数。

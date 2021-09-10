@@ -322,6 +322,13 @@ namespace Gy001.Controllers
             }
             var result = new GetSocialRelationshipsReturnDto();
             result.SocialRelationships.AddRange(coll.Select(c => (GameSocialRelationshipDto)c));
+            var ids = coll.Where(c => c.Properties.ContainsKey("charid")).Select(c => c.Properties.GetGuidOrDefault("charid"));
+            if (ids.Any())
+            {
+                result.Summary.AddRange(_World.SocialManager.GetCharSummary(ids, _UserContext).Select(c => (CharSummaryDto)c));
+            }
+            var relIds = coll.Select(c => c.Id2).Concat(coll.Select(c => c.Id)).ToArray();  //可能相关的物品信息
+            result.GameItems.AddRange(_UserContext.Set<GameItem>().Where(c => relIds.Contains(c.Id)).ToArray().Select(c => (GameItemDto)c));   //补足物品信息
             return result;
         }
 
@@ -463,40 +470,26 @@ namespace Gy001.Controllers
         /// <summary>
         /// 进行社交互动的通用接口。
         /// </summary>
-        /// <param name="model">参见 InteractParamsDto 说明。</param>
-        /// <returns>参见 InteractReturnDto 说明。</returns>
+        /// <param name="model">参见 PatForTiliParamsDto 说明。</param>
+        /// <returns>参见 PatForTiliReturnDto 说明。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPost]
-        public ActionResult<InteractReturnDto> Interact(InteractParamsDto model)
+        public ActionResult<PatForTiliReturnDto> PatForTili(PatForTiliParamsDto model)
         {
             if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
             {
                 return Unauthorized("令牌无效");
             }
-            InteractReturnDto result = new InteractReturnDto();
+            PatForTiliReturnDto result = new PatForTiliReturnDto();
             try
             {
-                var actioveId = GameHelper.FromBase64String(model.ActiveId);
-                if (actioveId == InteractActiveIds.PatForTili)  //获取体力
+                var r = _World.SocialManager.PatForTili(gu.CurrentChar, GameHelper.FromBase64String(model.ObjectId), _UserContext);
+                if (PatForTiliResult.Success != r)
                 {
-                    if (PatForTiliResult.Success != _World.SocialManager.PatForTili(gu.CurrentChar, GameHelper.FromBase64String(model.ObjectId)))
-                    {
-                        result.DebugMessage = VWorld.GetLastErrorMessage();
-                        result.HasError = true;
-                    }
+                    result.DebugMessage = VWorld.GetLastErrorMessage();
+                    result.HasError = true;
                 }
-                else if (InteractActiveIds.PatWithMounts == actioveId)  //与坐骑互动
-                {
-
-                }
-                else
-                {
-                    result = new InteractReturnDto()
-                    {
-                        HasError = true,
-                        DebugMessage = $"未知的行为Id={actioveId}",
-                    };
-                }
+                result.Code = r;
             }
             finally
             {
@@ -574,6 +567,7 @@ namespace Gy001.Controllers
                 result.CurrentFengge = (HomelandFenggeDto)datas.CurrentFengge;
                 result.Lands.AddRange(datas.Lands.Select(c => (GameItemDto)c));
                 result.Mounts.AddRange(datas.Mounts.Select(c => (GameItemDto)c));
+                //result.Mounts.Where(c => c.Properties.ContainsKey("for10")).ToList().ForEach(c => c.Properties["for10"] = 4);   //强行加入阵容信息。
             }
             return result;
         }

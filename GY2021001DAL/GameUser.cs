@@ -91,6 +91,7 @@ namespace GuangYuan.GY001.UserDb
         /// 玩家当前使用的角色。
         /// 选择当前角色后，需要设置该属性。
         /// </summary>
+        /// <value>当前角色对象，null用户尚未选择角色。</value>
         [NotMapped]
         public GameChar CurrentChar { get; set; }
 

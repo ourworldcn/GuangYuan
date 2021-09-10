@@ -204,6 +204,8 @@ namespace GY2021001WebApi.Controllers
                 {
                     result.HasError = datas.HasError;
                     result.DebugMessage = datas.DebugMessage;
+                    if (!result.HasError)
+                        result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
                 }
             }
             catch (Exception err)

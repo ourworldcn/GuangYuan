@@ -7,10 +7,37 @@ using System.Runtime.Serialization;
 namespace Game.Social
 {
     /// <summary>
+    ///与其他角色主控室互动的结果。
+    /// </summary>
+    public enum PatForTiliResult
+    {
+        /// <summary>
+        /// 未知错误。
+        /// </summary>
+        Unknow = -1,
+
+        /// <summary>
+        /// 成功。
+        /// </summary>
+        Success = 0,
+
+        /// <summary>
+        /// 访问次数超限。
+        /// </summary>
+        TimesOver,
+
+        /// <summary>
+        /// 已经访问过该角色。
+        /// </summary>
+        Already,
+    }
+
+    /// <summary>
     /// <see cref="GameSocialRelationship"/>中<see cref="GameEntityRelationshipBase.KeyType"/>使用的值，这里使用枚举类型以便使用。
     /// </summary>
     public enum SocialKeyTypes
     {
+
         /// <summary>
         /// 允许pvp攻击的对象,列表中包含的对象，而非协助反击的对象。
         /// </summary>
@@ -20,6 +47,11 @@ namespace Game.Social
         /// 与家园展示坐骑互动的KeyType值。
         /// </summary>
         PatWithMounts = 20000,
+
+        /// <summary>
+        /// 与主控室互动的数据条目。
+        /// </summary>
+        PatTili=20100,
     }
 
     /// <summary>

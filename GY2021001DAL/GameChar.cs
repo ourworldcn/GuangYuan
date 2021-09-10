@@ -131,7 +131,7 @@ namespace GuangYuan.GY001.UserDb
             {
                 if (null == _GameItems)
                 {
-                    _GameItems = DbContext.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ToList();
+                    _GameItems = DbContext.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ThenInclude(c => c.Children).ToList();
                     _GameItems.ForEach(c => c.GameChar = this);
                 }
                 return _GameItems;

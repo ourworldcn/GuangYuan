@@ -4,6 +4,7 @@
  */
 #pragma warning disable IDE0074 // 使用复合分配
 using Game.Social;
+using GuangYuan.GY001.BLL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -2013,6 +2014,20 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public int Friendliness { get; set; } = 0;
 
+        /// <summary>
+        /// 根据不同的 KeyType 值，这里的意义不同。
+        /// </summary>
+        [DataMember]
+        public string PropertyString { get; set; }
+
+        void Demo()
+        {
+            var dt = DateTime.UtcNow;
+            //调用接口
+            GetSocialRelationshipsReturnDto result = null;
+            result.SocialRelationships.Where(c => c.ObjectId == "动物id" && c.KeyType == 20000 && DateTime.Parse(PropertyString).Date == dt.Date);
+        }
+
     }
 
     /// <summary>
@@ -2033,6 +2048,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<CharSummaryDto> Summary { get; set; } = new List<CharSummaryDto>();
+
+        /// <summary>
+        /// 相关生物/道具信息。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
 
     }
 
@@ -2166,27 +2187,26 @@ namespace GY2021001WebApi.Models
     /// Interact 接口返回值封装类。
     /// </summary>
     [DataContract]
-    public class InteractReturnDto : ReturnDtoBase
+    public class PatForTiliReturnDto : ChangesReturnDtoBase
     {
+        public PatForTiliReturnDto()
+        {
+
+        }
+
         /// <summary>
-        /// 变化的对象集合。这个集合仅包括属于自己的对象。社交行为可能影响对方的属性，不在此属性内返回。
+        /// 互动结果的详细信息，<seealso cref="PatForTiliResult"/>。
         /// </summary>
         [DataMember]
-        public List<ChangesItemDto> Changes { get; set; } = new List<ChangesItemDto>();
+        public PatForTiliResult Code { get; set; }
     }
 
     /// <summary>
     /// Interact 接口参数封装类。
     /// </summary>
     [DataContract]
-    public class InteractParamsDto : TokenDtoBase
+    public class PatForTiliParamsDto : TokenDtoBase
     {
-        /// <summary>
-        /// 互动的Id。参见 InteractActiveIds 类的说明。
-        /// </summary>
-        [DataMember]
-        public string ActiveId { get; set; }
-
         /// <summary>
         /// 互动的对方角色Id。
         /// </summary>

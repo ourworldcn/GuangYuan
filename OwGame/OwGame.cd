@@ -11,13 +11,13 @@
     <Position X="18.5" Y="2.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
-      <FileName>GameBase.cs</FileName>
+      <FileName>GameHelper.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.StringObjectDictionaryExtensions" Collapsed="true">
     <Position X="18.5" Y="3.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAACAAAAgA=</HashCode>
+      <HashCode>IAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAABAAACAAAAgA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
   </Class>

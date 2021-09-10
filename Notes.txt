@@ -13,3 +13,5 @@ DateTime.UtcNow.ToString("");
 
 A向B申请好友，则 GameSocialRelationshipDto 对象中，Id=AId,ObjectId=BId,Friendliness=6,Confirmed=0
 Friendliness=6,Confirmed=0 标识这是一个好友申请的条目，Id是提出申请的一方，ObjectId是被邀请的一方。这个条目记录了一个动作，Id是动作的主体。
+
+"QhtsnntKgkm1X+sYEXzaAw=="

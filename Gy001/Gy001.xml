@@ -765,6 +765,11 @@
             小于-5则是黑名单，大于5是好友。目前这个字段仅使用-6和6两个值。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GameSocialRelationshipDto.PropertyString">
+            <summary>
+            根据不同的 KeyType 值，这里的意义不同。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。
@@ -1645,6 +1650,11 @@
             相关角色的摘要信息。用Id链接。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetSocialRelationshipsReturnDto.GameItems">
+            <summary>
+            相关生物/道具信息。
+            </summary>
+        </member>
         <member name="M:GY2021001WebApi.Models.ConfirmRequestFriendItemDto.#ctor">
             <summary>
             构造函数。
@@ -1728,32 +1738,27 @@
             与好友家园中的坐骑互动。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.InteractReturnDto">
+        <member name="T:GY2021001WebApi.Models.PatForTiliReturnDto">
             <summary>
             Interact 接口返回值封装类。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.InteractReturnDto.Changes">
+        <member name="P:GY2021001WebApi.Models.PatForTiliReturnDto.Code">
             <summary>
-            变化的对象集合。这个集合仅包括属于自己的对象。社交行为可能影响对方的属性，不在此属性内返回。
+            互动结果的详细信息，<seealso cref="T:Game.Social.PatForTiliResult"/>。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.InteractParamsDto">
+        <member name="T:GY2021001WebApi.Models.PatForTiliParamsDto">
             <summary>
             Interact 接口参数封装类。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.InteractParamsDto.ActiveId">
-            <summary>
-            互动的Id。参见 InteractActiveIds 类的说明。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.InteractParamsDto.ObjectId">
+        <member name="P:GY2021001WebApi.Models.PatForTiliParamsDto.ObjectId">
             <summary>
             互动的对方角色Id。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.InteractParamsDto.Properties">
+        <member name="P:GY2021001WebApi.Models.PatForTiliParamsDto.Properties">
             <summary>
             附属参数。
             </summary>
@@ -1991,12 +1996,12 @@
             <returns></returns>
             <response code="401">令牌错误。</response>
         </member>
-        <member name="M:Gy001.Controllers.SocialController.Interact(GY2021001WebApi.Models.InteractParamsDto)">
+        <member name="M:Gy001.Controllers.SocialController.PatForTili(GY2021001WebApi.Models.PatForTiliParamsDto)">
             <summary>
             进行社交互动的通用接口。
             </summary>
-            <param name="model">参见 InteractParamsDto 说明。</param>
-            <returns>参见 InteractReturnDto 说明。</returns>
+            <param name="model">参见 PatForTiliParamsDto 说明。</param>
+            <returns>参见 PatForTiliReturnDto 说明。</returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="M:Gy001.Controllers.SocialController.PatWithMounts(GY2021001WebApi.Models.PatWithMountsParamsDto)">

@@ -451,6 +451,7 @@ namespace GY2021001WebApi.Models
                 ObjectId = obj.Id2.ToBase64String(),
                 KeyType = obj.KeyType,
                 Friendliness = (sbyte)obj.Flag,
+                PropertyString = obj.PropertyString,
             };
             foreach (var item in obj.Properties)
             {

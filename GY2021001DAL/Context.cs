@@ -26,8 +26,8 @@ namespace GuangYuan.GY001.UserDb
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //用户
-            modelBuilder.Entity<GameUser>().HasIndex(c => c.CreateUtc);
-            modelBuilder.Entity<GameUser>().HasIndex(c => c.LoginName).IsUnique();
+            modelBuilder.Entity<GameUser>().HasIndex(c => c.LoginName).IsUnique(true);
+            modelBuilder.Entity<GameUser>().HasIndex(c => c.CreateUtc).IsUnique(false);
             //角色
             modelBuilder.Entity<GameChar>().HasIndex(c => c.DisplayName).IsUnique(true);
 

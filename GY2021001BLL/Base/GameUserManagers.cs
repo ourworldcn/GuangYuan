@@ -1,6 +1,4 @@
-﻿using Game.Social;
-using GuangYuan.GY001.TemplateDb;
-using GuangYuan.GY001.UserDb;
+﻿using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -9,13 +7,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -32,13 +29,101 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 默认锁定超时。单位：秒
         /// 在指定时间内无法锁定对象就返回失败。
+        /// 作为工程产品，这个可以避免死锁，务必不要是一个太大的值。
         /// </summary>
         public double DefaultLockTimeout { get; set; } = 3;
     }
 
     public class GameCharManager : GameManagerBase<GameCharManagerOptions>
     {
+        private class GameUserStore : IDisposable
+        {
+            public GameUserStore()
+            {
+            }
+
+            private readonly IServiceProvider _Service;
+            private VWorld _World;
+
+            public VWorld World => _World ??= _Service.GetService<VWorld>();
+
+            private ConcurrentDictionary<Guid, GameUser> _Token2Users = new ConcurrentDictionary<Guid, GameUser>();
+            internal ConcurrentDictionary<string, GameUser> _LoginName2Users = new ConcurrentDictionary<string, GameUser>();
+            internal ConcurrentDictionary<Guid, GameUser> _Id2Users = new ConcurrentDictionary<Guid, GameUser>();
+            internal ConcurrentDictionary<Guid, GameChar> _Token2GChars = new ConcurrentDictionary<Guid, GameChar>();
+            private bool disposedValue;
+
+            public bool Add(GameUser user)
+            {
+                bool succ = _Token2Users.TryAdd(user.CurrentToken, user);
+                succ = _LoginName2Users.TryAdd(user.LoginName, user) && succ;
+                succ = _Id2Users.TryAdd(user.Id, user) && succ;
+                succ = _Token2GChars.TryAdd(user.CurrentChar.Id, user.CurrentChar) && succ;
+                if (!succ)
+                {
+                    _Token2Users.TryRemove(user.CurrentToken, out _);
+                    _LoginName2Users.TryRemove(user.LoginName, out _);
+                    _Id2Users.TryRemove(user.Id, out _);
+                    _Token2GChars.TryRemove(user.CurrentChar.Id, out _);
+                }
+                return succ;
+            }
+
+            public bool Remove(GameUser user)
+            {
+                bool succ = _Token2Users.TryRemove(user.CurrentToken, out _);
+                succ = _LoginName2Users.TryRemove(user.LoginName, out _) && succ;
+                succ = _Id2Users.TryRemove(user.Id, out _) && succ;
+                succ = _Token2GChars.TryRemove(user.CurrentChar.Id, out _) && succ;
+                if (!succ)
+                {
+                    _Token2Users.TryAdd(user.CurrentToken, user);
+                    _LoginName2Users.TryAdd(user.LoginName, user);
+                    _Id2Users.TryAdd(user.Id, user);
+                    _Token2GChars.TryAdd(user.CurrentChar.Id, user.CurrentChar);
+                }
+                return succ;
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                if (!disposedValue)
+                {
+                    if (disposing)
+                    {
+                        // TODO: 释放托管状态(托管对象)
+                    }
+
+                    // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                    // TODO: 将大型字段设置为 null
+                    _Token2Users = null;
+                    _LoginName2Users = null;
+                    _Id2Users = null;
+                    _Token2GChars = null;
+
+                    disposedValue = true;
+                }
+            }
+
+            // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+            // ~GameUserStore()
+            // {
+            //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            //     Dispose(disposing: false);
+            // }
+
+            public void Dispose()
+            {
+                // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+                Dispose(disposing: true);
+                GC.SuppressFinalize(this);
+            }
+        }
+
         #region 字段
+
+        GameUserStore _Stroe = new GameUserStore();
+
         private bool _QuicklyRegisterSuffixSeqInit = false;
         private int _QuicklyRegisterSuffixSeq;
         private Timer _LogoutTimer;
@@ -256,10 +341,10 @@ namespace GuangYuan.GY001.BLL
         /// 虚拟事物模板管理器。
         /// </summary>
         public GameItemTemplateManager ItemTemplateManager => _ItemTemplateManager ??= World.ItemTemplateManager;
+
         #endregion 公共属性
 
         #region 公共方法
-
 
         /// <summary>
         /// 用指定的Id获取角色对象。
@@ -394,18 +479,18 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 登录用户。
         /// </summary>
-        /// <param name="loginName"></param>
+        /// <param name="uid">登录名。</param>
         /// <param name="pwd"></param>
         /// <param name="region"></param>
         /// <returns></returns>
-        public GameUser Login(string loginName, string pwd, string region)
+        public GameUser Login(string uid, string pwd, string region)
         {
-            var innerLoginName = loginName;
-            using var dwLoginName = World.LockString(ref innerLoginName);   //锁定用户名
+            var loginName = uid;
+            using var dwLoginName = World.LockString(ref loginName);   //锁定用户名
             Trace.Assert(null != dwLoginName);  //锁定该登录名不可失败
             GameUser gu = null;
             List<GameActionRecord> actionRecords = new List<GameActionRecord>();
-            if (_LoginName2Token.TryGetValue(innerLoginName, out Guid token))    //若已经登录
+            if (_LoginName2Token.TryGetValue(loginName, out Guid token))    //若已经登录
             {
                 _Token2User.TryGetValue(token, out gu);   //获取用户对象
                 lock (gu)
@@ -415,7 +500,7 @@ namespace GuangYuan.GY001.BLL
                     if (!IsPwd(gu, pwd))   //若密码错误
                         return null;
                     gu.CurrentToken = Guid.NewGuid(); //换新令牌
-                    _LoginName2Token.AddOrUpdate(innerLoginName, gu.CurrentToken, (lName, tk) => gu.CurrentToken);
+                    _LoginName2Token.AddOrUpdate(loginName, gu.CurrentToken, (lName, tk) => gu.CurrentToken);
                     _Token2User.TryRemove(token, out GameUser oldGu);
                     _Token2User.TryAdd(gu.CurrentToken, gu);
                     Nope(token);
@@ -425,7 +510,7 @@ namespace GuangYuan.GY001.BLL
             {
                 var db = World.CreateNewUserDbContext();
                 //_Service.GetService(typeof(GY001UserContext)) as GY001UserContext;
-                gu = db.GameUsers.FirstOrDefault(c => c.LoginName == innerLoginName);
+                gu = db.GameUsers.FirstOrDefault(c => c.LoginName == loginName);
                 if (null == gu)    //若未发现指定登录名
                     return null;
                 lock (gu)
@@ -441,7 +526,7 @@ namespace GuangYuan.GY001.BLL
                     //加入全局列表
                     var gc = gu.CurrentChar;
                     _Id2GameChar[gc.Id] = gc;
-                    _LoginName2Token.AddOrUpdate(innerLoginName, gu.CurrentToken, (c1, c2) => gu.CurrentToken);
+                    _LoginName2Token.AddOrUpdate(loginName, gu.CurrentToken, (c1, c2) => gu.CurrentToken);
                     _Token2User.AddOrUpdate(gu.CurrentToken, gu, (c1, c2) => gu);
 
                     gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = new DateTime(9999, 1, 1);   //标记在线
@@ -454,23 +539,8 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             if (null != actionRecords && actionRecords.Count > 0)
-                SaveActionRecordsAsync(actionRecords);
+                World.AddToUserContext(actionRecords);
             return gu;
-        }
-
-        /// <summary>
-        /// 异步保存<see cref="ActionRecord"/>。
-        /// </summary>
-        /// <param name="actionRecords"></param>
-        /// <returns>执行保存的任务对象。</returns>
-        public Task SaveActionRecordsAsync(IEnumerable<GameActionRecord> actionRecords)
-        {
-            return Task.Run(() =>
-            {
-                using var db = World.CreateNewUserDbContext();
-                db.ActionRecords.AddRange(actionRecords);
-                db.SaveChanges();
-            });
         }
 
         /// <summary>
@@ -596,7 +666,7 @@ namespace GuangYuan.GY001.BLL
             {
                 return false;   //TO DO
             }
-            using var dwLoginName = World.LockString(ref loginName);
+            using var dwLoginName = World.LockString(ref loginName);    //锁定用户名
             Trace.Assert(null != dwLoginName);
             if (!_Token2User.TryGetValue(token, out gu)) //若未知情况
             {
@@ -629,7 +699,7 @@ namespace GuangYuan.GY001.BLL
             {
                 gu.DbContext.SaveChanges();
                 if (actionRecords.Count > 0)
-                    SaveActionRecordsAsync(actionRecords);
+                    World.AddToUserContext(actionRecords);
             }
             catch (Exception err)
             {
@@ -714,6 +784,168 @@ namespace GuangYuan.GY001.BLL
             return db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);
         }
 
+        /// <summary>
+        /// 按角色Id锁定或加载后锁定用户对象。
+        /// </summary>
+        /// <param name="charId"></param>
+        /// <param name="timeout"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">试图锁定用户登录名在拘留池中实例时超过默认超时时间。通常这是潜在的死锁问题。</exception>
+        public IDisposable LockOrLoad(Guid charId, TimeSpan timeout, out GameUser user)
+        {
+            var gc = GetCharFromId(charId);
+            var gu = gc?.GameUser;
+            string loginName;
+            IDisposable result;
+            if (null != gu) //若得到用户
+            {
+                result = this.LockAndReturnDispose(gu, timeout);
+                if (null != result)
+                {
+                    user = null;
+                    return DisposerWrapper.Create(c => World.CharManager.Unlock(c as GameUser), gu);
+                }
+                else if (null != gu && !gu.IsDisposed) //若锁定超时
+                {
+                    VWorld.SetLastError(258);   //WAIT_TIMEOUT
+                    user = null;
+                    return null;
+                }
+            }
+            //试图加载用户
+            using (var context = World.CreateNewUserDbContext())
+                loginName = (from gChar in context.Set<GameChar>()
+                             join gUser in context.Set<GameUser>()
+                             on gChar.GameUserId equals gUser.Id
+                             where gChar.Id == charId
+                             select gUser.LoginName).FirstOrDefault();
+            if (string.IsNullOrEmpty(loginName))    //若找不到对象
+            {
+                VWorld.SetLastError(1317);  //ERROR_NO_SUCH_USER
+                user = null;
+                return null;
+            }
+            result = LockOrLoad(loginName, timeout, out user);
+            return result;
+        }
+
+        /// <summary>
+        /// 按登录名锁定用户或加载后锁定用户信息并返回清理接口。
+        /// 这个是主要接口基本接口其他相关接口调用此函数才能加载数据并锁定。派生类可以重载此成员以控制加载锁定过程，但必须调用此成员。
+        /// </summary>
+        /// <param name="loginName"></param>
+        /// <param name="timeout"></param>
+        /// <param name="user"></param>
+        /// <returns>成功锁定返回非空，调用者应负责释放！(<see cref="IDisposable.Dispose"/>)。
+        /// null则表示出错，<see cref="VWorld.GetLastError"/>可以获取详细错误码。</returns>
+        /// <exception cref="InvalidOperationException">试图锁定用户登录名在拘留池中实例时超过默认超时时间。通常这是潜在的死锁问题。</exception>
+        public virtual IDisposable LockOrLoad([NotNull] string loginName, TimeSpan timeout, out GameUser user)
+        {
+            if (!World.LockString(ref loginName, TimeSpan.FromSeconds(Options.DefaultLockTimeout/*务必使用较小超时，避免死锁*/)))  //若锁定此登录名用户的登入登出进程失败
+            {
+                throw new InvalidOperationException("试图锁定用户登录名在拘留池中实例时超过默认超时时间。通常这是潜在的死锁问题。");
+            }
+            using var dwLoginName = DisposerWrapper.Create(c => World.UnlockString(c, true), loginName);  //保证解除锁定
+            IDisposable result; //返回值
+            GameUser gu = null;
+            if (_LoginName2Token.TryGetValue(loginName, out var token) && _Token2User.TryGetValue(token, out gu))   //若找到用户
+            {
+                user = gu;
+                result = this.LockAndReturnDispose(gu, timeout);
+                if (null != result) //若锁定成功
+                    return result;
+            }
+            if (null != gu && !gu.IsDisposed) //若超时
+            {
+                VWorld.SetLastError(258);   //WAIT_TIMEOUT
+                user = null;
+                return null;
+            }
+            //此时内存中没有用户对象，试图加载对象
+            var context = World.CreateNewUserDbContext();
+            gu = context.GameUsers.Include(c => c.GameChars).FirstOrDefault(c => c.LoginName == loginName);
+            if (gu is null) //若指定的Id无效
+            {
+                VWorld.SetLastError(1317);  //ERROR_NO_SUCH_USER
+                user = null;
+                return null;
+            }
+            //此时应不存在已加载的对象
+            Trace.Assert(!_LoginName2Token.ContainsKey(loginName));
+            gu.Loaded(World.Service, context);  //初始化
+            if (!Monitor.TryEnter(gu) || gu.IsDisposed)
+                throw new InvalidOperationException("异常的锁定失败。");
+            result = DisposerWrapper.Create(c => World.CharManager.Unlock(c as GameUser), gu);
+            //加入
+            _Token2User.TryAdd(gu.CurrentToken, gu);
+            _LoginName2Token.TryAdd(gu.LoginName, gu.CurrentToken);
+            var gc = gu.CurrentChar;    //当前用户
+            if (null != gc)    //若有当前用户
+                _Id2GameChar.TryAdd(gc.Id, gc);
+            user = gu;
+            return result;
+        }
+
+        /// <summary>
+        /// 锁定一组用户对象。
+        /// </summary>
+        /// <param name="users"></param>
+        /// <param name="timeout"></param>
+        /// <returns>null表示失败。否则返回一个解锁所有锁定对象的接口。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IDisposable Lock(IEnumerable<GameUser> users, TimeSpan timeout)
+        {
+            return OwHelper.LockWithOrder(users.OrderBy(c => c.Id), (gu, ts) => Lock(gu, ts), gu => Unlock(gu, true), timeout);
+        }
+
+        /// <summary>
+        /// 锁定一组指定Id的角色。
+        /// 可以避免乱序死锁。
+        /// </summary>
+        /// <param name="charIds"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IDisposable LockOrLoadWithUserIds(IEnumerable<Guid> userIds, TimeSpan timeout)
+        {
+            var result = OwHelper.LockWithOrder(userIds.OrderBy(c => c), (charId, ts) => LockOrLoad(charId, timeout, out _), timeout);
+            return result;
+        }
+
+        /// <summary>
+        /// 根据给定的角色Id集合获取用户Id集合。
+        /// </summary>
+        /// <param name="charIds"></param>
+        /// <returns></returns>
+        public IEnumerable<Guid> GetUserIdsFromCharIds(IEnumerable<Guid> charIds)
+        {
+            var result = new List<Guid>();
+            var dbIds = new List<Guid>();   //需要从数据库读取用户Id的角色Id集合
+            foreach (var item in charIds)   //获取内存中的用户Id
+            {
+                var gu = GetCharFromId(item)?.GameUser;
+                if (gu is null)
+                    dbIds.Add(item);
+                else
+                    result.Add(gu.Id);
+            }
+            if (dbIds.Count > 0)   //若需要从数据库读取
+            {
+                using var db = World.CreateNewUserDbContext();
+                var coll = from gChar in db.Set<GameChar>()
+                           join gUser in db.Set<GameUser>()
+                           on gChar.GameUserId equals gUser.Id
+                           where dbIds.Contains(gChar.Id)
+                           select gUser.Id;
+                var ary = coll.ToArray();
+                if (ary.Length != dbIds.Count)
+                    return null;
+                result.AddRange(ary);
+            }
+            return result;
+        }
+
         #endregion 公共方法
 
         #region 事件及相关
@@ -732,6 +964,7 @@ namespace GuangYuan.GY001.BLL
         {
             GameChar = gameChar;
         }
+
         public GameChar GameChar { get; set; }
     }
 

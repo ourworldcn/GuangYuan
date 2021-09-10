@@ -763,114 +763,152 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="gameChar"></param>
         /// <param name="objectId"></param>
-        public PatForTiliResult PatForTili(GameChar gameChar, Guid objectId)
+        /// <param name="context"></param>
+        public PatForTiliResult PatForTili(GameChar gameChar, Guid objectId, GameUserContext context)
         {
             if (!World.CharManager.Lock(gameChar.GameUser))
             {
                 VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
                 return PatForTiliResult.Unknow; //一般不可能。
             }
-            GY001UserContext db = null;
+            DateTime dtNow = DateTime.UtcNow;   //当前时间
+            using var datas = new PatForTiliWorkData(World, gameChar, dtNow) { UserContext = context };
             try
             {
-                db = World.CreateNewUserDbContext();
-                var objChar = db.GameChars.Find(objectId);
+                var objChar = datas.UserContext.Set<GameChar>().Find(objectId);objChar.SuppressSave = true;
                 if (gameChar.Id == objectId || objChar is null)
                 {
                     VWorld.SetLastErrorMessage("试图访问自己或指定的角色不存在");
                     return PatForTiliResult.Unknow;
                 }
-                DateTime dtNow = DateTime.UtcNow;   //当前时间
-                var datas = new PatForTiliWrapper(gameChar, dtNow);
                 var dt = dtNow;
                 if (datas.Fcp.GetCurrentValue(ref dt) <= 0) //若已经用完访问次数
                     return PatForTiliResult.TimesOver;
-                if (datas.Visitors.Any(c => c.Item1 == objectId))    //若访问过了
+                if (datas.Visitors.Any(c => c.Id2 == objectId && DateTime.TryParse(c.PropertyString, out var dt) && dt.Date == datas.Now.Date))    //若访问过了
                     return PatForTiliResult.Already;
-                //成功抚摸
-                var sr = db.SocialRelationships.Find(objectId, objectId);
-                if (sr is null)
+                //成功交互
+                var sr = datas.Visitors.FirstOrDefault(c => c.Id2 == objectId);
+                if (sr is null)  //若没有条目
                 {
-                    sr = new GameSocialRelationship()
+                    sr = new GameSocialRelationship(gameChar.Id, objectId, (int)SocialKeyTypes.PatTili, 0)
                     {
-                        Id = objectId,
-                        Id2 = objectId,
+                        PropertyString = datas.Now.ToString("s"),
                     };
-                    db.SocialRelationships.Add(sr);
+                    datas.Visitors.Add(sr);
                 }
-                var count = sr.Properties.GetDecimalOrDefault("FriendCurrency", decimal.Zero);
-                count += 5;
-                sr.Properties["FriendCurrency"] = count;
-                db.SaveChanges();   //TO DO
-                //成功抚摸
+                datas.FriendCurrency += 5;  //增加友情货币。
+                //扣除次数
                 datas.Fcp.LastValue--;
-                datas.Visitors.Add((objectId, dtNow));
-                //db.SocialRelationships.dea.Local.Clear();
+                datas.Save();
                 World.CharManager.NotifyChange(gameChar.GameUser);  //通知状态发生了更改
             }
             finally
             {
-                db?.DisposeAsync();
+                context?.DisposeAsync();
                 World.CharManager.Unlock(gameChar.GameUser, true);
             }
             return PatForTiliResult.Success;
         }
 
-        public class PatForTiliWrapper
+        public class PatForTiliWorkData : GameCharWorkDataBase
         {
             private const string key = "patcountVisitors";
 
-            public PatForTiliWrapper()
+            public PatForTiliWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, DateTime now) : base(service, gameChar)
             {
-
-            }
-
-            /// <summary>
-            /// 构造函数。
-            /// </summary>
-            /// <param name="gameChar"></param>
-            /// <param name="now">按该时间点计算。</param>
-            public PatForTiliWrapper(GameChar gameChar, DateTime now)
-            {
-                _GameChar = gameChar;
                 _Now = now;
             }
 
-            private readonly GameChar _GameChar;
+            public PatForTiliWorkData([NotNull] VWorld world, [NotNull] GameChar gameChar, DateTime now) : base(world, gameChar)
+            {
+                _Now = now;
+            }
+
+            public PatForTiliWorkData([NotNull] VWorld world, [NotNull] string token, DateTime now) : base(world, token)
+            {
+                _Now = now;
+            }
+
             private readonly DateTime _Now;
 
-            public GameItem Tili { get => _GameChar.GetTili(); }
+            public DateTime Now => _Now;
+
+            public GameItem Tili { get => GameChar.GetTili(); }
 
             /// <summary>
             /// 与主控室互动的剩余次数。
             /// </summary>
             public FastChangingProperty Fcp { get => Tili.Name2FastChangingProperty["patcount"]; }
 
+            ObservableCollection<GameSocialRelationship> _Visitors;
 
-            public List<(Guid, DateTime)> Visitors
+            /// <summary>
+            /// 用户和其他玩家的主控室互动获得体力的数据条目。
+            /// </summary>
+            public ObservableCollection<GameSocialRelationship> Visitors
             {
                 get
                 {
-                    var result = Tili.ExtendPropertyDictionary.GetOrAdd(key, c => new ExtendPropertyDescriptor()
+                    if (_Visitors is null)
                     {
-                        Data = DateTime.UtcNow,
-                        Name = c,
-                        IsPersistence = true,
-                        Type = typeof(List<(Guid, DateTime)>),
-                    }).Data as List<(Guid, DateTime)>;
-                    result.RemoveAll(c => c.Item2.Date != _Now.Date);   //去掉不是今天访问的角色Id
-                    return result;
+                        _Visitors = new ObservableCollection<GameSocialRelationship>(UserContext.Set<GameSocialRelationship>().
+                            Where(c => c.Id == GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatTili));
+                        _Visitors.CollectionChanged += VisitorsCollectionChanged;
+                    }
+                    return _Visitors;
                 }
             }
 
-            private void Visitors_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            private void VisitorsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
             {
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        UserContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        UserContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
+                        break;
+                    case NotifyCollectionChangedAction.Reset:
+                        UserContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
+                        UserContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        throw new NotSupportedException();
+                    case NotifyCollectionChangedAction.Move:
+                    default:
+                        break;
+                }
+            }
 
+            GameItem _FriendCurrencyItem;
+
+            /// <summary>
+            /// 友情货币数。
+            /// </summary>
+            public decimal FriendCurrency
+            {
+                get
+                {
+                    if (_FriendCurrencyItem is null)
+                    {
+                        _FriendCurrencyItem = GameChar.GetFriendCurrency();
+                    }
+                    return _FriendCurrencyItem.Count ?? 0;
+                }
+                set
+                {
+                    if (_FriendCurrencyItem is null)
+                    {
+                        _FriendCurrencyItem = GameChar.GetFriendCurrency();
+                    }
+                    _FriendCurrencyItem.Count = value;
+                }
             }
 
             public void Save()
             {
-
+                UserContext.SaveChanges();
             }
         }
 
@@ -1229,7 +1267,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 else
                     resultColl = collMounts;
-                datas.Mounts.AddRange(collMounts);
+                datas.Mounts.AddRange(resultColl);
             }
             catch (Exception)
             {
@@ -1388,29 +1426,6 @@ namespace GuangYuan.GY001.BLL
                 base.Dispose(disposing);
             }
         }
-    }
-
-    public enum PatForTiliResult
-    {
-        /// <summary>
-        /// 未知错误。
-        /// </summary>
-        Unknow = -1,
-
-        /// <summary>
-        /// 成功。
-        /// </summary>
-        Success = 0,
-
-        /// <summary>
-        /// 访问次数超限。
-        /// </summary>
-        TimesOver,
-
-        /// <summary>
-        /// 已经访问过该角色。
-        /// </summary>
-        Already,
     }
 
     /// <summary>

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>OW</RootNamespace>
-    <LangVersion>7.3</LangVersion>
+    <!--<LangVersion>7.3</LangVersion>-->
     <Authors>OW</Authors>
   </PropertyGroup>
 

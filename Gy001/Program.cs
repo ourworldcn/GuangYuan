@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
+using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,7 +52,8 @@ namespace Gy001
         {
             var world = host.Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            return;
+            GameUserCache cache = new GameUserCache(world.Service, optionsAccessor: new MemoryCacheOptions() { });
+            cache.GetOrCreate("d", c => Task.Run(() => new object()));
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

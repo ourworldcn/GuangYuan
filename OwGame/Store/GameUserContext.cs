@@ -16,6 +16,12 @@ namespace OW.Game.Store
     /// <remarks>保存时会对跟踪的数据中支持<see cref="IBeforeSave"/>接口的对象调用<see cref="IBeforeSave.PrepareSaving(DbContext)"/></remarks>
     public class GameUserContext : DbContext
     {
+        /// <summary>
+        /// 避免IO过满的信号灯。
+        /// 默认允许2个线程公式读写数据库。
+        /// </summary>
+        public static SemaphoreSlim IOCounter = new SemaphoreSlim(Math.Min(2, Environment.ProcessorCount), Math.Min(2, Environment.ProcessorCount));
+
         public GameUserContext([NotNull] DbContextOptions options) : base(options)
         {
         }
@@ -27,14 +33,30 @@ namespace OW.Game.Store
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
             PrepareSaving();
-            return base.SaveChanges(acceptAllChangesOnSuccess);
+            IOCounter.Wait();
+            try
+            {
+                return base.SaveChanges(acceptAllChangesOnSuccess);
+            }
+            finally
+            {
+                IOCounter.Release();
+            }
         }
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) =>
             Task.Run(() =>
             {
                 PrepareSaving();
-                return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+                IOCounter.Wait();
+                try
+                {
+                    return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+                }
+                finally
+                {
+                    IOCounter.Release();
+                }
             });
 
         /// <summary>
@@ -48,8 +70,6 @@ namespace OW.Game.Store
                 item.PrepareSaving(this);
             }
         }
-
-
     }
 
     /// <summary>

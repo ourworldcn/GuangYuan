@@ -1,174 +1,247 @@
 {
-  "SocialRelationships": [
+  "CurrentFengge": {
+    "StyleTemplateId": "00000000-0000-0000-0000-000000000000",
+    "Id": 0,
+    "Fangans": [],
+    "ClientString": null
+  },
+  "Mounts": [
     {
-      "ObjectId": "t7n52NvTr0uYOkcq/H/ySg==",
-      "Friendliness": 0,
-      "Id": "ccND1bDnEUiZruRJcsUnyg==",
-      "Properties": {}
-    },
-    {
-      "ObjectId": "ccND1bDnEUiZruRJcsUnyg==",
-      "Friendliness": 6,
-      "Id": "t7n52NvTr0uYOkcq/H/ySg==",
-      "Properties": { "Confirmed": 0 }
+      "Id": "RThb+Jrav0662ITFBAumtg==",
+      "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
+      "CreateUtc": "2021-09-01T04:20:46.257993",
+      "Count": 1.00,
+      "Properties": {
+        "nemhp": 10,
+        "neatk": 10,
+        "neqlt": 10,
+        "cap": -1,
+        "tname": "×øÆï×éºÏ"
+      },
+      "OwnerId": null,
+      "Children": [
+        {
+          "Id": "ukVUpZRrIUGPTHPBEYBckg==",
+          "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
+          "CreateUtc": "2021-09-01T04:20:46.2580153",
+          "Count": 1.00,
+          "Properties": {
+            "nm": 1501,
+            "ps": 5001,
+            "js": 2001,
+            "tname": "ÑòÍ·"
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "RThb+Jrav0662ITFBAumtg==",
+          "ClientString": null
+        },
+        {
+          "Id": "Kzlc3D5j4kC71PNDtn2ETA==",
+          "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
+          "CreateUtc": "2021-09-01T04:20:46.2580269",
+          "Count": 1.00,
+          "Properties": {
+            "alt": 4,
+            "ms": 6,
+            "eng": 30,
+            "crp": 0,
+            "crv": 2,
+            "aha": 60,
+            "at": 1,
+            "bt": 0.3,
+            "csr": 5,
+            "ssr": 7,
+            "rci": 1,
+            "SK": 1001,
+            "nm": 1501,
+            "hi": 3001,
+            "mhp": 1000,
+            "atk": 100,
+            "qlt": 100,
+            "lug": -50,
+            "sg": 200,
+            "lv": 0,
+            "tname": "ÑòÉíÌå"
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "RThb+Jrav0662ITFBAumtg==",
+          "ClientString": null
+        }
+      ],
+      "ParentId": "pJbdPkvbQEOqA3nIO+hGLQ==",
+      "ClientString": null
     }
   ],
-  "Summary": [
+  "Lands": [
     {
-      "Id": "t7n52NvTr0uYOkcq/H/ySg==",
-      "DisplayName": "ÅîÐÅ½¡",
-      "Level": 0,
-      "CombatCap": 4000,
-      "LastLogoutDatetime": null,
-      "HomelandShows": [
+      "Id": "ICd7qdiCKESxLS3+sj6acA==",
+      "TemplateId": "VYxPIzxMBkStOAgdKVZPIA==",
+      "CreateUtc": "2021-09-01T04:20:46.2568788",
+      "Count": 1.00,
+      "Properties": {
+        "cap": -1,
+        "tnm": 5,
+        "trm": 3,
+        "dfm": 4,
+        "nm": 8000,
+        "tname": "Ö÷»ùµØ"
+      },
+      "OwnerId": null,
+      "Children": [
         {
-          "Id": "l8VbVdSq0UCXnemMl/QfQQ==",
-          "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-          "CreateUtc": "2021-08-30T06:37:15.0866984",
+          "Id": "w2pqJn5jEEiDbjk+imSQgw==",
+          "TemplateId": "xnHy00YSEkiypjoBw+dnFA==",
+          "CreateUtc": "2021-09-01T04:20:46.256939",
           "Count": 1.00,
           "Properties": {
-            "nemhp": 10,
-            "neatk": 10,
-            "neqlt": 10,
-            "cap": -1,
-            "tname": "×øÆï×éºÏ",
-            "for10": 0
+            "luw": 400,
+            "lug": 0,
+            "lut": 7200,
+            "mbnlv": 1,
+            "nmid": 2193,
+            "dsid": 2160,
+            "abid": "0;",
+            "labid": "0;",
+            "lv": 0,
+            "tname": "×¥²¶¸Ë"
           },
           "OwnerId": null,
-          "Children": [
-            {
-              "Id": "yiRJ1kPmdEWCCw5YUyZKgw==",
-              "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
-              "CreateUtc": "2021-08-30T06:37:15.0894472",
-              "Count": 1.00,
-              "Properties": {
-                "alt": 4,
-                "ms": 6,
-                "eng": 30,
-                "crp": 0,
-                "crv": 2,
-                "aha": 60,
-                "at": 1,
-                "bt": 0.3,
-                "csr": 5,
-                "ssr": 7,
-                "rci": 1,
-                "SK": 1001,
-                "nm": 1501,
-                "hi": 3001,
-                "mhp": 1000,
-                "atk": 100,
-                "qlt": 100,
-                "lug": -50,
-                "sg": 200,
-                "lv": 0,
-                "tname": "ÑòÉíÌå"
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "l8VbVdSq0UCXnemMl/QfQQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "MOoRsQi9G06Dp9ETDrTe/g==",
-              "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-              "CreateUtc": "2021-08-30T06:37:15.0888568",
-              "Count": 1.00,
-              "Properties": {
-                "nm": 1501,
-                "ps": 5001,
-                "js": 2001,
-                "tname": "ÑòÍ·"
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "l8VbVdSq0UCXnemMl/QfQQ==",
-              "ClientString": null
-            }
-          ],
-          "ParentId": "2HZjtZQTlkydUyRvkazwYA==",
+          "Children": [],
+          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
           "ClientString": null
-        }
-      ]
-    },
-    {
-      "Id": "ccND1bDnEUiZruRJcsUnyg==",
-      "DisplayName": "À×åÐÏ¼",
-      "Level": 0,
-      "CombatCap": 4000,
-      "LastLogoutDatetime": "2021-08-31T09:57:26.8987644",
-      "HomelandShows": [
+        },
         {
-          "Id": "RNqppYc55kOrH453dPssUQ==",
-          "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-          "CreateUtc": "2021-08-30T06:37:20.3376539",
+          "Id": "lhbR7qpvVk2Jb23Ds2hMlQ==",
+          "TemplateId": "vTkZ41Zwk0KaVWye4M1GgQ==",
+          "CreateUtc": "2021-09-01T04:20:46.2569537",
           "Count": 1.00,
           "Properties": {
-            "nemhp": 10,
-            "neatk": 10,
-            "neqlt": 10,
-            "cap": -1,
-            "tname": "×øÆï×éºÏ",
-            "for10": 0
+            "luw": 500,
+            "lug": 0,
+            "lut": 4320,
+            "mbnlv": 1,
+            "nmid": 2184,
+            "dsid": 2151,
+            "abid": "2161;2168;2171",
+            "labid": "2161;2168;2171",
+            "lv": 0,
+            "tname": "¹¥»÷ÆìÖÄ"
           },
           "OwnerId": null,
-          "Children": [
-            {
-              "Id": "WRW8eR8BfUmaO6k7yjR6vA==",
-              "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-              "CreateUtc": "2021-08-30T06:37:20.3376932",
-              "Count": 1.00,
-              "Properties": {
-                "nm": 1501,
-                "ps": 5001,
-                "js": 2001,
-                "tname": "ÑòÍ·"
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "RNqppYc55kOrH453dPssUQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "11pXXZ4YkUy9yt49tutu3w==",
-              "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
-              "CreateUtc": "2021-08-30T06:37:20.3377035",
-              "Count": 1.00,
-              "Properties": {
-                "alt": 4,
-                "ms": 6,
-                "eng": 30,
-                "crp": 0,
-                "crv": 2,
-                "aha": 60,
-                "at": 1,
-                "bt": 0.3,
-                "csr": 5,
-                "ssr": 7,
-                "rci": 1,
-                "SK": 1001,
-                "nm": 1501,
-                "hi": 3001,
-                "mhp": 1000,
-                "atk": 100,
-                "qlt": 100,
-                "lug": -50,
-                "sg": 200,
-                "lv": 0,
-                "tname": "ÑòÉíÌå"
-              },
-              "OwnerId": null,
-              "Children": [],
-              "ParentId": "RNqppYc55kOrH453dPssUQ==",
-              "ClientString": null
-            }
-          ],
-          "ParentId": "ySUvcAzYVkmET3If97e7Vg==",
+          "Children": [],
+          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
+          "ClientString": null
+        },
+        {
+          "Id": "E8N5TxpNKkqK/ISlGsI6BQ==",
+          "TemplateId": "J8uc+8IF8U2uITRe6qzgjw==",
+          "CreateUtc": "2021-09-01T04:20:46.2568855",
+          "Count": 1.00,
+          "Properties": {
+            "luw": 800,
+            "lug": 0,
+            "lut": 60,
+            "mhp": 1000,
+            "nmid": 2189,
+            "dsid": 2156,
+            "abid": "2161;",
+            "labid": "2161;",
+            "lv": 0,
+            "tname": "Ö÷¿ØÊÒ"
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
+          "ClientString": null
+        },
+        {
+          "Id": "xHhdyF8BWEalxcWYc3GyHQ==",
+          "TemplateId": "bdtenL216Uujpsv3lOa/Ew==",
+          "CreateUtc": "2021-09-01T04:20:46.2569206",
+          "Count": 800,
+          "Properties": {
+            "luw": 100,
+            "lug": 0,
+            "lut": 7200,
+            "stc": 800,
+            "fcpdCount": 180,
+            "fcpiCount": 5,
+            "fcpmCount": 800,
+            "mbnlv": 1,
+            "nmid": 2191,
+            "dsid": 2158,
+            "abid": "2127;2128;2129;2130",
+            "labid": "2127;2129",
+            "lv": 0,
+            "tname": "Ä¾²ÄÊ÷£¨Ä¾²Ä£©",
+            "fcpcCount": 800,
+            "fcptCount": "2021-09-09T09:50:46"
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
+          "ClientString": null
+        },
+        {
+          "Id": "iuSus65q30GrPemGM8R/qQ==",
+          "TemplateId": "O6eujBDiv0ehIQbMEpc7rw==",
+          "CreateUtc": "2021-09-01T04:20:46.2569644",
+          "Count": 0.00,
+          "Properties": {
+            "stc": 100,
+            "luw": 100,
+            "lug": 0,
+            "lut": 1200,
+            "mbnlv": 1,
+            "mhp": 500,
+            "nmid": 2192,
+            "dsid": 2159,
+            "abid": "2161;2194",
+            "labid": "2161;2194",
+            "lv": 0,
+            "tname": "Ä¾²Ä²Ö¿â"
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
+          "ClientString": null
+        },
+        {
+          "Id": "rNyebsBQrUOHR/Bzkn3/mg==",
+          "TemplateId": "DHQAel4DRkimGS0IVfYLVQ==",
+          "CreateUtc": "2021-09-01T04:20:46.256896",
+          "Count": 2400,
+          "Properties": {
+            "luw": 400,
+            "lug": 0,
+            "lut": 60,
+            "stc": 2400,
+            "fcpdCount": 180,
+            "fcpiCount": 15,
+            "fcpmCount": 2400,
+            "mbnlv": 1,
+            "nmid": 2190,
+            "dsid": 2157,
+            "abid": "2127;2128;2129;2130",
+            "labid": "2127;2129",
+            "lv": 0,
+            "tname": "ÓñÃ×Ìï£¨ÓñÃ×£©",
+            "fcpcCount": 2400,
+            "fcptCount": "2021-09-09T09:50:46"
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
           "ClientString": null
         }
-      ]
+      ],
+      "ParentId": "ogYLvoRf4EOiW0ZMp62tMQ==",
+      "ClientString": null
     }
   ],
   "HasError": false,
   "DebugMessage": null
 }
+UnityEngine.Debug:Log(Object)

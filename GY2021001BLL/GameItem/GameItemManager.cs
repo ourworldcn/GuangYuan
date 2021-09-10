@@ -1280,7 +1280,7 @@ namespace GuangYuan.GY001.BLL
                     //准备数据
                     var tid = gi.Properties.GetGuidOrDefault("usetid", Guid.Empty);
                     var ptid = gi.Properties.GetGuidOrDefault("useptid", Guid.Empty);
-                    if (tid == Guid.Empty || ptid == Guid.Empty || !gi.Properties.ContainsKey("usercount"))  //若数据不齐
+                    if (tid == Guid.Empty || ptid == Guid.Empty || !gi.Properties.ContainsKey("usecount"))  //若数据不齐
                     {
                         //TO DO
                         continue;

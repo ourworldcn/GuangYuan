@@ -1,22 +1,16 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using OW.Game.Expression;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -102,9 +96,9 @@ namespace GuangYuan.GY001.BLL
 
         #region 属性及相关
 
+        #region 复用用户数据库上下文
 #if NETCOREAPP5_0_OR_GREATER
 //NET5_0_OR_GREATER
-        #region 复用数据库上下文
 
         GameUserContext _UserContext;
 
@@ -173,9 +167,91 @@ namespace GuangYuan.GY001.BLL
             }
             db.SaveChanges();
         }
+#else
+        private readonly object _TemporaryUserContextLocker = new object();
+        private volatile GameUserContext _TemporaryUserContext;
 
-        #endregion 复用数据库上下文
+        private GameUserContext TemporaryUserContext
+        {
+            get
+            {
+                if (_TemporaryUserContext is null)
+                    lock (_TemporaryUserContextLocker)
+                        if (_TemporaryUserContext is null)
+                            _TemporaryUserContext = CreateNewUserDbContext();
+                return _TemporaryUserContext;
+            }
+        }
+
+        public void AddToUserContext(IEnumerable<object> collection)
+        {
+            lock (_TemporaryUserContextLocker)
+            {
+                TemporaryUserContext.AddRange(collection);
+                Monitor.Pulse(_TemporaryUserContextLocker);
+            }
+        }
+
+        public void RemoveToUserContext(IEnumerable<object> collection)
+        {
+            lock (_TemporaryUserContextLocker)
+            {
+                TemporaryUserContext.RemoveRange(collection);
+                Monitor.Pulse(_TemporaryUserContextLocker);
+            }
+        }
+
+        public void UpdateToUserContext(IEnumerable<object> collection)
+        {
+            lock (_TemporaryUserContextLocker)
+            {
+                TemporaryUserContext.UpdateRange(collection);
+                Monitor.Pulse(_TemporaryUserContextLocker);
+            }
+        }
+
+        void SaveTemporaryUserContext()
+        {
+            ILogger<VWorld> logger = Service.GetService<ILogger<VWorld>>();
+            DateTime dt = DateTime.UtcNow;
+            lock (_TemporaryUserContextLocker)
+                while (!CancellationTokenSource.IsCancellationRequested)
+                {
+                    try
+                    {
+                        Monitor.Wait(_TemporaryUserContextLocker, 1000);
+                        if (_TemporaryUserContext is null)  //若没有数据
+                        {
+                            dt = DateTime.UtcNow;
+                            continue;
+                        }
+                        if (DateTime.UtcNow - dt > TimeSpan.FromSeconds(1) || _TemporaryUserContext.ChangeTracker.Entries().Count() > 200)    //若超过1s,避免过于频繁的保存
+                        {
+                            _TemporaryUserContext.SaveChanges();
+                            if (_TemporaryUserContext.ChangeTracker.Entries().Count() > 200)    //若数据较多
+                            {
+                                _TemporaryUserContext.Dispose();
+                                _TemporaryUserContext = null;
+                            }
+                        }
+                        dt = DateTime.UtcNow;
+                    }
+                    catch (Exception err)
+                    {
+                        logger.LogError(err.Message);
+                        _TemporaryUserContext?.Dispose();
+                        _TemporaryUserContext = null;
+                    }
+                }
+            lock (_TemporaryUserContextLocker)
+            {
+                _TemporaryUserContext?.SaveChanges();
+                _TemporaryUserContext.Dispose();
+                _TemporaryUserContext = null;
+            }
+        }
 #endif
+        #endregion 复用用户数据库上下文
 
         private GameItemTemplateManager _ItemTemplateManager;
         public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= Service.GetRequiredService<GameItemTemplateManager>(); }
@@ -266,6 +342,13 @@ namespace GuangYuan.GY001.BLL
             RequestShutdown = _CancellationTokenSource.Token;
             var logger = Service.GetRequiredService<ILogger<VWorld>>();
             logger.LogInformation("初始化完毕，开始服务。");
+
+            Thread thread = new Thread(SaveTemporaryUserContext)
+            {
+                IsBackground = false,
+                Priority = ThreadPriority.Lowest,
+            };
+            thread.Start();
         }
 
         public TimeSpan GetServiceTime() =>
