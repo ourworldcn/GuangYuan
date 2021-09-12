@@ -18,6 +18,7 @@ using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -51,9 +52,11 @@ namespace Gy001
         private static void Test(IHost host)
         {
             var world = host.Services.GetRequiredService<VWorld>();
-            using var db = world.CreateNewUserDbContext();
-            GameUserCache cache = new GameUserCache(world.Service, optionsAccessor: new MemoryCacheOptions() { });
-            cache.GetOrCreate("d", c => Task.Run(() => new object()));
+            var excp = new Win32Exception(ErrorCodes.ERROR_INVALID_TOKEN);
+            var str = excp.Message;
+            //using var db = world.CreateNewUserDbContext();
+            //GameUserCache cache = new GameUserCache(world.Service, optionsAccessor: new MemoryCacheOptions() { });
+            //cache.GetOrCreate("d", c => Task.Run(() => new object()));
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

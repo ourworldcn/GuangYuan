@@ -82,6 +82,13 @@ namespace GuangYuan.GY001.UserDb
         public DateTime LastModifyDateTimeUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
+        /// 超时时间。
+        /// </summary>
+        /// <value>默认值15分钟。</value>
+        [NotMapped]
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(15);
+
+        /// <summary>
         /// 管理该用户数据存储的上下文。
         /// </summary>
         [NotMapped]

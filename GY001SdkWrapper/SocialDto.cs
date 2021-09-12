@@ -1,5 +1,6 @@
 ﻿using GuangYuan.GY001.UserDb;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -31,13 +32,13 @@ namespace Game.Social
         /// </summary>
         Already,
     }
-
+    
     /// <summary>
     /// <see cref="GameSocialRelationship"/>中<see cref="GameEntityRelationshipBase.KeyType"/>使用的值，这里使用枚举类型以便使用。
     /// </summary>
     public enum SocialKeyTypes
     {
-
+        
         /// <summary>
         /// 允许pvp攻击的对象,列表中包含的对象，而非协助反击的对象。
         /// </summary>

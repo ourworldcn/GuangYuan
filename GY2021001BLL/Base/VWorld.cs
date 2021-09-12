@@ -8,6 +8,7 @@ using Microsoft.Extensions.ObjectPool;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -45,6 +46,15 @@ namespace GuangYuan.GY001.BLL
         /// 服务器的当前时间。
         /// </summary>
         public DateTime CurrentDateTime { get; set; }
+    }
+
+    public static class ErrorCodes
+    {
+        public const int NO_ERROR = 0;
+        public const int WAIT_TIMEOUT = 258;
+        public const int ERROR_INVALID_TOKEN = 315;
+        public const int ERROR_NO_SUCH_USER = 1317;
+        public const int Unauthorized = unchecked((int)0x80190191);
     }
 
     /// <summary>
@@ -210,7 +220,7 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
-        void SaveTemporaryUserContext()
+        private void SaveTemporaryUserContext()
         {
             ILogger<VWorld> logger = Service.GetService<ILogger<VWorld>>();
             DateTime dt = DateTime.UtcNow;
@@ -402,6 +412,8 @@ namespace GuangYuan.GY001.BLL
         public bool IsHit(double val, Random random = null) =>
             (random ?? WorldRandom).NextDouble() < val;
 
+        #region 错误处理
+
         /// <summary>
         /// 存储当前线程最后的错误信息。
         /// </summary>
@@ -413,14 +425,27 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public string GetLastErrorMessage() => _LastErrorMessage;
+        public static string GetLastErrorMessage()
+        {
+            if (_LastErrorMessage is null)
+            {
+                try
+                {
+                    _LastErrorMessage = new Win32Exception(_LastError).Message;
+                }
+                catch (Exception)
+                {
+                }
+            }
+            return _LastErrorMessage;
+        }
 
         /// <summary>
         /// 设置最后错误信息。
         /// </summary>
         /// <param name="msg"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public void SetLastErrorMessage(string msg) => _LastErrorMessage = msg;
+        public static void SetLastErrorMessage(string msg) => _LastErrorMessage = msg;
 
         [ThreadStatic]
         private static int _LastError;
@@ -437,14 +462,20 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="errorCode"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetLastError(int errorCode) => _LastError = errorCode;
+        public static void SetLastError(int errorCode)
+        {
+            _LastError = errorCode;
+            _LastErrorMessage = null;
+        }
+
+        #endregion 错误处理
 
         /// <summary>
         /// 按既定顺序锁定一组对象。
         /// </summary>
         /// <param name="objectes"></param>
         /// <returns></returns>
-        static public bool Lock<T>(IList<T> objectes, TimeSpan timeout, out int index) where T : class
+        public static bool Lock<T>(IList<T> objectes, TimeSpan timeout, out int index) where T : class
         {
             index = -1;
             try
@@ -472,7 +503,7 @@ namespace GuangYuan.GY001.BLL
             return true;
         }
 
-        static public void Unlock<T>(IList<T> objectes, bool pulse = false) where T : class
+        public static void Unlock<T>(IList<T> objectes, bool pulse = false) where T : class
         {
             for (int i = 0; i < objectes.Count; i++)
             {
@@ -483,15 +514,16 @@ namespace GuangYuan.GY001.BLL
         }
 
         #region 锁定字符串
-        //按每个字符串平均占用64字节计算，10万个字符串实质占用6.4MB内存,可以接受。
 
 
         /// <summary>
-        /// 
+        /// 从字符串拘留池中取出实力并试图锁定。
+        /// 按每个字符串平均占用64字节计算，10万个字符串实质占用6.4MB内存,可以接受。
         /// </summary>
-        /// <param name="str"></param>
-        /// <param name="timeout"></param>
+        /// <param name="str">如果暂存了 str，则返回系统对其的引用；否则返回对值为 str 的字符串的新引用。</param>
+        /// <param name="timeout">用于等待锁的时间。 值为 -1 毫秒表示指定无限期等待。</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool LockString(ref string str, TimeSpan timeout)
         {
             str = string.Intern(str);
@@ -499,24 +531,45 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 锁定指定字符串在字符串拘留池中的实例。
+        /// 从字符串拘留池中取出实力并试图锁定。
+        /// 按每个字符串平均占用64字节计算，10万个字符串实质占用6.4MB内存,可以接受。
         /// </summary>
-        /// <param name="str">返回时指向字符串拘留池中的实例。</param>
-        /// <param name="isPulse">在解锁是是否发出脉冲信号。</param>
-        /// <returns>解锁的包装，如果没有成功锁定则为null。</returns>
-        public IDisposable LockString(ref string str, bool isPulse = false)
+        /// <param name="str">如果暂存了 str，则返回系统对其的引用；否则返回对值为 str 的字符串的新引用。</param>
+        /// <param name="timeout">等待锁所需的毫秒数。</param>
+        /// <returns>如果当前线程获取该锁，则为 true；否则为 false。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool LockString(ref string str, int timeout = -1)
         {
-            if (!LockString(ref str, Timeout.InfiniteTimeSpan))
-                return null;
-            var tmp = str;
-            return DisposerWrapper.Create(() => UnlockString(tmp, isPulse));
+            str = string.Intern(str);
+            return Monitor.TryEnter(str, timeout);
         }
 
+        /// <summary>
+        /// 释放指定对象上的排他锁。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="isPulse">是否通知等待队列中的线程锁定对象状态的更改。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UnlockString(string str, bool isPulse = false)
         {
             if (isPulse)
                 Monitor.Pulse(str);
             Monitor.Exit(str);
+        }
+
+        /// <summary>
+        /// 锁定指定字符串在字符串拘留池中的实例。
+        /// </summary>
+        /// <param name="str">返回时指向字符串拘留池中的实例。</param>
+        /// <param name="timeout"></param>
+        /// <param name="isPulse">在解锁是是否发出脉冲信号。</param>
+        /// <returns>解锁的包装,通过<seealso cref="DisposerWrapper.Create(Action)"/>创建，如果没有成功锁定则为null。</returns>
+        public IDisposable LockStringAndReturnDisposer(ref string str, TimeSpan timeout, bool isPulse = false)
+        {
+            if (!LockString(ref str, timeout))
+                return null;
+            var tmp = str;
+            return DisposerWrapper.Create(() => UnlockString(tmp, isPulse));
         }
         #endregion 锁定字符串
     }
@@ -530,10 +583,8 @@ namespace GuangYuan.GY001.BLL
         {
         }
 
-        public override List<GameItem> Create()
-        {
-            return new List<GameItem>();
-        }
+        public override List<GameItem> Create() =>
+            new List<GameItem>();
 
         public override bool Return(List<GameItem> obj)
         {

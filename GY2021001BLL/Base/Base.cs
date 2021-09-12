@@ -1,9 +1,7 @@
 ﻿using GuangYuan.GY001.UserDb;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Store;
 using System;
@@ -16,8 +14,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -105,10 +101,38 @@ namespace GuangYuan.GY001.BLL
 
     }
 
+    public interface IResultWorkData
+    {
+        /// <summary>
+        /// 是否有错误。
+        /// </summary>
+        /// <value>false无错，true有错误，具体错误参见错误码。</value>
+        public bool HasError { get; set; }
+
+        /// <summary>
+        /// 错误码。
+        /// </summary>
+        public int ErrorCode { get; set; }
+
+        /// <summary>
+        /// 错误信息。
+        /// </summary>
+        public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// 从<see cref="VWorld"/>对象获取错误信息。
+        /// </summary>
+        public void RefreshErrorFromWorld()
+        {
+            ErrorCode = VWorld.GetLastError();
+            ErrorMessage = VWorld.GetLastErrorMessage();
+        }
+    }
+
     /// <summary>
     /// 复杂工作的参数返回值封装类的基类。
     /// </summary>
-    public abstract class ComplexWorkDatasBase : GameCharWorkDataBase
+    public abstract class ComplexWorkDatasBase : GameCharWorkDataBase, IResultWorkData
     {
         protected ComplexWorkDatasBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -165,13 +189,13 @@ namespace GuangYuan.GY001.BLL
         public Dictionary<string, object> Result { get; } = new Dictionary<string, object>();
 
         [Conditional("DEBUG")]
-        public void SetDebugMessage(string msg) => DebugMessage = msg;
+        public void SetDebugMessage(string msg) => ErrorMessage = msg;
 
         private string _DebugMessage;
         /// <summary>
         /// 调试信息，如果发生错误，这里给出简要说明。
         /// </summary>
-        public string DebugMessage
+        public string ErrorMessage
         {
             get => _DebugMessage;
             set => _DebugMessage = value;
@@ -186,7 +210,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 返回码。当前版本默认使用<see cref="HttpStatusCode"/>。如果派生类不打算使用，则需要自行定义说明。
         /// </summary>
-        public int ResultCode { get; set; }
+        public int ErrorCode { get; set; }
 
         #endregion 出参
 
@@ -232,9 +256,8 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public VWorld World => _World ??= (VWorld)_Service.GetService(typeof(VWorld));
 
-        bool _UserContextOwner;
-
-        GameUserContext _UserContext;
+        private bool _UserContextOwner;
+        private GameUserContext _UserContext;
 
         /// <summary>
         /// 获取用户数据库上下文。
@@ -374,6 +397,46 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
+    /// 涉及到两个角色的的功能函数使用的工作数据基类。
+    /// </summary>
+    public abstract class RelationshipWorkDataBase : GameCharWorkDataBase, IResultWorkData
+    {
+        protected RelationshipWorkDataBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, [NotNull] GameChar otherChar) : base(service, gameChar)
+        {
+            _OtherChar = otherChar;
+        }
+
+        protected RelationshipWorkDataBase([NotNull] VWorld world, [NotNull] GameChar gameChar, [NotNull] GameChar otherChar) : base(world, gameChar)
+        {
+            _OtherChar = otherChar;
+        }
+
+        protected RelationshipWorkDataBase([NotNull] VWorld world, [NotNull] string token, [NotNull] GameChar otherChar) : base(world, token)
+        {
+            _OtherChar = otherChar;
+        }
+
+        private readonly GameChar _OtherChar;
+
+        public GameChar OtherChar { get => _OtherChar; }
+
+        #region IResultWorkData接口相关
+
+        public bool HasError { get; set; }
+        public int ErrorCode { get; set; }
+        
+        public string ErrorMessage { get; set; }
+
+        #endregion IResultWorkData接口相关
+
+        public IDisposable LockBoth()
+        {
+            var ary = new Guid[] { GameChar.Id, OtherChar.Id };
+            return World.CharManager.LockOrLoadWithUserIds(ary, TimeSpan.FromSeconds(World.CharManager.Options.DefaultLockTimeoutInSeconds));
+        }
+    }
+
+    /// <summary>
     /// Id集合的帮助器类。
     /// 场景，经常遇到要记录一组Id，且这些Id要记录最后刷新时间。
     /// 当日可能更改，非当日将导致会清理后更改。
@@ -412,16 +475,16 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameThing">保存在该对象的<see cref="SimpleExtendPropertyBase.Properties"/>属性中。</param>
         /// <param name="prefix">记录这些属性的前缀。</param>
         /// <param name="now">当前日期时间。</param>
-        CounterWrapper([NotNull] SimpleExtendPropertyBase entity, [NotNull] string prefix, DateTime now)
+        private CounterWrapper([NotNull] SimpleExtendPropertyBase entity, [NotNull] string prefix, DateTime now)
         {
             _Entity = entity;
             _Prefix = prefix;
             _Now = now;
         }
 
-        SimpleExtendPropertyBase _Entity;
-        string _Prefix;
-        DateTime _Now;
+        private readonly SimpleExtendPropertyBase _Entity;
+        private readonly string _Prefix;
+        private readonly DateTime _Now;
 
         /// <summary>
         /// 记录最后一次值的键名。
@@ -438,7 +501,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public string LastDateKey => $"{_Prefix}{LastDateKeySuffix}";
 
-        List<T> _TodayValues;
+        private List<T> _TodayValues;
         /// <summary>
         /// 今日所有数据。
         /// </summary>
@@ -471,7 +534,7 @@ namespace GuangYuan.GY001.BLL
         private bool _Disposed;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!_Disposed)
             {

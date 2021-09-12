@@ -112,7 +112,7 @@ namespace OW.Game.Store
         public string PropertiesString { get => _PropertiesString; set => _PropertiesString = value; }
 
         private Dictionary<string, object> _Properties;
-        private bool _IsDisposed;
+        private volatile bool _IsDisposed;
 
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。

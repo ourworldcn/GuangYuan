@@ -175,7 +175,7 @@ namespace GY2021001WebApi.Controllers
             var result = new SellReturnDto()
             {
                 HasError = datas.HasError,
-                DebugMessage = datas.DebugMessage,
+                DebugMessage = datas.ErrorMessage,
             };
             if (!result.HasError)
                 result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
@@ -198,12 +198,12 @@ namespace GY2021001WebApi.Controllers
             try
             {
                 world.ItemManager.UseItems(datas);
-                if (datas.HasError && datas.ResultCode == 401)
+                if (datas.HasError && datas.ErrorCode == 401)
                     return Unauthorized("令牌无效。");
                 else
                 {
                     result.HasError = datas.HasError;
-                    result.DebugMessage = datas.DebugMessage;
+                    result.DebugMessage = datas.ErrorMessage;
                     if (!result.HasError)
                         result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
                 }
@@ -232,13 +232,13 @@ namespace GY2021001WebApi.Controllers
             SetLineupReturnDto result = new SetLineupReturnDto();
             using var disposer = datas.LockUser();
             if (disposer is null)
-                return StatusCode(datas.ResultCode, datas.DebugMessage);
+                return StatusCode(datas.ErrorCode, datas.ErrorMessage);
             try
             {
                 var gim = HttpContext.RequestServices.GetRequiredService<GameItemManager>();
                 gim.SetLineup(datas);
                 result.HasError = datas.HasError;
-                result.DebugMessage = datas.DebugMessage;
+                result.DebugMessage = datas.ErrorMessage;
                 if (!result.HasError)
                 {
                     result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));

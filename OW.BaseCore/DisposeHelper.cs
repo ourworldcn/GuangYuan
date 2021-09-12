@@ -24,10 +24,8 @@ namespace System
             {
             }
 
-            public override DisposerWrapper Create()
-            {
-                return new DisposerWrapper();
-            }
+            public override DisposerWrapper Create() =>
+                new DisposerWrapper();
 
             public override bool Return(DisposerWrapper obj)
             {
@@ -37,6 +35,20 @@ namespace System
                 return true;
             }
         }
+
+        //private readonly static Action<IEnumerable<IDisposable>> ClearDisposables = c =>
+        //{
+        //    foreach (var item in c)
+        //    {
+        //        try
+        //        {
+        //            item.Dispose();
+        //        }
+        //        catch (Exception)
+        //        {
+        //        }
+        //    };
+        //};
 
         private static ObjectPool<DisposerWrapper> Pool { get; } = new DefaultObjectPool<DisposerWrapper>(new DisposerWrapperPolicy(), Math.Max(Environment.ProcessorCount * 4, 16));
 

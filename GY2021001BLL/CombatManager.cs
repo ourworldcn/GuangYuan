@@ -465,8 +465,8 @@ namespace GuangYuan.GY001.BLL
             if (!dv.LastIds.Contains(datats.OtherCharId))   //若是非法攻击的对象。TO DO要测试反击 和 协助的Id
             {
                 datats.HasError = true;
-                datats.ResultCode = (int)HttpStatusCode.BadRequest;
-                datats.DebugMessage = "不可攻击的对象。";
+                datats.ErrorCode = (int)HttpStatusCode.BadRequest;
+                datats.ErrorMessage = "不可攻击的对象。";
                 return;
             }
             if (false)   //若免战

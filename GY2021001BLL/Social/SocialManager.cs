@@ -923,8 +923,8 @@ namespace GuangYuan.GY001.BLL
             if (dwChar is null)
             {
                 datas.HasError = true;
-                datas.ResultCode = (int)HttpStatusCode.Unauthorized;
-                datas.DebugMessage = "令牌错误。";
+                datas.ErrorCode = (int)HttpStatusCode.Unauthorized;
+                datas.ErrorMessage = "令牌错误。";
                 return;
             }
             var db = datas.UserContext;
@@ -932,13 +932,13 @@ namespace GuangYuan.GY001.BLL
             if (datas.Counter.GetCurrentValue(ref tmpNow) <= 0)
             {
                 datas.HasError = true;
-                datas.DebugMessage = $"今日互动次数已用尽。";
+                datas.ErrorMessage = $"今日互动次数已用尽。";
                 return;
             }
             if (datas.IsVisited)  //若今日与玩家已经互动过
             {
                 datas.HasError = true;
-                datas.DebugMessage = $"今日已经与该玩家互动过。";
+                datas.ErrorMessage = $"今日已经与该玩家互动过。";
                 return;
             }
 
@@ -1230,8 +1230,8 @@ namespace GuangYuan.GY001.BLL
                 if (objChar is null)
                 {
                     datas.HasError = true;
-                    datas.DebugMessage = $"找不到指定Id的角色，Id{datas.OtherCharId}";
-                    datas.ResultCode = (int)HttpStatusCode.BadRequest;
+                    datas.ErrorMessage = $"找不到指定Id的角色，Id{datas.OtherCharId}";
+                    datas.ErrorCode = (int)HttpStatusCode.BadRequest;
                     return;
                 }
                 //构造对象

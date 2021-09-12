@@ -473,7 +473,7 @@ namespace GuangYuan.GY001.BLL
             BinaryGExpression setTidExpr = GetSetTIdExpr();
             if (null == setTidExpr || !setTidExpr.Right.TryGetValue(env, out object tidObj) || !OwHelper.TryGetGuid(tidObj, out Guid tid))
             {
-                //datas.DebugMessage = "未能找到新建物品的模板Id。";
+                //datas.ErrorMessage = "未能找到新建物品的模板Id。";
                 //datas.HasError = true;
                 return false;
             }
