@@ -33,7 +33,7 @@ namespace GuangYuan.GY001.UserDb
 
             //物品
             modelBuilder.Entity<GameItem>().HasIndex(c => c.OwnerId);
-            modelBuilder.Entity<GameItem>().HasIndex(c => c.TemplateId).IsUnique(false);
+            modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.Count }).IsUnique(false);
             modelBuilder.Entity<GameItem>().HasIndex(c => c.Count).IsUnique(false);
 
             //通用扩展属性

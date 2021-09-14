@@ -332,14 +332,17 @@ namespace GuangYuan.GY001.UserDb
             switch (e.Action)
             {
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach (var item in e.NewItems.OfType<GameExtendProperty>())
+                    {
+                        item.Id = Id;
+                    }
                     DbContext.Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
                     DbContext.Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
-                    DbContext.Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
-                    DbContext.Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
+                    throw new NotSupportedException();
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
                     break;

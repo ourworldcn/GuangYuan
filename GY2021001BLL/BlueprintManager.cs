@@ -1446,6 +1446,10 @@ namespace GuangYuan.GY001.BLL
             var parent1 = datas.GameItems[0];
             var parent2 = datas.GameItems[1];
             var child = FuhuaCore(datas.GameChar, parent1, parent2);
+            child.Name2FastChangingProperty.Add("fhcd", new FastChangingProperty(TimeSpan.FromSeconds(1), 1, 3600 * 8, 0, DateTime.UtcNow)
+            {
+                Tag = (datas.GameChar.Id,child.Id),
+            });
             gim.AddItem(child, fuhuaSlot, null, datas.ChangesItem); //放入孵化槽
             var qiwu = datas.GameChar.GetQiwuBag();
             if (jiyin.Count > 1)    //若尚有剩余基因蛋
@@ -1490,12 +1494,12 @@ namespace GuangYuan.GY001.BLL
                     if (VWorld.IsHit(0.5))   //若出a头
                     {
                         headT = gim.GetHeadTemplate(parent1);
-                        bodyT = gim.GetHeadTemplate(parent1);
+                        bodyT = gim.GetBodyTemplate(parent1);
                     }
                     else //若出b头
                     {
                         headT = gim.GetHeadTemplate(parent2);
-                        bodyT = gim.GetHeadTemplate(parent2);
+                        bodyT = gim.GetBodyTemplate(parent2);
                     }
 
                 }
@@ -1504,12 +1508,12 @@ namespace GuangYuan.GY001.BLL
                     if (VWorld.IsHit(0.5))   //若出a头
                     {
                         headT = gim.GetHeadTemplate(parent1);
-                        bodyT = gim.GetHeadTemplate(parent2);
+                        bodyT = gim.GetBodyTemplate(parent2);
                     }
                     else //若出b头
                     {
                         headT = gim.GetHeadTemplate(parent2);
-                        bodyT = gim.GetHeadTemplate(parent1);
+                        bodyT = gim.GetBodyTemplate(parent1);
                     }
                 }
             }

@@ -1,5 +1,4 @@
 ﻿using GuangYuan.GY001.UserDb;
-using OW.Game;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
@@ -32,17 +31,27 @@ namespace Game.Social
         /// </summary>
         Already,
     }
-    
+
     /// <summary>
     /// <see cref="GameSocialRelationship"/>中<see cref="GameEntityRelationshipBase.KeyType"/>使用的值，这里使用枚举类型以便使用。
     /// </summary>
     public enum SocialKeyTypes
     {
-        
+
         /// <summary>
-        /// 允许pvp攻击的对象,列表中包含的对象，而非协助反击的对象。
+        /// 允许pvp攻击的对象,列表中包含的可主动进行pvp行为的对象，而非协助/反击的对象。
         /// </summary>
         AllowPvpAttack = 10001,
+
+        /// <summary>
+        /// 可反击对象。客体Id是可攻击的角色对象Id。
+        /// </summary>
+        AllowPvpForRetaliation = 10002,
+
+        /// <summary>
+        /// 可协助攻击的对象条目。客体Id是可攻击的角色对象Id。Properties["questCharId"]是请求方角色Id。
+        /// </summary>
+        AllowPvpForHelp = 10003,
 
         /// <summary>
         /// 与家园展示坐骑互动的KeyType值。
@@ -52,7 +61,7 @@ namespace Game.Social
         /// <summary>
         /// 与主控室互动的数据条目。
         /// </summary>
-        PatTili=20100,
+        PatTili = 20100,
     }
 
     /// <summary>

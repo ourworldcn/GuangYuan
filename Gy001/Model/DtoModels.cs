@@ -2232,6 +2232,12 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string MountsId { get; set; }
 
+        /// <summary>
+        /// 是否解约，true解约，false签约或增加互动。
+        /// </summary>
+        [DataMember]
+        public bool IsRemove { get; set; }
+
     }
 
     /// <summary>
@@ -2311,16 +2317,31 @@ namespace GY2021001WebApi.Models
     {
     }
 
+    /// <summary>
+    /// GetPvpList 接口返回数据封装类。
+    /// </summary>
     [DataContract]
     public class GetPvpListReturnDto : ReturnDtoBase
     {
         /// <summary>
-        /// pvp对象数据。每个元素是一个可以或已经pvp对象。
+        /// pvp对象数据。每个元素是一个可以或已经pvp对象。暂时保留。
         /// <see cref="GameActionRecordDto.ParentId"/>是对方的角色Id。
         /// <see cref="GameActionRecordDto.Properties"/>中存在done且不为0则说明已经战斗过，否则是可战斗的对象。
         /// </summary>
         [DataMember]
         public List<GameActionRecordDto> PvpList { get; set; } = new List<GameActionRecordDto>();
+
+        /// <summary>
+        /// 货币袋及子对象数据。
+        /// </summary>
+        [DataMember]
+        public GameItemDto CurrencyBag { get; set; }
+
+        /// <summary>
+        /// 家园主地块及子对象数据。
+        /// </summary>
+        [DataMember]
+        public GameItemDto MainBase { get; set; }
     }
 
     public class RemoveBlackParamsDto : TokenDtoBase

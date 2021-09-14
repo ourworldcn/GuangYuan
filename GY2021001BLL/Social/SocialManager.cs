@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Store;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -15,6 +14,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
@@ -761,36 +761,26 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 去好友家互动以获得体力。
         /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="objectId"></param>
-        /// <param name="context"></param>
-        public PatForTiliResult PatForTili(GameChar gameChar, Guid objectId, GameUserContext context)
+        /// <param name="datas">工作数据。</param>
+        public PatForTiliResult PatForTili(PatForTiliWorkData datas)
         {
-            if (!World.CharManager.Lock(gameChar.GameUser))
-            {
-                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
-                return PatForTiliResult.Unknow; //一般不可能。
-            }
+            using var dwUsers = datas.Lock();
+            if (dwUsers is null)
+                return PatForTiliResult.TimesOver;
             DateTime dtNow = DateTime.UtcNow;   //当前时间
-            using var datas = new PatForTiliWorkData(World, gameChar, dtNow) { UserContext = context };
             try
             {
-                var objChar = datas.UserContext.Set<GameChar>().Find(objectId);objChar.SuppressSave = true;
-                if (gameChar.Id == objectId || objChar is null)
-                {
-                    VWorld.SetLastErrorMessage("试图访问自己或指定的角色不存在");
-                    return PatForTiliResult.Unknow;
-                }
                 var dt = dtNow;
                 if (datas.Fcp.GetCurrentValue(ref dt) <= 0) //若已经用完访问次数
                     return PatForTiliResult.TimesOver;
+                var objectId = datas.OtherChar.Id;
                 if (datas.Visitors.Any(c => c.Id2 == objectId && DateTime.TryParse(c.PropertyString, out var dt) && dt.Date == datas.Now.Date))    //若访问过了
                     return PatForTiliResult.Already;
                 //成功交互
                 var sr = datas.Visitors.FirstOrDefault(c => c.Id2 == objectId);
                 if (sr is null)  //若没有条目
                 {
-                    sr = new GameSocialRelationship(gameChar.Id, objectId, (int)SocialKeyTypes.PatTili, 0)
+                    sr = new GameSocialRelationship(datas.GameChar.Id, objectId, (int)SocialKeyTypes.PatTili, 0)
                     {
                         PropertyString = datas.Now.ToString("s"),
                     };
@@ -799,32 +789,32 @@ namespace GuangYuan.GY001.BLL
                 datas.FriendCurrency += 5;  //增加友情货币。
                 //扣除次数
                 datas.Fcp.LastValue--;
+                datas.Tili.Name2FastChangingProperty["Count"].LastValue += 5; //增加体力
                 datas.Save();
-                World.CharManager.NotifyChange(gameChar.GameUser);  //通知状态发生了更改
+                datas.ChangeItems.AddToChanges(datas.Tili);
+                World.CharManager.NotifyChange(datas.GameChar.GameUser);  //通知状态发生了更改
             }
-            finally
+            catch (Exception)
             {
-                context?.DisposeAsync();
-                World.CharManager.Unlock(gameChar.GameUser, true);
             }
             return PatForTiliResult.Success;
         }
 
-        public class PatForTiliWorkData : GameCharWorkDataBase
+        public class PatForTiliWorkData : RelationshipWorkDataBase
         {
             private const string key = "patcountVisitors";
 
-            public PatForTiliWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, DateTime now) : base(service, gameChar)
+            public PatForTiliWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId, DateTime now) : base(service, gameChar, otherGCharId)
             {
                 _Now = now;
             }
 
-            public PatForTiliWorkData([NotNull] VWorld world, [NotNull] GameChar gameChar, DateTime now) : base(world, gameChar)
+            public PatForTiliWorkData([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId, DateTime now) : base(world, gameChar, otherGCharId)
             {
                 _Now = now;
             }
 
-            public PatForTiliWorkData([NotNull] VWorld world, [NotNull] string token, DateTime now) : base(world, token)
+            public PatForTiliWorkData([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId, DateTime now) : base(world, token, otherGCharId)
             {
                 _Now = now;
             }
@@ -840,7 +830,7 @@ namespace GuangYuan.GY001.BLL
             /// </summary>
             public FastChangingProperty Fcp { get => Tili.Name2FastChangingProperty["patcount"]; }
 
-            ObservableCollection<GameSocialRelationship> _Visitors;
+            private ObservableCollection<GameSocialRelationship> _Visitors;
 
             /// <summary>
             /// 用户和其他玩家的主控室互动获得体力的数据条目。
@@ -881,7 +871,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
 
-            GameItem _FriendCurrencyItem;
+            private GameItem _FriendCurrencyItem;
 
             /// <summary>
             /// 友情货币数。
@@ -906,9 +896,9 @@ namespace GuangYuan.GY001.BLL
                 }
             }
 
-            public void Save()
+            public override void Save()
             {
-                UserContext.SaveChanges();
+                base.Save();
             }
         }
 
@@ -919,40 +909,51 @@ namespace GuangYuan.GY001.BLL
         public void PatWithMounts(PatWithMountsDatas datas)
         {
             var now = datas.Today;
-            using var dwChar = datas.LockUser();
+            using var dwChar = datas.Lock();
             if (dwChar is null)
             {
                 datas.HasError = true;
-                datas.ErrorCode = (int)HttpStatusCode.Unauthorized;
-                datas.ErrorMessage = "令牌错误。";
+                datas.ErrorCode = VWorld.GetLastError();
+                datas.ErrorMessage = VWorld.GetLastErrorMessage();
                 return;
             }
             var db = datas.UserContext;
             var tmpNow = now;
-            if (datas.Counter.GetCurrentValue(ref tmpNow) <= 0)
-            {
-                datas.HasError = true;
-                datas.ErrorMessage = $"今日互动次数已用尽。";
-                return;
-            }
-            if (datas.IsVisited)  //若今日与玩家已经互动过
-            {
-                datas.HasError = true;
-                datas.ErrorMessage = $"今日已经与该玩家互动过。";
-                return;
-            }
-
+            //if (datas.Counter.GetCurrentValue(ref tmpNow) <= 0)
+            //{
+            //    datas.HasError = true;
+            //    datas.ErrorMessage = $"今日互动次数已用尽。";
+            //    return;
+            //}
+            //if (datas.IsVisited)  //若今日与玩家已经互动过
+            //{
+            //    datas.HasError = true;
+            //    datas.ErrorMessage = $"今日已经与该玩家互动过。";
+            //    return;
+            //}
             var sr = datas.GetOrAddSr();  //与该坐骑互动的数据条目
-            //修改数据
-            datas.SetDateTime(sr, datas.Today);
-            datas.SetOtherCharId(sr, datas.OtherCharId);
-            datas.Counter.LastValue--;
-            if (++sr.Flag >= 7)  //若此次互动有了结果
+            if (datas.IsRemove)  //若是解约
             {
+                //修改数据
                 sr.Flag = 0;
-                var gameItem = datas.UserContext.Set<GameItem>().Include(c => c.Children).ThenInclude(c => c.Children).AsNoTracking().Single(c => c.Id == sr.Id2);
-                GameItem sendGi = World.ItemManager.CloneMounts(gameItem, ProjectConstant.HomelandPatCard); //创建幻影
-                World.ItemManager.AddItem(sendGi, datas.GameChar.GetItemBag(), null, datas.ChangeItems); //放入道具背包
+                datas.SetDateTime(sr, datas.Today);
+                datas.SetOtherCharId(sr, datas.OtherCharId);
+            }
+            else //签约或增加互动
+            {
+                //修改数据
+                datas.SetDateTime(sr, datas.Today);
+                datas.SetOtherCharId(sr, datas.OtherCharId);
+                //datas.Counter.LastValue--;
+                if (++sr.Flag >= 7)  //若此次互动有了结果
+                {
+                    sr.Flag = 0;
+                    //var gameItem = datas.UserContext.Set<GameItem>().Include(c => c.Children).ThenInclude(c => c.Children).AsNoTracking().Single(c => c.Id == sr.Id2);
+                    var gameItem = datas.Mount;
+                    GameItem sendGi = World.ItemManager.CloneMounts(gameItem, ProjectConstant.HomelandPatCard); //创建幻影
+                    sendGi.Properties["charDisplayName"] = datas.OtherChar.DisplayName;
+                    World.ItemManager.AddItem(sendGi, datas.GameChar.GetItemBag(), null, datas.ChangeItems); //放入道具背包
+                }
             }
             //删除其他签约坐骑
             var removbes = datas.Visitors.Where(c => datas.GetOtherCharId(sr) == datas.GetOtherCharId(c) && sr != c).ToList();
@@ -965,23 +966,23 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// PatWithMounts 使用的数据封装对象。
         /// </summary>
-        public class PatWithMountsDatas : ChangeItemsWorkDatsBase
+        public class PatWithMountsDatas : RelationshipWorkDataBase
         {
-            public PatWithMountsDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid mountsId, DateTime today) : base(service, gameChar)
+            public PatWithMountsDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid mountsId, DateTime today) : base(service, gameChar, Guid.Empty)
             {
                 MountsId = mountsId;
                 Today = today;
                 Initialize();
             }
 
-            public PatWithMountsDatas([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid mountsId, DateTime today) : base(world, gameChar)
+            public PatWithMountsDatas([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid mountsId, DateTime today) : base(world, gameChar, Guid.Empty)
             {
                 MountsId = mountsId;
                 Today = today;
                 Initialize();
             }
 
-            public PatWithMountsDatas([NotNull] VWorld world, [NotNull] string token, Guid mountsId, DateTime today) : base(world, token)
+            public PatWithMountsDatas([NotNull] VWorld world, [NotNull] string token, Guid mountsId, DateTime today) : base(world, token, Guid.Empty)
             {
                 MountsId = mountsId;
                 Today = today;
@@ -991,6 +992,24 @@ namespace GuangYuan.GY001.BLL
             private void Initialize()
             {
                 _LazyMounts = new Lazy<GameItem>(() => UserContext.Set<GameItem>().AsNoTracking().FirstOrDefault(c => c.Id == MountsId), true);
+                var pid = _LazyMounts.Value.ParentId.Value;
+                OtherCharId = UserContext.Set<GameItem>().AsNoTracking().FirstOrDefault(c => c.Id == pid).OwnerId.Value;
+            }
+
+            /// <summary>
+            /// 是否是解约。
+            /// </summary>
+            /// <value>true解约，否则为false。</value>
+            public bool IsRemove { get; set; }
+
+            /// <summary>
+            /// <inheritdoc/>
+            /// </summary>
+            /// <returns></returns>
+            public override IDisposable Lock()
+            {
+                var ary = new Guid[] { GameChar.Id, OtherCharId };
+                return World.CharManager.LockOrLoadWithCharIds(ary, TimeSpan.FromSeconds(World.CharManager.Options.DefaultLockTimeoutInSeconds));
             }
 
             /// <summary>
@@ -1097,9 +1116,9 @@ namespace GuangYuan.GY001.BLL
                 }
             }
 
-            public void Save()
+            public override void Save()
             {
-                UserContext.SaveChanges();
+                base.Save();
             }
 
             /// <summary>
@@ -1179,26 +1198,7 @@ namespace GuangYuan.GY001.BLL
             /// <summary>
             /// 要互动的坐骑。找不到则返回null。
             /// </summary>
-            public GameItem Mount => _LazyMounts.Value;
-
-            Guid? _OtherId;
-
-            /// <summary>
-            /// 对方玩家的Id。
-            /// </summary>
-            public Guid OtherCharId
-            {
-                get
-                {
-                    if (!_OtherId.HasValue)
-                    {
-                        _OtherId = (from bag in UserContext.Set<GameItem>()
-                                    where bag.Id == Mount.ParentId && bag.TemplateId == ProjectConstant.ZuojiBagSlotId && bag.OwnerId.HasValue
-                                    select bag.OwnerId.Value).First();
-                    }
-                    return _OtherId.Value;
-                }
-            }
+            public GameItem Mount => OtherChar.AllChildren.First(c => c.Id == MountsId);
 
             /// <summary>
             /// 是否已经访问过了该玩家。
@@ -1254,8 +1254,13 @@ namespace GuangYuan.GY001.BLL
                 var dikuais = hl.AllChildren.Where(c => gitm.GetTemplateFromeId(c.TemplateId).CatalogNumber / 100 == 1);  //获取地块
                 datas.Lands.AddRange(dikuais);
                 //获取阵容数据
-                var collMounts = gim.GetLineup(objChar, 10).Union(gim.GetLineup(objChar, 20))
-                     .Union(gim.GetLineup(objChar, 21)).Union(gim.GetLineup(objChar, 22)).Union(gim.GetLineup(objChar, 23)).Union(gim.GetLineup(objChar, 24));
+                var lineupNumbers = datas.CurrentFengge.Fangans.Select(c => 10000 + datas.CurrentFengge.Number * 10 + c.OrderNumber); //阵容号集合
+                var collMounts = gim.GetLineup(objChar, 10);
+                foreach (var item in lineupNumbers)
+                {
+                    collMounts = collMounts.Concat(gim.GetLineup(objChar, item));
+                }
+                collMounts = collMounts.Distinct();
                 //增加签约坐骑数据
                 var sr = datas.UserContext.Set<GameSocialRelationship>().Where(c => c.Id == datas.GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatWithMounts).AsEnumerable().
                      FirstOrDefault(c => c.Properties.GetGuidOrDefault("charid") == datas.OtherCharId); //获取签约关系
@@ -1368,6 +1373,66 @@ namespace GuangYuan.GY001.BLL
             return result;
         }
 
+        /// <summary>
+        /// 己方角色对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="context"></param>
+        /// <param name="excludes">要排除在外的角色Id集合。省略或为null则不排除。</param>
+        /// <returns>角色Id列表。</returns>
+        public IEnumerable<Guid> RefreshPvpList(GameChar gameChar, DbContext context, IEnumerable<Guid> excludes = null)
+        {
+            var maxCount = 3;   //总计获取的数量
+            var gcPvpObject = gameChar.GetPvpObject();
+            var pvpObjectTId = ProjectConstant.PvpObjectTId;  //PVP对象Id
+            var gameItemsQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId).AsNoTracking();    //查询的基础集合
+            IEnumerable<Guid> excludeCharIds = excludes is null ? new Guid[] { gameChar.Id } : excludes.Append(gameChar.Id);   //排除的角色Id集合
+            var excludeIds = (from bag in context.Set<GameItem>().Where(c => c.OwnerId.HasValue && excludeCharIds.Contains(c.OwnerId.Value)).AsNoTracking()
+                              join gi in context.Set<GameItem>().AsNoTracking()
+                              on bag.Id equals gi.ParentId
+                              where gi.TemplateId == pvpObjectTId
+                              select gi.Id).ToArray();  //pvp对象Id集合
+
+            var lower = (from tmp in gameItemsQuery //取下手
+                         where tmp.Count < gcPvpObject.Count && !excludeIds.Contains(tmp.Id)
+                         orderby tmp.Count descending
+                         select tmp).Take(maxCount);
+
+            var equals = (from tmp in gameItemsQuery //取平手
+                          where tmp.Count == gcPvpObject.Count && !excludeIds.Contains(tmp.Id)
+                          orderby tmp.Count descending
+                          select tmp).Take(maxCount);
+
+            var higher = (from tmp in gameItemsQuery //取上手
+                          where tmp.Count > gcPvpObject.Count && !excludeIds.Contains(tmp.Id)
+                          orderby tmp.Count
+                          select tmp).Take(maxCount);
+            var list = lower.Concat(equals).Concat(higher).ToList();
+
+            var listGameItems = new List<GameItem>();
+            //获取下手
+            var addItem = list.FirstOrDefault(c => c.Count < gcPvpObject.Count);    //下手
+            if (null != addItem)
+                listGameItems.Add(addItem);
+            //获取平手
+            var addItems = list.Where(c => c.Count == gcPvpObject.Count).Take(maxCount - listGameItems.Count - 1);
+            listGameItems.AddRange(addItems);
+            //获取上手
+            addItems = list.Where(c => c.Count > gcPvpObject.Count).Take(maxCount - listGameItems.Count);
+            listGameItems.AddRange(addItems);
+            //补偿
+            if (listGameItems.Count < maxCount)    //若没有取到足够的对手
+            {
+                listGameItems.ForEach(c => list.Remove(c)); //清理已经取得的
+                listGameItems.AddRange(list.Take(maxCount - listGameItems.Count));  //随机取得
+            }
+            //获取对手角色Id
+            var objParentIds = listGameItems.Select(c => c.ParentId.Value).ToArray();
+            var charIds = from tmp in context.Set<GameItem>().AsNoTracking()
+                          where objParentIds.Contains(tmp.Id)
+                          select tmp.OwnerId.Value;
+            return charIds;
+        }
         #endregion  项目特定功能
     }
 
@@ -1398,7 +1463,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 当前风格数据，下面仅含激活的方案数据。
         /// </summary>
-        public HomelandFengge CurrentFengge { get => GetOrAdd(nameof(CurrentFengge), ref _CurrentFengge); set => Result[nameof(CurrentFengge)] = value; }
+        public HomelandFengge CurrentFengge { get => _CurrentFengge; set => _CurrentFengge = value; }
 
         private List<GameItem> _Mounts;
 
@@ -1445,7 +1510,7 @@ namespace GuangYuan.GY001.BLL
         {
         }
 
-        string _DisplayName;
+        private string _DisplayName;
 
         /// <summary>
         /// 指定搜索角色的昵称。为空表示不限定角色名。
@@ -1477,7 +1542,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public bool DonotRefresh { get; set; }
 
-        bool disposedValue;
+        private bool disposedValue;
 
         protected override void Dispose(bool disposing)
         {

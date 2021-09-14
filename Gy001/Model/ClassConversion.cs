@@ -319,14 +319,6 @@ namespace GY2021001WebApi.Models
 
     public partial class HomelandFenggeDto
     {
-        public Guid StyleTemplateId
-        {
-            get => default;
-            set
-            {
-            }
-        }
-
         public static explicit operator HomelandFengge(HomelandFenggeDto obj)
         {
             var result = new HomelandFengge()

@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.TemplateDb;
+﻿using Game.Social;
+using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using OW.Game;
 using System;
@@ -181,11 +182,12 @@ namespace GuangYuan.GY001.BLL
             Initialize();
         }
 
-        #endregion 构造函数
         private void Initialize()
         {
 
         }
+
+        #endregion 构造函数
 
         private List<GameItemTemplate> _Dungeons;
 
@@ -453,31 +455,43 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 
+        /// pvp战斗结算。
         /// </summary>
         /// <param name="datats"></param>
-        public void EndCombatPvp(EndCombatPvpWorkData datats)
+        public void EndCombatPvp(EndCombatPvpWorkData datas)
         {
-            using var dwChar = datats.LockUser();
-            if (dwChar is null)
-                return;
-            var dv = new CharPvpDataView(datats.World.Service, datats.GameChar);
-            if (!dv.LastIds.Contains(datats.OtherCharId))   //若是非法攻击的对象。TO DO要测试反击 和 协助的Id
-            {
-                datats.HasError = true;
-                datats.ErrorCode = (int)HttpStatusCode.BadRequest;
-                datats.ErrorMessage = "不可攻击的对象。";
-                return;
-            }
+            var pTId = GetParent(datas.DungeonTemplate).Id; //大关卡模板Id
+            //校验免战
             if (false)   //若免战
             {
-
             }
-            
+            //分不同情况调用
+            if (datas.DungeonTemplate.Id == ProjectConstant.PvpDungeonTId) //若是正常pvp
+            {
+                Pvp(datas);
+            }
+            else if (datas.DungeonTemplate.Id == ProjectConstant.PvpForHelpDungeonTId) //若是协助pvp
+            {
+                PvpForHelp(datas);
+            }
+            else if (datas.DungeonTemplate.Id == ProjectConstant.PvpForRetaliationDungeonTId)   //若是反击pvp
+            {
+                PvpForRetaliation(datas);
+            }
+
+            var dv = new CharPvpDataView(datas.World.Service, datas.GameChar);
+            if (!dv.LastIds.Contains(datas.OtherCharId))   //若是非法攻击的对象。TO DO要测试反击 和 协助的Id
+            {
+                datas.HasError = true;
+                datas.ErrorCode = (int)HttpStatusCode.BadRequest;
+                datas.ErrorMessage = "不可攻击的对象。";
+                return;
+            }
+
             //修改数据
-            var db = datats.UserContext;
+            var db = datas.UserContext;
             //清理自身可攻击id
-            dv.LastIds.Remove(datats.OtherCharId);
+            dv.LastIds.Remove(datas.OtherCharId);
             //加入反击数据
             var sr = new GameSocialRelationship { };
             db.Set<GameSocialRelationship>().Add(sr);
@@ -487,7 +501,65 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 校验时间
+        /// 反击pvp。
+        /// </summary>
+        /// <param name="datats"></param>
+        private void PvpForRetaliation(EndCombatPvpWorkData datas)
+        {
+            datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpForRetaliation);
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 协助pvp。
+        /// </summary>
+        /// <param name="datats"></param>
+        private void PvpForHelp(EndCombatPvpWorkData datas)
+        {
+            datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpForHelp);
+        }
+
+        /// <summary>
+        /// 主动pvp。
+        /// </summary>
+        /// <param name="datats"></param>
+        private void Pvp(EndCombatPvpWorkData datas)
+        {
+            datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpAttack);
+            var sr = datas.SocialRelationships.FirstOrDefault(c => c.Id2 == datas.OtherChar.Id);  //关系数据
+            if (sr is null) //若不准攻击
+            {
+                datas.HasError = true;
+                VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                return;
+            }
+            //更改数据
+            datas.SocialRelationships.Remove(sr);
+            if (datas.IsWin)    //若进攻方胜利
+            {
+
+            }
+            else //防御方胜利
+            {
+
+            }
+            //获取物品
+            var gim = World.ItemManager;
+            var parents = datas.GetDefaultContainers(datas.GameItems);  //获取容器
+            for (int i = 0; i < datas.GameItems.Count; i++) //获取战利品
+            {
+                gim.AddItem(datas.GameItems[i], parents[i], null, datas.ChangeItems);
+            }
+            //发送邮件
+            var mail = new GameMail()
+            {
+            };
+            mail.Properties["MailTypeId"] = ProjectConstant.孵化补给动物.ToString();
+            World.SocialManager.SendMail(mail, new Guid[] { datas.OtherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+        }
+
+        /// <summary>
+        /// 校验时间。
         /// </summary>
         /// <returns></returns>
         private bool VerifyTime(EndCombatData data)
@@ -754,17 +826,17 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// pvp结束战斗调用接口的数据封装类。
     /// </summary>
-    public class EndCombatPvpWorkData : ComplexWorkDatasBase
+    public class EndCombatPvpWorkData : RelationshipWorkDataBase
     {
-        public EndCombatPvpWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        public EndCombatPvpWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
         {
         }
 
-        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar, otherGCharId)
         {
         }
 
-        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token, otherGCharId)
         {
         }
 
@@ -773,10 +845,12 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public Guid DungeonId { get; set; }
 
+        GameItemTemplate _DungeonTemplate;
+
         /// <summary>
-        /// 被攻击的角色Id。
+        /// 关卡模板。
         /// </summary>
-        public Guid OtherCharId { get; set; }
+        public GameItemTemplate DungeonTemplate => _DungeonTemplate ??= World.ItemTemplateManager.GetTemplateFromeId(DungeonId);
 
         /// <summary>
         /// 是否胜利了。
@@ -785,6 +859,7 @@ namespace GuangYuan.GY001.BLL
 
         /// <summary>
         /// 战利品的原始数据。
+        /// Item1=战利品模板Id,Item2=数量。
         /// </summary>
         public List<(Guid, decimal)> TIdAndCounts { get; } = new List<(Guid, decimal)>();
 
@@ -792,6 +867,7 @@ namespace GuangYuan.GY001.BLL
 
         /// <summary>
         /// 战利品。
+        /// 无主的物品。需要调用方添加到合适的容器中。
         /// </summary>
         public List<GameItem> GameItems
         {
@@ -809,6 +885,31 @@ namespace GuangYuan.GY001.BLL
                 }
                 return _GameItems;
             }
+        }
+
+        /// <summary>
+        /// 获取物品默认的容器对象。
+        /// </summary>
+        /// <returns></returns>
+        public List<GameThingBase> GetDefaultContainers(List<GameItem> gameItems)
+        {
+            var result = new List<GameThingBase>();
+            var gc = GameChar;
+            for (int i = 0; i < gameItems.Count; i++)
+            {
+                var item = gameItems[i];
+                if (item.TemplateId == ProjectConstant.JinbiId)
+                {
+                    result.Add(gc.GetCurrencyBag());
+                }
+                else if (item.TemplateId == ProjectConstant.MucaiId)
+                {
+                    result.Add(gc.GetCurrencyBag());
+                }
+                else
+                    throw new InvalidOperationException("不可获得物品。");
+            }
+            return result;
         }
     }
 }

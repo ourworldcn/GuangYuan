@@ -1,247 +1,229 @@
-{
-  "CurrentFengge": {
-    "StyleTemplateId": "00000000-0000-0000-0000-000000000000",
-    "Id": 0,
-    "Fangans": [],
+[
+  {
+    "Id": "fb8d5452-c478-46f0-8c16-8d4325cdcbb1",
+    "Number": 1,
+    "Fangans": [
+      {
+        "Id": "1f24416a-518e-4b01-8d12-a1db96bdafa2",
+        "OrderNumber": 0,
+        "FanganItems": [
+          {
+            "ItemIds": [ "6b653711-0554-4aa8-9457-05cecf7ca3bb", "61652dc3-f365-4e6b-bdbd-2bf17305d2f9", "b4394e59-af16-44db-99a6-91e73dab3a0c", "75774c81-6682-41d0-a68e-97dca4fa4e4a", "20a87787-2817-49b2-bdee-cde8531b259a" ],
+            "ContainerId": "731ae0b6-7df3-40be-9d55-6f385f94756f",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "6b653711-0554-4aa8-9457-05cecf7ca3bb",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "61652dc3-f365-4e6b-bdbd-2bf17305d2f9",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [ "384c804a-80f3-44a8-a8ff-1bcb748bd4eb", "07d62af0-5cfe-4ccd-bc83-5619cc8c01f2", "b5627a42-6ad5-420b-b5e0-e6c745cd68d9", "d622e885-1357-478c-9f78-eff4f144b764", "d3b7c561-98ce-42e2-babf-f510b5169cf0" ],
+            "ContainerId": "b4394e59-af16-44db-99a6-91e73dab3a0c",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "384c804a-80f3-44a8-a8ff-1bcb748bd4eb",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "07d62af0-5cfe-4ccd-bc83-5619cc8c01f2",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "b5627a42-6ad5-420b-b5e0-e6c745cd68d9",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "d622e885-1357-478c-9f78-eff4f144b764",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "d3b7c561-98ce-42e2-babf-f510b5169cf0",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [ "390dc30e-f579-43cf-a95d-360542e67cf7", "ab3ecd82-1d26-4446-bda8-9c91d3f179b5", "a03bfccd-3421-4ebb-81f0-9f9d919adda1", "f919e452-48f9-4ad3-bde8-b8843f4183c1", "d5cbb56c-abcc-4239-b267-bf7bf4b45d17", "ffa32e5d-58c2-4849-b665-db8fd342a41d" ],
+            "ContainerId": "75774c81-6682-41d0-a68e-97dca4fa4e4a",
+            "NewTemplateId": "234f8c55-4c3c-4406-ad38-081d29564f20",
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "390dc30e-f579-43cf-a95d-360542e67cf7",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "ab3ecd82-1d26-4446-bda8-9c91d3f179b5",
+            "NewTemplateId": "e31939bd-7056-4293-9a55-6c9ee0cd4681",
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "a03bfccd-3421-4ebb-81f0-9f9d919adda1",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "f919e452-48f9-4ad3-bde8-b8843f4183c1",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "d5cbb56c-abcc-4239-b267-bf7bf4b45d17",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "ffa32e5d-58c2-4849-b665-db8fd342a41d",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "20a87787-2817-49b2-bdee-cde8531b259a",
+            "NewTemplateId": null,
+            "ClientString": null
+          }
+        ],
+        "IsActived": false,
+        "ClientString": null
+      },
+      {
+        "Id": "85684910-b7ba-43ec-b63f-915aba16f860",
+        "OrderNumber": 1,
+        "FanganItems": [
+          {
+            "ItemIds": [ "6b653711-0554-4aa8-9457-05cecf7ca3bb", "61652dc3-f365-4e6b-bdbd-2bf17305d2f9", "b4394e59-af16-44db-99a6-91e73dab3a0c", "75774c81-6682-41d0-a68e-97dca4fa4e4a", "20a87787-2817-49b2-bdee-cde8531b259a" ],
+            "ContainerId": "731ae0b6-7df3-40be-9d55-6f385f94756f",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "6b653711-0554-4aa8-9457-05cecf7ca3bb",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "61652dc3-f365-4e6b-bdbd-2bf17305d2f9",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [ "384c804a-80f3-44a8-a8ff-1bcb748bd4eb", "07d62af0-5cfe-4ccd-bc83-5619cc8c01f2", "b5627a42-6ad5-420b-b5e0-e6c745cd68d9", "d622e885-1357-478c-9f78-eff4f144b764", "d3b7c561-98ce-42e2-babf-f510b5169cf0" ],
+            "ContainerId": "b4394e59-af16-44db-99a6-91e73dab3a0c",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "384c804a-80f3-44a8-a8ff-1bcb748bd4eb",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "07d62af0-5cfe-4ccd-bc83-5619cc8c01f2",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "b5627a42-6ad5-420b-b5e0-e6c745cd68d9",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "d622e885-1357-478c-9f78-eff4f144b764",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "d3b7c561-98ce-42e2-babf-f510b5169cf0",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [ "390dc30e-f579-43cf-a95d-360542e67cf7", "ab3ecd82-1d26-4446-bda8-9c91d3f179b5", "a03bfccd-3421-4ebb-81f0-9f9d919adda1", "f919e452-48f9-4ad3-bde8-b8843f4183c1", "d5cbb56c-abcc-4239-b267-bf7bf4b45d17", "ffa32e5d-58c2-4849-b665-db8fd342a41d" ],
+            "ContainerId": "75774c81-6682-41d0-a68e-97dca4fa4e4a",
+            "NewTemplateId": "234f8c55-4c3c-4406-ad38-081d29564f20",
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "390dc30e-f579-43cf-a95d-360542e67cf7",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "ab3ecd82-1d26-4446-bda8-9c91d3f179b5",
+            "NewTemplateId": "e31939bd-7056-4293-9a55-6c9ee0cd4681",
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "a03bfccd-3421-4ebb-81f0-9f9d919adda1",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "f919e452-48f9-4ad3-bde8-b8843f4183c1",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "d5cbb56c-abcc-4239-b267-bf7bf4b45d17",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "ffa32e5d-58c2-4849-b665-db8fd342a41d",
+            "NewTemplateId": null,
+            "ClientString": null
+          },
+          {
+            "ItemIds": [],
+            "ContainerId": "20a87787-2817-49b2-bdee-cde8531b259a",
+            "NewTemplateId": null,
+            "ClientString": null
+          }
+        ],
+        "IsActived": false,
+        "ClientString": null
+      }
+    ],
     "ClientString": null
-  },
-  "Mounts": [
-    {
-      "Id": "RThb+Jrav0662ITFBAumtg==",
-      "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
-      "CreateUtc": "2021-09-01T04:20:46.257993",
-      "Count": 1.00,
-      "Properties": {
-        "nemhp": 10,
-        "neatk": 10,
-        "neqlt": 10,
-        "cap": -1,
-        "tname": "×øÆï×éºÏ"
-      },
-      "OwnerId": null,
-      "Children": [
-        {
-          "Id": "ukVUpZRrIUGPTHPBEYBckg==",
-          "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
-          "CreateUtc": "2021-09-01T04:20:46.2580153",
-          "Count": 1.00,
-          "Properties": {
-            "nm": 1501,
-            "ps": 5001,
-            "js": 2001,
-            "tname": "ÑòÍ·"
-          },
-          "OwnerId": null,
-          "Children": [],
-          "ParentId": "RThb+Jrav0662ITFBAumtg==",
-          "ClientString": null
-        },
-        {
-          "Id": "Kzlc3D5j4kC71PNDtn2ETA==",
-          "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
-          "CreateUtc": "2021-09-01T04:20:46.2580269",
-          "Count": 1.00,
-          "Properties": {
-            "alt": 4,
-            "ms": 6,
-            "eng": 30,
-            "crp": 0,
-            "crv": 2,
-            "aha": 60,
-            "at": 1,
-            "bt": 0.3,
-            "csr": 5,
-            "ssr": 7,
-            "rci": 1,
-            "SK": 1001,
-            "nm": 1501,
-            "hi": 3001,
-            "mhp": 1000,
-            "atk": 100,
-            "qlt": 100,
-            "lug": -50,
-            "sg": 200,
-            "lv": 0,
-            "tname": "ÑòÉíÌå"
-          },
-          "OwnerId": null,
-          "Children": [],
-          "ParentId": "RThb+Jrav0662ITFBAumtg==",
-          "ClientString": null
-        }
-      ],
-      "ParentId": "pJbdPkvbQEOqA3nIO+hGLQ==",
-      "ClientString": null
-    }
-  ],
-  "Lands": [
-    {
-      "Id": "ICd7qdiCKESxLS3+sj6acA==",
-      "TemplateId": "VYxPIzxMBkStOAgdKVZPIA==",
-      "CreateUtc": "2021-09-01T04:20:46.2568788",
-      "Count": 1.00,
-      "Properties": {
-        "cap": -1,
-        "tnm": 5,
-        "trm": 3,
-        "dfm": 4,
-        "nm": 8000,
-        "tname": "Ö÷»ùµØ"
-      },
-      "OwnerId": null,
-      "Children": [
-        {
-          "Id": "w2pqJn5jEEiDbjk+imSQgw==",
-          "TemplateId": "xnHy00YSEkiypjoBw+dnFA==",
-          "CreateUtc": "2021-09-01T04:20:46.256939",
-          "Count": 1.00,
-          "Properties": {
-            "luw": 400,
-            "lug": 0,
-            "lut": 7200,
-            "mbnlv": 1,
-            "nmid": 2193,
-            "dsid": 2160,
-            "abid": "0;",
-            "labid": "0;",
-            "lv": 0,
-            "tname": "×¥²¶¸Ë"
-          },
-          "OwnerId": null,
-          "Children": [],
-          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
-          "ClientString": null
-        },
-        {
-          "Id": "lhbR7qpvVk2Jb23Ds2hMlQ==",
-          "TemplateId": "vTkZ41Zwk0KaVWye4M1GgQ==",
-          "CreateUtc": "2021-09-01T04:20:46.2569537",
-          "Count": 1.00,
-          "Properties": {
-            "luw": 500,
-            "lug": 0,
-            "lut": 4320,
-            "mbnlv": 1,
-            "nmid": 2184,
-            "dsid": 2151,
-            "abid": "2161;2168;2171",
-            "labid": "2161;2168;2171",
-            "lv": 0,
-            "tname": "¹¥»÷ÆìÖÄ"
-          },
-          "OwnerId": null,
-          "Children": [],
-          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
-          "ClientString": null
-        },
-        {
-          "Id": "E8N5TxpNKkqK/ISlGsI6BQ==",
-          "TemplateId": "J8uc+8IF8U2uITRe6qzgjw==",
-          "CreateUtc": "2021-09-01T04:20:46.2568855",
-          "Count": 1.00,
-          "Properties": {
-            "luw": 800,
-            "lug": 0,
-            "lut": 60,
-            "mhp": 1000,
-            "nmid": 2189,
-            "dsid": 2156,
-            "abid": "2161;",
-            "labid": "2161;",
-            "lv": 0,
-            "tname": "Ö÷¿ØÊÒ"
-          },
-          "OwnerId": null,
-          "Children": [],
-          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
-          "ClientString": null
-        },
-        {
-          "Id": "xHhdyF8BWEalxcWYc3GyHQ==",
-          "TemplateId": "bdtenL216Uujpsv3lOa/Ew==",
-          "CreateUtc": "2021-09-01T04:20:46.2569206",
-          "Count": 800,
-          "Properties": {
-            "luw": 100,
-            "lug": 0,
-            "lut": 7200,
-            "stc": 800,
-            "fcpdCount": 180,
-            "fcpiCount": 5,
-            "fcpmCount": 800,
-            "mbnlv": 1,
-            "nmid": 2191,
-            "dsid": 2158,
-            "abid": "2127;2128;2129;2130",
-            "labid": "2127;2129",
-            "lv": 0,
-            "tname": "Ä¾²ÄÊ÷£¨Ä¾²Ä£©",
-            "fcpcCount": 800,
-            "fcptCount": "2021-09-09T09:50:46"
-          },
-          "OwnerId": null,
-          "Children": [],
-          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
-          "ClientString": null
-        },
-        {
-          "Id": "iuSus65q30GrPemGM8R/qQ==",
-          "TemplateId": "O6eujBDiv0ehIQbMEpc7rw==",
-          "CreateUtc": "2021-09-01T04:20:46.2569644",
-          "Count": 0.00,
-          "Properties": {
-            "stc": 100,
-            "luw": 100,
-            "lug": 0,
-            "lut": 1200,
-            "mbnlv": 1,
-            "mhp": 500,
-            "nmid": 2192,
-            "dsid": 2159,
-            "abid": "2161;2194",
-            "labid": "2161;2194",
-            "lv": 0,
-            "tname": "Ä¾²Ä²Ö¿â"
-          },
-          "OwnerId": null,
-          "Children": [],
-          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
-          "ClientString": null
-        },
-        {
-          "Id": "rNyebsBQrUOHR/Bzkn3/mg==",
-          "TemplateId": "DHQAel4DRkimGS0IVfYLVQ==",
-          "CreateUtc": "2021-09-01T04:20:46.256896",
-          "Count": 2400,
-          "Properties": {
-            "luw": 400,
-            "lug": 0,
-            "lut": 60,
-            "stc": 2400,
-            "fcpdCount": 180,
-            "fcpiCount": 15,
-            "fcpmCount": 2400,
-            "mbnlv": 1,
-            "nmid": 2190,
-            "dsid": 2157,
-            "abid": "2127;2128;2129;2130",
-            "labid": "2127;2129",
-            "lv": 0,
-            "tname": "ÓñÃ×Ìï£¨ÓñÃ×£©",
-            "fcpcCount": 2400,
-            "fcptCount": "2021-09-09T09:50:46"
-          },
-          "OwnerId": null,
-          "Children": [],
-          "ParentId": "ICd7qdiCKESxLS3+sj6acA==",
-          "ClientString": null
-        }
-      ],
-      "ParentId": "ogYLvoRf4EOiW0ZMp62tMQ==",
-      "ClientString": null
-    }
-  ],
-  "HasError": false,
-  "DebugMessage": null
-}
-UnityEngine.Debug:Log(Object)
+  }
+]

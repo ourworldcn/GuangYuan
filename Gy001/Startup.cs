@@ -17,6 +17,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 using OW.Game;
+using Microsoft.Extensions.Logging.Debug;
 
 namespace Gy001
 {
@@ -54,9 +55,15 @@ namespace Gy001
                 builder.AddDebug();
 #endif //DEBUG
             });
+#if DEBUG
 
+            LoggerFactory LoggerFactory = new LoggerFactory(new[] { new DebugLoggerProvider() });
+            services.AddDbContext<GY001UserContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).UseLoggerFactory(LoggerFactory).EnableSensitiveDataLogging(), ServiceLifetime.Scoped);
+            services.AddDbContext<GY001TemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).UseLoggerFactory(LoggerFactory).EnableSensitiveDataLogging(), ServiceLifetime.Singleton);
+#else
             services.AddDbContext<GY001UserContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).EnableSensitiveDataLogging(), ServiceLifetime.Scoped);
             services.AddDbContext<GY001TemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).EnableSensitiveDataLogging(), ServiceLifetime.Singleton);
+#endif //DEBUG
 
             //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(UserDbOptions =>
             //{
@@ -97,8 +104,13 @@ namespace Gy001
 
             services.AddSingleton(c => new VWorld(c, new VWorldOptions()
             {
+#if DEBUG
+                UserDbOptions = new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).UseLoggerFactory(LoggerFactory).EnableSensitiveDataLogging().Options,
+                TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).UseLoggerFactory(LoggerFactory).Options,
+#else
                 UserDbOptions = new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).EnableSensitiveDataLogging().Options,
                 TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
+#endif //DEBUG
             }));
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
             {

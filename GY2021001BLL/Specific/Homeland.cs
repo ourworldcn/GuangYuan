@@ -23,6 +23,8 @@ namespace GuangYuan.GY001.BLL.Homeland
 
         }
 
+        public Guid Id { get; set; } = Guid.NewGuid();
+
         /// <summary>
         /// 风格号。
         /// </summary>
@@ -56,7 +58,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         public Guid Id { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// 方案号。 TO DO
+        /// 方案号。
         /// </summary>
         public int OrderNumber { get; set; }
 

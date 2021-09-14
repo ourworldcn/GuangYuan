@@ -320,6 +320,24 @@ namespace GuangYuan.GY001.BLL
 
         #endregion 类别号
 
+        #region 战斗常量
+        /// <summary>
+        /// 主动pvp大关卡模板Id。
+        /// </summary>
+        public static readonly Guid PvpDungeonTId = new Guid("{4805434E-605E-4479-B426-9A27C083D7D4}");
+
+        /// <summary>
+        /// 反击pvp大关卡模板Id。
+        /// </summary>
+        public static readonly Guid PvpForRetaliationDungeonTId = new Guid("{B4CDDF06-AD35-4E80-BFE2-975A5AF429CA}");
+
+        /// <summary>
+        /// 协助pvp大关卡模板Id。
+        /// </summary>
+        public static readonly Guid PvpForHelpDungeonTId = new Guid("{7A313D1C-7A53-4810-9586-6B52147D64C3}");
+
+        #endregion 战斗常量
+
         #region 蓝图常量
         /// <summary>
         /// 突破蓝图Id。

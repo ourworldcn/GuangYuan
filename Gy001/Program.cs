@@ -54,7 +54,13 @@ namespace Gy001
             var world = host.Services.GetRequiredService<VWorld>();
             var excp = new Win32Exception(ErrorCodes.ERROR_INVALID_TOKEN);
             var str = excp.Message;
+
+            using var dwGc = world.CharManager.LockOrLoad("test1", Timeout.InfiniteTimeSpan, out var gu);
+
+            var coll = world.SocialManager.RefreshPvpList(gu.CurrentChar, gu.DbContext).ToList();
+
             //using var db = world.CreateNewUserDbContext();
+            //var collChar = db.Set<GameChar>().Where(c => coll.Contains(c.Id)).ToArray();
             //GameUserCache cache = new GameUserCache(world.Service, optionsAccessor: new MemoryCacheOptions() { });
             //cache.GetOrCreate("d", c => Task.Run(() => new object()));
         }

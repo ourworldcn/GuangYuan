@@ -292,6 +292,8 @@ namespace GuangYuan.GY001.UserDb
         {
             get
             {
+                if (_Count.HasValue)
+                    return _Count.Value;
                 if (Name2FastChangingProperty is null)
                     return _Count;
                 return Name2FastChangingProperty.TryGetValue("Count", out var fcp) ? fcp.LastValue : _Count;

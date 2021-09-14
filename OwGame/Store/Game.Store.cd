@@ -68,14 +68,14 @@
   <Class Name="OW.Game.Store.GameUserContext" Collapsed="true">
     <Position X="11.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>gAAIAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>gAAIAAAAAAAAAEAAgAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameUserContext.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameObjectBase">
     <Position X="5.25" Y="7" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAEAAACAAAQAQAQAAAAAABAAAAAAAEAAAAAAAAAA=</HashCode>
+      <HashCode>AAgAAEAAACEAAQAQAQAAAAAABAAAAAAAEAAAAAAAAAA=</HashCode>
       <FileName>Store\GameUserContext.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />

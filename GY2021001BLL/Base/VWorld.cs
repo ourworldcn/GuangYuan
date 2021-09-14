@@ -54,7 +54,18 @@ namespace GuangYuan.GY001.BLL
         public const int WAIT_TIMEOUT = 258;
         public const int ERROR_INVALID_TOKEN = 315;
         public const int ERROR_NO_SUCH_USER = 1317;
+        /// <summary>
+        /// 并发或交错操作更改了对象的状态，使此操作无效。
+        /// </summary>
+        public const int E_CHANGED_STATE = unchecked((int)0x8000000C);
         public const int Unauthorized = unchecked((int)0x80190191);
+        public const int RO_E_CLOSED = unchecked((int)0x80000013);
+        public const int ObjectDisposed = RO_E_CLOSED;
+
+        /// <summary>
+        /// 参数错误。
+        /// </summary>
+        public const int ERROR_BAD_ARGUMENTS = 160;
     }
 
     /// <summary>
@@ -84,6 +95,19 @@ namespace GuangYuan.GY001.BLL
         /// 此标志发出信号表示虚拟世界已经因为某种原因请求退出。
         /// </summary>
         public CancellationTokenSource CancellationTokenSource => _CancellationTokenSource;
+
+        private static readonly Barrier _Barrier = new Barrier(0);
+
+        /// <summary>
+        /// 用于多个参与者协调不同阶段的屏障。
+        /// <list type="bullet">
+        /// <item>0 构建过程中。</item>
+        /// <item>1 正常服务。</item>
+        /// <item>2 开始结束清理。</item>
+        /// <item>3 全部清理结束。</item>
+        /// </list>
+        /// </summary>
+        public static Barrier Barrier => _Barrier;
 
         /// <summary>
         /// 该游戏世界因为种种原因已经请求卸载。
@@ -220,6 +244,9 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void SaveTemporaryUserContext()
         {
             ILogger<VWorld> logger = Service.GetService<ILogger<VWorld>>();
@@ -229,22 +256,22 @@ namespace GuangYuan.GY001.BLL
                 {
                     try
                     {
-                        Monitor.Wait(_TemporaryUserContextLocker, 1000);
+                        var waitSucc = Monitor.Wait(_TemporaryUserContextLocker, 1000);
                         if (_TemporaryUserContext is null)  //若没有数据
                         {
                             dt = DateTime.UtcNow;
                             continue;
                         }
-                        if (DateTime.UtcNow - dt > TimeSpan.FromSeconds(1) || _TemporaryUserContext.ChangeTracker.Entries().Count() > 200)    //若超过1s,避免过于频繁的保存
+                        if (DateTime.UtcNow - dt > TimeSpan.FromSeconds(1) || waitSucc && OwGameCommandInterceptor.ExecutingCount <= 0)    //若超过1s,避免过于频繁的保存
                         {
                             _TemporaryUserContext.SaveChanges();
-                            if (_TemporaryUserContext.ChangeTracker.Entries().Count() > 200)    //若数据较多
-                            {
-                                _TemporaryUserContext.Dispose();
-                                _TemporaryUserContext = null;
-                            }
                         }
                         dt = DateTime.UtcNow;
+                        if (_TemporaryUserContext.ChangeTracker.Entries().Count() > 200)    //若数据较多
+                        {
+                            _TemporaryUserContext.Dispose();
+                            _TemporaryUserContext = null;
+                        }
                     }
                     catch (Exception err)
                     {
@@ -515,7 +542,6 @@ namespace GuangYuan.GY001.BLL
 
         #region 锁定字符串
 
-
         /// <summary>
         /// 从字符串拘留池中取出实力并试图锁定。
         /// 按每个字符串平均占用64字节计算，10万个字符串实质占用6.4MB内存,可以接受。
@@ -524,11 +550,8 @@ namespace GuangYuan.GY001.BLL
         /// <param name="timeout">用于等待锁的时间。 值为 -1 毫秒表示指定无限期等待。</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool LockString(ref string str, TimeSpan timeout)
-        {
-            str = string.Intern(str);
-            return Monitor.TryEnter(str, timeout);
-        }
+        public bool LockString(ref string str, TimeSpan timeout) =>
+            LockString(ref str, (int)timeout.TotalMilliseconds);
 
         /// <summary>
         /// 从字符串拘留池中取出实力并试图锁定。
@@ -554,6 +577,10 @@ namespace GuangYuan.GY001.BLL
         {
             if (isPulse)
                 Monitor.Pulse(str);
+#if DEBUG
+            if (string.IsInterned(str) is null)
+                throw new SynchronizationLockException();
+#endif
             Monitor.Exit(str);
         }
 
@@ -567,7 +594,10 @@ namespace GuangYuan.GY001.BLL
         public IDisposable LockStringAndReturnDisposer(ref string str, TimeSpan timeout, bool isPulse = false)
         {
             if (!LockString(ref str, timeout))
+            {
+                SetLastError(ErrorCodes.WAIT_TIMEOUT);
                 return null;
+            }
             var tmp = str;
             return DisposerWrapper.Create(() => UnlockString(tmp, isPulse));
         }

@@ -232,7 +232,7 @@ namespace GuangYuan.GY001.BLL
                 if (DateTime.UtcNow - start >= Options.ScanFrequency)    //若本次扫描已经超时
                     break;
                 var loginName = item.LoginName;
-                var dwLoginName = world.LockStringAndReturnDisposer(ref loginName, TimeSpan.Zero);
+                using var dwLoginName = world.LockStringAndReturnDisposer(ref loginName, TimeSpan.Zero);
                 if (dwLoginName is null) //若锁定用户名不成功
                 {
                     if (Environment.HasShutdownStarted || world.RequestShutdown.IsCancellationRequested)
@@ -288,7 +288,6 @@ namespace GuangYuan.GY001.BLL
                             continue;
                         _DirtyUsers.TryRemove(item, out _);
                         item.DbContext.SaveChanges();
-                        Thread.Yield();
                     }
                     catch (DbUpdateConcurrencyException err)
                     {
@@ -300,6 +299,7 @@ namespace GuangYuan.GY001.BLL
                         //var coll = OwHelper.GetAllSubItemsOfTree(item.CurrentChar.GameItems, c => c.Children);
                         //var coll2 = coll.Where(c => c.Number == Guid.Empty).ToArray();
                     }
+                    Thread.Yield();
                 }
                 try
                 {
@@ -406,19 +406,27 @@ namespace GuangYuan.GY001.BLL
 
         /// <summary>
         /// 锁定用户。务必要用<seealso cref="Unlock(GameUser, bool)"/>解锁。两者配对使用。
+        /// 派生类可以重载此方法。
         /// </summary>
         /// <param name="user"></param>
         /// <param name="timeout">超时时间。</param>
-        /// <returns>true该用户已经锁定且有效。false锁定超时或用户已经无效。</returns>
+        /// <returns>true该用户已经锁定且有效。false锁定超时或用户已经无效。详细信息可通过<seealso cref="VWorld.GetLastError"/>获取。</returns>
         public virtual bool Lock(GameUser user, TimeSpan timeout)
         {
             if (user.IsDisposed)    //若已经无效
+            {
+                VWorld.SetLastError(ErrorCodes.ObjectDisposed);
                 return false;
+            }
             if (!Monitor.TryEnter(user, timeout))   //若锁定超时
+            {
+                VWorld.SetLastError(ErrorCodes.WAIT_TIMEOUT);
                 return false;
+            }
             if (user.IsDisposed)    //若已经无效
             {
                 Monitor.Exit(user);
+                VWorld.SetLastError(ErrorCodes.E_CHANGED_STATE);
                 return false;
             }
             return true;
@@ -527,11 +535,11 @@ namespace GuangYuan.GY001.BLL
         /// <exception cref="InvalidOperationException">试图锁定用户登录名在拘留池中实例时超过默认超时时间。通常这是潜在的死锁问题。</exception>
         public virtual IDisposable LockOrLoad([NotNull] string loginName, TimeSpan timeout, out GameUser user)
         {
-            if (!World.LockString(ref loginName, TimeSpan.FromSeconds(Options.DefaultLockTimeoutInSeconds/*务必使用较小超时，避免死锁*/)))  //若锁定此登录名用户的登入登出进程失败
+            using var dwLn = World.LockStringAndReturnDisposer(ref loginName, TimeSpan.FromSeconds(Options.DefaultLockTimeoutInSeconds/*务必使用较小超时，避免死锁*/));
+            if (dwLn is null)  //若锁定此登录名用户的登入登出进程失败
             {
                 throw new InvalidOperationException("试图锁定用户登录名在拘留池中实例时超过默认超时时间。通常这是潜在的死锁问题。");
             }
-            using var dwLoginName = DisposerWrapper.Create(c => World.UnlockString(c, true), loginName);  //保证解除锁定
             IDisposable result; //返回值
             if (_Store._LoginName2Users.TryGetValue(loginName, out var gu))   //若找到用户
             {
@@ -949,13 +957,13 @@ namespace GuangYuan.GY001.BLL
 
         /// <summary>
         /// 锁定一组指定Id的角色。
-        /// 可以避免乱序死锁。
+        /// 自动避免乱序死锁。
         /// </summary>
         /// <param name="charIds"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IDisposable LockOrLoadWithUserIds(IEnumerable<Guid> userIds, TimeSpan timeout)
+        public IDisposable LockOrLoadWithCharIds(IEnumerable<Guid> userIds, TimeSpan timeout)
         {
             var result = OwHelper.LockWithOrder(userIds.OrderBy(c => c), (charId, ts) => LockOrLoad(charId, timeout, out _), timeout);
             return result;
@@ -1058,5 +1066,34 @@ namespace GuangYuan.GY001.BLL
             return DisposerWrapper.Create(() => obj.Unlock(tmp));
         }
 
+        /// <summary>
+        /// 获取角色对象。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="token">Base64表现形式的令牌。</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameChar GetGCharFromToken(this GameCharManager obj, string token) =>
+            obj.GetUserFromToken(token).CurrentChar;
+
+        /// <summary>
+        /// 获取用户对象。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="token">Base64表现形式的令牌。</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameUser GetUserFromToken(this GameCharManager obj, string token) =>
+            obj.GetUserFromToken(GameHelper.FromBase64String(token));
+
+        /// <summary>
+        /// 获取角色对象。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="id">Base64表现形式的Id。</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameChar GetGCharFromId(this GameCharManager obj, string id) =>
+            obj.GetCharFromId(GameHelper.FromBase64String(id));
     }
 }

@@ -6,6 +6,7 @@ using OW.Game;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -390,50 +391,180 @@ namespace GuangYuan.GY001.BLL
         public Guid Token { get; set; }
 
         /// <summary>
-        /// 使用默认超时试图锁定用户。
+        /// 使用默认超时试图锁定<see cref="GameChar"/>用户。
         /// </summary>
         /// <returns></returns>
         public IDisposable LockUser() => World.CharManager.LockAndReturnDispose(GameChar.GameUser);
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _GameChar = null;
+                base.Dispose(disposing);
+            }
+        }
     }
 
     /// <summary>
-    /// 涉及到两个角色的的功能函数使用的工作数据基类。
+    /// 涉及到多个角色的的功能函数使用的工作数据基类。
     /// </summary>
     public abstract class RelationshipWorkDataBase : GameCharWorkDataBase, IResultWorkData
     {
-        protected RelationshipWorkDataBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, [NotNull] GameChar otherChar) : base(service, gameChar)
+        protected RelationshipWorkDataBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar)
         {
-            _OtherChar = otherChar;
+            _OtherCharId = otherGCharId;
         }
 
-        protected RelationshipWorkDataBase([NotNull] VWorld world, [NotNull] GameChar gameChar, [NotNull] GameChar otherChar) : base(world, gameChar)
+        protected RelationshipWorkDataBase([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar)
         {
-            _OtherChar = otherChar;
+            _OtherCharId = otherGCharId;
         }
 
-        protected RelationshipWorkDataBase([NotNull] VWorld world, [NotNull] string token, [NotNull] GameChar otherChar) : base(world, token)
+        protected RelationshipWorkDataBase([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token)
         {
-            _OtherChar = otherChar;
+            _OtherCharId = otherGCharId;
         }
 
-        private readonly GameChar _OtherChar;
+        private readonly List<Guid> _OtherCharIds = new List<Guid>();
 
-        public GameChar OtherChar { get => _OtherChar; }
+        /// <summary>
+        /// 其他相关角色。
+        /// </summary>
+        public List<Guid> OtherCharIds => _OtherCharIds;
+
+        /// <summary>
+        /// 锁定所有角色。
+        /// </summary>
+        /// <returns></returns>
+        public virtual IDisposable LockAll()
+        {
+            var coll = _OtherCharIds.Append(GameChar.Id);
+            return World.CharManager.LockOrLoadWithCharIds(coll, TimeSpan.FromSeconds(World.CharManager.Options.DefaultLockTimeoutInSeconds));
+        }
+
+        private Guid _OtherCharId;
+        public Guid OtherCharId { get => _OtherCharId; set => _OtherCharId = value; }
+
+        public GameChar OtherChar { get => World.CharManager.GetCharFromId(OtherCharId); }
 
         #region IResultWorkData接口相关
 
         public bool HasError { get; set; }
         public int ErrorCode { get; set; }
-        
+
         public string ErrorMessage { get; set; }
 
         #endregion IResultWorkData接口相关
 
-        public IDisposable LockBoth()
+        /// <summary>
+        /// 锁定相关的角色对象。
+        /// </summary>
+        /// <returns></returns>
+        public virtual IDisposable Lock()
         {
-            var ary = new Guid[] { GameChar.Id, OtherChar.Id };
-            return World.CharManager.LockOrLoadWithUserIds(ary, TimeSpan.FromSeconds(World.CharManager.Options.DefaultLockTimeoutInSeconds));
+            var ary = new Guid[] { GameChar.Id, _OtherCharId };
+            return World.CharManager.LockOrLoadWithCharIds(ary, TimeSpan.FromSeconds(World.CharManager.Options.DefaultLockTimeoutInSeconds));
         }
+
+        private List<ChangeItem> _ChangeItems;
+
+        /// <summary>
+        /// 工作后，物品变化数据。
+        /// 不同操作自行定义该属性内的内容。
+        /// </summary>
+        public List<ChangeItem> ChangeItems => _ChangeItems ??= new List<ChangeItem>();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    if (null != _GameSocialRelationships)
+                        _GameSocialRelationships.CollectionChanged -= new System.Collections.Specialized.NotifyCollectionChangedEventHandler(OnRelationshipsCollectionChanged);
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _GameSocialRelationships = null;
+                _KeyTypes = null;
+                base.Dispose(disposing);
+            }
+        }
+
+        #region 关系数据相关
+        private List<int> _KeyTypes;
+
+        /// <summary>
+        /// 关系数据。
+        /// </summary>
+        public List<int> KeyTypes => _KeyTypes ??= new List<int>();
+
+        private ObservableCollection<GameSocialRelationship> _GameSocialRelationships;
+
+        /// <summary>
+        /// 相关的一组关系数据。
+        /// </summary>
+        public virtual ObservableCollection<GameSocialRelationship> SocialRelationships
+        {
+            get
+            {
+                if (_GameSocialRelationships is null)
+                {
+                    var coll = from sr in UserContext.Set<GameSocialRelationship>()
+                               where sr.Id == GameChar.Id && KeyTypes.Contains(sr.KeyType)
+                               select sr;
+                    _GameSocialRelationships = new ObservableCollection<GameSocialRelationship>(coll);
+                    _GameSocialRelationships.CollectionChanged += OnRelationshipsCollectionChanged;
+                }
+                return _GameSocialRelationships;
+            }
+        }
+
+        /// <summary>
+        /// 关系数据集合内容发生变化时发生。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected virtual void OnRelationshipsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    UserContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    UserContext.AddRange(e.OldItems.OfType<GameSocialRelationship>());
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
+                    throw new NotSupportedException();
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    UserContext.AddRange(e.OldItems.OfType<GameSocialRelationship>());
+                    UserContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
+                default:
+                    break;
+            }
+        }
+
+        #endregion 关系数据相关
+
+        public virtual void Save()
+        {
+            UserContext.SaveChanges();
+        }
+
+
     }
 
     /// <summary>

@@ -476,24 +476,25 @@ namespace Gy001.Controllers
         [HttpPost]
         public ActionResult<PatForTiliReturnDto> PatForTili(PatForTiliParamsDto model)
         {
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-            {
+            var gc = _World.CharManager.GetGCharFromToken(model.Token);
+            if (gc is null)
                 return Unauthorized("令牌无效");
-            }
             PatForTiliReturnDto result = new PatForTiliReturnDto();
-            try
+            using var datas = new PatForTiliWorkData(_World, gc, GameHelper.FromBase64String(model.ObjectId), DateTime.UtcNow)
             {
-                var r = _World.SocialManager.PatForTili(gu.CurrentChar, GameHelper.FromBase64String(model.ObjectId), _UserContext);
-                if (PatForTiliResult.Success != r)
-                {
-                    result.DebugMessage = VWorld.GetLastErrorMessage();
-                    result.HasError = true;
-                }
-                result.Code = r;
+                UserContext = _UserContext
+            };
+            var r = _World.SocialManager.PatForTili(datas);
+            if (PatForTiliResult.Success != r)
+            {
+                result.DebugMessage = VWorld.GetLastErrorMessage();
+                result.HasError = true;
             }
-            finally
+            result.Code = r;
+            result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+            if (result.HasError = datas.HasError)
             {
-                _World.CharManager.Unlock(gu, true);
+                result.DebugMessage = datas.ErrorMessage;
             }
             return result;
         }
@@ -535,6 +536,7 @@ namespace Gy001.Controllers
             return result;
         }
 
+
         /// <summary>
         /// 获取指定用户家园数据的接口。
         /// </summary>
@@ -556,7 +558,7 @@ namespace Gy001.Controllers
             //填写其他参数
             datas.OtherCharId = GameHelper.FromBase64String(model.OtherCharId);
             world.SocialManager.GetHomelandData(datas);  //调用服务
-            //构造返回参数
+                                                         //构造返回参数
             var result = new GetHomelandDataReturnDto()
             {
                 HasError = datas.HasError,
