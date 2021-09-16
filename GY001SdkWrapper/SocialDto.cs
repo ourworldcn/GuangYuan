@@ -40,6 +40,7 @@ namespace Game.Social
 
         /// <summary>
         /// 允许pvp攻击的对象,列表中包含的可主动进行pvp行为的对象，而非协助/反击的对象。
+        /// <see cref="SimpleExtendPropertyBase.Properties"/>中属性有记录了详细信息。lastModifyDate=最后创建/修改时间， done=true则已经进攻过了。
         /// </summary>
         AllowPvpAttack = 10001,
 

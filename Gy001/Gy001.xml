@@ -22,7 +22,7 @@
             <param name="loginParamsDto">登陆参数,参见<seealso cref="T:GY2021001WebApi.Models.LoginParamsDto"/> </param>
             <returns>Token为空则是用户名或密码错误。</returns>
             <response code="500">用户名或密码错误。</response>
-            <response code="503">登录人数过多。请稍后登录。目前按每颗CPU带1000在线计算，未来更具实际数据增减。</response>
+            <response code="503">登录人数过多。请稍后登录。目前按每颗CPU带10000在线计算，未来更具实际数据增减。</response>
         </member>
         <member name="M:GY2021001WebApi.Controllers.AccountController.Nop(GY2021001WebApi.Models.NopParamsDto)">
             <summary>
@@ -166,6 +166,13 @@
             </summary>
             <param name="model"></param>
             <returns>参见 GetChangesItemReturnDto 说明。</returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.ClearChangesItem(GY2021001WebApi.Models.TokenDtoBase)">
+            <summary>
+            清除自动变化的数据集合中所有数据。
+            </summary>
+            <returns></returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.GetHomelandStyle(GY2021001WebApi.Models.GetHomelandFenggeParamsDto)">
@@ -1830,26 +1837,38 @@
             要获取家园信息的角色Id。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetPvpListParamsDto">
+            <summary>
+            GetPvpList 接口参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetPvpListParamsDto.IsRefresh">
+            <summary>
+            是否强制使用钻石刷新。
+            false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。
+            true，强制刷新，根据设计可能需要消耗资源。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetPvpListReturnDto">
             <summary>
             GetPvpList 接口返回数据封装类。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.PvpList">
+        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.CharIds">
             <summary>
-            pvp对象数据。每个元素是一个可以或已经pvp对象。暂时保留。
-            <see cref="P:GY2021001WebApi.Models.GameActionRecordDto.ParentId"/>是对方的角色Id。
-            <see cref="P:GY2021001WebApi.Models.GameActionRecordDto.Properties"/>中存在done且不为0则说明已经战斗过，否则是可战斗的对象。
+            可pvp角色Id列表。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.CurrencyBag">
+        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.CurrencyBags">
             <summary>
             货币袋及子对象数据。
+            键是角色Id，值是货币袋及其子对象。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.MainBase">
+        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.MainBases">
             <summary>
             家园主地块及子对象数据。
+            键是角色Id，值是主地块及其子对象。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.RemoveBlackParamsDto.CharId">
@@ -1872,12 +1891,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
@@ -2046,7 +2059,9 @@
             获取可以或已经pvp的角色的列表。
             </summary>
             <param name="model"><seealso cref="T:GY2021001WebApi.Models.GetPvpListParamsDto"/></param>
-            <returns><seealso cref="T:GY2021001WebApi.Models.GetPvpListReturnDto"/></returns>
+            <returns><seealso cref="T:GY2021001WebApi.Models.GetPvpListReturnDto"/>
+            ErrorCodes.RPC_S_OUT_OF_RESOURCES=1712 钻石不足
+            </returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">

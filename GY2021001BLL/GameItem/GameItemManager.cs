@@ -1305,7 +1305,7 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
-    public class UseItemsWorkDatas : ChangeItemsWorkDatsBase
+    public class UseItemsWorkDatas : ChangeItemsWorkDatasBase
     {
         public UseItemsWorkDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -1359,7 +1359,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 
     /// </summary>
-    public class SellDatas : ChangeItemsWorkDatsBase
+    public class SellDatas : ChangeItemsWorkDatasBase
     {
         public SellDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -1380,7 +1380,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// <see cref="GameItemManager.SetLineup(SetLineupDatas)"/>使用的参数和返回值封装类。
     /// </summary>
-    public class SetLineupDatas : ChangeItemsWorkDatsBase
+    public class SetLineupDatas : ChangeItemsWorkDatasBase
     {
         public SetLineupDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -1419,6 +1419,38 @@ namespace GuangYuan.GY001.BLL
 
     public static class GameItemManagerExtensions
     {
+        /// <summary>
+        /// 用物品信息填充简要信息。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="source"></param>
+        /// <param name="dest"></param>
+        public static void Fill(this GameItemManager manager, GameItem source, GameItemSummery dest)
+        {
+            if (source.Id != Guid.Empty)
+                dest.Id = source.Id;
+            dest.TemplateId = source.TemplateId;
+            dest.Count = source.Count;
+            foreach (var item in source.Properties)
+                dest.Properties[item.Key] = item.Value;
+        }
+
+        /// <summary>
+        /// 用简要信息填充物品信息。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="source"></param>
+        /// <param name="dest"></param>
+        public static void Fill(this GameItemManager manager, GameItemSummery source, GameItem dest)
+        {
+            if (source.Id != Guid.Empty)
+                dest.Id = source.Id;
+            dest.TemplateId = source.TemplateId;
+            dest.Count = source.Count;
+            foreach (var item in source.Properties)
+                dest.Properties[item.Key] = item.Value;
+        }
+
         /// <summary>
         /// 在指定集合中寻找指定模板Id的第一个对象。
         /// </summary>
@@ -1581,17 +1613,17 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 带变化物品返回值的类的接口。
     /// </summary>
-    public abstract class ChangeItemsWorkDatsBase : ComplexWorkDatasBase
+    public abstract class ChangeItemsWorkDatasBase : ComplexWorkDatasBase
     {
-        protected ChangeItemsWorkDatsBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        protected ChangeItemsWorkDatasBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
         }
 
-        protected ChangeItemsWorkDatsBase([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        protected ChangeItemsWorkDatasBase([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
         {
         }
 
-        protected ChangeItemsWorkDatsBase([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        protected ChangeItemsWorkDatasBase([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
         }
 

@@ -1,11 +1,8 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
-using Microsoft.Extensions.Caching.Memory;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -14,6 +11,35 @@ namespace GuangYuan.GY001.BLL
     /// </summary>
     public static class MountsExtensions
     {
+
+        public static void Fill(this GameItemManager manager, GameItem source, GY001GameItemSummery dest)
+        {
+            manager.Fill(source, dest as GameItemSummery);
+            if (source.IsIncludeChildren())
+            {
+                dest.BodyTId = manager.GetBody(source)?.TemplateId;
+                dest.HeadTId = manager.GetHead(source)?.TemplateId;
+            }
+        }
+
+        public static void Fill(this GameItemManager manager, GY001GameItemSummery source, GameItem dest)
+        {
+            manager.Fill(source as GameItemSummery, dest);
+            if (source.BodyTId.HasValue && source.HeadTId.HasValue)  //若是生物
+            {
+                var body = new GameItem()
+                {
+                    TemplateId = source.BodyTId.Value,
+                };
+                dest.Children.Add(body);
+
+                var head = new GameItem()
+                {
+                    TemplateId = source.HeadTId.Value,
+                };
+                dest.Children.Add(head);
+            }
+        }
 
         /// <summary>
         /// 创建一个坐骑或野生动物。
@@ -176,7 +202,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="item"></param>
         /// <returns>不是动物则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public GameItemTemplate GetHeadTemplate(this GameItemManager manager, GameItem item)
+        public static GameItemTemplate GetHeadTemplate(this GameItemManager manager, GameItem item)
         {
             var tmp = manager.GetHead(item);
             if (tmp is null)
@@ -191,7 +217,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="item"></param>
         /// <returns>不是动物则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public GameItemTemplate GetBodyTemplate(this GameItemManager manager, GameItem item)
+        public static GameItemTemplate GetBodyTemplate(this GameItemManager manager, GameItem item)
         {
             var tmp = manager.GetBody(item);
             if (tmp is null)

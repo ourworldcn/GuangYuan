@@ -630,6 +630,7 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string DebugMessage { get; set; }
+        public int ErrorCode { get;  set; }
 
     }
 
@@ -2312,36 +2313,46 @@ namespace GY2021001WebApi.Models
 
     }
 
+    /// <summary>
+    /// GetPvpList 接口参数封装类。
+    /// </summary>
     [DataContract]
     public class GetPvpListParamsDto : TokenDtoBase
     {
+        /// <summary>
+        /// 是否强制使用钻石刷新。
+        /// false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。
+        /// true，强制刷新，根据设计可能需要消耗资源。
+        /// </summary>
+        [DataMember]
+        public bool IsRefresh { get; set; }
     }
 
     /// <summary>
     /// GetPvpList 接口返回数据封装类。
     /// </summary>
     [DataContract]
-    public class GetPvpListReturnDto : ReturnDtoBase
+    public class GetPvpListReturnDto : ChangesReturnDtoBase
     {
         /// <summary>
-        /// pvp对象数据。每个元素是一个可以或已经pvp对象。暂时保留。
-        /// <see cref="GameActionRecordDto.ParentId"/>是对方的角色Id。
-        /// <see cref="GameActionRecordDto.Properties"/>中存在done且不为0则说明已经战斗过，否则是可战斗的对象。
+        /// 可pvp角色Id列表。
         /// </summary>
         [DataMember]
-        public List<GameActionRecordDto> PvpList { get; set; } = new List<GameActionRecordDto>();
+        public List<string> CharIds { get; set; } = new List<string>();
 
         /// <summary>
         /// 货币袋及子对象数据。
+        /// 键是角色Id，值是货币袋及其子对象。
         /// </summary>
         [DataMember]
-        public GameItemDto CurrencyBag { get; set; }
+        public Dictionary<string, GameItemDto> CurrencyBags { get; set; } = new Dictionary<string, GameItemDto>();
 
         /// <summary>
         /// 家园主地块及子对象数据。
+        /// 键是角色Id，值是主地块及其子对象。
         /// </summary>
         [DataMember]
-        public GameItemDto MainBase { get; set; }
+        public Dictionary<string, GameItemDto> MainBases { get; set; } = new Dictionary<string, GameItemDto>();
     }
 
     public class RemoveBlackParamsDto : TokenDtoBase

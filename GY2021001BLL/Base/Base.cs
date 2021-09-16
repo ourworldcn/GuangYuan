@@ -192,14 +192,15 @@ namespace GuangYuan.GY001.BLL
         [Conditional("DEBUG")]
         public void SetDebugMessage(string msg) => ErrorMessage = msg;
 
-        private string _DebugMessage;
+        private string _ErrorMessage;
+
         /// <summary>
         /// 调试信息，如果发生错误，这里给出简要说明。
         /// </summary>
         public string ErrorMessage
         {
-            get => _DebugMessage;
-            set => _DebugMessage = value;
+            get => _ErrorMessage ??= new Win32Exception(ErrorCode).Message;
+            set => _ErrorMessage = value;
         }
 
         /// <summary>
@@ -447,7 +448,7 @@ namespace GuangYuan.GY001.BLL
         public virtual IDisposable LockAll()
         {
             var coll = _OtherCharIds.Append(GameChar.Id);
-            return World.CharManager.LockOrLoadWithCharIds(coll, TimeSpan.FromSeconds(World.CharManager.Options.DefaultLockTimeoutInSeconds));
+            return World.CharManager.LockOrLoadWithCharIds(coll, World.CharManager.Options.DefaultLockTimeout);
         }
 
         private Guid _OtherCharId;
@@ -471,7 +472,7 @@ namespace GuangYuan.GY001.BLL
         public virtual IDisposable Lock()
         {
             var ary = new Guid[] { GameChar.Id, _OtherCharId };
-            return World.CharManager.LockOrLoadWithCharIds(ary, TimeSpan.FromSeconds(World.CharManager.Options.DefaultLockTimeoutInSeconds));
+            return World.CharManager.LockOrLoadWithCharIds(ary, World.CharManager.Options.DefaultLockTimeout);
         }
 
         private List<ChangeItem> _ChangeItems;
@@ -505,7 +506,7 @@ namespace GuangYuan.GY001.BLL
         private List<int> _KeyTypes;
 
         /// <summary>
-        /// 关系数据。
+        /// 关系数据类型限定。
         /// </summary>
         public List<int> KeyTypes => _KeyTypes ??= new List<int>();
 
@@ -520,8 +521,14 @@ namespace GuangYuan.GY001.BLL
             {
                 if (_GameSocialRelationships is null)
                 {
-                    var coll = from sr in UserContext.Set<GameSocialRelationship>()
+                    IQueryable<GameSocialRelationship> coll;
+                    if (KeyTypes.Count > 0)
+                        coll = from sr in UserContext.Set<GameSocialRelationship>()
                                where sr.Id == GameChar.Id && KeyTypes.Contains(sr.KeyType)
+                               select sr;
+                    else
+                        coll = from sr in UserContext.Set<GameSocialRelationship>()
+                               where sr.Id == GameChar.Id
                                select sr;
                     _GameSocialRelationships = new ObservableCollection<GameSocialRelationship>(coll);
                     _GameSocialRelationships.CollectionChanged += OnRelationshipsCollectionChanged;
@@ -568,132 +575,51 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
-    /// Id集合的帮助器类。
-    /// 场景，经常遇到要记录一组Id，且这些Id要记录最后刷新时间。
-    /// 当日可能更改，非当日将导致会清理后更改。
+    /// <see cref="GameItem"/>的简要类。
+    /// <see cref="Id"/>有非<see cref="Guid.Empty"/>则以Id为准，否则以<see cref="TemplateId"/>。
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public sealed class CounterWrapper<T> : IDisposable
+    public class GameItemSummery : SimpleExtendPropertyBase
     {
-        /// <summary>
-        /// 最后一次刷新结果的键名后缀。
-        /// </summary>
-        public const string LastValuesKeySuffix = "LastValues";
-
-        /// <summary>
-        /// 当日刷新的所有值的键名后缀。
-        /// </summary>
-        public const string TodayValuesKeySuffix = "TodayValues";
-
-        /// <summary>
-        /// 最后一次刷新日期键名后缀。
-        /// </summary>
-        public const string LastDateKeySuffix = "LastDate";
-
-        /// <summary>
-        /// 分隔符。
-        /// </summary>
-        public const string Separator = "`";
-
-        public static CounterWrapper<T> Create([NotNull] SimpleExtendPropertyBase entity, [NotNull] string prefix, DateTime now)
+        public GameItemSummery() : base(Guid.Empty)
         {
-            return new CounterWrapper<T>(entity, prefix, now);
+        }
+
+        public GameItemSummery(Guid id) : base(id)
+        {
         }
 
         /// <summary>
-        /// 构造函数。
+        /// 
         /// </summary>
-        /// <param name="gameThing">保存在该对象的<see cref="SimpleExtendPropertyBase.Properties"/>属性中。</param>
-        /// <param name="prefix">记录这些属性的前缀。</param>
-        /// <param name="now">当前日期时间。</param>
-        private CounterWrapper([NotNull] SimpleExtendPropertyBase entity, [NotNull] string prefix, DateTime now)
-        {
-            _Entity = entity;
-            _Prefix = prefix;
-            _Now = now;
-        }
-
-        private readonly SimpleExtendPropertyBase _Entity;
-        private readonly string _Prefix;
-        private readonly DateTime _Now;
+        public Guid TemplateId { get; set; }
 
         /// <summary>
-        /// 记录最后一次值的键名。
+        /// 
         /// </summary>
-        public string LastValuesKey => $"{_Prefix}{LastValuesKeySuffix}";
+        public decimal? Count { get; set; }
+    }
 
-        /// <summary>
-        /// 记录当日值的键名。
-        /// </summary>
-        public string TodayValuesKey => $"{_Prefix}{TodayValuesKeySuffix}";
-
-        /// <summary>
-        /// 最后刷新时间键名。
-        /// </summary>
-        public string LastDateKey => $"{_Prefix}{LastDateKeySuffix}";
-
-        private List<T> _TodayValues;
-        /// <summary>
-        /// 今日所有数据。
-        /// </summary>
-        public List<T> TodayValues
+    /// <summary>
+    /// 
+    /// </summary>
+    public class GY001GameItemSummery : GameItemSummery
+    {
+        public GY001GameItemSummery()
         {
-            get
-            {
-                if (_TodayValues is null)
-                    if (!_Entity.Properties.ContainsKey(LastDateKey) || _Entity.Properties.GetDateTimeOrDefault(LastDateKey) != _Now)  //若已经需要刷新
-                    {
-                        _TodayValues = new List<T>();
-                    }
-                    else
-                    {
-                        string val = _Entity.Properties.GetStringOrDefault(TodayValuesKey);
-                        if (string.IsNullOrWhiteSpace(val))  //若没有值
-                            _TodayValues = new List<T>();
-                        else
-                        {
-                            var converter = TypeDescriptor.GetConverter(typeof(T));
-                            _TodayValues = val.Split(Separator).Select(c => (T)converter.ConvertFrom(c)).ToList();
-                        }
-                    }
-                return _TodayValues;
-            }
         }
 
-        #region IDisposable接口及相关
-
-        private bool _Disposed;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Dispose(bool disposing)
+        public GY001GameItemSummery(Guid id) : base(id)
         {
-            if (!_Disposed)
-            {
-                if (disposing)
-                {
-                    // TODO: 释放托管状态(托管对象)
-                }
-
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
-                _Disposed = true;
-            }
         }
+        /// <summary>
+        /// 头Id。
+        /// </summary>
+        public Guid? HeadTId { get; set; }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~CounterWrapper()
-        // {
-        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-        //     Dispose(disposing: false);
-        // }
+        /// <summary>
+        /// 身体Id。
+        /// </summary>
+        public Guid? BodyTId { get; set; }
 
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion IDisposable接口及相关
     }
 }

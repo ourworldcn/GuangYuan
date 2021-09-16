@@ -14,7 +14,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
@@ -145,17 +144,26 @@ namespace GuangYuan.GY001.BLL
         /// <param name="sendId">发件人Id.</param>
         /// <param name="cc">抄送人列表，当前未用，保留未null或省略。</param>
         /// <param name="sc">密件抄送列表，当前未用，保留未null或省略。</param>
-        public void SendMail(GameMail mail, IEnumerable<Guid> to, Guid sendId, IEnumerable<Guid> cc = null, IEnumerable<Guid> sc = null)
+        public void SendMail([NotNull] GameMail mail, [NotNull] IEnumerable<Guid> to, Guid sendId, IEnumerable<Guid> cc = null, IEnumerable<Guid> sc = null)
         {
-            Trace.Assert(cc is null && sc is null);
-            var db = World.CreateNewUserDbContext();
             try
             {
                 mail.GenerateIdIfEmpty();
                 IEnumerable<GameMailAddress> tos;
                 if (to.Contains(SocialConstant.ToAllId)) //若是所有人群发所有人
                 {
-                    tos = from gc in db.GameChars
+                    //tos = from gc in db.GameChars
+                    //      select new GameMailAddress()
+                    //      {
+                    //          ThingId = gc.Id,
+                    //          DisplayName = gc.DisplayName,
+                    //          Kind = MailAddressKind.To,
+                    //          IsDeleted = false,
+                    //          Mail = mail,
+                    //          MailId = mail.Id,
+                    //      };
+                    using var db = World.CreateNewUserDbContext();
+                    tos = from gc in db.GameChars.AsNoTracking()
                           select new GameMailAddress()
                           {
                               ThingId = gc.Id,
@@ -168,12 +176,22 @@ namespace GuangYuan.GY001.BLL
                 }
                 else //若是逐个群发
                 {
-                    tos = from gc in db.GameChars
-                          where to.Contains(gc.Id)
+                    //tos = from gc in db.GameChars
+                    //      where to.Contains(gc.Id)
+                    //      select new GameMailAddress()
+                    //      {
+                    //          ThingId = gc.Id,
+                    //          DisplayName = gc.DisplayName,
+                    //          Kind = MailAddressKind.To,
+                    //          IsDeleted = false,
+                    //          Mail = mail,
+                    //          MailId = mail.Id,
+                    //      };
+                    tos = from tmp in to
                           select new GameMailAddress()
                           {
-                              ThingId = gc.Id,
-                              DisplayName = gc.DisplayName,
+                              ThingId = tmp,
+                              //DisplayName = gc.DisplayName,
                               Kind = MailAddressKind.To,
                               IsDeleted = false,
                               Mail = mail,
@@ -196,13 +214,13 @@ namespace GuangYuan.GY001.BLL
                 }
                 else
                 {
-                    var tmpChar = db.GameChars.Find(sendId);
-                    if (tmpChar is null)
-                        throw new ArgumentException("找不到指定Id的角色。", nameof(sendId));
+                    //var tmpChar = db.GameChars.Find(sendId);
+                    //if (tmpChar is null)
+                    //    throw new ArgumentException("找不到指定Id的角色。", nameof(sendId));
                     sender = new GameMailAddress()
                     {
                         ThingId = sendId,
-                        DisplayName = tmpChar.DisplayName,
+                        //DisplayName = tmpChar.DisplayName,
                         Kind = MailAddressKind.From,
                         IsDeleted = false,
                         Mail = mail,
@@ -213,11 +231,10 @@ namespace GuangYuan.GY001.BLL
                 //追加相关人
                 mail.Addresses.AddRange(tos);
                 mail.Addresses.Add(sender);
-                db.Mails.Add(mail);
+                World.AddToUserContext(new object[] { mail });
             }
-            finally
+            catch
             {
-                db.SaveChangesAsync().ContinueWith((task, dbPara) => (dbPara as DbContext)?.Dispose(), db, TaskContinuationOptions.ExecuteSynchronously);  //清理
             }
         }
 
@@ -1009,7 +1026,7 @@ namespace GuangYuan.GY001.BLL
             public override IDisposable Lock()
             {
                 var ary = new Guid[] { GameChar.Id, OtherCharId };
-                return World.CharManager.LockOrLoadWithCharIds(ary, TimeSpan.FromSeconds(World.CharManager.Options.DefaultLockTimeoutInSeconds));
+                return World.CharManager.LockOrLoadWithCharIds(ary, World.CharManager.Options.DefaultLockTimeout);
             }
 
             /// <summary>
@@ -1224,21 +1241,10 @@ namespace GuangYuan.GY001.BLL
             var gc = datas.GameChar;
             var gim = World.ItemManager;
             var db = datas.Context;
+            using var dwUsers = datas.Lock();
             try
             {
-                var objChar = db.Set<GameChar>().Find(datas.OtherCharId);
-                if (objChar is null)
-                {
-                    datas.HasError = true;
-                    datas.ErrorMessage = $"找不到指定Id的角色，Id{datas.OtherCharId}";
-                    datas.ErrorCode = (int)HttpStatusCode.BadRequest;
-                    return;
-                }
-                //构造对象
-                var objUser = db.Set<GameUser>().Find(objChar.GameUserId);
-                objUser.DbContext = db;
-                objUser.CurrentChar = objChar;
-                objChar.GameUser = objUser;
+                var objChar = datas.OtherChar;
                 var mountsBag = objChar.GetZuojiBag();
                 //获取风格
                 var gitm = World.ItemTemplateManager;
@@ -1280,97 +1286,123 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+        public class GetPvpCharsWorkDatas : ChangeItemsWorkDatasBase
+        {
+            public GetPvpCharsWorkDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+            {
+            }
+
+            public GetPvpCharsWorkDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+            {
+            }
+
+            public GetPvpCharsWorkDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+            {
+            }
+
+            private DateTime _Now;
+
+            /// <summary>
+            /// 当前时间。
+            /// </summary>
+            public DateTime Now { get => _Now; set => _Now = value; }
+
+            private List<Guid> _CharIds;
+
+            /// <summary>
+            /// 可pvp角色的列表。
+            /// </summary>
+            public List<Guid> CharIds => _CharIds ??= new List<Guid>();
+
+            private GameItem _PvpObject;
+
+            /// <summary>
+            /// PVP对象。
+            /// </summary>
+            public GameItem PvpObject => _PvpObject ??= GameChar.GetPvpObject();
+
+            /// <summary>
+            /// 是否强制使用钻石刷新。
+            /// false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。
+            /// true，强制刷新，根据设计可能需要消耗资源。
+            /// </summary>
+            public bool IsRefresh { get; set; }
+        }
 
         /// <summary>
         /// 获取该用户的指定指定日期的可pvp对象。
         /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="now">utc时间，取其指定日期部分。</param>
-        /// <param name="context"></param>
-        /// <returns>返回当前的pvp对象Id列表。如果没有则自动生成。</returns>
-        public IEnumerable<GameActionRecord> GetPvpChars(GameChar gameChar, DateTime now, DbContext context)
+        /// <param name="datas"></param>
+        /// <returns>返回当前的pvp对象Id列表。如果没有则自动生成。
+        /// 错误详细信息：
+        /// ErrorCodes.RPC_S_OUT_OF_RESOURCES=1712 钻石不足
+        /// ErrorCodes.ERROR_NOT_ENOUGH_QUOTA = 1816 超过刷新次数的上限
+        /// </returns>
+        public void GetPvpChars(GetPvpCharsWorkDatas datas)
         {
-            const string pvpChar = "PvpChar";
-            using var db = World.CreateNewUserDbContext();
-            var dt = now.Date;
-            var dt1 = dt + TimeSpan.FromDays(1);
-            var coll = from tmp in db.ActionRecords
-                       where tmp.DateTimeUtc >= dt.Date && tmp.DateTimeUtc < dt1 && tmp.ParentId == gameChar.Id && tmp.ActionId == pvpChar
-                       select tmp;  //获取今日已经出现在列表中的数据。
-            var lst = coll.ToList();
-            List<GameActionRecord> result = new List<GameActionRecord>();
-            var rankings = db.Set<CharSpecificExpandProperty>();
-            if (lst.Count <= 0)    //若该日没有生成pvp对象数据
+            using var dwUser = datas.LockUser();    //锁定用户
+            if (dwUser is null) //若无法锁定
             {
-                var count = 3;  //一次刷的数量
-                var ranking = rankings.Find(gameChar.Id);
-                var lv = gameChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
-                var newColl = (from tmp in rankings
-                               where tmp.PvpScore > ranking.PvpScore && tmp.CharLevel > lv && tmp.Id != gameChar.Id  //取上手
-                               orderby tmp.PvpScore
-                               select tmp).Take(count).Union(
-                    (from tmp in rankings
-                     where tmp.PvpScore >= ranking.PvpScore && tmp.Id != gameChar.Id
-                     orderby tmp.PvpScore
-                     select tmp).Take(count)).Union(
-                    (from tmp in rankings
-                     where tmp.PvpScore <= ranking.PvpScore && tmp.Id != gameChar.Id
-                     orderby tmp.PvpScore descending
-                     select tmp).Take(count)).Union(
-                    (from tmp in rankings
-                     where tmp.PvpScore < ranking.PvpScore && tmp.CharLevel < lv && tmp.Id != gameChar.Id    //取下手
-                     orderby tmp.PvpScore descending
-                     select tmp).Take(count));
-                var lstResult = newColl.OrderBy(c => c.PveCScore).ThenBy(c => c.CharLevel).ToList(); //排行榜集合
+                datas.HasError = true;
+                datas.ErrorCode = VWorld.GetLastError();
+                return;
+            }
+            const string pricePName = "refreshPriceD";    //升级的代价属性名
+            const string pvpChar = "PvpChar";   //PVP当日数据名的前缀
+            using var todayData = TodayDataWrapper<Guid>.Create(datas.PvpObject.Properties, pvpChar, datas.Now);    //当日数据的帮助器类
 
-                //获取下手
-                if (lstResult.Count == 0)   //若没有角色
-                    return result;
-                var addItem = lstResult.FirstOrDefault(c => c.PveCScore < ranking.PveCScore && c.CharLevel < lv) ?? lstResult.First();
-                result.Add(new GameActionRecord()
-                {
-                    ActionId = pvpChar,
-                    DateTimeUtc = now,
-                    ParentId = gameChar.Id,
-                    PropertiesString = $"Id2={addItem.Id}"
-                });
-                lstResult.Remove(addItem);
-                //获取平手
-                if (lstResult.Count == 0)   //若已无角色
-                    goto save;
-                addItem = (lstResult.FirstOrDefault(c => c.PveCScore == ranking.PveCScore && c.CharLevel == lv) ?? lstResult.FirstOrDefault(c => c.PveCScore == ranking.PveCScore))
-                    ?? lstResult.First();   //获取一个尽量相等的
-                result.Add(new GameActionRecord()
-                {
-                    ActionId = pvpChar,
-                    DateTimeUtc = now,
-                    ParentId = gameChar.Id,
-                    PropertiesString = $"Id2={addItem.Id}"
-                });
-                lstResult.Remove(addItem);
-                //获取上手
-                if (lstResult.Count == 0)   //若已无角色
-                    goto save;
-                addItem = (lstResult.LastOrDefault(c => c.PveCScore > ranking.PveCScore && c.CharLevel > lv) ?? lstResult.LastOrDefault(c => c.PveCScore > ranking.PveCScore))
-                    ?? lstResult.Last();   //获取一个尽量相等的
-                result.Add(new GameActionRecord()
-                {
-                    ActionId = pvpChar,
-                    DateTimeUtc = now,
-                    ParentId = gameChar.Id,
-                    PropertiesString = $"Id2={addItem.Id}"
-                });
-            //lstResult.Remove(addItem);
-            //追加新生成的数据
-            save:
-                db.ActionRecords.AddRange(result);
-                db.SaveChanges();
-            }
-            else //若已经生成
+            if (!todayData.HasData)  //若当日无数据
             {
-                result.AddRange(lst);
+                if (!World.ItemManager.SetPropertyValue(datas.PvpObject, ProjectConstant.LevelPropertyName, 0))   //若无法设置级别
+                {
+                    datas.HasError = true;
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    return;
+                }
             }
-            return result;
+            var lv = (int)datas.PvpObject.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);    //级别数据
+            if (lv >= datas.PvpObject.Template.GetMaxLevel(pricePName) - 1)  //若当日已经不可再刷
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;
+                return;
+            }
+            var priceD = datas.PvpObject.GetDecimalOrDefault(pricePName); //钻石计费的代价
+            var dia = datas.GameChar.GetZuanshi();  //钻石
+            if (datas.IsRefresh || !todayData.HasData) //若强制刷新或需要刷新
+            {
+                if (dia.Count < priceD)    //若钻石不足
+                {
+                    datas.HasError = true;
+                    datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
+                    return;
+                }
+
+                if (!World.ItemManager.SetPropertyValue(datas.PvpObject, ProjectConstant.LevelPropertyName, lv + 1))   //若无法设置级别
+                {
+                    datas.HasError = true;
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    return;
+                }
+                //修改数据
+                //获取列表
+                var ids = RefreshPvpList(datas.GameChar, datas.UserContext, todayData.TodayValues);
+                todayData.TodayValues.AddRange(ids);
+                todayData.LastValues.Clear();
+                todayData.LastValues.AddRange(ids);
+                dia.Count -= priceD;    //减去钻石
+                if (priceD != 0)
+                    datas.ChangeItems.AddToChanges(dia);
+                datas.CharIds.AddRange(todayData.LastValues);
+            }
+            else //不刷新
+            {
+                datas.CharIds.AddRange(todayData.LastValues);
+            }
+            //两种情况都要修改的数据
+            todayData.Save();   //保存当日当次数据
+            datas.ChangeItems.AddToChanges(datas.PvpObject);    //pvp数据对象
+            World.CharManager.NotifyChange(datas.GameChar.GameUser);    //修改用户数据
         }
 
         /// <summary>
@@ -1431,6 +1463,7 @@ namespace GuangYuan.GY001.BLL
             var charIds = from tmp in context.Set<GameItem>().AsNoTracking()
                           where objParentIds.Contains(tmp.Id)
                           select tmp.OwnerId.Value;
+            Debug.WriteLineIf(charIds.Count() < maxCount, "RefreshPvpList获得角色过少。");
             return charIds;
         }
         #endregion  项目特定功能
@@ -1439,24 +1472,19 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// <see cref="GameSocialManager.GetHomelandData(GetHomelandDataDatas)"/>使用的工作数据封装类。
     /// </summary>
-    public class GetHomelandDataDatas : ComplexWorkDatasBase
+    public class GetHomelandDataDatas : RelationshipWorkDataBase
     {
-        public GetHomelandDataDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        public GetHomelandDataDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
         {
         }
 
-        public GetHomelandDataDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        public GetHomelandDataDatas([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar, otherGCharId)
         {
         }
 
-        public GetHomelandDataDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        public GetHomelandDataDatas([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token, otherGCharId)
         {
         }
-
-        /// <summary>
-        /// 要获取的角色的Id。
-        /// </summary>
-        public Guid OtherCharId { get => Parameters.GetGuidOrDefault(nameof(OtherCharId)); set => Parameters[nameof(OtherCharId)] = value; }
 
         private HomelandFengge _CurrentFengge;
 
@@ -1470,13 +1498,14 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 相关坐骑的数据。
         /// </summary>
-        public List<GameItem> Mounts => GetOrAdd(nameof(Mounts), ref _Mounts);
+        public List<GameItem> Mounts => _Mounts ??= new List<GameItem>();
 
         private List<GameItem> _Lands;
+
         /// <summary>
         /// 地块信息。
         /// </summary>
-        public List<GameItem> Lands => GetOrAdd(nameof(Lands), ref _Lands);
+        public List<GameItem> Lands => _Lands ??= new List<GameItem>();
 
         public DbContext Context { get; set; }
 
@@ -1567,7 +1596,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 带变化物品和发送邮件返回值的类的接口
     /// </summary>
-    public abstract class ChangeItemsAndMailWorkDatsBase : ChangeItemsWorkDatsBase
+    public abstract class ChangeItemsAndMailWorkDatsBase : ChangeItemsWorkDatasBase
     {
 
         public ChangeItemsAndMailWorkDatsBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)

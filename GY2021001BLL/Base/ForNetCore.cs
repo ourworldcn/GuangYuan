@@ -5,7 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OW.Game.Expression;
+using OW.Game.Store;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,71 +47,60 @@ namespace GuangYuan.GY001.BLL
 
         private void CreateNewUserAndChar()
         {
-            var world = _Services.GetRequiredService<VWorld>();
-            var logger = _Services.GetService<ILogger<GameHostedService>>();
-            int start = 1;
-            using var db = world.CreateNewUserDbContext();
-            {
-                var loginNames = db.GameUsers.Where(c => c.LoginName.StartsWith("test")).Select(c => c.LoginName).ToArray();
-                var suffs = loginNames.Select(c =>
-                {
-                    return int.TryParse(c.Replace("test", string.Empty), out var suff) ? suff : 0;
-                }).OrderBy(c => c).ToArray();
-                for (int i = 0; i < suffs.Length; i++)
-                {
-                    if (suffs[i] != i + 1)
-                        break;
-                    start = i + 1;
-                }
-            }
 #if DEBUG
-            var maxCount = 2000;
+            var maxCount = 10000;
 #else
             var maxCount = 25000;
 #endif
+            var world = _Services.GetRequiredService<VWorld>();
+            var logger = _Services.GetService<ILogger<GameHostedService>>();
 
-            try
+            List<(string, string)> list = new List<(string, string)>(maxCount);
+            using (var db = world.CreateNewUserDbContext())
             {
-                for (int i = start; i < maxCount; i++)
+                //生成登录名
+                for (int i = 0; i < maxCount; i++)  //生成登录名
+                {
+                    list.Add(($"test{i + 1}", null));
+                }
+                HashSet<string> hsLn = new HashSet<string>(db.GameUsers.Where(c => c.LoginName.StartsWith("test")).Select(c => c.LoginName));  //获取已有登录名
+                list.RemoveAll(c => hsLn.Contains(c.Item1));    //去除已有登录名
+                                                                //生成角色昵称
+                HashSet<string> hsCharNames = new HashSet<string>(db.GameChars.Select(c => c.DisplayName));  //获取已有角色名
+                for (int i = 0; i < list.Count; i++)  //生成角色昵称
+                {
+                    string displayName;
+                    for (displayName = CnNames.GetName(VWorld.IsHit(0.5)); !hsCharNames.Add(displayName); displayName = CnNames.GetName(VWorld.IsHit(0.5))) ;
+                    list[i] = (list[i].Item1, displayName);
+                }
+            }
+            //生成角色
+            var context = world.CreateNewUserDbContext();
+            for (int i = 0; i < list.Count; i++)
+            {
+                var item = list[i];
+                var gu = new GameUser();
+                gu.Initialize(_Services, item.Item1, item.Item1, context, item.Item2);
+                if (i % 50 == 0 && i > 0)   //每n个账号
                 {
                     try
                     {
-                        var pwd = "test" + i.ToString();
-                        var loginName = "test" + i;
-                        if (db.GameUsers.Any(c => c.LoginName == loginName))
+                        context.SaveChanges();
+                        logger.LogDebug($"[{DateTime.UtcNow:s}]已经创建了{i + 1}个账号。");
+                        do
                         {
-                            continue;
-                        }
-                        using var gu = world.CharManager.QuicklyRegister(ref pwd, loginName);
-                        if (gu is null)
-                        {
-                            i--;
-                            continue;
-                        }
-                        if (i % 100 == 0)
-                        {
-                            logger.LogDebug($"[{DateTime.UtcNow:s}]已经创建了{i}个账号。");
-                        }
-#if DEBUG
-                        Thread.Sleep(i / 10);
-
-#else
-                        Thread.Sleep(i/10);
-#endif
+                            Thread.Sleep(5000);
+                        } while (OwGameCommandInterceptor.ExecutingCount > 0);
                     }
-                    catch (DbUpdateException err)
+                    catch (Exception err)
                     {
                         logger.LogWarning($"创建账号出错已重试——{err.Message}");
-                        Thread.Sleep(1);
-                        i--;
                     }
-                    Thread.Yield();
+                    context.Dispose();
+                    context = world.CreateNewUserDbContext();
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, false, true);
                 }
 
-            }
-            catch (Exception err)
-            {
-                logger.LogWarning($"创建账号时出现未处理错误，将停止创建。——{err.Message}");
             }
         }
 

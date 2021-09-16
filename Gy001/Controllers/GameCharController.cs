@@ -430,7 +430,7 @@ namespace GY2021001WebApi.Controllers
                         result.DebugMessage = $"m={fcp.MaxValue},c={fcp.LastValue},t={fcp.LastDateTime}";
                 }
                 result.Changes.AddRange(gc.ChangesItems.Select(c => (ChangesItemDto)c));
-                gc.ChangesItems.Clear();
+                //gc.ChangesItems.Clear();
             }
             catch (Exception err)
             {
@@ -442,6 +442,25 @@ namespace GY2021001WebApi.Controllers
                 world.CharManager.Unlock(gu, true);
             }
             return result;
+        }
+
+        /// <summary>
+        /// 清除自动变化的数据集合中所有数据。
+        /// </summary>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPost]
+        public ActionResult ClearChangesItem(TokenDtoBase model)
+        {
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            var dwUser = world.CharManager.Lock(model.Token, out var gu);
+            if (dwUser is null)
+            {
+                return Unauthorized(VWorld.GetLastErrorMessage());
+            }
+            var gc = gu.CurrentChar;
+            gc.ChangesItems.Clear();
+            return Ok();
         }
 
         /// <summary>

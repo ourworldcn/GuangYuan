@@ -343,7 +343,6 @@ namespace GuangYuan.GY001.UserDb
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
                     throw new NotSupportedException();
-                    break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:

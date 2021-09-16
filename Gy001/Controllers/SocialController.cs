@@ -1,5 +1,6 @@
 ﻿using Game.Social;
 using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -548,11 +549,11 @@ namespace Gy001.Controllers
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
                                                                                     //构造调用参数
-            using var datas = new GetHomelandDataDatas(_World, model.Token)
+            using var datas = new GetHomelandDataDatas(_World, model.Token, GameHelper.FromBase64String(model.OtherCharId))
             {
-                Context = _UserContext,
+                UserContext = _UserContext,
             };
-            using var disposer = datas.LockUser();
+            using var disposer = datas.Lock();
             if (disposer is null)   //若锁定失败
                 return StatusCode(datas.ErrorCode, datas.ErrorMessage);
             //填写其他参数
@@ -578,30 +579,60 @@ namespace Gy001.Controllers
         /// 获取可以或已经pvp的角色的列表。
         /// </summary>
         /// <param name="model"><seealso cref="GetPvpListParamsDto"/></param>
-        /// <returns><seealso cref="GetPvpListReturnDto"/></returns>
+        /// <returns><seealso cref="GetPvpListReturnDto"/>
+        /// ErrorCodes.RPC_S_OUT_OF_RESOURCES=1712 钻石不足
+        /// </returns>
         /// <response code="401">令牌错误。</response>
-        [HttpGet]
-        public ActionResult<GetPvpListReturnDto> GetPvpList([FromQuery] GetPvpListParamsDto model)
+        [HttpPost]
+        public ActionResult<GetPvpListReturnDto> GetPvpList(GetPvpListParamsDto model)
         {
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            using var datas = new GetPvpCharsWorkDatas(_World, model.Token)
             {
-                return Unauthorized("令牌无效");
-            }
-            GetPvpListReturnDto result = null;
+                IsRefresh = model.IsRefresh,
+                Now = DateTime.UtcNow,
+            };
+
+            GetPvpListReturnDto result = new GetPvpListReturnDto();
             try
             {
-                result = new GetPvpListReturnDto();
-                var returnData = _World.SocialManager.GetPvpChars(gu.CurrentChar, DateTime.UtcNow, _UserContext);
-                result.PvpList.AddRange(returnData.Select(c => (GameActionRecordDto)c));
+                using (var dwUser = datas.LockUser())
+                {
+                    if (dwUser is null)
+                        return Unauthorized("令牌无效");
+                    _World.SocialManager.GetPvpChars(datas);
+                    result.HasError = datas.HasError;
+                    if (datas.HasError)
+                    {
+                        result.ErrorCode = datas.ErrorCode;
+                        result.DebugMessage = datas.ErrorMessage;
+                    }
+                    else
+                    {
+                        result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                        result.CharIds.AddRange(datas.CharIds.Select(c => c.ToBase64String()));
+                    }
+                }
+                if (!result.HasError)    //若没有错误
+                {
+                    //增补客户端需要的额外数据
+                    using var dwUsers = _World.CharManager.LockOrLoadWithCharIds(datas.CharIds, _World.CharManager.Options.DefaultLockTimeout);
+                    if (dwUsers is null)
+                    {
+                        result.HasError = true;
+                        result.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
+                    }
+                    foreach (var charId in datas.CharIds)
+                    {
+                        var gc = _World.CharManager.GetCharFromId(charId);
+                        result.CurrencyBags[charId.ToBase64String()] = gc.GetCurrencyBag(); //设置货币带
+                        result.MainBases[charId.ToBase64String()] = gc.GetMainbase(); //设置主地块
+                    }
+                }
             }
             catch (Exception err)
             {
                 result.HasError = true;
                 result.DebugMessage = err.Message;
-            }
-            finally
-            {
-                _World.CharManager.Unlock(gu);
             }
             return result;
         }

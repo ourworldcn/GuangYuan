@@ -216,7 +216,7 @@ namespace OW.Game.Store
             InitializeCore(service, parameters);
             //如果有初始化器则调用项目初始化函数
             var init = service.GetService(typeof(IGameObjectInitializer)) as IGameObjectInitializer;
-            init?.Created(this);
+            init?.Created(this, parameters);
         }
 
         /// <summary>

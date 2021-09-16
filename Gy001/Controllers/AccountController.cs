@@ -68,13 +68,13 @@ namespace GY2021001WebApi.Controllers
         /// <param name="loginParamsDto">登陆参数,参见<seealso cref="LoginParamsDto"/> </param>
         /// <returns>Token为空则是用户名或密码错误。</returns>
         /// <response code="500">用户名或密码错误。</response>
-        /// <response code="503">登录人数过多。请稍后登录。目前按每颗CPU带1000在线计算，未来更具实际数据增减。</response>
+        /// <response code="503">登录人数过多。请稍后登录。目前按每颗CPU带10000在线计算，未来更具实际数据增减。</response>
         [HttpPost]
         public ActionResult<LoginReturnDto> Login(LoginParamsDto loginParamsDto)
         {
             //[ProducesResponseType(StatusCodes.Status400BadRequest)]
             var gm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
-            if (gm.OnlineCount > 1000 * Environment.ProcessorCount)
+            if (gm.Id2OnlineChar.Count > 10000 * Environment.ProcessorCount)
                 return StatusCode((int)HttpStatusCode.ServiceUnavailable, "登录人数过多，请稍后登录");
             var gu = gm.Login(loginParamsDto.LoginName, loginParamsDto.Pwd, loginParamsDto.Region);
 

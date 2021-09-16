@@ -58,11 +58,30 @@ namespace Gy001
             using var dwGc = world.CharManager.LockOrLoad("test1", Timeout.InfiniteTimeSpan, out var gu);
 
             var coll = world.SocialManager.RefreshPvpList(gu.CurrentChar, gu.DbContext).ToList();
-
+            var c1 = TypeDescriptor.GetConverter(typeof(Guid), true);
+            var c2 = TypeDescriptor.GetConverter(typeof(Guid));
             //using var db = world.CreateNewUserDbContext();
             //var collChar = db.Set<GameChar>().Where(c => coll.Contains(c.Id)).ToArray();
             //GameUserCache cache = new GameUserCache(world.Service, optionsAccessor: new MemoryCacheOptions() { });
             //cache.GetOrCreate("d", c => Task.Run(() => new object()));
+        }
+
+        public void Test2()
+        {
+            Dictionary<string, object> dic = new Dictionary<string, object>();
+
+            //CPU
+            //Intel(R) Core(TM) i5-10500 CPU @ 3.10GHz
+            //基准速度:	3.10 GHz
+            //插槽:	1
+            //内核:	6
+            //逻辑处理器:	12
+            //虚拟化:	已启用
+            //L1 缓存:	384 KB
+            //L2 缓存:	1.5 MB
+            //L3 缓存:	12.0 MB
+
+
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

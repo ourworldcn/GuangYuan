@@ -35,4 +35,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="百家姓.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

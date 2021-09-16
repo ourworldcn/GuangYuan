@@ -167,13 +167,14 @@ namespace GuangYuan.GY001.UserDb
             OnLogouting(e);
         }
 
-        public void Initialize(IServiceProvider service, string loginName, string pwd, DbContext db)
+        public void Initialize(IServiceProvider service, string loginName, string pwd, DbContext db, string charDisplayName = null)
         {
             var dic = new Dictionary<string, object>
             {
                 {"uid",loginName },
                 {"pwd",pwd },
                 {"db",db },
+                {"charDisplayName",charDisplayName },
             };
             Initialize(service, dic);
         }

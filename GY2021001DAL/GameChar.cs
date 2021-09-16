@@ -63,6 +63,7 @@ namespace GuangYuan.GY001.UserDb
             }
             else
                 throw new InvalidOperationException($"缺少键值指定该对象所属的{nameof(GameUser)}对象。");
+            DisplayName = parameters.GetValueOrDefault(nameof(DisplayName)) as string;
             var db = DbContext;
             //追加子对象
             if (Template.ChildrenTemplateIds.Count > 0)

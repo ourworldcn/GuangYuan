@@ -1,4 +1,5 @@
 ﻿using Game.Social;
+using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using OW.Game;
@@ -523,8 +524,26 @@ namespace GuangYuan.GY001.BLL
         /// 主动pvp。
         /// </summary>
         /// <param name="datats"></param>
-        private void Pvp(EndCombatPvpWorkData datas)
+        public void Pvp(EndCombatPvpWorkData datas)
         {
+            const string pricePName = "refreshPriceD";    //升级的代价属性名
+            const string pvpChar = "PvpChar";   //PVP当日数据名的前缀
+            using var dwUsers = datas.Lock();
+            if (dwUsers is null) //若无法锁定对象。
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
+                return;
+            }
+            var pvpObject = datas.GameChar.GetPvpObject();  //PVP对象
+            using var todayData = TodayDataWrapper<Guid>.Create(pvpObject.Properties, pvpChar, datas.Now);
+            if (!todayData.LastValues.Contains(datas.OtherChar.Id))  //若不能攻击
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "不可攻击的角色。";
+                return;
+            }
             datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpAttack);
             var sr = datas.SocialRelationships.FirstOrDefault(c => c.Id2 == datas.OtherChar.Id);  //关系数据
             if (sr is null) //若不准攻击
@@ -545,11 +564,11 @@ namespace GuangYuan.GY001.BLL
             }
             //获取物品
             var gim = World.ItemManager;
-            var parents = datas.GetDefaultContainers(datas.GameItems);  //获取容器
-            for (int i = 0; i < datas.GameItems.Count; i++) //获取战利品
-            {
-                gim.AddItem(datas.GameItems[i], parents[i], null, datas.ChangeItems);
-            }
+            //var parents = datas.GetDefaultContainers(datas.GameItems);  //获取容器
+            //for (int i = 0; i < datas.GameItems.Count; i++) //获取战利品
+            //{
+            //    gim.AddItem(datas.GameItems[i], parents[i], null, datas.ChangeItems);
+            //}
             //发送邮件
             var mail = new GameMail()
             {
@@ -841,11 +860,16 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 当前日期。
+        /// </summary>
+        public DateTime Now { get; set; }
+
+        /// <summary>
         /// 关卡Id
         /// </summary>
         public Guid DungeonId { get; set; }
 
-        GameItemTemplate _DungeonTemplate;
+        private GameItemTemplate _DungeonTemplate;
 
         /// <summary>
         /// 关卡模板。
@@ -858,32 +882,116 @@ namespace GuangYuan.GY001.BLL
         public bool IsWin { get; set; }
 
         /// <summary>
-        /// 战利品的原始数据。
-        /// Item1=战利品模板Id,Item2=数量。
+        /// 摧毁建筑的模板Id集合。
         /// </summary>
-        public List<(Guid, decimal)> TIdAndCounts { get; } = new List<(Guid, decimal)>();
-
-        List<GameItem> _GameItems;
+        public List<(Guid, decimal)> DestroyTIds { get; } = new List<(Guid, decimal)>();
 
         /// <summary>
-        /// 战利品。
-        /// 无主的物品。需要调用方添加到合适的容器中。
+        /// 规范化摧毁物数据。
         /// </summary>
-        public List<GameItem> GameItems
+        public void NormalizeDestroyTIds()
+        {
+            var coll = (from tmp in DestroyTIds
+                        group tmp by tmp.Item1 into g
+                        select (g.Key, g.Sum(c => c.Item2))).ToArray();
+            if (coll.Length != DestroyTIds.Count)   //若有变化
+            {
+                DestroyTIds.Clear();
+                DestroyTIds.AddRange(coll);
+            }
+        }
+
+        /// <summary>
+        /// 计算战斗收益。
+        /// </summary>
+        /// <param name="bootyOfAttacker">进攻方收益。为空则不设置。</param>
+        /// <param name="bootyOfDefenser">防御方收益。为空则不设置。</param>
+        private void ComputeBooty([AllowNull] List<(Guid, decimal)> bootyOfAttacker, [AllowNull] List<(Guid, decimal)> bootyOfDefenser)
+        {
+            int dMucaiCount; //摧毁木材仓库数
+            if (DestroyTIds.Any(c => c.Item1 == ProjectConstant.MucaiStoreTId))
+                dMucaiCount = (int)DestroyTIds.First(c => c.Item1 == ProjectConstant.MucaiStoreTId).Item2;
+            else
+                dMucaiCount = 0;
+            var dYumi = OtherChar.GetHomeland().AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId); //防御方玉米田
+            var dt = Now;
+            var dJinbi = dYumi.Name2FastChangingProperty["Count"].GetCurrentValue(ref dt); //防御方玉米田存量
+            var dMucaiShu = OtherChar.GetHomeland().AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId);   //防御方木材树
+            dt = Now;
+            var dMucai = dMucaiShu.Name2FastChangingProperty["Count"].GetCurrentValue(ref dt);  //防御方木材树的数量
+            var lvAttacker = GameChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);    //进攻方等级
+            var lvDefenser = OtherChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);    //防御方等级
+            var mucaiRank = OtherChar.GetMucai().Count.Value; //防御方仓库内木材
+            var jinbiOfAttacker = lvAttacker * 100 + dJinbi * 0.5m;  //进攻方获益金币基数
+            var mucaiOfAttacker = lvAttacker * 30 + dMucai * 0.5m + mucaiRank * 0.2m; //进攻方获益木材基数
+            var jinbiOfDefenser = 0m;    //防御方金币获益
+            var mucaiShuOfDefenser = 0m;    //防御方木材树获益
+            var mucaiOfDefenser = 0m;    //防御方木材仓库获益
+            if (IsWin)   //进攻方获胜
+            {
+                jinbiOfDefenser = -dJinbi * 0.5m;
+                mucaiShuOfDefenser = -dMucai * 0.5m;
+                mucaiOfDefenser = -mucaiRank * 0.2m;
+            }
+            else //进攻方未获胜
+            {
+                jinbiOfAttacker *= dMucaiCount * 0.1m;
+                mucaiOfAttacker *= dMucaiCount * 0.1m;
+            }
+            if (World.CharManager.Id2OnlineChar.ContainsKey(OtherCharId))    //若防御方在线
+            {
+                jinbiOfDefenser = decimal.Zero;
+                mucaiShuOfDefenser = decimal.Zero;
+                mucaiOfDefenser = decimal.Zero;
+            }
+            //进攻方收益
+            if (jinbiOfAttacker != decimal.Zero)
+                bootyOfAttacker?.Add((ProjectConstant.JinbiId, jinbiOfAttacker));
+            if (mucaiOfAttacker != decimal.Zero)
+                bootyOfAttacker?.Add((ProjectConstant.MucaiId, jinbiOfAttacker));
+            //防御方收益
+            if (jinbiOfDefenser != decimal.Zero)
+                bootyOfDefenser?.Add((ProjectConstant.JinbiId, jinbiOfDefenser));
+            if (mucaiShuOfDefenser != decimal.Zero)
+                bootyOfDefenser?.Add((ProjectConstant.MucaishuTId, mucaiShuOfDefenser));
+            if (mucaiOfDefenser != decimal.Zero)
+                bootyOfDefenser?.Add((ProjectConstant.MucaiId, mucaiOfDefenser));
+        }
+
+        private List<(Guid, decimal)> _BootyOfAttacker;
+        /// <summary>
+        /// 进攻者战利品。
+        /// Item1=模板Id,Item2=数量
+        /// </summary>
+        public List<(Guid, decimal)> BootyOfAttacker
         {
             get
             {
-                if (_GameItems is null)
+                if (_BootyOfAttacker is null)
                 {
-                    _GameItems = TIdAndCounts.Select(c =>
-                    {
-                        var result = new GameItem();
-                        result.Initialize(World.Service, c.Item1);
-                        result.Count = c.Item2;
-                        return result;
-                    }).ToList();
+                    NormalizeDestroyTIds();
+                    _BootyOfAttacker = new List<(Guid, decimal)>();
+                    ComputeBooty(_BootyOfAttacker, null);
                 }
-                return _GameItems;
+                return _BootyOfAttacker;
+            }
+        }
+
+        private List<(Guid, decimal)> _BootyOfDefenser;
+        /// <summary>
+        /// 防御者战利品。
+        /// </summary>
+        public List<(Guid, decimal)> BootyOfDefenser
+        {
+            get
+            {
+                if (_BootyOfDefenser is null)
+                {
+                    NormalizeDestroyTIds();
+                    _BootyOfDefenser = new List<(Guid, decimal)>();
+                    ComputeBooty(null, _BootyOfDefenser);
+                }
+                return _BootyOfDefenser;
             }
         }
 

@@ -392,7 +392,8 @@ namespace GuangYuan.GY001.BLL
         /// <inheritdoc/>
         /// </summary>
         /// <param name="obj"></param>
-        public bool Created(object obj)
+        /// <param name="parameters"></param>
+        public bool Created(object obj, IReadOnlyDictionary<string, object> parameters)
         {
             if (obj is GameItem gi)
             {
@@ -400,11 +401,11 @@ namespace GuangYuan.GY001.BLL
             }
             else if (obj is GameChar gc)
             {
-                return InitializerChar(gc);
+                return InitializerChar(gc, parameters);
             }
             else if (obj is GameUser gu)
             {
-                InitializerUser(gu);
+                InitializerUser(gu, parameters);
             }
             else
                 return false;
@@ -439,7 +440,13 @@ namespace GuangYuan.GY001.BLL
             return true;
         }
 
-        public bool InitializerUser(GameUser user)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public bool InitializerUser(GameUser user, IReadOnlyDictionary<string, object> parameters)
         {
             var gc = new GameChar();
             user.GameChars.Add(gc);
@@ -448,6 +455,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     { "tid",ProjectConstant.CharTemplateId},
                     { "user",user},
+                    {"DisplayName",parameters.GetValueOrDefault("charDisplayName") },
                 });
             //生成缓存数据
             var sep = new CharSpecificExpandProperty
@@ -468,9 +476,9 @@ namespace GuangYuan.GY001.BLL
         /// 角色创建后被调用。
         /// </summary>
         /// <param name="gameChar">已经创建的对象。</param>
-        /// 
+        /// <param name="parameters"></param>
         /// <returns></returns>
-        public bool InitializerChar(GameChar gameChar)
+        public bool InitializerChar(GameChar gameChar, IReadOnlyDictionary<string, object> parameters)
         {
             var world = World;
             var gitm = world.ItemTemplateManager;
@@ -493,10 +501,13 @@ namespace GuangYuan.GY001.BLL
                 world.ItemManager.ForcedAdd(item, runseSlot);
             }
             var db = gameChar.GameUser.DbContext;
-            string displayName;
-            for (displayName = CnNames.GetName(VWorld.IsHit(0.5)); db.Set<GameChar>().Any(c => c.DisplayName == displayName); displayName = CnNames.GetName(VWorld.IsHit(0.5)))
-                ;
-            gameChar.DisplayName ??= displayName;
+            if (string.IsNullOrWhiteSpace(gameChar.DisplayName))    //若没有指定昵称
+            {
+                string displayName;
+                for (displayName = CnNames.GetName(VWorld.IsHit(0.5)); db.Set<GameChar>().Any(c => c.DisplayName == displayName); displayName = CnNames.GetName(VWorld.IsHit(0.5)))
+                    ;
+                gameChar.DisplayName = displayName;
+            }
             result = true;
             //修正木材存贮最大量
             //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
@@ -525,7 +536,7 @@ namespace GuangYuan.GY001.BLL
             };
             db.Add(gsr);
             //发送测试邮件
-            Task.Delay(5000).ContinueWith(c =>
+            Task.Delay(1000).ContinueWith(c =>
             {
                 //创建欢迎邮件
                 var mail = new GameMail()
@@ -869,6 +880,15 @@ namespace GuangYuan.GY001.BLL
     /// </summary>
     public static class ProjectExtensions
     {
+        /// <summary>
+        /// 是否包含不可分割的孩子。
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsIncludeChildren(this GameItem item) =>
+            ProjectConstant.HomelandPatCard == item.TemplateId || ProjectConstant.ZuojiZuheRongqi == item.TemplateId;
+
         /// <summary>
         /// 获取弃物槽对象。
         /// </summary>

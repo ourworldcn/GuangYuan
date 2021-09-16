@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -66,6 +67,16 @@ namespace GuangYuan.GY001.BLL
         /// 参数错误。
         /// </summary>
         public const int ERROR_BAD_ARGUMENTS = 160;
+
+        /// <summary>
+        /// 没有足够资源完成操作。
+        /// </summary>
+        public const int RPC_S_OUT_OF_RESOURCES = 1721;
+
+        /// <summary>
+        /// 没有足够的配额来处理此命令。通常是超过某些次数的限制。
+        /// </summary>
+        public const int ERROR_NOT_ENOUGH_QUOTA = 1816;
     }
 
     /// <summary>
@@ -265,13 +276,14 @@ namespace GuangYuan.GY001.BLL
                         if (DateTime.UtcNow - dt > TimeSpan.FromSeconds(1) || waitSucc && OwGameCommandInterceptor.ExecutingCount <= 0)    //若超过1s,避免过于频繁的保存
                         {
                             _TemporaryUserContext.SaveChanges();
+                            if (_TemporaryUserContext.ChangeTracker.Entries().Count() > 200)    //若数据较多
+                            {
+                                _TemporaryUserContext.Dispose();
+                                _TemporaryUserContext = null;
+                                GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, false, true);
+                            }
                         }
                         dt = DateTime.UtcNow;
-                        if (_TemporaryUserContext.ChangeTracker.Entries().Count() > 200)    //若数据较多
-                        {
-                            _TemporaryUserContext.Dispose();
-                            _TemporaryUserContext = null;
-                        }
                     }
                     catch (Exception err)
                     {
