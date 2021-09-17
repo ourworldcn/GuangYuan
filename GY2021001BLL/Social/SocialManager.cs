@@ -560,9 +560,9 @@ namespace GuangYuan.GY001.BLL
                 World.CharManager.Nope(gameChar.GameUser);  //重置下线计时器
                 return result;
             }
-            catch (Exception err)
+            catch (Exception )
             {
-                throw err;
+                throw ;
             }
         }
 

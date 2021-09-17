@@ -18,6 +18,10 @@ using System.Reflection;
 using System.Security.Cryptography;
 using OW.Game;
 using Microsoft.Extensions.Logging.Debug;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using System.Net;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace Gy001
 {
@@ -58,8 +62,8 @@ namespace Gy001
 #if DEBUG
 
             LoggerFactory LoggerFactory = new LoggerFactory(new[] { new DebugLoggerProvider() });
-            services.AddDbContext<GY001UserContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).UseLoggerFactory(LoggerFactory).EnableSensitiveDataLogging(), ServiceLifetime.Scoped);
-            services.AddDbContext<GY001TemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).UseLoggerFactory(LoggerFactory).EnableSensitiveDataLogging(), ServiceLifetime.Singleton);
+            services.AddDbContext<GY001UserContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.EnableSensitiveDataLogging(), ServiceLifetime.Scoped);
+            services.AddDbContext<GY001TemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.EnableSensitiveDataLogging(), ServiceLifetime.Singleton);
 #else
             services.AddDbContext<GY001UserContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).EnableSensitiveDataLogging(), ServiceLifetime.Scoped);
             services.AddDbContext<GY001TemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).EnableSensitiveDataLogging(), ServiceLifetime.Singleton);
@@ -105,8 +109,8 @@ namespace Gy001
             services.AddSingleton(c => new VWorld(c, new VWorldOptions()
             {
 #if DEBUG
-                UserDbOptions = new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).UseLoggerFactory(LoggerFactory).EnableSensitiveDataLogging().Options,
-                TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).UseLoggerFactory(LoggerFactory).Options,
+                UserDbOptions = new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.EnableSensitiveDataLogging().Options,
+                TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.Options,
 #else
                 UserDbOptions = new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).EnableSensitiveDataLogging().Options,
                 TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
@@ -142,6 +146,16 @@ namespace Gy001
             #endregion 配置游戏专用服务
         }
 
+        private Task ExceptionHandler(HttpContext context)
+        {
+            return Task.Run(() =>
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                context.Response.WriteAsync(exceptionHandlerPathFeature.Error.Message);
+            });
+        }
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -150,6 +164,10 @@ namespace Gy001
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler(build => build.Run(ExceptionHandler));
             }
             #endregion 启用通用服务
 

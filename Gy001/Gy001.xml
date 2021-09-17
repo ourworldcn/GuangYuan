@@ -72,6 +72,13 @@
             <param name="model">参见 CombatEndParamsDto</param>
             <returns>参见 CombatEndReturnDto</returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.CombatController.CombatEndPvp(GY2021001WebApi.Models.CombatEndPvpParamsDto)">
+            <summary>
+            PVP战斗结算。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.GameCharController">
             <summary>
             角色相关操作。
@@ -1500,6 +1507,37 @@
             元素中仅需Id有效即可。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.CombatEndPvpParamsDto">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.DungeonId">
+            <summary>
+            关卡Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.OtherGCharId">
+            <summary>
+            对方角色Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.IsWin">
+            <summary>
+            是否胜利了。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.Destroies">
+            <summary>
+            摧毁建筑的模板Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.CombatId">
+            <summary>
+            战斗对象唯一Id。从邮件的 mail.Properties["CombatId"] 属性中获取。
+            反击和协助才需要填写。直接pvp时可以省略。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.SetLineupReturnDto">
             <summary>
             SetLineup接口返回的数据封装类。
@@ -1997,6 +2035,7 @@
                         var mountsIds = result.Select(c => c.ObjectId); //所有签约坐骑的Id集合
             </code>
             </returns>
+            <response code="401">令牌错误。</response>
         </member>
         <member name="M:Gy001.Controllers.SocialController.ConfirmRequestFriend(GY2021001WebApi.Models.ConfirmRequestFriendParamsDto)">
             <summary>

@@ -158,8 +158,11 @@ namespace GuangYuan.GY001.BLL
         #region 邮件类型Id
         public static readonly Guid 友情孵化补给动物 = new Guid("b4c30a07-2179-435e-b053-fd4b0c36251b");
 
-
         public static readonly Guid 孵化补给动物 = new Guid("{366ce206-8d17-47ea-a039-9280ddd81bbc}");
+
+        public static readonly Guid PVP系统奖励 = new Guid("{e7b07795-2051-4e3f-a5bc-b668bbebeb36}");
+
+        public static readonly Guid PVP反击邮件 = new Guid("{83c52c66-991f-489b-8b49-6c6c8af25fa5}");
 
         #endregion 邮件类型Id
         /// <summary>

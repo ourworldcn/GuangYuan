@@ -4,6 +4,11 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>GuangYuan.GY001.BLL</RootNamespace>
     <AssemblyName>GY001BllCore</AssemblyName>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CA1822</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -198,7 +198,7 @@ namespace GuangYuan.GY001.BLL.Social
 
         public void Dispose()
         {
-            _Db?.DisposeAsync();
+            _Db?.Dispose();
         }
     }
 

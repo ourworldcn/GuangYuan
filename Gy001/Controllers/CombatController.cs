@@ -79,5 +79,30 @@ namespace GY2021001WebApi.Controllers
             return null;
         }
 #endif
+
+        /// <summary>
+        /// PVP战斗结算。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<CombatEndPvpReturnDto> CombatEndPvp(CombatEndPvpParamsDto model)
+        {
+            var result = new CombatEndPvpReturnDto();
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            using var datas = new EndCombatPvpWorkData(world, model.Token, GameHelper.FromBase64String(model.OtherGCharId))
+            {
+                Now = DateTime.UtcNow,
+                DungeonId = GameHelper.FromBase64String(model.DungeonId),
+                IsWin = model.IsWin,
+            };
+            datas.DestroyTIds.AddRange(model.Destroies.Select(c => (ValueTuple<Guid, decimal>)c));
+            world.CombatManager.EndCombatPvp(datas);
+            result.HasError = datas.HasError;
+            result.DebugMessage = datas.ErrorMessage;
+            result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+            return result;
+        }
     }
+
 }

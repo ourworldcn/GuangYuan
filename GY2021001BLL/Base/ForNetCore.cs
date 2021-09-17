@@ -48,7 +48,7 @@ namespace GuangYuan.GY001.BLL
         private void CreateNewUserAndChar()
         {
 #if DEBUG
-            var maxCount = 10000;
+            var maxCount = 15000;
 #else
             var maxCount = 25000;
 #endif
@@ -75,33 +75,35 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             //生成角色
-            var context = world.CreateNewUserDbContext();
             for (int i = 0; i < list.Count; i++)
             {
                 var item = list[i];
-                var gu = new GameUser();
-                gu.Initialize(_Services, item.Item1, item.Item1, context, item.Item2);
-                if (i % 50 == 0 && i > 0)   //每n个账号
+                var gu = world.CharManager.CreateNewUserAndLock(item.Item1, item.Item1);
+                if (gu is null)
+                    continue;
+                gu.CurrentChar.DisplayName = item.Item2;
+                gu.Timeout = TimeSpan.FromSeconds(1);
+                world.CharManager.Unlock(gu);
+
+                if (i % 100 == 0 && i > 0)   //每n个账号
                 {
                     try
                     {
-                        context.SaveChanges();
                         logger.LogDebug($"[{DateTime.UtcNow:s}]已经创建了{i + 1}个账号。");
-                        do
+                        while (world.CharManager.Id2GameChar.Count > 10000)
                         {
                             Thread.Sleep(5000);
-                        } while (OwGameCommandInterceptor.ExecutingCount > 0);
+                        }
                     }
                     catch (Exception err)
                     {
                         logger.LogWarning($"创建账号出错已重试——{err.Message}");
                     }
-                    context.Dispose();
-                    context = world.CreateNewUserDbContext();
-                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, false, true);
                 }
 
             }
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
+            logger.LogInformation("完成了测试账号生成。");
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

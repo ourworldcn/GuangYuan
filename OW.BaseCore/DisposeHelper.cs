@@ -61,11 +61,6 @@ namespace System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DisposerWrapper Create(Action<object> action, object state) =>
-             Create(() => action(state));
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DisposerWrapper Create<T>(Action<T> action, T state) => Create(() => action(state));
 
         public static DisposerWrapper Create(IEnumerable<IDisposable> disposers) =>

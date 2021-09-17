@@ -1,12 +1,11 @@
 ﻿using Game.Social;
-using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Combat;
 using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -526,8 +525,10 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datats"></param>
         public void Pvp(EndCombatPvpWorkData datas)
         {
-            const string pricePName = "refreshPriceD";    //升级的代价属性名
             const string pvpChar = "PvpChar";   //PVP当日数据名的前缀
+#pragma warning disable CS0219 // 变量“pvpRetaliation”已被赋值，但从未使用过它的值
+            const string pvpRetaliation = "pvpRetaliation";   //反击字段
+#pragma warning restore CS0219 // 变量“pvpRetaliation”已被赋值，但从未使用过它的值
             using var dwUsers = datas.Lock();
             if (dwUsers is null) //若无法锁定对象。
             {
@@ -553,28 +554,83 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             //更改数据
+            var db = datas.UserContext;
             datas.SocialRelationships.Remove(sr);
-            if (datas.IsWin)    //若进攻方胜利
+            //移除攻击权
+            todayData.LastValues.Remove(datas.OtherCharId);
+            //增加复仇权
+            var srRetaliation = db.Set<GameSocialRelationship>().Find(datas.OtherCharId, datas.GameChar.Id, SocialKeyTypes.AllowPvpForRetaliation);   //反击关系数据
+            if (srRetaliation is null)   //若没有反击权数据
+            {
+                srRetaliation = new GameSocialRelationship()
+                {
+                    Id = datas.OtherCharId,
+                    Id2 = datas.GameChar.Id,
+                    KeyType = (int)SocialKeyTypes.AllowPvpForRetaliation,
+                    Flag = 0,
+                };
+                db.Add(srRetaliation);
+            }
+            srRetaliation.Flag++;   //增加可以复仇的次数
+            ///计算收益
+            //增加战斗记录
+            PvpCombat pc = new PvpCombat()
             {
 
-            }
-            else //防御方胜利
+            };
+            pc.AttackerIds.Add(datas.GameChar.Id);
+            pc.DefenserIds.Add(datas.OtherCharId);
+            db.Add(pc);
+            List<GameBooty> bootyOfAttacker = new List<GameBooty>();
+            foreach (var item in datas.BootyOfAttacker) //进攻方战利品
             {
-
+                var booty = new GameBooty()
+                {
+                    ParentId = pc.Id,
+                    CharId = datas.GameChar.Id,
+                    TemplateId = item.Item1,
+                    Count = item.Item2,
+                };
+                booty.SetGameItems(World, datas.ChangeItems);   //设置物品实际增减
             }
-            //获取物品
-            var gim = World.ItemManager;
-            //var parents = datas.GetDefaultContainers(datas.GameItems);  //获取容器
-            //for (int i = 0; i < datas.GameItems.Count; i++) //获取战利品
-            //{
-            //    gim.AddItem(datas.GameItems[i], parents[i], null, datas.ChangeItems);
-            //}
-            //发送邮件
+            db.AddRange(bootyOfAttacker);
+
+            List<GameBooty> bootyOfDefenser = new List<GameBooty>();
+            foreach (var item in datas.BootyOfDefenser) //防御方战利品
+            {
+                var booty = new GameBooty()
+                {
+                    ParentId = pc.Id,
+                    CharId = datas.OtherCharId,
+                    TemplateId = item.Item1,
+                    Count = item.Item2,
+                };
+                booty.SetGameItems(World);   //设置物品实际增减
+            }
+            db.AddRange(bootyOfDefenser);
+            //设置物品实际增减
+            bootyOfAttacker.ForEach(c => c.SetGameItems(World, datas.ChangeItems));
+            bootyOfDefenser.ForEach(c => c.SetGameItems(World));
+
+            //发送奖励邮件
             var mail = new GameMail()
             {
             };
-            mail.Properties["MailTypeId"] = ProjectConstant.孵化补给动物.ToString();
+            mail.Properties["MailTypeId"] = ProjectConstant.PVP系统奖励.ToString();
+            mail.Properties["CombatId"] = pc.Id.ToString();
+            bootyOfAttacker.ForEach(c => c.FillToDictionary(World, mail.Properties));
+            World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+            //发送反击邮件
+            mail = new GameMail()
+            {
+            };
+            mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件.ToString();
+            mail.Properties["CombatId"] = pc.Id.ToString();
+            bootyOfDefenser.ForEach(c => c.FillToDictionary(World, mail.Properties));
             World.SocialManager.SendMail(mail, new Guid[] { datas.OtherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+            ///保存数据
+            todayData.Save();
+            db.SaveChanges();
         }
 
         /// <summary>
@@ -839,185 +895,6 @@ namespace GuangYuan.GY001.BLL
             thing.Properties["atk"] = (float)thing.GetDecimalOrDefault("atk") * dic.GetValueOrDefault("atk");
             thing.Properties["mhp"] = (float)thing.GetDecimalOrDefault("mhp") * dic.GetValueOrDefault("mhp");
             thing.Properties["qlt"] = (float)thing.GetDecimalOrDefault("qlt") * dic.GetValueOrDefault("qlt");
-        }
-    }
-
-    /// <summary>
-    /// pvp结束战斗调用接口的数据封装类。
-    /// </summary>
-    public class EndCombatPvpWorkData : RelationshipWorkDataBase
-    {
-        public EndCombatPvpWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
-        {
-        }
-
-        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar, otherGCharId)
-        {
-        }
-
-        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token, otherGCharId)
-        {
-        }
-
-        /// <summary>
-        /// 当前日期。
-        /// </summary>
-        public DateTime Now { get; set; }
-
-        /// <summary>
-        /// 关卡Id
-        /// </summary>
-        public Guid DungeonId { get; set; }
-
-        private GameItemTemplate _DungeonTemplate;
-
-        /// <summary>
-        /// 关卡模板。
-        /// </summary>
-        public GameItemTemplate DungeonTemplate => _DungeonTemplate ??= World.ItemTemplateManager.GetTemplateFromeId(DungeonId);
-
-        /// <summary>
-        /// 是否胜利了。
-        /// </summary>
-        public bool IsWin { get; set; }
-
-        /// <summary>
-        /// 摧毁建筑的模板Id集合。
-        /// </summary>
-        public List<(Guid, decimal)> DestroyTIds { get; } = new List<(Guid, decimal)>();
-
-        /// <summary>
-        /// 规范化摧毁物数据。
-        /// </summary>
-        public void NormalizeDestroyTIds()
-        {
-            var coll = (from tmp in DestroyTIds
-                        group tmp by tmp.Item1 into g
-                        select (g.Key, g.Sum(c => c.Item2))).ToArray();
-            if (coll.Length != DestroyTIds.Count)   //若有变化
-            {
-                DestroyTIds.Clear();
-                DestroyTIds.AddRange(coll);
-            }
-        }
-
-        /// <summary>
-        /// 计算战斗收益。
-        /// </summary>
-        /// <param name="bootyOfAttacker">进攻方收益。为空则不设置。</param>
-        /// <param name="bootyOfDefenser">防御方收益。为空则不设置。</param>
-        private void ComputeBooty([AllowNull] List<(Guid, decimal)> bootyOfAttacker, [AllowNull] List<(Guid, decimal)> bootyOfDefenser)
-        {
-            int dMucaiCount; //摧毁木材仓库数
-            if (DestroyTIds.Any(c => c.Item1 == ProjectConstant.MucaiStoreTId))
-                dMucaiCount = (int)DestroyTIds.First(c => c.Item1 == ProjectConstant.MucaiStoreTId).Item2;
-            else
-                dMucaiCount = 0;
-            var dYumi = OtherChar.GetHomeland().AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId); //防御方玉米田
-            var dt = Now;
-            var dJinbi = dYumi.Name2FastChangingProperty["Count"].GetCurrentValue(ref dt); //防御方玉米田存量
-            var dMucaiShu = OtherChar.GetHomeland().AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId);   //防御方木材树
-            dt = Now;
-            var dMucai = dMucaiShu.Name2FastChangingProperty["Count"].GetCurrentValue(ref dt);  //防御方木材树的数量
-            var lvAttacker = GameChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);    //进攻方等级
-            var lvDefenser = OtherChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);    //防御方等级
-            var mucaiRank = OtherChar.GetMucai().Count.Value; //防御方仓库内木材
-            var jinbiOfAttacker = lvAttacker * 100 + dJinbi * 0.5m;  //进攻方获益金币基数
-            var mucaiOfAttacker = lvAttacker * 30 + dMucai * 0.5m + mucaiRank * 0.2m; //进攻方获益木材基数
-            var jinbiOfDefenser = 0m;    //防御方金币获益
-            var mucaiShuOfDefenser = 0m;    //防御方木材树获益
-            var mucaiOfDefenser = 0m;    //防御方木材仓库获益
-            if (IsWin)   //进攻方获胜
-            {
-                jinbiOfDefenser = -dJinbi * 0.5m;
-                mucaiShuOfDefenser = -dMucai * 0.5m;
-                mucaiOfDefenser = -mucaiRank * 0.2m;
-            }
-            else //进攻方未获胜
-            {
-                jinbiOfAttacker *= dMucaiCount * 0.1m;
-                mucaiOfAttacker *= dMucaiCount * 0.1m;
-            }
-            if (World.CharManager.Id2OnlineChar.ContainsKey(OtherCharId))    //若防御方在线
-            {
-                jinbiOfDefenser = decimal.Zero;
-                mucaiShuOfDefenser = decimal.Zero;
-                mucaiOfDefenser = decimal.Zero;
-            }
-            //进攻方收益
-            if (jinbiOfAttacker != decimal.Zero)
-                bootyOfAttacker?.Add((ProjectConstant.JinbiId, jinbiOfAttacker));
-            if (mucaiOfAttacker != decimal.Zero)
-                bootyOfAttacker?.Add((ProjectConstant.MucaiId, jinbiOfAttacker));
-            //防御方收益
-            if (jinbiOfDefenser != decimal.Zero)
-                bootyOfDefenser?.Add((ProjectConstant.JinbiId, jinbiOfDefenser));
-            if (mucaiShuOfDefenser != decimal.Zero)
-                bootyOfDefenser?.Add((ProjectConstant.MucaishuTId, mucaiShuOfDefenser));
-            if (mucaiOfDefenser != decimal.Zero)
-                bootyOfDefenser?.Add((ProjectConstant.MucaiId, mucaiOfDefenser));
-        }
-
-        private List<(Guid, decimal)> _BootyOfAttacker;
-        /// <summary>
-        /// 进攻者战利品。
-        /// Item1=模板Id,Item2=数量
-        /// </summary>
-        public List<(Guid, decimal)> BootyOfAttacker
-        {
-            get
-            {
-                if (_BootyOfAttacker is null)
-                {
-                    NormalizeDestroyTIds();
-                    _BootyOfAttacker = new List<(Guid, decimal)>();
-                    ComputeBooty(_BootyOfAttacker, null);
-                }
-                return _BootyOfAttacker;
-            }
-        }
-
-        private List<(Guid, decimal)> _BootyOfDefenser;
-        /// <summary>
-        /// 防御者战利品。
-        /// </summary>
-        public List<(Guid, decimal)> BootyOfDefenser
-        {
-            get
-            {
-                if (_BootyOfDefenser is null)
-                {
-                    NormalizeDestroyTIds();
-                    _BootyOfDefenser = new List<(Guid, decimal)>();
-                    ComputeBooty(null, _BootyOfDefenser);
-                }
-                return _BootyOfDefenser;
-            }
-        }
-
-        /// <summary>
-        /// 获取物品默认的容器对象。
-        /// </summary>
-        /// <returns></returns>
-        public List<GameThingBase> GetDefaultContainers(List<GameItem> gameItems)
-        {
-            var result = new List<GameThingBase>();
-            var gc = GameChar;
-            for (int i = 0; i < gameItems.Count; i++)
-            {
-                var item = gameItems[i];
-                if (item.TemplateId == ProjectConstant.JinbiId)
-                {
-                    result.Add(gc.GetCurrencyBag());
-                }
-                else if (item.TemplateId == ProjectConstant.MucaiId)
-                {
-                    result.Add(gc.GetCurrencyBag());
-                }
-                else
-                    throw new InvalidOperationException("不可获得物品。");
-            }
-            return result;
         }
     }
 }

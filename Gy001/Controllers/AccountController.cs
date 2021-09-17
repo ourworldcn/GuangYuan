@@ -1,24 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Numerics;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Gy001;
-using GuangYuan.GY001.BLL;
+﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.UserDb;
-using GuangYuan.GY001.TemplateDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OW.Game;
+using System;
+using System.Linq;
+using System.Net;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -85,6 +75,7 @@ namespace GY2021001WebApi.Controllers
             };
             if (null != gu)
                 result.Token = gu.CurrentToken.ToBase64String();
+            using var dwUsers = gm.LockAndReturnDispose(gu);
             result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
             return result;
         }

@@ -453,7 +453,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult ClearChangesItem(TokenDtoBase model)
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            var dwUser = world.CharManager.Lock(model.Token, out var gu);
+            var dwUser = world.CharManager.LockAndReturnDisposer(model.Token, out var gu);
             if (dwUser is null)
             {
                 return Unauthorized(VWorld.GetLastErrorMessage());

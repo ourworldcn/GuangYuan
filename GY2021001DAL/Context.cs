@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GuangYuan.GY001.UserDb.Combat;
+using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Store;
 using System;
@@ -61,6 +62,10 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.PveTScore).IsUnique(false);
             modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.LastLogoutUtc).IsUnique(false);
 
+            //战利品
+            modelBuilder.Entity<GameBooty>().HasIndex(c => new { c.ParentId, c.CharId }).IsUnique(false);
+
+
             //调用基类方法。
             base.OnModelCreating(modelBuilder);
         }
@@ -109,6 +114,16 @@ namespace GuangYuan.GY001.UserDb
         /// 操作记录。
         /// </summary>
         public DbSet<GameActionRecord> ActionRecords { get; set; }
+
+        /// <summary>
+        /// pvp战斗记录。
+        /// </summary>
+        public DbSet<PvpCombat> PvpCombat { get; set; }
+
+        /// <summary>
+        /// 战利品记录。
+        /// </summary>
+        public DbSet<GameBooty> GameBooty { get; set; }
 
         public override void Dispose()
         {

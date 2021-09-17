@@ -1720,6 +1720,49 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    [DataContract]
+    public class CombatEndPvpParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 关卡Id。
+        /// </summary>
+        [DataMember]
+        public string DungeonId { get; set; }
+
+        /// <summary>
+        /// 对方角色Id。
+        /// </summary>
+        [DataMember]
+        public string OtherGCharId { get; set; }
+
+        /// <summary>
+        /// 是否胜利了。
+        /// </summary>
+        [DataMember]
+        public bool IsWin { get; set; }
+
+        /// <summary>
+        /// 摧毁建筑的模板Id集合。
+        /// </summary>
+        [DataMember]
+        public List<IdAndCountDto> Destroies { get; set; } = new List<IdAndCountDto>();
+
+        /// <summary>
+        /// 战斗对象唯一Id。从邮件的 mail.Properties["CombatId"] 属性中获取。
+        /// 反击和协助才需要填写。直接pvp时可以省略。
+        /// </summary>
+        [DataMember]
+        public string CombatId { get; set; }
+    }
+
+    [DataContract]
+    public class CombatEndPvpReturnDto : ChangesAndMailReturnDtoBase
+    {
+    }
+
+    /// <summary>
     /// SetLineup接口返回的数据封装类。
     /// </summary>
     [DataContract]

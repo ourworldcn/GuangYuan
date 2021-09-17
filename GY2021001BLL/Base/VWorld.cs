@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -97,7 +98,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         private static VWorld _Default;
-        public VWorld Default => _Default ??= new VWorld(_RootServices, null);
+        public static VWorld Default => _Default ??= new VWorld(_RootServices, null);
 
         public readonly DateTime StartDateTimeUtc = DateTime.UtcNow;
         private readonly CancellationTokenSource _CancellationTokenSource = new CancellationTokenSource();
@@ -509,49 +510,6 @@ namespace GuangYuan.GY001.BLL
 
         #endregion 错误处理
 
-        /// <summary>
-        /// 按既定顺序锁定一组对象。
-        /// </summary>
-        /// <param name="objectes"></param>
-        /// <returns></returns>
-        public static bool Lock<T>(IList<T> objectes, TimeSpan timeout, out int index) where T : class
-        {
-            index = -1;
-            try
-            {
-                DateTime now = DateTime.UtcNow; //起始时间
-                DateTime end = now + timeout;   //结束时间
-                for (int i = 0; i < objectes.Count; i++)
-                {
-                    T obj = objectes[i];
-                    var ts = end - DateTime.UtcNow;
-                    if (!Monitor.TryEnter(obj))
-                    {
-                        index = i;
-                        return false;
-                    }
-                }
-            }
-            catch (Exception)
-            {
-            }
-            finally
-            {
-
-            }
-            return true;
-        }
-
-        public static void Unlock<T>(IList<T> objectes, bool pulse = false) where T : class
-        {
-            for (int i = 0; i < objectes.Count; i++)
-            {
-                if (pulse)
-                    Monitor.Pulse(objectes[i]);
-                Monitor.Exit(objectes[i]);
-            }
-        }
-
         #region 锁定字符串
 
         /// <summary>
@@ -596,23 +554,6 @@ namespace GuangYuan.GY001.BLL
             Monitor.Exit(str);
         }
 
-        /// <summary>
-        /// 锁定指定字符串在字符串拘留池中的实例。
-        /// </summary>
-        /// <param name="str">返回时指向字符串拘留池中的实例。</param>
-        /// <param name="timeout"></param>
-        /// <param name="isPulse">在解锁是是否发出脉冲信号。</param>
-        /// <returns>解锁的包装,通过<seealso cref="DisposerWrapper.Create(Action)"/>创建，如果没有成功锁定则为null。</returns>
-        public IDisposable LockStringAndReturnDisposer(ref string str, TimeSpan timeout, bool isPulse = false)
-        {
-            if (!LockString(ref str, timeout))
-            {
-                SetLastError(ErrorCodes.WAIT_TIMEOUT);
-                return null;
-            }
-            var tmp = str;
-            return DisposerWrapper.Create(() => UnlockString(tmp, isPulse));
-        }
         #endregion 锁定字符串
     }
 
@@ -635,4 +576,25 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
+    public static class VWorldExtensions
+    {
+        /// <summary>
+        /// 锁定指定字符串在字符串拘留池中的实例。
+        /// </summary>
+        /// <param name="world"></param>
+        /// <param name="str">返回时指向字符串拘留池中的实例。</param>
+        /// <param name="timeout"></param>
+        /// <param name="isPulse">在解锁是是否发出脉冲信号。</param>
+        /// <returns>解锁的包装,通过<seealso cref="DisposerWrapper.Create(Action)"/>创建，如果没有成功锁定则为null。</returns>
+        public static IDisposable LockStringAndReturnDisposer(this VWorld world, ref string str, TimeSpan timeout, bool isPulse = false)
+        {
+            if (!world.LockString(ref str, timeout))
+            {
+                VWorld.SetLastError(ErrorCodes.WAIT_TIMEOUT);
+                return null;
+            }
+            var tmp = str;
+            return DisposerWrapper.Create(() => world.UnlockString(tmp, isPulse));
+        }
+    }
 }

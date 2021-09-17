@@ -306,10 +306,13 @@ namespace Gy001.Controllers
         ///             var mountsIds = result.Select(c => c.ObjectId); //所有签约坐骑的Id集合
         /// </code>
         /// </returns>
+        /// <response code="401">令牌错误。</response>
         [HttpPut]
         public ActionResult<GetSocialRelationshipsReturnDto> GetSocialRelationships(GetSocialRelationshipsParamsDto model)
         {
             var gu = _World.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token));
+            if (gu is null)
+                return Unauthorized("令牌错误。");
             var gc = gu.CurrentChar;
             IEnumerable<GameSocialRelationship> coll;
             if (model.KeyTypes.Count > 0)  //若按键类型过滤
