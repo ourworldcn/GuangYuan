@@ -9,11 +9,10 @@ using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -520,7 +519,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="timeout">用于等待锁的时间。 值为 -1 毫秒表示指定无限期等待。</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool LockString(ref string str, TimeSpan timeout) =>
+        public bool LockString([NotNull] ref string str, TimeSpan timeout) =>
             LockString(ref str, (int)timeout.TotalMilliseconds);
 
         /// <summary>
@@ -531,10 +530,14 @@ namespace GuangYuan.GY001.BLL
         /// <param name="timeout">等待锁所需的毫秒数。</param>
         /// <returns>如果当前线程获取该锁，则为 true；否则为 false。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool LockString(ref string str, int timeout = -1)
+        public bool LockString([NotNull] ref string str, int timeout = -1)
         {
-            str = string.Intern(str);
-            return Monitor.TryEnter(str, timeout);
+            var tmp = string.Intern(str);
+            str = tmp;
+            var result = Monitor.TryEnter(tmp, timeout);
+            if (!result)
+                SetLastError(ErrorCodes.WAIT_TIMEOUT);
+            return result;
         }
 
         /// <summary>
@@ -586,13 +589,11 @@ namespace GuangYuan.GY001.BLL
         /// <param name="timeout"></param>
         /// <param name="isPulse">在解锁是是否发出脉冲信号。</param>
         /// <returns>解锁的包装,通过<seealso cref="DisposerWrapper.Create(Action)"/>创建，如果没有成功锁定则为null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IDisposable LockStringAndReturnDisposer(this VWorld world, ref string str, TimeSpan timeout, bool isPulse = false)
         {
             if (!world.LockString(ref str, timeout))
-            {
-                VWorld.SetLastError(ErrorCodes.WAIT_TIMEOUT);
                 return null;
-            }
             var tmp = str;
             return DisposerWrapper.Create(() => world.UnlockString(tmp, isPulse));
         }

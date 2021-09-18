@@ -57,29 +57,23 @@ namespace Gy001.Controllers
         [HttpPut]
         public ActionResult<GetMailsReturnDto> GetMails(GetMailsParamsDto model)
         {
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            var result = new GetMailsReturnDto();
+            var social = _World.SocialManager;
+            using var datas = new GetMailsDatas(_World, model.Token);
+            using var dwUser = datas.LockUser();
+            if (dwUser is null)
             {
-                return Unauthorized("令牌无效");
+                return Unauthorized("令牌错误。");
             }
-            try
+            social.GetMails(datas);
+            if (model.Ids is null || model.Ids.Count <= 0)  //若取所有邮件
+                result.Mails.AddRange(datas.Mails.Select(c => (GameMailDto)c));
+            else
             {
-                var result = new GetMailsReturnDto();
-                var social = _World.SocialManager;
-                var coll = social.GetMails(gu.CurrentChar);
-                if (model.Ids is null || model.Ids.Count <= 0)  //若取所有邮件
-                    result.Mails.AddRange(coll.Select(c => (GameMailDto)c));
-                else
-                {
-                    result.Mails.AddRange(coll.Select(c => (GameMailDto)c));    //TO DO效率低下
-                    result.Mails.RemoveAll(c => !model.Ids.Contains(c.Id));
-                }
-                return result;
-
+                result.Mails.AddRange(datas.Mails.Select(c => (GameMailDto)c));    //TO DO效率低下
+                result.Mails.RemoveAll(c => !model.Ids.Contains(c.Id));
             }
-            finally
-            {
-                _World.CharManager.Unlock(gu);
-            }
+            return result;
         }
 
         /// <summary>
@@ -480,7 +474,7 @@ namespace Gy001.Controllers
         [HttpPost]
         public ActionResult<PatForTiliReturnDto> PatForTili(PatForTiliParamsDto model)
         {
-            var gc = _World.CharManager.GetGCharFromToken(model.Token);
+            var gc = _World.CharManager.GetGameCharFromToken(model.Token);
             if (gc is null)
                 return Unauthorized("令牌无效");
             PatForTiliReturnDto result = new PatForTiliReturnDto();

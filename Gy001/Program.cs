@@ -55,7 +55,7 @@ namespace Gy001
             var excp = new Win32Exception(ErrorCodes.ERROR_INVALID_TOKEN);
             var str = excp.Message;
 
-            using var dwGc = world.CharManager.LockOrLoad("test1", Timeout.InfiniteTimeSpan, out var gu);
+            using var dwGc = world.CharManager.LockOrLoad("test1", out var gu, Timeout.InfiniteTimeSpan);
 
             var coll = world.SocialManager.RefreshPvpList(gu.CurrentChar, gu.DbContext).ToList();
             var c1 = TypeDescriptor.GetConverter(typeof(Guid), true);

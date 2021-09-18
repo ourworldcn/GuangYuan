@@ -1,6 +1,7 @@
 ﻿using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
+using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -50,6 +51,27 @@ namespace GuangYuan.GY001.BLL
         {
             const string prefix = "gTId";
             dic[$"{prefix}{booty.TemplateId}"] = booty.Count;
+        }
+
+        /// <summary>
+        /// 将信息从字典中取出。
+        /// </summary>
+        /// <param name="booty">追加到该集合中。</param>
+        /// <param name="world"></param>
+        /// <param name="dic">存储信息的字典。</param>
+        public static void FillToBooty(this ICollection<GameBooty> booty, VWorld world, IReadOnlyDictionary<string, object> dic)
+        {
+            const string prefix = "gTId"; int index = prefix.Length;
+            var coll = dic.Where(c => c.Key.StartsWith(prefix));
+            foreach (var item in coll)
+            {
+                var bt = new GameBooty()
+                {
+                    TemplateId = new Guid(item.Key[index..]),
+                    Count = dic.GetDecimalOrDefault(item.Key),
+                };
+                booty.Add(bt);
+            }
         }
     }
 }

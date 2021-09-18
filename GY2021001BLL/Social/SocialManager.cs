@@ -12,7 +12,6 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -79,20 +78,42 @@ namespace GuangYuan.GY001.BLL
         /// 获取指定用户的所有邮件。
         /// </summary>
         /// <returns></returns>
-        public List<GameMail> GetMails(GameChar gameChar)
+        public void GetMails(GetMailsDatas datas)
         {
-            var db = World.CreateNewUserDbContext();
             try
             {
-                var coll = GetMails(gameChar, db);
-                var result = coll.ToList();
-                FillAttachmentes(gameChar.Id, result.SelectMany(c => c.Attachmentes), db);
-                return result;
+                var coll = GetMails(datas.GameChar, datas.UserContext);
+                datas.Mails.AddRange(coll.ToList());
+                FillAttachmentes(datas.GameChar.Id, datas.Mails.SelectMany(c => c.Attachmentes), datas.UserContext);
             }
-            finally
+            catch (Exception err)
             {
-                Task.Delay(4000).ContinueWith((c, dbObj) => (dbObj as DbContext)?.DisposeAsync(), db, TaskContinuationOptions.ExecuteSynchronously);
+                datas.HasError = true;
+                datas.ErrorMessage = err.Message;
             }
+        }
+
+        public class GetMailsDatas : ComplexWorkDatasBase
+        {
+            public GetMailsDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+            {
+            }
+
+            public GetMailsDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+            {
+            }
+
+            public GetMailsDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+            {
+            }
+
+            private List<GameMail> _Mails;
+
+            /// <summary>
+            /// 返回的邮件。
+            /// </summary>
+            public List<GameMail> Mails => _Mails ??= new List<GameMail>();
+
         }
 
         /// <summary>
@@ -282,7 +303,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="results">每一项的获取结果。</param>
         public bool GetAttachmentes(IEnumerable<Guid> attachmentesIds, GameChar gameChar, DbContext db, IList<ChangeItem> changes = null, ICollection<(Guid, GetAttachmenteItemResult)> results = null)
         {
-            using var dwChar = World.CharManager.LockAndReturnDispose(gameChar.GameUser);
+            using var dwChar = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
             //附件Id是IdMark.Id,角色Id是IdMark.Id
             var gcId = gameChar.Id;
             var mails = GetMails(gameChar, db);  //角色的所有邮件
@@ -560,9 +581,9 @@ namespace GuangYuan.GY001.BLL
                 World.CharManager.Nope(gameChar.GameUser);  //重置下线计时器
                 return result;
             }
-            catch (Exception )
+            catch (Exception)
             {
-                throw ;
+                throw;
             }
         }
 

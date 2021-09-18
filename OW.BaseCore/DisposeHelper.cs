@@ -66,16 +66,21 @@ namespace System
         public static DisposerWrapper Create(IEnumerable<IDisposable> disposers) =>
             Create(c =>
             {
-                foreach (var item in (IEnumerable<IDisposable>)c)
+                List<Exception> exceptions = new List<Exception>();
+                foreach (var item in c)
                 {
                     try
                     {
                         item.Dispose();
                     }
-                    catch (Exception)
+                    catch (Exception err)
                     {
+                        exceptions.Add(err);
                     }
                 }
+                AggregateException aggregate;
+                if (exceptions.Count > 0)
+                    aggregate = new AggregateException(exceptions);
             }, disposers);
 
         /// <summary>

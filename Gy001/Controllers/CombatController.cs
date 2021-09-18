@@ -39,9 +39,8 @@ namespace GY2021001WebApi.Controllers
         {
             var world = HttpContext.RequestServices.GetService<VWorld>();
             var cbm = world.CombatManager;
-            StartCombatData data = new StartCombatData()
+            using var data = new StartCombatData(world, model.Token)
             {
-                GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.CurrentChar,
                 Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
             };
             cbm.StartCombat(data);

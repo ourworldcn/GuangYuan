@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OW.Game;
 using OW.Game.Store;
 using System;
@@ -395,7 +396,19 @@ namespace GuangYuan.GY001.BLL
         /// 使用默认超时试图锁定<see cref="GameChar"/>用户。
         /// </summary>
         /// <returns></returns>
-        public IDisposable LockUser() => World.CharManager.LockAndReturnDispose(GameChar.GameUser);
+        public IDisposable LockUser()
+        {
+            try
+            {
+                return World.CharManager.LockAndReturnDisposer(GameChar.GameUser);
+            }
+            catch (Exception err)
+            {
+                var logger = Service?.GetService<ILogger<GameCharWorkDataBase>>();
+                logger?.LogWarning($"锁定单个角色时出现异常——{err.Message}");
+                return null;
+            }
+        }
 
         protected override void Dispose(bool disposing)
         {
@@ -471,8 +484,17 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         public virtual IDisposable Lock()
         {
-            var ary = new Guid[] { GameChar.Id, _OtherCharId };
-            return World.CharManager.LockOrLoadWithCharIds(ary, World.CharManager.Options.DefaultLockTimeout);
+            try
+            {
+                var ary = new Guid[] { GameChar.Id, _OtherCharId };
+                return World.CharManager.LockOrLoadWithCharIds(ary, World.CharManager.Options.DefaultLockTimeout);
+            }
+            catch (Exception err)
+            {
+                var logger = Service?.GetService<ILogger<RelationshipWorkDataBase>>();
+                logger?.LogWarning($"锁定多个角色时出现异常——{err.Message}");
+                return null;
+            }
         }
 
         private List<ChangeItem> _ChangeItems;
@@ -490,13 +512,13 @@ namespace GuangYuan.GY001.BLL
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    if (null != _GameSocialRelationships)
-                        _GameSocialRelationships.CollectionChanged -= new System.Collections.Specialized.NotifyCollectionChangedEventHandler(OnRelationshipsCollectionChanged);
+                    if (null != _SocialRelationships)
+                        _SocialRelationships.CollectionChanged -= new System.Collections.Specialized.NotifyCollectionChangedEventHandler(OnRelationshipsCollectionChanged);
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                _GameSocialRelationships = null;
+                _SocialRelationships = null;
                 _KeyTypes = null;
                 base.Dispose(disposing);
             }
@@ -510,7 +532,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public List<int> KeyTypes => _KeyTypes ??= new List<int>();
 
-        private ObservableCollection<GameSocialRelationship> _GameSocialRelationships;
+        private ObservableCollection<GameSocialRelationship> _SocialRelationships;
 
         /// <summary>
         /// 相关的一组关系数据。
@@ -519,7 +541,7 @@ namespace GuangYuan.GY001.BLL
         {
             get
             {
-                if (_GameSocialRelationships is null)
+                if (_SocialRelationships is null)
                 {
                     IQueryable<GameSocialRelationship> coll;
                     if (KeyTypes.Count > 0)
@@ -530,10 +552,10 @@ namespace GuangYuan.GY001.BLL
                         coll = from sr in UserContext.Set<GameSocialRelationship>()
                                where sr.Id == GameChar.Id
                                select sr;
-                    _GameSocialRelationships = new ObservableCollection<GameSocialRelationship>(coll);
-                    _GameSocialRelationships.CollectionChanged += OnRelationshipsCollectionChanged;
+                    _SocialRelationships = new ObservableCollection<GameSocialRelationship>(coll);
+                    _SocialRelationships.CollectionChanged += OnRelationshipsCollectionChanged;
                 }
-                return _GameSocialRelationships;
+                return _SocialRelationships;
             }
         }
 

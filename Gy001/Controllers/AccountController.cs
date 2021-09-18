@@ -74,9 +74,11 @@ namespace GY2021001WebApi.Controllers
                 WorldServiceHost = worldServiceHost,
             };
             if (null != gu)
+            {
                 result.Token = gu.CurrentToken.ToBase64String();
-            using var dwUsers = gm.LockAndReturnDispose(gu);
-            result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
+                using var dwUsers = gm.LockAndReturnDisposer(gu);
+                result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
+            }
             return result;
         }
 

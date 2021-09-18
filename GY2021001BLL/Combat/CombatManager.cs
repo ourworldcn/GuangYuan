@@ -6,6 +6,7 @@ using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -90,20 +91,19 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 请求开始战斗的数据封装类
     /// </summary>
-    public class StartCombatData
+    public class StartCombatData : GameCharWorkDataBase
     {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public StartCombatData()
+        public StartCombatData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
-
         }
 
-        /// <summary>
-        /// 角色对象。
-        /// </summary>
-        public GameChar GameChar { get; set; }
+        public StartCombatData([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public StartCombatData([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
 
         /// <summary>
         /// 要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
@@ -295,10 +295,10 @@ namespace GuangYuan.GY001.BLL
         /// <returns>true正常启动，false没有找到指定的场景或角色当前正在战斗。</returns>
         public void StartCombat(StartCombatData data)
         {
-            var gcm = World.CharManager;
-            if (!gcm.Lock(data.GameChar.GameUser))
+            var dwUser = data.LockUser();
+            if (dwUser is null)
             {
-                data.DebugMessage = "用户已经无效";
+                data.DebugMessage = "令牌无效。";
                 data.HasError = true;
                 return;
             }
@@ -335,7 +335,6 @@ namespace GuangYuan.GY001.BLL
             }
             finally
             {
-                gcm.Unlock(data.GameChar.GameUser);
             }
             return;
         }
@@ -479,44 +478,7 @@ namespace GuangYuan.GY001.BLL
                 PvpForRetaliation(datas);
             }
 
-            var dv = new CharPvpDataView(datas.World.Service, datas.GameChar);
-            if (!dv.LastIds.Contains(datas.OtherCharId))   //若是非法攻击的对象。TO DO要测试反击 和 协助的Id
-            {
-                datas.HasError = true;
-                datas.ErrorCode = (int)HttpStatusCode.BadRequest;
-                datas.ErrorMessage = "不可攻击的对象。";
-                return;
-            }
 
-            //修改数据
-            var db = datas.UserContext;
-            //清理自身可攻击id
-            dv.LastIds.Remove(datas.OtherCharId);
-            //加入反击数据
-            var sr = new GameSocialRelationship { };
-            db.Set<GameSocialRelationship>().Add(sr);
-            //保存
-            db.SaveChanges();
-            dv.Save();
-        }
-
-        /// <summary>
-        /// 反击pvp。
-        /// </summary>
-        /// <param name="datats"></param>
-        private void PvpForRetaliation(EndCombatPvpWorkData datas)
-        {
-            datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpForRetaliation);
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 协助pvp。
-        /// </summary>
-        /// <param name="datats"></param>
-        private void PvpForHelp(EndCombatPvpWorkData datas)
-        {
-            datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpForHelp);
         }
 
         /// <summary>
@@ -558,20 +520,40 @@ namespace GuangYuan.GY001.BLL
             datas.SocialRelationships.Remove(sr);
             //移除攻击权
             todayData.LastValues.Remove(datas.OtherCharId);
-            //增加复仇权
-            var srRetaliation = db.Set<GameSocialRelationship>().Find(datas.OtherCharId, datas.GameChar.Id, SocialKeyTypes.AllowPvpForRetaliation);   //反击关系数据
-            if (srRetaliation is null)   //若没有反击权数据
+            //计算等级分
+            if (datas.IsWin) //若需要计算等级分
             {
-                srRetaliation = new GameSocialRelationship()
+                decimal diff = 0;
+                var pvpObj = datas.GameChar.GetPvpObject();
+                var otherPvpObj = datas.OtherChar.GetPvpObject();
+                diff = 1 + Math.Round((otherPvpObj.Count.Value - pvpObj.Count.Value) / 10, MidpointRounding.ToPositiveInfinity);
+                diff = Math.Clamp(diff, 0, 6);
+                pvpObj.Count += diff;
+                otherPvpObj.Count -= diff;
+                if (diff != 0)  //若等级分发生变化
                 {
-                    Id = datas.OtherCharId,
-                    Id2 = datas.GameChar.Id,
-                    KeyType = (int)SocialKeyTypes.AllowPvpForRetaliation,
-                    Flag = 0,
-                };
-                db.Add(srRetaliation);
+                    datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
+                    datas.World.CharManager.NotifyChange(datas.OtherChar.GameUser);
+                    datas.ChangeItems.AddToChanges(pvpObj);
+                }
             }
-            srRetaliation.Flag++;   //增加可以复仇的次数
+            //增加复仇权
+            if (datas.BootyOfDefenser.Count > 0)   //若有收益
+            {
+                var srRetaliation = db.Set<GameSocialRelationship>().Find(datas.OtherCharId, datas.GameChar.Id, SocialKeyTypes.AllowPvpForRetaliation);   //反击关系数据
+                if (srRetaliation is null)   //若没有反击权数据
+                {
+                    srRetaliation = new GameSocialRelationship()
+                    {
+                        Id = datas.OtherCharId,
+                        Id2 = datas.GameChar.Id,
+                        KeyType = (int)SocialKeyTypes.AllowPvpForRetaliation,
+                        Flag = 0,
+                    };
+                    db.Add(srRetaliation);
+                }
+                srRetaliation.Flag++;   //增加可以复仇的次数
+            }
             ///计算收益
             //增加战斗记录
             PvpCombat pc = new PvpCombat()
@@ -592,6 +574,7 @@ namespace GuangYuan.GY001.BLL
                     Count = item.Item2,
                 };
                 booty.SetGameItems(World, datas.ChangeItems);   //设置物品实际增减
+                datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
             }
             db.AddRange(bootyOfAttacker);
 
@@ -606,6 +589,7 @@ namespace GuangYuan.GY001.BLL
                     Count = item.Item2,
                 };
                 booty.SetGameItems(World);   //设置物品实际增减
+                datas.World.CharManager.NotifyChange(datas.OtherChar.GameUser);
             }
             db.AddRange(bootyOfDefenser);
             //设置物品实际增减
@@ -621,16 +605,107 @@ namespace GuangYuan.GY001.BLL
             bootyOfAttacker.ForEach(c => c.FillToDictionary(World, mail.Properties));
             World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             //发送反击邮件
-            mail = new GameMail()
+            if (datas.BootyOfDefenser.Count > 0)   //若有收益
             {
-            };
-            mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件.ToString();
-            mail.Properties["CombatId"] = pc.Id.ToString();
-            bootyOfDefenser.ForEach(c => c.FillToDictionary(World, mail.Properties));
-            World.SocialManager.SendMail(mail, new Guid[] { datas.OtherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+                //无收益则不发送邮件
+                mail = new GameMail()
+                {
+                };
+                mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件.ToString();
+                mail.Properties["CombatId"] = pc.Id.ToString();
+                bootyOfDefenser.ForEach(c => c.FillToDictionary(World, mail.Properties));
+                World.SocialManager.SendMail(mail, new Guid[] { datas.OtherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+            }
             ///保存数据
-            todayData.Save();
+            datas.Save();
             db.SaveChanges();
+        }
+
+        /// <summary>
+        /// 反击pvp。
+        /// </summary>
+        /// <param name="datats"></param>
+        private void PvpForRetaliation(EndCombatPvpWorkData datas)
+        {
+            using var dwUsers = datas.Lock();
+            if (dwUsers is null) //若无法锁定对象。
+            {
+                datas.HasError = true;
+                datas.ErrorCode = VWorld.GetLastError();
+                return;
+            }
+            datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpForRetaliation);
+            if (!datas.SocialRelationships.Any(c => c.Id2 == datas.OtherCharId))    //若不允许攻击
+            {
+                datas.HasError = true;
+                datas.ErrorMessage = "没有攻击权限。";
+                return;
+            }
+            var db = datas.UserContext;
+            var world = datas.World;
+            var lastCombatObj = db.Set<PvpCombat>().FirstOrDefault(c => c.Id == datas.CombatId);  //战斗对象
+            if (lastCombatObj is null)  //若找不到战报对象
+            {
+                datas.HasError = true;
+                datas.ErrorMessage = "找不到战报对象。";
+                return;
+            }
+            //更改数据
+            //增加战斗记录
+            PvpCombat pc = new PvpCombat()
+            {
+
+            };
+            pc.AttackerIds.Add(datas.GameChar.Id);
+            pc.DefenserIds.Add(datas.OtherCharId);
+            db.Add(pc);
+            //计算战利品
+            if (datas.IsWin) //若反击胜利
+            {
+                List<GameBooty> booties = new List<GameBooty>();
+                booties.FillToBooty(world, lastCombatObj.Properties);
+                booties.ForEach(c =>
+                {
+                    c.ParentId = pc.Id;
+                    c.CharId = datas.GameChar.Id;
+                }); //设置导航数据
+                booties.ForEach(c =>
+                c.SetGameItems(world, datas.ChangeItems));  //设置实际物品数据
+            }
+            //发送邮件
+            if (datas.IsWin) //反击得胜
+            {
+                //发送邮件
+                var mail = new GameMail()
+                {
+                };
+                mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_自己_胜利.ToString();
+                mail.Properties["CombatId"] = pc.Id.ToString();
+                World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+            }
+            else //反击失败
+            {
+                //发送邮件
+                var mail = new GameMail()
+                {
+                };
+                mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_自己_失败.ToString();
+                mail.Properties["CombatId"] = pc.Id.ToString();
+                
+                World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+            }
+            ///保存数据
+            datas.Save();
+            db.SaveChanges();
+        }
+
+        /// <summary>
+        /// 协助pvp。
+        /// </summary>
+        /// <param name="datats"></param>
+        private void PvpForHelp(EndCombatPvpWorkData datas)
+        {
+            datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpForHelp);
         }
 
         /// <summary>

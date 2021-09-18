@@ -167,7 +167,8 @@ namespace Gy001
             }
             else
             {
-                app.UseExceptionHandler(build => build.Run(ExceptionHandler));
+                app.UseDeveloperExceptionPage();
+                //app.UseExceptionHandler(build => build.Run(ExceptionHandler));
             }
             #endregion 启用通用服务
 

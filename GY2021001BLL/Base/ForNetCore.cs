@@ -48,7 +48,7 @@ namespace GuangYuan.GY001.BLL
         private void CreateNewUserAndChar()
         {
 #if DEBUG
-            var maxCount = 15000;
+            var maxCount = 5000;
 #else
             var maxCount = 25000;
 #endif
