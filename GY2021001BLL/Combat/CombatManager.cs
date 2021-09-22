@@ -203,7 +203,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         var gitm = World.ItemTemplateManager;
                         var coll = from tmp in gitm.Id2Template.Values
-                                   where tmp.GenusCode == 7 || tmp.GenusCode == 14
+                                   where tmp.Properties.ContainsKey("typ") && tmp.Properties.ContainsKey("mis") && tmp.Properties.ContainsKey("sec")
                                    select tmp;
                         _Dungeons = coll.ToList();
                     }
@@ -295,47 +295,41 @@ namespace GuangYuan.GY001.BLL
         /// <returns>true正常启动，false没有找到指定的场景或角色当前正在战斗。</returns>
         public void StartCombat(StartCombatData data)
         {
-            var dwUser = data.LockUser();
+            using var dwUser = data.LockUser();
             if (dwUser is null)
             {
                 data.DebugMessage = "令牌无效。";
                 data.HasError = true;
                 return;
             }
+            var cm = World.CombatManager;
+            var gameChar = data.GameChar;
+            var parent = cm.GetParent(data.Template); //大关
+            if (data.Template == parent)    //若指定了大关则变为第一小关
+            {
+                data.Template = Parent2Children[parent][0];
+            }
+            if (gameChar.CurrentDungeonId.HasValue && gameChar.CurrentDungeonId != data.Template.Id)
+            {
+                data.DebugMessage = "错误的关卡Id";
+                data.HasError = true;
+                return;
+            }
             try
             {
-                var cm = World.CombatManager;
-                var gameChar = data.GameChar;
-                var parent = cm.GetParent(data.Template); //大关
-                if (data.Template == parent)    //若指定了大关则变为第一小关
+                if (!Options?.CombatStart?.Invoke(Service, data) ?? true)
                 {
-                    data.Template = Parent2Children[parent][0];
-                }
-                if (gameChar.CurrentDungeonId.HasValue && gameChar.CurrentDungeonId != data.Template.Id)
-                {
-                    data.DebugMessage = "错误的关卡Id";
                     data.HasError = true;
                     return;
                 }
-                try
-                {
-                    if (!Options?.CombatStart?.Invoke(Service, data) ?? true)
-                    {
-                        data.HasError = true;
-                        return;
-                    }
-                }
-                catch (Exception)
-                {
-                }
-                gameChar.CurrentDungeonId = data.Template.Id;
-                gameChar.CombatStartUtc = DateTime.UtcNow;
-                data.DebugMessage = null;
-                data.HasError = false;
             }
-            finally
+            catch (Exception)
             {
             }
+            gameChar.CurrentDungeonId = data.Template.Id;
+            gameChar.CombatStartUtc = DateTime.UtcNow;
+            data.DebugMessage = null;
+            data.HasError = false;
             return;
         }
 
@@ -691,7 +685,7 @@ namespace GuangYuan.GY001.BLL
                 };
                 mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_自己_失败.ToString();
                 mail.Properties["CombatId"] = pc.Id.ToString();
-                
+
                 World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             }
             ///保存数据

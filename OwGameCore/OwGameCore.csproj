@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Description>游戏服务器的核心逻辑库。</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OW.BaseCore\OW.BaseCore.csproj" />
+    <ProjectReference Include="..\OwGame\OW.GameBaseCore.csproj" />
+  </ItemGroup>
+
+</Project>

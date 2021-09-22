@@ -80,17 +80,12 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         public void GetMails(GetMailsDatas datas)
         {
-            try
-            {
-                var coll = GetMails(datas.GameChar, datas.UserContext);
-                datas.Mails.AddRange(coll.ToList());
-                FillAttachmentes(datas.GameChar.Id, datas.Mails.SelectMany(c => c.Attachmentes), datas.UserContext);
-            }
-            catch (Exception err)
-            {
-                datas.HasError = true;
-                datas.ErrorMessage = err.Message;
-            }
+            using var dwUser = datas.LockUser();
+            if (dwUser is null)
+                return;
+            var coll = GetMails(datas.GameChar, datas.UserContext);
+            datas.Mails.AddRange(coll.ToList());
+            FillAttachmentes(datas.GameChar.Id, datas.Mails.SelectMany(c => c.Attachmentes), datas.UserContext);
         }
 
         public class GetMailsDatas : ComplexWorkDatasBase
@@ -370,6 +365,44 @@ namespace GuangYuan.GY001.BLL
             }
             return true;
         }
+
+        /// <summary>
+        /// 试图请求好友协助自己的攻击。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void RequestAssistance(RequestAssistanceDatas datas)
+        {
+            using var dwUser = datas.Lock();
+            if (dwUser is null)
+                return;
+            var rootCombat = datas.RootCombat;
+            if (rootCombat is null)
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = $"找不到指定的战报对象，Id={datas.RootCombatId}";
+                return;
+            }
+            if (rootCombat.GetRequestAssistance().HasValue)   //若已经请求了协助
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = $"已经请求了协助者。";
+                return;
+            }
+            //更改数据
+            rootCombat.SetRequestAssistance(datas.OtherCharId); //设置请求协助的对象。
+                                                                //发送邮件
+            var mail = new GameMail()
+            {
+            };
+            mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_被求助者_求助.ToString();
+            mail.Properties["CombatId"] = rootCombat.Id.ToString();
+            World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, datas.GameChar.Id); //被攻击邮件
+            //保存数据
+            datas.UserContext.SaveChanges();
+        }
+
         #endregion  邮件及相关
 
         #region 黑白名单相关
@@ -450,8 +483,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>目前最多返回5条。</returns>
         public void GetCharIdsForRequestFriend(GetCharIdsForRequestFriendDatas datas)
         {
-            datas.DbContext ??= World.CreateNewUserDbContext();
-            var db = datas.DbContext;
+            var db = datas.UserContext;
             using var view = new FriendDataView(World, datas.GameChar, DateTime.UtcNow);
             IEnumerable<Guid> result;
             if (!string.IsNullOrWhiteSpace(datas.DisplayName))   //若需要按角色昵稱过滤
@@ -1581,10 +1613,6 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public List<Guid> CharIds { get; } = new List<Guid>();
 
-        /// <summary>
-        /// 所使用的数据库上下文。
-        /// </summary>
-        public DbContext DbContext { get; set; }
 
         /// <summary>
         /// 仅当按身体模板过滤时，此属性才有效。
@@ -1592,23 +1620,18 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public bool DonotRefresh { get; set; }
 
-        private bool disposedValue;
-
         protected override void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!Disposed)
             {
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    DbContext?.DisposeAsync();
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                DbContext = null;
 
-                disposedValue = true;
                 base.Dispose(disposing);
             }
         }

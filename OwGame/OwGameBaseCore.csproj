@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>OW.Game</RootNamespace>
-    <AssemblyName>OwGameCore</AssemblyName>
-    <Description>封装与游戏数据库相关的类型。</Description>
-    <PackageId>OW.GameCore</PackageId>
+    <AssemblyName>OwGameBaseCore</AssemblyName>
+    <Description>封装游戏基础逻辑的类型。</Description>
+    <PackageId>OW.GameBaseCore</PackageId>
     <Authors>OW</Authors>
   </PropertyGroup>
 
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OW.BaseCore\OW.BaseCore.csproj" />
+    <ProjectReference Include="..\OW.BaseCore\OwBaseCore.csproj" />
   </ItemGroup>
 
 </Project>

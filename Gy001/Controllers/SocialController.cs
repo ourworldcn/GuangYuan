@@ -59,19 +59,26 @@ namespace Gy001.Controllers
         {
             var result = new GetMailsReturnDto();
             var social = _World.SocialManager;
-            using var datas = new GetMailsDatas(_World, model.Token);
-            using var dwUser = datas.LockUser();
-            if (dwUser is null)
+            using var datas = new GetMailsDatas(_World, model.Token)
             {
-                return Unauthorized("令牌错误。");
-            }
+                UserContext = _UserContext,
+            };
             social.GetMails(datas);
-            if (model.Ids is null || model.Ids.Count <= 0)  //若取所有邮件
-                result.Mails.AddRange(datas.Mails.Select(c => (GameMailDto)c));
+            if (!datas.HasError)
+                if (model.Ids is null || model.Ids.Count <= 0)  //若取所有邮件
+                    result.Mails.AddRange(datas.Mails.Select(c => (GameMailDto)c));
+                else
+                {
+                    result.Mails.AddRange(datas.Mails.Select(c => (GameMailDto)c));    //TO DO效率低下
+                    result.Mails.RemoveAll(c => !model.Ids.Contains(c.Id));
+                }
             else
             {
-                result.Mails.AddRange(datas.Mails.Select(c => (GameMailDto)c));    //TO DO效率低下
-                result.Mails.RemoveAll(c => !model.Ids.Contains(c.Id));
+                result.HasError = true;
+                result.ErrorCode = datas.ErrorCode;
+                result.DebugMessage = datas.ErrorMessage;
+                if (datas.ErrorCode == ErrorCodes.ERROR_INVALID_TOKEN)
+                    return Unauthorized(datas.ErrorMessage);
             }
             return result;
         }
@@ -161,6 +168,7 @@ namespace Gy001.Controllers
             using var data = new GetCharIdsForRequestFriendDatas(_World, model.Token)
             {
                 DisplayName = model.DisplayName,
+                UserContext = _UserContext,
             };
             data.BodyTIds.AddRange(model.BodyTIds.Select(c => GameHelper.FromBase64String(c)));
             using var disposer = data.LockUser();
@@ -172,7 +180,6 @@ namespace Gy001.Controllers
             try
             {
                 data.BodyTIds.AddRange(model.BodyTIds.Select(c => GameHelper.FromBase64String(c)));
-                data.DbContext = _World.CreateNewUserDbContext();
                 _World.SocialManager.GetCharIdsForRequestFriend(data);
                 if (data.HasError)
                 {
@@ -180,7 +187,7 @@ namespace Gy001.Controllers
                     result.DebugMessage = data.ErrorMessage;
                     return result;
                 }
-                var coll = _World.SocialManager.GetCharSummary(data.CharIds, data.DbContext);
+                var coll = _World.SocialManager.GetCharSummary(data.CharIds, data.UserContext);
                 result.CharSummaries.AddRange(coll.Select(c => (CharSummaryDto)c));
             }
             catch (Exception err)
@@ -632,6 +639,37 @@ namespace Gy001.Controllers
                 result.DebugMessage = err.Message;
             }
             return result;
+        }
+
+        /// <summary>
+        /// 请求好友协助进行pvp复仇。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<RequestAssistanceReturnDto> RequestAssistance(RequestAssistanceParamsDto model)
+        {
+            var result = new RequestAssistanceReturnDto()
+            {
+            };
+            using var datas = new RequestAssistanceDatas(_World, model.Token, GameHelper.FromBase64String(model.OtherId))
+            {
+                UserContext = _UserContext,
+                RootCombatId = GameHelper.FromBase64String(model.CombatId),
+            };
+            _World.SocialManager.RequestAssistance(datas);
+            result.HasError = datas.HasError;
+            result.DebugMessage = datas.ErrorMessage;
+            result.ErrorCode = datas.ErrorCode;
+            switch (result.ErrorCode)
+            {
+                case ErrorCodes.ERROR_INVALID_TOKEN:
+                    return Unauthorized(result.DebugMessage);
+                case ErrorCodes.ERROR_BAD_ARGUMENTS:
+                    return BadRequest(result.DebugMessage);
+                default:
+                    return result;
+            }
         }
     }
 

@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gy2021001Template\Gy001TemplateDb.csproj" />
-    <ProjectReference Include="..\OwGame\OW.GameCore.csproj" />
+    <ProjectReference Include="..\OwGame\OwGameBaseCore.csproj" />
   </ItemGroup>
 
 </Project>

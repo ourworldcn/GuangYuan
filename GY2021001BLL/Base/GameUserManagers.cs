@@ -506,7 +506,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="timeout">超时时间。-1毫秒是永久等待(<seealso cref="Timeout.InfiniteTimeSpan"/>),
         /// 省略或为null是使用配置中(Options.DefaultLockTimeout)，默认的超时值锁定。</param>
         /// <returns></returns>
-        public bool GetOrAddAndLock([NotNull] ref GameUser user, [AllowNull] TimeSpan? timeout = null)
+        internal protected bool GetOrAddAndLock([NotNull] ref GameUser user, [AllowNull] TimeSpan? timeout = null)
         {
             var lName = user.LoginName;
             using var dwLName = World.LockStringAndReturnDisposer(ref lName, timeout ?? Options.DefaultLockTimeout);    //锁定登录登出
@@ -528,7 +528,7 @@ namespace GuangYuan.GY001.BLL
             {
                 if (Lock(user, timeout))  //若成功锁定
                 {
-                    _Store.Add(gu);
+                    _Store.Add(user);
                     return true;
                 }
                 else
@@ -578,6 +578,7 @@ namespace GuangYuan.GY001.BLL
                 user = null;
                 return null;
             }
+            gu = gc.GameUser;
             gu.Loaded(Service, context);
             result = this.GetOrAddAndLockAndReturnDisposer(ref gu, timeout);
             if (result is null) //若锁定失败

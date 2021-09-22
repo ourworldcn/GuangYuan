@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Description>游戏核心逻辑封装</Description>
+    <RootNamespace>OW.Game</RootNamespace>
+    <AssemblyName>OwGameCore</AssemblyName>
+  </PropertyGroup>
+
+</Project>

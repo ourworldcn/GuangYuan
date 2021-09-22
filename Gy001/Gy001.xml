@@ -984,6 +984,17 @@
             令牌。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.SocialDtoBase">
+            <summary>
+            设计到两个角色的功能接口数据封装类。
+            Token指定了当前角色，OtherCharId是另一个角色的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SocialDtoBase.OtherCharId">
+            <summary>
+            另一个角色对象的Id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.PagingWithTokenParamsDtoBase">
             <summary>
             分页控制数据。
@@ -1574,6 +1585,21 @@
             阵容设置集合，参见 SetLineupItem 说明。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.RequestAssistanceParamsDto">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RequestAssistanceParamsDto.OtherId">
+            <summary>
+            要请求的好友角色Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RequestAssistanceParamsDto.CombatId">
+            <summary>
+            原始战斗的Id。针对该战斗进行协助。从邮件中获取。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetMailsParamsDto">
             <summary>
             获取邮件接口参数封装类数据。
@@ -1950,7 +1976,7 @@
             范围性的用户数据库上下文。
             </summary>
         </member>
-        <member name="M:Gy001.Controllers.SocialController.#ctor(GuangYuan.GY001.BLL.VWorld,GuangYuan.GY001.UserDb.GY001UserContext)">
+        <member name="M:Gy001.Controllers.SocialController.#ctor(OW.Game.VWorld,GuangYuan.GY001.UserDb.GY001UserContext)">
             <summary>
             构造函数，用于DI。
             </summary>
@@ -2108,6 +2134,13 @@
             ErrorCodes.RPC_S_OUT_OF_RESOURCES=1712 钻石不足
             </returns>
             <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.RequestAssistance(GY2021001WebApi.Models.RequestAssistanceParamsDto)">
+            <summary>
+            请求好友协助进行pvp复仇。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="T:Gy001.Controllers.WeatherForecastController">
             <summary>

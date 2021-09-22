@@ -197,6 +197,7 @@ namespace GuangYuan.GY001.UserDb
             Services = service;
             DbContext = parameters["db"] as DbContext;
 
+            CurrentToken = Guid.NewGuid();
             LoginName = (string)parameters["uid"];
             var pwd = (string)parameters["pwd"];
             using var hash = (HashAlgorithm)service.GetService(typeof(HashAlgorithm));

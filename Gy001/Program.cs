@@ -1,6 +1,4 @@
-using Game.Social;
 using GuangYuan.GY001.BLL;
-using GuangYuan.GY001.BLL.Social;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.AspNetCore.Hosting;
@@ -10,28 +8,23 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gy001
 {
     public class Program
     {
-        static private IHost _Host;
+        private static IHost _Host;
 
         public IHost DefaultHost => _Host;
 
@@ -52,12 +45,8 @@ namespace Gy001
         private static void Test(IHost host)
         {
             var world = host.Services.GetRequiredService<VWorld>();
-            var excp = new Win32Exception(ErrorCodes.ERROR_INVALID_TOKEN);
-            var str = excp.Message;
-
-            var c1 = TypeDescriptor.GetConverter(typeof(Guid), true);
-            var c2 = TypeDescriptor.GetConverter(typeof(Guid));
-            //using var db = world.CreateNewUserDbContext();
+            using var db = world.CreateNewUserDbContext();
+            //var coll = db.Set<PvpCombat>().Where(c => c.GetRequestAssistance()).ToArray();
             //var collChar = db.Set<GameChar>().Where(c => coll.Contains(c.Id)).ToArray();
             //GameUserCache cache = new GameUserCache(world.Service, optionsAccessor: new MemoryCacheOptions() { });
             //cache.GetOrCreate("d", c => Task.Run(() => new object()));

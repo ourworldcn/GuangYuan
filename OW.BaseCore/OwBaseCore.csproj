@@ -5,6 +5,7 @@
     <RootNamespace>OW</RootNamespace>
     <!--<LangVersion>7.3</LangVersion>-->
     <Authors>OW</Authors>
+    <AssemblyName>OwBaseCore</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

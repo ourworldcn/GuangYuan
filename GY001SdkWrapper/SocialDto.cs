@@ -74,7 +74,6 @@ namespace Game.Social
     {
         public GameSocialBaseDto()
         {
-
         }
 
         /// <summary>

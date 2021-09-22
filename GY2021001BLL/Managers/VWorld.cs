@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.TemplateDb;
+﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game.Store;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -14,7 +16,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace GuangYuan.GY001.BLL
+namespace OW.Game
 {
     /// <summary>
     /// 虚拟世界主控服务的配置类。
@@ -273,7 +275,8 @@ namespace GuangYuan.GY001.BLL
                             dt = DateTime.UtcNow;
                             continue;
                         }
-                        if (DateTime.UtcNow - dt > TimeSpan.FromSeconds(1) || waitSucc && OwGameCommandInterceptor.ExecutingCount <= 0)    //若超过1s,避免过于频繁的保存
+                        if (DateTime.UtcNow - dt > TimeSpan.FromSeconds(1) ||     //若超过1s,避免过于频繁的保存
+                            waitSucc && OwGameCommandInterceptor.ExecutingCount <= 0)   //避免IO过于频繁
                         {
                             _TemporaryUserContext.SaveChanges();
                             if (_TemporaryUserContext.ChangeTracker.Entries().Count() > 200)    //若数据较多
@@ -510,6 +513,18 @@ namespace GuangYuan.GY001.BLL
         #endregion 错误处理
 
         #region 锁定字符串
+
+        private static readonly ConcurrentDictionary<string, WeakReference<string>> _StringPool = new ConcurrentDictionary<string, WeakReference<string>>();
+
+        static string GetOrAddString(string str)
+        {
+            var wr = _StringPool.GetOrAdd(str, c => new WeakReference<string>(c));
+            if (!wr.TryGetTarget(out var result))
+                lock (wr)
+                    if (!wr.TryGetTarget(out result))
+                        wr.SetTarget(str);
+            return result;
+        }
 
         /// <summary>
         /// 从字符串拘留池中取出实力并试图锁定。

@@ -70,7 +70,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 获取或设置此邮件相关人的地址集合。
         /// </summary>
-        virtual public List<GameMailAddress> Addresses
+        public virtual List<GameMailAddress> Addresses
         {
             get
             {
@@ -123,7 +123,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 附件的集合。
         /// </summary>
-        virtual public List<GameMailAttachment> Attachmentes
+        public virtual List<GameMailAttachment> Attachmentes
         {
             get
             {
@@ -132,16 +132,6 @@ namespace GuangYuan.GY001.UserDb
                         _Attachmentes ??= new List<GameMailAttachment>();
                 return _Attachmentes;
             }
-        }
-
-        public void InvokeSaving(EventArgs e)
-        {
-            OnSaving(e);
-        }
-
-        protected virtual void OnSaving(EventArgs e)
-        {
-
         }
 
     }
@@ -176,7 +166,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 导航属性，此地址所属邮件。
         /// </summary>
-        virtual public GameMail Mail { get; set; }
+        public virtual GameMail Mail { get; set; }
 
         /// <summary>
         /// 这个地址的类型。
@@ -207,7 +197,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 导航属性，此地址所属邮件。
         /// </summary>
-        virtual public GameMail Mail { get; set; }
+        public virtual GameMail Mail { get; set; }
 
         /// <summary>
         /// 已经领取该附件的角色Id的集合。

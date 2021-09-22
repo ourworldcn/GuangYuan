@@ -2,13 +2,13 @@
  * 供Unity使用的SDK文件。
  * 目前使用C# 7.3版本语法。
  */
-#pragma warning disable IDE0074 // 使用复合分配
 using Game.Social;
 using GuangYuan.GY001.BLL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+#pragma warning disable IDE0074 // 使用复合分配
 
 namespace GY2021001WebApi.Models
 {
@@ -255,6 +255,29 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string Token { get; set; }
 
+    }
+
+    /// <summary>
+    /// 设计到两个角色的功能接口数据封装类。
+    /// Token指定了当前角色，OtherCharId是另一个角色的Id。
+    /// </summary>
+    [DataContract]
+    public class SocialDtoBase : TokenDtoBase
+    {
+        public SocialDtoBase()
+        {
+        }
+
+        public SocialDtoBase(string token, string otherCharId) : base(token)
+        {
+            OtherCharId = otherCharId;
+        }
+
+        /// <summary>
+        /// 另一个角色对象的Id。
+        /// </summary>
+        [DataMember]
+        public string OtherCharId { get; set; }
     }
 
     /// <summary>
@@ -630,7 +653,7 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string DebugMessage { get; set; }
-        public int ErrorCode { get;  set; }
+        public int ErrorCode { get; set; }
 
     }
 
@@ -1813,6 +1836,42 @@ namespace GY2021001WebApi.Models
     #endregion 战斗相关
 
     #region 社交相关
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [DataContract]
+    public class RequestAssistanceParamsDto : TokenDtoBase
+    {
+        public RequestAssistanceParamsDto()
+        {
+        }
+
+        public RequestAssistanceParamsDto(string token) : base(token)
+        {
+        }
+
+        /// <summary>
+        /// 要请求的好友角色Id。
+        /// </summary>
+        [DataMember]
+        public string OtherId { get; set; }
+
+        /// <summary>
+        /// 原始战斗的Id。针对该战斗进行协助。从邮件中获取。
+        /// </summary>
+        [DataMember]
+        public string CombatId { get; set; }
+
+    }
+
+    [DataContract]
+    public class RequestAssistanceReturnDto : ReturnDtoBase
+    {
+        public RequestAssistanceReturnDto()
+        {
+        }
+    }
 
     /// <summary>
     /// 获取邮件接口参数封装类数据。
