@@ -782,7 +782,7 @@ namespace GuangYuan.GY001.BLL
                 datas.HasError = true;
                 return;
             }
-            decimal stc = src.GetNumberOfStackRemainder();  //剩余可堆叠数
+            decimal stc = destItem.GetNumberOfStackRemainder();  //剩余可堆叠数
             count = Math.Min(count, stc);   //实际移走数量
             if (src.Name2FastChangingProperty.TryGetValue("Count", out FastChangingProperty fcp))    //若有快速变化属性
             {
@@ -1448,7 +1448,7 @@ namespace GuangYuan.GY001.BLL
             var child = FuhuaCore(datas.GameChar, parent1, parent2);
             child.Name2FastChangingProperty.Add("fhcd", new FastChangingProperty(TimeSpan.FromSeconds(1), 1, 3600 * 8, 0, DateTime.UtcNow)
             {
-                Tag = (datas.GameChar.Id,child.Id),
+                Tag = (datas.GameChar.Id, child.Id),
             });
             gim.AddItem(child, fuhuaSlot, null, datas.ChangesItem); //放入孵化槽
             var qiwu = datas.GameChar.GetQiwuBag();
@@ -1482,14 +1482,36 @@ namespace GuangYuan.GY001.BLL
             var t2BodyT = gim.GetBodyTemplate(parent2);
             var tids = gim.GetTujianResult(gameChar, t1BodyT, t2BodyT);
             GameItemTemplate headT, bodyT;  //输出结果的头和身体模板对象
-            if (null != tids && VWorld.IsHit((double)tids.Value.Item3))  //使用图鉴
+            if (null != tids && VWorld.IsHit((double)tids.Value.Item3))  //若使用图鉴
             {
                 headT = gim.GetTemplateFromeId(tids.Value.Item1);
                 bodyT = gim.GetTemplateFromeId(tids.Value.Item2);
             }
             else //不用有图鉴
             {
-                if (VWorld.IsHit(0.2))   //若出纯种生物
+                double probChun = 0.2;  //纯种坐骑的概率
+
+                Action<GameItem> action = c =>  //分别针对每个双亲的计算公式
+                {
+                    if (c.TemplateId == ProjectConstant.HomelandPatCard) //若是卡片
+                    {
+                        var rank = parent1.Properties.GetDecimalOrDefault("nerank");  //等级
+                        if (rank >= 3)   //若是高级坐骑
+                        {
+                            var bd = gim.GetBody(parent1);    //取身体对象
+                            var tidString = bd.TemplateId.ToString(); //记录合成次数的键名
+                            var suppusCount = gameChar.Properties.GetDecimalOrDefault(tidString); //已经用该卡合成的次数
+                            if (suppusCount <= 3) //若尚未达成次数
+                            {
+                                probChun = 0; //不准出现纯种生物
+                            }
+                            gameChar.Properties[tidString] = ++suppusCount;
+                        }
+                    }
+                };
+
+                action(parent1); action(parent2);
+                if (VWorld.IsHit(probChun))   //若出纯种生物
                 {
                     if (VWorld.IsHit(0.5))   //若出a头
                     {

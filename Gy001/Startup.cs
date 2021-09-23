@@ -140,6 +140,8 @@ namespace Gy001
             services.AddSingleton<IGameThingHelper>(c => c.GetService<GameItemManager>());
 
             services.AddSingleton(c => new GameSocialManager(c, new SocialManagerOptions()));
+            //加入任务/成就管理器
+            services.AddSingleton(c => new GameMissionManager(c, new GameMissionManagerOptions()));
 
             services.AddSingleton<IGameObjectInitializer>(c => new Gy001Initializer(c, new Gy001InitializerOptions()));
 

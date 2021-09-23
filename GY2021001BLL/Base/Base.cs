@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Store;
 using System;
@@ -14,7 +13,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -41,6 +39,39 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
+    /// 错误码封装。
+    /// </summary>
+    public static class ErrorCodes
+    {
+        public const int NO_ERROR = 0;
+        public const int WAIT_TIMEOUT = 258;
+        public const int ERROR_INVALID_TOKEN = 315;
+        public const int ERROR_NO_SUCH_USER = 1317;
+        /// <summary>
+        /// 并发或交错操作更改了对象的状态，使此操作无效。
+        /// </summary>
+        public const int E_CHANGED_STATE = unchecked((int)0x8000000C);
+        public const int Unauthorized = unchecked((int)0x80190191);
+        public const int RO_E_CLOSED = unchecked((int)0x80000013);
+        public const int ObjectDisposed = RO_E_CLOSED;
+
+        /// <summary>
+        /// 参数错误。One or more arguments are not correct.
+        /// </summary>
+        public const int ERROR_BAD_ARGUMENTS = 160;
+
+        /// <summary>
+        /// 没有足够资源完成操作。
+        /// </summary>
+        public const int RPC_S_OUT_OF_RESOURCES = 1721;
+
+        /// <summary>
+        /// 没有足够的配额来处理此命令。通常是超过某些次数的限制。
+        /// </summary>
+        public const int ERROR_NOT_ENOUGH_QUOTA = 1816;
+    }
+
+    /// <summary>
     /// 带详细信息的返回值。
     /// </summary>
     public interface IResultWorkData
@@ -61,19 +92,20 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public string ErrorMessage { get; set; }
 
-        /// <summary>
-        /// 从<see cref="VWorld"/>对象获取错误信息。
-        /// </summary>
-        public void FillErrorFromWorld()
-        {
-            ErrorCode = VWorld.GetLastError();
-            ErrorMessage = VWorld.GetLastErrorMessage();
-        }
     }
 
     public static class ResultWorkDataExtensions
     {
+        /// <summary>
+        /// 从<see cref="VWorld"/>对象获取错误信息。
+        /// </summary>
+        /// <param name="obj"></param>
+        public static void FillErrorFromWorld(this IResultWorkData obj)
+        {
+            obj.ErrorCode = VWorld.GetLastError();
+            obj.ErrorMessage = VWorld.GetLastErrorMessage();
 
+        }
     }
 
     /// <summary>
@@ -137,28 +169,6 @@ namespace GuangYuan.GY001.BLL
 
         [Conditional("DEBUG")]
         public void SetDebugMessage(string msg) => ErrorMessage = msg;
-
-        private string _ErrorMessage;
-
-        /// <summary>
-        /// 调试信息，如果发生错误，这里给出简要说明。
-        /// </summary>
-        public string ErrorMessage
-        {
-            get => _ErrorMessage ??= new Win32Exception(ErrorCode).Message;
-            set => _ErrorMessage = value;
-        }
-
-        /// <summary>
-        /// 是否有错误。
-        /// false没有错误，true有错误。
-        /// </summary>
-        public bool HasError { get; set; }
-
-        /// <summary>
-        /// 返回码。当前版本默认使用<see cref="HttpStatusCode"/>。如果派生类不打算使用，则需要自行定义说明。
-        /// </summary>
-        public int ErrorCode { get; set; }
 
         #endregion 出参
 
@@ -291,7 +301,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 
     /// </summary>
-    public abstract class GameCharWorkDataBase : WorkDataBase
+    public abstract class GameCharWorkDataBase : WorkDataBase, IResultWorkData
     {
         public const string Separator = "`";
 
@@ -355,6 +365,24 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+        #region IResultWorkData接口相关
+
+        public bool HasError { get; set; }
+        public int ErrorCode { get; set; }
+
+        private string _ErrorMessage;
+
+        /// <summary>
+        /// 调试信息，如果发生错误，这里给出简要说明。
+        /// </summary>
+        public string ErrorMessage
+        {
+            get => _ErrorMessage ??= new Win32Exception(ErrorCode).Message;
+            set => _ErrorMessage = value;
+        }
+
+        #endregion IResultWorkData接口相关
+
         protected override void Dispose(bool disposing)
         {
             if (!Disposed)
@@ -375,7 +403,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 涉及到多个角色的的功能函数使用的工作数据基类。
     /// </summary>
-    public abstract class RelationshipWorkDataBase : GameCharWorkDataBase, IResultWorkData
+    public abstract class RelationshipWorkDataBase : GameCharWorkDataBase
     {
         protected RelationshipWorkDataBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar)
         {
@@ -399,46 +427,50 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public List<Guid> OtherCharIds => _OtherCharIds;
 
-        /// <summary>
-        /// 锁定所有角色。
-        /// </summary>
-        /// <returns></returns>
-        public virtual IDisposable LockAll()
-        {
-            var coll = _OtherCharIds.Append(GameChar.Id);
-            return World.CharManager.LockOrLoadWithCharIds(coll, World.CharManager.Options.DefaultLockTimeout);
-        }
-
         private Guid _OtherCharId;
+        /// <summary>
+        /// 二元关系中，另一个角色的Id。
+        /// </summary>
         public Guid OtherCharId { get => _OtherCharId; set => _OtherCharId = value; }
 
         public GameChar OtherChar { get => World.CharManager.GetCharFromId(OtherCharId); }
 
-        #region IResultWorkData接口相关
-
-        public bool HasError { get; set; }
-        public int ErrorCode { get; set; }
-
-        public string ErrorMessage { get; set; }
-
-        #endregion IResultWorkData接口相关
-
         /// <summary>
-        /// 锁定相关的角色对象。
+        /// 锁定所有的角色对象。
         /// </summary>
         /// <returns></returns>
-        public virtual IDisposable Lock()
+        public virtual IDisposable LockAll()
         {
             try
             {
-                var ary = new Guid[] { GameChar.Id, _OtherCharId };
-                return World.CharManager.LockOrLoadWithCharIds(ary, World.CharManager.Options.DefaultLockTimeout);
+                return World.CharManager.LockOrLoadWithCharIds(AllCharIds, World.CharManager.Options.DefaultLockTimeout * AllCharIds.Count * 0.8);
             }
             catch (Exception err)
             {
                 var logger = Service?.GetService<ILogger<RelationshipWorkDataBase>>();
                 logger?.LogWarning($"锁定多个角色时出现异常——{err.Message}");
                 return null;
+            }
+        }
+
+        private List<Guid> _AllCharIds;
+
+        /// <summary>
+        /// 组合所有相关角色Id，用于<see cref="LockAll"/>
+        /// </summary>
+        public List<Guid> AllCharIds
+        {
+            get
+            {
+                if (_AllCharIds is null)
+                {
+                    _AllCharIds = new List<Guid>(OtherCharIds)
+                    {
+                        GameChar.Id,
+                        _OtherCharId
+                    };
+                }
+                return _AllCharIds;
             }
         }
 

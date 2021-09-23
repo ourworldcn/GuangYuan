@@ -17,12 +17,12 @@ namespace GuangYuan.GY001.UserDb.Combat
         }
 
         /// <summary>
-        /// 所属战斗。
+        /// 所属战斗对象的Id。
         /// </summary>
         public Guid ParentId { get; set; }
 
         /// <summary>
-        /// 所属角色。
+        /// 所属角色(参与战斗的角色Id)。
         /// </summary>
         public Guid CharId { get; set; }
 

@@ -1,6 +1,7 @@
 ﻿using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Combat;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,28 @@ namespace GuangYuan.GY001.BLL
         /// 反击和协助才需要填写。直接pvp时可以省略。
         /// </summary>
         public Guid CombatId { get; set; }
+
+        PvpCombat _Combat;
+        /// <summary>
+        /// 获取战斗对象，如果找不到则设置错误信息。
+        /// </summary>
+        public PvpCombat Combat
+        {
+            get
+            {
+                if (_Combat is null)
+                {
+                    _Combat = UserContext.Set<PvpCombat>().Find(CombatId);
+                    if (_Combat is null)
+                    {
+                        HasError = true;
+                        ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                        ErrorMessage = $"找不到指定的战报对象，Id={CombatId}";
+                    }
+                }
+                return _Combat;
+            }
+        }
 
         /// <summary>
         /// 当前日期。
@@ -192,5 +215,6 @@ namespace GuangYuan.GY001.BLL
             }
             return result;
         }
+
     }
 }

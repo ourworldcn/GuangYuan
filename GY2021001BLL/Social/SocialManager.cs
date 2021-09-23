@@ -85,7 +85,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             var coll = GetMails(datas.GameChar, datas.UserContext);
             datas.Mails.AddRange(coll.ToList());
-            FillAttachmentes(datas.GameChar.Id, datas.Mails.SelectMany(c => c.Attachmentes), datas.UserContext);
+            FillAttachmentes(datas.GameChar.Id, datas.Mails.SelectMany(c => c.Attachmentes));
         }
 
         public class GetMailsDatas : ComplexWorkDatasBase
@@ -116,8 +116,8 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="gcId">角色Id。</param>
         /// <param name="attachments"></param>
-        /// <param name="db"></param>
-        private void FillAttachmentes(Guid gcId, IEnumerable<GameMailAttachment> attachments, DbContext db)
+        /// 
+        private void FillAttachmentes(Guid gcId, IEnumerable<GameMailAttachment> attachments)
         {
             foreach (var item in attachments)
             {
@@ -160,7 +160,9 @@ namespace GuangYuan.GY001.BLL
         /// <param name="sendId">发件人Id.</param>
         /// <param name="cc">抄送人列表，当前未用，保留未null或省略。</param>
         /// <param name="sc">密件抄送列表，当前未用，保留未null或省略。</param>
+#pragma warning disable IDE0060 // 删除未使用的参数,禁用该警告，原因有些参数保留未用
         public void SendMail([NotNull] GameMail mail, [NotNull] IEnumerable<Guid> to, Guid sendId, IEnumerable<Guid> cc = null, IEnumerable<Guid> sc = null)
+#pragma warning restore IDE0060 // 删除未使用的参数
         {
             try
             {
@@ -372,7 +374,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void RequestAssistance(RequestAssistanceDatas datas)
         {
-            using var dwUser = datas.Lock();
+            using var dwUser = datas.LockAll();
             if (dwUser is null)
                 return;
             var rootCombat = datas.RootCombat;
@@ -399,6 +401,8 @@ namespace GuangYuan.GY001.BLL
             mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_被求助者_求助.ToString();
             mail.Properties["CombatId"] = rootCombat.Id.ToString();
             World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, datas.GameChar.Id); //被攻击邮件
+            //关系数据
+            datas.SocialRelationship.Flag++;
             //保存数据
             datas.UserContext.SaveChanges();
         }
@@ -483,7 +487,6 @@ namespace GuangYuan.GY001.BLL
         /// <returns>目前最多返回5条。</returns>
         public void GetCharIdsForRequestFriend(GetCharIdsForRequestFriendDatas datas)
         {
-            var db = datas.UserContext;
             using var view = new FriendDataView(World, datas.GameChar, DateTime.UtcNow);
             IEnumerable<Guid> result;
             if (!string.IsNullOrWhiteSpace(datas.DisplayName))   //若需要按角色昵稱过滤
@@ -834,7 +837,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas">工作数据。</param>
         public PatForTiliResult PatForTili(PatForTiliWorkData datas)
         {
-            using var dwUsers = datas.Lock();
+            using var dwUsers = datas.LockAll();
             if (dwUsers is null)
                 return PatForTiliResult.TimesOver;
             DateTime dtNow = DateTime.UtcNow;   //当前时间
@@ -872,7 +875,7 @@ namespace GuangYuan.GY001.BLL
 
         public class PatForTiliWorkData : RelationshipWorkDataBase
         {
-            private const string key = "patcountVisitors";
+            //private const string key = "patcountVisitors";
 
             public PatForTiliWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId, DateTime now) : base(service, gameChar, otherGCharId)
             {
@@ -979,7 +982,7 @@ namespace GuangYuan.GY001.BLL
         public void PatWithMounts(PatWithMountsDatas datas)
         {
             var now = datas.Today;
-            using var dwChar = datas.Lock();
+            using var dwChar = datas.LockAll();
             if (dwChar is null)
             {
                 datas.HasError = true;
@@ -1076,7 +1079,7 @@ namespace GuangYuan.GY001.BLL
             /// <inheritdoc/>
             /// </summary>
             /// <returns></returns>
-            public override IDisposable Lock()
+            public override IDisposable LockAll()
             {
                 var ary = new Guid[] { GameChar.Id, OtherCharId };
                 return World.CharManager.LockOrLoadWithCharIds(ary, World.CharManager.Options.DefaultLockTimeout);
@@ -1294,7 +1297,7 @@ namespace GuangYuan.GY001.BLL
             var gc = datas.GameChar;
             var gim = World.ItemManager;
             var db = datas.Context;
-            using var dwUsers = datas.Lock();
+            using var dwUsers = datas.LockAll();
             try
             {
                 var objChar = datas.OtherChar;
@@ -1396,8 +1399,7 @@ namespace GuangYuan.GY001.BLL
             using var dwUser = datas.LockUser();    //锁定用户
             if (dwUser is null) //若无法锁定
             {
-                datas.HasError = true;
-                datas.ErrorCode = VWorld.GetLastError();
+                datas.FillErrorFromWorld();
                 return;
             }
             const string pricePName = "refreshPriceD";    //升级的代价属性名

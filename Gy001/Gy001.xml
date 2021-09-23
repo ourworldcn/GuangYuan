@@ -1956,12 +1956,6 @@
             外围系统。
             </summary>
         </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
             使用蓝图制造或升级物品。
@@ -2132,6 +2126,7 @@
             <param name="model"><seealso cref="T:GY2021001WebApi.Models.GetPvpListParamsDto"/></param>
             <returns><seealso cref="T:GY2021001WebApi.Models.GetPvpListReturnDto"/>
             ErrorCodes.RPC_S_OUT_OF_RESOURCES=1712 钻石不足
+            ErrorCodes.ERROR_NOT_ENOUGH_QUOTA = 1816 超过刷新次数的上限
             </returns>
             <response code="401">令牌错误。</response>
         </member>

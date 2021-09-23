@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net;
 using System.Runtime.CompilerServices;
 
 namespace GuangYuan.GY001.BLL
@@ -109,11 +108,6 @@ namespace GuangYuan.GY001.BLL
         /// 要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
         /// </summary>
         public GameItemTemplate Template { get; set; }
-
-        /// <summary>
-        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
-        /// </summary>
-        public bool HasError { get; set; }
 
         /// <summary>
         /// 调试信息。调试状态下返回时填写。
@@ -485,7 +479,7 @@ namespace GuangYuan.GY001.BLL
 #pragma warning disable CS0219 // 变量“pvpRetaliation”已被赋值，但从未使用过它的值
             const string pvpRetaliation = "pvpRetaliation";   //反击字段
 #pragma warning restore CS0219 // 变量“pvpRetaliation”已被赋值，但从未使用过它的值
-            using var dwUsers = datas.Lock();
+            using var dwUsers = datas.LockAll();
             if (dwUsers is null) //若无法锁定对象。
             {
                 datas.HasError = true;
@@ -612,7 +606,6 @@ namespace GuangYuan.GY001.BLL
             }
             ///保存数据
             datas.Save();
-            db.SaveChanges();
         }
 
         /// <summary>
@@ -621,7 +614,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datats"></param>
         private void PvpForRetaliation(EndCombatPvpWorkData datas)
         {
-            using var dwUsers = datas.Lock();
+            using var dwUsers = datas.LockAll();
             if (dwUsers is null) //若无法锁定对象。
             {
                 datas.HasError = true;
@@ -690,7 +683,6 @@ namespace GuangYuan.GY001.BLL
             }
             ///保存数据
             datas.Save();
-            db.SaveChanges();
         }
 
         /// <summary>
@@ -699,7 +691,59 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datats"></param>
         private void PvpForHelp(EndCombatPvpWorkData datas)
         {
-            datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpForHelp);
+            if (datas.Combat is null || datas.Combat.DefenserIds.Count <= 0)   //若找不到战报对象,或数据异常
+                return;
+            var oriCharId = datas.Combat.DefenserIds.First();   //原始被打角色Id
+            datas.OtherCharIds.AddRange(datas.Combat.DefenserIds);  //将原始战斗的防御方角色ID加入锁定范围
+            using var dwUsers = datas.LockAll();    //锁定相关角色
+            if (dwUsers is null)
+            {
+                (datas as IResultWorkData).FillErrorFromWorld();
+                return;
+            }
+            var db = datas.UserContext;
+            var assId = datas.Combat.GetRequestAssistance();
+            if (assId != datas.GameChar.Id || !datas.Combat.GetAssistanceDone()) //没有请求当前角色协助
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = $"指定的战报对象没有请求此角色协助攻击或已经攻击过了。";
+            }
+            //更改数据
+            var pc = new PvpCombat  //本次战斗数据
+            {
+            };
+            pc.AttackerIds.Add(datas.GameChar.Id);
+            pc.DefenserIds.Add(datas.OtherCharId);
+            db.Add(pc);
+            //获取战利品
+            IEnumerable<GameBooty> oriBooty = Array.Empty<GameBooty>();    //夺回战利品
+            IEnumerable<GameBooty> newBooty = Array.Empty<GameBooty>();    //协助战利品
+            if (datas.IsWin)    //若赢得战斗
+            {
+                var boo = datas.Combat.BootyOfAttacker(datas.UserContext);  //原始进攻方的战利品
+                newBooty = boo.Select(c => new GameBooty   //计算进攻方战利品
+                {
+                    ParentId = pc.Id,
+                    CharId = datas.GameChar.Id,
+                    TemplateId = c.TemplateId,
+                    Count = Math.Round(c.Count * 0.3m, MidpointRounding.AwayFromZero),
+                });
+                db.AddRange(newBooty);  //加入数据库
+                oriBooty = boo.Select(c => new GameBooty   //计算被掠夺方战利品
+                {
+                    ParentId = pc.Id,
+                    CharId = oriCharId,
+                    TemplateId = c.TemplateId,
+                    Count = c.Count,
+                });
+            }
+            oriBooty.ToList().ForEach(c => c.SetGameItems(datas.World));    //被掠夺方战利品
+            newBooty.ToList().ForEach(c => c.SetGameItems(datas.World, datas.ChangeItems)); //进攻方战利品
+            //改写进攻权限
+            datas.Combat.SetAssistanceDone(true);
+            //保存数据
+            datas.Save();
         }
 
         /// <summary>

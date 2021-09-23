@@ -51,36 +51,6 @@ namespace OW.Game
         public DateTime CurrentDateTime { get; set; }
     }
 
-    public static class ErrorCodes
-    {
-        public const int NO_ERROR = 0;
-        public const int WAIT_TIMEOUT = 258;
-        public const int ERROR_INVALID_TOKEN = 315;
-        public const int ERROR_NO_SUCH_USER = 1317;
-        /// <summary>
-        /// 并发或交错操作更改了对象的状态，使此操作无效。
-        /// </summary>
-        public const int E_CHANGED_STATE = unchecked((int)0x8000000C);
-        public const int Unauthorized = unchecked((int)0x80190191);
-        public const int RO_E_CLOSED = unchecked((int)0x80000013);
-        public const int ObjectDisposed = RO_E_CLOSED;
-
-        /// <summary>
-        /// 参数错误。
-        /// </summary>
-        public const int ERROR_BAD_ARGUMENTS = 160;
-
-        /// <summary>
-        /// 没有足够资源完成操作。
-        /// </summary>
-        public const int RPC_S_OUT_OF_RESOURCES = 1721;
-
-        /// <summary>
-        /// 没有足够的配额来处理此命令。通常是超过某些次数的限制。
-        /// </summary>
-        public const int ERROR_NOT_ENOUGH_QUOTA = 1816;
-    }
-
     /// <summary>
     /// 游戏世界的服务。目前一个虚拟世界，对应唯一一个本类对象，且一个应用程序域（AppDomain）最多支持一个虚拟世界。
     /// 本质上游戏相关类群使用AOC机制，但不依赖DI，所以，在其所处的应用程序域内，本类的唯一对象（单例）部分的代替了容器。
@@ -333,6 +303,13 @@ namespace OW.Game
         /// </summary>
         public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Service.GetRequiredService<BlueprintManager>(); }
 
+        GameMissionManager _GameMissionManager;
+
+        /// <summary>
+        /// 任务/成就管理器。
+        /// </summary>
+        public GameMissionManager MissionManager { get => _GameMissionManager ??= Service.GetRequiredService<GameMissionManager>(); }
+
         private ObjectPool<List<GameItem>> _ObjectPoolListGameItem;
 
         public ObjectPool<List<GameItem>> ObjectPoolListGameItem
@@ -348,6 +325,7 @@ namespace OW.Game
                 return _ObjectPoolListGameItem;
             }
         }
+
 
         #region 随机数相关
 

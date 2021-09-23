@@ -964,7 +964,7 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IDisposable LockOrLoadWithCharIds(IEnumerable<Guid> userIds, TimeSpan timeout)
         {
-            var result = OwHelper.LockWithOrder(userIds.OrderBy(c => c), (charId, ts) => LockOrLoad(charId, out _, timeout), timeout);
+            var result = OwHelper.LockWithOrder(userIds.Distinct().OrderBy(c => c), (charId, ts) => LockOrLoad(charId, out _, timeout), timeout);
             return result;
         }
 

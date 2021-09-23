@@ -46,6 +46,9 @@ namespace Gy001
         {
             var world = host.Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
+            var excp = new ObjectDisposedException("");
+           //using EndCombatPvpWorkData datas = new EndCombatPvpWorkData(world, "", Guid.NewGuid());
+            //(datas as IResultWorkData).FillErrorFromWorld();
             //var coll = db.Set<PvpCombat>().Where(c => c.GetRequestAssistance()).ToArray();
             //var collChar = db.Set<GameChar>().Where(c => coll.Contains(c.Id)).ToArray();
             //GameUserCache cache = new GameUserCache(world.Service, optionsAccessor: new MemoryCacheOptions() { });

@@ -6,13 +6,10 @@ using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using OW.Game;
-using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using static GuangYuan.GY001.BLL.GameSocialManager;
 
 namespace Gy001.Controllers
@@ -557,7 +554,7 @@ namespace Gy001.Controllers
             {
                 UserContext = _UserContext,
             };
-            using var disposer = datas.Lock();
+            using var disposer = datas.LockAll();
             if (disposer is null)   //若锁定失败
                 return StatusCode(datas.ErrorCode, datas.ErrorMessage);
             //填写其他参数
@@ -585,6 +582,7 @@ namespace Gy001.Controllers
         /// <param name="model"><seealso cref="GetPvpListParamsDto"/></param>
         /// <returns><seealso cref="GetPvpListReturnDto"/>
         /// ErrorCodes.RPC_S_OUT_OF_RESOURCES=1712 钻石不足
+        /// ErrorCodes.ERROR_NOT_ENOUGH_QUOTA = 1816 超过刷新次数的上限
         /// </returns>
         /// <response code="401">令牌错误。</response>
         [HttpPost]

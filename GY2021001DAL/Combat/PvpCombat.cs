@@ -68,6 +68,16 @@ namespace GuangYuan.GY001.UserDb.Combat
             }
         }
 
+        List<GameBooty> _BootyOfAttacker;
+        public List<GameBooty> BootyOfAttacker(DbContext context)
+        {
+            if (_BootyOfAttacker is null)
+            {
+                _BootyOfAttacker = context.Set<GameBooty>().Where(c => c.ParentId == Id && AttackerIds.Contains(c.CharId)).ToList();
+            }
+            return _BootyOfAttacker;
+        }
+
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
