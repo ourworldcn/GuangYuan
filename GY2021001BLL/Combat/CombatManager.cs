@@ -483,7 +483,6 @@ namespace GuangYuan.GY001.BLL
             if (dwUsers is null) //若无法锁定对象。
             {
                 datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
                 return;
             }
             var pvpObject = datas.GameChar.GetPvpObject();  //PVP对象
@@ -496,24 +495,25 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpAttack);
-            var sr = datas.SocialRelationships.FirstOrDefault(c => c.Id2 == datas.OtherChar.Id);  //关系数据
-            if (sr is null) //若不准攻击
-            {
-                datas.HasError = true;
-                VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
-                return;
-            }
+            //var sr = datas.SocialRelationships.FirstOrDefault(c => c.Id2 == datas.OtherChar.Id);  //关系数据
+            //if (sr is null) //若不准攻击
+            //{
+            //    datas.HasError = true;
+            //    VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+            //    return;
+            //}
             //更改数据
             var db = datas.UserContext;
-            datas.SocialRelationships.Remove(sr);
+            //datas.SocialRelationships.Remove(sr);
             //移除攻击权
             todayData.LastValues.Remove(datas.OtherCharId);
+            GameItem pvpObj, otherPvpObj;
             //计算等级分
             if (datas.IsWin) //若需要计算等级分
             {
                 decimal diff = 0;
-                var pvpObj = datas.GameChar.GetPvpObject();
-                var otherPvpObj = datas.OtherChar.GetPvpObject();
+                pvpObj = datas.GameChar.GetPvpObject();
+                otherPvpObj = datas.OtherChar.GetPvpObject();
                 diff = 1 + Math.Round((otherPvpObj.Count.Value - pvpObj.Count.Value) / 10, MidpointRounding.ToPositiveInfinity);
                 diff = Math.Clamp(diff, 0, 6);
                 pvpObj.Count += diff;
@@ -525,32 +525,20 @@ namespace GuangYuan.GY001.BLL
                     datas.ChangeItems.AddToChanges(pvpObj);
                 }
             }
-            //增加复仇权
-            if (datas.BootyOfDefenser.Count > 0)   //若有收益
-            {
-                var srRetaliation = db.Set<GameSocialRelationship>().Find(datas.OtherCharId, datas.GameChar.Id, SocialKeyTypes.AllowPvpForRetaliation);   //反击关系数据
-                if (srRetaliation is null)   //若没有反击权数据
-                {
-                    srRetaliation = new GameSocialRelationship()
-                    {
-                        Id = datas.OtherCharId,
-                        Id2 = datas.GameChar.Id,
-                        KeyType = (int)SocialKeyTypes.AllowPvpForRetaliation,
-                        Flag = 0,
-                    };
-                    db.Add(srRetaliation);
-                }
-                srRetaliation.Flag++;   //增加可以复仇的次数
-            }
             ///计算收益
-            //增加战斗记录
+            //增加战报
             PvpCombat pc = new PvpCombat()
             {
 
             };
             pc.AttackerIds.Add(datas.GameChar.Id);
             pc.DefenserIds.Add(datas.OtherCharId);
+            //设置复仇权力
+            pc.SetAssistanceDone(false);    //多余
             db.Add(pc);
+            //移除击杀权
+            todayData.LastValues.Remove(datas.GameChar.Id);
+            //设置战利品
             List<GameBooty> bootyOfAttacker = new List<GameBooty>();
             foreach (var item in datas.BootyOfAttacker) //进攻方战利品
             {
@@ -606,6 +594,9 @@ namespace GuangYuan.GY001.BLL
             }
             ///保存数据
             datas.Save();
+            datas.HasError = false;
+            datas.ErrorCode = 0;
+            datas.ErrorMessage = null;
         }
 
         /// <summary>
@@ -621,11 +612,13 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorCode = VWorld.GetLastError();
                 return;
             }
-            datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpForRetaliation);
-            if (!datas.SocialRelationships.Any(c => c.Id2 == datas.OtherCharId))    //若不允许攻击
+            if (datas.Combat is null)
+                return;
+            if (datas.Combat.GetRevenge() || !datas.Combat.DefenserIds.Contains(datas.GameChar.Id))    //若没有复仇权
             {
                 datas.HasError = true;
-                datas.ErrorMessage = "没有攻击权限。";
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "没有复仇权";
                 return;
             }
             var db = datas.UserContext;

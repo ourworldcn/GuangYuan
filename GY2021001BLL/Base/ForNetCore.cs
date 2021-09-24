@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.TemplateDb;
+﻿using Game.Social;
+using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,8 +47,37 @@ namespace GuangYuan.GY001.BLL
             return result;
         }
 
+        void SendMail()
+        {
+            var world = _Services.GetRequiredService<VWorld>();
+            using var db = world.CreateNewUserDbContext();
+            var gu = db.Set<GameUser>().FirstOrDefault(c => c.LoginName == "test100");
+            while (gu is null)
+            {
+                Thread.Sleep(1000);
+                gu = db.Set<GameUser>().FirstOrDefault(c => c.LoginName == "test100");
+            }
+            var gc = gu.GameChars.First();
+            if (db.Set<GameMail>().Where(c => c.Addresses.Any(c1 => c1.ThingId == gc.Id)).Count() > 100)
+                return;
+            for (int i = 0; i < 100; i++)
+            {
+                var mail = new GameMail()
+                {
+                    Subject = $"测试邮件{i}",
+                };
+                mail.Attachmentes.Add(new GameMailAttachment()
+                {
+                    PropertiesString = $"TName=这是一个测试的附件对象,tid={ProjectConstant.JinbiId},ptid={ProjectConstant.CurrencyBagTId},count=100,desc=tid是送的物品模板id count是数量 ptid是放入容器的模板Id。",
+                });
+
+                world.SocialManager.SendMail(mail, new Guid[] { gu.GameChars.First().Id }, SocialConstant.FromSystemId);
+            }
+        }
+
         private void CreateNewUserAndChar()
         {
+            Task.Run(SendMail);
 #if DEBUG
             var maxCount = 5000;
 #else
@@ -55,7 +85,6 @@ namespace GuangYuan.GY001.BLL
 #endif
             var world = _Services.GetRequiredService<VWorld>();
             var logger = _Services.GetService<ILogger<GameHostedService>>();
-
             List<(string, string)> list = new List<(string, string)>(maxCount);
             using (var db = world.CreateNewUserDbContext())
             {

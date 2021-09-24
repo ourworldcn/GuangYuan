@@ -484,8 +484,25 @@ namespace GuangYuan.GY001.BLL
                 VWorld.SetLastError(ErrorCodes.E_CHANGED_STATE);
                 return false;
             }
+#if DEBUG
+            var st = new StackTrace(true);
+            var sb = new StringBuilder();
+            for (int i = 0; i < st.FrameCount; i++)
+            {
+                // Note that high up the call stack, there is only
+                // one stack frame.
+                StackFrame sf = st.GetFrame(i);
+                sb.AppendLine(sf.GetMethod().Name);
+                sb.AppendLine($"{sf.GetFileName()} , line {sf.GetFileLineNumber()}");
+            }
+            _LockerLog[user] = sb.ToString();
+#endif
             return true;
         }
+
+#if DEBUG
+        private readonly ConcurrentDictionary<GameUser, string> _LockerLog = new ConcurrentDictionary<GameUser, string>();
+#endif
 
         /// <summary>
         /// 解锁用户。与<seealso cref="Lock(GameUser, int)"/>配对使用。
@@ -497,6 +514,12 @@ namespace GuangYuan.GY001.BLL
             if (pulse)
                 Monitor.Pulse(user);
             Monitor.Exit(user);
+#if DEBUG
+            if (!Monitor.IsEntered(user))
+                _LockerLog.TryRemove(user, out _);
+
+#endif
+
         }
 
         /// <summary>
@@ -506,7 +529,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="timeout">超时时间。-1毫秒是永久等待(<seealso cref="Timeout.InfiniteTimeSpan"/>),
         /// 省略或为null是使用配置中(Options.DefaultLockTimeout)，默认的超时值锁定。</param>
         /// <returns></returns>
-        internal protected bool GetOrAddAndLock([NotNull] ref GameUser user, [AllowNull] TimeSpan? timeout = null)
+        protected internal bool GetOrAddAndLock([NotNull] ref GameUser user, [AllowNull] TimeSpan? timeout = null)
         {
             var lName = user.LoginName;
             using var dwLName = World.LockStringAndReturnDisposer(ref lName, timeout ?? Options.DefaultLockTimeout);    //锁定登录登出
@@ -820,15 +843,15 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         public bool Nope(GameUser user)
         {
-            if (!Lock(user))
+            using var dwUser = this.LockAndReturnDisposer(user, Timeout.InfiniteTimeSpan);
+            if (dwUser is null)
                 return false;
             try
             {
                 user.LastModifyDateTimeUtc = DateTime.UtcNow;
             }
-            finally
+            catch
             {
-                Unlock(user);
             }
             return true;
         }

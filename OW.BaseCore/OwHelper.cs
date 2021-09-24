@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
@@ -450,12 +451,12 @@ namespace System
         /// <param name="start">起始时间点。使用UTC时间。</param>
         /// <param name="timeout">超时值，可以是<see cref="Timeout.InfiniteTimeSpan"/></param>
         /// <returns><see cref="TimeSpan.Zero"/>表示超时，否则是剩余的时间。
-        /// 如果<paramref name="timeout"/>是<see cref="Timeout.InfiniteTimeSpan"/>，则立即返回<see cref="Timeout.InfiniteTimeSpan"/></returns>
+        /// 如果<paramref name="timeout"/>是<see cref="Timeout.InfiniteTimeSpan"/>，则立即返回<see cref="Timeout.InfiniteTimeSpan"/>。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TimeSpan ComputeTimeout(DateTime start, TimeSpan timeout)
         {
             if (Timeout.InfiniteTimeSpan == timeout)
-                return TimeSpan.Zero;
+                return Timeout.InfiniteTimeSpan;
             var ts = start + timeout - DateTime.UtcNow;
             return ts <= TimeSpan.Zero ? TimeSpan.Zero : ts;
         }
@@ -508,7 +509,7 @@ namespace System
         /// 按顺序锁定一组对象。
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
+        /// <param name="source">使用默认排序方法对元素进行去重和排序。</param>
         /// <param name="locker">可以引发异常，视同失败。此时必须未锁定。没有锁定成功应返回null。</param>
         /// <param name="timeout"></param>
         /// <returns></returns>

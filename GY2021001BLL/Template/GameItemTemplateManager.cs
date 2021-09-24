@@ -1,9 +1,11 @@
 ﻿using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -113,7 +115,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>null如果没有找到指定的<paramref name="seqPropName"/>名称的属性或，该属性不是序列属性。</returns>
         public string GetIndexPropName(GameItemTemplate template, string seqPropName)
         {
-            if (!template.Properties.TryGetValue(seqPropName, out object obj) || !(obj is decimal[] ))
+            if (!template.Properties.TryGetValue(seqPropName, out object obj) || !(obj is decimal[]))
                 return null;
             var pn = $"{ProjectConstant.LevelPropertyName}{seqPropName}";
             if (template.Properties.ContainsKey(pn))
@@ -131,7 +133,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="templat"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public decimal? GetPriceWithDiamond(this GameItemTemplate templat) =>
+        public static decimal? GetPriceWithDiamond(this GameItemTemplate templat) =>
             templat.TryGetPropertyValue("bd", out var sdObj) && OwHelper.TryGetDecimal(sdObj, out var sd) ? new decimal?(sd) : null;
 
         /// <summary>
@@ -140,8 +142,86 @@ namespace GuangYuan.GY001.BLL
         /// <param name="templat"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public bool IsFree(this GameItemTemplate templat) =>
+        public static bool IsFree(this GameItemTemplate templat) =>
             !templat.TryGetPropertyValue("bd", out var sdObj) || !OwHelper.TryGetDecimal(sdObj, out var sd) || sd <= 0;
 
+    }
+
+    /// <summary>
+    /// 升级数据工作的数据块。
+    /// </summary>
+    public class LevelUpDatas : GameCharWorkDataBase
+    {
+
+        public LevelUpDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public LevelUpDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public LevelUpDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        private GameItem _GameItem;
+        public GameItem GameItem { get => _GameItem; set => _GameItem = value; }
+
+        /// <summary>
+        /// 获取代价。
+        /// </summary>
+        /// <returns></returns>
+        public List<(Guid, decimal)> GetCost()
+        {
+            var dic = GameItem.Properties;
+            var bag = GameChar.GetCurrencyBag();
+
+            var dia = dic.GetDecimalOrDefault("lud"); //钻石
+            if (dia != decimal.Zero)   //若有钻石消耗
+            {
+                var gi = GameChar.GetZuanshi();
+                if (gi.Count + dia < 0) //若钻石不够
+                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+            }
+
+            var gold = dic.GetDecimalOrDefault("lug");  //金币
+            if (gold != decimal.Zero)   //若有金币消耗
+            {
+                var gi = GameChar.GetJinbi();
+                if (gi.Count + gold < 0) //若金币不够
+                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+            }
+
+            var wood = dic.GetDecimalOrDefault("luw");  //木材
+            if (wood != decimal.Zero)   //若有金币消耗
+            {
+                var gi = GameChar.GetMucai();
+                if (gi.Count + wood < 0) //若木材不够
+                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+            }
+            var result = new List<(Guid, decimal)>()
+            {
+                (GameChar.GetZuanshi().TemplateId,dia),
+                (GameChar.GetJinbi().TemplateId,gold),
+                (GameChar.GetMucai().TemplateId,wood),
+            };
+            return result;
+        }
+
+        /// <summary>
+        /// 获取升级所需的时间。
+        /// <see cref="TimeSpan.Zero"/>表示升级立即完成。
+        /// </summary>
+        /// <returns></returns>
+        public TimeSpan GetColdown()
+        {
+            return TimeSpan.FromSeconds((double)GameItem.Properties.GetDecimalOrDefault("lut"));
+        }
+
+        internal void Apply(GameChar gameChar, IResultWorkData datas)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

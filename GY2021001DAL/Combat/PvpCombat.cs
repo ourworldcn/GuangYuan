@@ -39,7 +39,10 @@ namespace GuangYuan.GY001.UserDb.Combat
             {
                 if (_AttackerIds is null)
                 {
-                    _AttackerIds = new List<Guid>(AttackerIdString.Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)));
+                    if (string.IsNullOrWhiteSpace(AttackerIdString))
+                        _AttackerIds = new List<Guid>();
+                    else
+                        _AttackerIds = new List<Guid>(AttackerIdString.Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)));
                 }
                 return _AttackerIds;
             }
@@ -62,7 +65,10 @@ namespace GuangYuan.GY001.UserDb.Combat
             {
                 if (_DefenserIds is null)
                 {
-                    _DefenserIds = new List<Guid>(AttackerIdString.Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)));
+                    if (string.IsNullOrWhiteSpace(DefenserIdString))
+                        _DefenserIds = new List<Guid>();
+                    else
+                        _DefenserIds = new List<Guid>(DefenserIdString.Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)));
                 }
                 return _DefenserIds;
             }

@@ -443,7 +443,12 @@ namespace GuangYuan.GY001.BLL
         {
             try
             {
-                return World.CharManager.LockOrLoadWithCharIds(AllCharIds, World.CharManager.Options.DefaultLockTimeout * AllCharIds.Count * 0.8);
+                var result = World.CharManager.LockOrLoadWithCharIds(AllCharIds, World.CharManager.Options.DefaultLockTimeout * AllCharIds.Count * 0.8);
+                if (result is null)
+                {
+                    this.FillErrorFromWorld();
+                }
+                return result;
             }
             catch (Exception err)
             {

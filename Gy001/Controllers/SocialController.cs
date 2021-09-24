@@ -345,11 +345,11 @@ namespace Gy001.Controllers
         [HttpPost]
         public ActionResult<ConfirmRequestFriendReturnDto> ConfirmRequestFriend(ConfirmRequestFriendParamsDto model)
         {
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            using var dwUser =_World.CharManager.LockAndReturnDisposer(model.Token, out var gu);
+            if (dwUser is null)
             {
                 return Unauthorized("令牌无效");
             }
-            using var dwChar = DisposerWrapper.Create(() => _World.CharManager.Unlock(gu, true));
             var result = new ConfirmRequestFriendReturnDto();
             try
             {

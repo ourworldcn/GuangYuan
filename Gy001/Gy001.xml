@@ -1956,6 +1956,12 @@
             外围系统。
             </summary>
         </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
             使用蓝图制造或升级物品。
@@ -1964,6 +1970,23 @@
             <returns>物品变化数据。</returns>
             <response code="401">令牌错误。</response>
             <response code="400">参数错误。</response>
+        </member>
+        <member name="T:Gy001.Controllers.GameBaseController">
+            <summary>
+            WebApi通讯封装的游戏服务器接口的控制器基类。
+            </summary>
+        </member>
+        <member name="T:Gy001.Controllers.GameMissionController">
+            <summary>
+            任务/成就相关操作。
+            </summary>
+        </member>
+        <member name="M:Gy001.Controllers.GameMissionController.GetMission(Gy001.Controllers.GameMissionController.GetMissionParamsDto)">
+            <summary>
+            
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="F:Gy001.Controllers.SocialController._UserContext">
             <summary>

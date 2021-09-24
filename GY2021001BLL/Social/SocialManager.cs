@@ -602,12 +602,9 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         public IEnumerable<GameSocialRelationship> GetSocialRelationships(GameChar gameChar, DbContext db)
         {
-            if (!World.CharManager.Lock(gameChar.GameUser))
-            {
-                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+            using var dwChar = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
+            if (dwChar is null)
                 return null;
-            }
-            using var dwChar = DisposerWrapper.Create(() => World.CharManager.Unlock(gameChar.GameUser, true));
             try
             {
                 var gcId = gameChar.Id;

@@ -127,5 +127,28 @@ namespace GuangYuan.GY001.BLL
                 obj.Properties["AssistanceDone"] = decimal.Zero;
         }
 
+        /// <summary>
+        /// 获取是否已经复仇。
+        /// </summary>
+        /// <param name="obj"></param>
+        public static bool GetRevenge(this PvpCombat obj)
+        {
+            var tmp = obj.Properties.GetDecimalOrDefault("RevengeDone", decimal.Zero);
+            return tmp == decimal.One;
+        }
+
+        /// <summary>
+        /// 设置是否已经复仇。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="value"></param>
+        public static void SetRevenge(this PvpCombat obj, bool value)
+        {
+            if (value)   //若设置已复仇
+                obj.Properties["RevengeDone"] = decimal.One;
+            else //设置未复仇
+                obj.Properties["RevengeDone"] = decimal.Zero;
+        }
+
     }
 }
