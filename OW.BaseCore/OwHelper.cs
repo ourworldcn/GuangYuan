@@ -20,6 +20,11 @@ namespace System
         public readonly static char[] CommaArrayWithCN = new char[] { ',', '，' };
 
         /// <summary>
+        /// 中英文分号数组。分割字符串常用此数组，避免生成新对象。
+        /// </summary>
+        public readonly static char[] SemicolonArrayWithCN = new char[] { ';', '；' };
+
+        /// <summary>
         /// 中英文冒号数组。分割字符串常用此数组，避免生成新对象。
         /// </summary>
         public readonly static char[] ColonArrayWithCN = new char[] { ':', '：' };

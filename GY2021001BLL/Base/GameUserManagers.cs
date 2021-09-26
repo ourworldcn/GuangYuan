@@ -517,9 +517,7 @@ namespace GuangYuan.GY001.BLL
 #if DEBUG
             if (!Monitor.IsEntered(user))
                 _LockerLog.TryRemove(user, out _);
-
 #endif
-
         }
 
         /// <summary>

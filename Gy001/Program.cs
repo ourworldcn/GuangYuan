@@ -1,4 +1,3 @@
-using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.AspNetCore.Hosting;
@@ -46,13 +45,9 @@ namespace Gy001
         {
             var world = host.Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            var excp = new ObjectDisposedException("");
-           //using EndCombatPvpWorkData datas = new EndCombatPvpWorkData(world, "", Guid.NewGuid());
-            //(datas as IResultWorkData).FillErrorFromWorld();
-            //var coll = db.Set<PvpCombat>().Where(c => c.GetRequestAssistance()).ToArray();
-            //var collChar = db.Set<GameChar>().Where(c => coll.Contains(c.Id)).ToArray();
             //GameUserCache cache = new GameUserCache(world.Service, optionsAccessor: new MemoryCacheOptions() { });
             //cache.GetOrCreate("d", c => Task.Run(() => new object()));
+            //db.SaveChanges();
         }
 
         public void Test2()

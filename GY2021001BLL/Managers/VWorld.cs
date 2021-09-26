@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
+using OW.Game.Mission;
 using OW.Game.Store;
 using System;
 using System.Collections.Concurrent;
@@ -109,6 +110,22 @@ namespace OW.Game
             Initialize();
         }
 
+        /// <summary>
+        /// 初始化函数。
+        /// </summary>
+        private void Initialize()
+        {
+            RequestShutdown = _CancellationTokenSource.Token;
+            var logger = Service.GetRequiredService<ILogger<VWorld>>();
+            logger.LogInformation("初始化完毕，开始服务。");
+
+            Thread thread = new Thread(SaveTemporaryUserContext)
+            {
+                IsBackground = false,
+                Priority = ThreadPriority.Lowest,
+            };
+            thread.Start();
+        }
         #endregion 构造函数
 
         #region 属性及相关
@@ -275,6 +292,8 @@ namespace OW.Game
 #endif
         #endregion 复用用户数据库上下文
 
+        #region 子管理器
+
         private GameItemTemplateManager _ItemTemplateManager;
         public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= Service.GetRequiredService<GameItemTemplateManager>(); }
 
@@ -303,12 +322,35 @@ namespace OW.Game
         /// </summary>
         public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Service.GetRequiredService<BlueprintManager>(); }
 
-        GameMissionManager _GameMissionManager;
+        private GameMissionManager _GameMissionManager;
 
         /// <summary>
         /// 任务/成就管理器。
         /// </summary>
         public GameMissionManager MissionManager { get => _GameMissionManager ??= Service.GetRequiredService<GameMissionManager>(); }
+
+        #endregion 子管理器
+
+        #region 对象池
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class ListGameItemPolicy : PooledObjectPolicy<List<GameItem>>
+        {
+            public ListGameItemPolicy()
+            {
+            }
+
+            public override List<GameItem> Create() =>
+                new List<GameItem>();
+
+            public override bool Return(List<GameItem> obj)
+            {
+                obj.Clear();
+                return true;
+            }
+        }
 
         private ObjectPool<List<GameItem>> _ObjectPoolListGameItem;
 
@@ -326,6 +368,44 @@ namespace OW.Game
             }
         }
 
+        /// <summary>
+        /// </summary>
+        private class StringObjectDictionaryPolicy : PooledObjectPolicy<Dictionary<string, object>>
+        {
+            public override Dictionary<string, object> Create()
+            {
+                return new Dictionary<string, object>();
+            }
+
+            public override bool Return(Dictionary<string, object> obj)
+            {
+                obj.Clear();
+                return true;
+            }
+        }
+
+        private ObjectPool<Dictionary<string, object>> _StringObjectDictionaryPool;
+
+        /// <summary>
+        /// 使用该属性可以避免不必要的内存分配和释放，使用此对象池的前提是满足以下所有条件：
+        /// 该字典会在一定周期内返回池，最好是一个数据包处理过程中临时用到的字典。
+        /// 使用非常频繁。
+        /// </summary>
+        public ObjectPool<Dictionary<string, object>> StringObjectDictionaryPool
+        {
+            get
+            {
+                if (_StringObjectDictionaryPool is null)
+                    lock (ThisLocker)
+                    {
+                        _StringObjectDictionaryPool ??= (Service.GetService<ObjectPool<Dictionary<string, object>>>()   //获取服务提供的对象池
+                            ?? new DefaultObjectPool<Dictionary<string, object>>(new StringObjectDictionaryPolicy(), Environment.ProcessorCount * 8));    //若服务没有提供能自己初始化
+                    }
+                return _StringObjectDictionaryPool;
+            }
+        }
+
+        #endregion 对象池
 
         #region 随机数相关
 
@@ -366,20 +446,6 @@ namespace OW.Game
 
 
         #endregion 属性及相关
-
-        private void Initialize()
-        {
-            RequestShutdown = _CancellationTokenSource.Token;
-            var logger = Service.GetRequiredService<ILogger<VWorld>>();
-            logger.LogInformation("初始化完毕，开始服务。");
-
-            Thread thread = new Thread(SaveTemporaryUserContext)
-            {
-                IsBackground = false,
-                Priority = ThreadPriority.Lowest,
-            };
-            thread.Start();
-        }
 
         public TimeSpan GetServiceTime() =>
             DateTime.UtcNow - StartDateTimeUtc;
@@ -494,7 +560,7 @@ namespace OW.Game
 
         private static readonly ConcurrentDictionary<string, WeakReference<string>> _StringPool = new ConcurrentDictionary<string, WeakReference<string>>();
 
-        static string GetOrAddString(string str)
+        private static string GetOrAddString(string str)
         {
             var wr = _StringPool.GetOrAdd(str, c => new WeakReference<string>(c));
             if (!wr.TryGetTarget(out var result))
@@ -551,25 +617,6 @@ namespace OW.Game
         }
 
         #endregion 锁定字符串
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class ListGameItemPolicy : PooledObjectPolicy<List<GameItem>>
-    {
-        public ListGameItemPolicy()
-        {
-        }
-
-        public override List<GameItem> Create() =>
-            new List<GameItem>();
-
-        public override bool Return(List<GameItem> obj)
-        {
-            obj.Clear();
-            return true;
-        }
     }
 
     public static class VWorldExtensions
