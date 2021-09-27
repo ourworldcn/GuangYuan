@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Game.Social;
+using OW.Game.Item;
 
 namespace GuangYuan.GY001.BLL
 {

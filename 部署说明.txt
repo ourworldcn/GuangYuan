@@ -1,0 +1,11 @@
+资源服务器配置
+MIME映射
+.apk application/octet-stream
+. application/octet-stream
+.unity3d application/octet-stream
+
+WebApi网站
+去掉模块
+WebDAVModule
+%windir%\System32\inetsrv\webdav.dll
+此功能影响put谓词的功能

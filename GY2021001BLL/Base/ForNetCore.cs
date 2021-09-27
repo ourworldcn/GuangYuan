@@ -1,16 +1,17 @@
 ﻿using Game.Social;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OW.Game;
 using OW.Game.Expression;
-using OW.Game.Store;
+using OW.Game.Item;
+using OW.Game.Mission;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +48,7 @@ namespace GuangYuan.GY001.BLL
             return result;
         }
 
-        void SendMail()
+        private void SendMail()
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
@@ -183,4 +184,47 @@ namespace GuangYuan.GY001.BLL
 
     }
 
+    public static class GameHostedServiceExtensions
+    {
+        public static void AddGameManagers(this IServiceCollection services)
+        {
+            services.AddHostedService<GameHostedService>();
+
+            services.AddTransient<HashAlgorithm>(c => SHA512.Create());
+
+            services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
+            {
+                Loaded = SpecificProject.ItemTemplateLoaded,
+            }));
+            services.AddSingleton(c => new GameItemManager(c, new GameItemManagerOptions()
+            {
+                ItemCreated = SpecificProject.GameItemCreated,
+            }));
+            services.AddSingleton(c => new GameCharManager(c, new GameCharManagerOptions()
+            {
+            }));
+            services.AddSingleton(c => new CombatManager(c, new CombatManagerOptions()
+            {
+                CombatStart = SpecificProject.CombatStart,
+                CombatEnd = SpecificProject.CombatEnd,
+            }));
+            services.AddSingleton<GamePropertyHelper, GameManagerPropertyHelper>();
+            services.AddSingleton(c => new BlueprintManager(c, new BlueprintManagerOptions()
+            {
+                DoApply = SpecificProject.ApplyBlueprint,
+            }));
+            services.AddSingleton<IGameThingHelper>(c => c.GetService<GameItemManager>());
+
+            services.AddSingleton(c => new GameSocialManager(c, new SocialManagerOptions()));
+            //加入任务/成就管理器
+            services.AddSingleton(c => new GameMissionManager(c, new GameMissionManagerOptions()));
+
+            //加入属性管理器
+            services.AddSingleton(c => new PropertyManager(c, new PropertyManagerOptions()));
+
+            services.AddSingleton<IGameObjectInitializer>(c => new Gy001Initializer(c, new Gy001InitializerOptions()));
+
+
+        }
+    }
 }

@@ -1,28 +1,23 @@
 using GuangYuan.GY001.BLL;
-using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
-using Microsoft.OpenApi.Models;
-using OW.Game.Expression;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Security.Cryptography;
-using OW.Game;
 using Microsoft.Extensions.Logging.Debug;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.OpenApi.Models;
+using OW.Game;
+using System;
+using System.IO;
 using System.Net;
-using Microsoft.AspNetCore.Diagnostics;
-using OW.Game.Mission;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Gy001
 {
@@ -41,7 +36,6 @@ namespace Gy001
             var userDbConnectionString = Configuration.GetConnectionString("DefaultConnection");
             var templateDbConnectionString = Configuration.GetConnectionString("TemplateDbConnection");
 
-            services.AddHostedService<GameHostedService>();
             #region 配置通用服务
 
             services.AddResponseCompression();
@@ -102,7 +96,8 @@ namespace Gy001
             #endregion 配置Swagger
 
             #region 配置游戏专用服务
-            services.AddTransient<HashAlgorithm>(c => SHA512.Create());
+            services.AddGameManagers();
+
             //services.AddTransient(options => new GY001UserContext(new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
             //services.AddSingleton(UserDbOptions => new GY001TemplateContext(new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
 
@@ -116,35 +111,6 @@ namespace Gy001
                 TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
 #endif //DEBUG
             }));
-            services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
-            {
-                Loaded = SpecificProject.ItemTemplateLoaded,
-            }));
-            services.AddSingleton(c => new GameItemManager(c, new GameItemManagerOptions()
-            {
-                ItemCreated = SpecificProject.GameItemCreated,
-            }));
-            services.AddSingleton(c => new GameCharManager(c, new GameCharManagerOptions()
-            {
-            }));
-            services.AddSingleton(c => new CombatManager(c, new CombatManagerOptions()
-            {
-                CombatStart = SpecificProject.CombatStart,
-                CombatEnd = SpecificProject.CombatEnd,
-            }));
-            services.AddSingleton<GamePropertyHelper, GameManagerPropertyHelper>();
-            services.AddSingleton(c => new BlueprintManager(c, new BlueprintManagerOptions()
-            {
-                DoApply = SpecificProject.ApplyBlueprint,
-            }));
-            services.AddSingleton<IGameThingHelper>(c => c.GetService<GameItemManager>());
-
-            services.AddSingleton(c => new GameSocialManager(c, new SocialManagerOptions()));
-            //加入任务/成就管理器
-            services.AddSingleton(c => new GameMissionManager(c, new GameMissionManagerOptions()));
-
-            services.AddSingleton<IGameObjectInitializer>(c => new Gy001Initializer(c, new Gy001InitializerOptions()));
-
             #endregion 配置游戏专用服务
         }
 

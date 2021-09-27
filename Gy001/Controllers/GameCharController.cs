@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OW.Game;
+using OW.Game.Item;
 using System;
 using System.Collections.Generic;
 using System.Linq;

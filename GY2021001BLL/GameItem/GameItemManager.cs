@@ -1,4 +1,5 @@
 ﻿using Game.Social;
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
@@ -14,7 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 
-namespace GuangYuan.GY001.BLL
+namespace OW.Game.Item
 {
     public class GameItemManagerOptions
     {

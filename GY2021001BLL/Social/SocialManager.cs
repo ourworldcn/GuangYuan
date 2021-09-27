@@ -4,6 +4,7 @@ using GuangYuan.GY001.BLL.Social;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
+using OW.Game.Item;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;

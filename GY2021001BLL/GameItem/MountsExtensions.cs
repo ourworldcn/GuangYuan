@@ -1,6 +1,9 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using OW.Game;
+using OW.Game.Item;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -223,6 +226,67 @@ namespace GuangYuan.GY001.BLL
             if (tmp is null)
                 return null;
             return manager.GetTemplate(tmp);
+        }
+
+        /// <summary>
+        /// 从指定字典的数据创建物品对象。
+        /// tid=模板id,count=数量,htid=头模板id,btid=身体模板id。这些键前可能添加前缀<paramref name="prefix"/>。
+        /// htid和btid要成对出现。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="dic"></param>
+        /// <param name="prefix">前缀字符串，默认值是空字符串，表示不考虑前缀。</param>
+        /// <returns></returns>
+        public static GameItem CreateItemFromDictionary(this GameItemManager manager, IReadOnlyDictionary<string, object> dic, string prefix = "")
+        {
+            GameItem result;
+            var tid = dic.GetGuidOrDefault($"{prefix}tid", Guid.Empty);
+            if (tid == Guid.Empty)
+                throw new ArgumentException("缺少模板id键值对。", nameof(dic));
+            var count = dic.GetDecimalOrDefault($"{prefix}count");
+            var htid = dic.GetGuidOrDefault($"{prefix}htid", Guid.Empty);
+            var btid = dic.GetGuidOrDefault($"{prefix}btid", Guid.Empty);
+            if (htid != Guid.Empty && btid != Guid.Empty)   //若创建生物
+            {
+                result = manager.CreateMounts(htid, btid, tid);
+            }
+            else
+            {
+                result = manager.CreateGameItem(tid);
+            }
+            if (count == 0)    //若需要设置数量
+                if (result.IsStc(out _))    //若可以堆叠
+                    result.Count = 0;
+                else
+                    result.Count = 1;
+            else //若明确指定了数量
+                result.Count = count;
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="gameItem"></param>
+        /// <returns></returns>
+        public static GameItem Clone(this GameItemManager manager, GameItem gameItem)
+        {
+            var result = new GameItem();
+            result.Initialize(manager.Service, gameItem.TemplateId);
+            foreach (var item in gameItem.Properties)
+            {
+                result.Properties[item.Key] = item.Value;
+            }
+            result.Count = gameItem.Count;
+            foreach (var item in gameItem.Children)
+            {
+                var subItem = manager.Clone(item);
+                subItem.Parent = result;
+                subItem.ParentId = result.Id;
+                result.Children.Add(subItem);
+            }
+            return result;
         }
     }
 

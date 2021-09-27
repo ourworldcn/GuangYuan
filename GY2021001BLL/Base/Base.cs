@@ -69,6 +69,11 @@ namespace GuangYuan.GY001.BLL
         /// 没有足够的配额来处理此命令。通常是超过某些次数的限制。
         /// </summary>
         public const int ERROR_NOT_ENOUGH_QUOTA = 1816;
+
+        /// <summary>
+        /// The data is invalid.
+        /// </summary>
+        public const int ERROR_INVALID_DATA = 13;
     }
 
     /// <summary>
@@ -169,6 +174,7 @@ namespace GuangYuan.GY001.BLL
 
         [Conditional("DEBUG")]
         public void SetDebugMessage(string msg) => ErrorMessage = msg;
+
 
         #endregion 出参
 
