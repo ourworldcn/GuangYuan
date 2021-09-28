@@ -7,4 +7,11 @@
     <AssemblyName>OwGameCore</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GY2021001DAL\GY001UserDb.csproj" />
+    <ProjectReference Include="..\Gy2021001Template\Gy001TemplateDb.csproj" />
+    <ProjectReference Include="..\OW.BaseCore\OwBaseCore.csproj" />
+    <ProjectReference Include="..\OwGame\OwGameBaseCore.csproj" />
+  </ItemGroup>
+
 </Project>

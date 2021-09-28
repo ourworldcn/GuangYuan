@@ -1035,6 +1035,11 @@
             调试信息。调试状态下返回时填写。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.ReturnDtoBase.ErrorCode">
+            <summary>
+            详细错误码。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.ChangesReturnDtoBase">
             <summary>
             带变化物品集合的返回数据对象基类。
@@ -1981,7 +1986,7 @@
             任务/成就相关操作。
             </summary>
         </member>
-        <member name="M:Gy001.Controllers.GameMissionController.GetMission(Gy001.Controllers.GameMissionController.GetMissionParamsDto)">
+        <member name="M:Gy001.Controllers.GameMissionController.GetMissionReward(GY2021001WebApi.Models.GetMissionRewardParamsDto)">
             <summary>
             
             </summary>

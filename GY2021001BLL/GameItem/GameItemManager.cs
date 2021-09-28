@@ -129,10 +129,8 @@ namespace OW.Game.Item
         /// <param name="gameObject"></param>
         /// <returns>如果无效的模板Id，则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameItemTemplate GetTemplate(GameItemBase gameObject)
-        {
-            return ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
-        }
+        public GameItemTemplate GetTemplate(GameItemBase gameObject) =>
+            gameObject.Template as GameItemTemplate ?? ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
 
         /// <summary>
         /// <inheritdoc/>
@@ -643,6 +641,42 @@ namespace OW.Game.Item
             {
                 AddItem(item, parent, remainder, changeItems);
             }
+        }
+
+        /// <summary>
+        /// 获取指定物品归属到指定角色时的首选默认容器。
+        /// </summary>
+        /// <param name="gChar"></param>
+        /// <param name="gameItem"></param>
+        /// <returns></returns>
+        public GameThingBase GetDefaultContainer(GameChar gChar, GameItem gameItem)
+        {
+            var template = GetTemplate(gameItem);
+            GameThingBase result;
+            switch (template.CatalogNumber)
+            {
+                case 0:
+                    if (gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi) //若是坐骑/野兽
+                    {
+                        result = this.IsExistsMounts(gChar, gameItem) ? gChar.GetShoulanBag() : gChar.GetZuojiBag();
+                    }
+                    else
+                        result = null;
+                    break;
+                case 18:    //道具
+                    result = gChar.GetItemBag();
+                    break;
+                case 26:    //时装
+                    result = null;
+                    break;
+                case 99:    //货币
+                    result = gChar.GetCurrencyBag();
+                    break;
+                default:
+                    result = null;
+                    break;
+            }
+            return result;
         }
 
         /// <summary>
@@ -1304,6 +1338,7 @@ namespace OW.Game.Item
                 }
             }
         }
+
     }
 
     public class UseItemsWorkDatas : ChangeItemsWorkDatasBase
@@ -1320,7 +1355,7 @@ namespace OW.Game.Item
         {
         }
 
-        List<(Guid, decimal)> _ItemIds;
+        private List<(Guid, decimal)> _ItemIds;
 
         /// <summary>
         /// 要使用物品的唯一Id集合。
@@ -1374,8 +1409,7 @@ namespace OW.Game.Item
         {
         }
 
-        private List<(Guid, decimal)> _SellIds;
-        public List<(Guid, decimal)> SellIds => GetOrAdd(nameof(SellIds), ref _SellIds);
+        public List<(Guid, decimal)> SellIds { get; } = new List<(Guid, decimal)>();
     }
 
     /// <summary>
@@ -1395,12 +1429,12 @@ namespace OW.Game.Item
         {
         }
 
-        List<(Guid, int, decimal)> _Settings;
+        private readonly List<(Guid, int, decimal)> _Settings;
 
         /// <summary>
         /// Item3是位置号，-1表示取消该坐骑在该阵容中的设置。
         /// </summary>
-        public List<(Guid, int, decimal)> Settings => GetOrAdd(nameof(Settings), ref _Settings);
+        public List<(Guid, int, decimal)> Settings { get; } = new List<(Guid, int, decimal)>();
     }
 
     public class ActiveStyleDatas
@@ -1480,7 +1514,7 @@ namespace OW.Game.Item
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="datas"></param>
-        static public void ActiveStyle(this GameItemManager manager, ActiveStyleDatas datas)
+        public static void ActiveStyle(this GameItemManager manager, ActiveStyleDatas datas)
         {
             var gcManager = manager.Service.GetRequiredService<GameCharManager>();
             if (!gcManager.Lock(datas.GameChar.GameUser))
@@ -1539,7 +1573,7 @@ namespace OW.Game.Item
         /// </summary>
         /// <param name="gameChar"></param>
         /// <returns></returns>
-        static public GameItem GetFuhuaSlot(this GameChar gameChar) =>
+        public static GameItem GetFuhuaSlot(this GameChar gameChar) =>
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);
 
         /// <summary>
@@ -1547,7 +1581,7 @@ namespace OW.Game.Item
         /// </summary>
         /// <param name="gameChar"></param>
         /// <returns></returns>
-        static public GameItem GetItemBag(this GameChar gameChar) =>
+        public static GameItem GetItemBag(this GameChar gameChar) =>
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);
 
         /// <summary>
@@ -1555,7 +1589,7 @@ namespace OW.Game.Item
         /// </summary>
         /// <param name="gameChar"></param>
         /// <returns></returns>
-        static public GameItem GetZuojiBag(this GameChar gameChar) =>
+        public static GameItem GetZuojiBag(this GameChar gameChar) =>
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);
 
         /// <summary>
@@ -1563,7 +1597,7 @@ namespace OW.Game.Item
         /// </summary>
         /// <param name="gameChar"></param>
         /// <returns></returns>
-        static public GameItem GetShoulanBag(this GameChar gameChar) =>
+        public static GameItem GetShoulanBag(this GameChar gameChar) =>
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
 
         /// <summary>
@@ -1572,7 +1606,7 @@ namespace OW.Game.Item
         /// <param name="gameChar"></param>
         /// <param name="id">坐骑的唯一Id。</param>
         /// <returns>如果没有找到则返回null。</returns>
-        static public GameItem GetMounetsFromId(this GameChar gameChar, Guid id) =>
+        public static GameItem GetMounetsFromId(this GameChar gameChar, Guid id) =>
             gameChar.GetZuojiBag()?.Children.FirstOrDefault(c => c.Id == id);
 
         /// <summary>
@@ -1580,7 +1614,7 @@ namespace OW.Game.Item
         /// </summary>
         /// <param name="gameChar"></param>
         /// <returns></returns>
-        static public GameItem GetTujianBag(this GameChar gameChar) =>
+        public static GameItem GetTujianBag(this GameChar gameChar) =>
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.TujianBagTId);
 
         /// <summary>
@@ -1591,7 +1625,7 @@ namespace OW.Game.Item
         /// <param name="t1Body">第一个身体模板。</param>
         /// <param name="t2Body">第二个身体模板。</param>
         /// <returns>符合要求的模板输出的值元组 (头模板Id,身体模板Id,概率)。没有找到图鉴可能返回空。</returns>
-        static public (Guid, Guid, decimal)? GetTujianResult(this GameItemManager mng, GameChar gameChar, GameItemTemplate t1Body, GameItemTemplate t2Body)
+        public static (Guid, Guid, decimal)? GetTujianResult(this GameItemManager mng, GameChar gameChar, GameItemTemplate t1Body, GameItemTemplate t2Body)
         {
             var gitm = mng.Service.GetRequiredService<GameItemTemplateManager>();
             var tujianBag = gameChar.GetZuojiBag(); //图鉴背包
@@ -1629,12 +1663,17 @@ namespace OW.Game.Item
         }
 
         private List<ChangeItem> _ChangeItems;
-
         /// <summary>
         /// 工作后，物品变化数据。
         /// 不同操作自行定义该属性内的内容。
         /// </summary>
-        public List<ChangeItem> ChangeItems => GetOrAdd(nameof(_ChangeItems), ref _ChangeItems);
+        public List<ChangeItem> ChangeItems { get => _ChangeItems ??= new List<ChangeItem>(); }
+
+        protected override void Dispose(bool disposing)
+        {
+            _ChangeItems = null;
+            base.Dispose(disposing);
+        }
     }
 
 }

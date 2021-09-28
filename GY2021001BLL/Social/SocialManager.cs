@@ -1660,7 +1660,13 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 工作后发送邮件的邮件Id。
         /// </summary>
-        public List<Guid> MailIds => GetOrAdd(nameof(MailIds), ref _MailIds);
+        public List<Guid> MailIds => _MailIds ??= new List<Guid>();
+
+        protected override void Dispose(bool disposing)
+        {
+            _MailIds = null;
+            base.Dispose(disposing);
+        }
 
     }
 }

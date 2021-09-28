@@ -214,6 +214,22 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 获取指定角色是否拥有了指定坐骑。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="gChar"></param>
+        /// <param name="gameItem"></param>
+        /// <returns></returns>
+        public static bool IsExistsMounts(this GameItemManager manager, GameChar gChar, GameItem gameItem)
+        {
+            var bag = gChar.GetZuojiBag();
+            var htid = manager.GetHeadTemplate(gameItem)?.Id;
+            var btid = manager.GetBodyTemplate(gameItem)?.Id;
+            if (!htid.HasValue || !btid.HasValue)  //若缺少Id存在
+                return false;
+            return bag.Children.Any(c => manager.GetHeadTemplate(c)?.Id == htid || manager.GetBodyTemplate(c)?.Id == btid);
+        }
+        /// <summary>
         /// 获取物品的身体模板。
         /// </summary>
         /// <param name="manager"></param>

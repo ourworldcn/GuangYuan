@@ -14,7 +14,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -138,49 +137,12 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public Guid ActionId { get; set; }
 
-        /// <summary>
-        /// 额外参数。
-        /// 不同操作自行定义该属性内的内容。
-        /// </summary>
-        public Dictionary<string, object> Parameters { get; } = new Dictionary<string, object>();
 
-        /// <summary>
-        /// 初始化变量并加入字典的帮助器方法。
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="name"></param>
-        /// <param name="cache">如果不是null就立即返回该值。否则声明一个新对象赋值并返回。</param>
-        /// <returns>cache</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        protected T GetOrAdd<T>(string name, ref T cache) where T : class, new()
-        {
-            if (cache is null)
-            {
-                cache = new T();
-                Parameters.Add(name, cache);
-            }
-            return cache;
-        }
-
-        #endregion 入参
-
-        #region 出参
-
-        /// <summary>
-        /// 返回的参数。
-        /// 不同操作自行定义该属性内的内容。
-        /// </summary>
-        public Dictionary<string, object> Result { get; } = new Dictionary<string, object>();
+        #endregion 出参
 
         [Conditional("DEBUG")]
         public void SetDebugMessage(string msg) => ErrorMessage = msg;
 
-
-        #endregion 出参
-
-        #region IDisposable接口
-
-        #endregion IDisposable接口
     }
 
     /// <summary>
@@ -264,7 +226,7 @@ namespace GuangYuan.GY001.BLL
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    if (_UserContextOwner) _UserContext?.Dispose();
+                    if (_UserContextOwner) _UserContext?.DisposeAsync();
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器

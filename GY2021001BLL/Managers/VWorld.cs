@@ -35,6 +35,13 @@ namespace OW.Game
 
         public DbContextOptions<GY001UserContext> UserDbOptions { get; set; }
         public DbContextOptions<GY001TemplateContext> TemplateDbOptions { get; set; }
+
+        /// <summary>
+        /// 后台保存数据上下文中最大实体数量。超过这个数量，将重新生成一个新的上下文对象。
+        /// 过多的追踪对象不仅占用内存且也耗费cpu扫描更改。
+        /// </summary>
+        /// <value>默认值:200</value>
+        public int ContextMaxEntityCount { get; set; } = 200;
     }
 
     /// <summary>
@@ -123,7 +130,7 @@ namespace OW.Game
             Thread thread = new Thread(SaveTemporaryUserContext)
             {
                 IsBackground = false,
-                Priority = ThreadPriority.Lowest,
+                Priority = ThreadPriority.BelowNormal,
             };
             thread.Start();
         }
@@ -134,115 +141,50 @@ namespace OW.Game
         #region 复用用户数据库上下文
 #if NETCOREAPP5_0_OR_GREATER
 //NET5_0_OR_GREATER
-
-        GameUserContext _UserContext;
-
-        /// <summary>
-        /// 一个公用的数据库上下文。
-        /// 特别地！使用之前必须锁定该对象，且一旦释放，应假设有后台线程会立即试图保存，然后清空所有跟踪对象！
-        /// 对此对象调用<see cref="Monitor.PulseAll(object)"/>可以加速保存线程获取锁。
-        /// </summary>
-        public GameUserContext UserContext
-        {
-            get
-            {
-                if (_UserContext is null)
-                    lock (this)
-                        if (_UserContext is null)
-                        {
-                            _UserContext = CreateNewUserDbContext();
-                            Thread thread = new Thread(DbSaveFunc)
-                            {
-                                IsBackground = false,
-                                Priority = ThreadPriority.Lowest
-                            };
-                            thread.Start();
-                        }
-                return _UserContext;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="obj"></param>
-        private void DbSaveFunc(object obj)
-        {
-            var ct = CancellationTokenSource.Token;
-            var logger = Services.GetService<ILogger<VWorld>>();
-            logger.LogDebug($"[{DateTime.UtcNow:s}]DbSaveFunc启动");
-            lock (_UserContext)
-            {
-                while (!CancellationTokenSource.IsCancellationRequested)
-                {
-                    try
-                    {
-                        if (Monitor.Wait(_UserContext, 2000) /*|| IsHit(0.2)*/)
-                        {
-                            var xx = _UserContext.Set<GameItem>().FirstOrDefault();
-                            _UserContext.SaveChanges();
-                            ClearDb(_UserContext);
-                        }
-                    }
-                    catch (Exception err)
-                    {
-                        logger.LogError($"公用用户数据库上下文保存数据时出错——{err.Message}");
-                    }
-                }
-            }
-        }
-
-        void ClearDb(DbContext db)
-        {
-            var coll = db.ChangeTracker.Entries().ToArray();
-            foreach (var item in coll)
-            {
-                var obj = db.Entry(item.Entity);
-                obj.State = EntityState.Detached;
-            }
-            db.SaveChanges();
-        }
 #else
-        private readonly object _TemporaryUserContextLocker = new object();
         private volatile GameUserContext _TemporaryUserContext;
+
+        private enum DbAction
+        {
+            Add,
+            Update,
+            Remove,
+            Execute,
+        }
+
+        /// <summary>
+        /// 数据库工作项队列。
+        /// </summary>
+        private readonly BlockingCollection<(DbAction, object)> _DbWorkQueue = new BlockingCollection<(DbAction, object)>();
 
         private GameUserContext TemporaryUserContext
         {
             get
             {
                 if (_TemporaryUserContext is null)
-                    lock (_TemporaryUserContextLocker)
-                        if (_TemporaryUserContext is null)
-                            _TemporaryUserContext = CreateNewUserDbContext();
+                {
+                    var newVal = CreateNewUserDbContext();
+                    var oldVal = Interlocked.CompareExchange(ref _TemporaryUserContext, CreateNewUserDbContext(), null);
+                    if (null != oldVal) //若没有替换
+                        newVal.DisposeAsync();
+                }
                 return _TemporaryUserContext;
             }
         }
 
         public void AddToUserContext(IEnumerable<object> collection)
         {
-            lock (_TemporaryUserContextLocker)
-            {
-                TemporaryUserContext.AddRange(collection);
-                Monitor.Pulse(_TemporaryUserContextLocker);
-            }
+            _DbWorkQueue.Add((DbAction.Add, collection));
         }
 
         public void RemoveToUserContext(IEnumerable<object> collection)
         {
-            lock (_TemporaryUserContextLocker)
-            {
-                TemporaryUserContext.RemoveRange(collection);
-                Monitor.Pulse(_TemporaryUserContextLocker);
-            }
+            _DbWorkQueue.Add((DbAction.Remove, collection));
         }
 
         public void UpdateToUserContext(IEnumerable<object> collection)
         {
-            lock (_TemporaryUserContextLocker)
-            {
-                TemporaryUserContext.UpdateRange(collection);
-                Monitor.Pulse(_TemporaryUserContextLocker);
-            }
+            _DbWorkQueue.Add((DbAction.Update, collection));
         }
 
         /// <summary>
@@ -252,29 +194,65 @@ namespace OW.Game
         {
             ILogger<VWorld> logger = Service.GetService<ILogger<VWorld>>();
             DateTime dt = DateTime.UtcNow;
-            lock (_TemporaryUserContextLocker)
-                while (!CancellationTokenSource.IsCancellationRequested)
+            List<(DbAction, object)> innerWorkdItems = new List<(DbAction, object)>();
+            (DbAction, object) workItem;
+            while (!CancellationTokenSource.IsCancellationRequested)
+            {
+                innerWorkdItems.Clear();
+                try
                 {
+                    if (_DbWorkQueue.IsCompleted || !_DbWorkQueue.TryTake(out workItem, -1))   //若没能等待获取工作项
+                        break;  //容错
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+                innerWorkdItems.Add(workItem);
+                if (workItem.Item1 != DbAction.Execute)    //若不是立即执行的命令
+                    while (_DbWorkQueue.Count > 0 && _DbWorkQueue.TryTake(out workItem, 0))   //获取所有工作项
+                    {
+                        innerWorkdItems.Add(workItem);
+                        if (workItem.Item1 == DbAction.Execute)   //若遇到一个需要立即执行的命令
+                            break;
+                    }
+                foreach (var item in innerWorkdItems)
+                {
+                    switch (item.Item1)
+                    {
+                        case DbAction.Add:
+                            TemporaryUserContext.AddRange(item.Item2 as IEnumerable<object>);
+                            break;
+                        case DbAction.Update:
+                            TemporaryUserContext.UpdateRange(item.Item2 as IEnumerable<object>);
+                            break;
+                        case DbAction.Remove:
+                            TemporaryUserContext.RemoveRange(item.Item2 as IEnumerable<object>);
+                            break;
+                        case DbAction.Execute:
+                        default:
+                            break;
+                    }
+                }
+                if (OwGameCommandInterceptor.ExecutingCount > 0)   //避免IO过于频繁
+                    Thread.Sleep(1000);
+                try
+                {
+                    TemporaryUserContext.SaveChanges();
+                }
+                catch (Exception err)
+                {
+                    logger.LogError(err.Message);
+                    _TemporaryUserContext?.Dispose();
+                    _TemporaryUserContext = null;
+                }
+                if (innerWorkdItems.Count > 0) //容错
+                {
+                    workItem = innerWorkdItems[innerWorkdItems.Count - 1];
                     try
                     {
-                        var waitSucc = Monitor.Wait(_TemporaryUserContextLocker, 1000);
-                        if (_TemporaryUserContext is null)  //若没有数据
-                        {
-                            dt = DateTime.UtcNow;
-                            continue;
-                        }
-                        if (DateTime.UtcNow - dt > TimeSpan.FromSeconds(1) ||     //若超过1s,避免过于频繁的保存
-                            waitSucc && OwGameCommandInterceptor.ExecutingCount <= 0)   //避免IO过于频繁
-                        {
-                            _TemporaryUserContext.SaveChanges();
-                            if (_TemporaryUserContext.ChangeTracker.Entries().Count() > 200)    //若数据较多
-                            {
-                                _TemporaryUserContext.Dispose();
-                                _TemporaryUserContext = null;
-                                GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, false, true);
-                            }
-                        }
-                        dt = DateTime.UtcNow;
+                        if (workItem.Item2 is string sql)   //若是一个需要立即执行的命令
+                            TemporaryUserContext.Database.ExecuteSqlRaw(sql);
                     }
                     catch (Exception err)
                     {
@@ -283,12 +261,18 @@ namespace OW.Game
                         _TemporaryUserContext = null;
                     }
                 }
-            lock (_TemporaryUserContextLocker)
-            {
-                _TemporaryUserContext?.SaveChanges();
-                _TemporaryUserContext.Dispose();
-                _TemporaryUserContext = null;
+                if (_TemporaryUserContext.ChangeTracker.Entries().Count() > Options.ContextMaxEntityCount)    //若数据较多
+                {
+                    _TemporaryUserContext.Dispose();
+                    _TemporaryUserContext = null;
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, false, true);
+                }
+                dt = DateTime.UtcNow;
             }
+            //TO DO
+            _TemporaryUserContext?.SaveChanges();
+            _TemporaryUserContext.Dispose();
+            _TemporaryUserContext = null;
         }
 #endif
         #endregion 复用用户数据库上下文

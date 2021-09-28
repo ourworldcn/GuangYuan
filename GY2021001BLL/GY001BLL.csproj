@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GY001SdkWrapper\GY001SdkWrapper.csproj" />
     <ProjectReference Include="..\GY2021001DAL\GY001UserDb.csproj" />
+    <ProjectReference Include="..\OW.GameCore\OwGameCore.csproj" />
     <ProjectReference Include="..\OwGame\OwGameBaseCore.csproj" />
   </ItemGroup>
 

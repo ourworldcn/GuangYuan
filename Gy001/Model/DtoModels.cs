@@ -653,6 +653,11 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string DebugMessage { get; set; }
+
+        /// <summary>
+        /// 详细错误码。
+        /// </summary>
+        [DataMember]
         public int ErrorCode { get; set; }
 
     }
@@ -688,15 +693,12 @@ namespace GY2021001WebApi.Models
 
         }
 
-        [IgnoreDataMember]
-        private List<string> _MailIds;
-
         /// <summary>
         /// 操作导致发送了邮件的Id集合。
         /// 如果是空集合则表示没有发送邮件。
         /// </summary>
         [DataMember]
-        public List<string> MailIds { get => _MailIds ?? (_MailIds = new List<string>()); set => _MailIds = value; }
+        public List<string> MailIds { get; set; } = new List<string>();
     }
 
     /// <summary>
@@ -2496,5 +2498,15 @@ namespace GY2021001WebApi.Models
 
     #endregion 社交相关
 
+    #region 任务成就相关
+    public class GetMissionRewardReturnDto : ReturnDtoBase
+    {
+    }
+
+    public class GetMissionRewardParamsDto : ChangesAndMailReturnDtoBase
+    {
+    }
+
+    #endregion 任务成就相关
 }
 #pragma warning restore IDE0074 // 使用复合分配

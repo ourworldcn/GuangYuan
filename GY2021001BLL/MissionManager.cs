@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.BLL;
+﻿using Game.Social;
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace OW.Game.Mission
 {
@@ -144,6 +146,93 @@ namespace OW.Game.Mission
         }
 
         /// <summary>
+        /// 异步扫描成就的变化情况。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public Task<bool> ScanAsync(GameChar gameChar)
+        {
+            return Task.Factory.StartNew(ScanCore, gameChar);
+        }
+
+        /// <summary>
+        /// 扫描成就变化的函数。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        private bool ScanCore(object gameChar)
+        {
+            bool result = false;
+            var gc = gameChar as GameChar;
+            var gu = gc?.GameUser;
+            if (gu is null)
+                return result;
+            using var dwUser = World.CharManager.LockAndReturnDisposer(gu);
+            if (dwUser is null)
+                return result;
+            /*等级成就
+玩家等级达到LV1|LV2|LV3|LV4|LV5|LV6|LV7|lv8|lv9|lv10*/
+
+            /*坐骑等级成就
+玩家提升坐骑等级最高达到
+LV2|LV3|LV5|LV7|LV10|LV12|LV14|LV16|LV18|LV20*/
+
+            /*满级坐骑数量成就
+拥有LV20的坐骑数量1，2，3，4，6，8，10，15，20，25*/
+
+            /*战力成就
+总战力达到10000，20000，30000，40000，50000，60000，70000，80000，100000，120000*/
+
+            /*获取坐骑成就
+获得坐骑（含杂交）1只，4只，10只，16只，28只，50只，100只，200只，300只，400只*/
+
+            /*纯种坐骑获取成就（不含杂交）
+获得纯种坐骑1只，2只，3只，4只，5只，8只，10只，12只，14只，17只*/
+
+            /*孵化成就
+成功孵化次数1次，5次，10次，15次，20次，30次，50次，100次，200次，400次*/
+
+            /*坐骑资质成就
+最高拥有坐骑资质总和达到，60，90，120，150，180，210，250，270，290，300*/
+
+            /*神纹成就
+最高拥有神纹等级达到10，20，30，40，50，60，70，80，90，100*/
+
+            /*神纹突破成就
+神纹累计突破次数达到：1次，3次，5次，10次，27次，54次，81次，108次，135次，216次*/
+
+            /*访问好友天次成就
+累计访问好友家园1天，2天，3天，5天，7天，10天，15天，20天，30天，60天*/
+
+            /*关卡成就
+打通大章1，大章2，3，4，5，6，7，8，9，10*/
+
+            /*累计进行塔防模式次数
+5次，10次，20次，30次,50次，70次，100次，130次，160次，280次*/
+
+            /*PVP进攻成就
+PVP进攻获胜1次，3次，5次，10次，20次，50次，100次，200次，300次，500次*/
+
+            /*PVP防御
+PVP防御获胜1次，3次，5次，10次，20次，50次，100次，200次，300次，500次*/
+
+            /*助战成就
+PVP助战获胜1次，2次，3次，5次，10次，20次，50次，100次，150次，200次*/
+
+            /*炮塔成就
+最高级别炮塔等级1，2，3，4，5，6，7，8，9，10*/
+
+            /*陷阱成就 最高级别陷阱等级1，2，3，4，5，6，7，8，9，10*/
+
+            /*旗帜成就
+最高级别旗帜等级1，2，3，4，5，6，7，8，9，10*/
+
+            /*方舟等级成就
+最高级别主基地等级1，2，3，4，5，6，7，8，9，10*/
+            return result;
+        }
+
+        /// <summary>
         /// 扫描发生变化的任务数据。
         /// </summary>
         /// <param name="gChar"></param>
@@ -212,17 +301,27 @@ namespace OW.Game.Mission
                 return;
             }
             var gim = World.ItemManager;
+            List<GameItem> remainder = new List<GameItem>();
             foreach (var item in obj_keys)  //遍历每个要领取奖励的成就对象
             {
                 var zhibiaos = item.Item3.Split(OwHelper.SemicolonArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => decimal.Parse(c));  //可领取的成就指标
                 var view = TId2Views[item.tmp.TemplateId];
                 foreach (var zhibiao in zhibiaos)   //对每个完成的成就获取物品
                 {
+                    remainder.Clear();
                     var tuple = view.Metrics.First(c => c.Item1 == zhibiao);
                     var gi = gim.Clone(tuple.Item2);  //复制新物品
-                    ;//自动加入对应容器
+                    var container = gim.GetDefaultContainer(datas.GameChar, gi);
+                    gim.AddItem(gi, container, remainder, datas.ChangeItems);//自动加入对应容器
+                    if (remainder.Count > 0)
+                    {
+                        var mail = new GameMail() { };
+                        World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, remainder.Select(c => (c, gim.GetDefaultContainer(datas.GameChar, c).TemplateId)));
+                        datas.MailIds.Add(mail.Id);
+                    }
                 }
             }
+            ChangeItem.Reduce(datas.ChangeItems);
             return;
         }
 
@@ -289,7 +388,21 @@ namespace OW.Game.Mission
         {
         }
 
-        public IEnumerable<Guid> ItemIds { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<Guid> ItemIds { get; } = new List<Guid>();
+
+        /// <summary>
+        /// 发送邮件的Id集合。如果无法获取奖品则发送邮件。
+        /// </summary>
+        public List<Guid> MailIds { get; } = new List<Guid>();
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+        }
+
     }
 
 }

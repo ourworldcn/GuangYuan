@@ -1,39 +1,38 @@
-﻿using GuangYuan.GY001.UserDb;
+﻿using Game.Social;
 using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using OW.Game.Item;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Game.Social;
-using OW.Game.Item;
 
 namespace GuangYuan.GY001.BLL
 {
     public static class ProjectMissionConstant
     {
-        public readonly static Guid 玩家等级成就 = new Guid("{25FFBEE1-F617-49BD-B0DE-32B3E3E975CB}");
-        public readonly static Guid 关卡成就 = new Guid("{96a36fbe-f79a-4579-932e-588772436da5}");
-        public readonly static Guid 坐骑最高等级成就 = new Guid("{2f48528e-fd7f-4269-92c9-dbd6f14ffef0}");
-        public readonly static Guid LV20坐骑数量 = new Guid("{7d5ad309-2614-434e-b8d3-afe4db93d8b3}");
-        public readonly static Guid 关卡模式总战力成就 = new Guid("{8bba8a00-e767-4a6a-aa6b-22ef03a3f527}");
-        public readonly static Guid 纯种坐骑数量成就 = new Guid("{49ee3541-3a6e-4d05-85b0-566c6bfecde2}");
-        public readonly static Guid 孵化成就 = new Guid("{814e47cd-8bdf-4efc-bd26-61af57b7fcf8}");
-        public readonly static Guid 最高资质成就 = new Guid("{0c29f28b-d3ac-4f44-8c41-8d279fd319b5}");
-        public readonly static Guid 最高神纹等级成就 = new Guid("{6ffc1f03-1c8e-4f7c-bc88-717e42eae59b}");
-        public readonly static Guid 神纹突破次数成就 = new Guid("{4b708b18-e0a3-4388-866f-56d0c6a6da0d}");
-        public readonly static Guid 累计访问好友天次成就 = new Guid("{42d3236c-ea7c-4444-898e-469aac1fda07}");
-        public readonly static Guid 累计塔防模式次数成就 = new Guid("{5c3d9daf-fe89-43a4-93f8-7abdc85418e5}");
-        public readonly static Guid PVP进攻成就 = new Guid("{6f8f5d48-e4b4-4e37-a48f-f8b6badc6f44}");
-        public readonly static Guid PVP防御成就 = new Guid("{c20cc819-dc76-482f-a3c4-cfd32b8b83c7}");
-        public readonly static Guid PVP助战成就 = new Guid("{6817d0d6-ad3d-4dd1-a8f5-4368ac5a568d}");
-        public readonly static Guid 方舟成就 = new Guid("{530efb1e-fc5d-4638-a728-e069431b197a}");
-        public readonly static Guid 炮塔成就 = new Guid("{26c63192-867a-43f4-919b-10a614ee2865}");
-        public readonly static Guid 陷阱成就 = new Guid("{03d80847-f273-413b-a2a2-81545ab03a89}");
-        public readonly static Guid 旗帜成就 = new Guid("{5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d}");
+        public static readonly Guid 玩家等级成就 = new Guid("{25FFBEE1-F617-49BD-B0DE-32B3E3E975CB}");
+        public static readonly Guid 关卡成就 = new Guid("{96a36fbe-f79a-4579-932e-588772436da5}");
+        public static readonly Guid 坐骑最高等级成就 = new Guid("{2f48528e-fd7f-4269-92c9-dbd6f14ffef0}");
+        public static readonly Guid LV20坐骑数量 = new Guid("{7d5ad309-2614-434e-b8d3-afe4db93d8b3}");
+        public static readonly Guid 关卡模式总战力成就 = new Guid("{8bba8a00-e767-4a6a-aa6b-22ef03a3f527}");
+        public static readonly Guid 纯种坐骑数量成就 = new Guid("{49ee3541-3a6e-4d05-85b0-566c6bfecde2}");
+        public static readonly Guid 孵化成就 = new Guid("{814e47cd-8bdf-4efc-bd26-61af57b7fcf8}");
+        public static readonly Guid 最高资质成就 = new Guid("{0c29f28b-d3ac-4f44-8c41-8d279fd319b5}");
+        public static readonly Guid 最高神纹等级成就 = new Guid("{6ffc1f03-1c8e-4f7c-bc88-717e42eae59b}");
+        public static readonly Guid 神纹突破次数成就 = new Guid("{4b708b18-e0a3-4388-866f-56d0c6a6da0d}");
+        public static readonly Guid 累计访问好友天次成就 = new Guid("{42d3236c-ea7c-4444-898e-469aac1fda07}");
+        public static readonly Guid 累计塔防模式次数成就 = new Guid("{5c3d9daf-fe89-43a4-93f8-7abdc85418e5}");
+        public static readonly Guid PVP进攻成就 = new Guid("{6f8f5d48-e4b4-4e37-a48f-f8b6badc6f44}");
+        public static readonly Guid PVP防御成就 = new Guid("{c20cc819-dc76-482f-a3c4-cfd32b8b83c7}");
+        public static readonly Guid PVP助战成就 = new Guid("{6817d0d6-ad3d-4dd1-a8f5-4368ac5a568d}");
+        public static readonly Guid 方舟成就 = new Guid("{530efb1e-fc5d-4638-a728-e069431b197a}");
+        public static readonly Guid 炮塔成就 = new Guid("{26c63192-867a-43f4-919b-10a614ee2865}");
+        public static readonly Guid 陷阱成就 = new Guid("{03d80847-f273-413b-a2a2-81545ab03a89}");
+        public static readonly Guid 旗帜成就 = new Guid("{5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d}");
     }
 
     /// <summary>
@@ -579,31 +578,6 @@ namespace GuangYuan.GY001.BLL
                 KeyType = SocialConstant.HomelandShowKeyType,
             };
             db.Add(gsr);
-            //发送测试邮件
-            Task.Delay(1000).ContinueWith(c =>
-            {
-                //创建欢迎邮件
-                var mail = new GameMail()
-                {
-                    Subject = "欢迎您加入XXX世界",
-                    Body = "此邮件是测试目的，正式版将删除。",
-                };
-                mail.Attachmentes.Add(new GameMailAttachment()
-                {
-                    PropertiesString = "TName=这是一个测试的附件对象,tid={ac7d593c-ce82-4642-97a3-14025da633e4},ptid={2BAA3FCD-2BE8-4096-916A-FF2D47E084EF},count=3,desc=tid是送的物品模板id count是数量 ptid是放入容器的模板Id。",
-                });
-                world.SocialManager.SendMail(mail, new Guid[] { gameChar.Id }, SocialConstant.FromSystemId);
-                for (int i = VWorld.WorldRandom.Next(2) + 1; i >= 0; i--)
-                {
-                    var mail2 = new GameMail()
-                    {
-                        Subject = "测试邮件" + i,
-                        Body = "此邮件是测试目的，正式版将删除。",
-                    };
-                    world.SocialManager.SendMail(mail2, new Guid[] { gameChar.Id }, SocialConstant.FromSystemId);
-                }
-            });
-
             return result;
         }
     }
@@ -916,7 +890,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameItem"></param>
         /// <returns>如果不能得到正确的模板对象则返回-1。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public int GetCatalogNumber(this GameItem gameItem) => gameItem.ItemTemplate?.CatalogNumber ?? -1;
+        public static int GetCatalogNumber(this GameItem gameItem) => gameItem.ItemTemplate?.CatalogNumber ?? -1;
     }
 
     /// <summary>
@@ -938,7 +912,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public GameItem GetQiwuBag(this GameChar gameChar) =>
+        public static GameItem GetQiwuBag(this GameChar gameChar) =>
             gameChar.GameItems.FirstOrDefault(c => ProjectConstant.QiwuBagTId == c.TemplateId);
 
         /// <summary>

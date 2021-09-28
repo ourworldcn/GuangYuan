@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GY2021001WebApi.Models;
+using Microsoft.AspNetCore.Mvc;
 using OW.Game;
 
 namespace Gy001.Controllers
@@ -20,18 +21,11 @@ namespace Gy001.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
-        public ActionResult<GetMissionReturnDto> GetMission(GetMissionParamsDto model)
+        public ActionResult<GetMissionRewardReturnDto> GetMissionReward(GetMissionRewardParamsDto model)
         {
-            var result = new GetMissionReturnDto();
+            var result = new GetMissionRewardReturnDto();
             return result;
         }
 
-        public class GetMissionReturnDto
-        {
-        }
-
-        public class GetMissionParamsDto
-        {
-        }
     }
 }
