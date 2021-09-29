@@ -749,7 +749,7 @@ namespace GuangYuan.GY001.BLL
             {
                 GameItem = datas.GameItems[0],
             };
-            
+
         }
 
         #endregion 通用功能
@@ -1212,6 +1212,7 @@ namespace GuangYuan.GY001.BLL
                     gameItem.RemoveFastChangingProperty(fcp.Name);
                 }
                 gc.ChangesItems.AddRange(LastChangesItems); LastChangesItems.Clear();
+                World.MissionManager.ScanAsync(gc);
             }
             finally
             {
@@ -1306,6 +1307,8 @@ namespace GuangYuan.GY001.BLL
                 //        break;
                 //}
                 World.CharManager.NotifyChange(gu);
+                if (!datas.HasError) //若无错
+                    World.MissionManager.ScanAsync(datas.GameChar);
             }
             catch (Exception err)
             {

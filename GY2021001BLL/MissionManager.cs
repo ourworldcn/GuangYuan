@@ -1,5 +1,6 @@
 ﻿using Game.Social;
 using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.Extensions.DependencyInjection;
@@ -167,68 +168,132 @@ namespace OW.Game.Mission
             var gu = gc?.GameUser;
             if (gu is null)
                 return result;
-            using var dwUser = World.CharManager.LockAndReturnDisposer(gu);
+            using var dwUser = World.CharManager.LockAndReturnDisposer(gu, World.CharManager.Options.DefaultLockTimeout * 1.5);
             if (dwUser is null)
                 return result;
-            /*等级成就
-玩家等级达到LV1|LV2|LV3|LV4|LV5|LV6|LV7|lv8|lv9|lv10*/
 
-            /*坐骑等级成就
-玩家提升坐骑等级最高达到
-LV2|LV3|LV5|LV7|LV10|LV12|LV14|LV16|LV18|LV20*/
+            var bag = gc.GetRenwuSlot();
+            decimal metrics = 0;
+            var gim = World.ItemManager;
+            foreach (var item in bag.Children)
+            {
+                Guid tid = item.TemplateId;
+                var str = tid.ToString();   //其中 GUID 的值表示为一系列小写的十六进制位，这些十六进制位分别以 8 个、4 个、4 个、4 个和 12 个位为一组并由连字符分隔开。 例如，返回值可以是“382c74c3-721d-4f34-80e5-57657b6cbc27”。 
+                switch (str)
+                {
+                    case "8bba8a00-e767-4a6a-aa6b-22ef03a3f527": //	关卡模式总战力成就	51005
+                    case "814e47cd-8bdf-4efc-bd26-61af57b7fcf8": //	孵化成就	51007
+                    case "42d3236c-ea7c-4444-898e-469aac1fda07": //	累计访问好友天次成就	51011
 
-            /*满级坐骑数量成就
-拥有LV20的坐骑数量1，2，3，4，6，8，10，15，20，25*/
+                    case "6f8f5d48-e4b4-4e37-a48f-f8b6badc6f44": //	pvp进攻成就	51013
+                    case "c20cc819-dc76-482f-a3c4-cfd32b8b83c7": //	pvp防御成就	51014
+                    case "6817d0d6-ad3d-4dd1-a8f5-4368ac5a568d": //	pvp助战成就	51015
 
-            /*战力成就
-总战力达到10000，20000，30000，40000，50000，60000，70000，80000，100000，120000*/
+                    case "5c3d9daf-fe89-43a4-93f8-7abdc85418e5": //	累计塔防模式次数成就	51012
+                    case "96a36fbe-f79a-4579-932e-588772436da5": //	关卡成就	51002
+                        {
+                            var diff = item.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名); //指标增量值
+                            item.Properties[ProjectMissionConstant.指标增量属性名] = decimal.Zero;
+                            metrics = item.Count.GetValueOrDefault() + diff;
+                        }
+                        break;
+                    case "25ffbee1-f617-49bd-b0de-32b3e3e975cb": //	玩家等级成就	51001
+                        metrics = gc.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+                        break;
+                    case "2f48528e-fd7f-4269-92c9-dbd6f14ffef0": //	坐骑最高等级成就	51003
+                        {
+                            var zuoqiBag = gc.GetZuojiBag();
+                            metrics = zuoqiBag.Children.Max(c => gim.GetBody(c).Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                        }
+                        break;
+                    case "7d5ad309-2614-434e-b8d3-afe4db93d8b3": //	lv20坐骑数量	51004
+                        {
+                            var zuoqiBag = gc.GetZuojiBag();
+                            metrics = zuoqiBag.Children.Count(c => gim.GetBody(c).Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName) >= 20);
+                        }
+                        break;
+                    case "49ee3541-3a6e-4d05-85b0-566c6bfecde2": //	纯种坐骑数量成就	51006
+                        {
+                            var zuoqiBag = gc.GetZuojiBag();
+                            metrics = zuoqiBag.Children.Count(c =>
+                            {
+                                var hgid = gim.GetHeadTemplate(c)?.Sequence;
+                                var bgid = gim.GetBodyTemplate(c)?.Sequence;
+                                if (!hgid.HasValue || !bgid.HasValue)
+                                    return false;
+                                return hgid.Value == bgid.Value;
+                            });
+                        }
+                        break;
+                    case "0c29f28b-d3ac-4f44-8c41-8d279fd319b5": //	最高资质成就	51008
+                        {
+                            var zuoqiBag = gc.GetZuojiBag();
 
-            /*获取坐骑成就
-获得坐骑（含杂交）1只，4只，10只，16只，28只，50只，100只，200只，300只，400只*/
+                            metrics = zuoqiBag.Children.Max(c =>
+                            {
+                                var neatk = c.Properties.GetDecimalOrDefault("neatk");
+                                var nemhp = c.Properties.GetDecimalOrDefault("nemhp");
+                                var neqlt = c.Properties.GetDecimalOrDefault("neqlt");
+                                return neatk + nemhp + neqlt;
+                            });
+                        }
+                        break;
+                    case "6ffc1f03-1c8e-4f7c-bc88-717e42eae59b": //	最高神纹等级成就	51009
+                        {
+                            var shenwenBag = gc.GetShenwenBag();
 
-            /*纯种坐骑获取成就（不含杂交）
-获得纯种坐骑1只，2只，3只，4只，5只，8只，10只，12只，14只，17只*/
+                            metrics = shenwenBag.Children.Max(c =>
+                            {
+                                var lvatk = c.Properties.GetDecimalOrDefault("lvatk");
+                                var lvmhp = c.Properties.GetDecimalOrDefault("lvmhp");
+                                var lvqlt = c.Properties.GetDecimalOrDefault("lvqlt");
+                                return Math.Max(Math.Max(lvatk, lvmhp), lvqlt);
+                            });
+                        }
+                        break;
+                    case "4b708b18-e0a3-4388-866f-56d0c6a6da0d": //	神纹突破次数成就	51010
+                        {
+                            var shenwenBag = gc.GetShenwenBag();
 
-            /*孵化成就
-成功孵化次数1次，5次，10次，15次，20次，30次，50次，100次，200次，400次*/
-
-            /*坐骑资质成就
-最高拥有坐骑资质总和达到，60，90，120，150，180，210，250，270，290，300*/
-
-            /*神纹成就
-最高拥有神纹等级达到10，20，30，40，50，60，70，80，90，100*/
-
-            /*神纹突破成就
-神纹累计突破次数达到：1次，3次，5次，10次，27次，54次，81次，108次，135次，216次*/
-
-            /*访问好友天次成就
-累计访问好友家园1天，2天，3天，5天，7天，10天，15天，20天，30天，60天*/
-
-            /*关卡成就
-打通大章1，大章2，3，4，5，6，7，8，9，10*/
-
-            /*累计进行塔防模式次数
-5次，10次，20次，30次,50次，70次，100次，130次，160次，280次*/
-
-            /*PVP进攻成就
-PVP进攻获胜1次，3次，5次，10次，20次，50次，100次，200次，300次，500次*/
-
-            /*PVP防御
-PVP防御获胜1次，3次，5次，10次，20次，50次，100次，200次，300次，500次*/
-
-            /*助战成就
-PVP助战获胜1次，2次，3次，5次，10次，20次，50次，100次，150次，200次*/
-
-            /*炮塔成就
-最高级别炮塔等级1，2，3，4，5，6，7，8，9，10*/
-
-            /*陷阱成就 最高级别陷阱等级1，2，3，4，5，6，7，8，9，10*/
-
-            /*旗帜成就
-最高级别旗帜等级1，2，3，4，5，6，7，8，9，10*/
-
-            /*方舟等级成就
-最高级别主基地等级1，2，3，4，5，6，7，8，9，10*/
+                            metrics = shenwenBag.Children.Sum(c =>
+                            {
+                                var sscatk = c.Properties.GetDecimalOrDefault("sscatk");
+                                var sscmhp = c.Properties.GetDecimalOrDefault("sscmhp");
+                                var sscqlt = c.Properties.GetDecimalOrDefault("sscqlt");
+                                return sscatk + sscmhp + sscqlt;
+                            });
+                        }
+                        break;
+                    case "530efb1e-fc5d-4638-a728-e069431b197a": //	方舟成就	51016
+                        {
+                            var mainControlRoom = gc.GetMainControlRoom();
+                            metrics = mainControlRoom.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+                        }
+                        break;
+                    case "26c63192-867a-43f4-919b-10a614ee2865": //	炮塔成就	51017
+                        {
+                            var homeland = gc.GetHomeland();
+                            metrics = homeland.AllChildren.Where(c => (c.Template as GameItemTemplate).CatalogNumber == 40).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                        }
+                        break;
+                    case "03d80847-f273-413b-a2a2-81545ab03a89": //	陷阱成就	51018
+                        {
+                            var homeland = gc.GetHomeland();
+                            metrics = homeland.AllChildren.Where(c => (c.Template as GameItemTemplate).CatalogNumber == 41).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                        }
+                        break;
+                    case "5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d": //	旗帜成就	51019
+                        {
+                            var homeland = gc.GetHomeland();
+                            metrics = homeland.AllChildren.Where(c => (c.Template as GameItemTemplate).CatalogNumber == 42).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                        }
+                        break;
+                    default:
+                        continue;
+                }
+                result = SetNewValue(bag, item.TemplateId, metrics) || result;
+            }
+            World.CharManager.NotifyChange(gu);
             return result;
         }
 
@@ -278,6 +343,8 @@ PVP助战获胜1次，2次，3次，5次，10次，20次，50次，100次，150�
                 return;
             }
             var slot = datas.GameChar.GetRenwuSlot();
+            //var tmpId = slot.Children.First(c => c.TemplateId == ProjectMissionConstant.坐骑最高等级成就).Id;
+            //datas.ItemIds[0] = tmpId;
             var coll = from id in datas.ItemIds
                        join obj in slot.Children
                        on id equals obj.Id
@@ -338,17 +405,19 @@ PVP助战获胜1次，2次，3次，5次，10次，20次，50次，100次，150�
             var mObj = missionSlot.Children.FirstOrDefault(c => c.TemplateId == tid);   //任务/成就对象
             var keyName = $"mcid{mObj.Id}"; //键名
             var template = missionSlot.Template;    //模板数据
-            var oldVal = missionSlot.Properties.GetStringOrDefault(keyName);   //原值
-            var lst = oldVal.Split(OwHelper.SemicolonArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => decimal.Parse(c)).ToList(); //级别完成且未领取的指标值。
+            var oldVal = mObj.Count.GetValueOrDefault();   //原值
+            var unpickMetrics = missionSlot.Properties.GetStringOrDefault(keyName, string.Empty).Split(OwHelper.SemicolonArrayWithCN, StringSplitOptions.RemoveEmptyEntries)
+                .Select(c => decimal.Parse(c)).ToArray();   //未领奖励的指标值
             if (!TId2Views.TryGetValue(tid, out var view))
             {
                 throw new InvalidOperationException("找不到指定模板id的对象。");
             }
-            var coll = view.Metrics.Where(c => newValue >= c.Item1).Select(c => c.Item1).Except(lst).ToArray(); //所有应新加入的值
-            if (coll.Length > 0)   //若确实有新成就
+            var oldMetrics = view.Metrics.Where(c => oldVal >= c.Item1).Select(c => c.Item1); //级别完成且未领取的指标值。
+            var newMetrics = view.Metrics.Where(c => newValue >= c.Item1).Select(c => c.Item1).Except(oldMetrics).Except(unpickMetrics).ToList(); //应加入的新值
+            mObj.Count = newValue;  //设置指标值
+            if (newMetrics.Count > 0)   //若确实有新成就
             {
-                lst.AddRange(coll);
-                missionSlot.Properties[keyName] = string.Join(';', lst.Select(c => c.ToString()));
+                missionSlot.Properties[keyName] = string.Join(';', newMetrics.Union(unpickMetrics).Select(c => c.ToString()));
                 return true;
             }
             else

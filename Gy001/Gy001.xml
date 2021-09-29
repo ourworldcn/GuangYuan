@@ -1488,6 +1488,11 @@
             非玩家方或pvp中被动方的战斗战斗损失列表。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndParamsDto.IsWin">
+            <summary>
+            是否赢了该关卡。最后一小关或大关结算时，此数据才有效。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.CombatLossesItemDto">
             <summary>
             战损项类。
@@ -1956,16 +1961,27 @@
             最好使用枚举 SocialKeyTypes 类型的值填充此集合。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetMissionRewardReturnDto">
+            <summary>
+            获取成就奖励接口GetMissionReward返回值封装类。
+            ChangesItems 包含变化数据。
+            MailIds可能有邮件Id,若无法拾取的物品将发送邮件。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetMissionRewardParamsDto">
+            <summary>
+            获取成就奖励接口GetMissionReward参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetMissionRewardParamsDto.ItemIds">
+            <summary>
+            要获取奖励所属任务对象的Id。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
@@ -1988,10 +2004,11 @@
         </member>
         <member name="M:Gy001.Controllers.GameMissionController.GetMissionReward(GY2021001WebApi.Models.GetMissionRewardParamsDto)">
             <summary>
-            
+            获取指定任务/成就的奖励。
             </summary>
             <param name="model"></param>
             <returns></returns>
+            <response code="401">令牌错误。</response>
         </member>
         <member name="F:Gy001.Controllers.SocialController._UserContext">
             <summary>

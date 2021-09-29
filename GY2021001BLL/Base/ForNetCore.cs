@@ -112,7 +112,7 @@ namespace GuangYuan.GY001.BLL
                 var gu = world.CharManager.CreateNewUserAndLock(item.Item1, item.Item1);
                 if (gu is null)
                     continue;
-                gu.CurrentChar.DisplayName = item.Item2;
+                gu.CurrentChar.DisplayName = $"{item.Item1}";
                 gu.Timeout = TimeSpan.FromSeconds(1);
                 world.CharManager.Unlock(gu);
 

@@ -63,11 +63,11 @@ namespace GY2021001WebApi.Controllers
                 Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
                 EndRequested = model.EndRequested,
                 OnlyMark = model.OnlyMark,
+                IsWin=model.IsWin,
             };
             if (null != model.GameItems)
                 result.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
             world.CombatManager.EndCombat(result);
-
             return (CombatEndReturnDto)result;
         }
 

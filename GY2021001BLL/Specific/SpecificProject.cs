@@ -33,6 +33,7 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid 炮塔成就 = new Guid("{26c63192-867a-43f4-919b-10a614ee2865}");
         public static readonly Guid 陷阱成就 = new Guid("{03d80847-f273-413b-a2a2-81545ab03a89}");
         public static readonly Guid 旗帜成就 = new Guid("{5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d}");
+        public const string 指标增量属性名 = "diffmetrics";
     }
 
     /// <summary>
@@ -55,11 +56,11 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         [Obsolete("下个版本可能会被删除。")]
         public static readonly Guid ZuojiShen = new Guid("{7D191539-11E1-49CD-8D0C-82E3E5B04D31}");
+
         /// <summary>
-        /// 神纹碎片背包槽Id。放在此槽中是未装备的神纹(碎片)。
+        /// 神纹装备槽。
         /// </summary>
-        [Obsolete("下个版本可能会被删除。")]
-        public static readonly Guid ShenWenBagSlotId = new Guid("{2BAA3FCD-2BE8-4096-916A-FF2D47E084EF}");
+        public static readonly Guid ShenWenBagSlotId = new Guid("88A4EED6-0AEB-4A70-8FDE-67F75E5E2C0A");
 
         /// <summary>
         /// 当前坐骑的容器Id。出战坐骑。

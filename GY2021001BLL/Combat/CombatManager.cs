@@ -3,6 +3,7 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using OW.Game;
+using OW.Game.Mission;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -85,6 +86,11 @@ namespace GuangYuan.GY001.BLL
         /// 获取变化物品的数据。仅当结算大关卡时这里才有数据。
         /// </summary>
         public List<ChangeItem> ChangesItems { get; set; } = new List<ChangeItem>();
+
+        /// <summary>
+        /// 是否赢了该关卡。最后一小关或大关结算时，此数据才有效。
+        /// </summary>
+        public bool IsWin { get; set; }
     }
 
     /// <summary>
@@ -427,6 +433,27 @@ namespace GuangYuan.GY001.BLL
                         gim.ForceMove(item, qiwu);
                         data.ChangesItems.AddToAdds(item);
                     }
+                    //设置成就数据
+                    if (data.IsWin && data.Template.Properties.GetDecimalOrDefault("typ") == 1) //若是推关
+                    {
+                        var mission = data.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.关卡成就);
+                        if (null != mission)   //若找到成就对象
+                        {
+                            var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
+                            mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
+                            World.MissionManager.ScanAsync(data.GameChar);
+                        }
+                    }
+                    else if (data.Template.Properties.GetDecimalOrDefault("typ") == 1)   //若是塔防
+                    {
+                        var mission = data.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.累计塔防模式次数成就);
+                        if (null != mission)   //若找到成就对象
+                        {
+                            var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
+                            mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
+                            World.MissionManager.ScanAsync(data.GameChar);
+                        }
+                    }
                 }
                 if (data.EndRequested)
                     data.NextTemplate = null;
@@ -597,6 +624,27 @@ namespace GuangYuan.GY001.BLL
             datas.HasError = false;
             datas.ErrorCode = 0;
             datas.ErrorMessage = null;
+            //计算成就数据
+            if (datas.IsWin)    //若进攻胜利
+            {
+                var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.PVP进攻成就);
+                if (null != mission)   //若找到成就对象
+                {
+                    var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
+                    mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
+                    World.MissionManager.ScanAsync(datas.GameChar);
+                }
+            }
+            else //若防御剩余
+            {
+                var mission = datas.OtherChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.PVP防御成就);
+                if (null != mission)   //若找到成就对象
+                {
+                    var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
+                    mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
+                    World.MissionManager.ScanAsync(datas.GameChar);
+                }
+            }
         }
 
         /// <summary>
@@ -737,6 +785,20 @@ namespace GuangYuan.GY001.BLL
             datas.Combat.SetAssistanceDone(true);
             //保存数据
             datas.Save();
+            datas.HasError = false;
+            datas.ErrorCode = 0;
+            datas.ErrorMessage = null;
+            //计算成就数据
+            if (datas.IsWin)
+            {
+                var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.PVP助战成就);
+                if (null != mission)   //若找到成就对象
+                {
+                    var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
+                    mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
+                    World.MissionManager.ScanAsync(datas.GameChar);
+                }
+            }
         }
 
         /// <summary>

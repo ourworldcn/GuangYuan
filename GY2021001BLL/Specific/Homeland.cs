@@ -133,13 +133,23 @@ namespace GuangYuan.GY001.BLL.Homeland
         #region 基础功能
 
         /// <summary>
-        /// 获取指定用户的主基地对象。
+        /// 获取指定用户的主基地(初始地块)对象。
         /// </summary>
         /// <param name="gameChar"></param>
         /// <returns>没有找到则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public GameItem GetMainbase(this GameChar gameChar) =>
+        public static GameItem GetMainbase(this GameChar gameChar) =>
             gameChar.GetHomeland()?.Children.FirstOrDefault(c => c.GetDikuaiIndex() == 0);
+
+        /// <summary>
+        /// 获取指定用户的家园中主控室对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns>没有找到则返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetMainControlRoom(this GameChar gameChar) =>
+            gameChar.GetMainbase()?.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.MainControlRoomSlotId);
+
 
         /// <summary>
         /// 获取家园对象。
@@ -163,12 +173,12 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="templateManager"></param>
         /// <returns>钻石计价的价格，如果没有价格则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public IEnumerable<GameItemTemplate> GetMainBaseTemplates(this GameItemTemplateManager templateManager) => templateManager.GetTemplates(c => c.CatalogNumber == 0100);
+        public static IEnumerable<GameItemTemplate> GetMainBaseTemplates(this GameItemTemplateManager templateManager) => templateManager.GetTemplates(c => c.CatalogNumber == 0100);
 
         /// <summary>
         /// 同步锁。
         /// </summary>
-        static private readonly object ThisLocker = new object();
+        private static readonly object ThisLocker = new object();
 
         /// <summary>
         /// 缓存所有地块信息。
@@ -180,7 +190,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// </summary>
         /// <param name="manager"></param>
         /// <returns>键二元值类型元组(风格号,地块索引号)，值是地块的模板对象。</returns>
-        static public ConcurrentDictionary<ValueTuple<int, int>, GameItemTemplate> GetAllDikuai(this GameItemTemplateManager manager)
+        public static ConcurrentDictionary<ValueTuple<int, int>, GameItemTemplate> GetAllDikuai(this GameItemTemplateManager manager)
         {
             if (_AllDikuai is null)
                 lock (ThisLocker)
@@ -199,7 +209,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="fenggeNumbers"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public IEnumerable<GameItemTemplate> GetTemplatesByFenggeNumber(this GameItemTemplateManager manager, int fenggeNumber) =>
+        public static IEnumerable<GameItemTemplate> GetTemplatesByFenggeNumber(this GameItemTemplateManager manager, int fenggeNumber) =>
            manager.GetAllDikuai().Values.Where(c => c.GetFenggeNumber() == fenggeNumber);
 
         /// <summary>
@@ -209,7 +219,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="index">地块号，0是主基地，第一个地块是1，以此类推。</param>
         /// <returns>指定地块号的所有风格的模板。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public IEnumerable<GameItemTemplate> GetTemplatesByDikuaiIndex(this GameItemTemplateManager manager, int index) =>
+        public static IEnumerable<GameItemTemplate> GetTemplatesByDikuaiIndex(this GameItemTemplateManager manager, int index) =>
             manager.GetAllDikuai().Values.Where(c => c.GetDikuaiIndex() == index);
 
         /// <summary>
@@ -220,7 +230,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="index"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public GameItemTemplate GetTemplateByNumberAndIndex(this GameItemTemplateManager manager, int fenggeNumber, int index) =>
+        public static GameItemTemplate GetTemplateByNumberAndIndex(this GameItemTemplateManager manager, int fenggeNumber, int index) =>
             manager.GetAllDikuai().GetValueOrDefault((fenggeNumber, index), null);
 
         /// <summary>
@@ -229,7 +239,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="template"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public int GetFenggeNumber(this GameItemTemplate template) => template.CatalogNumber / 100 == 1 ? template.Sequence : -1;
+        public static int GetFenggeNumber(this GameItemTemplate template) => template.CatalogNumber / 100 == 1 ? template.Sequence : -1;
 
         /// <summary>
         /// 获取模板的地块索引号，如果不是地块则返回-1.
@@ -237,7 +247,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="template"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public int GetDikuaiIndex(this GameItemTemplate template) => template.CatalogNumber / 100 == 1 ? template.Catalog3Number : -1;
+        public static int GetDikuaiIndex(this GameItemTemplate template) => template.CatalogNumber / 100 == 1 ? template.Catalog3Number : -1;
 
         /// <summary>
         /// 返回用户当前有多少地块，包含主基地。
@@ -245,7 +255,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public int GetDikuaiCount(this GameChar gameChar) =>
+        public static int GetDikuaiCount(this GameChar gameChar) =>
             gameChar.GetHomeland().Children.Count(c => ((c.Template as GameItemTemplate)?.GetDikuaiIndex() ?? 0) >= 0);
 
         /// <summary>
@@ -254,7 +264,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public IEnumerable<(int, GameItem)> GetDikuais(this GameChar gameChar) =>
+        public static IEnumerable<(int, GameItem)> GetDikuais(this GameChar gameChar) =>
             gameChar.GetHomeland().Children.Where(c => c.IsDikuai()).
                 Select(c => (c.GetDikuaiIndex(), c));
 
@@ -265,7 +275,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="dikuaiIndex">当是地块时，返回地块的索引号。</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public bool IsDikuai(this GameItem gameItem) =>
+        public static bool IsDikuai(this GameItem gameItem) =>
             gameItem.GetDikuaiIndex() >= 0;
 
         /// <summary>
@@ -274,7 +284,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameItem"></param>
         /// <returns>地块号，如果不是地块则返回-1。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public int GetDikuaiIndex(this GameItem gameItem) => (gameItem.Template as GameItemTemplate)?.GetDikuaiIndex() ?? -1;
+        public static int GetDikuaiIndex(this GameItem gameItem) => (gameItem.Template as GameItemTemplate)?.GetDikuaiIndex() ?? -1;
 
         /// <summary>
         /// 获取模板的风格号，如果不是风格则返回-1。
@@ -282,7 +292,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameItem"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public int GetFenggeNumber(this GameItem gameItem) => (gameItem.Template as GameItemTemplate)?.GetFenggeNumber() ?? -1;
+        public static int GetFenggeNumber(this GameItem gameItem) => (gameItem.Template as GameItemTemplate)?.GetFenggeNumber() ?? -1;
 
         /// <summary>
         /// 获取角色当前的风格号。
@@ -290,7 +300,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public int GetCurrentFenggeNumber(this GameChar gameChar) =>
+        public static int GetCurrentFenggeNumber(this GameChar gameChar) =>
             gameChar.GetHomeland().Children.FirstOrDefault(c => c.GetDikuaiIndex() == 0)?.GetFenggeNumber() ?? -1;
 
         /// <summary>
@@ -299,7 +309,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameChar">角色对象。</param>
         /// <param name="fenggeItems">自动添加数据，和免费风格。</param>
         /// <param name="manager">模板管理器。</param>
-        static public void MergeFangans(this GameChar gameChar, List<HomelandFengge> fenggeItems, GameItemTemplateManager manager)
+        public static void MergeFangans(this GameChar gameChar, List<HomelandFengge> fenggeItems, GameItemTemplateManager manager)
         {
             var hl = gameChar.GetHomeland();
 
@@ -326,6 +336,14 @@ namespace GuangYuan.GY001.BLL.Homeland
                     fangan.FanganItems.MergeContainer(hl, number, manager); //合并方案项
                 }
             }
+
+            if (!fenggeItems.SelectMany(c => c.Fangans).Any(c => c.IsActived))   //若没有激活方案
+            {
+                //激活初始的第一个方案
+                var fanan = fenggeItems.FirstOrDefault()?.Fangans.FirstOrDefault();
+                if (null != fanan)
+                    fanan.IsActived = true;
+            }
         }
 
         /// <summary>
@@ -336,7 +354,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="fenggeNumber">指定风格号。</param>
         /// <param name="manager">模板管理器。</param>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        static public void MergeContainer(this ICollection<HomelandFanganItem> obj, GameItem gameItem, int fenggeNumber, GameItemTemplateManager manager)
+        public static void MergeContainer(this ICollection<HomelandFanganItem> obj, GameItem gameItem, int fenggeNumber, GameItemTemplateManager manager)
         {
             var dikuaiNumber = gameItem.GetDikuaiIndex();   //指定物品的地块索引
             var item = obj.FirstOrDefault(c => c.ContainerId == gameItem.Id);   //获得此项在方案项中的对象
@@ -369,7 +387,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// 设置家园的建设方案。
         /// </summary>
         /// <param name="plans">家园建设方案的集合。</param>
-        static public void SetHomelandPlans(this GameCharManager manager, IEnumerable<HomelandFengge> plans, GameChar gameChar)
+        public static void SetHomelandPlans(this GameCharManager manager, IEnumerable<HomelandFengge> plans, GameChar gameChar)
         {
             var world = manager.World;
             var gu = gameChar.GameUser;
@@ -403,7 +421,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gc">角色对象。</param>
         /// <returns>方案集合，对应每个家园风格对象都会生成一个风格，如无内容则仅有Id,ClientString有效。</returns>
         /// <exception cref="InvalidOperationException">内部数据结构损坏</exception>
-        static public IEnumerable<HomelandFengge> GetHomelandPlans(this GameCharManager manager, GameChar gc)
+        public static IEnumerable<HomelandFengge> GetHomelandPlans(this GameCharManager manager, GameChar gc)
         {
             var result = new List<HomelandFengge>();
             try

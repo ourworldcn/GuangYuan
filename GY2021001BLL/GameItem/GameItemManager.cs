@@ -1601,6 +1601,14 @@ namespace OW.Game.Item
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
 
         /// <summary>
+        /// 获取神纹背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static GameItem GetShenwenBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShenWenBagSlotId);
+
+        /// <summary>
         /// 按指定Id获取坐骑。仅从坐骑包中获取。
         /// </summary>
         /// <param name="gameChar"></param>

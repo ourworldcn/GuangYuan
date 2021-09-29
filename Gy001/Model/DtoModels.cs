@@ -1666,6 +1666,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<CombatLossesItemDto> PassiveCombatLosses { get; set; } = new List<CombatLossesItemDto>();
+
+        /// <summary>
+        /// 是否赢了该关卡。最后一小关或大关结算时，此数据才有效。
+        /// </summary>
+        [DataMember]
+        public bool IsWin { get; set; }
     }
 
     /// <summary>
@@ -2499,12 +2505,28 @@ namespace GY2021001WebApi.Models
     #endregion 社交相关
 
     #region 任务成就相关
-    public class GetMissionRewardReturnDto : ReturnDtoBase
+
+    /// <summary>
+    /// 获取成就奖励接口GetMissionReward返回值封装类。
+    /// ChangesItems 包含变化数据。
+    /// MailIds可能有邮件Id,若无法拾取的物品将发送邮件。
+    /// </summary>
+    [DataContract]
+    public class GetMissionRewardReturnDto : ChangesAndMailReturnDtoBase
     {
     }
 
-    public class GetMissionRewardParamsDto : ChangesAndMailReturnDtoBase
+    /// <summary>
+    /// 获取成就奖励接口GetMissionReward参数封装类。
+    /// </summary>
+    [DataContract]
+    public class GetMissionRewardParamsDto : TokenDtoBase
     {
+        /// <summary>
+        /// 要获取奖励所属任务对象的Id。
+        /// </summary>
+        [DataMember]
+        public List<string> ItemIds { get; set; } = new List<string>();
     }
 
     #endregion 任务成就相关

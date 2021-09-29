@@ -481,27 +481,27 @@ namespace GuangYuan.GY001.BLL
             if (user.IsDisposed)    //若已经无效
             {
                 Monitor.Exit(user);
-                VWorld.SetLastError(ErrorCodes.E_CHANGED_STATE);
+                VWorld.SetLastError(ErrorCodes.ObjectDisposed);
                 return false;
             }
 #if DEBUG
-            var st = new StackTrace(true);
-            var sb = new StringBuilder();
-            for (int i = 0; i < st.FrameCount; i++)
-            {
-                // Note that high up the call stack, there is only
-                // one stack frame.
-                StackFrame sf = st.GetFrame(i);
-                sb.AppendLine(sf.GetMethod().Name);
-                sb.AppendLine($"{sf.GetFileName()} , line {sf.GetFileLineNumber()}");
-            }
-            _LockerLog[user] = sb.ToString();
+            //var st = new StackTrace(true);
+            //var sb = new StringBuilder();
+            //for (int i = 0; i < st.FrameCount; i++)
+            //{
+            //    // Note that high up the call stack, there is only
+            //    // one stack frame.
+            //    StackFrame sf = st.GetFrame(i);
+            //    sb.AppendLine(sf.GetMethod().Name);
+            //    sb.AppendLine($"{sf.GetFileName()} , line {sf.GetFileLineNumber()}");
+            //}
+            //_LockerLog[user] = sb.ToString();
 #endif
             return true;
         }
 
 #if DEBUG
-        private readonly ConcurrentDictionary<GameUser, string> _LockerLog = new ConcurrentDictionary<GameUser, string>();
+        //private readonly ConcurrentDictionary<GameUser, string> _LockerLog = new ConcurrentDictionary<GameUser, string>();
 #endif
 
         /// <summary>
@@ -515,8 +515,8 @@ namespace GuangYuan.GY001.BLL
                 Monitor.Pulse(user);
             Monitor.Exit(user);
 #if DEBUG
-            if (!Monitor.IsEntered(user))
-                _LockerLog.TryRemove(user, out _);
+            //if (!Monitor.IsEntered(user))
+            //    _LockerLog.TryRemove(user, out _);
 #endif
         }
 
@@ -675,16 +675,17 @@ namespace GuangYuan.GY001.BLL
         /// <returns>true已经处理，false指定用户已经无效。</returns>
         public bool NotifyChange(GameUser user)
         {
-            if (!Lock(user))
+            using var dwUser = this.LockAndReturnDisposer(user);
+            if (dwUser is null)
                 return false;
             try
             {
                 user.LastModifyDateTimeUtc = DateTime.UtcNow;
                 _DirtyUsers[user] = user;
             }
-            finally
+            catch
             {
-                Unlock(user);
+                return false;
             }
             return true;
         }
