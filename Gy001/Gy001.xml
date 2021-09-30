@@ -52,10 +52,11 @@
             战斗相关的操作。这里的功能以后可能依据需求改为Udp。
             </summary>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.CombatController.#ctor">
+        <member name="M:GY2021001WebApi.Controllers.CombatController.#ctor(OW.Game.VWorld)">
             <summary>
             构造函数。
             </summary>
+            <param name="world"></param>
         </member>
         <member name="M:GY2021001WebApi.Controllers.CombatController.Start(GY2021001WebApi.Models.CombatStartParamsDto)">
             <summary>

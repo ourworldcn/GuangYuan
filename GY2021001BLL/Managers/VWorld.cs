@@ -261,12 +261,13 @@ namespace OW.Game
                         _TemporaryUserContext = null;
                     }
                 }
-                if (_TemporaryUserContext.ChangeTracker.Entries().Count() > Options.ContextMaxEntityCount)    //若数据较多
-                {
-                    _TemporaryUserContext.Dispose();
-                    _TemporaryUserContext = null;
-                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, false, true);
-                }
+                if (null != _TemporaryUserContext)
+                    if (_TemporaryUserContext.ChangeTracker.Entries().Count() > Options.ContextMaxEntityCount)    //若数据较多
+                    {
+                        _TemporaryUserContext.Dispose();
+                        _TemporaryUserContext = null;
+                        GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, false, true);
+                    }
                 dt = DateTime.UtcNow;
             }
             //TO DO

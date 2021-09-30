@@ -39,7 +39,7 @@ namespace GuangYuan.GY001.BLL
         /// 扫描超时不动用户强制注销的频率。
         /// </summary>
         /// <value>默认值：1分钟。</value>
-        public TimeSpan ScanFrequency { get; set; } = TimeSpan.FromMinutes(1);
+        public TimeSpan ScanFrequencyOfLogout { get; set; } = TimeSpan.FromMinutes(1);
 
         /// <summary>
         /// 登录用户多长时间不动作，会被视同登出。
@@ -51,6 +51,7 @@ namespace GuangYuan.GY001.BLL
         /// 系统因某种原因自动加载进缓存的用户对象，多长时间不使用，会自动驱逐。
         /// </summary>
         public TimeSpan LogoutTimeoutForAutoLoad { get; set; } = TimeSpan.FromMinutes(1);
+
     }
 
     public class GameCharManager : GameManagerBase<GameCharManagerOptions>
@@ -228,7 +229,7 @@ namespace GuangYuan.GY001.BLL
         private void Initialize()
         {
             VWorld world = World;
-            _LogoutTimer = new Timer(LogoutFunc, null, Options.ScanFrequency, Options.ScanFrequency);
+            _LogoutTimer = new Timer(LogoutFunc, null, Options.ScanFrequencyOfLogout, Options.ScanFrequencyOfLogout);
             _SaveThread = new Thread(SaveFunc) { IsBackground = false, Priority = ThreadPriority.BelowNormal };
             _SaveThread.Start();
             world.RequestShutdown.Register(() =>
@@ -274,7 +275,7 @@ namespace GuangYuan.GY001.BLL
 
             foreach (var item in _Store._Token2Users.Values)
             {
-                if (DateTime.UtcNow - start >= Options.ScanFrequency)    //若本次扫描已经超时
+                if (DateTime.UtcNow - start >= Options.ScanFrequencyOfLogout)    //若本次扫描已经超时
                     break;
                 var loginName = item.LoginName;
                 using var dwLoginName = world.LockStringAndReturnDisposer(ref loginName, TimeSpan.Zero);
@@ -323,18 +324,22 @@ namespace GuangYuan.GY001.BLL
             VWorld world = World;
             while (true)
             {
-                foreach (var item in _DirtyUsers.Values)
+                foreach (var key in _DirtyUsers.Keys)
                 {
                     try
                     {
-                        var loginName = item.LoginName;
-                        using var dwLoginName = world.LockStringAndReturnDisposer(ref loginName, TimeSpan.Zero, true);    //锁定登录名
-                        if (dwLoginName is null)    //若锁定登录名失败
+                        if (!_DirtyUsers.TryRemove(key, out var item))
                             continue;
                         using var dwUser = this.LockAndReturnDisposer(item, TimeSpan.Zero);    //锁定用户
                         if (dwUser is null) //若锁定失败
+                        {
+                            if (!item.IsDisposed)   //若没有处置
+                            {
+                                _DirtyUsers[item] = item;   //加入准备下次再写入
+                                Thread.Yield();
+                            }
                             continue;
-                        _DirtyUsers.TryRemove(item, out _);
+                        }
                         item.DbContext.SaveChanges();
                     }
                     catch (DbUpdateConcurrencyException err)

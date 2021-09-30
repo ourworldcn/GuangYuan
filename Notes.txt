@@ -15,3 +15,18 @@ A向B申请好友，则 GameSocialRelationshipDto 对象中，Id=AId,ObjectId=BId,Friendlin
 Friendliness=6,Confirmed=0 标识这是一个好友申请的条目，Id是提出申请的一方，ObjectId是被邀请的一方。这个条目记录了一个动作，Id是动作的主体。
 
 "QhtsnntKgkm1X+sYEXzaAw=="
+
+USE [GY2021001Prod]
+GO
+while(1=1)
+begin
+	UPDATE top (1000) [dbo].[GameItems]
+	   SET 
+		  [PropertiesString] = REPLACE([PropertiesString],'fcpcCount=0','fcpcCount=36000')
+		  ,[count]=36000
+	  where TemplateId='{7a00740c-035e-4846-a619-2d0855f60b55}' and [count]=0
+	if(@@ROWCOUNT=0)
+	  break
+end
+GO
+

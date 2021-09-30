@@ -5,6 +5,7 @@ using OW.Game;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -166,47 +167,64 @@ namespace GuangYuan.GY001.BLL
         }
 
         private GameItem _GameItem;
+
+        /// <summary>
+        /// 要升级的物品。
+        /// </summary>
         public GameItem GameItem { get => _GameItem; set => _GameItem = value; }
 
         /// <summary>
-        /// 获取代价。
+        /// 获取物品升级所需的代价。
         /// </summary>
-        /// <returns></returns>
-        public List<(Guid, decimal)> GetCost()
+        /// <returns>升级需要的资源及消耗量，null表示不可升级。</returns>
+        public List<(GameItem, decimal)> GetCost()
         {
+            var lv = GameItem.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+            
+            var result = new List<(GameItem, decimal)>();
+
             var dic = GameItem.Properties;
             var bag = GameChar.GetCurrencyBag();
 
-            var dia = dic.GetDecimalOrDefault("lud"); //钻石
+            var dia = dic.GetDecimalOrDefault("lud", decimal.Zero); //钻石
             if (dia != decimal.Zero)   //若有钻石消耗
             {
                 var gi = GameChar.GetZuanshi();
-                if (gi.Count + dia < 0) //若钻石不够
-                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                result.Add((gi, dia));
             }
 
             var gold = dic.GetDecimalOrDefault("lug");  //金币
             if (gold != decimal.Zero)   //若有金币消耗
             {
                 var gi = GameChar.GetJinbi();
-                if (gi.Count + gold < 0) //若金币不够
-                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                result.Add((gi, gold));
             }
 
             var wood = dic.GetDecimalOrDefault("luw");  //木材
             if (wood != decimal.Zero)   //若有金币消耗
             {
                 var gi = GameChar.GetMucai();
-                if (gi.Count + wood < 0) //若木材不够
-                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                result.Add((gi, wood));
             }
-            var result = new List<(Guid, decimal)>()
-            {
-                (GameChar.GetZuanshi().TemplateId,dia),
-                (GameChar.GetJinbi().TemplateId,gold),
-                (GameChar.GetMucai().TemplateId,wood),
-            };
             return result;
+        }
+
+        /// <summary>
+        /// 消耗资源。
+        /// </summary>
+        /// <param name="cost"></param>
+        /// <returns>true,消耗资源成功，false至少有一种资源不足。</returns>
+        public bool Deplete(List<(GameItem, decimal)> cost)
+        {
+            var errItem = cost.FirstOrDefault(item => item.Item1.Count + item.Item2 < 0);
+            if (null != errItem.Item1)  //若有资源不足
+            {
+                VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                VWorld.SetLastErrorMessage($"{errItem.Item1.Template.DisplayName} 不足。");
+                return false;
+            }
+            cost.ForEach(c => c.Item1.Count += c.Item2);    //应用资源损耗
+            return true;
         }
 
         /// <summary>

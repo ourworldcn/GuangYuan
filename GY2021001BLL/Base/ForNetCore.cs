@@ -80,7 +80,7 @@ namespace GuangYuan.GY001.BLL
         {
             Task.Run(SendMail);
 #if DEBUG
-            var maxCount = 5000;
+            var maxCount = 4000;
 #else
             var maxCount = 25000;
 #endif

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.UserDb;
+using Gy001.Controllers;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,14 +20,14 @@ namespace GY2021001WebApi.Controllers
     /// </summary>
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class CombatController : ControllerBase
+    public class CombatController : GameBaseController
     {
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public CombatController()
+        /// <param name="world"></param>
+        public CombatController(VWorld world) : base(world)
         {
-
         }
 
         /// <summary>
@@ -37,11 +38,10 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<CombatStartReturnDto> Start(CombatStartParamsDto model)
         {
-            var world = HttpContext.RequestServices.GetService<VWorld>();
-            var cbm = world.CombatManager;
-            using var data = new StartCombatData(world, model.Token)
+            var cbm = World.CombatManager;
+            using var data = new StartCombatData(World, model.Token)
             {
-                Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
+                Template = World.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
             };
             cbm.StartCombat(data);
             return (CombatStartReturnDto)data;
@@ -56,18 +56,17 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<CombatEndReturnDto> End(CombatEndParamsDto model)
         {
-            var world = HttpContext.RequestServices.GetService<VWorld>();
             var result = new EndCombatData()
             {
-                GameChar = world.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.CurrentChar,
-                Template = world.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
+                GameChar = World.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.CurrentChar,
+                Template = World.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
                 EndRequested = model.EndRequested,
                 OnlyMark = model.OnlyMark,
                 IsWin=model.IsWin,
             };
             if (null != model.GameItems)
                 result.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
-            world.CombatManager.EndCombat(result);
+            World.CombatManager.EndCombat(result);
             return (CombatEndReturnDto)result;
         }
 
@@ -88,15 +87,14 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<CombatEndPvpReturnDto> CombatEndPvp(CombatEndPvpParamsDto model)
         {
             var result = new CombatEndPvpReturnDto();
-            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            using var datas = new EndCombatPvpWorkData(world, model.Token, GameHelper.FromBase64String(model.OtherGCharId))
+            using var datas = new EndCombatPvpWorkData(World, model.Token, GameHelper.FromBase64String(model.OtherGCharId))
             {
                 Now = DateTime.UtcNow,
                 DungeonId = GameHelper.FromBase64String(model.DungeonId),
                 IsWin = model.IsWin,
             };
             datas.DestroyTIds.AddRange(model.Destroies.Select(c => (ValueTuple<Guid, decimal>)c));
-            world.CombatManager.EndCombatPvp(datas);
+            World.CombatManager.EndCombatPvp(datas);
             result.HasError = datas.HasError;
             result.DebugMessage = datas.ErrorMessage;
             result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));

@@ -142,7 +142,7 @@ namespace GuangYuan.GY001.BLL.Social
             var frees = db.Set<GameSocialRelationship>().Where(c => c.PropertiesString.Contains(tmpStr1)).GroupBy(c => c.Id).Where(c => c.Count() >= 20).Select(c => c.Key); //未处理好友申请数量>20
             if (bodyTIds.Any())
                 result = from chars in activeChars
-                         where chars.Id != GameChar.Id
+                         where chars.Id != GameChar.Id  //不能查出自己
                          join tmp in shows
                          on chars.Id equals tmp.Id
                          where allows.Any(c => c.Id == chars.Id) && !frees.Any(c => c == chars.Id) && !todayList.Contains(chars.Id) && !notAllows.Contains(chars.Id)
@@ -153,6 +153,7 @@ namespace GuangYuan.GY001.BLL.Social
             else
                 result = from chars in activeChars
                          where allows.Any(c => c.Id == chars.Id) && !frees.Any(c => c == chars.Id) && !TodayIds.Contains(chars.Id) && !notAllows.Contains(chars.Id)
+                         where chars.Id != GameChar.Id  //不能查出自己
                          group chars by chars.Id into g
                          select g.Key;
             return result;

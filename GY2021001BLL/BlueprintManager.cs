@@ -586,6 +586,11 @@ namespace GuangYuan.GY001.BLL
         /// 执行蓝图导致发送邮件的Id集合。
         /// </summary>
         public List<Guid> MailIds => _MailIds ??= new List<Guid>();
+
+        /// <summary>
+        /// 错误码。
+        /// </summary>
+        public int ErrorCode { get; internal set; }
     }
 
     /// <summary>
@@ -723,6 +728,10 @@ namespace GuangYuan.GY001.BLL
                         BuyPveCount(datas);
                         succ = true;
                         break;
+                    case "6a0c5697-4228-4ec9-a69e-28d61bd52b32":    //坐骑等级提升
+                        LevelUp(datas);
+                        succ = true;
+                        break;
                     default:
                         succ = false;
                         break;
@@ -745,11 +754,42 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void LevelUp(ApplyBlueprintDatas datas)
         {
-            var luDatas = new LevelUpDatas(World, datas.GameChar)
+            var gim = World.ItemManager;
+            if (datas.Count <= 0)
             {
-                GameItem = datas.GameItems[0],
-            };
-
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "知道次数应大于0";
+                return;
+            }
+            for (int i = 0; i < datas.Count; i++)
+            {
+                var gi = datas.GameItems[0];
+                var luDatas = new LevelUpDatas(World, datas.GameChar)
+                {
+                    GameItem = datas.GameItems[0],
+                };
+                if (gim.IsMounts(gi))
+                    luDatas.GameItem = gim.GetBody(gi);
+                else
+                    luDatas.GameItem = gi;
+                var cost = luDatas.GetCost();
+                if (cost is null)   //若不可以升级
+                {
+                    return;
+                }
+                var succ = luDatas.Deplete(cost);
+                if (!succ)  //若资源不足
+                {
+                    return;
+                }
+                //升级
+                var oldLv = luDatas.GameItem.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+                gim.SetPropertyValue(luDatas.GameItem, ProjectConstant.LevelPropertyName, oldLv + 1);
+                datas.ChangesItem.AddToChanges(cost.Select(c => c.Item1).ToArray());
+                datas.SuccCount = i + 1;
+                datas.ChangesItem.AddToChanges(gi);
+            }
         }
 
         #endregion 通用功能
@@ -1571,7 +1611,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="child">要设置的对象。</param>
         /// <param name="parent1">双亲1。</param>
         /// <param name="parent1">双亲2。</param>
-        void SetNe(GameItem child, GameItem parent1, GameItem parent2)
+        private void SetNe(GameItem child, GameItem parent1, GameItem parent2)
         {
             var rank1 = parent1.Properties.GetDecimalOrDefault("nerank");
             var rank2 = parent2.Properties.GetDecimalOrDefault("nerank");
@@ -1760,7 +1800,7 @@ namespace GuangYuan.GY001.BLL
     public static class ApplyBlueprintDatasExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public bool Verify(this ApplyBlueprintDatas obj, bool succ, string errorMessage, params Guid[] errorItemTIds)
+        public static bool Verify(this ApplyBlueprintDatas obj, bool succ, string errorMessage, params Guid[] errorItemTIds)
         {
             if (!succ)
             {
@@ -1780,7 +1820,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="templateId"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        static public GameItem Lookup(this ApplyBlueprintDatas obj, IEnumerable<GameItem> parent, Guid? templateId, Guid? id = null)
+        public static GameItem Lookup(this ApplyBlueprintDatas obj, IEnumerable<GameItem> parent, Guid? templateId, Guid? id = null)
         {
             IEnumerable<GameItem> resultColl;
             if (templateId.HasValue)    //若需限定模板Id
