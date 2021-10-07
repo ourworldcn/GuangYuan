@@ -188,7 +188,7 @@ namespace OW.Game
         }
 
         /// <summary>
-        /// 
+        /// 后台保存数据库的工作函数。
         /// </summary>
         private void SaveTemporaryUserContext()
         {
@@ -281,12 +281,21 @@ namespace OW.Game
         #region 子管理器
 
         private GameItemTemplateManager _ItemTemplateManager;
+        /// <summary>
+        /// 模板管理器。
+        /// </summary>
         public GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= Service.GetRequiredService<GameItemTemplateManager>(); }
 
         private GameCharManager _GameCharManager;
+        /// <summary>
+        /// 角色管理器。
+        /// </summary>
         public GameCharManager CharManager { get => _GameCharManager ??= Service.GetRequiredService<GameCharManager>(); }
 
         private CombatManager _CombatManager;
+        /// <summary>
+        /// 战斗管理器。
+        /// </summary>
         public CombatManager CombatManager { get => _CombatManager ??= Service.GetRequiredService<CombatManager>(); }
 
         private GameItemManager _GameItemManager;
@@ -309,7 +318,6 @@ namespace OW.Game
         public BlueprintManager BlueprintManager { get => _BlueprintManager ??= Service.GetRequiredService<BlueprintManager>(); }
 
         private GameMissionManager _GameMissionManager;
-
         /// <summary>
         /// 任务/成就管理器。
         /// </summary>
