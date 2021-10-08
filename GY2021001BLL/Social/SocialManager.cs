@@ -330,7 +330,8 @@ namespace GuangYuan.GY001.BLL
                     var tid = item.Properties.GetGuidOrDefault(SocialConstant.SentTIdPName, Guid.Empty);
                     var count = item.Properties.GetDecimalOrDefault(SocialConstant.SentCountPName, decimal.Zero);
                     var ptid = item.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty);
-                    var gameItem = gim.CreateGameItem(tid);  //物品
+                    var gameItem = new GameItem();  //物品
+                    gameItem.Initialize(Service, tid);
                     gameItem.Count = count;
                     GameObjectBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
                     if (parent is null)
@@ -1015,8 +1016,10 @@ namespace GuangYuan.GY001.BLL
                 //修改数据
                 datas.SetDateTime(sr, datas.Today);
                 datas.SetOtherCharId(sr, datas.OtherCharId);
+                var gim = World.ItemManager;
+                var max = gim.GetBodyTemplate(datas.Mount).Properties.GetDecimalOrDefault("fht", 7);   //互动次数
                 //datas.Counter.LastValue--;
-                if (++sr.Flag >= 7)  //若此次互动有了结果
+                if (++sr.Flag >= max)  //若此次互动有了结果
                 {
                     sr.Flag = 0;
                     //var gameItem = datas.UserContext.Set<GameItem>().Include(c => c.Children).ThenInclude(c => c.Children).AsNoTracking().Single(c => c.Id == sr.Id2);

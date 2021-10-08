@@ -25,11 +25,6 @@ namespace GuangYuan.GY001.TemplateDb
             base.OnModelCreating(modelBuilder);
         }
 
-        ///// <summary>
-        ///// 属性定义表。
-        ///// </summary>
-        //public DbSet<GamePropertyTemplate> PropertyTemplates { get; set; }
-
         /// <summary>
         /// 装备表。
         /// </summary>
@@ -39,6 +34,11 @@ namespace GuangYuan.GY001.TemplateDb
         /// 蓝图表
         /// </summary>
         public DbSet<BlueprintTemplate> BlueprintTemplates { get; set; }
+
+        /// <summary>
+        /// 属性定义表。
+        /// </summary>
+        public DbSet<GamePropertyTemplate> GamePropertyTemplates { get; set; }
 
     }
 

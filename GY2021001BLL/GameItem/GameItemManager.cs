@@ -58,72 +58,6 @@ namespace OW.Game.Item
         #endregion
 
         /// <summary>
-        /// 按照指定模板Id创建一个对象。
-        /// </summary>
-        /// <param name="templateId">创建事物所需模板Id。</param>
-        /// <param name="ownerId">指定一个父Id,如果不指定或为null则忽略。</param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameItem CreateGameItem(Guid templateId, Guid? ownerId = null)
-        {
-            var template = World.ItemTemplateManager.GetTemplateFromeId(templateId);
-            if (null == template)
-                throw new ArgumentException($"找不到指定Id的模板对象Id={templateId}", nameof(templateId));
-            var result = CreateGameItem(template, ownerId);
-            return result;
-        }
-
-        /// <summary>
-        /// 按照指定模板创建一个对象。
-        /// </summary>
-        /// <param name="template">创建事物所需模板。</param>
-        /// <param name="ownerId">指定一个父Id,如果不指定或为null则忽略。</param>
-        /// <returns></returns>
-        public GameItem CreateGameItem(GameItemTemplate template, Guid? ownerId = null)
-        {
-            var result = new GameItem()
-            {
-                TemplateId = template.Id,
-                Template = template,
-                OwnerId = ownerId,
-                //Count = 1,
-            };
-            //初始化属性
-            var gitm = World.ItemTemplateManager;
-            foreach (var item in template.Properties)   //复制属性
-            {
-                if (item.Value is decimal[] seq)   //若是属性序列
-                {
-                    var indexPn = gitm.GetIndexPropName(template, item.Key);
-                    var lv = Convert.ToInt32(template.Properties.GetValueOrDefault(indexPn, 0m));
-                    result.Properties[item.Key] = seq[Math.Clamp(lv, 0, seq.Length - 1)];
-                }
-                else if (item.Key.Equals("count", StringComparison.InvariantCultureIgnoreCase)) //若是指定初始数量
-                    result.Count = Convert.ToDecimal(item.Value);
-                else
-                    result.Properties[item.Key] = item.Value;
-            }
-            if (template.SequencePropertyNames.Length > 0 && !result.Properties.Keys.Any(c => c.StartsWith(GameThingTemplateBase.LevelPrefix))) //若需追加等级属性
-                result.Properties[GameThingTemplateBase.LevelPrefix] = 0m;
-            result.Count ??= template.TryGetPropertyValue(ProjectConstant.StackUpperLimit, out _) ? 0 : 1;
-            if (result.Properties.Count > 0)    //若需要改写属性字符串。
-                result.PropertiesString = OwHelper.ToPropertiesString(result.Properties);   //改写属性字符串
-            //递归初始化子对象
-            result.Children.AddRange(template.ChildrenTemplateIds.Select(c => CreateGameItem(c)));
-            try
-            {
-                var dirty = Options?.ItemCreated?.Invoke(Service, result) ?? false;
-            }
-            catch (Exception)
-            {
-            }
-#if DEBUG
-            result.Properties["tname"] = template.DisplayName;
-#endif
-            return result;
-        }
-
-        /// <summary>
         /// 获取对象的模板。
         /// </summary>
         /// <param name="gameObject"></param>
@@ -409,7 +343,8 @@ namespace OW.Game.Item
             else //若可能堆叠且不是全部移动
             {
                 stc = stc == -1 ? decimal.MaxValue : stc;
-                var moveItem = CreateGameItem(item.TemplateId);
+                var moveItem = new GameItem();
+                moveItem.Initialize(Service, item.TemplateId);
                 moveItem.Count = count;
                 item.Count -= count;
                 var parent = GetContainer(item);   //获取源父容器
@@ -785,7 +720,8 @@ namespace OW.Game.Item
                 results.Add(gameItem);
                 for (; count >= 0; count--)   //分解出多余物品
                 {
-                    var item = CreateGameItem(gameItem.TemplateId);
+                    var item = new GameItem();
+                    item.Initialize(Service, gameItem.TemplateId);
                     item.Count = Math.Min(1, count);
                     results.Add(item);
                 }
@@ -802,7 +738,8 @@ namespace OW.Game.Item
                 results.Add(gameItem);  //加入第一个堆
                 while (count > 0) //当需要拆分
                 {
-                    var item = CreateGameItem(gameItem.TemplateId);
+                    var item = new GameItem();
+                    item.Initialize(Service, gameItem.TemplateId);
                     item.Count = Math.Min(count, stc); //取当前剩余数量，和允许最大堆叠数量中较小的值
                     results.Add(item);
                     count -= stc;
@@ -908,7 +845,8 @@ namespace OW.Game.Item
                 tmp.Children.ApartWithWithRepeated(tt.ChildrenTemplateIds, c => c.TemplateId, c => c, null, null, adds);
                 foreach (var addItem in adds)
                 {
-                    var newItem = gim.CreateGameItem(addItem);
+                    var newItem = new GameItem();
+                    newItem.Initialize(Service, addItem, tmp);
                     tmp.Children.Add(newItem);
                 }
             }

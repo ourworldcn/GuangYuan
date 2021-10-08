@@ -1,229 +1,1518 @@
-[
-  {
-    "Id": "fb8d5452-c478-46f0-8c16-8d4325cdcbb1",
-    "Number": 1,
-    "Fangans": [
-      {
-        "Id": "1f24416a-518e-4b01-8d12-a1db96bdafa2",
-        "OrderNumber": 0,
-        "FanganItems": [
-          {
-            "ItemIds": [ "6b653711-0554-4aa8-9457-05cecf7ca3bb", "61652dc3-f365-4e6b-bdbd-2bf17305d2f9", "b4394e59-af16-44db-99a6-91e73dab3a0c", "75774c81-6682-41d0-a68e-97dca4fa4e4a", "20a87787-2817-49b2-bdee-cde8531b259a" ],
-            "ContainerId": "731ae0b6-7df3-40be-9d55-6f385f94756f",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "6b653711-0554-4aa8-9457-05cecf7ca3bb",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "61652dc3-f365-4e6b-bdbd-2bf17305d2f9",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [ "384c804a-80f3-44a8-a8ff-1bcb748bd4eb", "07d62af0-5cfe-4ccd-bc83-5619cc8c01f2", "b5627a42-6ad5-420b-b5e0-e6c745cd68d9", "d622e885-1357-478c-9f78-eff4f144b764", "d3b7c561-98ce-42e2-babf-f510b5169cf0" ],
-            "ContainerId": "b4394e59-af16-44db-99a6-91e73dab3a0c",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "384c804a-80f3-44a8-a8ff-1bcb748bd4eb",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "07d62af0-5cfe-4ccd-bc83-5619cc8c01f2",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "b5627a42-6ad5-420b-b5e0-e6c745cd68d9",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "d622e885-1357-478c-9f78-eff4f144b764",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "d3b7c561-98ce-42e2-babf-f510b5169cf0",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [ "390dc30e-f579-43cf-a95d-360542e67cf7", "ab3ecd82-1d26-4446-bda8-9c91d3f179b5", "a03bfccd-3421-4ebb-81f0-9f9d919adda1", "f919e452-48f9-4ad3-bde8-b8843f4183c1", "d5cbb56c-abcc-4239-b267-bf7bf4b45d17", "ffa32e5d-58c2-4849-b665-db8fd342a41d" ],
-            "ContainerId": "75774c81-6682-41d0-a68e-97dca4fa4e4a",
-            "NewTemplateId": "234f8c55-4c3c-4406-ad38-081d29564f20",
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "390dc30e-f579-43cf-a95d-360542e67cf7",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "ab3ecd82-1d26-4446-bda8-9c91d3f179b5",
-            "NewTemplateId": "e31939bd-7056-4293-9a55-6c9ee0cd4681",
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "a03bfccd-3421-4ebb-81f0-9f9d919adda1",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "f919e452-48f9-4ad3-bde8-b8843f4183c1",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "d5cbb56c-abcc-4239-b267-bf7bf4b45d17",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "ffa32e5d-58c2-4849-b665-db8fd342a41d",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "20a87787-2817-49b2-bdee-cde8531b259a",
-            "NewTemplateId": null,
-            "ClientString": null
-          }
-        ],
-        "IsActived": false,
-        "ClientString": null
+{
+  "WorldServiceHost": "http://localhost:53251",
+  "GameChars": [
+    {
+      "Id": "0yLi7wznWUqmeVhUckNUYw==",
+      "Properties": {
+        "cap": -1,
+        "tname": "角色的模板"
       },
-      {
-        "Id": "85684910-b7ba-43ec-b63f-915aba16f860",
-        "OrderNumber": 1,
-        "FanganItems": [
-          {
-            "ItemIds": [ "6b653711-0554-4aa8-9457-05cecf7ca3bb", "61652dc3-f365-4e6b-bdbd-2bf17305d2f9", "b4394e59-af16-44db-99a6-91e73dab3a0c", "75774c81-6682-41d0-a68e-97dca4fa4e4a", "20a87787-2817-49b2-bdee-cde8531b259a" ],
-            "ContainerId": "731ae0b6-7df3-40be-9d55-6f385f94756f",
-            "NewTemplateId": null,
-            "ClientString": null
+      "DisplayName": "秋实皮",
+      "ClientGutsString": null,
+      "TemplateId": "aZLzDAFjC0eFJwevKcXu7A==",
+      "CreateUtc": "2021-10-08T10:43:35.4198091",
+      "GameUserId": "Vbrwcfv9Tk2whqZ7E1jPLQ==",
+      "GameItems": [
+        {
+          "Id": "65XURtcNnUi2iRmLyr7pPQ==",
+          "TemplateId": "GSSpsKptyEGQdJVxdf2cOw==",
+          "CreateUtc": "2021-10-08T10:43:35.6123416",
+          "Count": 1,
+          "Properties": {
+            "cap": 1,
+            "tname": "合成时候锁住血量天赋"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "6b653711-0554-4aa8-9457-05cecf7ca3bb",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "zoDQmAUSb0ytiiMWYMK+2A==",
+          "TemplateId": "d7Kg/saML0aw7YVAmr6ceQ==",
+          "CreateUtc": "2021-10-08T10:43:35.6122869",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "tname": "收益槽"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "61652dc3-f365-4e6b-bdbd-2bf17305d2f9",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "btRCQtElsEWPtTML/bK0mg==",
+          "TemplateId": "oaAwFkA1mkeyxRC2PnpXdA==",
+          "CreateUtc": "2021-10-08T10:43:35.6107919",
+          "Count": 1,
+          "Properties": {
+            "cap": 20,
+            "lv": 0,
+            "tname": "野生动物背包槽"
           },
-          {
-            "ItemIds": [ "384c804a-80f3-44a8-a8ff-1bcb748bd4eb", "07d62af0-5cfe-4ccd-bc83-5619cc8c01f2", "b5627a42-6ad5-420b-b5e0-e6c745cd68d9", "d622e885-1357-478c-9f78-eff4f144b764", "d3b7c561-98ce-42e2-babf-f510b5169cf0" ],
-            "ContainerId": "b4394e59-af16-44db-99a6-91e73dab3a0c",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "lkkKqeqONkWZ8D4Schz73Q==",
+          "TemplateId": "xo6xgpCRBEiBtTP/oDUa3g==",
+          "CreateUtc": "2021-10-08T10:43:35.6123501",
+          "Count": 1,
+          "Properties": {
+            "cap": 1,
+            "tname": "合成时候锁住攻击天赋"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "384c804a-80f3-44a8-a8ff-1bcb748bd4eb",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "k1xOPDluzkG70j+Vh6c9Ig==",
+          "TemplateId": "MduWcwId00OvBcFPTKKl/A==",
+          "CreateUtc": "2021-10-08T10:43:35.6158238",
+          "Count": 0,
+          "Properties": {
+            "stc": 10,
+            "lud": 100,
+            "lv": 0,
+            "tname": "好友位"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "07d62af0-5cfe-4ccd-bc83-5619cc8c01f2",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "zK/aoEhUgUyBxEQBxHUJSA==",
+          "TemplateId": "1u6kiOsKcEqP3mf3Xl4sCg==",
+          "CreateUtc": "2021-10-08T10:43:35.6080781",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "tname": "神纹装备槽"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "b5627a42-6ad5-420b-b5e0-e6c745cd68d9",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [
+            {
+              "Id": "uw5PvBrlIkS/kxmTcg9AKA==",
+              "TemplateId": "8MCoMvMmZkut3bPJ5mGfZQ==",
+              "CreateUtc": "2021-10-08T10:43:35.6449471",
+              "Count": 1,
+              "Properties": {
+                "body": 4016,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "狮鹫神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "jvTRVpG4QkuFsCLXz+gaiA==",
+              "TemplateId": "k1fIQQ34FE+jy+sM2DRQPg==",
+              "CreateUtc": "2021-10-08T10:43:35.6444509",
+              "Count": 1,
+              "Properties": {
+                "body": 4002,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "狼神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "8RMAZ3vyIEqMvS8z2rK3gw==",
+              "TemplateId": "zoAln9dGFE26S5fvL2BTXg==",
+              "CreateUtc": "2021-10-08T10:43:35.6446353",
+              "Count": 1,
+              "Properties": {
+                "body": 4003,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "长颈鹿神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "xnF3g3fACUuT+zAkQA1DXw==",
+              "TemplateId": "kqIErFNN/UmBOnXiDzi1oA==",
+              "CreateUtc": "2021-10-08T10:43:35.6443252",
+              "Count": 1,
+              "Properties": {
+                "body": 4004,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "老虎神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "GvU+9pv1MkmhSjJ3LBqlhA==",
+              "TemplateId": "J826j1F/g0KtR2rWT08BVw==",
+              "CreateUtc": "2021-10-08T10:43:35.6441541",
+              "Count": 1,
+              "Properties": {
+                "body": 4013,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "猪神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "gpjRrjW70UGipDqYtsEU0A==",
+              "TemplateId": "2LagpgPvdES6Q/H3QnSqvA==",
+              "CreateUtc": "2021-10-08T10:43:35.6450748",
+              "Count": 1,
+              "Properties": {
+                "body": 4009,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "山羊神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "VkNQG0LEDkmtOEw55buBtg==",
+              "TemplateId": "FyBUaZgMxEGmbVdYcz9Ffg==",
+              "CreateUtc": "2021-10-08T10:43:35.6445747",
+              "Count": 1,
+              "Properties": {
+                "body": 4001,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "羊神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "El2w+YdkDkCGWlHxH/HZgw==",
+              "TemplateId": "j90G3HrMLUa05ct62igxmA==",
+              "CreateUtc": "2021-10-08T10:43:35.6452038",
+              "Count": 1,
+              "Properties": {
+                "body": 4007,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "牛神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "sWWZjw9IgEaF9lSPIfFheQ==",
+              "TemplateId": "T62iuBIcMUGqvYliX1C6+A==",
+              "CreateUtc": "2021-10-08T10:43:35.6448244",
+              "Count": 1,
+              "Properties": {
+                "body": 4014,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "鸡神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "lR0d7iT4UEq5k2hxp0STBw==",
+              "TemplateId": "wSmGLVe+/k6ngcguaZu/IQ==",
+              "CreateUtc": "2021-10-08T10:43:35.6451418",
+              "Count": 1,
+              "Properties": {
+                "body": 4006,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "火龙神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "It0jNQriXUmfBHNs4Osrdg==",
+              "TemplateId": "8VE3yPI9k0yfcXEHfyAmSQ==",
+              "CreateUtc": "2021-10-08T10:43:35.6450128",
+              "Count": 1,
+              "Properties": {
+                "body": 4012,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "猫神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "P80jWe2kgki5RHmgrju3nw==",
+              "TemplateId": "zBHUbDZcLkyMr/4FY3i5Tg==",
+              "CreateUtc": "2021-10-08T10:43:35.6442551",
+              "Count": 1,
+              "Properties": {
+                "body": 4008,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "马神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "ezT9JTNNeUKFQH1Bz4Cp3g==",
+              "TemplateId": "BdkYguM1jEqA1mTxrnTg6A==",
+              "CreateUtc": "2021-10-08T10:43:35.644885",
+              "Count": 1,
+              "Properties": {
+                "body": 4011,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "狮子神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "dCEseY/vOUS2bat/CcdKUg==",
+              "TemplateId": "rOMni3Pb0kaz/ZbBrxfBEw==",
+              "CreateUtc": "2021-10-08T10:43:35.6445129",
+              "Count": 1,
+              "Properties": {
+                "body": 4015,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "独角兽神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "2NJSdwQA3UiWotFQUR7tcA==",
+              "TemplateId": "PClEXGo4B0ytNHLRWGMbtg==",
+              "CreateUtc": "2021-10-08T10:43:35.6447615",
+              "Count": 1,
+              "Properties": {
+                "body": 4010,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "羊驼神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "FH1EQ7MOSUWvJtM2390MAA==",
+              "TemplateId": "tXew/6XOT0aKRNefPBkrQw==",
+              "CreateUtc": "2021-10-08T10:43:35.6446972",
+              "Count": 1,
+              "Properties": {
+                "body": 4005,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "柯基神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            },
+            {
+              "Id": "9shU7wqkskiX4fzsbcAt9g==",
+              "TemplateId": "IbzPD68G3EGDnCC32aPe6g==",
+              "CreateUtc": "2021-10-08T10:43:35.6443888",
+              "Count": 1,
+              "Properties": {
+                "body": 4017,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0,
+                "tname": "天马神纹"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "zK/aoEhUgUyBxEQBxHUJSA==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+          "TemplateId": "YFgARtidMkmd4dieQWEETg==",
+          "CreateUtc": "2021-10-08T10:43:35.6160029",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "tname": "任务成就槽"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "d622e885-1357-478c-9f78-eff4f144b764",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [
+            {
+              "Id": "jij94RjQ9Um7Ywvj5vIygA==",
+              "TemplateId": "RwjYA3PyO0GiooFUWrA6iQ==",
+              "CreateUtc": "2021-10-08T10:43:35.6167691",
+              "Count": 0,
+              "Properties": {
+                "mtype": 3,
+                "stc": -1,
+                "tname": "陷阱成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "pCLJAVHJxUCi6A9019y6GA==",
+              "TemplateId": "kjHGJnqG9EORmxCmFO4oZQ==",
+              "CreateUtc": "2021-10-08T10:43:35.6167333",
+              "Count": 0,
+              "Properties": {
+                "mtype": 3,
+                "stc": -1,
+                "tname": "炮塔成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "SSXNSb+zPkSp+EIfWsBJxA==",
+              "TemplateId": "zUdOgd+L/E69JmGvV7f8+A==",
+              "CreateUtc": "2021-10-08T10:43:35.6162636",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "tname": "孵化成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "inUfpm1lLkOSMUpxx61n/g==",
+              "TemplateId": "8qT3Wqmb4ESzaBqhvZrtbQ==",
+              "CreateUtc": "2021-10-08T10:43:35.616534",
+              "Count": 0,
+              "Properties": {
+                "mtype": 3,
+                "stc": -1,
+                "tname": "旗帜成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "gqQufsH8eU6JHk5y2trs7w==",
+              "TemplateId": "jlJIL3/9aUKSydvW8U/+8A==",
+              "CreateUtc": "2021-10-08T10:43:35.616085",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "tname": "坐骑最高等级成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "zb+0kuO9ZkmgpFYwC49HtA==",
+              "TemplateId": "GcgMwnbcL0ijxM/TK4uDxw==",
+              "CreateUtc": "2021-10-08T10:43:35.616613",
+              "Count": 0,
+              "Properties": {
+                "mtype": 2,
+                "stc": -1,
+                "tname": "PVP防御成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "xWtkvNsWzkK0P1jtqty8Ug==",
+              "TemplateId": "CdNafRQmTkO406/k25PYsw==",
+              "CreateUtc": "2021-10-08T10:43:35.6161266",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "tname": "LV20坐骑数量"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "2s/o7Hwz7kKQ1WHRMxIiIw==",
+              "TemplateId": "1tAXaD2t0U2o9UNorFpWjQ==",
+              "CreateUtc": "2021-10-08T10:43:35.6166539",
+              "Count": 0,
+              "Properties": {
+                "mtype": 2,
+                "stc": -1,
+                "tname": "PVP助战成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "4rCpJjLmBUKOzmHvfQjgwA==",
+              "TemplateId": "i/IpDKzTRE+MQY0nn9MZtQ==",
+              "CreateUtc": "2021-10-08T10:43:35.6163362",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "tname": "最高资质成就（三项总和）"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "NcdD/D5nEUq+eG7JePMx7A==",
+              "TemplateId": "4b7/JRf2vUmw3jKz4+l1yw==",
+              "CreateUtc": "2021-10-08T10:43:35.6160153",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "tname": "玩家等级成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "YkghmTjti0O7eW/1zsOluQ==",
+              "TemplateId": "r509XIn+pEOT+Hq9yFQY5Q==",
+              "CreateUtc": "2021-10-08T10:43:35.6164914",
+              "Count": 0,
+              "Properties": {
+                "mtype": 2,
+                "stc": -1,
+                "tname": "累计塔防模式次数成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "xGZ2OPqrVEWXSH3o+bwgug==",
+              "TemplateId": "vm+jlpr3eUWTLliHckNtpQ==",
+              "CreateUtc": "2021-10-08T10:43:35.6160526",
+              "Count": 0,
+              "Properties": {
+                "mtype": 2,
+                "stc": -1,
+                "tname": "关卡成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "M32BwNOY5EuQf4Hml1jwAQ==",
+              "TemplateId": "SF2Pb7TkN06kj/i2utxvRA==",
+              "CreateUtc": "2021-10-08T10:43:35.6165736",
+              "Count": 0,
+              "Properties": {
+                "mtype": 2,
+                "stc": -1,
+                "tname": "PVP进攻成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "aC2fF4Y1EUytaYsN5SEkrQ==",
+              "TemplateId": "HvsOU138OEanKOBpQxsZeg==",
+              "CreateUtc": "2021-10-08T10:43:35.6166925",
+              "Count": 0,
+              "Properties": {
+                "mtype": 3,
+                "stc": -1,
+                "tname": "方舟成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "QIjMuNWJkEiwEpmRY3/cIg==",
+              "TemplateId": "Ax/8b44cfE+8iHF+Qurlmw==",
+              "CreateUtc": "2021-10-08T10:43:35.6163657",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "tname": "最高神纹等级成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "AKK0ndAJAUGDcbwQ84+FgQ==",
+              "TemplateId": "AIq6i2fnakqqayLvA6P1Jw==",
+              "CreateUtc": "2021-10-08T10:43:35.6161763",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "tname": "关卡模式总战力成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "mSvF0Q5FLk2iS9P1n/Bifw==",
+              "TemplateId": "bCPTQnzqRESJjkaarB/aBw==",
+              "CreateUtc": "2021-10-08T10:43:35.6164503",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "tname": "累计访问过好友天数成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "qoArijsG/UeBjfbqWN9wUw==",
+              "TemplateId": "QTXuSW46BU2FsFZsa/7N4g==",
+              "CreateUtc": "2021-10-08T10:43:35.6162192",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "tname": "纯种坐骑数量成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "sN9xZKpO8k++OfkEynxcNg==",
+              "TemplateId": "GItwS6PgiEOGb1bQxqbaDQ==",
+              "CreateUtc": "2021-10-08T10:43:35.6164107",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "tname": "神纹突破次数成就"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "N5/AbAZ3yEeFXF4W/OqGpQ==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "HYoyCid6tE+Fo2TZLIjwuA==",
+          "TemplateId": "VS9qNOic3kew4FJf+3Zakw==",
+          "CreateUtc": "2021-10-08T10:43:35.6159932",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "tname": "弃物槽"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "d3b7c561-98ce-42e2-babf-f510b5169cf0",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "JdnfibGQ7Ey0f3uwsrSBOA==",
+          "TemplateId": "EEUMsY4MrUCHu29YKCc+KQ==",
+          "CreateUtc": "2021-10-08T10:43:35.6123583",
+          "Count": 1,
+          "Properties": {
+            "cap": 1,
+            "tname": "合成时候锁住质量天赋"
           },
-          {
-            "ItemIds": [ "390dc30e-f579-43cf-a95d-360542e67cf7", "ab3ecd82-1d26-4446-bda8-9c91d3f179b5", "a03bfccd-3421-4ebb-81f0-9f9d919adda1", "f919e452-48f9-4ad3-bde8-b8843f4183c1", "d5cbb56c-abcc-4239-b267-bf7bf4b45d17", "ffa32e5d-58c2-4849-b665-db8fd342a41d" ],
-            "ContainerId": "75774c81-6682-41d0-a68e-97dca4fa4e4a",
-            "NewTemplateId": "234f8c55-4c3c-4406-ad38-081d29564f20",
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "mwIw8BqCl0eGxYfC/A+i5w==",
+          "TemplateId": "ie4qusMLEka2/13f74XJ5Q==",
+          "CreateUtc": "2021-10-08T10:43:35.6123117",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "tname": "坐骑背包"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "390dc30e-f579-43cf-a95d-360542e67cf7",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [
+            {
+              "Id": "x4tmV5aWMESGEqBizdTghQ==",
+              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
+              "CreateUtc": "2021-10-08T10:43:35.6423652",
+              "Count": 1,
+              "Properties": {
+                "nemhp": 10,
+                "neatk": 10,
+                "neqlt": 10,
+                "cap": -1,
+                "tname": "坐骑组合",
+                "for10": 0
+              },
+              "OwnerId": null,
+              "Children": [
+                {
+                  "Id": "1FUikhgM0UCVxDz1hy/YzQ==",
+                  "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
+                  "CreateUtc": "2021-10-08T10:43:35.6434783",
+                  "Count": 1,
+                  "Properties": {
+                    "alt": 4,
+                    "ms": 6,
+                    "eng": 20,
+                    "crp": 0,
+                    "crv": 2,
+                    "aha": 60,
+                    "at": 1,
+                    "bt": 0.3,
+                    "csr": 6,
+                    "ssr": 7,
+                    "rci": 1,
+                    "SK": 1001,
+                    "nm": 1501,
+                    "hi": 3001,
+                    "mhp": 1000,
+                    "atk": 100,
+                    "qlt": 100,
+                    "lug": -50,
+                    "sg": 500,
+                    "nerank": 1,
+                    "lv": 0,
+                    "tname": "羊身体"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "x4tmV5aWMESGEqBizdTghQ==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "J8t9ci+X00CQa/bTA/npdQ==",
+                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
+                  "CreateUtc": "2021-10-08T10:43:35.6425481",
+                  "Count": 1,
+                  "Properties": {
+                    "nm": 1501,
+                    "ps": 5001,
+                    "js": 2001,
+                    "tname": "羊头"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "x4tmV5aWMESGEqBizdTghQ==",
+                  "ClientString": null
+                }
+              ],
+              "ParentId": "mwIw8BqCl0eGxYfC/A+i5w==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "YB2gZKVamEeKqI7o1wax9g==",
+          "TemplateId": "CeLHo1Bd30mKeCH/P6ohOg==",
+          "CreateUtc": "2021-10-08T10:43:35.6123243",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "tname": "时装背包"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "ab3ecd82-1d26-4446-bda8-9c91d3f179b5",
-            "NewTemplateId": "e31939bd-7056-4293-9a55-6c9ee0cd4681",
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "WrbZKLbE0UGsnpLqDIBXdw==",
+          "TemplateId": "zT+qK+grlkCRav8tR+CE7w==",
+          "CreateUtc": "2021-10-08T10:43:35.6107441",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "tname": "道具背包槽"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "a03bfccd-3421-4ebb-81f0-9f9d919adda1",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "yHUteqeZkUmfBKHqTurvWw==",
+          "TemplateId": "balmcBT1x0KjDl51Z5AK1A==",
+          "CreateUtc": "2021-10-08T10:43:35.6158397",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "tname": "货币袋"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "f919e452-48f9-4ad3-bde8-b8843f4183c1",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [
+            {
+              "Id": "fkSmvzH0d0ePEzbnSq011Q==",
+              "TemplateId": "hJWVAcniVE67t/zFipSE7A==",
+              "CreateUtc": "2021-10-08T10:43:35.6158513",
+              "Count": 0,
+              "Properties": {
+                "stc": 10000,
+                "isuni": 1,
+                "tname": "木材"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "yHUteqeZkUmfBKHqTurvWw==",
+              "ClientString": null
+            },
+            {
+              "Id": "k9RVBaNtaUuuK2XsfuUI8Q==",
+              "TemplateId": "QsmDK5weRUuYFq0svw5HPw==",
+              "CreateUtc": "2021-10-08T10:43:35.6158622",
+              "Count": 0,
+              "Properties": {
+                "stc": -1,
+                "tname": "金币"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "yHUteqeZkUmfBKHqTurvWw==",
+              "ClientString": null
+            },
+            {
+              "Id": "mCjHyS+0mU+Z6qhYn3FFGA==",
+              "TemplateId": "C3Wi0QCTV0ykB5QewQJLHA==",
+              "CreateUtc": "2021-10-08T10:43:35.6159748",
+              "Count": 0,
+              "Properties": {
+                "Count": 1000,
+                "stc": -1,
+                "refreshPriceD": 0,
+                "lv": 0,
+                "tname": "pvp数据记录对象"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "yHUteqeZkUmfBKHqTurvWw==",
+              "ClientString": null
+            },
+            {
+              "Id": "6cmnFDZsvEuavrWWLLfoxg==",
+              "TemplateId": "Jv27jUtrAEywuL16ebIcug==",
+              "CreateUtc": "2021-10-08T10:43:35.6159636",
+              "Count": 0,
+              "Properties": {
+                "stc": -1,
+                "tname": "友情商店货币"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "yHUteqeZkUmfBKHqTurvWw==",
+              "ClientString": null
+            },
+            {
+              "Id": "VPC7dA8tgUW8mLggRH3vFQ==",
+              "TemplateId": "Dc20mfrLUUifagA19Ghedw==",
+              "CreateUtc": "2021-10-08T10:43:35.615881",
+              "Count": 20,
+              "Properties": {
+                "stc": 20,
+                "Count": 20,
+                "fcpmCount": 20,
+                "fcpdCount": 300,
+                "fcpiCount": 1,
+                "fcpcCount": 20,
+                "fcpipatcount": 3,
+                "fcpdpatcount": 86400,
+                "fcpmpatcount": 3,
+                "fcptpatcount": "2021-10-08T00:00:00",
+                "fcpcpatcount": 3,
+                "tname": "体力",
+                "fcptCount": "2021-10-08T10:43:35"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "yHUteqeZkUmfBKHqTurvWw==",
+              "ClientString": null
+            },
+            {
+              "Id": "u/AOZsTnY0yYSc6bkJUEOQ==",
+              "TemplateId": "yBFu1apIh0eCK85Ou/poTQ==",
+              "CreateUtc": "2021-10-08T10:43:35.615925",
+              "Count": 5,
+              "Properties": {
+                "Count": 5,
+                "stc": 5,
+                "fcptCount": "2021-10-08T00:00:00",
+                "fcpdCount": 86400,
+                "fcpmCount": 5,
+                "fcpiCount": 5,
+                "fcpcCount": 5,
+                "lud": 5,
+                "lv": 0,
+                "ltlv": "2021-1-1 0:0:0",
+                "tname": "塔防pve次数对象"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "yHUteqeZkUmfBKHqTurvWw==",
+              "ClientString": null
+            },
+            {
+              "Id": "n3dIs5AeGEqzntUzF0GofA==",
+              "TemplateId": "7Fs2Pj34fUaljJ66Q0WGgg==",
+              "CreateUtc": "2021-10-08T10:43:35.6158709",
+              "Count": 0,
+              "Properties": {
+                "stc": -1,
+                "count": 2000,
+                "tname": "钻石"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "yHUteqeZkUmfBKHqTurvWw==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "oiE1OnIJvUmeJbzrXgg7kA==",
+          "TemplateId": "BlaFOu6lm0Wx7XbptYR9fQ==",
+          "CreateUtc": "2021-10-08T10:43:35.6124146",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "fcpiPatWithMountsCounter": 3,
+            "fcpmPatWithMountsCounter": 3,
+            "fcpdPatWithMountsCounter": 86400,
+            "fcpcPatWithMountsCounter": 3,
+            "fcptPatWithMountsCounter": "2021-10-08T00:00:00",
+            "tname": "家园"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "d5cbb56c-abcc-4239-b267-bf7bf4b45d17",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [
+            {
+              "Id": "IF2m36XcDk65hB20mlJafA==",
+              "TemplateId": "pRImMd0wCk6nHVB0OXQo+w==",
+              "CreateUtc": "2021-10-08T10:43:35.6151424",
+              "Count": 1,
+              "Properties": {
+                "cap": -1,
+                "tname": "建筑背包"
+              },
+              "OwnerId": null,
+              "Children": [
+                {
+                  "Id": "nZz57P+ONkKYwQEVVlOuOw==",
+                  "TemplateId": "J7iTZ4R5tE6mqWE4aXJhng==",
+                  "CreateUtc": "2021-10-08T10:43:35.6152665",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": 300,
+                    "lug": 0,
+                    "lut": 2400,
+                    "mbnlv": 1,
+                    "nmid": 2173,
+                    "dsid": 2140,
+                    "abid": "2161;2162;2163;2164",
+                    "labid": "2161;2162",
+                    "lv": 0,
+                    "tname": "直射炮塔-2"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "IF2m36XcDk65hB20mlJafA==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "Vlsjbo7SskyHnGrhJeOlew==",
+                  "TemplateId": "S8AwyYYQmEKs9gWbGA5F1w==",
+                  "CreateUtc": "2021-10-08T10:43:35.6153231",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": 300,
+                    "lug": 0,
+                    "lut": 2400,
+                    "mbnlv": 1,
+                    "nmid": 2174,
+                    "dsid": 2141,
+                    "abid": "2161;2162;2163;2164;2165",
+                    "labid": "2161;2162;2165",
+                    "lv": 0,
+                    "tname": "迫击炮-1"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "IF2m36XcDk65hB20mlJafA==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "SbPIPToT/kyWBqDma5XxQA==",
+                  "TemplateId": "D+Nnct5oCk6Y9uT4ib9jzA==",
+                  "CreateUtc": "2021-10-08T10:43:35.6153973",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": 240,
+                    "lug": 0,
+                    "lut": 2400,
+                    "mbnlv": 1,
+                    "nmid": 2180,
+                    "dsid": 2147,
+                    "abid": "2163;2165",
+                    "labid": "2163;2165",
+                    "lv": 0,
+                    "tname": "弹飞蘑菇-1"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "IF2m36XcDk65hB20mlJafA==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "bS8hIMjHfEiwgKaGvFrBzg==",
+                  "TemplateId": "YOOaSWjjD0yeqO+LPgSFgw==",
+                  "CreateUtc": "2021-10-08T10:43:35.6153686",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": 240,
+                    "lug": 0,
+                    "lut": 20,
+                    "mbnlv": 1,
+                    "nmid": 2179,
+                    "dsid": 2146,
+                    "abid": "2162;2163;2165",
+                    "labid": "2162;2163;2165",
+                    "lv": 0,
+                    "tname": "爆炸樱桃-1"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "IF2m36XcDk65hB20mlJafA==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "UwXuO5p6WEqZm69mGtaBRA==",
+                  "TemplateId": "ejDnmjCd8kORzjpDlXq4ag==",
+                  "CreateUtc": "2021-10-08T10:43:35.6151942",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": 300,
+                    "lug": 0,
+                    "lut": 20,
+                    "mbnlv": 1,
+                    "nmid": 2173,
+                    "dsid": 2140,
+                    "abid": "2161;2162;2163;2164",
+                    "labid": "2161;2162",
+                    "lv": 0,
+                    "tname": "直射炮塔-1"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "IF2m36XcDk65hB20mlJafA==",
+                  "ClientString": null
+                }
+              ],
+              "ParentId": "oiE1OnIJvUmeJbzrXgg7kA==",
+              "ClientString": null
+            },
+            {
+              "Id": "kgrLvJepOkGlNyWnNCCD9w==",
+              "TemplateId": "VYxPIzxMBkStOAgdKVZPIA==",
+              "CreateUtc": "2021-10-08T10:43:35.6154528",
+              "Count": 1,
+              "Properties": {
+                "cap": -1,
+                "tnm": 5,
+                "trm": 3,
+                "nm": 8000,
+                "tname": "主基地"
+              },
+              "OwnerId": null,
+              "Children": [
+                {
+                  "Id": "lJzUcou6v0qsHQb3FEdlCA==",
+                  "TemplateId": "J8uc+8IF8U2uITRe6qzgjw==",
+                  "CreateUtc": "2021-10-08T10:43:35.615477",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": 800,
+                    "lug": 0,
+                    "lut": 60,
+                    "mhp": 1000,
+                    "nmid": 2189,
+                    "dsid": 2156,
+                    "abid": "2161;",
+                    "labid": "2161;",
+                    "lv": 0,
+                    "tname": "主控室"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "kgrLvJepOkGlNyWnNCCD9w==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "idxfgo6rikul7CuBANH71g==",
+                  "TemplateId": "vTkZ41Zwk0KaVWye4M1GgQ==",
+                  "CreateUtc": "2021-10-08T10:43:35.6157267",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": 500,
+                    "lug": 0,
+                    "lut": 4320,
+                    "mbnlv": 1,
+                    "nmid": 2184,
+                    "dsid": 2151,
+                    "abid": "2161;2168;2171",
+                    "labid": "2161;2168;2171",
+                    "dfm": 1,
+                    "lv": 0,
+                    "tname": "攻击旗帜"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "kgrLvJepOkGlNyWnNCCD9w==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "CKrVBZ7M3UeIzlnQ6hcluw==",
+                  "TemplateId": "O6eujBDiv0ehIQbMEpc7rw==",
+                  "CreateUtc": "2021-10-08T10:43:35.6157634",
+                  "Count": 0,
+                  "Properties": {
+                    "stc": 100,
+                    "luw": 100,
+                    "lug": 0,
+                    "lut": 20,
+                    "mbnlv": 1,
+                    "mhp": 500,
+                    "nmid": 2192,
+                    "dsid": 2159,
+                    "abid": "2161;2194",
+                    "labid": "2161;2194",
+                    "lv": 0,
+                    "tname": "木材仓库"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "kgrLvJepOkGlNyWnNCCD9w==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "ZFx2jJi9mUWpFF6UnSk1dg==",
+                  "TemplateId": "xnHy00YSEkiypjoBw+dnFA==",
+                  "CreateUtc": "2021-10-08T10:43:35.6156707",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": 400,
+                    "lug": 0,
+                    "lut": 7200,
+                    "mbnlv": 1,
+                    "nmid": 2193,
+                    "dsid": 2160,
+                    "abid": "2287;2288",
+                    "labid": "2287;2288",
+                    "gadt": 0.05,
+                    "dac": 0,
+                    "width": 1,
+                    "lv": 0,
+                    "tname": "抓捕网"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "kgrLvJepOkGlNyWnNCCD9w==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "O5XxJIVQFkuIt3MPDLU1RQ==",
+                  "TemplateId": "DHQAel4DRkimGS0IVfYLVQ==",
+                  "CreateUtc": "2021-10-08T10:43:35.6155089",
+                  "Count": 0,
+                  "Properties": {
+                    "luw": 400,
+                    "lug": 0,
+                    "lut": 60,
+                    "stc": 2400,
+                    "fcpdCount": 180,
+                    "fcpiCount": 15,
+                    "fcpmCount": 2400,
+                    "mbnlv": 1,
+                    "nmid": 2190,
+                    "dsid": 2157,
+                    "abid": "2127;2128;2129;2130",
+                    "labid": "2127;2129",
+                    "lv": 0,
+                    "tname": "玉米田（玉米）",
+                    "fcpcCount": 0,
+                    "fcptCount": "2021-10-08T10:43:35"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "kgrLvJepOkGlNyWnNCCD9w==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "H2u37kpWCEWyUqo3vgLfPg==",
+                  "TemplateId": "bdtenL216Uujpsv3lOa/Ew==",
+                  "CreateUtc": "2021-10-08T10:43:35.6156128",
+                  "Count": 0,
+                  "Properties": {
+                    "luw": 100,
+                    "lug": 0,
+                    "lut": 20,
+                    "stc": 800,
+                    "fcpdCount": 180,
+                    "fcpiCount": 5,
+                    "fcpmCount": 800,
+                    "mbnlv": 1,
+                    "nmid": 2191,
+                    "dsid": 2158,
+                    "abid": "2127;2128;2129;2130",
+                    "labid": "2127;2129",
+                    "lv": 0,
+                    "tname": "木材树（木材）",
+                    "fcpcCount": 0,
+                    "fcptCount": "2021-10-08T10:43:35"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "kgrLvJepOkGlNyWnNCCD9w==",
+                  "ClientString": null
+                }
+              ],
+              "ParentId": "oiE1OnIJvUmeJbzrXgg7kA==",
+              "ClientString": null
+            },
+            {
+              "Id": "WfSELoGxiE2vtkQdwSbFew==",
+              "TemplateId": "02hkNtcA7EKBHYgi+w3vQg==",
+              "CreateUtc": "2021-10-08T10:43:35.6150389",
+              "Count": 1,
+              "Properties": {
+                "cap": -1,
+                "tname": "风格背包"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "oiE1OnIJvUmeJbzrXgg7kA==",
+              "ClientString": null
+            },
+            {
+              "Id": "G/V+pxmfLkGfQmuLB3yq2Q==",
+              "TemplateId": "02hkNtcA7EKBHYgi+w3vQg==",
+              "CreateUtc": "2021-10-08T10:43:35.6158166",
+              "Count": 1,
+              "Properties": {
+                "cap": -1,
+                "tname": "风格背包"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "oiE1OnIJvUmeJbzrXgg7kA==",
+              "ClientString": null
+            },
+            {
+              "Id": "oymhQGFd1kuYccmMF+fIaQ==",
+              "TemplateId": "mNdwO2lJOkSwgbBalmAC5Q==",
+              "CreateUtc": "2021-10-08T10:43:35.6158038",
+              "Count": 0,
+              "Properties": {
+                "stc": 1,
+                "count": 0,
+                "tname": "工人槽"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "oiE1OnIJvUmeJbzrXgg7kA==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "j79imJ3KvkmkZr4+MBewtg==",
+          "TemplateId": "e843ZAOKZ06fiYyatxQSYw==",
+          "CreateUtc": "2021-10-08T10:43:35.612333",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "tname": "坐骑图鉴背包"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "ffa32e5d-58c2-4849-b665-db8fd342a41d",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "g/oxUP8ltEe5G+PgEpcElw==",
+          "TemplateId": "r3JAuJG760avXLRi4zYcbA==",
+          "CreateUtc": "2021-10-08T10:43:35.6123668",
+          "Count": 1,
+          "Properties": {
+            "cd": 25200,
+            "cap": 1,
+            "inccapcost": 500,
+            "lv": 0,
+            "tname": "孵化槽"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "20a87787-2817-49b2-bdee-cde8531b259a",
-            "NewTemplateId": null,
-            "ClientString": null
-          }
-        ],
-        "IsActived": false,
-        "ClientString": null
-      }
-    ],
-    "ClientString": null
-  }
-]
+          "OwnerId": "0yLi7wznWUqmeVhUckNUYw==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        }
+      ],
+      "CurrentDungeonId": null,
+      "CombatStartUtc": null,
+      "ClientExtendProperties": {}
+    }
+  ],
+  "Token": "dFmzMdT7W0yDg8XdG3TzAA=="
+}

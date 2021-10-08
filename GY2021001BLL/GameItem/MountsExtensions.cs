@@ -268,7 +268,8 @@ namespace GuangYuan.GY001.BLL
             }
             else
             {
-                result = manager.CreateGameItem(tid);
+                result = new GameItem();
+                result.Initialize(manager.Service, tid);
             }
             if (count == 0)    //若需要设置数量
                 if (result.IsStc(out _))    //若可以堆叠

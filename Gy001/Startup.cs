@@ -101,6 +101,9 @@ namespace Gy001
             //services.AddTransient(options => new GY001UserContext(new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
             //services.AddSingleton(UserDbOptions => new GY001TemplateContext(new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
 
+            //services.Configure<VWorldOptions>(Configuration.GetSection("VWorldOptions"));
+
+
             services.AddSingleton(c => new VWorld(c, new VWorldOptions()
             {
 #if DEBUG

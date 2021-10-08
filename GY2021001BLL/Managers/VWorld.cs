@@ -323,6 +323,12 @@ namespace OW.Game
         /// </summary>
         public GameMissionManager MissionManager { get => _GameMissionManager ??= Service.GetRequiredService<GameMissionManager>(); }
 
+        IGamePropertyManager _PropertyManager;
+
+        /// <summary>
+        /// 属性管理器。
+        /// </summary>
+        public IGamePropertyManager PropertyManager { get => _PropertyManager ??= Service.GetRequiredService<IGamePropertyManager>(); }
         #endregion 子管理器
 
         #region 对象池

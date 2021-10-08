@@ -46,7 +46,7 @@ namespace Gy001
         {
             var world = host.Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            
+            var dic = world.PropertyManager.Filter(new string[] { "count","mtid23087402","mcount123","mbtidds32d","mhtidde32","stceqw","fht"});
             //cache.GetOrCreate("d", c => Task.Run(() => new object()));
             //db.SaveChanges();
         }

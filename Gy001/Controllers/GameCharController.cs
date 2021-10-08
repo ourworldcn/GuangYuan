@@ -340,9 +340,9 @@ namespace GY2021001WebApi.Controllers
                     }
                     else
                     {
-                        var tmp = gim.CreateGameItem(gi.TemplateId);
+                        var tmp = new GameItem();
+                        tmp.Initialize(world.Service, gi.TemplateId, gi);
                         tmp.Count = gi.Count;
-                        tmp.ParentId = gi.ParentId;
                         lst.Add(tmp);
                     }
                 }

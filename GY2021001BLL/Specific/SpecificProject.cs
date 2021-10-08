@@ -539,7 +539,12 @@ namespace GuangYuan.GY001.BLL
             //增加神纹
             var runseSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShenWenSlotId);   //神纹装备槽
             var templates = world.ItemTemplateManager.Id2Template.Values.Where(c => c.GenusCode == 10);
-            var shenwens = templates.Select(c => world.ItemManager.CreateGameItem(c));
+            var shenwens = templates.Select(c =>
+            {
+                var r = new GameItem();
+                r.Initialize(Service, c.Id);
+                return r;
+            });
             foreach (var item in shenwens)
             {
                 world.ItemManager.ForcedAdd(item, runseSlot);
@@ -777,7 +782,8 @@ namespace GuangYuan.GY001.BLL
                           select (template, tmp.Count ?? 1);
             shouyiSlot.Children.AddRange(shenwen.Select(c =>
             {
-                var sw = world.ItemManager.CreateGameItem(c.template);
+                var sw = new GameItem();
+                sw.Initialize(world.Service, c.template.Id);
                 sw.Count = c.Item2;
                 return sw;
             }));

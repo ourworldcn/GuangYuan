@@ -479,7 +479,9 @@ namespace GuangYuan.GY001.BLL
                 return false;
             }
             GameItemManager gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
-            GameItem gameItem = gim.CreateGameItem(tid);
+
+            GameItem gameItem = new GameItem();
+            gameItem.Initialize(Parent.Parent.Service, tid);
 
             string keyName = Template.Id.ToString();
             if (env.Variables.TryGetValue(keyName, out GameExpressionBase expr) && expr is ConstGExpression)   //若已经存在该变量
@@ -1161,14 +1163,16 @@ namespace GuangYuan.GY001.BLL
                         GameItem parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == item.ParentTId);
                         if (item.PrvTId.HasValue)    //若送物品
                         {
-                            GameItem tmp = gim.CreateGameItem(item.PrvTId.Value);
+                            GameItem tmp = new GameItem();
+                            tmp.Initialize(World.Service, item.PrvTId.Value);
                             gim.AddItem(tmp, parent, null, LastChangesItems);
                         }
                         if (item.Genus.HasValue)   //若送地块
                         {
                             int styleNumber = gameChar.GetCurrentFenggeNumber();   //激活的风格号
                             var subItem = World.ItemTemplateManager.GetTemplateByNumberAndIndex(styleNumber, item.Genus.Value % 100);
-                            GameItem tmp = gim.CreateGameItem(subItem);
+                            GameItem tmp = new GameItem();
+                            tmp.Initialize(Service, subItem.Id, gameChar.GetHomeland());
                             gim.AddItem(tmp, gameChar.GetHomeland(), null, LastChangesItems);
                         }
                     }

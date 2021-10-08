@@ -407,9 +407,10 @@ namespace GuangYuan.GY001.UserDb
             if (Guid.Empty == TemplateId) throw new InvalidOperationException("没有指定有效的模板Id。");
             var helper = service.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
             Template = helper.GetTemplateFromeId(TemplateId);
-
+            var gpm = service.GetService(typeof(IGamePropertyManager)) as IGamePropertyManager;
+            var coll = gpm is null ? Template.Properties : gpm.Filter(Template.Properties);
             //初始化自身属性
-            foreach (var item in Template.Properties)   //复制属性
+            foreach (var item in coll)   //复制属性
             {
                 if (item.Value is IList seq)   //若是属性序列
                 {
