@@ -1091,9 +1091,10 @@ namespace OW.Game.Item
         {
             if (this.IsMounts(item))
             {
+                gold = this.GetBody(item).Properties.GetDecimalOrDefault("sg");
                 var totalNe = item.Properties.GetDecimalOrDefault("neatk", 0m) +   //总资质值
-                item.Properties.GetDecimalOrDefault("nemhp", 0m) +
-                item.Properties.GetDecimalOrDefault("neqlt", 0m);
+                    item.Properties.GetDecimalOrDefault("nemhp", 0m) +
+                    item.Properties.GetDecimalOrDefault("neqlt", 0m);
                 totalNe = Math.Round(totalNe, MidpointRounding.AwayFromZero);  //取整，容错
                 decimal mul;
 
@@ -1103,7 +1104,7 @@ namespace OW.Game.Item
                 else if (totalNe >= 181 && totalNe <= 240) mul = 3;
                 else if (totalNe >= 241 && totalNe <= 300) mul = 4;
                 else mul = 0;
-                gold = mul * totalNe;
+                gold = mul * gold;
                 dia = 0;
             }
             else
@@ -1239,11 +1240,10 @@ namespace OW.Game.Item
                 if (bpid != Guid.Empty)    //若指定了蓝图
                 {
                     var template = bpMng.GetTemplateFromId(bpid) as BlueprintTemplate;
-                    ApplyBlueprintDatas bpDatas = new ApplyBlueprintDatas()
+                    ApplyBlueprintDatas bpDatas = new ApplyBlueprintDatas(Service, datas.GameChar)
                     {
                         Count = 1,
                         Blueprint = template,
-                        GameChar = datas.GameChar,
                     };
                     bpDatas.GameItems.Add(gi);
                     //TO DO
@@ -1617,8 +1617,18 @@ namespace OW.Game.Item
 
         protected override void Dispose(bool disposing)
         {
-            _ChangeItems = null;
-            base.Dispose(disposing);
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _ChangeItems = null;
+                base.Dispose(disposing);
+            }
         }
     }
 

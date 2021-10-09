@@ -45,11 +45,10 @@ namespace Gy001.Controllers
             if (!world.BlueprintManager.Id2BlueprintTemplate.TryGetValue(new Guid("{DD5095F8-929F-45A5-A86C-4A1792E9D9C8}"), out BlueprintTemplate blueprint))
                 return NotFound("未发现蓝图");
             var gc = gu.CurrentChar;
-            ApplyBlueprintDatas applyBluprintDatas = new ApplyBlueprintDatas()
+            ApplyBlueprintDatas applyBluprintDatas = new ApplyBlueprintDatas(world.Service, gu.CurrentChar)
             {
                 Count = 1,
                 Blueprint = blueprint,
-                GameChar = gu.CurrentChar,
             };
             var hl = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);
             var goldTId = new Guid("7a00740c-035e-4846-a619-2d0855f60b55");
@@ -89,10 +88,9 @@ namespace Gy001.Controllers
             ApplyBlueprintDatas datas = null;
             try
             {
-                datas = new ApplyBlueprintDatas()
+                datas = new ApplyBlueprintDatas(_World.Service,gu.CurrentChar)
                 {
                     Blueprint = world.BlueprintManager.GetTemplateFromId(GameHelper.FromBase64String(model.BlueprintId)) as BlueprintTemplate,  //这里不处理是空的情况
-                    GameChar = gu.CurrentChar,
                     Count = model.Count,
                 };
                 datas.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));

@@ -10,7 +10,9 @@ using OW.Game.Expression;
 using OW.Game.Item;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -18,6 +20,104 @@ using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
 {
+    /// <summary>
+    /// 升级数据工作的数据块。
+    /// </summary>
+    public class LevelUpDatas : GameCharWorkDataBase
+    {
+
+        public LevelUpDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public LevelUpDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public LevelUpDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        private GameItem _GameItem;
+
+        /// <summary>
+        /// 要升级的物品。
+        /// </summary>
+        public GameItem GameItem { get => _GameItem; set => _GameItem = value; }
+
+        /// <summary>
+        /// 获取物品升级所需的代价。
+        /// </summary>
+        /// <returns>升级需要的资源及消耗量，null表示不可升级,此时可通过<see cref="VWorld.GetLastError"/>获取详细信息。</returns>
+        public List<(GameItem, decimal)> GetCost()
+        {
+            var lv = GameItem.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+
+            var result = new List<(GameItem, decimal)>();
+
+            var dic = GameItem.Properties;
+            var bag = GameChar.GetCurrencyBag();
+
+            var dia = dic.GetDecimalOrDefault("lud", decimal.Zero); //钻石
+            if (dia != decimal.Zero)   //若有钻石消耗
+            {
+                dia = -Math.Abs(dia);
+                var gi = GameChar.GetZuanshi();
+                result.Add((gi, dia));
+            }
+
+            var gold = dic.GetDecimalOrDefault("lug");  //金币
+            if (gold != decimal.Zero)   //若有金币消耗
+            {
+                gold = -Math.Abs(gold);
+                var gi = GameChar.GetJinbi();
+                result.Add((gi, gold));
+            }
+
+            var wood = dic.GetDecimalOrDefault("luw");  //木材
+            if (wood != decimal.Zero)   //若有金币消耗
+            {
+                wood = -Math.Abs(wood);
+                var gi = GameChar.GetMucai();
+                result.Add((gi, wood));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 消耗资源。
+        /// </summary>
+        /// <param name="cost"></param>
+        /// <returns>true,消耗资源成功，false至少有一种资源不足。</returns>
+        public bool Deplete(List<(GameItem, decimal)> cost)
+        {
+            var errItem = cost.FirstOrDefault(item => item.Item1.Count + item.Item2 < 0);
+            if (null != errItem.Item1)  //若有资源不足
+            {
+                VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                VWorld.SetLastErrorMessage($"{errItem.Item1.Template.DisplayName} 不足。");
+                return false;
+            }
+            cost.ForEach(c => c.Item1.Count += c.Item2);    //应用资源损耗
+            return true;
+        }
+
+        /// <summary>
+        /// 获取升级所需的时间。
+        /// <see cref="TimeSpan.Zero"/>表示升级立即完成。
+        /// </summary>
+        /// <returns></returns>
+        public TimeSpan GetColdown()
+        {
+            return TimeSpan.FromSeconds((double)GameItem.Properties.GetDecimalOrDefault("lut"));
+        }
+
+        internal void Apply(GameChar gameChar, IResultWorkData datas)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class GameManagerPropertyHelper : GameThingPropertyHelper
     {
         private readonly GameItemManager _Manager;
@@ -500,22 +600,24 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 使用蓝图的数据。
     /// </summary>
-    public class ApplyBlueprintDatas
+    public class ApplyBlueprintDatas : ChangeItemsWorkDatasBase
     {
-        public ApplyBlueprintDatas()
+        public ApplyBlueprintDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
+        }
 
+        public ApplyBlueprintDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public ApplyBlueprintDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
         }
 
         /// <summary>
         /// 蓝图的模板。
         /// </summary>
         public BlueprintTemplate Blueprint { get; set; }
-
-        /// <summary>
-        /// 角色对象。
-        /// </summary>
-        public GameChar GameChar { get; set; }
 
         /// <summary>
         /// 要执行蓝图制造的对象集合。可以仅给出关键物品，在制造过成中会补足其他所需物品。
@@ -548,18 +650,6 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public List<ChangeItem> ChangesItem { get; } = new List<ChangeItem>();
 
-        /// <summary>
-        /// 是否有错误。
-        /// </summary>
-        public bool HasError
-        {
-            get;
-            set;
-        }
-
-        [Conditional("DEBUG")]
-        public void SetDebugMessage(string msg) => DebugMessage = msg;
-
         private string _DebugMessage;
         /// <summary>
         /// 调试信息，如果发生错误，这里给出简要说明。
@@ -589,10 +679,6 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public List<Guid> MailIds => _MailIds ??= new List<Guid>();
 
-        /// <summary>
-        /// 错误码。
-        /// </summary>
-        public int ErrorCode { get; internal set; }
     }
 
     /// <summary>
@@ -757,16 +843,41 @@ namespace GuangYuan.GY001.BLL
         public void LevelUp(ApplyBlueprintDatas datas)
         {
             var gim = World.ItemManager;
+            if (datas.GameItems.Count <= 0)
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "应指定一个升级物品。";
+                return;
+            }
             if (datas.Count <= 0)
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.DebugMessage = "知道次数应大于0";
+                datas.DebugMessage = "升级次数应大于0。";
                 return;
             }
+            var lut = datas.GameItems[0].Properties.GetDecimalOrDefault("lut");
+            if (lut > 0 && datas.Count > 1)
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "升级冷却时间大于0时，不可以连续升级。";
+            }
+            var gi = datas.GameItems[0];
+            var template = gi.Template;
+            var lv = (int)gi.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+            if (template.GetMaxLevel(template.SequencePropertyNames.FirstOrDefault()) <= lv)  //若已达最大等级
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "已达最大等级";
+                datas.ErrorItemTIds.Add(gi.TemplateId);
+                return;
+            }
+
             for (int i = 0; i < datas.Count; i++)
             {
-                var gi = datas.GameItems[0];
                 var luDatas = new LevelUpDatas(World, datas.GameChar)
                 {
                     GameItem = datas.GameItems[0],
@@ -776,25 +887,50 @@ namespace GuangYuan.GY001.BLL
                 else
                     luDatas.GameItem = gi;
                 var cost = luDatas.GetCost();
-                if (cost is null)   //若不可以升级
+                if (cost is null)   //若资源不足以升级
                 {
+                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                    datas.HasError = true;
+                    datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
+                    datas.DebugMessage = VWorld.GetLastErrorMessage();
                     return;
                 }
                 var succ = luDatas.Deplete(cost);
                 if (!succ)  //若资源不足
                 {
+                    if (datas.SuccCount == 0)
+                    {
+                        datas.HasError = true;
+                    }
+                    datas.ErrorCode = VWorld.GetLastError();
+                    datas.DebugMessage = VWorld.GetLastErrorMessage();
                     return;
                 }
-                //升级
-                var oldLv = luDatas.GameItem.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
-                gim.SetPropertyValue(luDatas.GameItem, ProjectConstant.LevelPropertyName, oldLv + 1);
-                datas.ChangesItem.AddToChanges(cost.Select(c => c.Item1).ToArray());
-                datas.SuccCount = i + 1;
-                datas.ChangesItem.AddToChanges(gi);
+                lut = gi.GetDecimalOrDefault("lut");
+                if (lut == decimal.Zero)   //若没有升级延时
+                {
+                    //升级
+                    var oldLv = luDatas.GameItem.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+                    gim.SetPropertyValue(luDatas.GameItem, ProjectConstant.LevelPropertyName, oldLv + 1);
+                    //记录变化信息
+                    datas.ChangesItem.AddToChanges(cost.Select(c => c.Item1).ToArray());
+                    datas.SuccCount = i + 1;
+                    datas.ChangesItem.AddToChanges(gi);
+                }
+                else //若有升级延时
+                {
+                    //记录变化信息
+                    datas.ChangesItem.AddToChanges(cost.Select(c => c.Item1).ToArray());
+                    datas.SuccCount = i + 1;
+                    datas.ChangesItem.AddToChanges(gi);
+                    return;
+                }
             }
         }
 
         #endregion 通用功能
+
+
         #region 家园相关
 
         /// <summary>

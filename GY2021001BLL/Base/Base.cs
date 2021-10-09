@@ -180,7 +180,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 获取世界服务。
         /// </summary>
-        public VWorld World => _World ??= (VWorld)_Service.GetService(typeof(VWorld));
+        public VWorld World => _World ??= _Service.GetService(typeof(VWorld)) as VWorld;
 
         private bool _UserContextOwner;
         private GameUserContext _UserContext;
