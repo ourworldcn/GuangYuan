@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
@@ -86,10 +85,37 @@ namespace OW.Game.Store
         }
     }
 
+    public class DynamicPropertyChangedEventArgs
+    {
+        public DynamicPropertyChangedEventArgs()
+        {
+
+        }
+
+        public DynamicPropertyChangedEventArgs([NotNull] string propertyName, object oldValue)
+        {
+            PropertyName = propertyName;
+            OldValue = oldValue;
+        }
+
+        public string PropertyName { get; set; }
+
+        public object OldValue { get; set; }
+    }
+
+    public interface INotifyDynamicPropertyChanged
+    {
+        //
+        // 摘要:
+        //     Occurs when a property value changes.
+        event EventHandler<DynamicPropertyChangedEventArgs> DynamicPropertyChanged;
+
+    }
+
     /// <summary>
     /// 提供一个基类，包含一个编码为字符串的压缩属性。且该字符串可以理解为一个字典的内容。
     /// </summary>
-    public abstract class SimpleExtendPropertyBase : GuidKeyObjectBase, IBeforeSave, IDisposable
+    public abstract class SimpleExtendPropertyBase : GuidKeyObjectBase, IBeforeSave, IDisposable, INotifyDynamicPropertyChanged
     {
         /// <summary>
         /// <inheritdoc/>
@@ -114,9 +140,35 @@ namespace OW.Game.Store
         /// </summary>
         public string PropertiesString { get => _PropertiesString; set => _PropertiesString = value; }
 
-        private Dictionary<string, object> _Properties;
         private volatile bool _IsDisposed;
 
+        #region 事件及其相关
+
+        /// <summary>
+        /// 设置动态属性并根据是否实质发生了变化而决定是否引发<see cref="PropertyChanged"/>事件。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="val"></param>
+        public void SetDynamicPropertyValue([NotNull] string name, object val)
+        {
+            Properties.TryGetValue(name, out var old);
+            Properties[name] = val;
+            if (!Equals(old, val))  //若发生了变化
+            {
+                OnDynamicPropertyChanged(new DynamicPropertyChangedEventArgs(name, old));
+            }
+        }
+
+        protected virtual void OnDynamicPropertyChanged(DynamicPropertyChangedEventArgs e) => DynamicPropertyChanged?.Invoke(this, e);
+        public event EventHandler<DynamicPropertyChangedEventArgs> DynamicPropertyChanged;
+
+        public void InvokeDynamicPropertyChanged(DynamicPropertyChangedEventArgs e)
+        {
+            OnDynamicPropertyChanged(e);
+        }
+        #endregion  事件及其相关
+
+        private Dictionary<string, object> _Properties;
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
         /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，拆箱问题不大，且非核心战斗才会较多的使用该属性。

@@ -341,7 +341,7 @@ namespace GY2021001WebApi.Controllers
                     else
                     {
                         var tmp = new GameItem();
-                        tmp.Initialize(world.Service, gi.TemplateId, gi);
+                        tmp.Initialize(world.Service, gi.TemplateId);
                         tmp.Count = gi.Count;
                         lst.Add(tmp);
                     }
@@ -350,10 +350,13 @@ namespace GY2021001WebApi.Controllers
                 List<ChangeItem> changes = new List<ChangeItem>();
                 foreach (var item in lst)   //加入
                 {
-                    if (item.ParentId.Value == gc.Id)
+                    if (item.ParentId == gc.Id)
                         gim.AddItems(new GameItem[] { item }, gc, null, changes);
                     else
-                        gim.AddItems(new GameItem[] { item }, dic[item.ParentId.Value], null, changes);
+                    {
+                        var parent = gim.GetDefaultContainer(gc, item);
+                        gim.AddItems(new GameItem[] { item }, parent, null, changes);
+                    }
 
                 }
                 var coll = changes.SelectMany(c => c.Adds.Concat(c.Changes)).Distinct();

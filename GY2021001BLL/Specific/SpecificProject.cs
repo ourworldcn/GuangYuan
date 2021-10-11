@@ -1,4 +1,5 @@
 ﻿using Game.Social;
+using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -473,6 +475,24 @@ namespace GuangYuan.GY001.BLL
                 gim.MoveItems(slot, c => true, daojuBag);
                 slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockQltSlotId); //锁定槽
                 gim.MoveItems(slot, c => true, daojuBag);
+                //挂接升级回调
+                var hl = gc.GetHomeland();
+                foreach (var item in hl.AllChildren)
+                {
+                    if (!item.Name2FastChangingProperty.TryGetValue(ProjectConstant.UpgradeTimeName, out var fcp))
+                        continue;
+
+                    item.DynamicPropertyChanged += World.BlueprintManager.Gi_PropertyChanged;
+                    var dt = fcp.ComputeComplateDateTime();
+                    var now = DateTime.UtcNow;
+                    TimeSpan ts;
+                    if (now >= dt)   //若已经超时
+                        ts = TimeSpan.Zero;
+                    else
+                        ts = dt - now;
+                    var tm = new Timer(World.BlueprintManager.LevelUpCompleted, ValueTuple.Create(gc.Id, item.Id), ts, Timeout.InfiniteTimeSpan);
+                }
+
             }
             else if (obj is GameUser gu)
             {

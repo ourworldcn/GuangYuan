@@ -17,7 +17,7 @@
   <Class Name="OW.Game.Store.SimpleExtendPropertyBase">
     <Position X="2.75" Y="3" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAIAACAACAAABAAAACAABAAAAAAAAAAAAgAAAACAAA=</HashCode>
+      <HashCode>EAAIAACAACAIABAAAACAABAAAAAAAAAAAAiAQAACAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -68,7 +68,7 @@
   <Class Name="OW.Game.Store.GameUserContext" Collapsed="true">
     <Position X="11.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>gAAIAAAAAAAAAEAAgAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>gAAIAAAAAQAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameUserContext.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -91,6 +91,13 @@
     <Position X="9.5" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>Store\GameStoreBase.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="OW.Game.Store.INotifyDynamicPropertyChanged" Collapsed="true">
+    <Position X="10.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Interface>

@@ -424,7 +424,7 @@ namespace GuangYuan.GY001.UserDb
             if (Template.SequencePropertyNames.Length > 0 && !Properties.Keys.Any(c => c.StartsWith(GameThingTemplateBase.LevelPrefix))) //若需追加等级属性
                 Properties[GameThingTemplateBase.LevelPrefix] = 0m;
 #if DEBUG
-            Properties["tname"] = Template.DisplayName;
+            Properties["tname"] = Template.DisplayName.Replace('，', '-').Replace(',', '-').Replace('=', '-');
 #endif
 
         }

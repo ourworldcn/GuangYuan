@@ -130,7 +130,7 @@ namespace OW.Game.Store
     /// <summary>
     /// 玩家数据对象的基类。
     /// </summary>
-    public abstract class GameObjectBase : SimpleExtendPropertyBase, IDisposable
+    public abstract class GameObjectBase : SimpleExtendPropertyBase, IDisposable, INotifyDynamicPropertyChanged
     {
         /// <summary>
         /// <inheritdoc/>
@@ -146,7 +146,7 @@ namespace OW.Game.Store
         /// <param name="id"><inheritdoc/></param>
         public GameObjectBase(Guid id) : base(id)
         {
-
+            
         }
 
         private string _IdString;
