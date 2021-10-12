@@ -74,6 +74,7 @@ namespace OW.Game
         private string _Prefix;
         private readonly DateTime _Now;
         private string _LastValuesKey;
+
         /// <summary>
         /// 记录最后一次值的键名。
         /// </summary>
@@ -180,7 +181,7 @@ namespace OW.Game
         }
 
         /// <summary>
-        /// 保存数据。
+        /// 保存数据到字典中。
         /// </summary>
         public void Save()
         {
@@ -324,12 +325,16 @@ namespace OW.Game
         /// <param name="lastComputerDateTime">时间。建议一律采用Utc时间。</param>
         public FastChangingProperty(TimeSpan delay, decimal increment, decimal maxVal, decimal currentVal, DateTime lastComputerDateTime)
         {
+            if (increment > 0 && maxVal < currentVal || increment < 0 && maxVal > currentVal)  //若不向终值收敛
+                throw new ArgumentException("不向终值收敛。");
             _LastValue = currentVal;
             LastDateTime = lastComputerDateTime;
             Delay = delay;
             Increment = increment;
             MaxValue = maxVal;
         }
+
+        #region 属性及相关
 
         /// <summary>
         /// 自动跳变到的最大值。
@@ -348,42 +353,27 @@ namespace OW.Game
         /// </summary>
         public decimal LastValue { get => _LastValue; set => _LastValue = value; }
 
-        ///// <summary>
-        ///// 设置最后计算的值和时间，并根据值是否大于或等于最大值，引发事件。
-        ///// 如果已经结束则不会引发事件，只有当设置之前未结束，设置之后结束才会引发事件。
-        ///// </summary>
-        ///// <param name="lastValue"></param>
-        ///// <param name="lastDateTime"></param>
-        ///// <param name="maxValue">设置的最大值，省略或空则不会设置最大值<see cref="MaxValue"/>属性。</param>
-        ///// <returns>true引发了事件，false未引发事件。</returns>
-        //public bool SetAndRaiseEvent(decimal lastValue, DateTime lastDateTime, decimal? maxValue = null)
-        //{
-        //    DateTime dt = DateTime.UtcNow;
-        //    var isComplete = LastValue >= MaxValue || ComputeComplateDateTime() <= dt;
-        //    LastValue = lastValue;
-        //    LastDateTime = lastDateTime;
-        //    if (maxValue.HasValue)
-        //    {
-        //        MaxValue = maxValue.Value;
-        //    }
-
-        //    if (LastValue < MaxValue && !isComplete)   //若需引发事件
-        //    {
-        //        OnCompleted(new CompletedEventArgs(lastDateTime));
-        //        return true;
-        //    }
-        //    return false;
-        //}
-
         /// <summary>
         /// 多久计算一次。
         /// </summary>
         public TimeSpan Delay { get; set; }
 
         /// <summary>
-        /// 每次计算的增量。
+        /// 每次跳点的增量。
         /// </summary>
         public decimal Increment { get; set; }
+
+        /// <summary>
+        /// 一个记录额外信息的属性。本类成员不使用该属性。
+        /// </summary>
+        public object Tag { get; set; }
+
+        /// <summary>
+        /// 获取指示该渐变属性是否已经完成。会更新计算时间。
+        /// </summary>
+        public bool IsComplate => GetCurrentValueWithUtc() >= MaxValue;
+
+        #endregion 属性及相关
 
         /// <summary>
         /// 获取当前值。自动修改<see cref="LastComputerDateTime"/>和<see cref="LastValue"/>属性。
@@ -402,8 +392,6 @@ namespace OW.Game
             else //若尚未结束
             {
                 _LastValue = Math.Clamp(_LastValue + count * Increment, decimal.Zero, MaxValue);
-                if (_LastValue >= MaxValue)
-                    OnCompleted(new CompletedEventArgs(now));
             }
             return _LastValue;
         }
@@ -412,7 +400,7 @@ namespace OW.Game
         /// 以当前<see cref="LastValue"/>为准预估完成时间点。
         /// </summary>
         /// <returns>预估完成时间。不会刷新计算最新值。</returns>
-        public DateTime ComputeComplateDateTime()
+        public DateTime GetComplateDateTime()
         {
             if (_LastValue >= MaxValue)  //若已经结束
             {
@@ -433,21 +421,6 @@ namespace OW.Game
             DateTime now = DateTime.UtcNow;
             return GetCurrentValue(ref now);
         }
-
-        /// <summary>
-        /// 名字，本类成员不使用该属性。
-        /// </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// 一个记录额外信息的属性。本类成员不使用该属性。
-        /// </summary>
-        public object Tag { get; set; }
-
-        /// <summary>
-        /// 获取指示该渐变属性是否已经完成。会更新计算时间。
-        /// </summary>
-        public bool IsComplate => GetCurrentValueWithUtc() >= MaxValue;
 
         /// <summary>
         /// 
@@ -551,25 +524,6 @@ namespace OW.Game
         }
 
         #region 事件及相关
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void InvokeOnCompleted(CompletedEventArgs e)
-        {
-            OnCompleted(e);
-        }
-
-        public event EventHandler<CompletedEventArgs> Completed;
-
-        /// <summary>
-        /// 在直接或间接调用<see cref="GetCurrentValue(ref DateTime)"/>时，如果计算状态由未完成变为完成则引发该事件。
-        /// </summary>
-        /// <remarks>如果使用未完成时间计算后，再用完成的时间点计算，如此返回将每次都引发事件。
-        /// 处理函数最好是各种管理器的实例成员。因为需要并发锁定，否则行为未知。</remarks>
-        /// <param name="e"></param>
-        protected virtual void OnCompleted(CompletedEventArgs e)
-        {
-            Completed?.Invoke(this, e);
-        }
 
         /// <summary>
         /// 设置最后计算得到的值，同时将计算时间更新到最接近指定点的时间。

@@ -198,7 +198,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Tag")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
@@ -227,7 +227,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id", "Name");
+                    b.HasKey("Id", "Tag");
 
                     b.ToTable("ExtendProperties");
                 });
@@ -348,13 +348,13 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameSetting", b =>
                 {
-                    b.Property<string>("Name")
+                    b.Property<string>("Tag")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Val")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Name");
+                    b.HasKey("Tag");
 
                     b.ToTable("GameSettings");
                 });

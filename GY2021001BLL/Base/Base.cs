@@ -226,7 +226,7 @@ namespace GuangYuan.GY001.BLL
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    if (_UserContextOwner) _UserContext?.DisposeAsync();
+                    if (_UserContextOwner) _UserContext?.Dispose();
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
@@ -550,7 +550,7 @@ namespace GuangYuan.GY001.BLL
     /// <see cref="GameItem"/>的简要类。
     /// <see cref="Id"/>有非<see cref="Guid.Empty"/>则以Id为准，否则以<see cref="TemplateId"/>。
     /// </summary>
-    public class GameItemSummery : SimpleExtendPropertyBase
+    public class GameItemSummery : SimpleDynamicPropertyBase
     {
         public GameItemSummery() : base(Guid.Empty)
         {

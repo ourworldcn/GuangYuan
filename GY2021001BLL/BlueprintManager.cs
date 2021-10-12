@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -943,10 +944,10 @@ namespace GuangYuan.GY001.BLL
                     if (fcp is null)
                     {
                         var now = DateTime.UtcNow;
-                        fcp = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, lut, 0, now) { Name = ProjectConstant.UpgradeTimeName };
-                        DateTime dtComplated = fcp.ComputeComplateDateTime();   //预估完成时间
-                        gi.Name2FastChangingProperty.Add(fcp.Name, fcp);
-                        fcp.ToDictionary(gi.Properties, fcp.Name);
+                        fcp = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, lut, 0, now) { Tag = ProjectConstant.UpgradeTimeName };
+                        DateTime dtComplated = fcp.GetComplateDateTime();   //预估完成时间
+                        gi.Name2FastChangingProperty.Add(fcp.Tag as string, fcp);
+                        fcp.ToDictionary(gi.Properties, fcp.Tag as string);
                         Timer timer = new Timer(LevelUpCompleted, (datas.GameChar.Id, gi.Id),
                             dtComplated - now, Timeout.InfiniteTimeSpan);
                     }
@@ -982,14 +983,24 @@ namespace GuangYuan.GY001.BLL
                 //TO DO
                 return;
             }
-            var fcp = gi.RemoveFastChangingProperty(ProjectConstant.UpgradeTimeName);
-            if (fcp is null)    //若已经处理了
+            if (!gi.Name2FastChangingProperty.TryGetValue(ProjectConstant.UpgradeTimeName, out var fcp))    //若已经处理了
                 return;
             //升级
             var oldLv = gi.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
             World.ItemManager.SetPropertyValue(gi, ProjectConstant.LevelPropertyName, oldLv + 1);
             //通知属性发生变化
-            gi.InvokeDynamicPropertyChanged(new DynamicPropertyChangedEventArgs(ProjectConstant.LevelPropertyName, oldLv));
+            try
+            {
+                gi.InvokeDynamicPropertyChanged(new DynamicPropertyChangedEventArgs(ProjectConstant.LevelPropertyName, oldLv));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                gi.RemoveFastChangingProperty(ProjectConstant.UpgradeTimeName);
+            }
             //扫描成就
             World.MissionManager.ScanAsync(gc);
         }
@@ -1114,10 +1125,10 @@ namespace GuangYuan.GY001.BLL
             if (gi.Name2FastChangingProperty.TryGetValue(ProjectConstant.UpgradeTimeName, out var fcp)) //若需要冷却
             {
                 //计算可能的完成时间
-                DateTime dtComplate = fcp.ComputeComplateDateTime();   //预计完成时间
+                DateTime dtComplate = fcp.GetComplateDateTime();   //预计完成时间
                 TimeSpan ts = dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.02);
                 gi.DynamicPropertyChanged += Gi_PropertyChanged;
-                worker.Count = worker.Count + 1;
+                worker.Count++;
                 datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
             }
             else //立即完成
@@ -1128,6 +1139,11 @@ namespace GuangYuan.GY001.BLL
             return;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void Gi_PropertyChanged(object sender, DynamicPropertyChangedEventArgs e)
         {
             if (e.PropertyName == ProjectConstant.LevelPropertyName && sender is GameItem gi)
@@ -1169,7 +1185,7 @@ namespace GuangYuan.GY001.BLL
             }
             else //若未完成
             {
-                DateTime dtComplate = fcp.ComputeComplateDateTime();
+                DateTime dtComplate = fcp.GetComplateDateTime();
                 decimal tm = (decimal)(dtComplate - dt).TotalMinutes;
 
                 decimal cost = tm switch //需要花费的钻石
@@ -1566,7 +1582,6 @@ namespace GuangYuan.GY001.BLL
             var child = FuhuaCore(datas.GameChar, parent1, parent2);
             child.Name2FastChangingProperty.Add("fhcd", new FastChangingProperty(TimeSpan.FromSeconds(1), 1, 3600 * 8, 0, DateTime.UtcNow)
             {
-                Tag = (datas.GameChar.Id, child.Id),
             });
             gim.AddItem(child, fuhuaSlot, null, datas.ChangesItem); //放入孵化槽
             var qiwu = datas.GameChar.GetQiwuBag();
@@ -1988,8 +2003,9 @@ namespace GuangYuan.GY001.BLL
                     {
                         if (_Alls is null)
                         {
+                            using var sr = File.OpenText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "主控室升级附送物品设置.txt"));
                             _Alls = new List<MainbaseUpgradePrv>();
-                            foreach (string line in text.Split("\r\n", StringSplitOptions.None))   //枚举行
+                            for (string line = sr.ReadLine(); null != line; line = sr.ReadLine())
                             {
                                 if (string.IsNullOrWhiteSpace(line))
                                 {

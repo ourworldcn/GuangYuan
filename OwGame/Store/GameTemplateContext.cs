@@ -24,7 +24,7 @@ namespace OW.Game.Store
     /// <summary>
     /// 所有游戏模板类的基类。
     /// </summary>
-    public abstract class GameTemplateBase : SimpleExtendPropertyBase
+    public abstract class GameTemplateBase : SimpleDynamicPropertyBase
     {
         /// <summary>
         /// <inheritdoc/>

@@ -402,7 +402,7 @@ namespace GuangYuan.GY001.BLL.Homeland
                 //foreach (var item in coll)
                 //{
                 //    var exProp = item.OldPlan.GetOrAddExtendProperty(ProjectConstant.HomelandPlanPropertyName, c =>
-                //         new GameExtendProperty() { Name = c, });
+                //         new GameExtendProperty() { Tag = c, });
                 //    var jsonStr = JsonSerializer.Serialize(item.NewPlan);
                 //    exProp.Text = jsonStr;
                 //}
@@ -429,7 +429,7 @@ namespace GuangYuan.GY001.BLL.Homeland
                 //var hpb = gc.AllChildren.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId); //家园方案背包
                 //foreach (var item in hpb.Children)
                 //{
-                //    var hpo = item.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.HomelandPlanPropertyName);  //方案数据对象
+                //    var hpo = item.ExtendProperties.FirstOrDefault(c => c.Tag == ProjectConstant.HomelandPlanPropertyName);  //方案数据对象
                 //    HomelandFengge tmp;
                 //    if (hpo is null || string.IsNullOrWhiteSpace(hpo.Text)) //若未初始化
                 //    {

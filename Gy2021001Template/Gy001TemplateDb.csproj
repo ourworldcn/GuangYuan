@@ -41,4 +41,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="数据表\" />
+  </ItemGroup>
+
 </Project>

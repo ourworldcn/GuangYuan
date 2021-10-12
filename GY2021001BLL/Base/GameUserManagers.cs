@@ -369,7 +369,7 @@ namespace GuangYuan.GY001.BLL
             //服务终止
             Thread.CurrentThread.Priority = ThreadPriority.Normal;
             _DirtyUsers.Clear();
-            while (_Store._Token2Users.Count > 0)   //把所有还在线的用户强制注销
+            while (!_Store._Token2Users.IsEmpty)   //把所有还在线的用户强制注销
                 foreach (var item in _Store._Token2Users.Values)
                 {
                     try
@@ -497,7 +497,7 @@ namespace GuangYuan.GY001.BLL
             //    // Note that high up the call stack, there is only
             //    // one stack frame.
             //    StackFrame sf = st.GetFrame(i);
-            //    sb.AppendLine(sf.GetMethod().Name);
+            //    sb.AppendLine(sf.GetMethod().Tag);
             //    sb.AppendLine($"{sf.GetFileName()} , line {sf.GetFileLineNumber()}");
             //}
             //_LockerLog[user] = sb.ToString();

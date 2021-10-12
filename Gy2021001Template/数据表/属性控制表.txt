@@ -1,0 +1,8 @@
+mtid	mtid	TRUE	TRUE	FALSE			成就达到特定指标时，送物品的模板Id属性名前缀
+mcount	mcount	TRUE	TRUE	FALSE			成就达到特定指标时，送物品的的数量属性名前缀
+mhtid	mhtid	TRUE	TRUE	FALSE			成就达到特定指标时，送坐骑/野兽的头模板Id属性名前缀
+mbtid	mbtid	TRUE	TRUE	FALSE			成就达到特定指标时，送坐骑/野兽的身体模板Id属性名前缀
+count	count	FALSE	FALSE	FALSE			用模板初始化对象时的数量属性的名称
+lv	lv	FALSE	FALSE	FALSE			级别属性的前缀，可以重命名fname的内容该属性名称发生变化
+stc	stc	FALSE	FALSE	FALSE			堆叠属性的名称，-1表示不限制，省略则表示不可堆叠；可以重命名fname的内容该属性名称发生变化
+cap	cap	FALSE	FALSE	FALSE			容器对象下属对象的最大数量的属性名称，-1表示不限制，省略则表示不是容器；可以重命名fname的内容该属性名称发生变化

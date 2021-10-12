@@ -15,7 +15,7 @@ using System.Text.Json;
 namespace GuangYuan.GY001.UserDb
 {
     [Table("GameChars")]
-    public class GameChar : GameCharBase
+    public class GameChar : GameCharBase, IDisposable
     {
         /// <summary>
         /// <inheritdoc/>
@@ -28,7 +28,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        /// <param _Name="id"><inheritdoc/></param>
+        /// <param name="id"><inheritdoc/></param>
         public GameChar(Guid id) : base(id)
         {
         }
@@ -36,7 +36,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。用于延迟加载。
         /// </summary>
-        /// <param _Name="lazyLoader">延迟加载器。</param>
+        /// <param name="lazyLoader">延迟加载器。</param>
         //private GameChar(Action<object, string> lazyLoader)
         //{
         //    LazyLoader = lazyLoader;
@@ -286,7 +286,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 转换为摘要类。
         /// </summary>
-        /// <param _Name="obj"></param>
+        /// <param name="obj"></param>
         public static explicit operator ChangesItemSummary(ChangeItem obj)
         {
             var result = new ChangesItemSummary()
@@ -303,8 +303,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 从摘要类恢复完整对象。
         /// </summary>
-        /// <param _Name="obj"></param>
-        /// <param _Name="gameChar"></param>
+        /// <param name="obj"></param>
+        /// <param name="gameChar"></param>
         /// <returns></returns>
         public static List<ChangeItem> ToChangesItem(IEnumerable<ChangesItemSummary> objs, GameChar gameChar)
         {
@@ -347,40 +347,12 @@ namespace GuangYuan.GY001.UserDb
     public abstract class GameCharBase : GameThingBase, IDisposable
     {
 
-        private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
-
         protected GameCharBase()
         {
         }
 
         protected GameCharBase(Guid id) : base(id)
         {
-        }
-
-        /// <summary>
-        /// 快速变化属性。
-        /// </summary>
-        [NotMapped]
-        public Dictionary<string, FastChangingProperty> Name2FastChangingProperty
-        {
-            get
-            {
-                if (_Name2FastChangingProperty is null)
-                {
-                    lock (this)
-                        if (_Name2FastChangingProperty is null)
-                        {
-                            var list = FastChangingPropertyExtensions.FromGameThing(this);
-                            var charId = Id;
-                            foreach (var item in list)
-                            {
-                                item.Tag = (charId, Id);    //设置Tag
-                            }
-                            _Name2FastChangingProperty = list.ToDictionary(c => c.Name);
-                        }
-                }
-                return _Name2FastChangingProperty;
-            }
         }
 
         protected override void Dispose(bool disposing)
@@ -394,7 +366,6 @@ namespace GuangYuan.GY001.UserDb
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                _Name2FastChangingProperty = null;
                 base.Dispose(disposing);
             }
         }

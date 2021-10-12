@@ -115,8 +115,8 @@ namespace GuangYuan.GY001.UserDb
         /// 试图从<see cref="GameExtendProperty"/>中转化得到<see cref="ExtendPropertyDescriptor"/>对象。
         /// 特别地，本成员使用了反射，因此程序集改名导致原有数据无法读回。
         /// </summary>
-        /// <param _Name="obj"></param>
-        /// <param _Name="result"></param>
+        /// <param name="obj"></param>
+        /// <param name="result"></param>
         /// <returns>true成功得到对象，false转化错误。</returns>
         static public bool TryParse(GameExtendProperty obj, out ExtendPropertyDescriptor result)
         {
@@ -151,7 +151,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 将当前对象内容填写到指定的<see cref="GameExtendProperty"/>对象中。
         /// </summary>
-        /// <param _Name="obj"></param>
+        /// <param name="obj"></param>
         public void FillTo(GameExtendProperty obj)
         {
             var fullName = Type.AssemblyQualifiedName;
@@ -164,8 +164,8 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 更新或追加对象。
         /// </summary>
-        /// <param _Name="srcs"></param>
-        /// <param _Name="dests"></param>
+        /// <param name="srcs"></param>
+        /// <param name="dests"></param>
         static public void Fill(IEnumerable<ExtendPropertyDescriptor> srcs, ICollection<GameExtendProperty> dests)
         {
             var coll = (from src in srcs
@@ -198,10 +198,10 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param _Name="data"></param>
-        /// <param _Name="name"></param>
-        /// <param _Name="isPersistence"></param>
-        /// <param _Name="type"></param>
+        /// <param name="data"></param>
+        /// <param name="name"></param>
+        /// <param name="isPersistence"></param>
+        /// <param name="type"></param>
         public ExtendPropertyDescriptor(object data, string name, bool isPersistence = false, Type type = null)
         {
             Data = data;

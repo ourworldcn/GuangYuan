@@ -15,7 +15,7 @@ namespace GuangYuan.GY001.UserDb
     /// </summary>
     /// <remarks>写入此对象，需要锁定相应的角色对象。读取可以幻读。
     /// </remarks>
-    public class CharSpecificExpandProperty : SimpleExtendPropertyBase
+    public class CharSpecificExpandProperty : SimpleDynamicPropertyBase
     {
         //
         public CharSpecificExpandProperty()

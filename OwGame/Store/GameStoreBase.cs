@@ -115,12 +115,12 @@ namespace OW.Game.Store
     /// <summary>
     /// 提供一个基类，包含一个编码为字符串的压缩属性。且该字符串可以理解为一个字典的内容。
     /// </summary>
-    public abstract class SimpleExtendPropertyBase : GuidKeyObjectBase, IBeforeSave, IDisposable, INotifyDynamicPropertyChanged
+    public abstract class SimpleDynamicPropertyBase : GuidKeyObjectBase, IBeforeSave, IDisposable, INotifyDynamicPropertyChanged
     {
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public SimpleExtendPropertyBase()
+        public SimpleDynamicPropertyBase()
         {
         }
 
@@ -128,7 +128,7 @@ namespace OW.Game.Store
         /// <inheritdoc/>
         /// </summary>
         /// <param name="id"><inheritdoc/></param>
-        public SimpleExtendPropertyBase(Guid id) : base(id)
+        public SimpleDynamicPropertyBase(Guid id) : base(id)
         {
         }
 
@@ -154,9 +154,7 @@ namespace OW.Game.Store
             Properties.TryGetValue(name, out var old);
             Properties[name] = val;
             if (!Equals(old, val))  //若发生了变化
-            {
                 OnDynamicPropertyChanged(new DynamicPropertyChangedEventArgs(name, old));
-            }
         }
 
         protected virtual void OnDynamicPropertyChanged(DynamicPropertyChangedEventArgs e) => DynamicPropertyChanged?.Invoke(this, e);
@@ -237,7 +235,7 @@ namespace OW.Game.Store
         }
 
         // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~SimpleExtendPropertyBase()
+        // ~SimpleDynamicPropertyBase()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
         //     Dispose(disposing: false);
@@ -267,7 +265,7 @@ namespace OW.Game.Store
     /// 通常应使用Id属性指代最长查找的实体——即"我"这一方，Id2可以记录关系对象Id。
     /// </remarks>
     [NotMapped]
-    public class GameEntityRelationshipBase : SimpleExtendPropertyBase
+    public class GameEntityRelationshipBase : SimpleDynamicPropertyBase
     {
         /// <summary>
         /// 构造函数。

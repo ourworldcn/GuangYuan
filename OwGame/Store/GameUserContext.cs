@@ -130,7 +130,7 @@ namespace OW.Game.Store
     /// <summary>
     /// 玩家数据对象的基类。
     /// </summary>
-    public abstract class GameObjectBase : SimpleExtendPropertyBase, IDisposable, INotifyDynamicPropertyChanged
+    public abstract class GameObjectBase : SimpleDynamicPropertyBase, IDisposable, INotifyDynamicPropertyChanged
     {
         /// <summary>
         /// <inheritdoc/>

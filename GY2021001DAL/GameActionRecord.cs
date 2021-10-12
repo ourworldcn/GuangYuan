@@ -21,7 +21,7 @@ namespace GuangYuan.GY001.UserDb
     /// </code>
     /// 索引在此情况下最有用。
     /// </remarks>
-    public class GameActionRecord : SimpleExtendPropertyBase
+    public class GameActionRecord : SimpleDynamicPropertyBase
     {
         public GameActionRecord()
         {

@@ -92,7 +92,7 @@ namespace GuangYuan.GY001.TemplateDb
 
         /// <summary>
         /// 仅当<see cref="Kind"/>是<see cref="GamePropertyType.Sequence"/>此成员才有效。
-        /// 成员值是另一个游戏属性的名字，表示当前游戏属性的具体值选择是另一个序列属性作为索引。如: {Name=="atk" IndexBy=="lvatk"}表示表示lvatk的属性值是序列属性atk的选择索引。
+        /// 成员值是另一个游戏属性的名字，表示当前游戏属性的具体值选择是另一个序列属性作为索引。如: {Tag=="atk" IndexBy=="lvatk"}表示表示lvatk的属性值是序列属性atk的选择索引。
         /// </summary>
         [Column("索引属性名")]
         public string IndexBy { get; set; }

@@ -1,3 +1,4 @@
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using OW.Game;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -46,8 +48,17 @@ namespace Gy001
         {
             var world = host.Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            var dic = world.PropertyManager.Filter(new string[] { "count","mtid23087402","mcount123","mbtidds32d","mhtidde32","stceqw","fht"});
-            //cache.GetOrCreate("d", c => Task.Run(() => new object()));
+            var dic = world.PropertyManager.Filter(new string[] { "count", "mtid23087402", "mcount123", "mbtidds32d", "mhtidde32", "stceqw", "fht" });
+            var conv = TypeDescriptor.GetConverter(typeof(string));
+            string s = "3.5";
+            int? i = 2;
+            float? f = null;
+            object obj1 = DateTime.UtcNow;
+            object obj2 = i;
+            object obj3 = f;
+            var d1 =Convert.ToString(obj1);
+            d1 = Convert.ToString(obj2);
+            d1 = Convert.ToString(obj3);
             //db.SaveChanges();
         }
 

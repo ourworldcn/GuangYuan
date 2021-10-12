@@ -483,7 +483,7 @@ namespace GuangYuan.GY001.BLL
                         continue;
 
                     item.DynamicPropertyChanged += World.BlueprintManager.Gi_PropertyChanged;
-                    var dt = fcp.ComputeComplateDateTime();
+                    var dt = fcp.GetComplateDateTime();
                     var now = DateTime.UtcNow;
                     TimeSpan ts;
                     if (now >= dt)   //若已经超时

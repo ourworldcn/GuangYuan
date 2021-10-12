@@ -980,8 +980,8 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas">参数及返回值的封装类。</param>
         public void PatWithMounts(PatWithMountsDatas datas)
         {
-            var now = datas.Today;
             using var dwChar = datas.LockAll();
+            var now = datas.Today;
             if (dwChar is null)
             {
                 datas.HasError = true;
@@ -1024,7 +1024,7 @@ namespace GuangYuan.GY001.BLL
                     sr.Flag = 0;
                     //var gameItem = datas.UserContext.Set<GameItem>().Include(c => c.Children).ThenInclude(c => c.Children).AsNoTracking().Single(c => c.Id == sr.Id2);
                     var gameItem = datas.Mount;
-                    GameItem sendGi = World.ItemManager.CloneMounts(gameItem, ProjectConstant.HomelandPatCard); //创建幻影
+                    GameItem sendGi = World.ItemManager.CloneMounts(gameItem, ProjectConstant.HomelandPatCard); //创建幻影,应提前创建幻影
                     sendGi.Properties["charDisplayName"] = datas.OtherChar.DisplayName;
                     World.ItemManager.AddItem(sendGi, datas.GameChar.GetItemBag(), null, datas.ChangeItems); //放入道具背包
                 }
@@ -1285,6 +1285,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             #endregion 工作函数内部使用
+
         }
 
         /// <summary>

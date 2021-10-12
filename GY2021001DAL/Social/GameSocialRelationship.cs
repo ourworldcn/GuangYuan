@@ -29,7 +29,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param _Name="id">指定Id。</param>
+        /// <param name="id">指定Id。</param>
         public GameSocialRelationship(Guid id) : base(id)
         {
         }
@@ -37,9 +37,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param _Name="id"></param>
-        /// <param _Name="id2"></param>
-        /// <param _Name="flag"></param>
+        /// <param name="id"></param>
+        /// <param name="id2"></param>
+        /// <param name="flag"></param>
         /// <param name="keyType"></param>
         public GameSocialRelationship(Guid id, Guid id2, int keyType, int flag) : base(id, id2, keyType, flag)
         {
@@ -63,9 +63,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 用指定角色填充角色摘要信息。
         /// </summary>
-        /// <param _Name="gameChar">角色对象。</param>
-        /// <param _Name="charSummary">角色摘要对象。</param>
-        /// <param _Name="records">查询操作记录的接口。</param>
+        /// <param name="gameChar">角色对象。</param>
+        /// <param name="charSummary">角色摘要对象。</param>
+        /// <param name="records">查询操作记录的接口。</param>
         public static void Fill(GameChar gameChar, CharSummary charSummary, IQueryable<GameActionRecord> records)
         {
             charSummary.Id = gameChar.Id;
@@ -123,9 +123,9 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 用指定角色填充好友摘要信息。
         /// </summary>
-        /// <param _Name="gameChar">角色对象。</param>
-        /// <param _Name="charSummary">好友摘要对象。</param>
-        /// <param _Name="records">查询操作记录的接口。</param>
+        /// <param name="gameChar">角色对象。</param>
+        /// <param name="charSummary">好友摘要对象。</param>
+        /// <param name="records">查询操作记录的接口。</param>
         public static void Fill(GameChar gameChar, FrientSummary charSummary, IQueryable<GameActionRecord> records)
         {
             CharSummary.Fill(gameChar, charSummary, records);

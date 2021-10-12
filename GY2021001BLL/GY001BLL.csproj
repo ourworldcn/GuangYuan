@@ -28,4 +28,10 @@
     <ProjectReference Include="..\OwGame\OwGameBaseCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="主控室升级附送物品设置.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
