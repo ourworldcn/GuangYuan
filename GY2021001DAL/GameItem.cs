@@ -527,7 +527,10 @@ namespace GuangYuan.GY001.UserDb
         {
             base.InitializeCore(service, parameters);
             //设置本类型特有属性
-            Count ??= Template.Properties.ContainsKey(StackUpperLimit) ? 0 : 1;
+            if (Template.Properties.TryGetValue("Count", out var countObj)) //若指定了初始数量
+                Count = Convert.ToDecimal(countObj);
+            else
+                Count ??= Template.Properties.ContainsKey(StackUpperLimit) ? 0 : 1;
             if (parameters.TryGetValue("parent", out var obj) && obj is GameItem gi)
             {
                 ParentId = gi.Id;

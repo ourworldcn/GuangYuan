@@ -517,6 +517,7 @@ namespace Gy001.Controllers
                 using var datas = new PatWithMountsDatas(_World, model.Token, GameHelper.FromBase64String(model.MountsId), DateTime.UtcNow)
                 {
                     UserContext = _UserContext,
+                    IsRemove=model.IsRemove,
                 };
                 using var dwChar = datas.LockUser();
                 if (dwChar is null)
@@ -554,6 +555,7 @@ namespace Gy001.Controllers
             {
                 UserContext = _UserContext,
             };
+            
             using var disposer = datas.LockAll();
             if (disposer is null)   //若锁定失败
                 return StatusCode(datas.ErrorCode, datas.ErrorMessage);

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -140,7 +141,7 @@ namespace OW.Game
                     {
                         string val = _Dictionary.GetStringOrDefault(LastValuesKey);
                         if (string.IsNullOrWhiteSpace(val))  //若没有值
-                            _TodayValues = new List<T>();
+                            _LastValues = new List<T>();
                         else //若有值
                         {
                             var converter = Converter;
@@ -326,7 +327,7 @@ namespace OW.Game
         public FastChangingProperty(TimeSpan delay, decimal increment, decimal maxVal, decimal currentVal, DateTime lastComputerDateTime)
         {
             if (increment > 0 && maxVal < currentVal || increment < 0 && maxVal > currentVal)  //若不向终值收敛
-                throw new ArgumentException("不向终值收敛。");
+                Debug.WriteLine("不向终值收敛。");
             _LastValue = currentVal;
             LastDateTime = lastComputerDateTime;
             Delay = delay;

@@ -547,6 +547,7 @@ namespace GY2021001WebApi.Controllers
                     oldFengges.Add(newFengge);  //加入新对象
                 }
                 gc.MergeFangans(oldFengges, gitm);  //更新对象数据
+                
                 world.CharManager.NotifyChange(gu);
             }
             catch (Exception err)

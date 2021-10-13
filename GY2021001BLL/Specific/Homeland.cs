@@ -4,6 +4,7 @@
 
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using OW.Game.Item;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -336,14 +337,21 @@ namespace GuangYuan.GY001.BLL.Homeland
                     fangan.FanganItems.MergeContainer(hl, number, manager); //合并方案项
                 }
             }
-
-            if (!fenggeItems.SelectMany(c => c.Fangans).Any(c => c.IsActived))   //若没有激活方案
+            var active = fenggeItems.SelectMany(c => c.Fangans).FirstOrDefault(c => c.IsActived);
+            if (active is null)   //若没有激活方案
             {
                 //激活初始的第一个方案
-                var fanan = fenggeItems.FirstOrDefault()?.Fangans.FirstOrDefault();
-                if (null != fanan)
-                    fanan.IsActived = true;
+                active = fenggeItems.FirstOrDefault()?.Fangans.FirstOrDefault();
+                active.IsActived = true;
             }
+            var datas = new ActiveStyleDatas()
+            {
+                Fangan = active,
+                GameChar = gameChar,
+            };
+            active.IsActived = true;
+            manager.World.ItemManager.ActiveStyle(datas);
+
         }
 
         /// <summary>

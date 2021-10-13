@@ -8,6 +8,7 @@ using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -463,7 +464,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     // TODO: 释放托管状态(托管对象)
                     if (null != _SocialRelationships)
-                        _SocialRelationships.CollectionChanged -= new System.Collections.Specialized.NotifyCollectionChangedEventHandler(OnRelationshipsCollectionChanged);
+                        _SocialRelationships.CollectionChanged -= new NotifyCollectionChangedEventHandler(OnRelationshipsCollectionChanged);
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
@@ -522,12 +523,12 @@ namespace GuangYuan.GY001.BLL
                     UserContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                    UserContext.AddRange(e.OldItems.OfType<GameSocialRelationship>());
+                    UserContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
                     throw new NotSupportedException();
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
-                    UserContext.AddRange(e.OldItems.OfType<GameSocialRelationship>());
+                    UserContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
                     UserContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
@@ -542,7 +543,6 @@ namespace GuangYuan.GY001.BLL
         {
             UserContext.SaveChanges();
         }
-
 
     }
 

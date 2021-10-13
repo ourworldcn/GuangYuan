@@ -1483,15 +1483,17 @@ namespace OW.Game.Item
                         var newContainer = gitm.GetTemplateFromeId(item.NewTemplateId.Value);
                         container.ChangeTemplate(newContainer);
                     }
-                    foreach (var id in item.ItemIds)    //添加物品
-                    {
-                        var gameItem = dic.GetValueOrDefault(id);
-                        if (gameItem is null)   //若不是家园内物品
-                            continue;
-                        if (!moveableGIds.Contains(gameItem.GetCatalogNumber()))  //若不可移动
-                            continue;
-                        manager.MoveItems(manager.GetContainer(gameItem), c => c.Id == gameItem.Id, destParent, datas.ItemChanges);
-                    }
+                    if (destParent.IsDikuai())   //若容器是地块
+                        foreach (var id in item.ItemIds)    //添加物品
+                        {
+                            var gameItem = dic.GetValueOrDefault(id);
+                            if (gameItem is null)   //若不是家园内物品
+                                continue;
+                            if (!moveableGIds.Contains(gameItem.GetCatalogNumber()))  //若不可移动
+                                continue;
+                            manager.ForceMove(gameItem, destParent);
+                            //manager.MoveItems(manager.GetContainer(gameItem), c => c.Id == gameItem.Id, destParent, datas.ItemChanges);
+                        }
                 }
                 manager.World.CharManager.NotifyChange(datas.GameChar.GameUser);
             }

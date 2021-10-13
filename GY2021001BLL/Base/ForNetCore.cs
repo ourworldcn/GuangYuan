@@ -10,6 +10,7 @@ using OW.Game.Item;
 using OW.Game.Mission;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
@@ -44,6 +45,7 @@ namespace GuangYuan.GY001.BLL
 #else
                thread.Start();
 #endif
+                Trace.WriteLine("游戏虚拟世界服务成功上线。");
             }, _Services, cancellationToken);
             return result;
         }
@@ -139,6 +141,7 @@ namespace GuangYuan.GY001.BLL
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
+            Trace.WriteLine("游戏虚拟世界服务开始下线。");
             return Task.CompletedTask;
         }
 

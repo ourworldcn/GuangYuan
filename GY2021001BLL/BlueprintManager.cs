@@ -991,6 +991,7 @@ namespace GuangYuan.GY001.BLL
             //通知属性发生变化
             try
             {
+                OnLevelUpCompleted(sender);
                 gi.InvokeDynamicPropertyChanged(new DynamicPropertyChangedEventArgs(ProjectConstant.LevelPropertyName, oldLv));
             }
             catch (Exception)
@@ -1003,6 +1004,15 @@ namespace GuangYuan.GY001.BLL
             }
             //扫描成就
             World.MissionManager.ScanAsync(gc);
+        }
+
+        /// <summary>
+        /// 升级物品结束时被调用。
+        /// </summary>
+        /// <param name="sender"></param>
+        protected virtual void OnLevelUpCompleted(object sender)
+        {
+            UpgradeCompleted(sender);
         }
 
         #endregion 通用功能
@@ -1092,7 +1102,7 @@ namespace GuangYuan.GY001.BLL
             }
             GameItem gi = hl.AllChildren.FirstOrDefault(c => c.Id == datas.GameItems[0].Id);   //要升级的物品
             var lut = gi.Properties.GetDecimalOrDefault("lut"); //冷却的秒数
-            if (lut > 0 && !datas.Verify(worker.GetNumberOfStackRemainder() > 0, "所有建筑工人都在忙", worker.TemplateId))
+            if (lut > 0 && !datas.Verify(worker.Count > 0, "所有建筑工人都在忙", worker.TemplateId))
             {
                 return;
             }
@@ -1127,8 +1137,7 @@ namespace GuangYuan.GY001.BLL
                 //计算可能的完成时间
                 DateTime dtComplate = fcp.GetComplateDateTime();   //预计完成时间
                 TimeSpan ts = dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.02);
-                gi.DynamicPropertyChanged += Gi_PropertyChanged;
-                worker.Count++;
+                worker.Count--;
                 datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
             }
             else //立即完成
@@ -1137,17 +1146,6 @@ namespace GuangYuan.GY001.BLL
             }
             #endregion 修改属性
             return;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void Gi_PropertyChanged(object sender, DynamicPropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == ProjectConstant.LevelPropertyName && sender is GameItem gi)
-                UpgradeCompleted(ValueTuple.Create(gi.GameChar.Id, gi.Id));
         }
 
         /// <summary>
@@ -1167,8 +1165,6 @@ namespace GuangYuan.GY001.BLL
 
             GameItem worker = datas.Lookup(hl.Children, ProjectConstant.WorkerOfHomelandTId);
             if (worker is null) return;
-
-            if (!datas.Verify(worker.Count.HasValue && worker.Count > 0, "没有在升级的物品")) return;
 
             if (!datas.Verify(gameItem.Name2FastChangingProperty.TryGetValue(ProjectConstant.UpgradeTimeName, out FastChangingProperty fcp), "物品未进行升级"))
             {
@@ -1329,7 +1325,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 LastChangesItems.AddToChanges(gameItem.ContainerId.Value, gameItem);
                 var worker = gc.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);
-                worker.Count--;
+                worker.Count++;
             }
             catch (Exception)
             {

@@ -482,7 +482,6 @@ namespace GuangYuan.GY001.BLL
                     if (!item.Name2FastChangingProperty.TryGetValue(ProjectConstant.UpgradeTimeName, out var fcp))
                         continue;
 
-                    item.DynamicPropertyChanged += World.BlueprintManager.Gi_PropertyChanged;
                     var dt = fcp.GetComplateDateTime();
                     var now = DateTime.UtcNow;
                     TimeSpan ts;

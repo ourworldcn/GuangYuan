@@ -991,18 +991,6 @@ namespace GuangYuan.GY001.BLL
             }
             var db = datas.UserContext;
             var tmpNow = now;
-            //if (datas.Counter.GetCurrentValue(ref tmpNow) <= 0)
-            //{
-            //    datas.HasError = true;
-            //    datas.ErrorMessage = $"今日互动次数已用尽。";
-            //    return;
-            //}
-            //if (datas.IsVisited)  //若今日与玩家已经互动过
-            //{
-            //    datas.HasError = true;
-            //    datas.ErrorMessage = $"今日已经与该玩家互动过。";
-            //    return;
-            //}
             var sr = datas.GetOrAddSr();  //与该坐骑互动的数据条目
             if (datas.IsRemove)  //若是解约
             {
@@ -1010,10 +998,28 @@ namespace GuangYuan.GY001.BLL
                 sr.Flag = 0;
                 datas.SetDateTime(sr, datas.Today);
                 datas.SetOtherCharId(sr, datas.OtherCharId);
+                datas.UserContext.Remove(sr);
             }
             else //签约或增加互动
             {
+                if (datas.Hudong.TodayValues.Contains(datas.MountsId))
+                {
+                    datas.HasError = true;
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "今日已经与该坐骑互动过了。";
+                    return;
+                }
+                var dt = datas.Now;
+                if (datas.Counter.GetCurrentValue(ref dt) <= 0)
+                {
+                    datas.HasError = true;
+                    datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
+                    datas.ErrorMessage = "今日互动次数已经用完。";
+                    return;
+                }
                 //修改数据
+                datas.Hudong.TodayValues.Add(datas.MountsId);   //记录互动痕迹
+                datas.Counter.LastValue--; //减少可互动次数
                 datas.SetDateTime(sr, datas.Today);
                 datas.SetOtherCharId(sr, datas.OtherCharId);
                 var gim = World.ItemManager;
@@ -1024,7 +1030,7 @@ namespace GuangYuan.GY001.BLL
                     sr.Flag = 0;
                     //var gameItem = datas.UserContext.Set<GameItem>().Include(c => c.Children).ThenInclude(c => c.Children).AsNoTracking().Single(c => c.Id == sr.Id2);
                     var gameItem = datas.Mount;
-                    GameItem sendGi = World.ItemManager.CloneMounts(gameItem, ProjectConstant.HomelandPatCard); //创建幻影,应提前创建幻影
+                    GameItem sendGi = World.ItemManager.CloneMounts(gameItem, ProjectConstant.HomelandPatCard); //创建幻影
                     sendGi.Properties["charDisplayName"] = datas.OtherChar.DisplayName;
                     World.ItemManager.AddItem(sendGi, datas.GameChar.GetItemBag(), null, datas.ChangeItems); //放入道具背包
                 }
@@ -1045,21 +1051,18 @@ namespace GuangYuan.GY001.BLL
             public PatWithMountsDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid mountsId, DateTime today) : base(service, gameChar, Guid.Empty)
             {
                 MountsId = mountsId;
-                Today = today;
                 Initialize();
             }
 
             public PatWithMountsDatas([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid mountsId, DateTime today) : base(world, gameChar, Guid.Empty)
             {
                 MountsId = mountsId;
-                Today = today;
                 Initialize();
             }
 
             public PatWithMountsDatas([NotNull] VWorld world, [NotNull] string token, Guid mountsId, DateTime today) : base(world, token, Guid.Empty)
             {
                 MountsId = mountsId;
-                Today = today;
                 Initialize();
             }
 
@@ -1092,9 +1095,15 @@ namespace GuangYuan.GY001.BLL
             public Guid MountsId { get; set; }
 
             /// <summary>
+            /// 当前时间。
+            /// </summary>
+            /// <value>默认值：<see cref="DateTime.UtcNow"/></value>
+            public DateTime Now { get; set; } = DateTime.UtcNow;
+
+            /// <summary>
             /// 当前日期。
             /// </summary>
-            public DateTime Today { get; set; }
+            public DateTime Today => Now.Date;
 
             /// <summary>
             /// 如果友好度已满，使用此坐骑与对方坐骑杂交。
@@ -1119,12 +1128,30 @@ namespace GuangYuan.GY001.BLL
             /// </summary>
             public const string ExPropName = "PatWithMountsExProp";
 
+            public const string PatTodayName = "patMounts";
+
             private FastChangingProperty _Counter;
 
             /// <summary>
-            /// 剩余次数。
+            /// 互动数据剩余次数。
             /// </summary>
             public FastChangingProperty Counter => _Counter ??= GameChar.GetHomeland().Name2FastChangingProperty[FcpName];
+
+            private TodayDataWrapper<Guid> _Hudong;
+            /// <summary>
+            /// 互动数据。
+            /// </summary>
+            public TodayDataWrapper<Guid> Hudong
+            {
+                get
+                {
+                    if (_Hudong is null)
+                    {
+                        _Hudong = TodayDataWrapper<Guid>.Create(GameChar.GetHomeland().Properties, PatTodayName, Now);
+                    }
+                    return _Hudong;
+                }
+            }
 
             private ObservableCollection<GameSocialRelationship> _Visitors;
 
@@ -1167,6 +1194,11 @@ namespace GuangYuan.GY001.BLL
                 return sr;
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
             private void VisitorsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
             {
                 switch (e.Action)
@@ -1192,6 +1224,8 @@ namespace GuangYuan.GY001.BLL
 
             public override void Save()
             {
+                if (null != _Hudong)
+                    _Hudong.Save();
                 base.Save();
             }
 
@@ -1306,9 +1340,9 @@ namespace GuangYuan.GY001.BLL
                 var mountsBag = objChar.GetZuojiBag();
                 //获取风格
                 var gitm = World.ItemTemplateManager;
-                var fengges = gc.GetFengges();
+                var fengges = objChar.GetFengges();
                 if (fengges.Count == 0) //若未初始化
-                    gc.MergeFangans(fengges, gitm);
+                    objChar.MergeFangans(fengges, gitm);
                 var fengge = fengges.FirstOrDefault(c => c.Fangans.Any(c1 => c1.IsActived));
                 if (fengge is null) //若没有指定激活风格
                     fengge = fengges.First();
