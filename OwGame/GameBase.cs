@@ -544,23 +544,6 @@ namespace OW.Game
     }
 
     /// <summary>
-    /// <see cref="FastChangingProperty.Completed"/>事件所用参数。
-    /// </summary>
-    public class CompletedEventArgs : EventArgs
-    {
-        public CompletedEventArgs(DateTime completedDateTime)
-        {
-            CompletedDateTime = completedDateTime;
-        }
-
-        /// <summary>
-        /// 获取或设置完成的时间点。
-        /// </summary>
-        public DateTime CompletedDateTime { get; set; }
-
-    }
-
-    /// <summary>
     /// 初始化挂接接口。
     /// </summary>
     public interface IGameObjectInitializer

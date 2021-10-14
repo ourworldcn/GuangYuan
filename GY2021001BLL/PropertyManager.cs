@@ -74,6 +74,11 @@ namespace OW.Game
         /// </summary>
         public ISet<string> NoCopyPrefixNames => _NoCopyPrefixNames ??= new HashSet<string>(Id2Datas.Values.Where(c => c.IsFix && c.IsPrefix).Select(c => string.IsNullOrEmpty(c.FName) ? c.PName : c.FName));
 
+        /// <summary>
+        /// 级别属性名前缀。
+        /// </summary>
+        public string LevelPropertyName => _Alls.Value["lv"].FName;
+
     }
 
 }

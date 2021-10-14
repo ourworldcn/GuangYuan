@@ -109,6 +109,8 @@ namespace GuangYuan.GY001.TemplateDb
     /// </summary>
     public interface IGamePropertyManager
     {
+        abstract string LevelPropertyName { get; }
+
         /// <summary>
         /// 过滤掉不必复制的属性名。
         /// </summary>

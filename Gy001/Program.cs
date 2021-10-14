@@ -50,15 +50,9 @@ namespace Gy001
             using var db = world.CreateNewUserDbContext();
             var dic = world.PropertyManager.Filter(new string[] { "count", "mtid23087402", "mcount123", "mbtidds32d", "mhtidde32", "stceqw", "fht" });
             var conv = TypeDescriptor.GetConverter(typeof(string));
-            string s = "3.5";
-            int? i = 2;
-            float? f = null;
-            object obj1 = DateTime.UtcNow;
-            object obj2 = i;
-            object obj3 = f;
-            var d1 =Convert.ToString(obj1);
-            d1 = Convert.ToString(obj2);
-            d1 = Convert.ToString(obj3);
+
+            var str = Uri.EscapeDataString("a=t,dss=1,µÄ%=12%,");
+            var str1 = Uri.UnescapeDataString(str);
             //db.SaveChanges();
         }
 

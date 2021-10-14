@@ -114,6 +114,7 @@ namespace Gy001
                 TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
 #endif //DEBUG
             }));
+            services.AddSingleton<GameEventsManager>(c => new Gy001GameEventsManager(c, new GameEventsManagerOptions()));
             #endregion 配置游戏专用服务
         }
 

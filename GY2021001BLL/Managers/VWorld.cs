@@ -172,6 +172,11 @@ namespace OW.Game
             }
         }
 
+        public void AddToUserContext(string sql)
+        {
+            _DbWorkQueue.Add((DbAction.Execute, sql));
+        }
+
         public void AddToUserContext(IEnumerable<object> collection)
         {
             _DbWorkQueue.Add((DbAction.Add, collection));
@@ -329,6 +334,13 @@ namespace OW.Game
         /// 属性管理器。
         /// </summary>
         public IGamePropertyManager PropertyManager { get => _PropertyManager ??= Service.GetRequiredService<IGamePropertyManager>(); }
+
+        GameEventsManager _EventsManager;
+        /// <summary>
+        /// 事件管理器。
+        /// </summary>
+        public GameEventsManager EventsManager => _EventsManager ??= Service.GetService<GameEventsManager>();
+
         #endregion 子管理器
 
         #region 对象池

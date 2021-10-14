@@ -467,6 +467,16 @@ namespace System
         }
 
         /// <summary>
+        /// 计算剩余时间间隔，若<paramref name="end"/>在<paramref name="start"/>之前则返回<see cref="TimeSpan.Zero"/>。
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TimeSpan ComputeTimeout(DateTime start, DateTime end) =>
+            start >= end ? TimeSpan.Zero : end - start;
+
+        /// <summary>
         /// 按顺序锁定一组对象。
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -553,5 +563,6 @@ namespace System
             }
 
         }
+
     }
 }

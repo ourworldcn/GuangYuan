@@ -135,18 +135,17 @@ namespace OW.Game.Item
         /// <returns>true成功设置,false未能成功设置属性。</returns>
         public bool SetPropertyValue(GameItem gameItem, string propName, object val, GameChar gameChar = null)
         {
+            gameItem.Properties.TryGetValue(propName, out var oldValue);
             //TO DO
             if (propName.Equals("tid", StringComparison.InvariantCultureIgnoreCase))
             {
                 gameItem.TemplateId = (Guid)val;
-                return true;
             }
             else if (propName.Equals("pid", StringComparison.InvariantCultureIgnoreCase))
             {
                 if (!OwHelper.TryGetGuid(val, out var pid))
                     return false;
                 gameItem.ParentId = pid;
-                return true;
             }
             else if (propName.Equals("ptid", StringComparison.InvariantCultureIgnoreCase))  //移动到新的父容器
             {
@@ -228,6 +227,8 @@ namespace OW.Game.Item
             }
             else
                 gameItem.SetPropertyValue(propName, val);
+
+            World.EventsManager.OnDynamicPropertyChanged(gameItem, new ValueTuple<string, object>[] { (propName, oldValue) });
             return true;
         }
 
