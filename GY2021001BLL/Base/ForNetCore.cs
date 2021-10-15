@@ -45,6 +45,7 @@ namespace GuangYuan.GY001.BLL
 #else
                thread.Start();
 #endif
+                Task.Run(LoadCache);
                 Trace.WriteLine("游戏虚拟世界服务成功上线。");
             }, _Services, cancellationToken);
             return result;
@@ -164,6 +165,8 @@ namespace GuangYuan.GY001.BLL
 
             _Services.GetService<BlueprintManager>();
             _Services.GetService<GamePropertyHelper>();
+            _Services.GetService<GameEventsManager>();
+            _Services.GetService<GameSchedulerManager>();
         }
 
         private void CreateDb(IServiceProvider services)
@@ -227,6 +230,8 @@ namespace GuangYuan.GY001.BLL
 
             services.AddSingleton<IGameObjectInitializer>(c => new Gy001Initializer(c, new Gy001InitializerOptions()));
 
+            //加入任务管理器
+            services.AddSingleton(c => new GameSchedulerManager(c, new SchedulerManagerOptions()));
         }
     }
 }

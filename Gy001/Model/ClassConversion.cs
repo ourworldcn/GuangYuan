@@ -304,7 +304,7 @@ namespace GY2021001WebApi.Models
             };
             if (!result.HasError)
             {
-                result.ChangesItems.AddRange(obj.ChangesItem.Select(c => (ChangesItemDto)c));
+                result.ChangesItems.AddRange(obj.ChangeItems.Select(c => (ChangesItemDto)c));
                 result.FormulaIds.AddRange(obj.FormulaIds.Select(c => c.ToBase64String()));
                 result.ErrorTIds.AddRange(obj.ErrorItemTIds.Select(c => c.ToBase64String()));
                 result.MailIds.AddRange(obj.MailIds.Select(c => c.ToBase64String()));

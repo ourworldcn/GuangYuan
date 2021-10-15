@@ -732,61 +732,6 @@ namespace GuangYuan.GY001.UserDb
     /// </summary>
     public static class ChangesItemExtensions
     {
-        //#region 变化信息相关
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="changes"></param>
-        ///// <param name="gameItem">>如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
-        //public void ChangesToAdds(ICollection<ChangeItem> changes, GameItem gameItem)
-        //{
-        //    var cid = (GetContainer(gameItem)?.Id ?? gameItem.Id) ?? Guid.Empty;
-        //    var item = changes.FirstOrDefault(c => c.ContainerId == cid);
-        //    if (null == item)
-        //    {
-        //        item = new ChangeItem() { ContainerId = cid };
-        //        changes.Add(item);
-        //    }
-        //    item.Adds.Add(gameItem);
-        //}
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="changes"></param>
-        ///// <param name="gameItem">如果当前没有容器，会使用<see cref="Guid.Empty"/>作为容器Id。</param>
-        //public void ChangesToChanges(ICollection<ChangeItem> changes, GameItem gameItem)
-        //{
-        //    var cid = (GetContainer(gameItem)?.Id ?? gameItem.Id) ?? Guid.Empty;
-        //    var item = changes.FirstOrDefault(c => c.ContainerId == cid);
-        //    if (null == item)
-        //    {
-        //        item = new ChangeItem() { ContainerId = cid };
-        //        changes.Add(item);
-        //    }
-        //    item.Changes.Add(gameItem);
-        //}
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="changes"></param>
-        ///// <param name="itemId"></param>
-        ///// <param name="containerId"></param>
-        //public void ChangesToRemoves(ICollection<ChangeItem> changes, Guid itemId, Guid containerId)
-        //{
-        //    var item = changes.FirstOrDefault(c => c.ContainerId == containerId);
-        //    if (null == item)
-        //    {
-        //        item = new ChangeItem() { ContainerId = containerId };
-        //        changes.Add(item);
-        //    }
-        //    item.Removes.Add(itemId);
-        //}
-
-        //#endregion 变化信息相关
-
         /// <summary>
         /// 追加物品到追加数据中。
         /// </summary>

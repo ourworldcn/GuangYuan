@@ -425,14 +425,14 @@ namespace GY2021001WebApi.Controllers
             try
             {
                 var gc = gu.CurrentChar;
-                if (0 == gc.ChangesItems.Count)
-                {
-                    var fcp = gc.Name2FastChangingProperty.GetValueOrDefault(ProjectConstant.UpgradeTimeName);
-                    if (fcp is null)
-                        result.DebugMessage = $"无法找到{ProjectConstant.UpgradeTimeName}快速变化属性。";
-                    else
-                        result.DebugMessage = $"m={fcp.MaxValue},c={fcp.LastValue},t={fcp.LastDateTime}";
-                }
+                //if (0 == gc.ChangesItems.Count)
+                //{
+                //    var fcp = gc.Name2FastChangingProperty.GetValueOrDefault(ProjectConstant.UpgradeTimeName);
+                //    if (fcp is null)
+                //        result.DebugMessage = $"无法找到{ProjectConstant.UpgradeTimeName}快速变化属性。";
+                //    else
+                //        result.DebugMessage = $"m={fcp.MaxValue},c={fcp.LastValue},t={fcp.LastDateTime}";
+                //}
                 result.Changes.AddRange(gc.ChangesItems.Select(c => (ChangesItemDto)c));
                 //gc.ChangesItems.Clear();
             }

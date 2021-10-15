@@ -341,6 +341,12 @@ namespace OW.Game
         /// </summary>
         public GameEventsManager EventsManager => _EventsManager ??= Service.GetService<GameEventsManager>();
 
+        GameSchedulerManager _SchedulerManager;
+        /// <summary>
+        /// 获取任务计划管理器。
+        /// </summary>
+        public GameSchedulerManager SchedulerManager => _SchedulerManager ??= Service.GetService<GameSchedulerManager>();
+
         #endregion 子管理器
 
         #region 对象池

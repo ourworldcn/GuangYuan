@@ -599,6 +599,12 @@ namespace OW.Game.Item
                     else
                         result = null;
                     break;
+                case 10:
+                    result = gChar.GetShenwenBag();
+                    break;
+                case 15:    //神纹强化道具
+                case 16:    //神纹强化道具
+                case 17:    //神纹强化道具
                 case 18:    //道具
                     result = gChar.GetItemBag();
                     break;

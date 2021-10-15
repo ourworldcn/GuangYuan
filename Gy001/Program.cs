@@ -51,7 +51,7 @@ namespace Gy001
             var dic = world.PropertyManager.Filter(new string[] { "count", "mtid23087402", "mcount123", "mbtidds32d", "mhtidde32", "stceqw", "fht" });
             var conv = TypeDescriptor.GetConverter(typeof(string));
 
-            var str = Uri.EscapeDataString("a=t,dss=1,µÄ%=12%,");
+            var str = Uri.EscapeDataString(Guid.NewGuid().ToString("b"));
             var str1 = Uri.UnescapeDataString(str);
             //db.SaveChanges();
         }

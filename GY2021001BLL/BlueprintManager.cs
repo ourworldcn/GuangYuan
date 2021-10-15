@@ -200,7 +200,7 @@ namespace GuangYuan.GY001.BLL
                     }
                 }
             }
-            ChangeItem.Reduce(datas.ChangesItem);
+            ChangeItem.Reduce(datas.ChangeItems);
             return;
         }
 
@@ -505,16 +505,16 @@ namespace GuangYuan.GY001.BLL
             {
                 if (Template.IsNew)
                 {
-                    datas.ChangesItem.AddToAdds(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
+                    datas.ChangeItems.AddToAdds(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
                 }
                 else
                 {
-                    datas.ChangesItem.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
+                    datas.ChangeItems.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
                 }
             }
             else //若没有剩余
             {
-                datas.ChangesItem.AddToRemoves(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem.Id);
+                datas.ChangeItems.AddToRemoves(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem.Id);
             }
 
             return true;
@@ -645,11 +645,6 @@ namespace GuangYuan.GY001.BLL
         /// 获取或设置成功执行的次数。
         /// </summary>
         public int SuccCount { get; set; }
-
-        /// <summary>
-        /// 应用蓝图后，物品变化数据。
-        /// </summary>
-        public List<ChangeItem> ChangesItem { get; } = new List<ChangeItem>();
 
         private string _DebugMessage;
         /// <summary>
@@ -818,7 +813,7 @@ namespace GuangYuan.GY001.BLL
                         succ = true;
                         break;
                     case "6a0c5697-4228-4ec9-a69e-28d61bd52b32":    //坐骑等级提升
-                        LevelUp(datas);
+                        MountsLevelUp(datas);
                         succ = true;
                         break;
                     default:
@@ -833,6 +828,26 @@ namespace GuangYuan.GY001.BLL
                 succ = true;
             }
             return succ;
+        }
+
+        void MountsLevelUp(ApplyBlueprintDatas datas)
+        {
+            var datasInner = new ApplyBlueprintDatas(datas.World, datas.GameChar)
+            {
+                ActionId = datas.ActionId,
+                Count = datas.Count,
+                Blueprint = datas.Blueprint,
+                UserContext = datas.UserContext,
+            };
+            var gi = World.ItemManager.GetBody(datas.GameItems[0]);
+            datasInner.GameItems.Add(gi);
+            LevelUp(datasInner);
+            datas.ChangeItems.AddToChanges(datas.GameItems[0]);
+            datas.ChangeItems.AddRange(datasInner.ChangeItems);
+            datas.SuccCount = datasInner.SuccCount;
+            datas.HasError = datasInner.HasError;
+            datas.ErrorCode = datasInner.ErrorCode;
+            datas.DebugMessage = datasInner.DebugMessage;
         }
 
         #region 通用功能
@@ -931,16 +946,16 @@ namespace GuangYuan.GY001.BLL
                     var oldLv = luDatas.GameItem.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
                     gim.SetPropertyValue(luDatas.GameItem, ProjectConstant.LevelPropertyName, oldLv + 1);
                     //记录变化信息
-                    datas.ChangesItem.AddToChanges(cost.Select(c => c.Item1).ToArray());
+                    datas.ChangeItems.AddToChanges(cost.Select(c => c.Item1).ToArray());
                     datas.SuccCount = i + 1;
-                    datas.ChangesItem.AddToChanges(gi);
+                    datas.ChangeItems.AddToChanges(gi);
                 }
                 else //若有升级延时
                 {
                     //记录变化信息
-                    datas.ChangesItem.AddToChanges(cost.Select(c => c.Item1).ToArray());
+                    datas.ChangeItems.AddToChanges(cost.Select(c => c.Item1).ToArray());
                     datas.SuccCount = i + 1;
-                    datas.ChangesItem.AddToChanges(gi);
+                    datas.ChangeItems.AddToChanges(gi);
                     if (fcp is null)
                     {
                         var now = DateTime.UtcNow;
@@ -948,6 +963,16 @@ namespace GuangYuan.GY001.BLL
                         DateTime dtComplated = fcp.GetComplateDateTime();   //预估完成时间
                         gi.Name2FastChangingProperty.Add(fcp.Tag as string, fcp);
                         fcp.ToDictionary(gi.Properties, fcp.Tag as string);
+                        //定时任务
+                        var scId = Guid.NewGuid();  //定时任务Id
+                        var sd = new SchedulerDescriptor(scId)
+                        {
+                            ComplatedDatetime = dtComplated,
+                            MethodName = "Upgraded",
+                        };
+                        sd.Properties["charId"] = datas.GameChar.Id;
+                        sd.Properties["itemId"] = gi.Id;
+                        gi.Properties["UpgradedSchedulerId"] = sd.Id.ToString();
                         Timer timer = new Timer(LevelUpCompleted, (datas.GameChar.Id, gi.Id),
                             dtComplated - now, Timeout.InfiniteTimeSpan);
                     }
@@ -1076,8 +1101,8 @@ namespace GuangYuan.GY001.BLL
             }
 
             destItem.Count += count;
-            datas.ChangesItem.AddToChanges(src.ContainerId.Value, src);
-            datas.ChangesItem.AddToChanges(destItem.ContainerId.Value, destItem);
+            datas.ChangeItems.AddToChanges(src.ContainerId.Value, src);
+            datas.ChangeItems.AddToChanges(destItem.ContainerId.Value, destItem);
         }
 
         /// <summary>
@@ -1138,7 +1163,7 @@ namespace GuangYuan.GY001.BLL
                 DateTime dtComplate = fcp.GetComplateDateTime();   //预计完成时间
                 TimeSpan ts = dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.02);
                 worker.Count--;
-                datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
+                datas.ChangeItems.AddToChanges(worker.ContainerId.Value, worker);
             }
             else //立即完成
             {
@@ -1176,7 +1201,7 @@ namespace GuangYuan.GY001.BLL
             if (fcp.LastValue >= fcp.MaxValue)  //若已经完成
             {
                 gameItem.RemoveFastChangingProperty(ProjectConstant.UpgradeTimeName);
-                datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
+                datas.ChangeItems.AddToChanges(gameItem.ContainerId.Value, gameItem);
                 return;
             }
             else //若未完成
@@ -1201,18 +1226,18 @@ namespace GuangYuan.GY001.BLL
                         return;
                     }
                     dim.Count -= cost;
-                    datas.ChangesItem.AddToChanges(dim.ContainerId.Value, dim);
+                    datas.ChangeItems.AddToChanges(dim.ContainerId.Value, dim);
                 }
                 var count = worker.Count;
                 LevelUpCompleted((datas.GameChar.Id, gameItem.Id));
                 //工人
                 if (worker.Count != count)
-                    datas.ChangesItem.AddToChanges(worker.ContainerId.Value, worker);
+                    datas.ChangeItems.AddToChanges(worker.ContainerId.Value, worker);
                 //追加新建物品
-                datas.ChangesItem.AddRange(LastChangesItems); //追加新建物品
+                datas.ChangeItems.AddRange(LastChangesItems); //追加新建物品
                 LastChangesItems.Clear();
                 gameItem.RemoveFastChangingProperty(ProjectConstant.UpgradeTimeName);
-                datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
+                datas.ChangeItems.AddToChanges(gameItem.ContainerId.Value, gameItem);
             }
 
             return;
@@ -1254,11 +1279,11 @@ namespace GuangYuan.GY001.BLL
             var gim = World.ItemManager;
             gim.SetPropertyValue(td, ProjectConstant.LevelPropertyName, lv + 1);    //变更购买价格
             td.SetPropertyValue("ltlv", ltlv.ToString());  //记录购时间
-            datas.ChangesItem.AddToChanges(td.ContainerId.Value, td);
+            datas.ChangeItems.AddToChanges(td.ContainerId.Value, td);
             td.Name2FastChangingProperty["Count"].LastValue++;
             diam.Count -= lud;  //改钻石
-            datas.ChangesItem.AddToChanges(diam);
-            datas.ChangesItem.AddToChanges(td);
+            datas.ChangeItems.AddToChanges(diam);
+            datas.ChangeItems.AddToChanges(td);
         }
         #endregion 家园相关
 
@@ -1326,6 +1351,9 @@ namespace GuangYuan.GY001.BLL
                 LastChangesItems.AddToChanges(gameItem.ContainerId.Value, gameItem);
                 var worker = gc.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);
                 worker.Count++;
+                LastChangesItems.AddToChanges(worker);
+                if (LastChangesItems.Count > 0)
+                    gc.ChangesItems.AddRange(LastChangesItems);
             }
             catch (Exception)
             {
@@ -1391,12 +1419,12 @@ namespace GuangYuan.GY001.BLL
                         datas.SuccCount++;
                     }
                 }
-                ChangeItem.Reduce(datas.ChangesItem);    //压缩变化数据
+                ChangeItem.Reduce(datas.ChangeItems);    //压缩变化数据
                 //switch (datas.Blueprint.Id.ToString("D").ToLower())
                 //{
                 //    case "8b4ac76c-d8cc-4300-95ca-668350149821": //针对孵化蓝图
                 //        GameItem tmp = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);  //孵化槽
-                //        ChangeItem slotFh = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == tmp.Id);    //孵化容器变化数据
+                //        ChangeItem slotFh = datas.ChangeItems.FirstOrDefault(c => c.ContainerId == tmp.Id);    //孵化容器变化数据
                 //        if (slotFh == null)
                 //        {
                 //            break;
@@ -1408,10 +1436,10 @@ namespace GuangYuan.GY001.BLL
                 //            break;
                 //        }
 
-                //        ChangeItem containerMounts = datas.ChangesItem.FirstOrDefault(c => c.ContainerId == gi.Id);    //组合容器
+                //        ChangeItem containerMounts = datas.ChangeItems.FirstOrDefault(c => c.ContainerId == gi.Id);    //组合容器
                 //        Debug.Assert(containerMounts.Adds.Count == 2);
                 //        gi.Children.AddRange(containerMounts.Adds);
-                //        datas.ChangesItem.Remove(containerMounts);
+                //        datas.ChangeItems.Remove(containerMounts);
                 //        break;
                 //    default:
                 //        break;
@@ -1492,7 +1520,7 @@ namespace GuangYuan.GY001.BLL
                 gameItem.Properties["neatk"] = Math.Round(gameItem.GetDecimalOrDefault("neatk"), MidpointRounding.AwayFromZero);
                 gameItem.Properties["nemhp"] = Math.Round(gameItem.GetDecimalOrDefault("nemhp"), MidpointRounding.AwayFromZero);
                 gameItem.Properties["neqlt"] = Math.Round(gameItem.GetDecimalOrDefault("neqlt"), MidpointRounding.AwayFromZero);
-                if (!gim.MoveItem(gameItem, 1, slotSl, datas.ChangesItem))   //若无法放入
+                if (!gim.MoveItem(gameItem, 1, slotSl, datas.ChangeItems))   //若无法放入
                 {
                     //发邮件
                     var social = World.SocialManager;
@@ -1510,7 +1538,7 @@ namespace GuangYuan.GY001.BLL
                 gameItem.Properties["neatk"] = 10m;
                 gameItem.Properties["nemhp"] = 10m;
                 gameItem.Properties["neqlt"] = 10m;
-                gim.MoveItem(gameItem, 1, slotZq, datas.ChangesItem);
+                gim.MoveItem(gameItem, 1, slotZq, datas.ChangeItems);
             }
         }
 
@@ -1549,11 +1577,11 @@ namespace GuangYuan.GY001.BLL
             //减少钻石
             zuanshi.Count -= cost;
             GameItemManager gim = World.ItemManager;
-            datas.ChangesItem.AddToChanges(zuanshi.ParentId ?? zuanshi.OwnerId.Value, zuanshi);
+            datas.ChangeItems.AddToChanges(zuanshi.ParentId ?? zuanshi.OwnerId.Value, zuanshi);
             //修改冷却时间
             fcp.LastValue = fcp.MaxValue;
             fcp.LastDateTime = DateTime.UtcNow;
-            datas.ChangesItem.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
+            datas.ChangeItems.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
         }
 
         /// <summary>
@@ -1579,22 +1607,22 @@ namespace GuangYuan.GY001.BLL
             child.Name2FastChangingProperty.Add("fhcd", new FastChangingProperty(TimeSpan.FromSeconds(1), 1, 3600 * 8, 0, DateTime.UtcNow)
             {
             });
-            gim.AddItem(child, fuhuaSlot, null, datas.ChangesItem); //放入孵化槽
+            gim.AddItem(child, fuhuaSlot, null, datas.ChangeItems); //放入孵化槽
             var qiwu = datas.GameChar.GetQiwuBag();
             if (jiyin.Count > 1)    //若尚有剩余基因蛋
             {
                 jiyin.Count--;
-                datas.ChangesItem.AddToChanges(jiyin);
+                datas.ChangeItems.AddToChanges(jiyin);
             }
             else //若基因蛋用完
             {
-                gim.MoveItem(jiyin, 1, qiwu, datas.ChangesItem);
+                gim.MoveItem(jiyin, 1, qiwu, datas.ChangeItems);
             }
 
             if (parent1.TemplateId == ProjectConstant.HomelandPatCard) //若是卡片
-                gim.MoveItem(parent1, 1, qiwu, datas.ChangesItem);
+                gim.MoveItem(parent1, 1, qiwu, datas.ChangeItems);
             if (parent2.TemplateId == ProjectConstant.HomelandPatCard) //若是卡片
-                gim.MoveItem(parent2, 1, qiwu, datas.ChangesItem);
+                gim.MoveItem(parent2, 1, qiwu, datas.ChangeItems);
         }
 
         /// <summary>
@@ -1765,7 +1793,7 @@ namespace GuangYuan.GY001.BLL
             else
             {
                 GameItem lockItem = lockAtk.Children.First();
-                datas.ChangesItem.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
+                datas.ChangeItems.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
                 gim.ForceDelete(lockItem);
             }
             //血量资质
@@ -1785,7 +1813,7 @@ namespace GuangYuan.GY001.BLL
             else
             {
                 GameItem lockItem = lockMhp.Children.First();
-                datas.ChangesItem.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
+                datas.ChangeItems.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
                 gim.ForceDelete(lockItem);
             }
             //质量资质
@@ -1805,12 +1833,12 @@ namespace GuangYuan.GY001.BLL
             else
             {
                 GameItem lockItem = lockQlt.Children.First();
-                datas.ChangesItem.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
+                datas.ChangeItems.AddToRemoves(lockItem.ContainerId.Value, lockItem.Id);
                 gim.ForceDelete(lockItem);
             }
-            datas.ChangesItem.AddToRemoves(gameItem2.ContainerId.Value, gameItem2.Id);
+            datas.ChangeItems.AddToRemoves(gameItem2.ContainerId.Value, gameItem2.Id);
             gim.ForceDelete(gameItem2);
-            datas.ChangesItem.AddToChanges(gameItem.ContainerId.Value, gameItem);
+            datas.ChangeItems.AddToChanges(gameItem.ContainerId.Value, gameItem);
         }
         #endregion 合成相关
 
@@ -1857,8 +1885,8 @@ namespace GuangYuan.GY001.BLL
             fcp.LastValue += 20;    //无视限制增加体力
             tili.Count = fcp.LastValue; //
             zuanshi.Count -= 20;    //扣除钻石
-            datas.ChangesItem.AddToChanges(datas.GameChar.Id, zuanshi);
-            datas.ChangesItem.AddToChanges(tili);
+            datas.ChangeItems.AddToChanges(datas.GameChar.Id, zuanshi);
+            datas.ChangeItems.AddToChanges(tili);
         }
 
         #region 社交相关

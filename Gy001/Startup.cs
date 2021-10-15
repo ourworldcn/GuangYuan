@@ -94,7 +94,7 @@ namespace Gy001
                 c.IncludeXmlComments(xmlPath);
             });
             #endregion 配置Swagger
-
+            
             #region 配置游戏专用服务
             services.AddGameManagers();
 
