@@ -56,17 +56,29 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<CombatEndReturnDto> End(CombatEndParamsDto model)
         {
-            var result = new EndCombatData()
+            EndCombatData result = null;
+            try
             {
-                GameChar = World.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.CurrentChar,
-                Template = World.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
-                EndRequested = model.EndRequested,
-                OnlyMark = model.OnlyMark,
-                IsWin=model.IsWin,
-            };
-            if (null != model.GameItems)
-                result.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
-            World.CombatManager.EndCombat(result);
+                result = new EndCombatData()
+                {
+                    GameChar = World.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.CurrentChar,
+                    Template = World.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
+                    EndRequested = model.EndRequested,
+                    OnlyMark = model.OnlyMark,
+                    IsWin = model.IsWin,
+                };
+                if (null != model.GameItems)
+                    result.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
+                World.CombatManager.EndCombat(result);
+            }
+            catch (Exception err)
+            {
+                if (null != result)
+                {
+                    result.HasError = true;
+                    result.DebugMessage = err.Message;
+                }
+            }
             return (CombatEndReturnDto)result;
         }
 

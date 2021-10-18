@@ -138,7 +138,6 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 任务计划管理器。
     /// </summary>
-    [Guid(ClassId)]
     [DisplayName("任务计划管理器")]
     public class GameSchedulerManager : GameManagerBase<SchedulerManagerOptions>
     {
@@ -161,7 +160,7 @@ namespace GuangYuan.GY001.BLL
         {
             using var db = World.CreateNewUserDbContext();
             _Id2Descriptor = new ConcurrentDictionary<Guid, SchedulerDescriptor>(
-                db.ActionRecords.AsNoTracking().Where(c => c.ActionId == ClassId).ToDictionary(c => c.Id, c =>
+                db.ActionRecords.AsNoTracking().Where(c => c.ActionId == SchedulerDescriptor.ClassId).ToDictionary(c => c.Id, c =>
                 {
                     var result = (SchedulerDescriptor)c;
                     result.Timer = new Timer(TimerCallbackHandel);

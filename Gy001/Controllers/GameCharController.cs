@@ -414,7 +414,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<GetChangesItemReturnDto> GetChangesItem(GetChangesItemParamsDto model)
         {
             var logger = HttpContext.RequestServices.GetRequiredService<ILogger<GameCharController>>();
-            logger.LogInformation($"[{DateTime.UtcNow}]Call GetChangesItem");
+            logger.LogDebug($"[{DateTime.UtcNow}]Call GetChangesItem");
             var result = new GetChangesItemReturnDto();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))

@@ -227,8 +227,11 @@ namespace OW.Game.Item
             }
             else
                 gameItem.SetPropertyValue(propName, val);
-
-            World.EventsManager.OnDynamicPropertyChanged(gameItem, new ValueTuple<string, object>[] { (propName, oldValue) });
+            DynamicPropertyChangedCollection args = new DynamicPropertyChangedCollection();
+            var item = new SimplePropertyChangedCollection();
+            args.Add(item);
+            item.Items.Add(new SimplePropertyChangedItem<object>(propName, oldValue, gameItem.Properties[propName]));
+            World.EventsManager.OnDynamicPropertyChanged(args);
             return true;
         }
 
@@ -1182,6 +1185,7 @@ namespace OW.Game.Item
                 datas.ErrorCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
+            var pchange = new DynamicPropertyChangedCollection();   //属性变化数据类
             var db = gc.GameUser.DbContext;
             foreach (var item in datas.Settings)    //逐个设置
             {
@@ -1189,7 +1193,8 @@ namespace OW.Game.Item
                 var key = $"{ProjectConstant.ZhenrongPropertyName}{item.Item2}";
                 if (item.Item3 != -1)  //若设置阵容
                 {
-                    mounts.Properties[key] = item.Item3;
+                    //mounts.Properties[key] = item.Item3;
+                    pchange.MarkAndSet(mounts, key, item.Item3);
                     if (item.Item2 == 10)  //若是家园展示
                     {
                         var tid = World.ItemManager.GetBody(mounts).TemplateId; //身体的模板Id
@@ -1208,7 +1213,8 @@ namespace OW.Game.Item
                 }
                 else //若取消阵容设置
                 {
-                    mounts.Properties.Remove(key);
+                    //mounts.Properties.Remove(key);
+                    pchange.MarkAndRemove(mounts, key);
                     if (item.Item2 == 10)  //若是家园展示
                     {
                         var tid = World.ItemManager.GetBody(mounts).TemplateId; //身体的模板Id
@@ -1221,6 +1227,7 @@ namespace OW.Game.Item
                 }
                 datas.ChangeItems.AddToChanges(mounts);
             }
+            World.EventsManager.OnDynamicPropertyChanged(pchange);
             World.CharManager.NotifyChange(gc.GameUser);
         }
 
