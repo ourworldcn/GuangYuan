@@ -899,18 +899,22 @@ namespace GuangYuan.GY001.BLL
             }
 
             var template = gi.Template;
-            var lv = (int)gi.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
-            if (template.GetMaxLevel(template.SequencePropertyNames.FirstOrDefault()) <= lv)  //若已达最大等级
-            {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.DebugMessage = "已达最大等级";
-                datas.ErrorItemTIds.Add(gi.TemplateId);
-                return;
-            }
-
+            int lv;
             for (int i = 0; i < datas.Count; i++)
             {
+                lv = (int)gi.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+                if (template.GetMaxLevel(template.SequencePropertyNames.FirstOrDefault()) <= lv)  //若已达最大等级
+                {
+                    if (i > 0) //若已经成功升级过至少一次
+                    {
+                        datas.HasError = true;
+                        datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                        datas.ErrorItemTIds.Add(gi.TemplateId);
+                    }
+                    datas.DebugMessage = "已达最大等级";
+                    return;
+                }
+
                 var luDatas = new LevelUpDatas(World, datas.GameChar)
                 {
                     GameItem = datas.GameItems[0],

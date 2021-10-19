@@ -65,6 +65,13 @@ namespace GuangYuan.GY001.UserDb
                 throw new InvalidOperationException($"缺少键值指定该对象所属的{nameof(GameUser)}对象。");
             DisplayName = parameters.GetValueOrDefault(nameof(DisplayName)) as string;
             var db = DbContext;
+            ExtendProperties.Add(new GameExtendProperty()   //增加推关战力
+            {
+                Id = Id,
+                Name = "推关战力",
+                StringValue = DisplayName,
+                DecimalValue = 0,
+            });
             //追加子对象
             if (Template.ChildrenTemplateIds.Count > 0)
             {

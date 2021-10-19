@@ -196,23 +196,20 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Tag")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<DateTime>("DateTimeValue")
+                    b.Property<DateTime?>("DateTimeValue")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("DecimalValue")
+                    b.Property<decimal?>("DecimalValue")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<double>("DoubleValue")
-                        .HasColumnType("float");
 
                     b.Property<Guid?>("GuidValue")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("IntValue")
+                    b.Property<int?>("IntValue")
                         .HasColumnType("int");
 
                     b.Property<string>("PropertiesString")
@@ -225,7 +222,11 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id", "Tag");
+                    b.HasKey("Id", "Name");
+
+                    b.HasIndex("Name", "DecimalValue");
+
+                    b.HasIndex("Name", "IntValue");
 
                     b.ToTable("ExtendProperties");
                 });
@@ -346,13 +347,13 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameSetting", b =>
                 {
-                    b.Property<string>("Tag")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Val")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Tag");
+                    b.HasKey("Name");
 
                     b.ToTable("GameSettings");
                 });

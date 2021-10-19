@@ -228,7 +228,7 @@ namespace OW.Game.Item
             else
                 gameItem.SetPropertyValue(propName, val);
             DynamicPropertyChangedCollection args = new DynamicPropertyChangedCollection();
-            var item = new SimplePropertyChangedCollection();
+            var item = new SimplePropertyChangedCollection() { Thing = gameItem };
             args.Add(item);
             item.Items.Add(new SimplePropertyChangedItem<object>(propName, oldValue, gameItem.Properties[propName]));
             World.EventsManager.OnDynamicPropertyChanged(args);
@@ -1291,6 +1291,48 @@ namespace OW.Game.Item
             }
         }
 
+        public IList<GameExtendProperty> GetRankOfTuiguan(GetRankOfTuiguanDatas datas)
+        {
+            using var dwUser = datas.LockUser();
+            if (dwUser is null)
+                return Array.Empty<GameExtendProperty>();
+            var dbSet = datas.UserContext.Set<GameExtendProperty>();
+            var gc = datas.GameChar;
+            var gp = gc.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.ZhangLiName);
+            if (gp is null)
+            {
+                gp = new GameExtendProperty()
+                {
+                    Id = gc.Id,
+                    Name = ProjectConstant.ZhangLiName,
+                    StringValue = gc.DisplayName,
+                    DecimalValue = 0,
+                };
+                gc.ExtendProperties.Add(gp);
+            }
+            var coll = from tmp in dbSet    //排名在当前角色之前的角色
+                       where tmp.Name == ProjectConstant.ZhangLiName && (tmp.DecimalValue < gp.DecimalValue.Value || tmp.DecimalValue == gp.DecimalValue.Value && string.Compare(tmp.StringValue, gc.DisplayName)<0)
+                       orderby tmp.DecimalValue
+                       select tmp;
+            var rank = coll.Count();
+            var prv = coll.Take(25).ToList();
+            return null;
+        }
+    }
+
+    public class GetRankOfTuiguanDatas : ComplexWorkDatasBase
+    {
+        public GetRankOfTuiguanDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public GetRankOfTuiguanDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public GetRankOfTuiguanDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
     }
 
     public class UseItemsWorkDatas : ChangeItemsWorkDatasBase

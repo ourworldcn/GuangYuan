@@ -635,6 +635,24 @@ namespace OW.Game
         }
 
         #endregion 锁定字符串
+
+        #region 功能
+
+        /// <summary>
+        /// 获取全服推关战力排名前n位成员。
+        /// </summary>
+        /// <param name="topN">前多少位的排名。过大的值将导致缓慢，设计时考虑100左右。</param>
+        /// <returns></returns>
+        public IList<GameExtendProperty> GetRankOfTuiguanQuery(int topN)
+        {
+            using var db = CreateNewUserDbContext();
+            var coll = from tmp in db.Set<GameExtendProperty>().AsNoTracking()
+                       where tmp.Name == ProjectConstant.ZhangLiName
+                       orderby tmp.DecimalValue, tmp.StringValue descending
+                       select tmp;
+            return coll.Take(topN).ToList();
+        }
+        #endregion 功能
     }
 
     public static class VWorldExtensions

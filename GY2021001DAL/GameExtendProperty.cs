@@ -69,17 +69,15 @@ namespace GuangYuan.GY001.UserDb
             get => _StringValue;
             set
             {
-                if (value.Length > 256)
+                if (value?.Length > 256)
                     throw new ArgumentException("最长仅能支持256个字符。", nameof(value));
                 _StringValue = value;
             }
         }
 
-        public int IntValue { get; set; }
+        public int? IntValue { get; set; }
 
-        public decimal DecimalValue { get; set; }
-
-        public double DoubleValue { get; set; }
+        public decimal? DecimalValue { get; set; }
 
         /// <summary>
         /// 长文本属性，无法索引。
@@ -90,7 +88,7 @@ namespace GuangYuan.GY001.UserDb
         /// 日期属性。
         /// </summary>
         /// <value>默认值是创建此对象是的UTC时间。</value>
-        public DateTime DateTimeValue { get; set; } = DateTime.UtcNow;
+        public DateTime? DateTimeValue { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// 一个<see cref="Guid"/>值。
@@ -125,19 +123,19 @@ namespace GuangYuan.GY001.UserDb
                 result = null;
                 return false;
             }
-            if (obj.IntValue <= 0 || obj.Text.Length <= obj.IntValue + 1 || obj.Text[obj.IntValue] != ';')   //若格式不正确
+            if (obj.IntValue <= 0 || obj.Text.Length <= obj.IntValue + 1 || obj.Text[obj.IntValue.Value] != ';')   //若格式不正确
             {
                 result = null;
                 return false;
             }
-            var fullName = obj.Text[..obj.IntValue];
+            var fullName = obj.Text[..obj.IntValue.Value];
             var type = Type.GetType(fullName);
             if (type is null)   //若找不到指定类
             {
                 result = null;
                 return false;
             }
-            var guts = obj.Text[(obj.IntValue + 1)..];
+            var guts = obj.Text[(obj.IntValue.Value + 1)..];
             result = new ExtendPropertyDescriptor()
             {
                 Data = string.IsNullOrWhiteSpace(guts) ? default : JsonSerializer.Deserialize(guts, type),

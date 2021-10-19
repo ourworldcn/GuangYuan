@@ -731,19 +731,13 @@ namespace GY2021001WebApi.Models
         /// 32bit整型值。
         /// </summary>
         [DataMember]
-        public int IntValue { get; set; }
+        public int? IntValue { get; set; }
 
         /// <summary>
         /// 大定点数。大致范围±1.0 x 1e28 至 ±7.9228 x 1e28
         /// </summary>
         [DataMember]
-        public decimal DecimalValue { get; set; }
-
-        /// <summary>
-        /// 双精度浮点数。大致范围±5.0 × 1e−324 到 ±1.7 × 1e308
-        /// </summary>
-        [DataMember]
-        public double DoubleValue { get; set; }
+        public decimal? DecimalValue { get; set; }
 
         /// <summary>
         /// 长字符串。
@@ -755,13 +749,13 @@ namespace GY2021001WebApi.Models
         /// 日期值。
         /// </summary>
         [DataMember]
-        public DateTime DateTimeValue { get; set; }
+        public DateTime? DateTimeValue { get; set; }
 
         /// <summary>
         /// 所属对象Id。
         /// </summary>
         [DataMember]
-        public Guid ParentId { get; set; }
+        public Guid? ParentId { get; set; }
     }
 
     /// <summary>
@@ -2530,5 +2524,46 @@ namespace GY2021001WebApi.Models
     }
 
     #endregion 任务成就相关
+
+    #region 排行相关
+
+    /// <summary>
+    /// 排行的数据项。
+    /// </summary>
+    public partial class RankDataItemDto
+    {
+        /// <summary>
+        /// 角色的Id。
+        /// </summary>
+        public string CharId { get; set; }
+
+        /// <summary>
+        /// 在全服中的排行号。从0开始，排行第一，1是排行第二，以此类推...。
+        /// </summary>
+        public int OrderNumber { get; set; }
+
+        /// <summary>
+        /// 战力。
+        /// </summary>
+        public decimal Metrics { get; set; }
+
+        /// <summary>
+        /// 角色的昵称。
+        /// </summary>
+        public string DisplayName { get; set; }
+    }
+
+    /// <summary>
+    /// 推关战力排行。
+    /// </summary>
+    [DataContract]
+    public class GetRankOfTuiguanQueryReturnDto : ReturnDtoBase
+    {
+        [DataMember]
+        public List<RankDataItemDto> Datas { get; set; } = new List<RankDataItemDto>();
+    }
+
+    #endregion 排行相关
+
 }
 #pragma warning restore IDE0074 // 使用复合分配

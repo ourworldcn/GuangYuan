@@ -94,14 +94,33 @@ namespace GY2021001WebApi.Controllers
         [HttpGet]
         public ActionResult<string> GetNewCnName(int sex)
         {
-            return CnNames.GetName(1==sex);
+            return CnNames.GetName(1 == sex);
         }
 
         [ResponseCache(Location = ResponseCacheLocation.Any, Duration = 120)]
         [HttpGet]
-        public ActionResult<List< MainbaseUpgradePrv>> GetMainbaseUpgradePrv()
+        public ActionResult<List<MainbaseUpgradePrv>> GetMainbaseUpgradePrv()
         {
             return MainbaseUpgradePrv.Alls;
         }
+
+        /// <summary>
+        /// 获取全服推关战力Top 50。
+        /// </summary>
+        /// <returns></returns>
+        //[ResponseCache(Location = ResponseCacheLocation.Any, Duration = 120)]
+        [HttpGet]
+        public ActionResult<GetRankOfTuiguanQueryReturnDto> GetRankOfTuiguanQuery()
+        {
+            var coll = _World.GetRankOfTuiguanQuery(50);
+            var result = new GetRankOfTuiguanQueryReturnDto();
+            result.Datas.AddRange(coll.Select(c => (RankDataItemDto)c));
+            for (int i = 0; i < result.Datas.Count; i++)
+            {
+                result.Datas[i].OrderNumber = i;
+            }
+            return result;
+        }
     }
+
 }

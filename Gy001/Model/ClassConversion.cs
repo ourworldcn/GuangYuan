@@ -249,7 +249,6 @@ namespace GY2021001WebApi.Models
             {
                 DateTimeValue = obj.DateTimeValue,
                 DecimalValue = obj.DecimalValue,
-                DoubleValue = obj.DoubleValue,
                 IntValue = obj.IntValue,
                 Name = obj.Name,
                 StringValue = obj.StringValue,
@@ -456,5 +455,19 @@ namespace GY2021001WebApi.Models
 
     #endregion 社交相关
 
-
+    #region 排行相关
+    public partial class RankDataItemDto
+    {
+        public static explicit operator RankDataItemDto(GameExtendProperty obj)
+        {
+            var result = new RankDataItemDto()
+            {
+                CharId = obj.Base64IdString,
+                DisplayName = obj.StringValue,
+                Metrics = (int)obj.DecimalValue,
+            };
+            return result;
+        }
+    }
+    #endregion  排行相关
 }

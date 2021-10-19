@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    [Migration("20210901023201_21090102")]
-    partial class _21090102
+    [Migration("20211019083052_21101901")]
+    partial class _21101901
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -70,6 +70,54 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.HasIndex("State");
 
                     b.ToTable("CharSpecificExpandProperty");
+                });
+
+            modelBuilder.Entity("GuangYuan.GY001.UserDb.Combat.GameBooty", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CharId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Count")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PropertiesString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TemplateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId", "CharId");
+
+                    b.ToTable("GameBooty");
+                });
+
+            modelBuilder.Entity("GuangYuan.GY001.UserDb.Combat.PvpCombat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AttackerIdString")
+                        .HasColumnType("nvarchar(320)")
+                        .HasMaxLength(320);
+
+                    b.Property<string>("DefenserIdString")
+                        .HasColumnType("nvarchar(320)")
+                        .HasMaxLength(320);
+
+                    b.Property<string>("PropertiesString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PvpCombat");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameActionRecord", b =>
@@ -150,23 +198,20 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Tag")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<DateTime>("DateTimeValue")
+                    b.Property<DateTime?>("DateTimeValue")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("DecimalValue")
+                    b.Property<decimal?>("DecimalValue")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<double>("DoubleValue")
-                        .HasColumnType("float");
 
                     b.Property<Guid?>("GuidValue")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("IntValue")
+                    b.Property<int?>("IntValue")
                         .HasColumnType("int");
 
                     b.Property<string>("PropertiesString")
@@ -179,7 +224,11 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id", "Tag");
+                    b.HasKey("Id", "Name");
+
+                    b.HasIndex("Name", "DecimalValue");
+
+                    b.HasIndex("Name", "IntValue");
 
                     b.ToTable("ExtendProperties");
                 });
@@ -212,11 +261,13 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Count");
+
                     b.HasIndex("OwnerId");
 
                     b.HasIndex("ParentId");
 
-                    b.HasIndex("TemplateId");
+                    b.HasIndex("TemplateId", "Count");
 
                     b.ToTable("GameItems");
                 });
@@ -298,13 +349,13 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameSetting", b =>
                 {
-                    b.Property<string>("Tag")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Val")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Tag");
+                    b.HasKey("Name");
 
                     b.ToTable("GameSettings");
                 });
@@ -353,6 +404,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
+
+                    b.Property<int?>("NodeNum")
+                        .HasColumnType("int");
 
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");

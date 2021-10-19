@@ -966,12 +966,10 @@ namespace GuangYuan.GY001.BLL
         public bool UpdateAbility(GameItem gameItem, IDictionary<string, double> dic)
         {
             var gim = World.ItemManager;
-            var body = gim.GetBody(gameItem);
-            if (null == body)
+            var body = gim.GetBody(gameItem);   //身体对象
+            if (body is null)
                 return false;
-            if (!OwHelper.TryGetDecimal(gim.GetPropertyValue(gameItem, "gid"), out var gid) || 0 == gid)
-                return false;
-            var bodyGid = (int)gid; //身体Id
+            var bodyGid = (int)((GameItemTemplate)body.Template).GId; //身体Id
             //计算本体属性
             var head = gim.GetHead(gameItem);
             if (null == head)

@@ -249,6 +249,12 @@
             <param name="sex">0是传统意义上的女性，1是传统意义上的男性。未来可能添加多元性别，目前未得到此需求。</param>
             <returns>一个随机的中文名。</returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.VWorldController.GetRankOfTuiguanQuery">
+            <summary>
+            获取全服推关战力Top 50。
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Models.IdAndCountDto">
             <summary>
             Id和数量的封装。通常用于其他对象中。
@@ -560,11 +566,6 @@
             大定点数。大致范围±1.0 x 1e28 至 ±7.9228 x 1e28
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.DoubleValue">
-            <summary>
-            双精度浮点数。大致范围±5.0 × 1e−324 到 ±1.7 × 1e308
-            </summary>
-        </member>
         <member name="P:GY2021001WebApi.Models.GameExtendPropertyDto.Text">
             <summary>
             长字符串。
@@ -783,6 +784,31 @@
         <member name="P:GY2021001WebApi.Models.GameSocialRelationshipDto.PropertyString">
             <summary>
             根据不同的 KeyType 值，这里的意义不同。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.RankDataItemDto">
+            <summary>
+            排行的数据项。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RankDataItemDto.CharId">
+            <summary>
+            角色的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RankDataItemDto.OrderNumber">
+            <summary>
+            在全服中的排行号。从0开始，排行第一，1是排行第二，以此类推...。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RankDataItemDto.Metrics">
+            <summary>
+            战力。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RankDataItemDto.DisplayName">
+            <summary>
+            角色的昵称。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
@@ -1979,6 +2005,11 @@
             要获取奖励所属任务对象的Id。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetRankOfTuiguanQueryReturnDto">
+            <summary>
+            推关战力排行。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -2193,17 +2224,6 @@
             <summary>
             
             </summary>
-        </member>
-        <member name="M:Gy001.Program.Test(Microsoft.Extensions.Hosting.IHost)">
-            <summary>
-            测试点。
-            </summary>
-        </member>
-        <member name="M:Gy001.Program.CreateDb(Microsoft.Extensions.Hosting.IHost)">
-            <summary>
-            创建数据库。
-            </summary>
-            <param name="host"></param>
         </member>
     </members>
 </doc>

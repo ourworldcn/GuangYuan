@@ -3,7 +3,6 @@ using GuangYuan.GY001.UserDb;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 
 namespace OW.Game
@@ -64,6 +63,8 @@ namespace OW.Game
         /// 新值。
         /// </summary>
         public T NewValue { get; set; }
+
+        public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
     }
 
     public class SimplePropertyChangedCollection : ICollection<SimplePropertyChangedItem<object>>
@@ -180,8 +181,16 @@ namespace OW.Game
         /// </summary>
         /// <param name="thing"></param>
         /// <returns></returns>
-        public SimplePropertyChangedCollection GetOrAddItem(GameThingBase thing) =>
-             Items.FirstOrDefault(c => c.Thing.Id == thing.Id) ?? new SimplePropertyChangedCollection() { Thing = thing };
+        public SimplePropertyChangedCollection GetOrAddItem(GameThingBase thing)
+        {
+            var result = Items.FirstOrDefault(c => c.Thing.Id == thing.Id);
+            if (result is null)
+            {
+                result = new SimplePropertyChangedCollection() { Thing = thing };
+                Items.Add(result);
+            }
+            return result;
+        }
 
         /// <summary>
         /// 记录指定的动态属性的旧值。
@@ -325,9 +334,9 @@ namespace OW.Game
             var mrs = args.Where(c => c.Thing.TemplateId == ProjectConstant.MainControlRoomSlotId && c.Thing is GameItem); //主控室
             foreach (var item in mrs)
             {
+                var gi = item.Thing as GameItem;
                 foreach (var sunItem in item.Items.Where(c => c.Name == ProjectConstant.LevelPropertyName)) //若主控室升级了
                 {
-                    var gi = item.Thing as GameItem;
                     var newLv = gi.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
                     var oldLv = Convert.ToDecimal(sunItem.OldValue);
                     if (newLv == oldLv + 1)
@@ -337,7 +346,50 @@ namespace OW.Game
                     break;
                 }
             }
+            OnLineupChenged(args);
         }
+
+        #region 阵容相关
+        private void OnLineupChenged(DynamicPropertyChangedCollection args)
+        {
+            var chars = args.Where(c => IsLineup0(c)).Select(c => c.Thing).OfType<GameItem>().Select(c => c.GameChar).Distinct();
+            Dictionary<string, double> dic = new Dictionary<string, double>();
+            foreach (var gc in chars)   //遍历每个角色
+            {
+                decimal zhanli = 0;
+                var gis = World.ItemManager.GetLineup(gc, 0);
+                foreach (var gi in gis)
+                {
+                    World.CombatManager.UpdateAbility(gi, dic);
+                    zhanli += (decimal)dic.GetValueOrDefault("abi");
+                }
+                var ep = gc.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.ZhangLiName);
+                if (ep is null)
+                {
+                    ep = new GameExtendProperty()
+                    {
+                        Name = ProjectConstant.ZhangLiName,
+                        DecimalValue = zhanli,
+                        StringValue = gc.DisplayName,
+                    };
+                    gc.ExtendProperties.Add(ep);
+                }
+                else
+                    ep.DecimalValue = zhanli;
+            }
+        }
+
+        /// <summary>
+        /// 是否是一个推关阵营的变化信息。
+        /// </summary>
+        /// <param name="coll"></param>
+        /// <returns></returns>
+        private bool IsLineup0(SimplePropertyChangedCollection coll)
+        {
+            return coll.Any(c => c.Name.StartsWith(ProjectConstant.ZhenrongPropertyName) && int.TryParse(c.Name[ProjectConstant.ZhenrongPropertyName.Length..], out var ln) && ln == 0);
+        }
+
+        #endregion 阵容相关
 
         public override void OnGameItemAdd(IEnumerable<GameItem> gameItems, Dictionary<string, object> parameters)
         {

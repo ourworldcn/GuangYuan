@@ -1,6 +1,12 @@
 ﻿using Game.Social;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -10,8 +16,11 @@ using OW.Game.Item;
 using OW.Game.Mission;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,9 +41,12 @@ namespace GuangYuan.GY001.BLL
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            using var scope = _Services.CreateScope();
+            var service = scope.ServiceProvider;
+            CreateDb(service);
+            Test();
             var result = Task.Factory.StartNew(c =>
             {
-                //CreateDb((IServiceProvider)c);
                 Thread thread = new Thread(CreateNewUserAndChar)
                 {
                     IsBackground = true,
@@ -83,9 +95,9 @@ namespace GuangYuan.GY001.BLL
         {
             Task.Run(SendMail);
 #if DEBUG
-            var maxCount = 4000;
+            var maxCount = 1000;
 #else
-            var maxCount = 25000;
+            var maxCount = 1000;
 #endif
             var world = _Services.GetRequiredService<VWorld>();
             var logger = _Services.GetService<ILogger<GameHostedService>>();
@@ -147,6 +159,39 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 测试点。
+        /// </summary>
+        /// <remarks> 
+        /// CPU
+        /// Intel(R) Core(TM) i5-10500 CPU @ 3.10GHz
+        /// 基准速度:	3.10 GHz
+        /// 插槽:	1
+        /// 内核:	6
+        /// 逻辑处理器:	12
+        /// 虚拟化:	已启用
+        /// L1 缓存:	384 KB
+        /// L2 缓存:	1.5 MB
+        /// L3 缓存:	12.0 MB
+        /// </remarks>
+        [Conditional("DEBUG")]
+        private void Test()
+        {
+            var world = _Services.GetRequiredService<VWorld>();
+            using var db = world.CreateNewUserDbContext();
+            var dic = world.PropertyManager.Filter(new string[] { "count", "mtid23087402", "mcount123", "mbtidds32d", "mhtidde32", "stceqw", "fht" });
+            var conv = TypeDescriptor.GetConverter(typeof(string));
+            var coll = from tmp in db.ExtendProperties    //排名在当前角色之前的角色
+                       where tmp.Name == ProjectConstant.ZhangLiName && (tmp.DecimalValue < 100 || tmp.DecimalValue == 1 && string.Compare(tmp.StringValue, "fdf") < 0)
+                       orderby tmp.DecimalValue
+                       select tmp;
+            var rank = coll.Count();
+
+            var str = Uri.EscapeDataString(Guid.NewGuid().ToString("b"));
+            var str1 = Uri.UnescapeDataString(str);
+            //db.SaveChanges();
+        }
+
+        /// <summary>
         /// 加载缓存。
         /// </summary>
         private void LoadCache()
@@ -169,6 +214,10 @@ namespace GuangYuan.GY001.BLL
             _Services.GetService<GameSchedulerManager>();
         }
 
+        /// <summary>
+        /// 升级数据库结构。
+        /// </summary>
+        /// <param name="services"></param>
         private void CreateDb(IServiceProvider services)
         {
             var logger = services.GetRequiredService<ILogger<GameHostedService>>();
@@ -184,9 +233,69 @@ namespace GuangYuan.GY001.BLL
             }
             catch (Exception err)
             {
-                logger.LogError(err, $"An error occurred creating the DB.{err.Message}");
+                logger.LogError(err, $"升级数据库出现错误——{err.Message}");
             }
         }
+
+        #region 自动生成数据库迁移文件
+
+        private void CreateDbTest(DbContext dbContext)
+        {
+            dbContext.Database.EnsureCreated();
+            IModel lastModel = null;
+            var lastMigration = dbContext.Set<MigrationLog>()
+                    .OrderByDescending(e => e.Id)
+                    .FirstOrDefault();
+            lastModel = lastMigration == null ? null : (CreateModelSnapshot(lastMigration.SnapshotDefine).Result?.Model);
+
+            var modelDiffer = dbContext.GetInfrastructure().GetService<IMigrationsModelDiffer>();
+            var isDiff = modelDiffer.HasDifferences(lastModel, dbContext.Model); //这个方法返回值是true或者false，这个可以比较老版本的model和当前版本的model是否出现更改。
+
+            var upOperations = modelDiffer.GetDifferences(lastModel, dbContext.Model);  //这个方法返回的迁移的操作对象。
+
+            dbContext.GetInfrastructure().GetRequiredService<IMigrationsSqlGenerator>().Generate(upOperations, dbContext.Model).ToList();   //这个方法是根据迁移对象和当前的model生成迁移sql脚本。
+
+        }
+
+        public class MigrationLog
+        {
+            public Guid Id { get; set; }
+            public string SnapshotDefine { get; internal set; }
+        }
+
+        private Task<ModelSnapshot> CreateModelSnapshot(string codedefine, DbContext db = null)
+        {
+            var ModuleDbContext = db.GetType();
+            var ContextAssembly = ModuleDbContext.Assembly.FullName;
+            string SnapshotName = "";
+            // 生成快照，需要存到数据库中供更新版本用
+            var references = ModuleDbContext.Assembly
+                .GetReferencedAssemblies()
+                .Select(e => MetadataReference.CreateFromFile(Assembly.Load(e).Location))
+                .Union(new MetadataReference[]
+                {
+                    MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
+                    MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(ModuleDbContext.Assembly.Location)
+                });
+
+            var compilation = CSharpCompilation.Create(ContextAssembly)
+                .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+                .AddReferences(references)
+                .AddSyntaxTrees(SyntaxFactory.ParseSyntaxTree(codedefine));
+
+            return Task.Run(() =>
+            {
+                using var stream = new MemoryStream();
+                var compileResult = compilation.Emit(stream);
+                return compileResult.Success
+                    ? Assembly.Load(stream.GetBuffer()).CreateInstance(ContextAssembly + "." + SnapshotName) as ModelSnapshot
+                    : null;
+            });
+        }
+
+        #endregion 自动生成数据库迁移文件
 
     }
 

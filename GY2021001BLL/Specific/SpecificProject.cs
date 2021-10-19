@@ -286,6 +286,7 @@ namespace GuangYuan.GY001.BLL
 
         #endregion 家园及相关
 
+        public const string ZhangLiName = "推关战力";
 
         #endregion 固定模板Id
 
