@@ -79,6 +79,12 @@ namespace OW.Game
         /// </summary>
         public string LevelPropertyName => _Alls.Value["lv"].FName;
 
+        string _StackUpperLimit;
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        public string StackUpperLimit => _StackUpperLimit ??= (_Alls.Value.GetValueOrDefault("stc")?.FName ?? "stc");
+
     }
 
 }

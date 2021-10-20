@@ -14,7 +14,7 @@
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.Store.SimpleExtendPropertyBase">
+  <Class Name="OW.Game.Store.SimpleDynamicPropertyBase">
     <Position X="2.75" Y="3" Width="1.5" />
     <TypeIdentifier>
       <HashCode>EAAIAACAACAIABAAAACAABAAAAAAAAAAAAiAQAACAAA=</HashCode>
@@ -30,7 +30,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameEntityRelationshipBase">
-    <Position X="0.5" Y="7" Width="1.75" />
+    <Position X="0.5" Y="8" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAACAAIAQAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
@@ -59,7 +59,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameTemplateBase">
-    <Position X="3" Y="7" Width="1.5" />
+    <Position X="3" Y="8" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAABAAAQAAQAAAAAAAAAQA=</HashCode>
       <FileName>Store\GameTemplateContext.cs</FileName>
@@ -73,7 +73,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameObjectBase">
-    <Position X="5.25" Y="7" Width="1.5" />
+    <Position X="5.25" Y="8" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAgAAEAAACEAAQAQAQAAAAAABAAAAAAAEAAAAAAAAAA=</HashCode>
       <FileName>Store\GameUserContext.cs</FileName>
@@ -95,7 +95,7 @@
     </TypeIdentifier>
   </Interface>
   <Interface Name="OW.Game.Store.INotifyDynamicPropertyChanged" Collapsed="true">
-    <Position X="10.25" Y="4.75" Width="1.5" />
+    <Position X="11.25" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>

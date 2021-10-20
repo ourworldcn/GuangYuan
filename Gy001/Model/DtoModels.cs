@@ -2563,6 +2563,47 @@ namespace GY2021001WebApi.Models
         public List<RankDataItemDto> Datas { get; set; } = new List<RankDataItemDto>();
     }
 
+    /// <summary>
+    /// GetRankOfTuiguanForMe接口的参数封装类。
+    /// </summary>
+    public class GetRankOfTuiguanForMeParamsDto : TokenDtoBase
+    {
+        public GetRankOfTuiguanForMeParamsDto()
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// GetRankOfTuiguanForMe接口的返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class GetRankOfTuiguanForMeReturnDto : ReturnDtoBase
+    {
+        public GetRankOfTuiguanForMeReturnDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 在角色之前（排名更高）紧邻的角色，最多25个。
+        /// </summary>
+        [DataMember]
+        public List<RankDataItemDto> Prv { get; set; } = new List<RankDataItemDto>();
+
+        /// <summary>
+        /// 在角色之后（排名更低）紧邻的角色，最多25个。
+        /// </summary>
+        [DataMember]
+        public List<RankDataItemDto> Next { get; set; } = new List<RankDataItemDto>();
+
+        /// <summary>
+        /// 自己在服务器中的排名。0表示第一，1表示第二，以此类推。
+        /// </summary>
+        [DataMember]
+        public int Rank { get; set; }
+    }
+
     #endregion 排行相关
 
 }

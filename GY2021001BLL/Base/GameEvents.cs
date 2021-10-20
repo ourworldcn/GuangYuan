@@ -1,9 +1,21 @@
-﻿using GuangYuan.GY001.BLL;
+﻿using Game.Social;
+using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Homeland;
+using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using Microsoft.EntityFrameworkCore;
+using OW.Game.Item;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
 
 namespace OW.Game
 {
@@ -299,6 +311,200 @@ namespace OW.Game
         {
 
         }
+
+        #region 创建后初始化
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void GameItemCreated(GameItem gameItem, Guid templateId, [AllowNull] GameItem parent, Guid? ownerId, IReadOnlyDictionary<string, object> parameters)
+        {
+            GameItemCreated(gameItem, World.ItemTemplateManager.GetTemplateFromeId(templateId), parent, ownerId, parameters);
+        }
+
+        /// <summary>
+        /// 初始化一个<see cref="GameItem"/>对象。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="template"></param>
+        /// <param name="parent">父容器对象,如果为null，则使用<paramref name="ownerId"/>设置拥有者属性，否则忽略<paramref name="ownerId"/></param>
+        /// <param name="ownerId"></param>
+        /// <param name="parameters"></param>
+        public virtual void GameItemCreated(GameItem gameItem, GameItemTemplate template, [AllowNull] GameItem parent, Guid? ownerId, IReadOnlyDictionary<string, object> parameters)
+        {
+            var gpm = World.PropertyManager;
+            var gt = gameItem.Template;
+            //设置本类型特有属性
+            GameThingCreated(gameItem, template, parameters);
+            if (gt.Properties.TryGetValue("Count", out var countObj)) //若指定了初始数量
+                gameItem.Count = Convert.ToDecimal(countObj);
+            else
+                gameItem.Count ??= gt.Properties.ContainsKey(gpm.StackUpperLimit) ? 0 : 1;
+            //设置导航关系
+            if (parent is null)
+                gameItem.OwnerId = ownerId;
+            else
+            {
+                gameItem.ParentId = parent.Id;
+                gameItem.Parent = parent;
+            }
+            //追加子对象
+            if (gt.ChildrenTemplateIds.Count > 0)
+            {
+                gameItem.Children.AddRange(gt.ChildrenTemplateIds.Select(c =>
+                {
+                    var r = new GameItem();
+                    GameItemCreated(r, c, gameItem, null, parameters);
+                    return r;
+                }));
+            }
+        }
+
+        /// <summary>
+        /// 初始化角色对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="template"></param>
+        /// <param name="user">null则不设置自身的导航属性。</param>
+        /// <param name="displayName">昵称。为null则不设置</param>
+        /// <param name="context">使用的存储上下文。</param>
+        /// <param name="parameters"></param>
+        public virtual void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, DbContext context, IReadOnlyDictionary<string, object> parameters)
+        {
+            GameThingCreated(gameChar, template, parameters);
+            var gt = gameChar.Template;
+            //初始化本类型特殊数据
+            if (null != user)
+            {
+                gameChar.GameUserId = user.Id;
+                gameChar.GameUser = user;
+            }
+            if (null != displayName)
+                gameChar.DisplayName = displayName;
+            //追加子对象
+            if (gt.ChildrenTemplateIds.Count > 0)
+            {
+                Dictionary<string, object> dic = new Dictionary<string, object>()
+                {
+                    {"owner",this },
+                };
+                var coll = gt.ChildrenTemplateIds.Select(c =>
+                    {
+                        GameItem gi = new GameItem();
+                        GameItemCreated(gi, c, null, gameChar.Id, dic);
+                        return gi;
+                    });
+                gameChar.GameItems.AddRange(coll);
+                context.AddRange(coll); //将直接孩子加入数据库
+            }
+        }
+
+        /// <summary>
+        /// 初始化一个新用户。
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="loginName"></param>
+        /// <param name="pwd"></param>
+        /// <param name="context"></param>
+        /// <param name="parameters"></param>
+        public virtual void GameUserCreated(GameUser user, string loginName, string pwd, [AllowNull] DbContext context, IReadOnlyDictionary<string, object> parameters)
+        {
+            //base.InitializeCore(service, parameters);
+            //初始化本类型的数据
+            user.Services = Service;
+            user.DbContext ??= (context ?? World.CreateNewUserDbContext());
+
+            user.CurrentToken = Guid.NewGuid();
+            user.LoginName = loginName;
+
+            using var hash = (HashAlgorithm)Service.GetService(typeof(HashAlgorithm));
+            var pwdHash = hash.ComputeHash(Encoding.UTF8.GetBytes(pwd));
+            user.PwdHash = pwdHash;
+
+            user.DbContext.Add(this);
+        }
+
+        #region 保护方法
+        protected void GameThingCreated(GameThingBase thing, Guid templateId, IReadOnlyDictionary<string, object> parameters)
+        {
+            var template = World.ItemTemplateManager.GetTemplateFromeId(templateId);
+            GameThingCreated(thing, template, parameters);
+        }
+
+        /// <summary>
+        /// 在一个<see cref="GameThingBase"/>的子类被创建后调用。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="template"></param>
+        /// <param name="parameters"></param>
+        protected virtual void GameThingCreated(GameThingBase thing, GameThingTemplateBase template, IReadOnlyDictionary<string, object> parameters)
+        {
+            var gpm = World.PropertyManager;
+            var coll = gpm is null ? template.Properties : gpm.Filter(template.Properties);
+            var dic = thing.Properties;
+            //初始化自身属性
+            thing.Template = template;
+            foreach (var item in coll)   //复制属性
+            {
+                if (item.Value is IList seq)   //若是属性序列
+                {
+                    var indexPn = template.GetIndexPropName(item.Key);
+                    var lv = Convert.ToInt32(template.Properties.GetValueOrDefault(indexPn, 0m));
+                    dic[item.Key] = seq[Math.Clamp(lv, 0, seq.Count - 1)];
+                }
+                else
+                    dic[item.Key] = item.Value;
+            }
+            if (template.SequencePropertyNames.Length > 0 && !dic.Keys.Any(c => c.StartsWith(GameThingTemplateBase.LevelPrefix))) //若需追加等级属性
+                dic[gpm.LevelPropertyName] = 0m;
+#if DEBUG
+            dic["tname"] = template.DisplayName.Replace('，', '-').Replace(',', '-').Replace('=', '-');
+#endif
+
+        }
+        #endregion 保护方法
+        #endregion 创建后初始化
+
+        #region 加载后初始化
+        public virtual void GameItemLoaded(GameItem gameItem)
+        {
+            GameThingLoaded(gameItem);
+            //通知直接所属物品加载完毕
+            var list = gameItem.Children.ToList();
+            list.ForEach(c => GameItemLoaded(c));
+
+        }
+
+        public virtual void GameCharLoaded(GameChar gameChar)
+        {
+            GameThingLoaded(gameChar);
+            Debug.Assert(gameChar.GameUser != null && gameChar.GameUser.DbContext != null);
+            ////补足角色的槽
+            //var tt = World.ItemTemplateManager.GetTemplateFromeId(e.GameChar.TemplateId);
+            //List<Guid> ids = new List<Guid>();
+            //tt.ChildrenTemplateIds.ApartWithWithRepeated(e.GameChar.GameItems, c => c, c => c.TemplateId, ids, null, null);
+            //foreach (var item in ids.Select(c => World.ItemTemplateManager.GetTemplateFromeId(c)))
+            //{
+            //    var gameItem = World.ItemManager.CreateGameItem(item, e.GameChar.Id);
+            //    e.GameChar.GameUser.DbContext.Set<GameItem>().Add(gameItem);
+            //    e.GameChar.GameItems.Add(gameItem);
+            //}
+            ////补足所属物品的槽
+            //World.ItemManager.Normalize(e.GameChar.GameItems);
+            //通知直接所属物品加载完毕
+            var list = gameChar.GameItems.ToList();
+            list.ForEach(c => GameItemLoaded(c));
+        }
+
+        /// <summary>
+        /// 加载后初始化。
+        /// </summary>
+        /// <param name="thing"></param>
+        protected virtual void GameThingLoaded(GameThingBase thing)
+        {
+            thing.Template = World.ItemTemplateManager.GetTemplateFromeId(thing.TemplateId);
+
+        }
+        #endregion 加载后初始化
+
     }
 
     public static class GameEventsManagerExtensions
@@ -394,6 +600,144 @@ namespace OW.Game
         public override void OnGameItemAdd(IEnumerable<GameItem> gameItems, Dictionary<string, object> parameters)
         {
             base.OnGameItemAdd(gameItems, parameters);
+        }
+
+        #region 创建后初始化
+
+        public override void GameUserCreated(GameUser user, string loginName, string pwd, [AllowNull] DbContext context, IReadOnlyDictionary<string, object> parameters)
+        {
+            base.GameUserCreated(user, loginName, pwd, context, parameters);
+            var gc = new GameChar();
+            user.GameChars.Add(gc);
+            user.CurrentChar = gc;
+            var gt = World.ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
+            GameCharCreated(gc, gt, user, parameters.GetValueOrDefault(nameof(GameChar.DisplayName)) as string, user.DbContext, new Dictionary<string, object>());
+            //生成缓存数据
+            var sep = new CharSpecificExpandProperty
+            {
+                CharLevel = (int)gc.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName),
+                LastPvpScore = 1000,
+                PvpScore = 1000,
+                Id = gc.Id,
+                GameChar = gc,
+                FrinedCount = 0,
+                FrinedMaxCount = 10,
+                LastLogoutUtc = DateTime.UtcNow,
+            };
+            gc.SpecificExpandProperties = sep;
+        }
+
+        public override void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, DbContext context, IReadOnlyDictionary<string, object> parameters)
+        {
+            base.GameCharCreated(gameChar, template, user, displayName, context, parameters);
+            gameChar.ExtendProperties.Add(new GameExtendProperty()   //增加推关战力
+            {
+                Id = gameChar.Id,
+                Name = "推关战力",
+                StringValue = gameChar.DisplayName,
+                DecimalValue = 0,
+            });
+            //加入日志
+            var ar = new GameActionRecord
+            {
+                ParentId = gameChar.Id,
+                ActionId = "Created",
+                PropertiesString = $"CreateBy=CreateChar",
+            };
+            World.AddToUserContext(new object[] { ar });
+            var gitm = World.ItemTemplateManager;
+            var gim = World.ItemManager;
+            var db = gameChar.GameUser.DbContext;
+            if (string.IsNullOrWhiteSpace(gameChar.DisplayName))    //若没有指定昵称
+            {
+                string tmp;
+                for (tmp = CnNames.GetName(VWorld.IsHit(0.5)); db.Set<GameChar>().Any(c => c.DisplayName == tmp); tmp = CnNames.GetName(VWorld.IsHit(0.5)))
+                    ;
+                gameChar.DisplayName = tmp;
+            }
+            //修正木材存贮最大量
+            //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
+            //var stcMucai = mucai.GetStc();
+            //if (stcMucai < decimal.MaxValue)
+            //{
+            //    var mucaiStore = gameChar.GetHomeland().Children.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);
+            //    var stcs = mucaiStore.Select(c => c.GetStc());
+            //    if (stcs.Any(c => c == decimal.MaxValue))   //若有任何仓库是最大堆叠
+            //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, -1);
+            //    else
+            //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, stcs.Sum() + stcMucai);
+            //}
+            //增加坐骑
+            var mountsBagSlot = gameChar.GetZuojiBag();   //坐骑背包槽
+            for (int i = 3001; i < 3002; i++)   //仅增加羊坐骑
+            {
+                var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == i);
+                var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 1000 + i);
+                var mounts = gim.CreateMounts(headTemplate, bodyTemplate);
+                gim.ForcedAdd(mounts, mountsBagSlot);
+            }
+            //将第一个坐骑放入家园展示
+            var showMount = mountsBagSlot.Children.FirstOrDefault();
+            if (null != showMount)  //若有坐骑
+            {
+                var dic = showMount?.Properties;
+                if (dic != null)
+                    dic["for10"] = 0;
+                GameSocialRelationship gsr = new GameSocialRelationship()
+                {
+                    Id = gameChar.Id,
+                    Id2 = gim.GetBody(showMount).TemplateId,
+                    KeyType = SocialConstant.HomelandShowKeyType,
+                };
+                db.Add(gsr);
+            }
+        }
+
+        #endregion 创建后初始化
+
+        /// <summary>
+        /// 未发送给客户端的数据保存在<see cref="GameThingBase.ExtendProperties"/>中使用的属性名称。
+        /// </summary>
+        public const string ChangesItemExPropertyName = "{BAD410C8-6393-44B4-9EB1-97F91ED11C12}";
+
+        public override void GameCharLoaded(GameChar gameChar)
+        {
+            base.GameCharLoaded(gameChar);
+            //未发送给客户端的数据
+            var exProp = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);
+            if (null != exProp)    //若有需要反序列化的对象
+            {
+                var tmp = JsonSerializer.Deserialize<List<ChangesItemSummary>>(exProp.Text);
+                gameChar.ChangesItems.AddRange(ChangesItemSummary.ToChangesItem(tmp, gameChar));
+            }
+            //加载扩展属性
+            gameChar.SpecificExpandProperties = gameChar.DbContext.Set<CharSpecificExpandProperty>().Find(gameChar.Id);
+            //清除锁定属性槽内物品，放回道具背包中
+            var gim = World.ItemManager;
+            var daojuBag = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包
+            var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockAtkSlotId); //锁定槽
+            gim.MoveItems(slot, c => true, daojuBag);
+            slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockMhpSlotId); //锁定槽
+            gim.MoveItems(slot, c => true, daojuBag);
+            slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockQltSlotId); //锁定槽
+            gim.MoveItems(slot, c => true, daojuBag);
+            //挂接升级回调
+            var hl = gameChar.GetHomeland();
+            foreach (var item in hl.AllChildren)
+            {
+                if (!item.Name2FastChangingProperty.TryGetValue(ProjectConstant.UpgradeTimeName, out var fcp))
+                    continue;
+
+                var dt = fcp.GetComplateDateTime();
+                var now = DateTime.UtcNow;
+                TimeSpan ts;
+                if (now >= dt)   //若已经超时
+                    ts = TimeSpan.Zero;
+                else
+                    ts = dt - now;
+                var tm = new Timer(World.BlueprintManager.LevelUpCompleted, ValueTuple.Create(gameChar.Id, item.Id), ts, Timeout.InfiniteTimeSpan);
+            }
+
         }
     }
 

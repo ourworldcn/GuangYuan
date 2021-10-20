@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
@@ -94,7 +95,7 @@ namespace Gy001
                 c.IncludeXmlComments(xmlPath);
             });
             #endregion 配置Swagger
-            
+
             #region 配置游戏专用服务
             services.AddGameManagers();
 
@@ -114,7 +115,7 @@ namespace Gy001
                 TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
 #endif //DEBUG
             }));
-            services.AddSingleton<GameEventsManager>(c => new Gy001GameEventsManager(c, new GameEventsManagerOptions()));
+            services.Replace(ServiceDescriptor.Singleton<GameEventsManager>(c => new Gy001GameEventsManager(c, new GameEventsManagerOptions())));
             #endregion 配置游戏专用服务
         }
 

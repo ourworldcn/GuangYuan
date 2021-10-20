@@ -547,7 +547,7 @@ namespace GY2021001WebApi.Controllers
                     oldFengges.Add(newFengge);  //加入新对象
                 }
                 gc.MergeFangans(oldFengges, gitm);  //更新对象数据
-                
+
                 world.CharManager.NotifyChange(gu);
             }
             catch (Exception err)
@@ -603,6 +603,40 @@ namespace GY2021001WebApi.Controllers
             finally
             {
                 world.CharManager.Unlock(gu, true);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取推关战力排名，
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public ActionResult<GetRankOfTuiguanForMeReturnDto> GetRankOfTuiguanForMe(GetRankOfTuiguanForMeParamsDto model)
+        {
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            var datas = new GetRankOfTuiguanDatas(world, model.Token);
+            {
+            };
+            world.ItemManager.GetRankOfTuiguan(datas);
+            var result = new GetRankOfTuiguanForMeReturnDto();
+            result.HasError = datas.HasError;
+            result.ErrorCode = datas.ErrorCode;
+            result.DebugMessage = datas.ErrorMessage;
+            if (!datas.HasError)
+            {
+                result.Rank = datas.Rank;
+                result.Prv.AddRange(datas.Prv.Select(c => (RankDataItemDto)c).OrderByDescending(c => c.Metrics).ThenBy(c => c.DisplayName));
+                for (int i = 0; i < result.Prv.Count; i++)  //设置排名号
+                {
+                    result.Prv[i].OrderNumber = i + result.Rank - result.Prv.Count;
+                }
+                result.Next.AddRange(datas.Next.Select(c => (RankDataItemDto)c).OrderByDescending(c => c.Metrics).ThenBy(c => c.DisplayName));
+                for (int i = 0; i < result.Next.Count; i++) //设置排名号
+                {
+                    result.Next[i].OrderNumber = i + result.Rank + 1;
+                }
             }
             return result;
         }

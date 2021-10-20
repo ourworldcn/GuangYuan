@@ -109,7 +109,16 @@ namespace GuangYuan.GY001.TemplateDb
     /// </summary>
     public interface IGamePropertyManager
     {
+        /// <summary>
+        /// 获取表示级别的属性名，或其前缀。
+        /// 通常就是lv,这个也是前缀，如lvatk存在，则atk属性使用lvatk标记的级别，而不使用lv标记的级别。
+        /// </summary>
         abstract string LevelPropertyName { get; }
+
+        /// <summary>
+        /// 堆叠属性的名称。默认stc。
+        /// </summary>
+        string StackUpperLimit { get; }
 
         /// <summary>
         /// 过滤掉不必复制的属性名。
@@ -118,6 +127,11 @@ namespace GuangYuan.GY001.TemplateDb
         /// <returns></returns>
         public IEnumerable<string> Filter(IEnumerable<string> pNmaes);
 
+        /// <summary>
+        /// 过滤掉不必复制的属性名。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <returns></returns>
         public IEnumerable<KeyValuePair<string, object>> Filter(IReadOnlyDictionary<string, object> dic);
     }
 }

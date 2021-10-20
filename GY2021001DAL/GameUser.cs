@@ -178,7 +178,7 @@ namespace GuangYuan.GY001.UserDb
                 {"uid",loginName },
                 {"pwd",pwd },
                 {"db",db },
-                {"charDisplayName",charDisplayName },
+                {nameof(GameChar.DisplayName),charDisplayName },
             };
             Initialize(service, dic);
         }

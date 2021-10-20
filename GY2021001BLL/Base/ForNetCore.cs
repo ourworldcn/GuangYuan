@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OW.Game;
@@ -95,9 +96,9 @@ namespace GuangYuan.GY001.BLL
         {
             Task.Run(SendMail);
 #if DEBUG
-            var maxCount = 1000;
+            var maxCount = 1500;
 #else
-            var maxCount = 1000;
+            var maxCount = 1500;
 #endif
             var world = _Services.GetRequiredService<VWorld>();
             var logger = _Services.GetService<ILogger<GameHostedService>>();
@@ -128,6 +129,11 @@ namespace GuangYuan.GY001.BLL
                 if (gu is null)
                     continue;
                 gu.CurrentChar.DisplayName = $"{item.Item1}";
+                var zhanli = gu.CurrentChar.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.ZhangLiName);
+                if (null != zhanli)
+                {
+                    zhanli.StringValue = gu.CurrentChar.DisplayName;
+                }
                 gu.Timeout = TimeSpan.FromSeconds(1);
                 world.CharManager.Unlock(gu);
 
@@ -305,7 +311,7 @@ namespace GuangYuan.GY001.BLL
         {
             services.AddHostedService<GameHostedService>();
 
-            services.AddTransient<HashAlgorithm>(c => SHA512.Create());
+            services.TryAddTransient<HashAlgorithm>(c => SHA512.Create());
 
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
             {
@@ -338,6 +344,9 @@ namespace GuangYuan.GY001.BLL
             services.AddSingleton<IGamePropertyManager>(c => new PropertyManager(c, new PropertyManagerOptions()));
 
             services.AddSingleton<IGameObjectInitializer>(c => new Gy001Initializer(c, new Gy001InitializerOptions()));
+
+            //加入事件管理器
+            services.TryAddSingleton(c => new GameEventsManager(c, new GameEventsManagerOptions()));
 
             //加入任务管理器
             services.AddSingleton(c => new GameSchedulerManager(c, new SchedulerManagerOptions()));

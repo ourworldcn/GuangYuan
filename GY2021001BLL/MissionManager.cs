@@ -342,7 +342,7 @@ namespace OW.Game.Mission
                 datas.FillErrorFromWorld();
                 return;
             }
-            var slot = datas.GameChar.GetRenwuSlot();
+            var slot = datas.GameChar.GetRenwuSlot();   //任务槽
             //var tmpId = slot.Children.First(c => c.TemplateId == ProjectMissionConstant.坐骑最高等级成就).Id;
             //datas.ItemIds[0] = tmpId;
             var coll = from id in datas.ItemIds

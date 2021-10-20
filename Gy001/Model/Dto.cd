@@ -1,133 +1,133 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="GY2021001WebApi.Models.QuicklyRegisterReturnDto" Collapsed="true">
-    <Position X="94.75" Y="3.5" Width="1.5" />
+    <Position X="97.75" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.TokenDtoBase" Collapsed="true">
-    <Position X="46" Y="0.5" Width="1.5" />
+    <Position X="47.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.PagingWithTokenParamsDtoBase" Collapsed="true">
-    <Position X="93" Y="3.5" Width="1.5" />
+    <Position X="96" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAIAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.PagingRetunDtoBase" Collapsed="true">
-    <Position X="91.25" Y="3.5" Width="1.5" />
+    <Position X="94.25" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.LoginReturnDto" Collapsed="true">
-    <Position X="17.75" Y="1.75" Width="1.5" />
+    <Position X="20.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.LoginParamsDto" Collapsed="true">
-    <Position X="87.75" Y="3.5" Width="1.5" />
+    <Position X="90.75" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AEAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ChangePwdParamsDto" Collapsed="true">
-    <Position X="20" Y="1.75" Width="1.5" />
+    <Position X="23" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.NopParamsDto" Collapsed="true">
-    <Position X="22.25" Y="1.75" Width="1.5" />
+    <Position X="25.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GameItemTemplateDto" Collapsed="true">
-    <Position X="87.75" Y="2.5" Width="1.5" />
+    <Position X="90.75" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BAACEgAAAAAAAAAAAEAAAAAAAAAAAAAAAIAAAAACAAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GameItemDto" Collapsed="true">
-    <Position X="96.5" Y="1.5" Width="1.5" />
+    <Position X="99.5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAYAIAAAgAJAAABBFAAQAAAAAAABAAgAAAAACCAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GameCharDto" Collapsed="true">
-    <Position X="93" Y="1.5" Width="1.5" />
+    <Position X="96" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BAASEAAAAAAgACAAAIAAAAAQAAAAAABACABAAIACCAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.DtoConstant" Collapsed="true">
-    <Position X="87.75" Y="1.5" Width="1.5" />
+    <Position X="90.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BAAABAAIAhEBQAAABAABBAAAxAEAgBAAJQRgAiAEiwA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.DtoHelper" Collapsed="true">
-    <Position X="89.5" Y="1.5" Width="1.5" />
+    <Position X="92.5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ChangesItemDto" Collapsed="true">
-    <Position X="87.75" Y="0.5" Width="1.5" />
+    <Position X="90.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAABAAAAgCgAAAAAAAJAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.VWorldInfomationDto" Collapsed="true">
-    <Position X="91.25" Y="4.5" Width="1.5" />
+    <Position X="94.25" Y="4.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAEAAAIAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ReturnDtoBase">
-    <Position X="37.5" Y="3.5" Width="1.5" />
+    <Position X="36" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAgAAAAIAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ChangesReturnDtoBase">
-    <Position X="26" Y="5.75" Width="2.25" />
+    <Position X="23.25" Y="5.75" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.RenameParamsDto" Collapsed="true">
-    <Position X="24.5" Y="1.75" Width="1.5" />
+    <Position X="27.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ModifyClentStringParamsDto" Collapsed="true">
-    <Position X="29" Y="1.75" Width="1.5" />
+    <Position X="32" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>QAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
@@ -141,154 +141,154 @@
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.CombatStartParamsDto" Collapsed="true">
-    <Position X="40.25" Y="1.75" Width="1.5" />
+    <Position X="43.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.CombatStartReturnDto" Collapsed="true">
-    <Position X="93" Y="0.5" Width="1.5" />
+    <Position X="96" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAkAAAAAAAAAAAAAAAAABIAAAAAAAAAAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.CombatEndParamsDto" Collapsed="true">
-    <Position X="49.25" Y="1.75" Width="1.5" />
+    <Position X="52.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>BAAAAAAAAAAAABAAgAAAAAAAAAAAAAACAAAAQAAAAAA=</HashCode>
+      <HashCode>BAAAAAgAAAAAABAAgAAAAAAAAAAAAAACAAAAQAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.CombatEndReturnDto" Collapsed="true">
-    <Position X="31" Y="8.5" Width="1.5" />
+    <Position X="28.25" Y="8.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABACAAAAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ModifyClientExtendPropertyParamsDto" Collapsed="true">
-    <Position X="26.75" Y="1.75" Width="1.5" />
+    <Position X="29.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAgAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.SetCombatMountsParamsDto" Collapsed="true">
-    <Position X="31.25" Y="1.75" Width="1.5" />
+    <Position X="34.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ApplyBlueprintParamsDto" Collapsed="true">
-    <Position X="38" Y="1.75" Width="1.5" />
+    <Position X="41" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BAAAgAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ApplyBlueprintReturnDto" Collapsed="true">
-    <Position X="19.75" Y="11.25" Width="1.5" />
+    <Position X="17" Y="11" Width="1.5" />
     <TypeIdentifier>
       <HashCode>gIAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAQAAAAAAAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.SellParamsDto" Collapsed="true">
-    <Position X="47" Y="1.75" Width="1.5" />
+    <Position X="50" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.SellReturnDto" Collapsed="true">
-    <Position X="26.5" Y="8.5" Width="1.5" />
+    <Position X="23.75" Y="8.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.SetLineupReturnDto" Collapsed="true">
-    <Position X="28.75" Y="8.5" Width="1.5" />
+    <Position X="26" Y="8.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.SetLineupItem" Collapsed="true">
-    <Position X="87.75" Y="4.5" Width="1.5" />
+    <Position X="90.75" Y="4.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAgAAAAAAAAAAAAAAAIAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.SetLineupParamsDto" Collapsed="true">
-    <Position X="33.5" Y="1.75" Width="1.5" />
+    <Position X="36.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.MoveItemsItemDto" Collapsed="true">
-    <Position X="89.5" Y="3.5" Width="1.5" />
+    <Position X="92.5" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAgAAAAAQAAAAAAAEAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.MoveItemsParamsDto" Collapsed="true">
-    <Position X="42.5" Y="1.75" Width="1.5" />
+    <Position X="45.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAABAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.MoveItemsReturnDto" Collapsed="true">
-    <Position X="24.25" Y="8.5" Width="1.5" />
+    <Position X="21.5" Y="8.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.AddItemsParamsDto" Collapsed="true">
-    <Position X="51.5" Y="1.75" Width="1.5" />
+    <Position X="54.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetItemsParamsDto" Collapsed="true">
-    <Position X="56" Y="1.75" Width="1.5" />
+    <Position X="59" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetItemsReturnDto" Collapsed="true">
-    <Position X="93" Y="2.5" Width="1.5" />
+    <Position X="96" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetChangesItemParamsDto" Collapsed="true">
-    <Position X="35.75" Y="1.75" Width="1.5" />
+    <Position X="38.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetChangesItemReturnDto" Collapsed="true">
-    <Position X="49" Y="5.75" Width="1.5" />
+    <Position X="46.25" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.SetHomelandFenggeParamsDto" Collapsed="true">
-    <Position X="44.75" Y="1.75" Width="1.5" />
+    <Position X="47.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
@@ -302,14 +302,14 @@
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetHomelandFenggeParamsDto" Collapsed="true">
-    <Position X="53.75" Y="1.75" Width="1.5" />
+    <Position X="56.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetHomelandFenggeReturnDto" Collapsed="true">
-    <Position X="46.75" Y="5.75" Width="1.5" />
+    <Position X="44" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
@@ -343,287 +343,287 @@
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ChangesAndMailReturnDtoBase">
-    <Position X="19.25" Y="8.5" Width="2.25" />
+    <Position X="16.5" Y="8.5" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAQAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ModifyClientExtendPropertyReturn" Collapsed="true">
-    <Position X="51.25" Y="5.75" Width="1.5" />
+    <Position X="48.5" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAgAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ApplyHomelandStyleParamsDto" Collapsed="true">
-    <Position X="58.25" Y="1.75" Width="1.5" />
+    <Position X="61.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ApplyHomelandStyleReturnDto" Collapsed="true">
-    <Position X="55.75" Y="5.75" Width="1.5" />
+    <Position X="53" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetMailsParamsDto" Collapsed="true">
-    <Position X="13.25" Y="1.75" Width="1.5" />
+    <Position X="13.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetMailsReturnDto" Collapsed="true">
-    <Position X="60.25" Y="5.75" Width="1.5" />
+    <Position X="57.5" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.RemoveMailsRetuenDto" Collapsed="true">
-    <Position X="62.5" Y="5.75" Width="1.5" />
+    <Position X="59.75" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.RemoveMailsParamsDto" Collapsed="true">
-    <Position X="67.25" Y="1.75" Width="1.5" />
+    <Position X="70.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetAttachmentesParamsDto" Collapsed="true">
-    <Position X="71.75" Y="1.75" Width="1.5" />
+    <Position X="74.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetAttachmentesRetuenDto" Collapsed="true">
-    <Position X="33.25" Y="8.5" Width="1.5" />
+    <Position X="30.5" Y="8.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetCharSummaryReturnDto" Collapsed="true">
-    <Position X="53.5" Y="5.75" Width="1.5" />
+    <Position X="50.75" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.CharSummaryDto" Collapsed="true">
-    <Position X="89.5" Y="0.5" Width="1.5" />
+    <Position X="92.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACUAAAAgAAAAAAAAAAAAAAAAAAAAABAAQAAIAAAAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.RequestFriendReturnDto" Collapsed="true">
-    <Position X="58" Y="5.75" Width="1.5" />
+    <Position X="55.25" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.RequestFriendParamsDto">
-    <Position X="60.5" Y="1.75" Width="1.5" />
+    <Position X="63.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GameSocialRelationshipDto" Collapsed="true">
-    <Position X="89.5" Y="2.5" Width="1.5" />
+    <Position X="92.5" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>QAAAAAAAAEAAAAAAAAAAAAAAAIAQAAAAAAAEAAAAAQA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetSocialRelationshipsReturnDto" Collapsed="true">
-    <Position X="64.75" Y="5.75" Width="1.5" />
+    <Position X="62" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BACAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ConfirmRequestFriendParamsDto" Collapsed="true">
-    <Position X="69.5" Y="1.75" Width="1.5" />
+    <Position X="72.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ConfirmRequestFriendReturnDto" Collapsed="true">
-    <Position X="69.25" Y="5.75" Width="1.5" />
+    <Position X="66.5" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ModifySrReturnDto" Collapsed="true">
-    <Position X="44.5" Y="5.75" Width="1.5" />
+    <Position X="41.75" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ModifySrParamsDto" Collapsed="true">
-    <Position X="15.5" Y="1.75" Width="1.5" />
+    <Position X="15.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.InteractActiveIds" Collapsed="true">
-    <Position X="96.5" Y="2.5" Width="1.5" />
+    <Position X="99.5" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAABAAAAAAAAAAAAAAQAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.PatForTiliParamsDto" Collapsed="true">
-    <Position X="62.75" Y="1.75" Width="1.5" />
+    <Position X="65.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.PatWithMountsParamsDto" Collapsed="true">
-    <Position X="65" Y="1.75" Width="1.5" />
+    <Position X="68" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.PatWithMountsReturnDto" Collapsed="true">
-    <Position X="67" Y="5.75" Width="1.5" />
+    <Position X="64.25" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAIAAAAAAAgAAAAAAAAAAAAAAAAAAAABAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GameExtendPropertyDto" Collapsed="true">
-    <Position X="94.75" Y="1.5" Width="1.5" />
+    <Position X="97.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAEAEQAAAQAAAAAAEAgAgAACAAAACA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAEAEQAAAQAAAAAAAAgAgAACAAAACA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GameActionRecordDto" Collapsed="true">
-    <Position X="91.25" Y="1.5" Width="1.5" />
+    <Position X="94.25" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAACAAAAAAAAAAAAAIAAAAAIAAAAAAAAgAAAAACAQA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.UseItemsParamsItemDto" Collapsed="true">
-    <Position X="89.5" Y="4.5" Width="1.5" />
+    <Position X="92.5" Y="4.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.UseItemsParamsDto" Collapsed="true">
-    <Position X="74" Y="1.75" Width="1.5" />
+    <Position X="77" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.UseItemsReturnDto" Collapsed="true">
-    <Position X="35.5" Y="8.5" Width="1.5" />
+    <Position X="32.75" Y="8.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.SellParamsItemDto" Collapsed="true">
-    <Position X="96.5" Y="3.5" Width="1.5" />
+    <Position X="99.5" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.IdAndCountDto" Collapsed="true">
-    <Position X="94.75" Y="2.5" Width="1.5" />
+    <Position X="97.75" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAEAAAAAAAQAAAAAAAAAAAAAAAAIAAA=</HashCode>
       <FileName>Model\ClassConversion.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.CombatLossesItemDto" Collapsed="true">
-    <Position X="91.25" Y="0.5" Width="1.5" />
+    <Position X="94.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAQAAAAAAAAAAAAQAAAAAAAAAAAACAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.CombatEndPvpParamsDto" Collapsed="true">
-    <Position X="80.75" Y="1.75" Width="1.5" />
+    <Position X="83.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AIAAAAgAAAAAABAAAAAAAQAAAAAAAAAAAAAAAAABAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.CombatEndPvpReturnDto" Collapsed="true">
-    <Position X="22" Y="11.25" Width="1.5" />
+    <Position X="19.25" Y="11" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.RequestAssistanceParamsDto" Collapsed="true">
-    <Position X="11" Y="1.75" Width="1.5" />
+    <Position X="11.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.RequestAssistanceReturnDto" Collapsed="true">
-    <Position X="42.25" Y="5.75" Width="1.5" />
+    <Position X="39.5" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetAttachmentesResultItemDto" Collapsed="true">
-    <Position X="91.25" Y="2.5" Width="1.5" />
+    <Position X="94.25" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetCharSummaryParamsDto" Collapsed="true">
-    <Position X="76.25" Y="1.75" Width="1.5" />
+    <Position X="79.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ConfirmRequestFriendItemDto" Collapsed="true">
-    <Position X="94.75" Y="0.5" Width="1.5" />
+    <Position X="97.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AABAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.ConfirmRequestFriendReturnItemDto" Collapsed="true">
-    <Position X="96.5" Y="0.5" Width="1.5" />
+    <Position X="99.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.PatForTiliReturnDto" Collapsed="true">
-    <Position X="37.75" Y="8.5" Width="1.5" />
+    <Position X="35" Y="8.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
@@ -637,65 +637,65 @@
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetHomelandDataParamsDto" Collapsed="true">
-    <Position X="83" Y="1.75" Width="1.5" />
+    <Position X="86" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetPvpListParamsDto" Collapsed="true">
-    <Position X="85.25" Y="1.75" Width="1.5" />
+    <Position X="88.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetPvpListReturnDto" Collapsed="true">
-    <Position X="14.75" Y="8.5" Width="1.5" />
+    <Position X="12.5" Y="8.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAIAAAAABAgAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.RemoveBlackParamsDto" Collapsed="true">
-    <Position X="8.75" Y="1.75" Width="1.5" />
+    <Position X="9" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.RemoveBlackReturnDto" Collapsed="true">
-    <Position X="40" Y="5.75" Width="1.5" />
+    <Position X="37.25" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetSocialRelationshipsParamsDto" Collapsed="true">
-    <Position X="78.5" Y="1.75" Width="1.5" />
+    <Position X="81.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.SocialDtoBase" Collapsed="true">
-    <Position X="6.5" Y="1.75" Width="1.5" />
+    <Position X="6.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetMissionRewardReturnDto" Collapsed="true">
-    <Position X="12.5" Y="5.75" Width="1.5" />
+    <Position X="14.75" Y="11" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GY2021001WebApi.Models.GetMissionRewardParamsDto" Collapsed="true">
-    <Position X="17" Y="11.25" Width="2" />
+    <Position X="18" Y="1.75" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Model\DtoModels.cs</FileName>
     </TypeIdentifier>
   </Class>

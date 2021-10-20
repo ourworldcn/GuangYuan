@@ -207,6 +207,13 @@
             <param name="model"></param>
             <returns></returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetRankOfTuiguanForMe(GY2021001WebApi.Models.GetRankOfTuiguanForMeParamsDto)">
+            <summary>
+            获取推关战力排名，
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
             <summary>
             世界服务器的相关操作。
@@ -2008,6 +2015,31 @@
         <member name="T:GY2021001WebApi.Models.GetRankOfTuiguanQueryReturnDto">
             <summary>
             推关战力排行。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetRankOfTuiguanForMeParamsDto">
+            <summary>
+            GetRankOfTuiguanForMe接口的参数封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetRankOfTuiguanForMeReturnDto">
+            <summary>
+            GetRankOfTuiguanForMe接口的返回值封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetRankOfTuiguanForMeReturnDto.Prv">
+            <summary>
+            在角色之前（排名更高）紧邻的角色，最多25个。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetRankOfTuiguanForMeReturnDto.Next">
+            <summary>
+            在角色之后（排名更低）紧邻的角色，最多25个。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetRankOfTuiguanForMeReturnDto.Rank">
+            <summary>
+            自己在服务器中的排名。0表示第一，1表示第二，以此类推。
             </summary>
         </member>
         <member name="T:Gy001.Controllers.BlueprintController">

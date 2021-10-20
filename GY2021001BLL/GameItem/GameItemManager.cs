@@ -1291,12 +1291,12 @@ namespace OW.Game.Item
             }
         }
 
-        public IList<GameExtendProperty> GetRankOfTuiguan(GetRankOfTuiguanDatas datas)
+        public void GetRankOfTuiguan(GetRankOfTuiguanDatas datas)
         {
             using var dwUser = datas.LockUser();
             if (dwUser is null)
-                return Array.Empty<GameExtendProperty>();
-            var dbSet = datas.UserContext.Set<GameExtendProperty>();
+                return;
+            var dbSet = datas.UserContext.Set<GameExtendProperty>().AsNoTracking();
             var gc = datas.GameChar;
             var gp = gc.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.ZhangLiName);
             if (gp is null)
@@ -1311,12 +1311,20 @@ namespace OW.Game.Item
                 gc.ExtendProperties.Add(gp);
             }
             var coll = from tmp in dbSet    //排名在当前角色之前的角色
-                       where tmp.Name == ProjectConstant.ZhangLiName && (tmp.DecimalValue < gp.DecimalValue.Value || tmp.DecimalValue == gp.DecimalValue.Value && string.Compare(tmp.StringValue, gc.DisplayName)<0)
-                       orderby tmp.DecimalValue
+                       where tmp.Name == ProjectConstant.ZhangLiName && (tmp.DecimalValue > gp.DecimalValue.Value || tmp.DecimalValue == gp.DecimalValue.Value && string.Compare(tmp.StringValue, gc.DisplayName) < 0)
+                       orderby tmp.DecimalValue, tmp.StringValue
                        select tmp;
             var rank = coll.Count();
-            var prv = coll.Take(25).ToList();
-            return null;
+            datas.Rank = rank;
+            var prv = coll.Take(25).ToList();   //排在前面的的紧邻数据
+            datas.Prv.AddRange(prv);
+
+            var collNext = from tmp in dbSet    //排在指定角色之后的
+                           where tmp.Name == ProjectConstant.ZhangLiName && (tmp.DecimalValue < gp.DecimalValue.Value || tmp.DecimalValue == gp.DecimalValue && string.Compare(tmp.StringValue, gc.DisplayName) > 0)
+                           orderby tmp.DecimalValue descending, tmp.StringValue descending
+                           select tmp;
+            var next = collNext.Take(25).ToList();
+            datas.Next.AddRange(next);
         }
     }
 
@@ -1333,6 +1341,13 @@ namespace OW.Game.Item
         public GetRankOfTuiguanDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
         }
+
+
+        public List<GameExtendProperty> Prv { get; } = new List<GameExtendProperty>();
+
+        public List<GameExtendProperty> Next { get; } = new List<GameExtendProperty>();
+
+        public int Rank { get; set; }
     }
 
     public class UseItemsWorkDatas : ChangeItemsWorkDatasBase
