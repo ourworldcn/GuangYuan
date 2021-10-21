@@ -314,8 +314,9 @@ namespace OW.Game
 
         #region 创建后初始化
 
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void GameItemCreated(GameItem gameItem, Guid templateId, [AllowNull] GameItem parent, Guid? ownerId, IReadOnlyDictionary<string, object> parameters)
+        public void GameItemCreated(GameItem gameItem, Guid templateId, [AllowNull] GameItem parent, Guid? ownerId, [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
         {
             GameItemCreated(gameItem, World.ItemTemplateManager.GetTemplateFromeId(templateId), parent, ownerId, parameters);
         }
@@ -328,12 +329,12 @@ namespace OW.Game
         /// <param name="parent">父容器对象,如果为null，则使用<paramref name="ownerId"/>设置拥有者属性，否则忽略<paramref name="ownerId"/></param>
         /// <param name="ownerId"></param>
         /// <param name="parameters"></param>
-        public virtual void GameItemCreated(GameItem gameItem, GameItemTemplate template, [AllowNull] GameItem parent, Guid? ownerId, IReadOnlyDictionary<string, object> parameters)
+        public virtual void GameItemCreated(GameItem gameItem, GameItemTemplate template, [AllowNull] GameItem parent, Guid? ownerId, [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
         {
             var gpm = World.PropertyManager;
-            var gt = gameItem.Template;
             //设置本类型特有属性
             GameThingCreated(gameItem, template, parameters);
+            var gt = gameItem.Template;
             if (gt.Properties.TryGetValue("Count", out var countObj)) //若指定了初始数量
                 gameItem.Count = Convert.ToDecimal(countObj);
             else
@@ -365,9 +366,9 @@ namespace OW.Game
         /// <param name="template"></param>
         /// <param name="user">null则不设置自身的导航属性。</param>
         /// <param name="displayName">昵称。为null则不设置</param>
-        /// <param name="context">使用的存储上下文。</param>
         /// <param name="parameters"></param>
-        public virtual void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, DbContext context, IReadOnlyDictionary<string, object> parameters)
+        /// 
+        public virtual void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, IReadOnlyDictionary<string, object> parameters)
         {
             GameThingCreated(gameChar, template, parameters);
             var gt = gameChar.Template;
@@ -388,12 +389,12 @@ namespace OW.Game
                 };
                 var coll = gt.ChildrenTemplateIds.Select(c =>
                     {
-                        GameItem gi = new GameItem();
+                        GameItem gi = new GameItem() { GameChar = gameChar };
                         GameItemCreated(gi, c, null, gameChar.Id, dic);
                         return gi;
                     });
                 gameChar.GameItems.AddRange(coll);
-                context.AddRange(coll); //将直接孩子加入数据库
+                gameChar.DbContext.AddRange(coll); //将直接孩子加入数据库
             }
         }
 
@@ -403,11 +404,10 @@ namespace OW.Game
         /// <param name="user"></param>
         /// <param name="loginName"></param>
         /// <param name="pwd"></param>
-        /// <param name="context"></param>
+        /// <param name="context">使用的存储上下文，如果是null，则会自动创建一个。</param>
         /// <param name="parameters"></param>
-        public virtual void GameUserCreated(GameUser user, string loginName, string pwd, [AllowNull] DbContext context, IReadOnlyDictionary<string, object> parameters)
+        public virtual void GameUserCreated(GameUser user, string loginName, string pwd, [AllowNull] DbContext context, [AllowNull] IReadOnlyDictionary<string, object> parameters)
         {
-            //base.InitializeCore(service, parameters);
             //初始化本类型的数据
             user.Services = Service;
             user.DbContext ??= (context ?? World.CreateNewUserDbContext());
@@ -419,7 +419,7 @@ namespace OW.Game
             var pwdHash = hash.ComputeHash(Encoding.UTF8.GetBytes(pwd));
             user.PwdHash = pwdHash;
 
-            user.DbContext.Add(this);
+            user.DbContext.Add(user);
         }
 
         #region 保护方法
@@ -438,10 +438,11 @@ namespace OW.Game
         protected virtual void GameThingCreated(GameThingBase thing, GameThingTemplateBase template, IReadOnlyDictionary<string, object> parameters)
         {
             var gpm = World.PropertyManager;
+            //初始化自身属性
+            thing.TemplateId = template.Id;
+            thing.Template = template;
             var coll = gpm is null ? template.Properties : gpm.Filter(template.Properties);
             var dic = thing.Properties;
-            //初始化自身属性
-            thing.Template = template;
             foreach (var item in coll)   //复制属性
             {
                 if (item.Value is IList seq)   //若是属性序列
@@ -491,7 +492,19 @@ namespace OW.Game
             //World.ItemManager.Normalize(e.GameChar.GameItems);
             //通知直接所属物品加载完毕
             var list = gameChar.GameItems.ToList();
-            list.ForEach(c => GameItemLoaded(c));
+            list.ForEach(c =>
+            {
+                c.GameChar = gameChar;
+                GameItemLoaded(c);
+            });
+        }
+
+        public virtual void GameUserLoaded(GameUser user, DbContext context)
+        {
+            //初始化本类型的数据
+            user.Services = Service;
+            user.DbContext = context;
+            user.CurrentToken = Guid.NewGuid();
         }
 
         /// <summary>
@@ -509,6 +522,14 @@ namespace OW.Game
 
     public static class GameEventsManagerExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void GameItemCreated(this GameEventsManager manager, GameItem gameItem, Guid templateId) =>
+                   manager.GameItemCreated(gameItem, manager.World.ItemTemplateManager.GetTemplateFromeId(templateId));
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void GameItemCreated(this GameEventsManager manager, GameItem gameItem, GameItemTemplate template) =>
+                    manager.GameItemCreated(gameItem, template, null, null);
     }
 
     public class Gy001GameEventsManagerOptions : GameEventsManagerOptions
@@ -604,14 +625,14 @@ namespace OW.Game
 
         #region 创建后初始化
 
-        public override void GameUserCreated(GameUser user, string loginName, string pwd, [AllowNull] DbContext context, IReadOnlyDictionary<string, object> parameters)
+        public override void GameUserCreated(GameUser user, string loginName, string pwd, [AllowNull] DbContext context, [AllowNull] IReadOnlyDictionary<string, object> parameters)
         {
             base.GameUserCreated(user, loginName, pwd, context, parameters);
             var gc = new GameChar();
             user.GameChars.Add(gc);
             user.CurrentChar = gc;
             var gt = World.ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
-            GameCharCreated(gc, gt, user, parameters.GetValueOrDefault(nameof(GameChar.DisplayName)) as string, user.DbContext, new Dictionary<string, object>());
+            GameCharCreated(gc, gt, user, parameters?.GetValueOrDefault(nameof(GameChar.DisplayName)) as string, new Dictionary<string, object>());
             //生成缓存数据
             var sep = new CharSpecificExpandProperty
             {
@@ -627,24 +648,9 @@ namespace OW.Game
             gc.SpecificExpandProperties = sep;
         }
 
-        public override void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, DbContext context, IReadOnlyDictionary<string, object> parameters)
+        public override void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, IReadOnlyDictionary<string, object> parameters)
         {
-            base.GameCharCreated(gameChar, template, user, displayName, context, parameters);
-            gameChar.ExtendProperties.Add(new GameExtendProperty()   //增加推关战力
-            {
-                Id = gameChar.Id,
-                Name = "推关战力",
-                StringValue = gameChar.DisplayName,
-                DecimalValue = 0,
-            });
-            //加入日志
-            var ar = new GameActionRecord
-            {
-                ParentId = gameChar.Id,
-                ActionId = "Created",
-                PropertiesString = $"CreateBy=CreateChar",
-            };
-            World.AddToUserContext(new object[] { ar });
+            base.GameCharCreated(gameChar, template, user, displayName, parameters);
             var gitm = World.ItemTemplateManager;
             var gim = World.ItemManager;
             var db = gameChar.GameUser.DbContext;
@@ -655,6 +661,13 @@ namespace OW.Game
                     ;
                 gameChar.DisplayName = tmp;
             }
+            gameChar.ExtendProperties.Add(new GameExtendProperty()   //增加推关战力
+            {
+                Id = gameChar.Id,
+                Name = "推关战力",
+                StringValue = gameChar.DisplayName,
+                DecimalValue = 0,
+            });
             //修正木材存贮最大量
             //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
             //var stcMucai = mucai.GetStc();
@@ -691,8 +704,47 @@ namespace OW.Game
                 };
                 db.Add(gsr);
             }
+            //加入日志
+            var ar = new GameActionRecord
+            {
+                ParentId = gameChar.Id,
+                ActionId = "Created",
+                PropertiesString = $"CreateBy=CreateChar",
+            };
+            World.AddToUserContext(new object[] { ar });
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="template"></param>
+        /// <param name="parent"></param>
+        /// <param name="ownerId"></param>
+        /// <param name="parameters">针对坐骑，htid,btid都存在则自动创建相应的头和身体。</param>
+        public override void GameItemCreated(GameItem gameItem, GameItemTemplate template, [AllowNull] GameItem parent, Guid? ownerId, [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
+        {
+            base.GameItemCreated(gameItem, template, parent, ownerId, parameters);
+            if (template.Id == ProjectConstant.ZuojiZuheRongqi && null != parameters)   //若是生物且可能有相应的初始化参数
+            {
+                var gitm = World.ItemTemplateManager;
+                var htid = parameters.GetGuidOrDefault("htid");
+                var headTemplate = gitm.GetTemplateFromeId(htid);
+                if (headTemplate is null)
+                    return;
+                var btid = parameters.GetGuidOrDefault("btid");
+                var bodyTemplate = gitm.GetTemplateFromeId(btid);
+                if (bodyTemplate is null)
+                    return;
+                var head = new GameItem();
+                gameItem.Children.Add(head);
+                GameItemCreated(head, headTemplate, gameItem, null, null);
+
+                var body = new GameItem();
+                gameItem.Children.Add(body);
+                GameItemCreated(body, bodyTemplate, gameItem, null, null);
+            }
+        }
         #endregion 创建后初始化
 
         /// <summary>
@@ -738,6 +790,12 @@ namespace OW.Game
                 var tm = new Timer(World.BlueprintManager.LevelUpCompleted, ValueTuple.Create(gameChar.Id, item.Id), ts, Timeout.InfiniteTimeSpan);
             }
 
+        }
+
+        public override void GameUserLoaded(GameUser user, DbContext context)
+        {
+            base.GameUserLoaded(user, context);
+            user.CurrentChar = user.GameChars[0];   //项目特定:一个用户有且仅有一个角色
         }
     }
 

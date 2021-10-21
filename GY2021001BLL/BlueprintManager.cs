@@ -582,7 +582,7 @@ namespace GuangYuan.GY001.BLL
             GameItemManager gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
 
             GameItem gameItem = new GameItem();
-            gameItem.Initialize(Parent.Parent.Service, tid);
+            gim.World.EventsManager.GameItemCreated(gameItem, tid, null, null);
 
             string keyName = Template.Id.ToString();
             if (env.Variables.TryGetValue(keyName, out GameExpressionBase expr) && expr is ConstGExpression)   //若已经存在该变量
@@ -1339,7 +1339,7 @@ namespace GuangYuan.GY001.BLL
                         if (item.PrvTId.HasValue)    //若送物品
                         {
                             GameItem tmp = new GameItem();
-                            tmp.Initialize(World.Service, item.PrvTId.Value);
+                            World.EventsManager.GameItemCreated(tmp, item.PrvTId.Value);
                             gim.AddItem(tmp, parent, null, LastChangesItems);
                         }
                         if (item.Genus.HasValue)   //若送地块
@@ -1347,7 +1347,7 @@ namespace GuangYuan.GY001.BLL
                             int styleNumber = gc.GetCurrentFenggeNumber();   //激活的风格号
                             var subItem = World.ItemTemplateManager.GetTemplateByNumberAndIndex(styleNumber, item.Genus.Value % 100);
                             GameItem tmp = new GameItem();
-                            tmp.Initialize(Service, subItem.Id, gc.GetHomeland());
+                            World.EventsManager.GameItemCreated(tmp, subItem.Id, gc.GetHomeland(), null);
                             gim.AddItem(tmp, gc.GetHomeland(), null, LastChangesItems);
                         }
                     }

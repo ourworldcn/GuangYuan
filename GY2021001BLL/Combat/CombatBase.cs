@@ -21,7 +21,8 @@ namespace GuangYuan.GY001.BLL
         {
             var gc = world.CharManager.GetCharFromId(booty.CharId);
             GameItem gi = new GameItem();
-            gi.Initialize(world.Service, booty.TemplateId); gi.Count = booty.Count;
+            world.EventsManager.GameItemCreated(gi, booty.TemplateId, null, null, null);
+            gi.Count = booty.Count;
             var gim = world.ItemManager;
             GameItem parent;
             if (booty.TemplateId == ProjectConstant.JinbiId)

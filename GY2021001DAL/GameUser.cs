@@ -171,54 +171,6 @@ namespace GuangYuan.GY001.UserDb
             OnLogouting(e);
         }
 
-        public void Initialize(IServiceProvider service, string loginName, string pwd, DbContext db, string charDisplayName = null)
-        {
-            var dic = new Dictionary<string, object>
-            {
-                {"uid",loginName },
-                {"pwd",pwd },
-                {"db",db },
-                {nameof(GameChar.DisplayName),charDisplayName },
-            };
-            Initialize(service, dic);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="parameters"><inheritdoc/>,额外需要以下参数<code>
-        /// {
-        ///     {"uid",loginName }, //登录名，字符串
-        ///     {"pwd",pwd},    //密码，字符串明文。
-        ///     {"db",db}, //数据库上下文对象。
-        /// }
-        /// </code>。</param>
-        protected override void InitializeCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
-        {
-            base.InitializeCore(service, parameters);
-            //初始化本类型的数据
-            Services = service;
-            DbContext = parameters["db"] as DbContext;
-
-            CurrentToken = Guid.NewGuid();
-            LoginName = (string)parameters["uid"];
-            var pwd = (string)parameters["pwd"];
-            using var hash = (HashAlgorithm)service.GetService(typeof(HashAlgorithm));
-            var pwdHash = hash.ComputeHash(Encoding.UTF8.GetBytes(pwd));
-            PwdHash = pwdHash;
-
-            DbContext.Add(this);
-        }
-
-        protected override void LoadedCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
-        {
-            base.LoadedCore(service, parameters);
-            //初始化本类型的数据
-            Services = service;
-            DbContext = parameters["db"] as DbContext;
-            CurrentToken = Guid.NewGuid();
-        }
         #endregion 事件
     }
 }

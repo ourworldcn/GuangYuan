@@ -79,6 +79,11 @@ namespace GuangYuan.GY001.BLL
 
             private bool _IsDisposed;
 
+            /// <summary>
+            /// 向内存缓存加入用户对象。
+            /// </summary>
+            /// <param name="user"></param>
+            /// <returns></returns>
             public bool Add(GameUser user)
             {
                 bool succ = _Token2Users.TryAdd(user.CurrentToken, user);
@@ -253,9 +258,7 @@ namespace GuangYuan.GY001.BLL
         public GameUser CreateNewUserAndLock(string loginName, string pwd)
         {
             var gu = new GameUser();
-            DbContext db = World.CreateNewUserDbContext();
-            gu.Initialize(Service, loginName, pwd, db);
-            gu.CurrentToken = Guid.NewGuid();
+            World.EventsManager.GameUserCreated(gu, loginName, pwd, null, null);
             if (!Lock(gu))
                 return null;
             _Store.Add(gu);
@@ -605,7 +608,7 @@ namespace GuangYuan.GY001.BLL
                 return null;
             }
             gu = gc.GameUser;
-            gu.Loaded(Service, context);
+            World.EventsManager.GameUserLoaded(gu, context);
             result = this.GetOrAddAndLockAndReturnDisposer(ref gu, timeout);
             if (result is null) //若锁定失败
             {
@@ -661,7 +664,8 @@ namespace GuangYuan.GY001.BLL
             }
             //此时应不存在已加载的对象
             Trace.Assert(!_Store._LoginName2Users.ContainsKey(ln));
-            gu.Loaded(World.Service, context);  //初始化
+            World.EventsManager.GameUserLoaded(gu, context); //初始化
+
             if (!Monitor.TryEnter(gu) || gu.IsDisposed)
                 throw new InvalidOperationException("异常的锁定失败。");
             result = DisposerWrapper.Create(c => World.CharManager.Unlock(c), gu);
@@ -821,9 +825,21 @@ namespace GuangYuan.GY001.BLL
                     }
                     pwd = sb.ToString();
                 }
+                using var dwLn = World.LockStringAndReturnDisposer(ref loginName, Options.DefaultLockTimeout);
+                if (dwLn is null)   //若锁定失败
+                    return null;
+                if (_Store._LoginName2Users.ContainsKey(loginName))  //若已经存在登录名用户
+                    return null;
                 //存储角色信息
-                result.Initialize(Service, loginName, pwd, db);
-                db.SaveChanges();
+                World.EventsManager.GameUserCreated(result, loginName, pwd, null, null);
+                lock (result)
+                {
+                    _Store.Add(result);
+                    _Store._Id2OnlineChars.TryAdd(result.CurrentChar.Id, result.CurrentChar);
+                    result.Timeout = TimeSpan.FromSeconds(15);
+                    NotifyChange(result);
+                }
+                //db.SaveChanges();
             }
             return result;
         }

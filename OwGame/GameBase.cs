@@ -543,23 +543,4 @@ namespace OW.Game
         #endregion 事件及相关
     }
 
-    /// <summary>
-    /// 初始化挂接接口。
-    /// </summary>
-    public interface IGameObjectInitializer
-    {
-        /// <summary>
-        /// 在游戏对象创建后调用，以帮助特定项目初始化自己独有的数据。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns>true初始化了数据，false没有进行特定该类型对象的初始化。</returns>
-        bool Created(object obj, IReadOnlyDictionary<string, object> parameters);
-
-        /// <summary>
-        /// 游戏对象从后被存储加载到内存后调用。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns>true初始化了数据，false没有进行特定该类型对象的初始化。</returns>
-        bool Loaded(object obj, DbContext context);
-    }
 }

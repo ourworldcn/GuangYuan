@@ -1033,6 +1033,13 @@ namespace GuangYuan.GY001.BLL
             return true;
         }
 
+        public decimal GetTotalAbility(IEnumerable<Guid> charIds)
+        {
+            decimal result = 0;
+            //using var dwUsers = World.CharManager.LockOrLoadWithCharIds(charIds,wo);
+            return result;
+        }
+
         /// <summary>
         /// 
         /// </summary>

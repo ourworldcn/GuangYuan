@@ -341,7 +341,7 @@ namespace GY2021001WebApi.Controllers
                     else
                     {
                         var tmp = new GameItem();
-                        tmp.Initialize(world.Service, gi.TemplateId);
+                        world.EventsManager.GameItemCreated(tmp, gi.TemplateId, null, null);
                         tmp.Count = gi.Count;
                         lst.Add(tmp);
                     }

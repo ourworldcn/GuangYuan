@@ -331,7 +331,7 @@ namespace GuangYuan.GY001.BLL
                     var count = item.Properties.GetDecimalOrDefault(SocialConstant.SentCountPName, decimal.Zero);
                     var ptid = item.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty);
                     var gameItem = new GameItem();  //物品
-                    gameItem.Initialize(Service, tid);
+                    World.EventsManager.GameItemCreated(gameItem, tid, null, null, null);
                     gameItem.Count = count;
                     GameObjectBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
                     if (parent is null)
@@ -1452,7 +1452,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             var lv = (int)datas.PvpObject.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);    //级别数据
-            if (lv >= datas.PvpObject.Template.GetMaxLevel(pricePName) - 1)  //若当日已经不可再刷
+            if (lv >= datas.PvpObject.Template.GetMaxLevel(pricePName) - 1 && datas.IsRefresh)  //若当日已经不可再刷
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;

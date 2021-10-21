@@ -65,15 +65,11 @@ namespace GuangYuan.GY001.BLL
         public static GameItem CreateMounts(this GameItemManager manager, Guid headTId, Guid bodyTId, Guid containerTId)
         {
             var result = new GameItem();
-            result.Initialize(manager.Service, containerTId);
-
-            var head = new GameItem();
-            head.Initialize(manager.Service, headTId);
-            manager.SetHead(result, head);
-
-            var body = new GameItem();
-            body.Initialize(manager.Service, bodyTId);
-            manager.SetBody(result, body);
+            manager.World.EventsManager.GameItemCreated(result, containerTId, null, null, new Dictionary<string, object>()
+            {
+                {"htid",headTId },
+                {"btid",bodyTId },
+            });
 
             return result;
         }
@@ -269,7 +265,7 @@ namespace GuangYuan.GY001.BLL
             else
             {
                 result = new GameItem();
-                result.Initialize(manager.Service, tid);
+                manager.World.EventsManager.GameItemCreated(result,tid);
             }
             if (count == 0)    //若需要设置数量
                 if (result.IsStc(out _))    //若可以堆叠
@@ -290,7 +286,7 @@ namespace GuangYuan.GY001.BLL
         public static GameItem Clone(this GameItemManager manager, GameItem gameItem)
         {
             var result = new GameItem();
-            result.Initialize(manager.Service, gameItem.TemplateId);
+            manager.World.EventsManager.GameItemCreated(result, gameItem.TemplateId);
             foreach (var item in gameItem.Properties)
             {
                 result.Properties[item.Key] = item.Value;

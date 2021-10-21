@@ -17,7 +17,6 @@ using OW.Game.Item;
 using OW.Game.Mission;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -184,13 +183,22 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
+            var ary = new Guid[] { new Guid("BF37B672-30AB-43C7-9C08-A07D4FA773AA"),
+                new Guid("7D533BF8-47A3-4FCC-BC98-A0AB5B2667F8"),
+                new Guid("4B7CEDD3-3CEA-46FA-9C8D-A10829EA893F"),
+                new Guid("CD642BC0-4779-4B90-A707-A11634E4D3D6"),
+                new Guid("B026DBC2-074F-46D1-9903-A1352B4CCE88"),
+                new Guid("E5F5C19A-2C80-437C-B89F-A1549DA8823E"),
+                new Guid("47918744-1AA3-4863-A33D-A1B2CE6895CA"),
+                new Guid("A371C342-2FC7-4BF4-BF58-A1D2191E62BB"),
+                new Guid("DC02D307-9707-4D04-A462-A1FBA96FEB46"),
+                new Guid("1C7F900F-527C-4A7C-AF3F-A1FF3221CB0C"),};
+            //var coll = world.SocialManager.GetCharSummary1(ary,db);
+            //var coll1 = from tmp in db.Set<GameChar>()
+            //            where tmp.Id.CompareTo(Guid.Empty)>0
+            //            select ValueTuple.Create(tmp.Id, tmp.DisplayName);
+            //var r = coll1.Take(10).ToArray();
             var dic = world.PropertyManager.Filter(new string[] { "count", "mtid23087402", "mcount123", "mbtidds32d", "mhtidde32", "stceqw", "fht" });
-            var conv = TypeDescriptor.GetConverter(typeof(string));
-            var coll = from tmp in db.ExtendProperties    //排名在当前角色之前的角色
-                       where tmp.Name == ProjectConstant.ZhangLiName && (tmp.DecimalValue < 100 || tmp.DecimalValue == 1 && string.Compare(tmp.StringValue, "fdf") < 0)
-                       orderby tmp.DecimalValue
-                       select tmp;
-            var rank = coll.Count();
 
             var str = Uri.EscapeDataString(Guid.NewGuid().ToString("b"));
             var str1 = Uri.UnescapeDataString(str);
@@ -343,7 +351,7 @@ namespace GuangYuan.GY001.BLL
             //加入属性管理器
             services.AddSingleton<IGamePropertyManager>(c => new PropertyManager(c, new PropertyManagerOptions()));
 
-            services.AddSingleton<IGameObjectInitializer>(c => new Gy001Initializer(c, new Gy001InitializerOptions()));
+            //services.AddSingleton<IGameObjectInitializer>(c => new Gy001Initializer(c, new Gy001InitializerOptions()));
 
             //加入事件管理器
             services.TryAddSingleton(c => new GameEventsManager(c, new GameEventsManagerOptions()));

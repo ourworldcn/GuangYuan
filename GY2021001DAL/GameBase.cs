@@ -456,47 +456,5 @@ namespace GuangYuan.GY001.UserDb
             }
         }
 
-        /// <summary>
-        /// 新建对象后此方法被<see cref="Initialize(IServiceProvider, IReadOnlyDictionary{string, object})"/>调用以实际初始化本对象。
-        /// </summary>
-        /// <param name="service">服务容器。</param>
-        /// <param name="parameters"><inheritdoc/> <see cref="GameThingBase"/>需要键为tid，值为Guid类型的参数指定使用的模板Id </param>
-        /// <exception cref="InvalidOperationException">没有指定有效的模板Id。</exception>
-        protected override void InitializeCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
-        {
-            base.InitializeCore(service, parameters);
-            TemplateId = parameters.GetGuidOrDefault("tid");
-            if (Guid.Empty == TemplateId) throw new InvalidOperationException("没有指定有效的模板Id。");
-            var helper = service.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
-            Template = helper.GetTemplateFromeId(TemplateId);
-            var gpm = service.GetService(typeof(IGamePropertyManager)) as IGamePropertyManager;
-            var coll = gpm is null ? Template.Properties : gpm.Filter(Template.Properties);
-            //初始化自身属性
-            foreach (var item in coll)   //复制属性
-            {
-                if (item.Value is IList seq)   //若是属性序列
-                {
-                    var indexPn = Template.GetIndexPropName(item.Key);
-                    var lv = Convert.ToInt32(Template.Properties.GetValueOrDefault(indexPn, 0m));
-                    Properties[item.Key] = seq[Math.Clamp(lv, 0, seq.Count - 1)];
-                }
-                else
-                    Properties[item.Key] = item.Value;
-            }
-            if (Template.SequencePropertyNames.Length > 0 && !Properties.Keys.Any(c => c.StartsWith(GameThingTemplateBase.LevelPrefix))) //若需追加等级属性
-                Properties[GameThingTemplateBase.LevelPrefix] = 0m;
-#if DEBUG
-            Properties["tname"] = Template.DisplayName.Replace('，', '-').Replace(',', '-').Replace('=', '-');
-#endif
-
-        }
-
-        protected override void LoadedCore(IServiceProvider service, IReadOnlyDictionary<string, object> parameters)
-        {
-            base.LoadedCore(service, parameters);
-            var helper = service.GetService(typeof(IGameThingHelper)) as IGameThingHelper;
-            Template = helper?.GetTemplateFromeId(TemplateId);
-
-        }
     }
 }

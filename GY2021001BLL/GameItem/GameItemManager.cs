@@ -348,7 +348,7 @@ namespace OW.Game.Item
             {
                 stc = stc == -1 ? decimal.MaxValue : stc;
                 var moveItem = new GameItem();
-                moveItem.Initialize(Service, item.TemplateId);
+                World.EventsManager.GameItemCreated(moveItem, item.TemplateId, null, null, null);
                 moveItem.Count = count;
                 item.Count -= count;
                 var parent = GetContainer(item);   //获取源父容器
@@ -731,7 +731,7 @@ namespace OW.Game.Item
                 for (; count >= 0; count--)   //分解出多余物品
                 {
                     var item = new GameItem();
-                    item.Initialize(Service, gameItem.TemplateId);
+                    World.EventsManager.GameItemCreated(item, gameItem.TemplateId);
                     item.Count = Math.Min(1, count);
                     results.Add(item);
                 }
@@ -749,7 +749,7 @@ namespace OW.Game.Item
                 while (count > 0) //当需要拆分
                 {
                     var item = new GameItem();
-                    item.Initialize(Service, gameItem.TemplateId);
+                    World.EventsManager.GameItemCreated(item, gameItem.TemplateId);
                     item.Count = Math.Min(count, stc); //取当前剩余数量，和允许最大堆叠数量中较小的值
                     results.Add(item);
                     count -= stc;
@@ -856,7 +856,7 @@ namespace OW.Game.Item
                 foreach (var addItem in adds)
                 {
                     var newItem = new GameItem();
-                    newItem.Initialize(Service, addItem, tmp);
+                    World.EventsManager.GameItemCreated(newItem, addItem, tmp, null);
                     tmp.Children.Add(newItem);
                 }
             }
@@ -1282,7 +1282,7 @@ namespace OW.Game.Item
                     }
                     //生成新物品
                     var giAdd = new GameItem();
-                    giAdd.Initialize(World.Service, tid);
+                    World.EventsManager.GameItemCreated(giAdd,tid);
                     giAdd.Count = count * item.Item2;
                     //修改数据
                     gim.AddItem(giAdd, parent, null, datas.ChangeItems);    //加入新物品
