@@ -258,6 +258,20 @@ namespace GY2021001WebApi.Models
             return result;
         }
     }
+
+    public partial class GeneralCharSummaryDto
+    {
+        public static implicit operator GeneralCharSummaryDto(GameChar obj)
+        {
+            var result = new GeneralCharSummaryDto()
+            {
+                Id = obj.Base64IdString,
+                DisplayName = obj.DisplayName,
+                Level = (int)obj.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName),
+            };
+            return result;
+        }
+    }
     #endregion 基础数据
 
     public partial class CombatStartReturnDto

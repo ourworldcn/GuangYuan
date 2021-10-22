@@ -13,7 +13,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// pvp结束战斗调用接口的数据封装类。
     /// </summary>
-    public class EndCombatPvpWorkData : RelationshipWorkDataBase
+    public class EndCombatPvpWorkData : BinaryRelationshipWorkDataBase
     {
         public EndCombatPvpWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
         {

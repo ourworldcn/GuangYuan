@@ -533,8 +533,8 @@ namespace GuangYuan.GY001.BLL
             var db = datas.UserContext;
             //datas.SocialRelationships.Remove(sr);
             //移除攻击权
-            todayData.LastValues.Remove(datas.OtherCharId);
-            GameItem pvpObj, otherPvpObj;
+            todayData.LastValues.Remove(datas.OtherCharId); 
+             GameItem pvpObj, otherPvpObj;
             //计算等级分
             if (datas.IsWin) //若需要计算等级分
             {
@@ -565,6 +565,7 @@ namespace GuangYuan.GY001.BLL
             db.Add(pc);
             //移除击杀权
             todayData.LastValues.Remove(datas.GameChar.Id);
+            todayData.Save();
             //设置战利品
             List<GameBooty> bootyOfAttacker = new List<GameBooty>();
             foreach (var item in datas.BootyOfAttacker) //进攻方战利品

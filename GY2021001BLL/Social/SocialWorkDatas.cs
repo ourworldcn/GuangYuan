@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace GuangYuan.GY001.BLL
 {
-    public class RequestAssistanceDatas : RelationshipWorkDataBase
+    public class RequestAssistanceDatas : BinaryRelationshipWorkDataBase
     {
         public RequestAssistanceDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
         {

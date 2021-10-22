@@ -245,14 +245,7 @@ namespace GuangYuan.GY001.BLL
             var type = Type.GetType(data.ServiceTypeName);
             var service = Service.GetService(type);
             var method = type.GetMethod(data.MethodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            switch (data.MethodName)
-            {
-                case nameof(Upgraded): //延迟升级结束
-                    Upgraded(data);
-                    break;
-                default:
-                    break;
-            }
+            method.Invoke(service, new object[] { data });
         }
 
         private void Upgraded(SchedulerDescriptor data)

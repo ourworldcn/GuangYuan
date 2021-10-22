@@ -26,6 +26,39 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
+    public class GetGeneralCharSummaryDatas : RelationshipWorkDataBase
+    {
+        public GetGeneralCharSummaryDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public GetGeneralCharSummaryDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public GetGeneralCharSummaryDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        private List<GameChar> _GameChars;
+
+        /// <summary>
+        /// 角色信息。
+        /// </summary>
+        public List<GameChar> GameChars => _GameChars ??= new List<GameChar>();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                _GameChars = null;
+                base.Dispose(disposing);
+            }
+        }
+    }
+
+
+
     /// <summary>
     /// 社交类功能管理器。
     /// </summary>
@@ -56,6 +89,20 @@ namespace GuangYuan.GY001.BLL
         }
 
         #endregion 构造函数及相关
+
+        public void GetGeneralCharSummary(GetGeneralCharSummaryDatas datas)
+        {
+            using var dwUsers = datas.LockAll();
+            if (dwUsers is null)
+                return;
+            var list = datas.OtherCharIds.Select(c => World.CharManager.GetCharFromId(c)).ToList();
+            if (list.All(c => c is null))
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_USER;
+            }
+            datas.GameChars.AddRange(datas.OtherCharIds.Select(c => World.CharManager.GetCharFromId(c)));
+        }
 
         #region 邮件及相关
 
@@ -872,7 +919,7 @@ namespace GuangYuan.GY001.BLL
             return PatForTiliResult.Success;
         }
 
-        public class PatForTiliWorkData : RelationshipWorkDataBase
+        public class PatForTiliWorkData : BinaryRelationshipWorkDataBase
         {
             //private const string key = "patcountVisitors";
 
@@ -1046,7 +1093,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// PatWithMounts 使用的数据封装对象。
         /// </summary>
-        public class PatWithMountsDatas : RelationshipWorkDataBase
+        public class PatWithMountsDatas : BinaryRelationshipWorkDataBase
         {
             public PatWithMountsDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid mountsId, DateTime today) : base(service, gameChar, Guid.Empty)
             {
@@ -1563,7 +1610,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// <see cref="GameSocialManager.GetHomelandData(GetHomelandDataDatas)"/>使用的工作数据封装类。
     /// </summary>
-    public class GetHomelandDataDatas : RelationshipWorkDataBase
+    public class GetHomelandDataDatas : BinaryRelationshipWorkDataBase
     {
         public GetHomelandDataDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
         {
@@ -1602,7 +1649,7 @@ namespace GuangYuan.GY001.BLL
 
         protected override void Dispose(bool disposing)
         {
-            if (!Disposed)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {
@@ -1660,7 +1707,7 @@ namespace GuangYuan.GY001.BLL
 
         protected override void Dispose(bool disposing)
         {
-            if (!Disposed)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {

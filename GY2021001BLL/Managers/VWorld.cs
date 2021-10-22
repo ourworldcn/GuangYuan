@@ -125,7 +125,6 @@ namespace OW.Game
         {
             RequestShutdown = _CancellationTokenSource.Token;
             var logger = Service.GetRequiredService<ILogger<VWorld>>();
-            logger.LogInformation("初始化完毕，开始服务。");
 
             Thread thread = new Thread(SaveTemporaryUserContext)
             {

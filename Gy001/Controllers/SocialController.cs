@@ -630,6 +630,7 @@ namespace Gy001.Controllers
                         var gc = _World.CharManager.GetCharFromId(charId);
                         result.CurrencyBags[charId.ToBase64String()] = gc.GetCurrencyBag(); //设置货币带
                         result.MainBases[charId.ToBase64String()] = gc.GetMainbase(); //设置主地块
+                        result.CharSummary.Add(gc);
                     }
                 }
             }

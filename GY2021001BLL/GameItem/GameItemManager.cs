@@ -1282,7 +1282,7 @@ namespace OW.Game.Item
                     }
                     //生成新物品
                     var giAdd = new GameItem();
-                    World.EventsManager.GameItemCreated(giAdd,tid);
+                    World.EventsManager.GameItemCreated(giAdd, tid);
                     giAdd.Count = count * item.Item2;
                     //修改数据
                     gim.AddItem(giAdd, parent, null, datas.ChangeItems);    //加入新物品
@@ -1690,7 +1690,7 @@ namespace OW.Game.Item
 
         protected override void Dispose(bool disposing)
         {
-            if (!Disposed)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {

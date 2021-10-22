@@ -388,6 +388,8 @@ namespace OW.Game.Mission
                     }
                 }
             }
+            var keys = objs.Select(c => $"mcid{c.Id}").ToList();
+            keys.ForEach(c => slot.Properties.Remove(c));
             ChangeItem.Reduce(datas.ChangeItems);
             return;
         }

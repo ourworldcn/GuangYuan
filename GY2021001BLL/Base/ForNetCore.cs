@@ -58,7 +58,8 @@ namespace GuangYuan.GY001.BLL
                thread.Start();
 #endif
                 Task.Run(LoadCache);
-                Trace.WriteLine("游戏虚拟世界服务成功上线。");
+                var logger = _Services.GetService<ILogger<GameHostedService>>();
+                logger.LogInformation("游戏虚拟世界服务成功上线。");
             }, _Services, cancellationToken);
             return result;
         }
@@ -182,26 +183,14 @@ namespace GuangYuan.GY001.BLL
         private void Test()
         {
             var world = _Services.GetRequiredService<VWorld>();
-            using var db = world.CreateNewUserDbContext();
-            var ary = new Guid[] { new Guid("BF37B672-30AB-43C7-9C08-A07D4FA773AA"),
-                new Guid("7D533BF8-47A3-4FCC-BC98-A0AB5B2667F8"),
-                new Guid("4B7CEDD3-3CEA-46FA-9C8D-A10829EA893F"),
-                new Guid("CD642BC0-4779-4B90-A707-A11634E4D3D6"),
-                new Guid("B026DBC2-074F-46D1-9903-A1352B4CCE88"),
-                new Guid("E5F5C19A-2C80-437C-B89F-A1549DA8823E"),
-                new Guid("47918744-1AA3-4863-A33D-A1B2CE6895CA"),
-                new Guid("A371C342-2FC7-4BF4-BF58-A1D2191E62BB"),
-                new Guid("DC02D307-9707-4D04-A462-A1FBA96FEB46"),
-                new Guid("1C7F900F-527C-4A7C-AF3F-A1FF3221CB0C"),};
-            //var coll = world.SocialManager.GetCharSummary1(ary,db);
-            //var coll1 = from tmp in db.Set<GameChar>()
-            //            where tmp.Id.CompareTo(Guid.Empty)>0
-            //            select ValueTuple.Create(tmp.Id, tmp.DisplayName);
-            //var r = coll1.Take(10).ToArray();
-            var dic = world.PropertyManager.Filter(new string[] { "count", "mtid23087402", "mcount123", "mbtidds32d", "mhtidde32", "stceqw", "fht" });
+            //using var db = world.CreateNewUserDbContext();
+            //var ary = db.GameChars.OrderBy(c => c.Id).Skip(100).Take(20).Select(c => c.Id).ToArray();
 
-            var str = Uri.EscapeDataString(Guid.NewGuid().ToString("b"));
-            var str1 = Uri.UnescapeDataString(str);
+            //var coll1 = from tmp in db.Set<GameChar>()
+            //            where ary.Contains(tmp.Id) 
+            //            select tmp;
+            //var lookup = coll1.ToLookup(c=>c.TemplateId);
+            //var r = coll1.Take(10).ToArray();
             //db.SaveChanges();
         }
 
@@ -239,7 +228,7 @@ namespace GuangYuan.GY001.BLL
             {
                 var tContext = services.GetRequiredService<GY001TemplateContext>();
                 TemplateMigrateDbInitializer.Initialize(tContext);
-                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。");
+                logger.LogInformation($"{DateTime.UtcNow}模板数据库已正常升级。");
 
                 var context = services.GetRequiredService<GY001UserContext>();
                 MigrateDbInitializer.Initialize(context);

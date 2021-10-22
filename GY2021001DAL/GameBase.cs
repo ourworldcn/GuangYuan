@@ -4,7 +4,6 @@ using OW.Game;
 using OW.Game.Expression;
 using OW.Game.Store;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -387,21 +386,21 @@ namespace GuangYuan.GY001.UserDb
         {
             switch (e.Action)
             {
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                case NotifyCollectionChangedAction.Add:
                     foreach (var item in e.NewItems.OfType<GameExtendProperty>())
                     {
                         item.Id = Id;
                     }
                     DbContext.Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
                     break;
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Remove:
                     DbContext.Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
                     break;
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Replace:
                     throw new NotSupportedException();
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
+                case NotifyCollectionChangedAction.Move:
                     break;
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                case NotifyCollectionChangedAction.Reset:
                     DbContext.Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
                     DbContext.Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
                     break;

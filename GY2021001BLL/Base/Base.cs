@@ -113,6 +113,8 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
+    #region 工作数据基类
+
     /// <summary>
     /// 复杂工作的参数返回值封装类的基类。
     /// </summary>
@@ -212,17 +214,17 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
-        private bool _Disposed;
+        private bool _IsDisposed;
 
         /// <summary>
         /// 是否已经被处置。
         /// </summary>
-        protected bool Disposed { get => _Disposed; }
+        protected bool IsDisposed { get => _IsDisposed; }
 
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_Disposed)
+            if (!_IsDisposed)
             {
                 if (disposing)
                 {
@@ -235,7 +237,7 @@ namespace GuangYuan.GY001.BLL
                 _UserContext = null;
                 _World = null;
                 _Service = null;
-                _Disposed = true;
+                _IsDisposed = true;
             }
         }
 
@@ -354,7 +356,7 @@ namespace GuangYuan.GY001.BLL
 
         protected override void Dispose(bool disposing)
         {
-            if (!Disposed)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {
@@ -372,19 +374,19 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 涉及到多个角色的的功能函数使用的工作数据基类。
     /// </summary>
-    public abstract class RelationshipWorkDataBase : GameCharWorkDataBase
+    public abstract class BinaryRelationshipWorkDataBase : GameCharWorkDataBase
     {
-        protected RelationshipWorkDataBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar)
+        protected BinaryRelationshipWorkDataBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar)
         {
             _OtherCharId = otherGCharId;
         }
 
-        protected RelationshipWorkDataBase([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar)
+        protected BinaryRelationshipWorkDataBase([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar)
         {
             _OtherCharId = otherGCharId;
         }
 
-        protected RelationshipWorkDataBase([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token)
+        protected BinaryRelationshipWorkDataBase([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token)
         {
             _OtherCharId = otherGCharId;
         }
@@ -421,7 +423,7 @@ namespace GuangYuan.GY001.BLL
             }
             catch (Exception err)
             {
-                var logger = Service?.GetService<ILogger<RelationshipWorkDataBase>>();
+                var logger = Service?.GetService<ILogger<BinaryRelationshipWorkDataBase>>();
                 logger?.LogWarning($"锁定多个角色时出现异常——{err.Message}");
                 return null;
             }
@@ -443,6 +445,7 @@ namespace GuangYuan.GY001.BLL
                         GameChar.Id,
                         _OtherCharId
                     };
+                    _AllCharIds.AddRange(OtherCharIds);
                 }
                 return _AllCharIds;
             }
@@ -458,7 +461,7 @@ namespace GuangYuan.GY001.BLL
 
         protected override void Dispose(bool disposing)
         {
-            if (!Disposed)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {
@@ -547,6 +550,59 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
+    /// 涉及多个次要角色的工作数据基类。
+    /// </summary>
+    public class RelationshipWorkDataBase : GameCharWorkDataBase
+    {
+        public RelationshipWorkDataBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public RelationshipWorkDataBase([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public RelationshipWorkDataBase([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        private readonly List<Guid> _OtherCharIds = new List<Guid>();
+
+        /// <summary>
+        /// 其他相关角色。
+        /// </summary>
+        public List<Guid> OtherCharIds => _OtherCharIds;
+
+        /// <summary>
+        /// 锁定所有的角色对象。
+        /// </summary>
+        /// <returns></returns>
+        public virtual IDisposable LockAll()
+        {
+            try
+            {
+                var result = World.CharManager.LockOrLoadWithCharIds(OtherCharIds.Append(GameChar.Id), World.CharManager.Options.DefaultLockTimeout * OtherCharIds.Count * 0.8);
+                if (result is null)
+                {
+                    this.FillErrorFromWorld();
+                }
+                return result;
+            }
+            catch (Exception err)
+            {
+                var logger = Service?.GetService<ILogger<BinaryRelationshipWorkDataBase>>();
+                logger?.LogWarning($"锁定多个角色时出现异常——{err.Message}");
+                return null;
+            }
+        }
+
+
+
+    }
+
+    #endregion 工作数据基类
+
+    /// <summary>
     /// <see cref="GameItem"/>的简要类。
     /// <see cref="Id"/>有非<see cref="Guid.Empty"/>则以Id为准，否则以<see cref="TemplateId"/>。
     /// </summary>
@@ -594,4 +650,5 @@ namespace GuangYuan.GY001.BLL
         public Guid? BodyTId { get; set; }
 
     }
+
 }

@@ -1,30 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="GuangYuan.GY001.BLL.Compiler" Collapsed="true">
-    <Position X="8.25" Y="1.5" Width="1.5" />
+    <Position X="10.5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.ComplexWorkDatasBase">
-    <Position X="0.5" Y="9.75" Width="2.25" />
+    <Position X="0.5" Y="10" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAAACAAAAAAAAAAAAAIAAAQAAAAAAAAAAIACAAAAAAA=</HashCode>
+      <HashCode>AAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.BLL.WorkDataBase">
-    <Position X="2" Y="1.5" Width="2.25" />
+    <Position X="3" Y="1.5" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAADAAABBAAAAAAAAAAACEQAAQAAAAIAACAAA=</HashCode>
+      <HashCode>AAAAAACAADAAABAAAAAAABAAAACEQAAQAAAAIAAAAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharWorkDataBase">
-    <Position X="2" Y="5.75" Width="2.25" />
+    <Position X="3" Y="5.75" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AYBAAAABACAAAAAAAAAAAAAAAAgAABAIAAAAAAABACA=</HashCode>
       <FileName>Base\Base.cs</FileName>
@@ -32,22 +32,22 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameHostedService" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="10" Y="2.5" Width="1.5" />
+    <Position X="12.25" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAABAgAAAAAAAAAAgAAQAAAAAAAAAQAQAAAAAAAAA=</HashCode>
+      <HashCode>AAAAABEgCAAAAAAAAAgAAQAAAAAAAAAQAQAACAAAAAA=</HashCode>
       <FileName>Base\ForNetCore.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" Collapsed="true" />
   </Class>
   <Class Name="OW.Game.VWorldOptions" Collapsed="true">
-    <Position X="10" Y="3.5" Width="1.5" />
+    <Position X="12.25" Y="3.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAgAAAAEAAAAAAAgAAAAAAAA=</HashCode>
       <FileName>Managers\VWorld.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.VWorldInfomation" Collapsed="true">
-    <Position X="8.25" Y="3.5" Width="1.5" />
+    <Position X="10.5" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
       <FileName>Managers\VWorld.cs</FileName>
@@ -61,55 +61,54 @@
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharManagerOptions" Collapsed="true">
-    <Position X="8.25" Y="2.5" Width="1.5" />
+    <Position X="10.5" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAEAAABAAAAAAAAAAAAAABAAAAAAAAAAIAAAAAA=</HashCode>
+      <HashCode>AAAAAAEAAABAAAAAAAAAAAAAAAAAAAAAAAAAIAAAEAA=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharManager" Collapsed="true">
-    <Position X="10" Y="1.5" Width="1.5" />
+    <Position X="12.25" Y="1.5" Width="1.5" />
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
-    <NestedTypes>
-      <Class Name="GuangYuan.GY001.BLL.GameCharManager.GameUserStore" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Base\GameUserManagers.cs</NewMemberFileName>
-        </TypeIdentifier>
-        <Lollipop Position="0.2" />
-      </Class>
-    </NestedTypes>
     <TypeIdentifier>
       <HashCode>gAAQAAAAAFMAAYAAAgzCBAIAoEAoA4AIlADQAAEEAAE=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.CharLoadedEventArgs" Collapsed="true">
-    <Position X="6.5" Y="1.5" Width="1.5" />
+    <Position X="8.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharManagerExtensions" Collapsed="true">
-    <Position X="6.5" Y="2.5" Width="1.5" />
+    <Position X="8.75" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAQAAAAAAAECAAAAAEIAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.BLL.RelationshipWorkDataBase">
-    <Position X="3.5" Y="9.75" Width="2" />
+  <Class Name="GuangYuan.GY001.BLL.BinaryRelationshipWorkDataBase">
+    <Position X="3.5" Y="10" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAQQAIAAASAAAgAAICCCAAAAAgAACAQAAAAAAAACAAA=</HashCode>
+      <HashCode>AAQQAIAAASAAAgAAICCCAACAAgAACAQAAAAAAABCAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameItemSummery" Collapsed="true">
-    <Position X="6.5" Y="3.5" Width="1.5" />
+    <Position X="8.75" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAABAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\Base.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.RelationshipWorkDataBase">
+    <Position X="6.25" Y="10" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAQQAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
