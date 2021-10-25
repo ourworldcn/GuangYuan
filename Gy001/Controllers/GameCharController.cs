@@ -414,10 +414,10 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<GetChangesItemReturnDto> GetChangesItem(GetChangesItemParamsDto model)
         {
             var logger = HttpContext.RequestServices.GetRequiredService<ILogger<GameCharController>>();
-            logger.LogDebug($"[{DateTime.UtcNow}]Call GetChangesItem");
             var result = new GetChangesItemReturnDto();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            using var dwUser = world.CharManager.LockAndReturnDisposer(GameHelper.FromBase64String(model.Token), out GameUser gu);
+            if (dwUser is null)
             {
                 logger.LogWarning("[{dt}]{method}锁定失败。", DateTime.UtcNow, nameof(GetChangesItem));
                 return Unauthorized("令牌无效");
@@ -425,14 +425,7 @@ namespace GY2021001WebApi.Controllers
             try
             {
                 var gc = gu.CurrentChar;
-                //if (0 == gc.ChangesItems.Count)
-                //{
-                //    var fcp = gc.Name2FastChangingProperty.GetValueOrDefault(ProjectConstant.UpgradeTimeName);
-                //    if (fcp is null)
-                //        result.DebugMessage = $"无法找到{ProjectConstant.UpgradeTimeName}快速变化属性。";
-                //    else
-                //        result.DebugMessage = $"m={fcp.MaxValue},c={fcp.LastValue},t={fcp.LastDateTime}";
-                //}
+                logger.LogDebug($"[{DateTime.UtcNow}] Call GetChangesItem");
                 result.Changes.AddRange(gc.ChangesItems.Select(c => (ChangesItemDto)c));
                 //gc.ChangesItems.Clear();
             }
@@ -440,10 +433,6 @@ namespace GY2021001WebApi.Controllers
             {
                 result.DebugMessage = err.ToString();
                 result.HasError = true;
-            }
-            finally
-            {
-                world.CharManager.Unlock(gu, true);
             }
             return result;
         }
@@ -620,10 +609,12 @@ namespace GY2021001WebApi.Controllers
             {
             };
             world.ItemManager.GetRankOfTuiguan(datas);
-            var result = new GetRankOfTuiguanForMeReturnDto();
-            result.HasError = datas.HasError;
-            result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.ErrorMessage;
+            var result = new GetRankOfTuiguanForMeReturnDto
+            {
+                HasError = datas.HasError,
+                ErrorCode = datas.ErrorCode,
+                DebugMessage = datas.ErrorMessage
+            };
             if (!datas.HasError)
             {
                 result.Rank = datas.Rank;

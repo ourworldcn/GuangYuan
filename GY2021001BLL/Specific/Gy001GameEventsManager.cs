@@ -58,6 +58,7 @@ namespace OW.Game
             OnLineupChenged(args);
         }
 
+
         #region 阵容相关
         private void OnLineupChenged(DynamicPropertyChangedCollection args)
         {

@@ -10,8 +10,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 
 namespace GuangYuan.GY001.BLL
@@ -30,7 +28,7 @@ namespace GuangYuan.GY001.BLL
             };
             result.Properties[nameof(Properties)] = Uri.EscapeDataString(OwHelper.ToPropertiesString(obj.Properties)); //记录参数
             result.Properties[nameof(ComplatedDatetime)] = obj.ComplatedDatetime.ToString("s"); //记录定时的时间
-            result.Properties[nameof(ServiceTypeName)] = obj.ServiceTypeName; //记录方法名
+            result.Properties[nameof(ServiceTypeName)] = Uri.EscapeDataString(obj.ServiceTypeName); //记录方法名
             result.Properties[nameof(MethodName)] = obj.MethodName; //记录方法名
             return result;
         }
@@ -41,9 +39,8 @@ namespace GuangYuan.GY001.BLL
             {
                 Id = obj.Id,
                 ComplatedDatetime = obj.Properties.GetDateTimeOrDefault(nameof(ComplatedDatetime)),
-                ServiceTypeName = obj.Properties.GetStringOrDefault(nameof(ServiceTypeName)),   //服务名
+                ServiceTypeName = Uri.UnescapeDataString(obj.Properties.GetStringOrDefault(nameof(ServiceTypeName))),   //服务名
                 MethodName = obj.Properties.GetStringOrDefault(nameof(MethodName)), //记录方法名
-
             };
             OwHelper.AnalysePropertiesString(Uri.UnescapeDataString(obj.Properties.GetStringOrDefault(nameof(Properties))), result.Properties);
             return result;
@@ -76,7 +73,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public string MethodName { get; set; }
 
-        Dictionary<string, object> _Properties;
+        private Dictionary<string, object> _Properties;
         /// <summary>
         /// 额外参数的字典，只能放置可转换为字符串的类型。
         /// </summary>
@@ -132,11 +129,15 @@ namespace GuangYuan.GY001.BLL
 
     public class SchedulerManagerOptions
     {
+        public SchedulerManagerOptions()
+        {
 
+        }
     }
 
     /// <summary>
     /// 任务计划管理器。
+    /// 安排持久化任务，在用户注销或服务器重启后任务也可以得到执行。
     /// </summary>
     [DisplayName("任务计划管理器")]
     public class GameSchedulerManager : GameManagerBase<SchedulerManagerOptions>
@@ -163,13 +164,18 @@ namespace GuangYuan.GY001.BLL
                 db.ActionRecords.AsNoTracking().Where(c => c.ActionId == SchedulerDescriptor.ClassId).ToDictionary(c => c.Id, c =>
                 {
                     var result = (SchedulerDescriptor)c;
-                    result.Timer = new Timer(TimerCallbackHandel);
+                    result.Timer = new Timer(TimerCallbackHandel, result, Timeout.Infinite, Timeout.Infinite);
                     return result;
                 }));
             foreach (var item in _Id2Descriptor)
             {
-                var ts = OwHelper.ComputeTimeout(DateTime.UtcNow, item.Value.ComplatedDatetime);
-                item.Value.Timer.Change(ts, Timeout.InfiniteTimeSpan);
+                lock (item.Value)
+                {
+                    if (item.Value.IsDisposed)
+                        continue;
+                    var ts = OwHelper.ComputeTimeout(DateTime.UtcNow, item.Value.ComplatedDatetime);
+                    item.Value.Timer.Change(ts, Timeout.InfiniteTimeSpan);
+                }
             }
             var logger = Service.GetService<ILogger<GameSchedulerManager>>();
             logger.LogInformation("任务计划管理器开始工作。");
@@ -178,7 +184,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 所有计划任务。
         /// </summary>
-        ConcurrentDictionary<Guid, SchedulerDescriptor> _Id2Descriptor = new ConcurrentDictionary<Guid, SchedulerDescriptor>();
+        private ConcurrentDictionary<Guid, SchedulerDescriptor> _Id2Descriptor = new ConcurrentDictionary<Guid, SchedulerDescriptor>();
 
         /// <summary>
         /// 计时器到期使用的处理函数。
@@ -186,21 +192,27 @@ namespace GuangYuan.GY001.BLL
         /// <param name="state"></param>
         private void TimerCallbackHandel(object state)
         {
-            if (state is SchedulerDescriptor sd)
+            var sd = (SchedulerDescriptor)state;
+            lock (sd)
             {
-                try
+                if (!sd.IsDisposed) //若该工作项有效
                 {
-                    if (!sd.IsDisposed)
-                        OnScheduler(sd);
-                }
-                finally
-                {
-                    if (_Id2Descriptor.TryRemove(sd.Id, out var tmp))
+                    var id = sd.Id;
+                    try
                     {
-                        var sql = $"DELETE FROM [ActionRecords] WHERE [id] = '{tmp.Id}' AND [ActionId]='{SchedulerDescriptor.ClassId}'";
-                        World.AddToUserContext(sql);
-                        using var disposer = tmp;
+                        OnScheduler(sd);
                     }
+                    finally
+                    {
+                        sd.Dispose();
+                        _Id2Descriptor.Remove(id, out _);
+                        var sql = $"DELETE FROM [ActionRecords] WHERE [Id] = '{id}' AND [ActionId]='{SchedulerDescriptor.ClassId}'";
+                        World.AddToUserContext(sql);
+                    }
+                }
+                else //若已经因为并发问题被清理
+                {
+                    //TO DO
                 }
             }
         }
@@ -218,22 +230,49 @@ namespace GuangYuan.GY001.BLL
             World.AddToUserContext(new object[] { gar });
             _Id2Descriptor[data.Id] = data;
             var ts = OwHelper.ComputeTimeout(DateTime.UtcNow, data.ComplatedDatetime);
-            data.Timer = new Timer(TimerCallbackHandel, gar, ts, Timeout.InfiniteTimeSpan);
+            data.Timer = new Timer(TimerCallbackHandel, data, ts, Timeout.InfiniteTimeSpan);
 
         }
 
-        public bool Change(SchedulerDescriptor data)
+        /// <summary>
+        /// 移除一个计划项。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>true成功移除，false没有找到或已经由其他线程移除了。</returns>
+        public bool Remove(Guid id)
         {
-            if (!_Id2Descriptor.TryGetValue(data.Id, out var sd))
+            if (!_Id2Descriptor.TryGetValue(id, out var sd))
                 return false;
+            lock (sd)
             {
-                if (data.IsDisposed) //若已经执行
+                if (sd.IsDisposed)
                     return false;
-                sd.Dispose();
-                Scheduler(data);
+                using (sd)
+                    _Id2Descriptor.Remove(sd.Id, out _);
+                return true;
             }
-            return true;
         }
+
+        /// <summary>
+        /// 改变计划项。
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        //public bool Change(SchedulerDescriptor data)
+        //{
+        //    if (!_Id2Descriptor.TryGetValue(data.Id, out var sd))
+        //        return false;
+        //    lock (sd)
+        //    {
+        //        if (data.IsDisposed) //若已经执行
+        //            return false;
+
+        //    }
+        //    sd.Dispose();
+        //    Scheduler(data);
+
+        //    return true;
+        //}
 
         /// <summary>
         /// 延迟任务到期时调用。派生类可以重载此函数。
@@ -244,8 +283,8 @@ namespace GuangYuan.GY001.BLL
         {
             var type = Type.GetType(data.ServiceTypeName);
             var service = Service.GetService(type);
-            var method = type.GetMethod(data.MethodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            method.Invoke(service, new object[] { data });
+            var method = type.GetMethod(data.MethodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, new Type[] { typeof(SchedulerDescriptor) }, null);
+            method?.Invoke(service, new object[] { data });
         }
 
         private void Upgraded(SchedulerDescriptor data)

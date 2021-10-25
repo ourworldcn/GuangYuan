@@ -1869,9 +1869,6 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public decimal CombatCap { get; set; }
 
-        /// <summary>
-        /// 最后一次下线时间。空表示当前在线。
-        /// </summary>
         //[DataMember]
         //public DateTime? LastLogoutDatetime { get; set; }
 

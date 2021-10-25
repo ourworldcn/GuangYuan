@@ -10,13 +10,11 @@ using OW.Game.Item;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
@@ -830,7 +828,7 @@ namespace GuangYuan.GY001.BLL
             return succ;
         }
 
-        void MountsLevelUp(ApplyBlueprintDatas datas)
+        private void MountsLevelUp(ApplyBlueprintDatas datas)
         {
             var datasInner = new ApplyBlueprintDatas(datas.World, datas.GameChar)
             {
@@ -972,22 +970,42 @@ namespace GuangYuan.GY001.BLL
                         var sd = new SchedulerDescriptor(scId)
                         {
                             ComplatedDatetime = dtComplated,
-                            MethodName = "Upgraded",
+                            MethodName = nameof(LevelUpCompleted),
+                            ServiceTypeName = GetType().FullName,
                         };
                         sd.Properties["charId"] = datas.GameChar.Id;
                         sd.Properties["itemId"] = gi.Id;
+                        World.SchedulerManager.Scheduler(sd);
+
                         gi.Properties["UpgradedSchedulerId"] = sd.Id.ToString();
-                        Timer timer = new Timer(LevelUpCompleted, (datas.GameChar.Id, gi.Id),
-                            dtComplated - now, Timeout.InfiniteTimeSpan);
                     }
                     return;
                 }
             }
         }
 
+        /// <summary>
+        /// 升级完成的处理函数。
+        /// </summary>
+        /// <param name="sender"></param>
+        public void LevelUpCompleted(SchedulerDescriptor sender)
+        {
+            var gcId = sender.Properties.GetGuidOrDefault("charId");
+            var giId = sender.Properties.GetGuidOrDefault("itemId");
+            using var dwUser = World.CharManager.LockOrLoad(gcId, out var gu);
+            if (dwUser is null)
+                return;
+            var gc = gu.GameChars.FirstOrDefault(c => c.Id == gcId);
+            if (gc is null)
+                return;
+            LevelUpCompleted((gcId, giId));
+            if (LastChangesItems.Count > 0)
+                gc.ChangesItems.AddRange(LastChangesItems);
+
+        }
 
         /// <summary>
-        /// 升级完成的处理函数
+        /// 通用升级完成的处理函数。
         /// </summary>
         /// <param name="sender"></param>
         public void LevelUpCompleted(object sender)
@@ -1041,7 +1059,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="sender"></param>
         protected virtual void OnLevelUpCompleted(object sender)
         {
-            UpgradeCompleted(sender);
+            UpgradeCompletedInHomelang(sender);
         }
 
         #endregion 通用功能
@@ -1163,15 +1181,12 @@ namespace GuangYuan.GY001.BLL
 
             if (gi.Name2FastChangingProperty.TryGetValue(ProjectConstant.UpgradeTimeName, out var fcp)) //若需要冷却
             {
-                //计算可能的完成时间
-                DateTime dtComplate = fcp.GetComplateDateTime();   //预计完成时间
-                TimeSpan ts = dtComplate - DateTime.UtcNow + TimeSpan.FromSeconds(0.02);
                 worker.Count--;
                 datas.ChangeItems.AddToChanges(worker.ContainerId.Value, worker);
             }
             else //立即完成
             {
-                UpgradeCompleted(ValueTuple.Create(datas.GameChar.Id, gi.Id));
+                UpgradeCompletedInHomelang(ValueTuple.Create(datas.GameChar.Id, gi.Id));
             }
             #endregion 修改属性
             return;
@@ -1304,7 +1319,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void UpgradeCompleted(object state)
+        public void UpgradeCompletedInHomelang(object state)
         {
             if (!(state is ValueTuple<Guid, Guid> ids))
             {
@@ -1321,12 +1336,12 @@ namespace GuangYuan.GY001.BLL
             var gc = gu.GameChars.FirstOrDefault(c => c.Id == ids.Item1);
             try
             {
-                GameItem gameItem = gc.AllChildren.FirstOrDefault(c => c.Id == ids.Item2);
+                GameItem gameItem = gc.GetHomeland().AllChildren.FirstOrDefault(c => c.Id == ids.Item2);
                 if (gameItem is null)
                 {
                     return;
                 }
-
+                LastChangesItems.Clear();
                 int lv = (int)gameItem.GetDecimalOrDefault(ProjectConstant.LevelPropertyName, 0m);  //原等级
                 //gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
                 if (gameItem.TemplateId == ProjectConstant.MainControlRoomSlotId) //如果是主控室升级
@@ -1347,7 +1362,7 @@ namespace GuangYuan.GY001.BLL
                             int styleNumber = gc.GetCurrentFenggeNumber();   //激活的风格号
                             var subItem = World.ItemTemplateManager.GetTemplateByNumberAndIndex(styleNumber, item.Genus.Value % 100);
                             GameItem tmp = new GameItem();
-                            World.EventsManager.GameItemCreated(tmp, subItem.Id, gc.GetHomeland(), null);
+                            World.EventsManager.GameItemCreated(tmp, subItem.Id);
                             gim.AddItem(tmp, gc.GetHomeland(), null, LastChangesItems);
                         }
                     }
@@ -1356,8 +1371,6 @@ namespace GuangYuan.GY001.BLL
                 var worker = gc.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);
                 worker.Count++;
                 LastChangesItems.AddToChanges(worker);
-                if (LastChangesItems.Count > 0)
-                    gc.ChangesItems.AddRange(LastChangesItems);
             }
             catch (Exception)
             {
