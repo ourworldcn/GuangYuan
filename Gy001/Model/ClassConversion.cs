@@ -3,6 +3,7 @@ using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Combat;
 using OW.Game;
 using System;
 using System.Linq;
@@ -11,6 +12,23 @@ using System.Text.Json;
 namespace GY2021001WebApi.Models
 {
     #region 基础数据
+
+    public partial class CombatDto
+    {
+        public static implicit operator CombatDto(PvpCombat obj)
+        {
+            var result = new CombatDto()
+            {
+                EndUtc = obj.EndUtc,
+                Id = obj.IdString,
+            };
+            result.AttackerIds.AddRange(obj.AttackerIds);
+            result.DefenserIds.AddRange(obj.DefenserIds);
+            foreach (var item in obj.Properties)
+                result.Properties[item.Key] = item.Value;
+            return result;
+        }
+    }
 
     public partial class IdAndCountDto
     {

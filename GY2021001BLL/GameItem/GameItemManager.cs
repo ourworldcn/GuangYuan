@@ -300,7 +300,8 @@ namespace OW.Game.Item
                 var oov = seq[lv];  //原级别模板值
 
                 var val = Convert.ToDecimal(gameItem.Properties.GetValueOrDefault(seqPName, oov));  //物品的属性值
-                gameItem.Properties[seqPName] = seq[newLevel] + val - oov;
+                var old = newLevel < seq.Length ? seq[newLevel] : oov;  //可能缺失最后一级数据
+                gameItem.Properties[seqPName] = old + val - oov;
             }
             return;
         }
@@ -352,17 +353,13 @@ namespace OW.Game.Item
                 moveItem.Count = count;
                 item.Count -= count;
                 var parent = GetContainer(item);   //获取源父容器
-                AddItem(moveItem, destContainer);  //TO DO 需要处理无法完整放入问题
-#if DEBUG
-                var gc = moveItem.GameChar;
-                var state = gc.GameUser.DbContext.Entry(moveItem).State;
-#endif
+                AddItem(moveItem, destContainer, null, changesItems);  //TO DO 需要处理无法完整放入问题
                 if (null != changesItems)
                 {
                     //增加变化 
                     changesItems.AddToChanges(item.ParentId ?? item.OwnerId.Value, item);
                     //增加新增
-                    changesItems.AddToAdds(moveItem.ParentId ?? moveItem.OwnerId.Value, moveItem);
+                    //changesItems.AddToAdds(moveItem.ParentId ?? moveItem.OwnerId.Value, moveItem);
                 }
             }
             return result;
@@ -547,12 +544,9 @@ namespace OW.Game.Item
                 }
                 else //全部移动了
                 {
-                    var _ = new ChangeItem()
-                    {
-                        ContainerId = src.Id,
-                    };
-                    _.Removes.AddRange(removeIds);
-                    changes?.Add(_);
+                    if (null != changes)
+                        foreach (var item in removeIds)
+                            changes.AddToRemoves(src.Id, item);
                 }
             }
             finally
@@ -1289,6 +1283,9 @@ namespace OW.Game.Item
                     gim.MoveItem(gi, item.Item2, qiwuBag, datas.ChangeItems);
                 }
             }
+            ChangeItem.Reduce(datas.ChangeItems);
+            if (datas.ChangeItems.Count > 0)
+                World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
 
         public void GetRankOfTuiguan(GetRankOfTuiguanDatas datas)

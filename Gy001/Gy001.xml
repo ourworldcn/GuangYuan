@@ -262,6 +262,36 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:GY2021001WebApi.Models.CombatDto">
+            <summary>
+            战斗对象的数据传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.Id">
+            <summary>
+            Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.Properties">
+            <summary>
+            动态属性字典。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.AttackerIds">
+            <summary>
+            攻击方角色Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.DefenserIds">
+            <summary>
+            防御方角色Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.EndUtc">
+            <summary>
+            该战斗结束的Utc时间。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.IdAndCountDto">
             <summary>
             Id和数量的封装。通常用于其他对象中。

@@ -324,11 +324,11 @@ namespace OW.Game
         /// <param name="parent">父容器对象,如果为null，则使用<paramref name="ownerId"/>设置拥有者属性，否则忽略<paramref name="ownerId"/></param>
         /// <param name="ownerId"></param>
         /// <param name="parameters"></param>
-        public virtual void GameItemCreated(GameItem gameItem, GameItemTemplate template, [AllowNull] GameItem parent, Guid? ownerId, [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
+        public virtual void GameItemCreated(GameItem gameItem, [NotNull] GameItemTemplate template, [AllowNull] GameItem parent, Guid? ownerId, [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
         {
-            var gpm = World.PropertyManager;
             //设置本类型特有属性
             GameThingCreated(gameItem, template, parameters);
+            var gpm = World.PropertyManager;
             var gt = gameItem.Template;
             if (gt.Properties.TryGetValue("Count", out var countObj)) //若指定了初始数量
                 gameItem.Count = Convert.ToDecimal(countObj);
@@ -387,7 +387,7 @@ namespace OW.Game
                         GameItem gi = new GameItem() { GameChar = gameChar };
                         GameItemCreated(gi, c, null, gameChar.Id, dic);
                         return gi;
-                    });
+                    }).ToArray();
                 gameChar.GameItems.AddRange(coll);
                 gameChar.DbContext.AddRange(coll); //将直接孩子加入数据库
             }

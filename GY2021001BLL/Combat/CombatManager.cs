@@ -391,7 +391,23 @@ namespace GuangYuan.GY001.BLL
                 }
                 //记录收益——改写收益槽数据
                 List<GameItem> lst = new List<GameItem>();
-                World.ItemManager.AddItems(data.GameItems, shouyiSlot, lst);
+
+                World.ItemManager.AddItems(data.GameItems.Select(c =>
+                {
+                    if (gim.IsMounts(c))
+                    {
+
+                        var mounts = new GameItem();
+                        World.EventsManager.GameItemCreated(mounts, c.TemplateId, shouyiSlot, null,
+                            new Dictionary<string, object>() { { "htid", gim.GetHeadTemplate(c).IdString }, { "btid", gim.GetBodyTemplate(c).IdString } });
+                        mounts.Properties["neatk"] = c.Properties.GetDecimalOrDefault("neatk",0);
+                        mounts.Properties["nemhp"] = c.Properties.GetDecimalOrDefault("nemhp", 0);
+                        mounts.Properties["neqlt"] = c.Properties.GetDecimalOrDefault("neqlt", 0);
+                        return mounts;
+                    }
+                    else
+                        return c;
+                }), shouyiSlot, lst);
                 Trace.WriteLineIf(lst.Count > 0, "大事不好东西没放进去。");   //目前是不可能地
 
                 //判断大关卡是否要结束
@@ -533,8 +549,8 @@ namespace GuangYuan.GY001.BLL
             var db = datas.UserContext;
             //datas.SocialRelationships.Remove(sr);
             //移除攻击权
-            todayData.LastValues.Remove(datas.OtherCharId); 
-             GameItem pvpObj, otherPvpObj;
+            todayData.LastValues.Remove(datas.OtherCharId);
+            GameItem pvpObj, otherPvpObj;
             //计算等级分
             if (datas.IsWin) //若需要计算等级分
             {

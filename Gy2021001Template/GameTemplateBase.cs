@@ -1,6 +1,5 @@
 ﻿/*物品对象
  */
-using OW.Game;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
@@ -58,11 +57,9 @@ namespace GuangYuan.GY001.TemplateDb
         {
             get
             {
-                if (null == _ChildrenTemplateIds)
-                {
+                if (_ChildrenTemplateIds is null)
                     lock (this)
-                    {
-                        if (null == _ChildrenTemplateIds)
+                        if (_ChildrenTemplateIds is null)
                         {
                             if (string.IsNullOrWhiteSpace(ChildrenTemplateIdString))
                             {
@@ -73,9 +70,6 @@ namespace GuangYuan.GY001.TemplateDb
                                 _ChildrenTemplateIds = ChildrenTemplateIdString.Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
                             }
                         }
-                    }
-                }
-
                 return _ChildrenTemplateIds;
             }
         }
@@ -170,7 +164,7 @@ namespace GuangYuan.GY001.TemplateDb
 
     }
 
-    static public class GameThingTemplateBaseExtensons
+    public static class GameThingTemplateBaseExtensons
     {
         /// <summary>
         /// 试图获取指定的序列属性的值。
@@ -178,7 +172,7 @@ namespace GuangYuan.GY001.TemplateDb
         /// <param name="name"></param>
         /// <returns>序列属性（数组表示），null表示不存在指定名称的属性或其不是指定元素类型的序列属性。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public T[] GetSequenceProperty<T>(this GameThingTemplateBase obj, string name) => obj.Properties.GetValueOrDefault(name) as T[];
+        public static T[] GetSequenceProperty<T>(this GameThingTemplateBase obj, string name) => obj.Properties.GetValueOrDefault(name) as T[];
 
         /// <summary>
         /// 获取属性的值，若是序列属性则返回相应索引的值，如果不是序列属性则返回属性的值。
@@ -189,7 +183,7 @@ namespace GuangYuan.GY001.TemplateDb
         /// <param name="lv"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public decimal GetSequenceValueOrValue(this GameThingTemplateBase obj, string name, int lv)
+        public static decimal GetSequenceValueOrValue(this GameThingTemplateBase obj, string name, int lv)
         {
             var seq = obj.GetSequenceProperty<decimal>(name);
             if (seq is null) //若非序列属性
@@ -208,7 +202,7 @@ namespace GuangYuan.GY001.TemplateDb
         /// <param name="defaultVal">若不是等级属性，使用此值。</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static public T GetSequencePropertyValueOrDefault<T>(this GameThingTemplateBase obj, string name, int lv, T defaultVal = default)
+        public static T GetSequencePropertyValueOrDefault<T>(this GameThingTemplateBase obj, string name, int lv, T defaultVal = default)
         {
             var tmp = obj.GetSequenceProperty<T>(name);
             return tmp is null ? defaultVal : tmp[lv];
@@ -221,7 +215,7 @@ namespace GuangYuan.GY001.TemplateDb
         /// <param name="level"></param>
         /// <param name="result"></param>
         /// <returns>true返回值，false,指定名称的属性不是序列属性，或指定级别超出限制。</returns>
-        static public bool TryGetValueWithLevel<T>(this GameThingTemplateBase obj, string name, int level, out T result)
+        public static bool TryGetValueWithLevel<T>(this GameThingTemplateBase obj, string name, int level, out T result)
         {
             var ary = obj.GetSequenceProperty<T>(name);
             if (level < 0 || null == ary || level >= ary.Length)

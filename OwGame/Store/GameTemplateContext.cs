@@ -43,6 +43,15 @@ namespace OW.Game.Store
 
         }
 
+        string _IdString;
+
+        /// <summary>
+        /// Id的字符串形式"00000000-0000-0000-0000-000000000000"从 a 到 f 的十六进制数字是小写的。
+        /// 大量频繁使用模板对象时，使用该属性避免分配新字符串。
+        /// </summary>
+        [NotMapped]
+        public string IdString => _IdString ??= Id.ToString("D");
+
         /// <summary>
         /// 服务器不是用该属性。仅用于人读备注。
         /// </summary>

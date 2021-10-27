@@ -4,6 +4,8 @@
 
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using OW.Game.Item;
 using System;
 using System.Collections.Concurrent;
@@ -390,6 +392,12 @@ namespace GuangYuan.GY001.BLL.Homeland
 
         #endregion 基础功能
 
+        /// <summary>
+        /// 可移动的物品GIds。
+        /// </summary>
+        private static readonly int[] moveableGIds = new int[] { 11, 40, 41 };
+
+
         #region 方案的缓存与存储
         /// <summary>
         /// 设置家园的建设方案。
@@ -399,27 +407,128 @@ namespace GuangYuan.GY001.BLL.Homeland
         {
             var world = manager.World;
             var gu = gameChar.GameUser;
-            if (!world.CharManager.Lock(gu))
+            using var dwUser = world.CharManager.LockAndReturnDisposer(gu);
+            if (dwUser is null)
+            {
                 return;
+            }
+            var logger = world.Service.GetService<ILogger<GameCharManager>>();
+            var gc = gu.CurrentChar;
             try
             {
-                //var hpb = gameChar.AllChildren.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId); //家园方案背包
-                //var coll = from nPlan in plans
-                //           join oPlan in hpb.Children on nPlan.Number equals oPlan.Number
-                //           select (NewPlan: nPlan, OldPlan: oPlan);
-                //foreach (var item in coll)
-                //{
-                //    var exProp = item.OldPlan.GetOrAddExtendProperty(ProjectConstant.HomelandPlanPropertyName, c =>
-                //         new GameExtendProperty() { Tag = c, });
-                //    var jsonStr = JsonSerializer.Serialize(item.NewPlan);
-                //    exProp.Text = jsonStr;
-                //}
+                var oldFengges = gc.GetFengges();
+                if (oldFengges.Count == 0) //若未初始化
+                    gc.MergeFangans(oldFengges, world.ItemTemplateManager);
+                var hl = gameChar.GetHomeland();
+                var dic = hl.AllChildren.ToDictionary(c => c.Id);   //家园下所有对象，键是对象Id
+                var bag = hl.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandBuilderBagTId);   //家园建筑背包
+                foreach (var fengge in plans)   //遍历风格
+                {
+                    var oldFengge = oldFengges.FirstOrDefault(c => c.Number == fengge.Number);   //已有风格对象
+                    var newFengge = fengge; //新风格
+
+                    foreach (var fangan in oldFengge.Fangans)   //遍历方案
+                    {
+                        var oldFangan = fangan;
+                        var newFangan = newFengge.Fangans.FirstOrDefault(c => c.Id == oldFangan.Id);    //找到对应的新方案
+                        if (newFangan is null)  //若没有对应方案
+                            continue;
+                        oldFangan.ClientString = newFangan.ClientString;
+                        var bagItem = fangan.FanganItems.FirstOrDefault(c => c.ContainerId == bag.Id);
+                        if (bagItem is null)
+                        {
+                            logger.LogError("找不到建筑背包在家园数据中对应的数据。");
+                            return;
+                        }
+                        foreach (var oldFanganItem in oldFangan.FanganItems.ToArray())    //遍历每个方案项
+                        {
+                            var newFanganItem = newFangan.FanganItems.FirstOrDefault(c => c.ContainerId == oldFanganItem.ContainerId);
+                            if (newFanganItem is null)  //若没有对应的新数据
+                                continue;
+                            if (newFanganItem.NewTemplateId.HasValue) //若需要改变容器模板
+                            {
+                                var tmp = fangan.FanganItems.FirstOrDefault(c => c.ContainerId == newFanganItem.ContainerId);
+                                if (tmp is null)    //若没有该对象置换模板的数据
+                                    fangan.FanganItems.Add(newFanganItem);
+                                else
+                                    tmp.NewTemplateId = newFanganItem.NewTemplateId == Guid.Empty ? null : newFanganItem.NewTemplateId;
+                            }
+                            if (dic.TryGetValue(newFanganItem.ContainerId, out var gi) && gi.IsDikuai())    //若有对应的地块
+                            {
+                                ClearMoveable(oldFanganItem, dic);   //去掉原有可移动物品
+                                var adds = newFanganItem.ItemIds.Where(c =>    //获取追加可移动物品的Id集合
+                                {
+                                    return IsMoveable(c, dic);
+                                });
+                                oldFanganItem.ItemIds.AddRange(adds);    //追加可移动物品Id集合
+                            }
+                        }
+                    }
+                }
+                var active = oldFengges.GetActive();
+                world.ItemManager.ActiveStyle(new ActiveStyleDatas()
+                {
+                    Fangan = active,
+                    GameChar = gc,
+                });
                 world.CharManager.NotifyChange(gu);
             }
-            finally
+            catch (Exception err)
             {
-                world.CharManager.Unlock(gu, true);
+                logger.LogError($"设置家园数据时出错——{err.Message}");
             }
+        }
+
+        /// <summary>
+        /// 获取指定id的物品是否是可移动物品。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="hint">加速搜索的字典。</param>
+        /// <returns></returns>
+        public static bool IsMoveable(Guid id, Dictionary<Guid, GameItem> hint)
+        {
+            var gameItem = hint.GetValueOrDefault(id);
+            if (gameItem is null)   //若不是家园内物品
+                return false;
+            if (!moveableGIds.Contains(gameItem.GetCatalogNumber()))  //若不可移动
+                return false;
+            return true;
+        }
+
+        /// <summary>
+        /// 去除可移动物品的Id，并将去除掉的集合返回。
+        /// </summary>
+        /// <param name="fanganItem"></param>
+        /// <param name="hint">加速搜索的字典，键是Id，值是物品。</param>
+        /// <returns></returns>
+        public static IEnumerable<Guid> ClearMoveable(this HomelandFanganItem fanganItem, Dictionary<Guid, GameItem> hint)
+        {
+            List<Guid> result = new List<Guid>();
+            fanganItem.ItemIds.RemoveAll(c =>
+            {
+                if (!IsMoveable(c, hint))
+                    return false;
+                result.Add(c);
+                return true;
+            });
+            return result;
+        }
+
+        /// <summary>
+        /// 获取激活方案，若没有则设置第一个风格的第一个方案为激活方案并返回。
+        /// </summary>
+        /// <param name="fengges"></param>
+        /// <returns></returns>
+        public static HomelandFangan GetActive(this IEnumerable<HomelandFengge> fengges)
+        {
+            var active = fengges.SelectMany(c => c.Fangans).FirstOrDefault(c => c.IsActived);
+            if (active is null)   //若没有激活方案
+            {
+                //激活初始的第一个方案
+                active = fengges.FirstOrDefault()?.Fangans.FirstOrDefault();
+                active.IsActived = true;
+            }
+            return active;
         }
 
         /// <summary>

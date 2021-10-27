@@ -769,10 +769,9 @@ namespace GuangYuan.GY001.BLL
         private bool Dispatch(ApplyBlueprintDatas datas)
         {
             bool succ;
-            string idStr = datas.Blueprint.Id.ToString("D").ToLower();
             try
             {
-                switch (idStr)
+                switch (datas.Blueprint.IdString)
                 {
                     case "8b4ac76c-d8cc-4300-95ca-668350149821":    //若是孵化
                         Fuhua(datas);
@@ -812,6 +811,12 @@ namespace GuangYuan.GY001.BLL
                         break;
                     case "6a0c5697-4228-4ec9-a69e-28d61bd52b32":    //坐骑等级提升
                         MountsLevelUp(datas);
+                        succ = true;
+                        break;
+                    case "3af71bc0-db28-4f42-a1ca-38fb5b5030cc":    //攻击神纹升级
+                    case "d40c1818-06cf-4d19-9f6e-5ba54472b6fc":    //血量神纹升级
+                    case "dd999eee-9d4e-40de-bff9-16d5054d139b":    //质量神纹升级
+                        ShenwenLevelUp(datas);
                         succ = true;
                         break;
                     default:
@@ -982,6 +987,77 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// 神纹升级。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void ShenwenLevelUp(ApplyBlueprintDatas datas)
+        {
+            if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。"))
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                return;
+            }
+            var gi = datas.GameItems[0];    //升级的神纹
+            var gc = datas.GameChar;
+            if (!datas.Verify(gc.GetShenwenBag().Children.Contains(gi) && gi.ItemTemplate.CatalogNumber == 10, "要升级的不是一个神纹对象。"))
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                return;
+            }
+            string pname; //主属性名后缀
+            int gcode;  //主属性名对应的类型码
+            switch (datas.Blueprint.IdString)
+            {
+                case "3af71bc0-db28-4f42-a1ca-38fb5b5030cc":    //攻击
+                    pname = "atk";
+                    gcode = 16;
+                    break;
+                case "d40c1818-06cf-4d19-9f6e-5ba54472b6fc":   //血量
+                    pname = "mhp";
+                    gcode = 15;
+                    break;
+                case "dd999eee-9d4e-40de-bff9-16d5054d139b":     //质量
+                    pname = "qlt";
+                    gcode = 17;
+                    break;
+                default:
+                    datas.HasError = true;
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.DebugMessage = "不正确的模板";
+                    return;
+            }
+            //道具
+            var bodyCode = gi.GetDecimalOrDefault("body");
+            var daoju = gc.GetItemBag().Children.FirstOrDefault(c => c.Properties.GetDecimalOrDefault("body") == bodyCode && c.GetCatalogNumber() == gcode); //碎片道具
+            if (!(daoju?.Count > 0)) //若道具不足
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
+                return;
+            }
+            //升级次数
+            var lvpname = $"lv{pname}"; //主属性名
+            var mlvpname = $"mlv{pname}"; //上限属性名
+            var lv = gi.GetDecimalOrDefault(lvpname); //级别
+            var mlv = gi.GetDecimalOrDefault(mlvpname); //级别上限
+            var maxCount = Math.Min(datas.Count, mlv - lv);   //实际的升级次数
+            if (maxCount <= 0) //若已经升级到顶
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                datas.DebugMessage = "不可继续升级。";
+                return;
+            }
+            maxCount = Math.Min(maxCount, daoju.Count.Value);   //实际升级次数
+            //修改数据
+            World.ItemManager.SetLevel(gi, pname, (int)(lv + maxCount));
+            gi.Properties[lvpname] = (lv + maxCount);
+            daoju.Count -= maxCount;
+            datas.SuccCount = (int)maxCount;
+            datas.ChangeItems.AddToChanges(gi, daoju);
         }
 
         /// <summary>

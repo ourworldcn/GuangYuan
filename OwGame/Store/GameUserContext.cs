@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -119,16 +120,16 @@ namespace OW.Game.Store
         private void PrepareSaving()
         {
             var coll = ChangeTracker.Entries().Select(c => c.Entity).OfType<IBeforeSave>().Where(c => !c.SuppressSave).ToList();
-            try
+            foreach (var item in coll)
             {
-                foreach (var item in coll)
+                try
                 {
                     item.PrepareSaving(this);
                 }
-            }
-            catch (Exception)
-            {
-
+                catch (Exception err)
+                {
+                    Debug.WriteLine($"预保存时发生错误——{err.Message}");
+                }
             }
         }
         #endregion 保存前
@@ -153,7 +154,7 @@ namespace OW.Game.Store
         /// <param name="id"><inheritdoc/></param>
         public GameObjectBase(Guid id) : base(id)
         {
-            
+
         }
 
         private string _IdString;

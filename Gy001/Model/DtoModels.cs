@@ -14,6 +14,65 @@ namespace GY2021001WebApi.Models
 {
 
     #region 基础数据
+
+    /// <summary>
+    /// 战斗对象的数据传输类。
+    /// </summary>
+    [DataContract]
+    public partial class CombatDto
+    {
+        /// <summary>
+        /// Id。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 动态属性字典。
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+
+
+        /// <summary>
+        /// 攻击方角色Id集合。
+        /// </summary>
+        [DataMember]
+        public List<Guid> AttackerIds { get; set; } = new List<Guid>();
+
+        /// <summary>
+        /// 防御方角色Id集合。
+        /// </summary>
+        [DataMember]
+        public List<Guid> DefenserIds { get; set; } = new List<Guid>();
+
+        //private List<GameBooty> _BootyOfAttacker;
+        ///// <summary>
+        ///// 获取战利品。
+        ///// </summary>
+        ///// <param name="context"></param>
+        ///// <returns></returns>
+        //public List<GameBooty> BootyOfAttacker(DbContext context)
+        //{
+        //    if (_BootyOfAttacker is null)
+        //    {
+        //        _BootyOfAttacker = context.Set<GameBooty>().Where(c => c.ParentId == Id && AttackerIds.Contains(c.CharId)).ToList();
+        //    }
+        //    return _BootyOfAttacker;
+        //}
+
+        ///// <summary>
+        ///// 该战斗开始的Utc时间。
+        ///// </summary>
+        //public DateTime StartUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 该战斗结束的Utc时间。
+        /// </summary>
+        [DataMember]
+        public DateTime EndUtc { get; set; } = DateTime.UtcNow;
+    }
+
     /// <summary>
     /// 该项目使用的特定常量。
     /// </summary>

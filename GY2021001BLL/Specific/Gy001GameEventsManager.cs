@@ -220,12 +220,12 @@ namespace OW.Game
                 if (bodyTemplate is null)
                     return;
                 var head = new GameItem();
-                gameItem.Children.Add(head);
                 GameItemCreated(head, headTemplate, gameItem, null, null);
+                gameItem.Children.Add(head);
 
                 var body = new GameItem();
-                gameItem.Children.Add(body);
                 GameItemCreated(body, bodyTemplate, gameItem, null, null);
+                gameItem.Children.Add(body);
             }
         }
         #endregion 创建后初始化

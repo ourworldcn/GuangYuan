@@ -74,6 +74,11 @@ namespace GuangYuan.GY001.BLL
         /// The data is invalid.
         /// </summary>
         public const int ERROR_INVALID_DATA = 13;
+
+        /// <summary>
+        /// 操作试图超过实施定义的限制。
+        /// </summary>
+        public const int ERROR_IMPLEMENTATION_LIMIT = 1292;
     }
 
     /// <summary>

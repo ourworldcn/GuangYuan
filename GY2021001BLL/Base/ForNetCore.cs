@@ -17,6 +17,7 @@ using OW.Game.Item;
 using OW.Game.Mission;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -57,7 +58,7 @@ namespace GuangYuan.GY001.BLL
 #else
                thread.Start();
 #endif
-                Task.Run(LoadCache);
+                Task.Run(CreateGameManager);
                 var logger = _Services.GetService<ILogger<GameHostedService>>();
                 logger.LogInformation("游戏虚拟世界服务成功上线。");
             }, _Services, cancellationToken);
@@ -183,6 +184,7 @@ namespace GuangYuan.GY001.BLL
         private void Test()
         {
             var world = _Services.GetRequiredService<VWorld>();
+            decimal? deci=default;
             //using var db = world.CreateNewUserDbContext();
             //var ary = db.GameChars.OrderBy(c => c.Id).Skip(100).Take(20).Select(c => c.Id).ToArray();
 
@@ -195,10 +197,18 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 加载缓存。
+        /// 创建所有<see cref="VWorld"/>链接的游戏管理器以初始化缓存。
         /// </summary>
-        private void LoadCache()
+        private void CreateGameManager()
         {
+            var world = _Services.GetRequiredService<VWorld>();
+            var coll = from pi in world.GetType().GetProperties().OfType<PropertyInfo>()
+                       where typeof(GameManagerBase<>).IsAssignableFrom(pi.PropertyType)
+                       select pi;
+            foreach (var item in coll)
+            {
+                ;
+            }
             var logger = _Services.GetService<ILogger<GameItemTemplateManager>>();
             try
             {

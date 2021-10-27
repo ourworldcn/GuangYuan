@@ -2,11 +2,9 @@
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Text;
 
 namespace GuangYuan.GY001.UserDb.Combat
 {
@@ -28,9 +26,9 @@ namespace GuangYuan.GY001.UserDb.Combat
         [MaxLength(320)]    //保留能索引的能力
         public string AttackerIdString { get; set; }
 
-        List<Guid> _AttackerIds;
+        private List<Guid> _AttackerIds;
         /// <summary>
-        /// 攻击方Id集合。
+        /// 攻击方角色Id集合。
         /// </summary>
         [NotMapped]
         public List<Guid> AttackerIds
@@ -54,9 +52,9 @@ namespace GuangYuan.GY001.UserDb.Combat
         [MaxLength(320)]    //保留能索引的能力
         public string DefenserIdString { get; set; }
 
-        List<Guid> _DefenserIds;
+        private List<Guid> _DefenserIds;
         /// <summary>
-        /// 防御方Id集合。
+        /// 防御方角色Id集合。
         /// </summary>
         [NotMapped]
         public List<Guid> DefenserIds
@@ -74,7 +72,12 @@ namespace GuangYuan.GY001.UserDb.Combat
             }
         }
 
-        List<GameBooty> _BootyOfAttacker;
+        private List<GameBooty> _BootyOfAttacker;
+        /// <summary>
+        /// 获取战利品。
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public List<GameBooty> BootyOfAttacker(DbContext context)
         {
             if (_BootyOfAttacker is null)
@@ -100,6 +103,16 @@ namespace GuangYuan.GY001.UserDb.Combat
             }
             base.PrepareSaving(db);
         }
+
+        /// <summary>
+        /// 该战斗开始的Utc时间。
+        /// </summary>
+        public DateTime StartUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 该战斗结束的Utc时间。
+        /// </summary>
+        public DateTime EndUtc { get; set; } = DateTime.UtcNow;
 
         protected override void Dispose(bool disposing)
         {

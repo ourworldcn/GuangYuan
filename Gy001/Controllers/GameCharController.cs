@@ -518,35 +518,21 @@ namespace GY2021001WebApi.Controllers
         {
             var result = new SetHomelandFenggeReturnDto() { };
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-                return Unauthorized("令牌无效");
+            using var dwUser = world.CharManager.LockAndReturnDisposer(model.Token, out var gu);
+            if (dwUser is null)
+                return Unauthorized(VWorld.GetLastErrorMessage());
             try
             {
                 var gc = gu.CurrentChar;
                 var gitm = world.ItemTemplateManager;
-                var oldFengges = gc.GetFengges();
-                if (oldFengges.Count == 0) //若未初始化
-                    gc.MergeFangans(oldFengges, gitm);
                 var fengges = model.Fengges.Select(c => (HomelandFengge)c).ToArray();
-                for (int i = 0; i < fengges.Length; i++)
-                {
-                    var newFengge = fengges[i];
-                    var oldFengge = oldFengges.FirstOrDefault(c => c.Number == newFengge.Number);   //已有风格对象
-                    oldFengges.Remove(oldFengge);   //删除旧对象
-                    oldFengges.Add(newFengge);  //加入新对象
-                }
-                gc.MergeFangans(oldFengges, gitm);  //更新对象数据
-
-                world.CharManager.NotifyChange(gu);
+                world.CharManager.SetHomelandPlans(fengges, gc);
             }
-            catch (Exception err)
+            catch (Exception err) 
             {
-                result.DebugMessage = err.Message;
                 result.HasError = true;
-            }
-            finally
-            {
-                world.CharManager.Unlock(gu, true);
+                result.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                result.DebugMessage = err.Message;
             }
             return result;
         }
