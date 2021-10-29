@@ -65,6 +65,11 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid ShenWenBagSlotId = new Guid("88A4EED6-0AEB-4A70-8FDE-67F75E5E2C0A");
 
         /// <summary>
+        /// 时装装备槽。
+        /// </summary>
+        public static readonly Guid ShizhuangBagSlotId = new Guid("{a3c7e209-5d50-49df-8a78-21ff3faa213a}");
+
+        /// <summary>
         /// 当前坐骑的容器Id。出战坐骑。
         /// </summary>
         [Obsolete("下个版本可能会被删除。")]
@@ -740,6 +745,15 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetCurrencyBag(this GameChar gameChar) =>
             gameChar.GameItems.FirstOrDefault(c => ProjectConstant.CurrencyBagTId == c.TemplateId);
+
+        /// <summary>
+        /// 获取坐骑袋。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetZuoqiBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => ProjectConstant.ZuojiBagSlotId == c.TemplateId);
 
         /// <summary>
         /// 获取金币对象。

@@ -17,6 +17,7 @@ using System.Threading;
 
 namespace GuangYuan.GY001.BLL
 {
+
     /// <summary>
     /// GameCharManager类的配置类。
     /// </summary>

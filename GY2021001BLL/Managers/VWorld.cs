@@ -346,6 +346,11 @@ namespace OW.Game
         /// </summary>
         public GameSchedulerManager SchedulerManager => _SchedulerManager ??= Service.GetService<GameSchedulerManager>();
 
+        GameAdminManager _AdminManager;
+        /// <summary>
+        /// 获取管理员服务。
+        /// </summary>
+        public GameAdminManager AdminManager => _AdminManager ??= Service.GetService<GameAdminManager>();
         #endregion 子管理器
 
         #region 对象池
@@ -647,7 +652,7 @@ namespace OW.Game
             using var db = CreateNewUserDbContext();
             var coll = from tmp in db.Set<GameExtendProperty>().AsNoTracking()
                        where tmp.Name == ProjectConstant.ZhangLiName
-                       orderby tmp.DecimalValue, tmp.StringValue descending
+                       orderby tmp.DecimalValue descending, tmp.StringValue
                        select tmp;
             return coll.Take(topN).ToList();
         }

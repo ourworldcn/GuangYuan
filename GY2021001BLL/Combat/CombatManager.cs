@@ -2,6 +2,7 @@
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
+using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Mission;
 using System;
@@ -400,7 +401,7 @@ namespace GuangYuan.GY001.BLL
                         var mounts = new GameItem();
                         World.EventsManager.GameItemCreated(mounts, c.TemplateId, shouyiSlot, null,
                             new Dictionary<string, object>() { { "htid", gim.GetHeadTemplate(c).IdString }, { "btid", gim.GetBodyTemplate(c).IdString } });
-                        mounts.Properties["neatk"] = c.Properties.GetDecimalOrDefault("neatk",0);
+                        mounts.Properties["neatk"] = c.Properties.GetDecimalOrDefault("neatk", 0);
                         mounts.Properties["nemhp"] = c.Properties.GetDecimalOrDefault("nemhp", 0);
                         mounts.Properties["neqlt"] = c.Properties.GetDecimalOrDefault("neqlt", 0);
                         return mounts;
@@ -484,6 +485,57 @@ namespace GuangYuan.GY001.BLL
             return;
         }
 
+        #region PVP相关
+
+        public void UpDatePvpInfo(GameChar gameChar, DbContext context)
+        {
+
+        }
+
+        public const string PvpRankName = "PVP排行";
+
+        /// <summary>
+        /// 获取指定用户的pvp排名。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public int GetPvpRank(GameChar gameChar)
+        {
+            var context = gameChar.GameUser.DbContext;
+            var pvp = gameChar.GetPvpObject();
+            var coll = from tmp in context.Set<GameExtendProperty>()
+                       where tmp.Name == PvpRankName && (tmp.DecimalValue > pvp.Count || tmp.DecimalValue == pvp.Count && string.Compare(tmp.StringValue, gameChar.DisplayName) < 0)
+                       select tmp;
+            return coll.Count();
+        }
+
+        /// <summary>
+        /// 用角色的最新信息更新pvp排行的缓存数据。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        public void UpdatePvpInfo(GameChar gameChar)
+        {
+            var context = gameChar.GameUser.DbContext;
+            var pvp = gameChar.GetPvpObject();
+            var pvpInfo = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == PvpRankName);
+            if (pvpInfo is null)
+            {
+                pvpInfo = new GameExtendProperty()
+                {
+                    Id = gameChar.Id,
+                    Name = PvpRankName,
+                    DecimalValue = pvp.Count,
+                    StringValue = gameChar.DisplayName,
+                };
+                gameChar.ExtendProperties.Add(pvpInfo);
+            }
+            else
+            {
+                pvpInfo.DecimalValue = pvp.Count;
+                pvpInfo.StringValue = gameChar.DisplayName;
+            }
+        }
+
         /// <summary>
         /// pvp战斗结算。
         /// </summary>
@@ -495,6 +547,9 @@ namespace GuangYuan.GY001.BLL
             if (false)   //若免战
             {
             }
+            using var dwUser = datas.LockAll();
+            if (dwUser is null)
+                return;
             //分不同情况调用
             if (datas.DungeonTemplate.Id == ProjectConstant.PvpDungeonTId) //若是正常pvp
             {
@@ -508,8 +563,21 @@ namespace GuangYuan.GY001.BLL
             {
                 PvpForRetaliation(datas);
             }
-
-
+            if (!datas.HasError) //若成功
+            {
+                var pvp1 = datas.GameChar.ExtendProperties.FirstOrDefault(c => c.Name == PvpRankName);
+                var pvp2 = datas.OtherChar.ExtendProperties.FirstOrDefault(c => c.Name == PvpRankName);
+                datas.Combat.Properties["attackerRankBefore"] = GetPvpRank(datas.GameChar);   //进攻者排名
+                datas.Combat.Properties["attackerScoreBefore"] = pvp1.DecimalValue;  //进攻者积分
+                datas.Combat.Properties["defenderRankBefore"] = GetPvpRank(datas.OtherChar);
+                datas.Combat.Properties["defenderScoreBefore"] = pvp2.DecimalValue;
+                UpdatePvpInfo(datas.GameChar);
+                UpdatePvpInfo(datas.OtherChar);
+                datas.Combat.Properties["attackerRankAfter"] = GetPvpRank(datas.GameChar);   //进攻者排名
+                datas.Combat.Properties["attackerScoreAfter"] = pvp1.DecimalValue;  //进攻者积分
+                datas.Combat.Properties["defenderRankAfter"] = GetPvpRank(datas.OtherChar);
+                datas.Combat.Properties["defenderScoreAfter"] = pvp2.DecimalValue;
+            }
         }
 
         /// <summary>
@@ -551,6 +619,11 @@ namespace GuangYuan.GY001.BLL
             //移除攻击权
             todayData.LastValues.Remove(datas.OtherCharId);
             GameItem pvpObj, otherPvpObj;
+            //增加战报
+            PvpCombat pc = new PvpCombat()
+            {
+
+            };
             //计算等级分
             if (datas.IsWin) //若需要计算等级分
             {
@@ -569,15 +642,11 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             ///计算收益
-            //增加战报
-            PvpCombat pc = new PvpCombat()
-            {
-
-            };
             pc.AttackerIds.Add(datas.GameChar.Id);
             pc.DefenserIds.Add(datas.OtherCharId);
             //设置复仇权力
             pc.SetAssistanceDone(false);    //多余
+            datas.Combat = pc;
             db.Add(pc);
             //移除击杀权
             todayData.LastValues.Remove(datas.GameChar.Id);
@@ -703,6 +772,7 @@ namespace GuangYuan.GY001.BLL
             };
             pc.AttackerIds.Add(datas.GameChar.Id);
             pc.DefenserIds.Add(datas.OtherCharId);
+            datas.Combat = pc;
             db.Add(pc);
             //计算战利品
             if (datas.IsWin) //若反击胜利
@@ -773,6 +843,7 @@ namespace GuangYuan.GY001.BLL
             };
             pc.AttackerIds.Add(datas.GameChar.Id);
             pc.DefenserIds.Add(datas.OtherCharId);
+            datas.Combat = pc;
             db.Add(pc);
             //获取战利品
             IEnumerable<GameBooty> oriBooty = Array.Empty<GameBooty>();    //夺回战利品
@@ -817,6 +888,8 @@ namespace GuangYuan.GY001.BLL
                 }
             }
         }
+
+        #endregion PVP相关
 
         /// <summary>
         /// 校验时间。
@@ -1086,5 +1159,47 @@ namespace GuangYuan.GY001.BLL
             thing.Properties["mhp"] = (float)thing.GetDecimalOrDefault("mhp") * dic.GetValueOrDefault("mhp");
             thing.Properties["qlt"] = (float)thing.GetDecimalOrDefault("qlt") * dic.GetValueOrDefault("qlt");
         }
+
+        /// <summary>
+        /// 获取指定的战斗对象。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void GetCombat(GetCombatDatas datas)
+        {
+            using var dwUser = datas.LockUser();
+            if (dwUser is null)
+                return;
+            var idstring = datas.GameChar.IdString;
+            datas.CombatObject = datas.UserContext.Set<PvpCombat>().AsNoTracking().FirstOrDefault(c => c.Id == datas.CombatId /*&& (c.AttackerIdString.Contains(idstring) || c.DefenserIdString.Contains(idstring))*/);
+            if (datas.CombatObject is null)
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "找不到指定战斗对象，或没有参加该战斗。";
+            }
+            return;
+        }
+    }
+
+    /// <summary>
+    /// 获取战斗对象的工作数据对象。
+    /// </summary>
+    public class GetCombatDatas : ComplexWorkDatasBase
+    {
+        public GetCombatDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public GetCombatDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public GetCombatDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        public Guid CombatId { get; set; }
+
+        public PvpCombat CombatObject { get; set; }
     }
 }

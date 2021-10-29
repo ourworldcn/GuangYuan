@@ -301,6 +301,29 @@ namespace GuangYuan.GY001.BLL
             }
             return result;
         }
+
+        /// <summary>
+        /// 复制一个对象。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="srcItem"></param>
+        /// <param name="destItem"></param>
+        public static void Clone(this GameItemManager manager, GameItem srcItem,GameItem destItem)
+        {
+            foreach (var item in srcItem.Properties)
+            {
+                destItem.Properties[item.Key] = item.Value;
+            }
+            destItem.Count = srcItem.Count;
+            foreach (var item in srcItem.Children)
+            {
+                var subItem = manager.Clone(item);
+                subItem.Parent = destItem;
+                subItem.ParentId = destItem.Id;
+                destItem.Children.Add(subItem);
+            }
+        }
+
     }
 
 

@@ -184,7 +184,8 @@ namespace GuangYuan.GY001.BLL
         private void Test()
         {
             var world = _Services.GetRequiredService<VWorld>();
-            decimal? deci=default;
+           var str1= world.AdminManager.NewPassword(4);
+           var str2 = world.AdminManager.NewPassword(4);
             //using var db = world.CreateNewUserDbContext();
             //var ary = db.GameChars.OrderBy(c => c.Id).Skip(100).Take(20).Select(c => c.Id).ToArray();
 
@@ -197,34 +198,31 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 创建所有<see cref="VWorld"/>链接的游戏管理器以初始化缓存。
+        /// 创建所有<see cref="VWorld"/>链接的游戏管理器以初始化。
         /// </summary>
         private void CreateGameManager()
         {
             var world = _Services.GetRequiredService<VWorld>();
             var coll = from pi in world.GetType().GetProperties().OfType<PropertyInfo>()
-                       where typeof(GameManagerBase<>).IsAssignableFrom(pi.PropertyType)
+                       where pi.Name.EndsWith("Manager")
                        select pi;
+            int succ = 0;
             foreach (var item in coll)
             {
-                ;
+                if (null != item.GetValue(world))
+                    succ++;
             }
-            var logger = _Services.GetService<ILogger<GameItemTemplateManager>>();
+            var logger = _Services.GetService<ILogger<GameHostedService>>();
             try
             {
                 var gitm = _Services.GetService<GameItemTemplateManager>();
                 var templates = gitm.Id2Template;
-                logger?.LogInformation($"{DateTime.UtcNow:s}服务已上线，初始化加载{templates.Count}个模板数据进行缓存。");
             }
             catch (Exception err)
             {
                 logger?.LogError($"{DateTime.UtcNow:s}初始化发生异常{err.Message}", err);
             }
-
-            _Services.GetService<BlueprintManager>();
-            _Services.GetService<GamePropertyHelper>();
-            _Services.GetService<GameEventsManager>();
-            _Services.GetService<GameSchedulerManager>();
+            logger.LogInformation($"[{DateTime.UtcNow:s}]通用加速功能运行完毕。");
         }
 
         /// <summary>
@@ -357,6 +355,9 @@ namespace GuangYuan.GY001.BLL
 
             //加入任务管理器
             services.AddSingleton(c => new GameSchedulerManager(c, new SchedulerManagerOptions()));
+
+            //加入管理员服务
+            services.AddSingleton(c => new GameAdminManager(c, new AdminManagerOptions()));
         }
     }
 }

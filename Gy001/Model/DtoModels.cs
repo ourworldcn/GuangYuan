@@ -1894,6 +1894,32 @@ namespace GY2021001WebApi.Models
         public List<SetLineupItem> Settings { get; set; }
     }
 
+    /// <summary>
+    /// 获取战斗对象接口的返回值封装类
+    /// </summary>
+    [DataContract]
+    public class GetCombatObjectResultDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 战斗对象的数据，参见其具体说明。
+        /// </summary>
+        [DataMember]
+        public CombatDto CombatObject { get; set; }
+    }
+
+    /// <summary>
+    /// 获取战斗对象接口的参数封装类
+    /// </summary>
+    [DataContract]
+    public class GetCombatObjectParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 战斗对象的Id。
+        /// </summary>
+        [DataMember]
+        public string CombatId { get; set; }
+    }
+
     #endregion 战斗相关
 
     #region 社交相关
@@ -2712,5 +2738,57 @@ namespace GY2021001WebApi.Models
 
     #endregion 排行相关
 
+    #region 管理相关
+
+    [DataContract]
+    public class AccountSummery
+    {
+        /// <summary>
+        /// 登录名。
+        /// </summary>
+        [DataMember]
+        public string LoginName { get; set; }
+
+        /// <summary>
+        /// 密码。
+        /// </summary>
+        [DataMember]
+        public string Pwd { get; set; }
+    }
+
+    /// <summary>
+    /// 复制账号接口返回值的数据封装类。
+    /// </summary>
+    [DataContract]
+    public class CloneAccountReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 返回账号密码集合。Item1=账号，Item2=密码。
+        /// </summary>
+        [DataMember]
+        public List<AccountSummery> Account { get; set; } = new List<AccountSummery>();
+    }
+
+    /// <summary>
+    /// 复制账号接口参数封装类。
+    /// </summary>
+    [DataContract]
+    public class CloneAccountParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 复制多少个账号。
+        /// </summary>
+        [DataMember]
+        public int Count { get; set; }
+
+        /// <summary>
+        /// 登录名的前缀。
+        /// </summary>
+        [DataMember]
+        public string LoginNamePrefix { get; set; }
+
+    }
+
+    #endregion 管理相关
 }
 #pragma warning restore IDE0074 // 使用复合分配

@@ -47,6 +47,18 @@
             <returns></returns>
             <response code="400">意外错误。</response>
         </member>
+        <member name="T:GY2021001WebApi.Controllers.AdminController">
+            <summary>
+            与账号相关的操作控制器。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.CloneAccount(GY2021001WebApi.Models.CloneAccountParamsDto)">
+            <summary>
+            复制账号。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
             战斗相关的操作。这里的功能以后可能依据需求改为Udp。
@@ -76,6 +88,13 @@
         <member name="M:GY2021001WebApi.Controllers.CombatController.CombatEndPvp(GY2021001WebApi.Models.CombatEndPvpParamsDto)">
             <summary>
             PVP战斗结算。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.CombatController.GetCombatObject(GY2021001WebApi.Models.GetCombatObjectParamsDto)">
+            <summary>
+            获取指定的战斗对象。
             </summary>
             <param name="model"></param>
             <returns></returns>
@@ -1689,6 +1708,26 @@
             阵容设置集合，参见 SetLineupItem 说明。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetCombatObjectResultDto">
+            <summary>
+            获取战斗对象接口的返回值封装类
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetCombatObjectResultDto.CombatObject">
+            <summary>
+            战斗对象的数据，参见其具体说明。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetCombatObjectParamsDto">
+            <summary>
+            获取战斗对象接口的参数封装类
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetCombatObjectParamsDto.CombatId">
+            <summary>
+            战斗对象的Id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.RequestAssistanceParamsDto">
             <summary>
             
@@ -2107,10 +2146,51 @@
             自己在服务器中的排名。0表示第一，1表示第二，以此类推。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.AccountSummery.LoginName">
+            <summary>
+            登录名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.AccountSummery.Pwd">
+            <summary>
+            密码。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CloneAccountReturnDto">
+            <summary>
+            复制账号接口返回值的数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CloneAccountReturnDto.Account">
+            <summary>
+            返回账号密码集合。Item1=账号，Item2=密码。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CloneAccountParamsDto">
+            <summary>
+            复制账号接口参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CloneAccountParamsDto.Count">
+            <summary>
+            复制多少个账号。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CloneAccountParamsDto.LoginNamePrefix">
+            <summary>
+            登录名的前缀。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

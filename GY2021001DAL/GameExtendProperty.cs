@@ -11,6 +11,7 @@ namespace GuangYuan.GY001.UserDb
 {
     /// <summary>
     /// 服务器内部使用的通用扩展属性。
+    /// 这个对象视同为对应的主体对象的一部分，因此锁定在主体对象上，但任何部件都可能读取该对象在数据库中的存储。
     /// <see cref="Id"/> 和 <see cref="Name"/> 组成联合主键。
     /// </summary>
     public class GameExtendProperty : GameObjectBase

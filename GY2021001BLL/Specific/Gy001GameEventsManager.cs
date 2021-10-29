@@ -131,7 +131,7 @@ namespace OW.Game
             gc.SpecificExpandProperties = sep;
         }
 
-        public override void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, IReadOnlyDictionary<string, object> parameters)
+        public override void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, [AllowNull] IReadOnlyDictionary<string, object> parameters)
         {
             base.GameCharCreated(gameChar, template, user, displayName, parameters);
             var gitm = World.ItemTemplateManager;
@@ -195,6 +195,8 @@ namespace OW.Game
                 PropertiesString = $"CreateBy=CreateChar",
             };
             World.AddToUserContext(new object[] { ar });
+            //加入pvp排名信息
+            World.CombatManager.UpdatePvpInfo(gameChar);
         }
 
         /// <summary>
@@ -283,4 +285,12 @@ namespace OW.Game
         }
     }
 
+    public static class Gy001GameEventsManagerExtensions
+    {
+        public static void MountsCreated(this GameEventsManager manager, GameItem gameItem, GameThingBase parent, GameItemTemplate headTemplate, GameItemTemplate bodyTemplate)
+        {
+            manager.GameItemCreated(gameItem, null, parent is GameItem ? (GameItem)parent : null, parent is GameItem ? (Guid?)null : parent.Id,
+                new Dictionary<string, object>() { { "ht", headTemplate }, { "bt", bodyTemplate } });
+        }
+    }
 }

@@ -363,7 +363,7 @@ namespace OW.Game
         /// <param name="displayName">昵称。为null则不设置</param>
         /// <param name="parameters"></param>
         /// 
-        public virtual void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, IReadOnlyDictionary<string, object> parameters)
+        public virtual void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, [AllowNull] IReadOnlyDictionary<string, object> parameters)
         {
             GameThingCreated(gameChar, template, parameters);
             var gt = gameChar.Template;

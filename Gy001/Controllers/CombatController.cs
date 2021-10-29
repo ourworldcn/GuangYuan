@@ -112,6 +112,28 @@ namespace GY2021001WebApi.Controllers
             result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
             return result;
         }
+
+        /// <summary>
+        /// 获取指定的战斗对象。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public ActionResult<GetCombatObjectResultDto> GetCombatObject(GetCombatObjectParamsDto model)
+        {
+            var result = new GetCombatObjectResultDto();
+            GetCombatDatas datas = new GetCombatDatas(World, model.Token)
+            {
+                CombatId = GameHelper.FromBase64String(model.CombatId),
+            };
+            World.CombatManager.GetCombat(datas);
+            result.HasError = datas.HasError;
+            result.ErrorCode = datas.ErrorCode;
+            result.DebugMessage = datas.ErrorMessage;
+            if (!datas.HasError)
+                result.CombatObject = datas.CombatObject;
+            return result;
+        }
     }
 
 }

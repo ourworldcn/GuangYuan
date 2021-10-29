@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,6 @@ namespace Gy001.Controllers
 
         VWorld _World;
 
-        public VWorld World { get => _World; set => _World = value; }
+        public VWorld World { get => _World ??= HttpContext.RequestServices.GetService<VWorld>(); set => _World = value; }
     }
 }

@@ -989,6 +989,8 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+        #region 神纹相关
+
         /// <summary>
         /// 神纹升级。
         /// </summary>
@@ -1059,6 +1061,16 @@ namespace GuangYuan.GY001.BLL
             datas.SuccCount = (int)maxCount;
             datas.ChangeItems.AddToChanges(gi, daoju);
         }
+
+        /// <summary>
+        /// 神纹突破。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void ShenwenTupo(ApplyBlueprintDatas datas)
+        {
+
+        }
+        #endregion 神纹相关
 
         /// <summary>
         /// 升级完成的处理函数。
@@ -1139,7 +1151,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         #endregion 通用功能
-
 
         #region 家园相关
 
@@ -1307,7 +1318,7 @@ namespace GuangYuan.GY001.BLL
                 decimal cost = tm switch //需要花费的钻石
                 {
                     _ when tm <= 5m => 0,
-                    _ => Math.Ceiling(tm - 5),
+                    _ => Math.Ceiling(tm - 5) * 10,
                 };
                 if (cost > 0)   //若需要钻石
                 {
@@ -1652,7 +1663,7 @@ namespace GuangYuan.GY001.BLL
             //计算所需钻石
             GameItem zuanshi = datas.GameChar.GetZuanshi();    //钻石
             DateTime dt = DateTime.UtcNow;
-            decimal tm = (fcp.MaxValue - fcp.GetCurrentValue(ref dt)) / 60;
+            decimal tm = (fcp.MaxValue - fcp.GetCurrentValue(ref dt)) / 60;  //每分钟10钻
             decimal cost;
             if (tm <= 5)   //若不收费
             {
@@ -1660,7 +1671,7 @@ namespace GuangYuan.GY001.BLL
             }
             else
             {
-                cost = Math.Ceiling(tm - 5);
+                cost = Math.Ceiling(tm - 5) * 10;
             }
 
             if (!datas.Verify(cost <= zuanshi.Count, $"需要{cost}钻石,但目前仅有{zuanshi.Count}个钻石。"))

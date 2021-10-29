@@ -53,6 +53,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 return _Combat;
             }
+            set => _Combat = value;
         }
 
         /// <summary>

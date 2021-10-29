@@ -606,7 +606,7 @@ namespace OW.Game.Item
                     result = gChar.GetItemBag();
                     break;
                 case 26:    //时装
-                    result = null;
+                    result = gChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShizhuangBagSlotId);
                     break;
                 case 99:    //货币
                     result = gChar.GetCurrencyBag();
@@ -1591,6 +1591,14 @@ namespace OW.Game.Item
         /// <returns></returns>
         public static GameItem GetItemBag(this GameChar gameChar) =>
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);
+
+        /// <summary>
+        /// 获取时装背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static GameItem GetShizhuangBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShizhuangBagSlotId);
 
         /// <summary>
         /// 获取坐骑背包。
