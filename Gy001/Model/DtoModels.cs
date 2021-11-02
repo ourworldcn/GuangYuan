@@ -1844,6 +1844,8 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class CombatEndPvpReturnDto : ChangesAndMailReturnDtoBase
     {
+        [DataMember]
+        public CombatDto Combat { get; set; }
     }
 
     /// <summary>

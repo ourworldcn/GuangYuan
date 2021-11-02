@@ -33,11 +33,12 @@ namespace GuangYuan.GY001.BLL
             const string prefix = "vip";
             var context = datas.UserContext;
             var loginNames = context.Set<GameUser>().Where(c => c.LoginName.StartsWith(prefix)).Select(c => (c.LoginName));    //获取已有登录名
-            var lastIndex = loginNames.ToList().Select(c =>
-            {
-                var str = c[prefix.Length..];
-                return int.TryParse(str, out var number) ? number : 0;
-            }).Max();   //最大尾号
+            var listNames = loginNames.ToList();
+            var lastIndex = listNames.Count == 0 ? -1 : loginNames.ToList().Select(c =>
+                 {
+                     var str = c[prefix.Length..];
+                     return int.TryParse(str, out var number) ? number : 0;
+                 }).Max();   //最大尾号
             List<(string, string, string)> list = new List<(string, string, string)>();
             for (int i = 0; i < datas.Count; i++)   //生成账号数据
             {
@@ -115,13 +116,16 @@ namespace GuangYuan.GY001.BLL
                 destSlot = destChar.GetCurrencyBag();
                 foreach (var srcItem in srcSlot.Children)
                 {
-                    var destItem = destSlot.Children.FirstOrDefault(c => c.TemplateId == srcChar.TemplateId);
+                    var destItem = destSlot.Children.FirstOrDefault(c => c.TemplateId == srcItem.TemplateId);
                     if (destItem is null)
                     {
                         destItem = new GameItem();
                         World.EventsManager.GameItemCreated(destItem, srcItem.TemplateId);
+                        World.ItemManager.Clone(srcItem, destItem);
+                        World.ItemManager.AddItem(destItem, destSlot);
                     }
-                    World.ItemManager.Clone(srcItem, destItem);
+                    else
+                        World.ItemManager.Clone(srcItem, destItem);
                 }
                 #endregion 货币
 
@@ -130,13 +134,16 @@ namespace GuangYuan.GY001.BLL
                 destSlot = destChar.GetItemBag();
                 foreach (var srcItem in srcSlot.Children)
                 {
-                    var destItem = destSlot.Children.FirstOrDefault(c => c.TemplateId == srcChar.TemplateId);
+                    var destItem = destSlot.Children.FirstOrDefault(c => c.TemplateId == srcItem.TemplateId);
                     if (destItem is null)
                     {
                         destItem = new GameItem();
                         World.EventsManager.GameItemCreated(destItem, srcItem.TemplateId);
+                        World.ItemManager.Clone(srcItem, destItem);
+                        World.ItemManager.AddItem(destItem, destSlot);
                     }
-                    World.ItemManager.Clone(srcItem, destItem);
+                    else
+                        World.ItemManager.Clone(srcItem, destItem);
                 }
                 #endregion 道具
 
@@ -145,13 +152,16 @@ namespace GuangYuan.GY001.BLL
                 destSlot = destChar.GetShizhuangBag();
                 foreach (var srcItem in srcSlot.Children)
                 {
-                    var destItem = destSlot.Children.FirstOrDefault(c => c.TemplateId == srcChar.TemplateId);
+                    var destItem = destSlot.Children.FirstOrDefault(c => c.TemplateId == srcItem.TemplateId);
                     if (destItem is null)
                     {
                         destItem = new GameItem();
                         World.EventsManager.GameItemCreated(destItem, srcItem.TemplateId);
+                        World.ItemManager.Clone(srcItem, destItem);
+                        World.ItemManager.AddItem(destItem, destSlot);
                     }
-                    World.ItemManager.Clone(srcItem, destItem);
+                    else
+                        World.ItemManager.Clone(srcItem, destItem);
                 }
                 #endregion 时装
                 //背包容量
@@ -159,7 +169,7 @@ namespace GuangYuan.GY001.BLL
                     GameItem srcItem, destItem;
                     srcItem = srcChar.GetShoulanBag();
                     destItem = destChar.GetShoulanBag();
-                    destItem.Properties[ProjectConstant.ContainerCapacity] = srcChar.Properties.GetDecimalOrDefault(ProjectConstant.ContainerCapacity);
+                    destItem.Properties[ProjectConstant.ContainerCapacity] = srcItem.Properties.GetDecimalOrDefault(ProjectConstant.ContainerCapacity);
                 }
             }
         }

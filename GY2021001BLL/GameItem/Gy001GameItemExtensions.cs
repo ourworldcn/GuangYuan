@@ -1,5 +1,7 @@
-﻿using GuangYuan.GY001.TemplateDb;
+﻿using GuangYuan.GY001.BLL.Homeland;
+using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using OW.Game.Item;
 using System;
@@ -12,8 +14,219 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 针对坐骑/野兽相关的扩展。
     /// </summary>
-    public static class MountsExtensions
+    public static class Gy001GameItemExtensions
     {
+
+        /// <summary>
+        /// 在指定集合中寻找指定模板Id的第一个对象。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="parent"></param>
+        /// <param name="templateId"></param>
+        /// <param name="msg"></param>
+        /// <returns>找到的第一个对象，null没有找到，msg给出提示信息。</returns>
+        public static GameItem FindFirstOrDefault(this GameItemManager manager, IEnumerable<GameItem> parent, Guid templateId, out string msg)
+        {
+            var result = parent.FirstOrDefault(c => c.TemplateId == templateId);
+            if (result is null)
+                msg = $"找不到指定模板Id的物品，TemplateId={templateId}";
+            else
+                msg = null;
+            return result;
+        }
+
+        /// <summary>
+        /// 可移动的物品GIds。
+        /// </summary>
+        private static readonly int[] moveableGIds = new int[] { 11, 40, 41 };
+
+        /// <summary>
+        /// 激活风格。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="datas"></param>
+        public static void ActiveStyle(this GameItemManager manager, ActiveStyleDatas datas)
+        {
+            var gcManager = manager.Service.GetRequiredService<GameCharManager>();
+            if (!gcManager.Lock(datas.GameChar.GameUser))
+            {
+                datas.HasError = true;
+                datas.Message = "无法锁定用户。";
+            }
+            try
+            {
+                var gitm = manager.Service.GetRequiredService<GameItemTemplateManager>();
+                var hl = datas.GameChar.GetHomeland();
+                var builderBag = hl.Children.First(c => c.TemplateId == ProjectConstant.HomelandBuilderBagTId);
+                var dic = datas.Fangan.FanganItems.SelectMany(c => c.ItemIds).Distinct().Join(hl.AllChildren, c => c, c => c.Id, (l, r) => r).ToDictionary(c => c.Id);
+                dic[hl.Id] = hl;    //包括家园
+                foreach (var item in datas.Fangan.FanganItems)
+                {
+                    var destParent = dic.GetValueOrDefault(item.ContainerId);
+                    if (destParent is null)  //若找不到目标容器
+                        continue;
+                    //将可移动物品收回包裹（除捕获竿）
+                    manager.MoveItems(destParent, c => c.GetCatalogNumber() != 11 && moveableGIds.Contains(c.GetCatalogNumber()), builderBag, datas.ItemChanges);
+                    //改变容器模板
+                    var container = dic.GetValueOrDefault(item.ContainerId);
+                    if (container is null)  //若找不到容器对象
+                        continue;
+                    if (item.NewTemplateId.HasValue && item.NewTemplateId != Guid.Empty) //若需要改变容器模板
+                    {
+                        var newContainer = gitm.GetTemplateFromeId(item.NewTemplateId.Value);
+                        container.ChangeTemplate(newContainer);
+                    }
+                    if (destParent.IsDikuai())   //若容器是地块
+                        foreach (var id in item.ItemIds)    //添加物品
+                        {
+                            var gameItem = dic.GetValueOrDefault(id);
+                            if (gameItem is null)   //若不是家园内物品
+                                continue;
+                            if (!moveableGIds.Contains(gameItem.GetCatalogNumber()))  //若不可移动
+                                continue;
+                            manager.ForceMove(gameItem, destParent);
+                            //manager.MoveItems(manager.GetContainer(gameItem), c => c.Id == gameItem.Id, destParent, datas.ItemChanges);
+                        }
+                }
+                manager.World.CharManager.NotifyChange(datas.GameChar.GameUser);
+            }
+            catch (Exception err)
+            {
+                datas.HasError = true;
+                datas.Message = err.Message;
+            }
+            finally
+            {
+                gcManager.Unlock(datas.GameChar.GameUser, true);
+            }
+        }
+
+        /// <summary>
+        /// 获取指定双亲符合条件的图鉴。
+        /// </summary>
+        /// <param name="mng"></param>
+        /// <param name="gameChar">角色对象。</param>
+        /// <param name="t1Body">第一个身体模板。</param>
+        /// <param name="t2Body">第二个身体模板。</param>
+        /// <returns>符合要求的模板输出的值元组 (头模板Id,身体模板Id,概率)。没有找到图鉴可能返回空。</returns>
+        public static (Guid, Guid, decimal)? GetTujianResult(this GameItemManager mng, GameChar gameChar, GameItemTemplate t1Body, GameItemTemplate t2Body)
+        {
+            var gitm = mng.Service.GetRequiredService<GameItemTemplateManager>();
+            var tujianBag = gameChar.GetZuojiBag(); //图鉴背包
+            var tujian = tujianBag.Children.FirstOrDefault(c => //图鉴
+            {
+                var bd1 = c.Template.Properties.GetDecimalOrDefault("hbab");
+                var bd2 = c.Template.Properties.GetDecimalOrDefault("hbbb");
+                return bd1 == t1Body.CatalogNumber && bd2 == t2Body.CatalogNumber || bd2 == t1Body.CatalogNumber && bd1 == t2Body.CatalogNumber;
+            });
+            if (tujian is null)
+                return null;
+            var hTId = tujian.Properties.GetGuidOrDefault("outheadtid", Guid.Empty);
+            var bTId = tujian.Properties.GetGuidOrDefault("outbodytid", Guid.Empty);
+            var prob = tujian.Properties.GetDecimalOrDefault("hbsr");
+            return (hTId, bTId, prob);
+        }
+
+        /// <summary>
+        /// 用物品信息填充简要信息。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="source"></param>
+        /// <param name="dest"></param>
+        public static void Fill(this GameItemManager manager, GameItem source, GameItemSummery dest)
+        {
+            if (source.Id != Guid.Empty)
+                dest.Id = source.Id;
+            dest.TemplateId = source.TemplateId;
+            dest.Count = source.Count;
+            foreach (var item in source.Properties)
+                dest.Properties[item.Key] = item.Value;
+        }
+
+        /// <summary>
+        /// 用简要信息填充物品信息。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="source"></param>
+        /// <param name="dest"></param>
+        public static void Fill(this GameItemManager manager, GameItemSummery source, GameItem dest)
+        {
+            if (source.Id != Guid.Empty)
+                dest.Id = source.Id;
+            dest.TemplateId = source.TemplateId;
+            dest.Count = source.Count;
+            foreach (var item in source.Properties)
+                dest.Properties[item.Key] = item.Value;
+        }
+
+        #region 获取特定对象的快捷方式
+
+        /// <summary>
+        /// 获取孵化槽。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static GameItem GetFuhuaSlot(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);
+
+        /// <summary>
+        /// 获取道具背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static GameItem GetItemBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);
+
+        /// <summary>
+        /// 获取时装背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static GameItem GetShizhuangBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShizhuangBagSlotId);
+
+        /// <summary>
+        /// 获取坐骑背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static GameItem GetZuojiBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);
+
+        /// <summary>
+        /// 获取兽栏对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static GameItem GetShoulanBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
+
+        /// <summary>
+        /// 获取神纹背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static GameItem GetShenwenBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShenWenBagSlotId);
+
+        /// <summary>
+        /// 按指定Id获取坐骑。仅从坐骑包中获取。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="id">坐骑的唯一Id。</param>
+        /// <returns>如果没有找到则返回null。</returns>
+        public static GameItem GetMounetsFromId(this GameChar gameChar, Guid id) =>
+            gameChar.GetZuojiBag()?.Children.FirstOrDefault(c => c.Id == id);
+
+        /// <summary>
+        /// 获取图鉴背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static GameItem GetTujianBag(this GameChar gameChar) =>
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.TujianBagTId);
+
+        #endregion 获取特定对象的快捷方式
 
         public static void Fill(this GameItemManager manager, GameItem source, GY001GameItemSummery dest)
         {
@@ -265,7 +478,7 @@ namespace GuangYuan.GY001.BLL
             else
             {
                 result = new GameItem();
-                manager.World.EventsManager.GameItemCreated(result,tid);
+                manager.World.EventsManager.GameItemCreated(result, tid);
             }
             if (count == 0)    //若需要设置数量
                 if (result.IsStc(out _))    //若可以堆叠
@@ -278,11 +491,11 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 
+        /// 复制一个物品对象。
         /// </summary>
         /// <param name="manager"></param>
-        /// <param name="gameItem"></param>
-        /// <returns></returns>
+        /// <param name="gameItem">源对象。</param>
+        /// <returns>目标对象。</returns>
         public static GameItem Clone(this GameItemManager manager, GameItem gameItem)
         {
             var result = new GameItem();
@@ -306,10 +519,12 @@ namespace GuangYuan.GY001.BLL
         /// 复制一个对象。
         /// </summary>
         /// <param name="manager"></param>
-        /// <param name="srcItem"></param>
-        /// <param name="destItem"></param>
-        public static void Clone(this GameItemManager manager, GameItem srcItem,GameItem destItem)
+        /// <param name="srcItem">源对象。</param>
+        /// <param name="destItem">目标对象。</param>
+        public static void Clone(this GameItemManager manager, GameItem srcItem, GameItem destItem)
         {
+            destItem.TemplateId = srcItem.TemplateId;
+            destItem.Template = srcItem.Template;
             foreach (var item in srcItem.Properties)
             {
                 destItem.Properties[item.Key] = item.Value;

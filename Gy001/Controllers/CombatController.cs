@@ -110,6 +110,7 @@ namespace GY2021001WebApi.Controllers
             result.HasError = datas.HasError;
             result.DebugMessage = datas.ErrorMessage;
             result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+            result.Combat = datas.Combat;
             return result;
         }
 

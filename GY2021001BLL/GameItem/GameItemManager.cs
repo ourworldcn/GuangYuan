@@ -4,16 +4,18 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OW.Game.Item
 {
@@ -1458,215 +1460,142 @@ namespace OW.Game.Item
         public GameChar GameChar { get; set; }
     }
 
+    /// <summary>
+    /// 封装<see cref="GameItemManager"/>扩展方法。
+    /// </summary>
     public static class GameItemManagerExtensions
     {
-        /// <summary>
-        /// 用物品信息填充简要信息。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="source"></param>
-        /// <param name="dest"></param>
-        public static void Fill(this GameItemManager manager, GameItem source, GameItemSummery dest)
+        public static void Fill([NotNull] this GameItemManager manager, [NotNull] IEnumerable<GameItem> gameItems, [NotNull] BinaryWriter writer)
         {
-            if (source.Id != Guid.Empty)
-                dest.Id = source.Id;
-            dest.TemplateId = source.TemplateId;
-            dest.Count = source.Count;
-            foreach (var item in source.Properties)
-                dest.Properties[item.Key] = item.Value;
+            var count = gameItems.Count();
+            writer.Write(count);
+            foreach (var item in gameItems)
+            {
+                manager.Fill(item, writer);
+            }
         }
 
-        /// <summary>
-        /// 用简要信息填充物品信息。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="source"></param>
-        /// <param name="dest"></param>
-        public static void Fill(this GameItemManager manager, GameItemSummery source, GameItem dest)
+        public static void Fill(this GameItemManager manager, GameItem gameItem, BinaryWriter writer)
         {
-            if (source.Id != Guid.Empty)
-                dest.Id = source.Id;
-            dest.TemplateId = source.TemplateId;
-            dest.Count = source.Count;
-            foreach (var item in source.Properties)
-                dest.Properties[item.Key] = item.Value;
-        }
-
-        /// <summary>
-        /// 在指定集合中寻找指定模板Id的第一个对象。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="parent"></param>
-        /// <param name="templateId"></param>
-        /// <param name="msg"></param>
-        /// <returns>找到的第一个对象，null没有找到，msg给出提示信息。</returns>
-        public static GameItem FindFirstOrDefault(this GameItemManager manager, IEnumerable<GameItem> parent, Guid templateId, out string msg)
-        {
-            var result = parent.FirstOrDefault(c => c.TemplateId == templateId);
-            if (result is null)
-                msg = $"找不到指定模板Id的物品，TemplateId={templateId}";
-            else
-                msg = null;
-            return result;
-        }
-
-        /// <summary>
-        /// 可移动的物品GIds。
-        /// </summary>
-        private static readonly int[] moveableGIds = new int[] { 11, 40, 41 };
-
-        /// <summary>
-        /// 激活风格。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="datas"></param>
-        public static void ActiveStyle(this GameItemManager manager, ActiveStyleDatas datas)
-        {
-            var gcManager = manager.Service.GetRequiredService<GameCharManager>();
-            if (!gcManager.Lock(datas.GameChar.GameUser))
+            writer.Write(gameItem.ClientGutsString ?? string.Empty);
+            writer.Write(gameItem.Count);
+            writer.Write(gameItem.CreateUtc);
+            writer.Write(gameItem.Id);
+            writer.Write(gameItem.OwnerId);
+            writer.Write(gameItem.ParentId);
+            writer.Write(OwConvert.ToString(gameItem.Properties) ?? string.Empty);
+            writer.Write(gameItem.TemplateId);
+            writer.Write(gameItem.Children.Count);
+            foreach (var item in gameItem.Children)
             {
-                datas.HasError = true;
-                datas.Message = "无法锁定用户。";
-            }
-            try
-            {
-                var gitm = manager.Service.GetRequiredService<GameItemTemplateManager>();
-                var hl = datas.GameChar.GetHomeland();
-                var builderBag = hl.Children.First(c => c.TemplateId == ProjectConstant.HomelandBuilderBagTId);
-                var dic = datas.Fangan.FanganItems.SelectMany(c => c.ItemIds).Distinct().Join(hl.AllChildren, c => c, c => c.Id, (l, r) => r).ToDictionary(c => c.Id);
-                dic[hl.Id] = hl;    //包括家园
-                foreach (var item in datas.Fangan.FanganItems)
-                {
-                    var destParent = dic.GetValueOrDefault(item.ContainerId);
-                    if (destParent is null)  //若找不到目标容器
-                        continue;
-                    //将可移动物品收回包裹（除捕获竿）
-                    manager.MoveItems(destParent, c => c.GetCatalogNumber() != 11 && moveableGIds.Contains(c.GetCatalogNumber()), builderBag, datas.ItemChanges);
-                    //改变容器模板
-                    var container = dic.GetValueOrDefault(item.ContainerId);
-                    if (container is null)  //若找不到容器对象
-                        continue;
-                    if (item.NewTemplateId.HasValue && item.NewTemplateId != Guid.Empty) //若需要改变容器模板
-                    {
-                        var newContainer = gitm.GetTemplateFromeId(item.NewTemplateId.Value);
-                        container.ChangeTemplate(newContainer);
-                    }
-                    if (destParent.IsDikuai())   //若容器是地块
-                        foreach (var id in item.ItemIds)    //添加物品
-                        {
-                            var gameItem = dic.GetValueOrDefault(id);
-                            if (gameItem is null)   //若不是家园内物品
-                                continue;
-                            if (!moveableGIds.Contains(gameItem.GetCatalogNumber()))  //若不可移动
-                                continue;
-                            manager.ForceMove(gameItem, destParent);
-                            //manager.MoveItems(manager.GetContainer(gameItem), c => c.Id == gameItem.Id, destParent, datas.ItemChanges);
-                        }
-                }
-                manager.World.CharManager.NotifyChange(datas.GameChar.GameUser);
-            }
-            catch (Exception err)
-            {
-                datas.HasError = true;
-                datas.Message = err.Message;
-            }
-            finally
-            {
-                gcManager.Unlock(datas.GameChar.GameUser, true);
+                manager.Fill(item, writer);
             }
         }
 
         /// <summary>
-        /// 获取孵化槽。
+        /// 填充对象，调用者需要调用<see cref="GameEventsManager.GameItemLoaded(GameItem)"/>以完成加载后的初始化工作。
         /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        public static GameItem GetFuhuaSlot(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);
-
-        /// <summary>
-        /// 获取道具背包。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        public static GameItem GetItemBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);
-
-        /// <summary>
-        /// 获取时装背包。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        public static GameItem GetShizhuangBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShizhuangBagSlotId);
-
-        /// <summary>
-        /// 获取坐骑背包。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        public static GameItem GetZuojiBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);
-
-        /// <summary>
-        /// 获取兽栏对象。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        public static GameItem GetShoulanBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
-
-        /// <summary>
-        /// 获取神纹背包。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        public static GameItem GetShenwenBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShenWenBagSlotId);
-
-        /// <summary>
-        /// 按指定Id获取坐骑。仅从坐骑包中获取。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="id">坐骑的唯一Id。</param>
-        /// <returns>如果没有找到则返回null。</returns>
-        public static GameItem GetMounetsFromId(this GameChar gameChar, Guid id) =>
-            gameChar.GetZuojiBag()?.Children.FirstOrDefault(c => c.Id == id);
-
-        /// <summary>
-        /// 获取图鉴背包。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        public static GameItem GetTujianBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.TujianBagTId);
-
-        /// <summary>
-        /// 获取指定双亲符合条件的图鉴。
-        /// </summary>
-        /// <param name="mng"></param>
-        /// <param name="gameChar">角色对象。</param>
-        /// <param name="t1Body">第一个身体模板。</param>
-        /// <param name="t2Body">第二个身体模板。</param>
-        /// <returns>符合要求的模板输出的值元组 (头模板Id,身体模板Id,概率)。没有找到图鉴可能返回空。</returns>
-        public static (Guid, Guid, decimal)? GetTujianResult(this GameItemManager mng, GameChar gameChar, GameItemTemplate t1Body, GameItemTemplate t2Body)
+        /// <param name="manager"></param>
+        /// <param name="reader"></param>
+        /// <param name="gameItem"></param>
+        public static void Fill(this GameItemManager manager, BinaryReader reader, GameItem gameItem)
         {
-            var gitm = mng.Service.GetRequiredService<GameItemTemplateManager>();
-            var tujianBag = gameChar.GetZuojiBag(); //图鉴背包
-            var tujian = tujianBag.Children.FirstOrDefault(c => //图鉴
+            gameItem.ClientGutsString = reader.ReadString();
+            gameItem.Count = reader.ReadNullableDecimal();
+            gameItem.CreateUtc = reader.ReadDateTime();
+            gameItem.Id = reader.ReadGuid();
+            gameItem.OwnerId = reader.ReadNullableGuid();
+            gameItem.ParentId = reader.ReadNullableGuid();
+            gameItem.PropertiesString = reader.ReadString();
+            gameItem.TemplateId = reader.ReadGuid();
+            var count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
             {
-                var bd1 = c.Template.Properties.GetDecimalOrDefault("hbab");
-                var bd2 = c.Template.Properties.GetDecimalOrDefault("hbbb");
-                return bd1 == t1Body.CatalogNumber && bd2 == t2Body.CatalogNumber || bd2 == t1Body.CatalogNumber && bd1 == t2Body.CatalogNumber;
+                var gi = new GameItem();
+                manager.Fill(reader, gi);
+                gameItem.Children.Add(gi);
+            }
+            gameItem.Children.ForEach(c =>
+            {
+                c.Parent = gameItem;
             });
-            if (tujian is null)
-                return null;
-            var hTId = tujian.Properties.GetGuidOrDefault("outheadtid", Guid.Empty);
-            var bTId = tujian.Properties.GetGuidOrDefault("outbodytid", Guid.Empty);
-            var prob = tujian.Properties.GetDecimalOrDefault("hbsr");
-            return (hTId, bTId, prob);
         }
 
+        public static void Fill(this GameItemManager manager, BinaryReader reader, ICollection<GameItem> gameItems)
+        {
+            var count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                var gi = new GameItem();
+                manager.Fill(reader, gi);
+                gameItems.Add(gi);
+            }
+        }
+    }
+
+    public static class BinaryExtensions
+    {
+        #region 读取器扩展
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Guid ReadGuid(this BinaryReader reader)
+        {
+            var guts = reader.ReadBytes(16);
+            return new Guid(guts);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DateTime ReadDateTime(this BinaryReader reader)
+        {
+            return new DateTime(reader.ReadInt64());
+        }
+
+        public static decimal? ReadNullableDecimal(this BinaryReader reader)
+        {
+            if (!reader.ReadBoolean())
+                return null;
+            return reader.ReadDecimal();
+        }
+
+        public static Guid? ReadNullableGuid(this BinaryReader reader)
+        {
+            if (!reader.ReadBoolean())
+                return null;
+            return reader.ReadGuid();
+        }
+
+        #endregion 读取器扩展
+
+        #region 写入器扩展
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Write(this BinaryWriter writer, Guid guid)
+        {
+            writer.Write(guid.ToByteArray());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Write(this BinaryWriter writer, DateTime dateTime)
+        {
+            writer.Write(dateTime.Ticks);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Write(this BinaryWriter writer, decimal? obj)
+        {
+            writer.Write(obj.HasValue);
+            if (obj.HasValue)
+                writer.Write(obj.Value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Write(this BinaryWriter writer, Guid? obj)
+        {
+            writer.Write(obj.HasValue);
+            if (obj.HasValue)
+                writer.Write(obj.Value);
+        }
+        #endregion 写入器扩展
     }
 
     /// <summary>
@@ -1710,4 +1639,49 @@ namespace OW.Game.Item
         }
     }
 
+    public class GameItemJsonConverter : JsonConverter<GameItem>
+    {
+        public override GameItem Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            var result = new GameItem();
+
+            reader.Read();
+
+            result.Id = reader.GetGuid();
+            return result;
+        }
+
+        public override void Write(Utf8JsonWriter writer, GameItem value, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            writer.WriteString(nameof(value.Id), value.Id);
+            writer.WriteString(nameof(value.TemplateId), value.TemplateId);
+            if (value.Count is null)
+                writer.WriteNull(nameof(value.Count));
+            else
+                writer.WriteNumber(nameof(value.Count), value.Count.Value);
+            writer.WriteStartObject(nameof(value.Properties));
+            foreach (var item in value.Properties)
+            {
+                if (item.Value is null)
+                    writer.WriteNull(item.Key);
+                else
+                    writer.WriteString(item.Key, item.Value.ToString());
+            }
+            writer.WriteEndObject();
+            writer.WriteStartArray(nameof(value.Children));
+            foreach (var item in value.Children)
+            {
+                Write(writer, item, options);
+            }
+            writer.WriteEndArray();
+            if (value.OwnerId is null)
+                writer.WriteNull(nameof(value.OwnerId));
+            else
+                writer.WriteString(nameof(value.OwnerId), value.OwnerId.Value);
+            writer.WriteString(nameof(value.ClientGutsString), value.ClientGutsString);
+            writer.WriteString(nameof(value.CreateUtc), value.CreateUtc);
+            writer.WriteEndObject();
+        }
+    }
 }

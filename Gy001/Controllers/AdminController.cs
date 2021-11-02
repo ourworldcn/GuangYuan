@@ -30,7 +30,11 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<CloneAccountReturnDto> CloneAccount(CloneAccountParamsDto model)
         {
             var result = new CloneAccountReturnDto();
-            using var datas = new CloneUserDatas(_World, model.Token);
+            using var datas = new CloneUserDatas(_World, model.Token)
+            {
+                Count=model.Count,
+                LoginNamePrefix=model.LoginNamePrefix,
+            };
             World.AdminManager.CloneUser(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;

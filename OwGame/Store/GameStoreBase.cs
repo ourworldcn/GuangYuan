@@ -180,7 +180,7 @@ namespace OW.Game.Store
                 if (_Properties is null)
                 {
                     _Properties = new Dictionary<string, object>();
-                    OwHelper.AnalysePropertiesString(PropertiesString, _Properties);
+                    OwHelper.Fill(PropertiesString, _Properties);
                 }
                 return _Properties;
             }
@@ -204,7 +204,7 @@ namespace OW.Game.Store
         {
             if (_Properties is null) //若未初始化字典
                 return; //不变更属性
-            PropertiesString = OwHelper.ToPropertiesString(Properties);
+            PropertiesString = OwConvert.ToString(Properties);
         }
 
         /// <summary>

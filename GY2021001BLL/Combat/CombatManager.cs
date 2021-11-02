@@ -565,8 +565,8 @@ namespace GuangYuan.GY001.BLL
             }
             if (!datas.HasError) //若成功
             {
-                var pvp1 = datas.GameChar.ExtendProperties.FirstOrDefault(c => c.Name == PvpRankName);
-                var pvp2 = datas.OtherChar.ExtendProperties.FirstOrDefault(c => c.Name == PvpRankName);
+                var pvp1 = datas.GameChar.GetOrAddPvpExtendProperty();
+                var pvp2 = datas.OtherChar.GetOrAddPvpExtendProperty();
                 datas.Combat.Properties["attackerRankBefore"] = GetPvpRank(datas.GameChar);   //进攻者排名
                 datas.Combat.Properties["attackerScoreBefore"] = pvp1.DecimalValue;  //进攻者积分
                 datas.Combat.Properties["defenderRankBefore"] = GetPvpRank(datas.OtherChar);
@@ -577,6 +577,7 @@ namespace GuangYuan.GY001.BLL
                 datas.Combat.Properties["attackerScoreAfter"] = pvp1.DecimalValue;  //进攻者积分
                 datas.Combat.Properties["defenderRankAfter"] = GetPvpRank(datas.OtherChar);
                 datas.Combat.Properties["defenderScoreAfter"] = pvp2.DecimalValue;
+                datas.Save();
             }
         }
 
@@ -1201,5 +1202,26 @@ namespace GuangYuan.GY001.BLL
         public Guid CombatId { get; set; }
 
         public PvpCombat CombatObject { get; set; }
+    }
+
+    public static class CombatManagerExtensions
+    {
+        public static GameExtendProperty GetOrAddPvpExtendProperty(this GameChar gameChar)
+        {
+            var pvpEp = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == CombatManager.PvpRankName);
+            if (pvpEp is null)
+            {
+                var pvp = gameChar.GetPvpObject();
+                pvpEp = new GameExtendProperty()
+                {
+                    Id = gameChar.Id,
+                    Name = CombatManager.PvpRankName,
+                    DecimalValue = pvp.Count,
+                    StringValue = gameChar.DisplayName,
+                };
+                gameChar.ExtendProperties.Add(pvpEp);
+            }
+            return pvpEp;
+        }
     }
 }

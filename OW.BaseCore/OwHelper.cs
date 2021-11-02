@@ -187,52 +187,15 @@ namespace System
         public static int RoundWithAwayFromZero(decimal result) => (int)Math.Round(result, MidpointRounding.AwayFromZero);
 
         /// <summary>
-        /// 分割属性字符串。
+        /// 用字串形式属性，填充属性字典。
         /// </summary>
-        /// <param name="propStr">属性字符串。</param>
-        /// <param name="stringProps">字符串属性。</param>
-        /// <param name="numberProps">数值属性。</param>
-        /// <param name="sequenceProps">序列属性。</param>
-        public static void AnalysePropertiesString(string propStr, IDictionary<string, string> stringProps, IDictionary<string, float> numberProps,
-            IDictionary<string, float[]> sequenceProps)
+        /// <param name="str"></param>
+        /// <param name="dic"></param>
+        public static void Fill(string str, IDictionary<string, object> dic)
         {
-            var coll = propStr.Trim(' ', '"').Replace(Environment.NewLine, " ").Split(',', StringSplitOptions.RemoveEmptyEntries);
-            foreach (var item in coll)
-            {
-                var guts = item.Split('=', StringSplitOptions.RemoveEmptyEntries);
-                if (2 != guts.Length)
-                {
-                    throw new InvalidCastException($"数据格式错误:'{guts}'");   //TO DO
-                }
-                var keyName = string.Intern(guts[0].Trim());
-                var val = guts[1].Trim();
-                if (val.Contains('|'))  //若是序列属性
-                {
-                    var seq = val.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                    var ary = seq.Select(c => float.Parse(c.Trim())).ToArray();
-                    sequenceProps[keyName] = ary;
-                }
-                else if (float.TryParse(val, out float num))   //若是数值属性
-                {
-                    numberProps[keyName] = num;
-                }
-                else //若是字符串属性
-                {
-                    stringProps[keyName] = val;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 用字串形式属性，填充游戏属性字典。
-        /// </summary>
-        /// <param name="propStr"></param>
-        /// <param name="props"></param>
-        public static void AnalysePropertiesString(string propStr, IDictionary<string, object> props)
-        {
-            if (string.IsNullOrWhiteSpace(propStr))
+            if (string.IsNullOrWhiteSpace(str))
                 return;
-            var coll = propStr.Replace(Environment.NewLine, " ").Trim(' ', '"').Split(CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
+            var coll = str.Replace(Environment.NewLine, " ").Trim(' ', '"').Split(CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
             foreach (var item in coll)
             {
                 var guts = item.Split('=', StringSplitOptions.RemoveEmptyEntries);
@@ -245,53 +208,51 @@ namespace System
                 var val = guts.Length < 2 ? null : guts?[1]?.Trim();
                 if (val is null)
                 {
-                    props[keyName] = null;
+                    dic[keyName] = null;
                 }
                 else if (val.Contains('|'))  //若是序列属性
                 {
                     var seq = val.Split('|', StringSplitOptions.RemoveEmptyEntries);
                     var ary = seq.Select(c => decimal.Parse(c.Trim())).ToArray();
-                    props[keyName] = ary;
+                    dic[keyName] = ary;
                 }
                 else if (decimal.TryParse(val, out decimal num))   //若是数值属性
                 {
-                    props[keyName] = num;
+                    dic[keyName] = num;
                 }
                 else //若是字符串属性
                 {
-                    props[keyName] = val;
+                    dic[keyName] = val;
                 }
             }
         }
 
         /// <summary>
-        /// 从游戏属性字典获取字符串表现形式。
+        /// 从属性字典获取字符串表现形式,填充到<see cref="StringBuilder"/>对象。
         /// </summary>
-        /// <param name="dic">可以是空字典，但不能是空引用。</param>
-        /// <returns></returns>
-        public static string ToPropertiesString(IDictionary<string, object> dic)
+        /// <param name="dic"></param>
+        /// <param name="stringBuilder"></param>
+        public static void Fill(IReadOnlyDictionary<string, object> dic, StringBuilder stringBuilder)
         {
-            StringBuilder result = new StringBuilder();
             foreach (var item in dic)
             {
-                result.Append(item.Key).Append('=');
+                stringBuilder.Append(item.Key).Append('=');
                 if (TryGetDecimal(item.Value, out _))   //如果可以转换为数字
                 {
-                    result.Append(item.Value.ToString()).Append(',');
+                    stringBuilder.Append(item.Value.ToString()).Append(',');
                 }
                 else if (item.Value is decimal[])
                 {
                     var ary = item.Value as decimal[];
-                    result.AppendJoin('|', ary.Select(c => c.ToString())).Append(',');
+                    stringBuilder.AppendJoin('|', ary.Select(c => c.ToString())).Append(',');
                 }
                 else //字符串
                 {
-                    result.Append(item.Value?.ToString()).Append(',');
+                    stringBuilder.Append(item.Value?.ToString()).Append(',');
                 }
             }
-            if (result.Length > 0 && result[^1] == ',')   //若尾部是逗号
-                result.Remove(result.Length - 1, 1);
-            return result.ToString();
+            if (stringBuilder.Length > 0 && stringBuilder[^1] == ',')   //若尾部是逗号
+                stringBuilder.Remove(stringBuilder.Length - 1, 1);
         }
 
         /// <summary>
@@ -374,46 +335,6 @@ namespace System
                 foreach (var item in leftDic.SelectMany(c => c.Value))
                     leftOnly.Add(item);
 
-        }
-
-        /// <summary>
-        /// 分解|分开的数组，并放入decimal数组中。
-        /// </summary>
-        /// <param name="str"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public static bool AnalyseSequence(string str, out decimal[] result)
-        {
-            result = null;
-            var ary = str.Split('|', StringSplitOptions.RemoveEmptyEntries);
-            List<decimal> lst = new List<decimal>();
-            foreach (var item in ary)
-            {
-                if (!decimal.TryParse(item, out decimal tmp))
-                    return false;
-                lst.Add(tmp);
-            }
-            result = lst.ToArray();
-            return true;
-        }
-
-        /// <summary>
-        /// 分析1|3|2类型序列添加到指定集合末尾。
-        /// </summary>
-        /// <param name="str"></param>
-        /// <param name="collection"></param>
-        /// <returns>true成功添加，false遇到了一个不能转换为数字的元素，此时<paramref name="collection"/>中有不确定个元素被追加到末尾。</returns>
-        public static bool AnalyseSequence(string str, ICollection<decimal> collection)
-        {
-            var ary = str.Split('|', StringSplitOptions.RemoveEmptyEntries);
-            List<decimal> lst = new List<decimal>();
-            foreach (var item in ary)
-            {
-                if (!decimal.TryParse(item, out decimal tmp))
-                    return false;
-                lst.Add(tmp);
-            }
-            return true;
         }
 
         /// <summary>
@@ -564,5 +485,20 @@ namespace System
 
         }
 
+    }
+
+    public static class OwConvert
+    {
+        /// <summary>
+        /// 从属性字典获取字符串表现形式。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <returns></returns>
+        public static string ToString(IReadOnlyDictionary<string,object> dic)
+        {
+            StringBuilder sb = new StringBuilder();
+            OwHelper.Fill(dic, sb);
+            return sb.ToString();
+        }
     }
 }

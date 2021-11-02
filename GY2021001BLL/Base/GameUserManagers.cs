@@ -739,6 +739,7 @@ namespace GuangYuan.GY001.BLL
                 var gc = gu.CurrentChar;
                 _Store._Id2OnlineChars.AddOrUpdate(gc.Id, gc, (c1, c2) => gc);  //标记在线
                 gu.Timeout = Options.LogoutTimeout; //置超时时间
+                gu.NodeNum = 0;
                 Nope(gu.CurrentToken);
             }
             else //未登录
@@ -760,6 +761,7 @@ namespace GuangYuan.GY001.BLL
                     ParentId = gc.Id,
                 });
                 gu.Timeout = Options.LogoutTimeout; //置超时时间
+                gu.NodeNum = 0;
                 NotifyChange(gu);
             }
             if (null != actionRecords && actionRecords.Count > 0)
@@ -908,6 +910,7 @@ namespace GuangYuan.GY001.BLL
                 try
                 {
                     gu.InvokeLogouting(reason);
+                    gu.NodeNum = null;
                     actionRecord.DateTimeUtc = DateTime.UtcNow;
                 }
                 catch (Exception)

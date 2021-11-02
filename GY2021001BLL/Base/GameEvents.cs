@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -509,7 +510,6 @@ namespace OW.Game
         protected virtual void GameThingLoaded(GameThingBase thing)
         {
             thing.Template = World.ItemTemplateManager.GetTemplateFromeId(thing.TemplateId);
-
         }
         #endregion 加载后初始化
 
