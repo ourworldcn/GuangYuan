@@ -41,7 +41,7 @@ namespace GuangYuan.GY001.UserDb
 
         private string _Name;
         /// <summary>
-        /// 属性的名称。
+        /// 属性的名称。与Id一同组成联合主键。
         /// </summary>
         [MaxLength(64)]
         public string Name
@@ -95,6 +95,11 @@ namespace GuangYuan.GY001.UserDb
         /// 一个<see cref="Guid"/>值。
         /// </summary>
         public Guid? GuidValue { get; set; }
+
+        /// <summary>
+        /// 二进制值。
+        /// </summary>
+        public byte[] ByteArray { get; set; }
     }
 
     /// <summary>

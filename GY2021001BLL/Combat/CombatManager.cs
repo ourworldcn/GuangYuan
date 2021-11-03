@@ -3,7 +3,9 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using OW.Game.Item;
 using OW.Game.Mission;
 using System;
 using System.Collections.Generic;
@@ -537,6 +539,28 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 更新推关战力信息。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        public void UpdatePveInfo(GameChar gameChar)
+        {
+            var data = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.ZhangLiName);
+            if (data is null)
+            {
+                data = new GameExtendProperty()
+                {
+                    Id = gameChar.Id,
+                    Name = ProjectConstant.ZhangLiName,
+                    StringValue = gameChar.DisplayName,
+                    DecimalValue = World.CombatManager.GetTotalAbility(gameChar),
+                };
+                gameChar.ExtendProperties.Add(data);
+            }
+            else
+                data.DecimalValue = World.CombatManager.GetTotalAbility(gameChar);
+        }
+
+        /// <summary>
         /// pvp战斗结算。
         /// </summary>
         /// <param name="datats"></param>
@@ -577,6 +601,17 @@ namespace GuangYuan.GY001.BLL
                 datas.Combat.Properties["attackerScoreAfter"] = pvp1.DecimalValue;  //进攻者积分
                 datas.Combat.Properties["defenderRankAfter"] = GetPvpRank(datas.OtherChar);
                 datas.Combat.Properties["defenderScoreAfter"] = pvp2.DecimalValue;
+                //记录信息
+                var gim = World.ItemManager;
+                var view = new WarNewspaperView(datas.Combat, World.Service);
+                //攻击方信息
+                var Me = gim.ToByteArray(gim.GetLineup(datas.GameChar, 2));
+                datas.Combat.AttackerExInfo = Me;
+                view.AttackerDisplayName = datas.GameChar.DisplayName;
+                //防御方信息
+                var other = gim.ToByteArray(gim.GetLineup(datas.OtherChar, 10000));
+                datas.Combat.DefenserExInfo = other;
+                view.DefenserDisplayName = datas.OtherChar.DisplayName;
                 datas.Save();
             }
         }
@@ -621,7 +656,7 @@ namespace GuangYuan.GY001.BLL
             todayData.LastValues.Remove(datas.OtherCharId);
             GameItem pvpObj, otherPvpObj;
             //增加战报
-            PvpCombat pc = new PvpCombat()
+            WarNewspaper pc = new WarNewspaper()
             {
 
             };
@@ -646,7 +681,6 @@ namespace GuangYuan.GY001.BLL
             pc.AttackerIds.Add(datas.GameChar.Id);
             pc.DefenserIds.Add(datas.OtherCharId);
             //设置复仇权力
-            pc.SetAssistanceDone(false);    //多余
             datas.Combat = pc;
             db.Add(pc);
             //移除击杀权
@@ -706,7 +740,7 @@ namespace GuangYuan.GY001.BLL
                 bootyOfDefenser.ForEach(c => c.FillToDictionary(World, mail.Properties));
                 World.SocialManager.SendMail(mail, new Guid[] { datas.OtherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             }
-            ///保存数据
+            //保存数据
             datas.Save();
             datas.HasError = false;
             datas.ErrorCode = 0;
@@ -747,27 +781,35 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorCode = VWorld.GetLastError();
                 return;
             }
-            if (datas.Combat is null)
+            var oldWar = datas.UserContext.Set<WarNewspaper>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
+            if (oldWar is null)
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "找不到指定的最初战斗。";
                 return;
-            if (datas.Combat.GetRevenge() || !datas.Combat.DefenserIds.Contains(datas.GameChar.Id))    //若没有复仇权
+            }
+            var oldView = new WarNewspaperView(oldWar, World.Service);
+
+            if (!oldWar.DefenserIds.Contains(datas.GameChar.Id))    //若没有复仇权
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                 datas.ErrorMessage = "没有复仇权";
                 return;
             }
-            var db = datas.UserContext;
-            var world = datas.World;
-            var lastCombatObj = db.Set<PvpCombat>().FirstOrDefault(c => c.Id == datas.CombatId);  //战斗对象
-            if (lastCombatObj is null)  //若找不到战报对象
+            if (oldView.Retaliationed)   //若已经反击过了
             {
                 datas.HasError = true;
-                datas.ErrorMessage = "找不到战报对象。";
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "已经反击过了。";
                 return;
             }
+            var db = datas.UserContext;
+            var world = datas.World;
             //更改数据
             //增加战斗记录
-            PvpCombat pc = new PvpCombat()
+            WarNewspaper pc = new WarNewspaper()
             {
 
             };
@@ -779,7 +821,7 @@ namespace GuangYuan.GY001.BLL
             if (datas.IsWin) //若反击胜利
             {
                 List<GameBooty> booties = new List<GameBooty>();
-                booties.FillToBooty(world, lastCombatObj.Properties);
+                booties.FillToBooty(world, oldWar.Properties);
                 booties.ForEach(c =>
                 {
                     c.ParentId = pc.Id;
@@ -796,6 +838,7 @@ namespace GuangYuan.GY001.BLL
                 {
                 };
                 mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_自己_胜利.ToString();
+                mail.Properties["OldCombatId"] = datas.CombatId.ToString();
                 mail.Properties["CombatId"] = pc.Id.ToString();
                 World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             }
@@ -806,11 +849,13 @@ namespace GuangYuan.GY001.BLL
                 {
                 };
                 mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_自己_失败.ToString();
+                mail.Properties["OldCombatId"] = datas.CombatId.ToString();
                 mail.Properties["CombatId"] = pc.Id.ToString();
 
                 World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             }
-            ///保存数据
+            //保存数据
+            oldView.Retaliationed = true;
             datas.Save();
         }
 
@@ -830,16 +875,25 @@ namespace GuangYuan.GY001.BLL
                 (datas as IResultWorkData).FillErrorFromWorld();
                 return;
             }
+            var oldWar = datas.UserContext.Set<WarNewspaper>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
+            if (oldWar is null)
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "找不到指定的最初战斗。";
+                return;
+            }
+            var oldView = new WarNewspaperView(oldWar, World.Service);
             var db = datas.UserContext;
-            var assId = datas.Combat.GetRequestAssistance();
-            if (assId != datas.GameChar.Id || !datas.Combat.GetAssistanceDone()) //没有请求当前角色协助
+            var assId = oldView.AssistanceId;
+            if (assId != datas.GameChar.Id || !oldView.Assistancing) //没有请求当前角色协助
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                 datas.ErrorMessage = $"指定的战报对象没有请求此角色协助攻击或已经攻击过了。";
             }
             //更改数据
-            var pc = new PvpCombat  //本次战斗数据
+            var pc = new WarNewspaper  //本次战斗数据
             {
             };
             pc.AttackerIds.Add(datas.GameChar.Id);
@@ -870,9 +924,10 @@ namespace GuangYuan.GY001.BLL
             }
             oriBooty.ToList().ForEach(c => c.SetGameItems(datas.World));    //被掠夺方战利品
             newBooty.ToList().ForEach(c => c.SetGameItems(datas.World, datas.ChangeItems)); //进攻方战利品
-            //改写进攻权限
-            datas.Combat.SetAssistanceDone(true);
             //保存数据
+            //改写进攻权限
+            oldView.Assistancing = false;
+            oldView.Assistanced = true;
             datas.Save();
             datas.HasError = false;
             datas.ErrorCode = 0;
@@ -1124,10 +1179,24 @@ namespace GuangYuan.GY001.BLL
             return true;
         }
 
-        public decimal GetTotalAbility(IEnumerable<Guid> charIds)
+        /// <summary>
+        /// 获取纯种坐骑总战力。
+        /// </summary>
+        /// <param name="gc"></param>
+        /// <returns></returns>
+        public decimal GetTotalAbility(GameChar gc)
         {
+            var dic = new Dictionary<string, double>();
+            var bag = gc.GetZuoqiBag();
+            var gim = World.ItemManager;
+            var gis = bag.Children.Where(c => gim.IsChunzhongMounts(c));
             decimal result = 0;
-            //using var dwUsers = World.CharManager.LockOrLoadWithCharIds(charIds,wo);
+            foreach (var gi in gis)
+            {
+                World.CombatManager.UpdateAbility(gi, dic);
+                result += (decimal)dic.GetValueOrDefault("abi");
+                dic.Clear();
+            }
             return result;
         }
 
@@ -1171,12 +1240,12 @@ namespace GuangYuan.GY001.BLL
             if (dwUser is null)
                 return;
             var idstring = datas.GameChar.IdString;
-            datas.CombatObject = datas.UserContext.Set<PvpCombat>().AsNoTracking().FirstOrDefault(c => c.Id == datas.CombatId /*&& (c.AttackerIdString.Contains(idstring) || c.DefenserIdString.Contains(idstring))*/);
+            datas.CombatObject = datas.UserContext.Set<WarNewspaper>().AsNoTracking().FirstOrDefault(c => c.Id == datas.CombatId /*&& (c.AttackerIdString.Contains(idstring) || c.DefenserIdString.Contains(idstring))*/);
             if (datas.CombatObject is null)
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "找不到指定战斗对象，或没有参加该战斗。";
+                datas.ErrorMessage = "找不到指定战斗对象。";
             }
             return;
         }
@@ -1201,7 +1270,7 @@ namespace GuangYuan.GY001.BLL
 
         public Guid CombatId { get; set; }
 
-        public PvpCombat CombatObject { get; set; }
+        public WarNewspaper CombatObject { get; set; }
     }
 
     public static class CombatManagerExtensions
@@ -1222,6 +1291,92 @@ namespace GuangYuan.GY001.BLL
                 gameChar.ExtendProperties.Add(pvpEp);
             }
             return pvpEp;
+        }
+
+    }
+
+    /// <summary>
+    /// 战斗对象的视图类。
+    /// </summary>
+    public class WarNewspaperView
+    {
+        private readonly WarNewspaper _WarNewspaper;
+        private readonly IServiceProvider _Service;
+
+        public WarNewspaperView([NotNull] WarNewspaper warNewspaper, IServiceProvider service)
+        {
+            _WarNewspaper = warNewspaper;
+            _Service = service;
+        }
+
+        /// <summary>
+        /// 获取或设置是否正在请求协助。
+        /// </summary>
+        public bool Assistancing
+        {
+            get { return _WarNewspaper.Properties.GetBooleanOrDefaut("Assistancing", false); }
+            set { _WarNewspaper.Properties["Assistancing"] = value; }
+        }
+
+        /// <summary>
+        /// 获取或设置是否已经协助完毕。
+        /// </summary>
+        public bool Assistanced
+        {
+            get { return _WarNewspaper.Properties.GetBooleanOrDefaut("Assistanced", false); }
+            set { _WarNewspaper.Properties["Assistanced"] = value; }
+        }
+
+        /// <summary>
+        /// 是否已经反击。
+        /// </summary>
+        public bool Retaliationed
+        {
+            get { return _WarNewspaper.Properties.GetBooleanOrDefaut("Retaliationed", false); }
+            set { _WarNewspaper.Properties["Retaliationed"] = value; }
+        }
+
+        public IEnumerable<GameItem> GetAttackerMounts()
+        {
+            var gim = _Service.GetRequiredService<GameItemManager>();
+            return gim.ToGameItems(_WarNewspaper.AttackerExInfo);
+        }
+
+        public IEnumerable<GameItem> GetDefenserMounts()
+        {
+            var gim = _Service.GetRequiredService<GameItemManager>();
+            return gim.ToGameItems(_WarNewspaper.DefenserExInfo);
+        }
+
+        public string AttackerDisplayName
+        {
+            get { return _WarNewspaper.Properties.GetStringOrDefault("AttackerDisplayName"); }
+            set { _WarNewspaper.Properties["AttackerDisplayName"] = value; }
+        }
+
+        public string DefenserDisplayName
+        {
+            get { return _WarNewspaper.Properties.GetStringOrDefault("DefenserDisplayName"); }
+            set { _WarNewspaper.Properties["DefenserDisplayName"] = value; }
+        }
+
+        /// <summary>
+        /// 设置或获取协助者的角色Id。
+        /// </summary>
+        public Guid? AssistanceId
+        {
+            get
+            {
+                var result = _WarNewspaper.Properties.GetGuidOrDefault("AssistanceId");
+                return result != Guid.Empty ? new Guid?(result) : null;
+            }
+            set
+            {
+                if (value is null)
+                    _WarNewspaper.Properties.Remove("AssistanceId");
+                else
+                    _WarNewspaper.Properties["AssistanceId"] = value.Value.ToString();
+            }
         }
     }
 }

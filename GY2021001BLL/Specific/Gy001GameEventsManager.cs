@@ -4,7 +4,6 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
-using OW.Game.Item;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -144,13 +143,6 @@ namespace OW.Game
                     ;
                 gameChar.DisplayName = tmp;
             }
-            gameChar.ExtendProperties.Add(new GameExtendProperty()   //增加推关战力
-            {
-                Id = gameChar.Id,
-                Name = "推关战力",
-                StringValue = gameChar.DisplayName,
-                DecimalValue = 0,
-            });
             //修正木材存贮最大量
             //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
             //var stcMucai = mucai.GetStc();
@@ -195,6 +187,8 @@ namespace OW.Game
                 PropertiesString = $"CreateBy=CreateChar",
             };
             World.AddToUserContext(new object[] { ar });
+            //增加推关战力
+            World.CombatManager.UpdatePveInfo(gameChar);
             //加入pvp排名信息
             World.CombatManager.UpdatePvpInfo(gameChar);
         }

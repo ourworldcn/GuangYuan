@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using GuangYuan.GY001.BLL;
+﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.UserDb;
 using Gy001.Controllers;
 using GY2021001WebApi.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using System;
+using System.Linq;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -131,10 +125,34 @@ namespace GY2021001WebApi.Controllers
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;
             result.DebugMessage = datas.ErrorMessage;
-            if (!datas.HasError)
+            if (!datas.HasError)    //若成功返回
+            {
                 result.CombatObject = datas.CombatObject;
+                var view = new WarNewspaperView(datas.CombatObject, World.Service);
+                result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => (GameItemDto)c));
+                result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => (GameItemDto)c));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 放弃pvp的反击和请求协助的权力。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public ActionResult<AbortPvpResultDto> AbortPvp(AbortPvpParamsDto model)
+        {
+            AbortPvpResultDto result = new AbortPvpResultDto();
             return result;
         }
     }
 
+    public class AbortPvpParamsDto
+    {
+    }
+
+    public class AbortPvpResultDto
+    {
+    }
 }

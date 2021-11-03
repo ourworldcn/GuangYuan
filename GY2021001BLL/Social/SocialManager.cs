@@ -434,16 +434,18 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = $"找不到指定的战报对象，Id={datas.RootCombatId}";
                 return;
             }
-            if (rootCombat.GetRequestAssistance().HasValue)   //若已经请求了协助
+            var rootView = new WarNewspaperView(rootCombat, World.Service);
+            if (rootView.Assistancing || rootView.Assistanced)   //若已经请求了协助
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = $"已经请求了协助者。";
+                datas.ErrorMessage = $"已经请求了协助者或已经协助结束。";
                 return;
             }
             //更改数据
-            rootCombat.SetRequestAssistance(datas.OtherCharId); //设置请求协助的对象。
-                                                                //发送邮件
+            rootView.Assistancing = true;
+            rootView.AssistanceId = datas.OtherCharId; //设置请求协助的对象。
+            //发送邮件
             var mail = new GameMail()
             {
             };

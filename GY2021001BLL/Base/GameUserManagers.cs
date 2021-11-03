@@ -276,7 +276,7 @@ namespace GuangYuan.GY001.BLL
             VWorld world = World;
             if (Environment.HasShutdownStarted || world.RequestShutdown.IsCancellationRequested)
                 return;
-
+            var succCount = 0;
             foreach (var item in _Store._Token2Users.Values)
             {
                 if (DateTime.UtcNow - start >= Options.ScanFrequencyOfLogout)    //若本次扫描已经超时
@@ -301,7 +301,10 @@ namespace GuangYuan.GY001.BLL
                         continue;
                     }
                     if (DateTime.UtcNow - item.LastModifyDateTimeUtc >= item.Timeout)   //若超时
+                    {
                         Logout(item, LogoutReason.Timeout); //注销
+                        succCount++;
+                    }
                     if (Environment.HasShutdownStarted || world.RequestShutdown.IsCancellationRequested)
                         break;
                 }
@@ -312,7 +315,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 Thread.Yield();
             }
-            if (!Environment.HasShutdownStarted && !world.RequestShutdown.IsCancellationRequested && World.IsHit(0.2))
+            if (!Environment.HasShutdownStarted && !world.RequestShutdown.IsCancellationRequested && World.IsHit((double)succCount / 5))
             {
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);

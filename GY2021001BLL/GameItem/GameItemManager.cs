@@ -647,6 +647,8 @@ namespace OW.Game.Item
                 }
                 var succ = ForcedAdd(gameItem, parent);
                 changeItems?.AddToAdds(parent.Id, gameItem);
+                if (this.IsMounts(gameItem)) //若是坐骑
+                    World.CombatManager.UpdatePveInfo(gameItem.GameChar);
                 return;
             }
             else //若可堆叠
@@ -1315,6 +1317,7 @@ namespace OW.Game.Item
                        select tmp;
             var rank = coll.Count();
             datas.Rank = rank;
+            datas.Scope = gp.DecimalValue.Value;
             var prv = coll.Take(25).ToList();   //排在前面的的紧邻数据
             datas.Prv.AddRange(prv);
 
@@ -1346,7 +1349,15 @@ namespace OW.Game.Item
 
         public List<GameExtendProperty> Next { get; } = new List<GameExtendProperty>();
 
+        /// <summary>
+        /// 自己的战力排名。
+        /// </summary>
         public int Rank { get; set; }
+
+        /// <summary>
+        /// 自己的战力。
+        /// </summary>
+        public decimal Scope { get; set; }
     }
 
     public class UseItemsWorkDatas : ChangeItemsWorkDatasBase
@@ -1465,6 +1476,17 @@ namespace OW.Game.Item
     /// </summary>
     public static class GameItemManagerExtensions
     {
+        public static byte[] ToByteArray([NotNull] this GameItemManager manager, [NotNull] IEnumerable<GameItem> gameItems)
+        {
+            MemoryStream ms = new MemoryStream();
+            using (var sw = new BinaryWriter(ms))
+            {
+                manager.Fill(gameItems, sw);
+                sw.Flush();
+            }
+            return ms.ToArray();
+        }
+
         public static void Fill([NotNull] this GameItemManager manager, [NotNull] IEnumerable<GameItem> gameItems, [NotNull] BinaryWriter writer)
         {
             var count = gameItems.Count();
@@ -1490,6 +1512,20 @@ namespace OW.Game.Item
             {
                 manager.Fill(item, writer);
             }
+        }
+
+        public static IEnumerable<GameItem> ToGameItems(this GameItemManager manager, BinaryReader reader)
+        {
+            var result = new List<GameItem>();
+            manager.Fill(reader, result);
+            return result;
+        }
+
+        public static IEnumerable<GameItem> ToGameItems(this GameItemManager manager, byte[] buffer)
+        {
+            using var ms = new MemoryStream(buffer, false);
+            using var reader = new BinaryReader(ms);
+            return manager.ToGameItems(reader);
         }
 
         /// <summary>

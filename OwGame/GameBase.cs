@@ -308,7 +308,20 @@ namespace OW.Game
             return OwHelper.TryGetFloat(obj, out var result) ? result : defaultVal;
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool GetBooleanOrDefaut(this IReadOnlyDictionary<string, object> dic, string key, bool defaultVal = default)
+        {
+            if (!dic.TryGetValue(key, out var obj))
+                return defaultVal;
+            return OwHelper.TryGetBoolean(key, out var result) ? result : defaultVal;
+        }
     }
 
     /// <summary>

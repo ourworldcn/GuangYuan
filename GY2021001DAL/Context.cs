@@ -121,7 +121,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// pvp战斗记录。
         /// </summary>
-        public DbSet<PvpCombat> PvpCombat { get; set; }
+        public DbSet<WarNewspaper> WarNewspaper { get; set; }
 
         /// <summary>
         /// 战利品记录。

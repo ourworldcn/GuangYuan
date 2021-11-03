@@ -33,17 +33,17 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public Guid CombatId { get; set; }
 
-        PvpCombat _Combat;
+        WarNewspaper _Combat;
         /// <summary>
         /// 获取战斗对象，如果找不到则设置错误信息。
         /// </summary>
-        public PvpCombat Combat
+        public WarNewspaper Combat
         {
             get
             {
                 if (_Combat is null)
                 {
-                    _Combat = UserContext.Set<PvpCombat>().Find(CombatId);
+                    _Combat = UserContext.Set<WarNewspaper>().Find(CombatId);
                     if (_Combat is null)
                     {
                         HasError = true;

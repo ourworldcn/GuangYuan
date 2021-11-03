@@ -99,6 +99,13 @@
             <param name="model"></param>
             <returns></returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.CombatController.AbortPvp(GY2021001WebApi.Controllers.AbortPvpParamsDto)">
+            <summary>
+            放弃pvp的反击和请求协助的权力。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.GameCharController">
             <summary>
             角色相关操作。
@@ -1718,6 +1725,16 @@
             战斗对象的数据，参见其具体说明。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetCombatObjectResultDto.AttackerMounts">
+            <summary>
+            攻击者的坐骑集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetCombatObjectResultDto.DefenserMounts">
+            <summary>
+            防御者的坐骑集合。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetCombatObjectParamsDto">
             <summary>
             获取战斗对象接口的参数封装类
@@ -2144,6 +2161,11 @@
         <member name="P:GY2021001WebApi.Models.GetRankOfTuiguanForMeReturnDto.Rank">
             <summary>
             自己在服务器中的排名。0表示第一，1表示第二，以此类推。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetRankOfTuiguanForMeReturnDto.Scope">
+            <summary>
+            自己的战力积分。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.AccountSummery.LoginName">

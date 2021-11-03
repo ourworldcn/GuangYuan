@@ -528,7 +528,7 @@ namespace GY2021001WebApi.Controllers
                 var fengges = model.Fengges.Select(c => (HomelandFengge)c).ToArray();
                 world.CharManager.SetHomelandPlans(fengges, gc);
             }
-            catch (Exception err) 
+            catch (Exception err)
             {
                 result.HasError = true;
                 result.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
@@ -604,6 +604,7 @@ namespace GY2021001WebApi.Controllers
             if (!datas.HasError)
             {
                 result.Rank = datas.Rank;
+                result.Scope = datas.Scope;
                 result.Prv.AddRange(datas.Prv.Select(c => (RankDataItemDto)c).OrderByDescending(c => c.Metrics).ThenBy(c => c.DisplayName));
                 for (int i = 0; i < result.Prv.Count; i++)  //设置排名号
                 {

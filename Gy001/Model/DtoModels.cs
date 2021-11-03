@@ -1907,6 +1907,18 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public CombatDto CombatObject { get; set; }
+
+        /// <summary>
+        /// 攻击者的坐骑集合。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> AttackerMounts { get; set; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 防御者的坐骑集合。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> DefenserMounts { get; set; } = new List<GameItemDto>();
     }
 
     /// <summary>
@@ -2736,6 +2748,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public int Rank { get; set; }
+
+        /// <summary>
+        /// 自己的战力积分。
+        /// </summary>
+        [DataMember]
+        public decimal Scope { get; set; }
     }
 
     #endregion 排行相关

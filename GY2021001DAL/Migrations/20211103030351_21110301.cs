@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GuangYuan.GY001.UserDb.Migrations
 {
-    public partial class _21101901 : Migration
+    public partial class _21110301 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -35,7 +35,8 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     DecimalValue = table.Column<decimal>(nullable: true),
                     Text = table.Column<string>(nullable: true),
                     DateTimeValue = table.Column<DateTime>(nullable: true),
-                    GuidValue = table.Column<Guid>(nullable: true)
+                    GuidValue = table.Column<Guid>(nullable: true),
+                    ByteArray = table.Column<byte[]>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -127,20 +128,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PvpCombat",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    PropertiesString = table.Column<string>(nullable: true),
-                    AttackerIdString = table.Column<string>(maxLength: 320, nullable: true),
-                    DefenserIdString = table.Column<string>(maxLength: 320, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PvpCombat", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "SocialRelationships",
                 columns: table => new
                 {
@@ -154,6 +141,24 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SocialRelationships", x => new { x.Id, x.Id2, x.KeyType });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WarNewspaper",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    PropertiesString = table.Column<string>(nullable: true),
+                    AttackerIdString = table.Column<string>(maxLength: 320, nullable: true),
+                    DefenserIdString = table.Column<string>(maxLength: 320, nullable: true),
+                    AttackerExInfo = table.Column<byte[]>(nullable: true),
+                    DefenserExInfo = table.Column<byte[]>(nullable: true),
+                    StartUtc = table.Column<DateTime>(nullable: false),
+                    EndUtc = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WarNewspaper", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -407,10 +412,10 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 name: "MailAttachmentes");
 
             migrationBuilder.DropTable(
-                name: "PvpCombat");
+                name: "SocialRelationships");
 
             migrationBuilder.DropTable(
-                name: "SocialRelationships");
+                name: "WarNewspaper");
 
             migrationBuilder.DropTable(
                 name: "GameChars");

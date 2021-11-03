@@ -8,15 +8,15 @@ using System.Linq;
 
 namespace GuangYuan.GY001.UserDb.Combat
 {
-    public class PvpCombat : GameObjectBase
+    public class WarNewspaper : GameObjectBase
     {
         public const string Separator = "`";
 
-        public PvpCombat()
+        public WarNewspaper()
         {
         }
 
-        public PvpCombat(Guid id) : base(id)
+        public WarNewspaper(Guid id) : base(id)
         {
         }
 
@@ -86,6 +86,16 @@ namespace GuangYuan.GY001.UserDb.Combat
             }
             return _BootyOfAttacker;
         }
+
+        /// <summary>
+        /// 进攻方附属信息。
+        /// </summary>
+        public byte[] AttackerExInfo { get; set; }
+
+        /// <summary>
+        /// 防御方附属信息。
+        /// </summary>
+        public byte[] DefenserExInfo { get; set; }
 
         /// <summary>
         /// <inheritdoc/>

@@ -1057,9 +1057,18 @@ namespace GuangYuan.GY001.BLL
             //修改数据
             World.ItemManager.SetLevel(gi, pname, (int)(lv + maxCount));
             gi.Properties[lvpname] = (lv + maxCount);
+
             daoju.Count -= maxCount;
             datas.SuccCount = (int)maxCount;
-            datas.ChangeItems.AddToChanges(gi, daoju);
+            if (daoju.Count > 0)
+                datas.ChangeItems.AddToChanges(gi, daoju);
+            else
+            {
+                datas.ChangeItems.AddToRemoves(gc.GetItemBag().Id, daoju.Id);
+                datas.GameChar.GameUser.DbContext.Remove(daoju);
+                gc.GetItemBag().Children.Remove(daoju);
+            }
+            datas.ChangeItems.AddToChanges(gi);
         }
 
         /// <summary>
@@ -1068,7 +1077,72 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void ShenwenTupo(ApplyBlueprintDatas datas)
         {
+            decimal[] costs = new decimal[] { -1, -3, -5, -8, -11, -15, -19, -24, -30 }; //突破石耗损
+            double[] probs = new double[] { 1, 1, 1, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5 };    //突破概率
+            if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。"))
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                return;
+            }
+            var gi = datas.GameItems[0];    //突破的神纹
+            var gc = datas.GameChar;
+            string pname;
+            switch (datas.Blueprint.IdString)
+            {
+                case "92f63905-a39f-4e1a-ad17-ea648a99be7a":    //神纹攻击突破
+                    pname = "atk";
+                    break;
+                case "e35d12f0-c2d6-40bf-a2b0-f04b057ff68c":    //神纹血量突破
+                    pname = "mhp";
+                    break;
+                case "7fc78174-f884-4918-a4fc-b84db5360cf9":    //神纹质量突破
+                    pname = "qlt";
+                    break;
+                default:
+                    datas.HasError = true;
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.DebugMessage = "不正确的模板";
+                    return;
+            }
+            var lvName = $"lv{pname}";
+            var ssc = (int)gi.Properties.GetDecimalOrDefault($"ssc{pname}");    //突破次数
+            var cost = costs[ssc];  //所需突破石数量
+            var itemBag = gc.GetItemBag();
+            var tid = new Guid("A9BD0E89-1105-4A52-982A-97E6EE4AD577"); //突破石道具
+            var tupoItem = itemBag.Children.FirstOrDefault(c => c.TemplateId == tid);
+            if (tupoItem is null || tupoItem.Count + cost < 0)   //若突破石不足
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
+                return;
+            }
+            //测算是否成功突破
+            var prob = probs[ssc];
+            bool ok = World.IsHit(prob);
+            //修改数据
+            tupoItem.Count += cost;
+            if (tupoItem.Count > 0)    //若还有剩余
+            {
+                datas.ChangeItems.AddToChanges(tupoItem);
+            }
+            else //若已经全部消耗
+            {
+                datas.ChangeItems.AddToRemoves(tupoItem.ContainerId.Value, tupoItem.Id);
+                gc.GameUser.DbContext.Remove(tupoItem);
+                itemBag.Children.Remove(tupoItem);
+            }
+            if (ok)  //若突破成功
+            {
+                gi.Properties[$"ssc{pname}"] = ssc + 1;
+                gi.Properties[$"mlv{pname}"] = gi.Properties.GetDecimalOrDefault($"mlv{pname}") + 10;
 
+            }
+            else //若突破失败
+            {
+                var lv = gi.Properties.GetDecimalOrDefault(lvName);
+                World.ItemManager.SetLevel(gi, lvName, (int)Math.Max(lv - 3, 0));
+            }
+            datas.ChangeItems.AddToChanges(gi);
         }
         #endregion 神纹相关
 

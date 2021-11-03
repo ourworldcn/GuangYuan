@@ -28,18 +28,18 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public Guid RootCombatId { get; set; }
 
-        private PvpCombat _RootCombat;
+        private WarNewspaper _RootCombat;
 
         /// <summary>
         /// 初始战斗对象。
         /// </summary>
-        public PvpCombat RootCombat
+        public WarNewspaper RootCombat
         {
             get
             {
                 if (_RootCombat is null)
                 {
-                    _RootCombat = UserContext.Set<PvpCombat>().FirstOrDefault(c => c.Id == RootCombatId);
+                    _RootCombat = UserContext.Set<WarNewspaper>().FirstOrDefault(c => c.Id == RootCombatId);
                 }
                 return _RootCombat;
             }
@@ -75,80 +75,4 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
-    public static class SocialPvpCombatExtensions
-    {
-        /// <summary>
-        /// 是否已经请求了协助。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Guid? GetRequestAssistance(this PvpCombat obj)
-        {
-            var tmp = obj.Properties.GetGuidOrDefault("RequestAssistanceDatas", Guid.Empty);
-            return tmp == Guid.Empty ? null as Guid? : tmp;
-        }
-
-        /// <summary>
-        /// 设置是否请求了协助。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="value"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetRequestAssistance(this PvpCombat obj, Guid? charId)
-        {
-            if (charId.HasValue)
-                obj.Properties["RequestAssistanceDatas"] = charId.Value.ToString();
-            else
-                obj.Properties.Remove("RequestAssistanceDatas");
-        }
-
-        /// <summary>
-        /// 获取是否已经协助过了。默认未协助过。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public static bool GetAssistanceDone(this PvpCombat obj)
-        {
-            var tmp = obj.Properties.GetDecimalOrDefault("AssistanceDone", decimal.Zero);
-            return tmp == decimal.One;
-        }
-
-        /// <summary>
-        /// 设置是否已经协助过了。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="value"></param>
-        public static void SetAssistanceDone(this PvpCombat obj, bool value)
-        {
-            if (value)   //若设置已协助
-                obj.Properties["AssistanceDone"] = decimal.One;
-            else //设置未协助
-                obj.Properties["AssistanceDone"] = decimal.Zero;
-        }
-
-        /// <summary>
-        /// 获取是否已经复仇。
-        /// </summary>
-        /// <param name="obj"></param>
-        public static bool GetRevenge(this PvpCombat obj)
-        {
-            var tmp = obj.Properties.GetDecimalOrDefault("RevengeDone", decimal.Zero);
-            return tmp == decimal.One;
-        }
-
-        /// <summary>
-        /// 设置是否已经复仇。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="value"></param>
-        public static void SetRevenge(this PvpCombat obj, bool value)
-        {
-            if (value)   //若设置已复仇
-                obj.Properties["RevengeDone"] = decimal.One;
-            else //设置未复仇
-                obj.Properties["RevengeDone"] = decimal.Zero;
-        }
-
-    }
 }

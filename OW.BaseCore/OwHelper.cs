@@ -180,6 +180,31 @@ namespace System
         }
 
         /// <summary>
+        /// 尽可能转换为Guid类型。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static bool TryGetBoolean(object obj, out bool result)
+        {
+            if (obj is bool b)
+            {
+                result = b;
+                return true;
+            }
+            else if (obj is string str && bool.TryParse(str, out result))
+                return true;
+            else if (TryGetDecimal(obj, out var deci))
+            {
+                result = deci != decimal.Zero;
+                return true;
+            }
+            result = false;
+            return false;
+        }
+
+        /// <summary>
         /// 四舍五入取整。
         /// </summary>
         /// <param name="result"></param>
@@ -494,7 +519,7 @@ namespace System
         /// </summary>
         /// <param name="dic"></param>
         /// <returns></returns>
-        public static string ToString(IReadOnlyDictionary<string,object> dic)
+        public static string ToString(IReadOnlyDictionary<string, object> dic)
         {
             StringBuilder sb = new StringBuilder();
             OwHelper.Fill(dic, sb);

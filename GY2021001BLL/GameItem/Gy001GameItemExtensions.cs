@@ -423,6 +423,21 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 获取是否是纯种坐骑的指示。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="gameItem"></param>
+        /// <returns></returns>
+        public static bool IsChunzhongMounts(this GameItemManager manager, GameItem gameItem)
+        {
+            var ht = manager.GetHeadTemplate(gameItem);
+            var bt = manager.GetBodyTemplate(gameItem);
+            if (ht is null || bt is null)
+                return false;
+            return ht.GenusCode == bt.GenusCode;
+        }
+
+        /// <summary>
         /// 获取指定角色是否拥有了指定坐骑。
         /// </summary>
         /// <param name="manager"></param>

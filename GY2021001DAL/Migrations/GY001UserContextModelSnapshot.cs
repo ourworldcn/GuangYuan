@@ -97,14 +97,20 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.ToTable("GameBooty");
                 });
 
-            modelBuilder.Entity("GuangYuan.GY001.UserDb.Combat.PvpCombat", b =>
+            modelBuilder.Entity("GuangYuan.GY001.UserDb.Combat.WarNewspaper", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<byte[]>("AttackerExInfo")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("AttackerIdString")
                         .HasColumnType("nvarchar(320)")
                         .HasMaxLength(320);
+
+                    b.Property<byte[]>("DefenserExInfo")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("DefenserIdString")
                         .HasColumnType("nvarchar(320)")
@@ -121,7 +127,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PvpCombat");
+                    b.ToTable("WarNewspaper");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameActionRecord", b =>
@@ -205,6 +211,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
+
+                    b.Property<byte[]>("ByteArray")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime?>("DateTimeValue")
                         .HasColumnType("datetime2");

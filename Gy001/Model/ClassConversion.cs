@@ -15,7 +15,7 @@ namespace GY2021001WebApi.Models
 
     public partial class CombatDto
     {
-        public static implicit operator CombatDto(PvpCombat obj)
+        public static implicit operator CombatDto(WarNewspaper obj)
         {
             var result = new CombatDto()
             {
