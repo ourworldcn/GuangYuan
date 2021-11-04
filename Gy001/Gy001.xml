@@ -59,6 +59,13 @@
             <param name="model"></param>
             <returns></returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.SetCharExp(GY2021001WebApi.Models.SetCharExpParamsDto)">
+            <summary>
+            给当前角色设置经验值。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
             战斗相关的操作。这里的功能以后可能依据需求改为Udp。
@@ -316,6 +323,36 @@
         <member name="P:GY2021001WebApi.Models.CombatDto.EndUtc">
             <summary>
             该战斗结束的Utc时间。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GameBootyDto">
+            <summary>
+            战利品数据传输对象。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameBootyDto.ParentId">
+            <summary>
+            所属战斗对象的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameBootyDto.CharId">
+            <summary>
+            所属角色(参与战斗的角色Id)。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameBootyDto.TemplateId">
+            <summary>
+            模板Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameBootyDto.Count">
+            <summary>
+            数量。可能是负数，表示失去的数量。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameBootyDto.Properties">
+            <summary>
+            封装额外的参数，目前仅对坐骑/野兽时，这里有htid和btid属性。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.IdAndCountDto">
@@ -1735,6 +1772,11 @@
             防御者的坐骑集合。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetCombatObjectResultDto.Booty">
+            <summary>
+            战利品集合。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetCombatObjectParamsDto">
             <summary>
             获取战斗对象接口的参数封装类
@@ -2203,16 +2245,25 @@
             登录名的前缀。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.SetCharExpParamsDto">
+            <summary>
+            设置角色经验接口使用的参数传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetCharExpParamsDto.Exp">
+            <summary>
+            指定的经验值。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SetCharExpReturnDto">
+            <summary>
+            设置角色经验接口使用的返回值传输类。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

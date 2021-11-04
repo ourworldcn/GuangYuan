@@ -17,13 +17,11 @@ using OW.Game.Item;
 using OW.Game.Mission;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -124,6 +122,8 @@ namespace GuangYuan.GY001.BLL
                     list[i] = (list[i].Item1, displayName);
                 }
             }
+            var charTemplate = world.ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
+            var maxExp = (int)charTemplate.GetSequenceProperty<decimal>("expLimit").Last();
             //生成角色
             for (int i = 0; i < list.Count; i++)
             {
@@ -137,6 +137,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     zhanli.StringValue = gu.CurrentChar.DisplayName;
                 }
+                world.CharManager.SetExp(gu.CurrentChar,VWorld.WorldRandom.Next(maxExp));
                 gu.Timeout = TimeSpan.FromSeconds(1);
                 world.CharManager.Unlock(gu);
 

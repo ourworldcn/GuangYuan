@@ -135,7 +135,7 @@ namespace GuangYuan.GY001.BLL
                 jinbiOfAttacker *= dMucaiCount * 0.1m;
                 mucaiOfAttacker *= dMucaiCount * 0.1m;
             }
-            if (World.CharManager.Id2OnlineChar.ContainsKey(OtherCharId))    //若防御方在线
+            if (World.CharManager.IsOnline(OtherCharId))    //若防御方在线
             {
                 jinbiOfDefenser = decimal.Zero;
                 mucaiShuOfDefenser = decimal.Zero;

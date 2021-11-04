@@ -489,11 +489,6 @@ namespace GuangYuan.GY001.BLL
 
         #region PVP相关
 
-        public void UpDatePvpInfo(GameChar gameChar, DbContext context)
-        {
-
-        }
-
         public const string PvpRankName = "PVP排行";
 
         /// <summary>
@@ -517,9 +512,13 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         public void UpdatePvpInfo(GameChar gameChar)
         {
+            using var dwUser = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
+            if (dwUser is null)
+                return;
             var context = gameChar.GameUser.DbContext;
             var pvp = gameChar.GetPvpObject();
             var pvpInfo = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == PvpRankName);
+            bool isDirty = false;
             if (pvpInfo is null)
             {
                 pvpInfo = new GameExtendProperty()
@@ -530,12 +529,16 @@ namespace GuangYuan.GY001.BLL
                     StringValue = gameChar.DisplayName,
                 };
                 gameChar.ExtendProperties.Add(pvpInfo);
+                isDirty = true;
             }
             else
             {
                 pvpInfo.DecimalValue = pvp.Count;
                 pvpInfo.StringValue = gameChar.DisplayName;
+                isDirty = true;
             }
+            if (isDirty)
+                World.CharManager.NotifyChange(gameChar.GameUser);
         }
 
         /// <summary>
@@ -677,7 +680,7 @@ namespace GuangYuan.GY001.BLL
                     datas.ChangeItems.AddToChanges(pvpObj);
                 }
             }
-            ///计算收益
+            //计算收益
             pc.AttackerIds.Add(datas.GameChar.Id);
             pc.DefenserIds.Add(datas.OtherCharId);
             //设置复仇权力
@@ -703,22 +706,26 @@ namespace GuangYuan.GY001.BLL
             db.AddRange(bootyOfAttacker);
 
             List<GameBooty> bootyOfDefenser = new List<GameBooty>();
-            foreach (var item in datas.BootyOfDefenser) //防御方战利品
+            if (!World.CharManager.IsOnline(datas.OtherCharId))    //若不在线
             {
-                var booty = new GameBooty()
+                foreach (var item in datas.BootyOfDefenser) //防御方战利品
                 {
-                    ParentId = pc.Id,
-                    CharId = datas.OtherCharId,
-                    TemplateId = item.Item1,
-                    Count = item.Item2,
-                };
-                booty.SetGameItems(World);   //设置物品实际增减
-                datas.World.CharManager.NotifyChange(datas.OtherChar.GameUser);
+                    var booty = new GameBooty()
+                    {
+                        ParentId = pc.Id,
+                        CharId = datas.OtherCharId,
+                        TemplateId = item.Item1,
+                        Count = item.Item2,
+                    };
+                    booty.SetGameItems(World);   //设置物品实际增减
+                    datas.World.CharManager.NotifyChange(datas.OtherChar.GameUser);
+                }
+                db.AddRange(bootyOfDefenser);
             }
-            db.AddRange(bootyOfDefenser);
             //设置物品实际增减
             bootyOfAttacker.ForEach(c => c.SetGameItems(World, datas.ChangeItems));
-            bootyOfDefenser.ForEach(c => c.SetGameItems(World));
+            if (!World.CharManager.IsOnline(datas.OtherCharId))    //若不在线
+                bootyOfDefenser.ForEach(c => c.SetGameItems(World));
 
             //发送奖励邮件
             var mail = new GameMail()
@@ -1332,8 +1339,14 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public bool Retaliationed
         {
-            get { return _WarNewspaper.Properties.GetBooleanOrDefaut("Retaliationed", false); }
-            set { _WarNewspaper.Properties["Retaliationed"] = value; }
+            get
+            {
+                return _WarNewspaper.Properties.GetBooleanOrDefaut("Retaliationed", false);
+            }
+            set
+            {
+                _WarNewspaper.Properties["Retaliationed"] = value;
+            }
         }
 
         public IEnumerable<GameItem> GetAttackerMounts()
@@ -1354,6 +1367,9 @@ namespace GuangYuan.GY001.BLL
             set { _WarNewspaper.Properties["AttackerDisplayName"] = value; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string DefenserDisplayName
         {
             get { return _WarNewspaper.Properties.GetStringOrDefault("DefenserDisplayName"); }

@@ -1,5 +1,4 @@
-﻿using Game.Social;
-using GuangYuan.GY001.BLL;
+﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
@@ -20,10 +19,27 @@ namespace GY2021001WebApi.Models
             var result = new CombatDto()
             {
                 EndUtc = obj.EndUtc,
-                Id = obj.IdString,
+                Id = obj.Base64IdString,
             };
-            result.AttackerIds.AddRange(obj.AttackerIds);
-            result.DefenserIds.AddRange(obj.DefenserIds);
+            result.AttackerIds.AddRange(obj.AttackerIds.Select(c=>c.ToBase64String()));
+            result.DefenserIds.AddRange(obj.DefenserIds.Select(c=>c.ToBase64String()));
+            foreach (var item in obj.Properties)
+                result.Properties[item.Key] = item.Value;
+            return result;
+        }
+    }
+
+    public partial class GameBootyDto
+    {
+        public static implicit operator GameBootyDto(GameBooty obj)
+        {
+            var result = new GameBootyDto()
+            {
+                CharId = obj.CharId.ToBase64String(),
+                Count = obj.Count,
+                ParentId = obj.ParentId.ToBase64String(),
+                TemplateId = obj.TemplateId.ToBase64String(),
+            };
             foreach (var item in obj.Properties)
                 result.Properties[item.Key] = item.Value;
             return result;
@@ -115,7 +131,7 @@ namespace GY2021001WebApi.Models
             return result;
         }
 
-        static public GameItemDto FromGameItem(GameItem obj, bool includeChildren = false)
+        public static GameItemDto FromGameItem(GameItem obj, bool includeChildren = false)
         {
             var result = new GameItemDto()
             {
@@ -466,7 +482,7 @@ namespace GY2021001WebApi.Models
     public partial class GameSocialRelationshipDto
     {
 
-        static public implicit operator GameSocialRelationshipDto(GameSocialRelationship obj)
+        public static implicit operator GameSocialRelationshipDto(GameSocialRelationship obj)
         {
             var result = new GameSocialRelationshipDto()
             {

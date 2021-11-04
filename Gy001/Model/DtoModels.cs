@@ -3,7 +3,6 @@
  * 目前使用C# 7.3版本语法。
  */
 using Game.Social;
-using GuangYuan.GY001.BLL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,13 +37,13 @@ namespace GY2021001WebApi.Models
         /// 攻击方角色Id集合。
         /// </summary>
         [DataMember]
-        public List<Guid> AttackerIds { get; set; } = new List<Guid>();
+        public List<string> AttackerIds { get; set; } = new List<string>();
 
         /// <summary>
         /// 防御方角色Id集合。
         /// </summary>
         [DataMember]
-        public List<Guid> DefenserIds { get; set; } = new List<Guid>();
+        public List<string> DefenserIds { get; set; } = new List<string>();
 
         //private List<GameBooty> _BootyOfAttacker;
         ///// <summary>
@@ -71,6 +70,38 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public DateTime EndUtc { get; set; } = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 战利品数据传输对象。
+    /// </summary>
+    [DataContract]
+    public partial class GameBootyDto
+    {
+        /// <summary>
+        /// 所属战斗对象的Id。
+        /// </summary>
+        public string ParentId { get; set; }
+
+        /// <summary>
+        /// 所属角色(参与战斗的角色Id)。
+        /// </summary>
+        public string CharId { get; set; }
+
+        /// <summary>
+        /// 模板Id。
+        /// </summary>
+        public string TemplateId { get; set; }
+
+        /// <summary>
+        /// 数量。可能是负数，表示失去的数量。
+        /// </summary>
+        public decimal Count { get; set; }
+
+        /// <summary>
+        /// 封装额外的参数，目前仅对坐骑/野兽时，这里有htid和btid属性。
+        /// </summary>
+        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
     }
 
     /// <summary>
@@ -1919,6 +1950,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<GameItemDto> DefenserMounts { get; set; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 战利品集合。
+        /// </summary>
+        [DataMember]
+        public List<GameBootyDto> Booty { get; set; } = new List<GameBootyDto>();
     }
 
     /// <summary>
@@ -2265,7 +2302,7 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string PropertyString { get; set; }
 
-        void Demo()
+        private void Demo()
         {
             var dt = DateTime.UtcNow;
             //调用接口
@@ -2420,12 +2457,12 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 与家园主基地互动获得体力的Id。
         /// </summary>
-        static public Guid PatForTili = new Guid("{910FC71A-3E1F-405B-8224-8182C4EC882E}");
+        public static Guid PatForTili = new Guid("{910FC71A-3E1F-405B-8224-8182C4EC882E}");
 
         /// <summary>
         /// 与好友家园中的坐骑互动。
         /// </summary>
-        static public Guid PatWithMounts = new Guid("{F9E4552F-9CD1-46E8-84E8-E71D946465CA}");
+        public static Guid PatWithMounts = new Guid("{F9E4552F-9CD1-46E8-84E8-E71D946465CA}");
     }
 
     /// <summary>
@@ -2807,6 +2844,24 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string LoginNamePrefix { get; set; }
 
+    }
+
+    /// <summary>
+    /// 设置角色经验接口使用的参数传输类。
+    /// </summary>
+    public class SetCharExpParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 指定的经验值。
+        /// </summary>
+        public decimal Exp { get; set; }
+    }
+
+    /// <summary>
+    /// 设置角色经验接口使用的返回值传输类。
+    /// </summary>
+    public class SetCharExpReturnDto : ReturnDtoBase
+    {
     }
 
     #endregion 管理相关

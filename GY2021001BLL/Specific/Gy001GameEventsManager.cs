@@ -54,9 +54,40 @@ namespace OW.Game
                     break;
                 }
             }
+            CharLevelUp(args);  //角色等级变化
             OnLineupChenged(args);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        private void CharLevelUp(DynamicPropertyChangedCollection e)
+        {
+            foreach (var spcc in e.Where(c => c.Thing is GameChar)) //遍历针对角色的动态属性变化
+            {
+                foreach (var item in spcc)
+                {
+                    if (item.Name != World.PropertyManager.LevelPropertyName)   //若不是等级变化
+                        continue;
+                    var oldLv = item.HasOldValue ? (int)item.OldValue : 0;
+                    var newLv = item.HasNewValue ? (int)item.NewValue : 0;
+                    if (oldLv >= newLv)    //若不是等级增加了，容错
+                        continue;
+                    for (int i = oldLv; i < newLv; i++) //遍历每个增加的等级
+                    {
+                        switch (i)
+                        {
+                            case 3: //玩家等级5（游戏流程第3天)，PVP模式，好友系统
+                                World.CombatManager.UpdatePvpInfo(spcc.Thing as GameChar);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+        }
 
         #region 阵容相关
         private void OnLineupChenged(DynamicPropertyChangedCollection args)
@@ -189,8 +220,8 @@ namespace OW.Game
             World.AddToUserContext(new object[] { ar });
             //增加推关战力
             World.CombatManager.UpdatePveInfo(gameChar);
-            //加入pvp排名信息
-            World.CombatManager.UpdatePvpInfo(gameChar);
+            //不可加入pvp排名信息
+            //World.CombatManager.UpdatePvpInfo(gameChar);
         }
 
         /// <summary>

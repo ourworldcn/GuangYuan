@@ -1,8 +1,10 @@
 ﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Combat;
 using Gy001.Controllers;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using System;
 using System.Linq;
@@ -95,6 +97,7 @@ namespace GY2021001WebApi.Controllers
             var result = new CombatEndPvpReturnDto();
             using var datas = new EndCombatPvpWorkData(World, model.Token, GameHelper.FromBase64String(model.OtherGCharId))
             {
+                CombatId = GameHelper.FromBase64String(model.CombatId),
                 Now = DateTime.UtcNow,
                 DungeonId = GameHelper.FromBase64String(model.DungeonId),
                 IsWin = model.IsWin,
@@ -117,7 +120,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<GetCombatObjectResultDto> GetCombatObject(GetCombatObjectParamsDto model)
         {
             var result = new GetCombatObjectResultDto();
-            GetCombatDatas datas = new GetCombatDatas(World, model.Token)
+            using GetCombatDatas datas = new GetCombatDatas(World, model.Token)
             {
                 CombatId = GameHelper.FromBase64String(model.CombatId),
             };
@@ -131,6 +134,7 @@ namespace GY2021001WebApi.Controllers
                 var view = new WarNewspaperView(datas.CombatObject, World.Service);
                 result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => (GameItemDto)c));
                 result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => (GameItemDto)c));
+                result.Booty.AddRange(datas.UserContext.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Id).AsEnumerable().Select(c => (GameBootyDto)c));
             }
             return result;
         }

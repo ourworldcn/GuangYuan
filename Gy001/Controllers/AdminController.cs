@@ -14,7 +14,7 @@ namespace GY2021001WebApi.Controllers
     [ApiController]
     public class AdminController : GameBaseController
     {
-        VWorld _World;
+        private readonly VWorld _World;
 
         public AdminController(VWorld world)
         {
@@ -32,8 +32,8 @@ namespace GY2021001WebApi.Controllers
             var result = new CloneAccountReturnDto();
             using var datas = new CloneUserDatas(_World, model.Token)
             {
-                Count=model.Count,
-                LoginNamePrefix=model.LoginNamePrefix,
+                Count = model.Count,
+                LoginNamePrefix = model.LoginNamePrefix,
             };
             World.AdminManager.CloneUser(datas);
             result.HasError = datas.HasError;
@@ -47,6 +47,22 @@ namespace GY2021001WebApi.Controllers
                     Pwd = c.Item2,
                 }));
             }
+            return result;
+        }
+
+        /// <summary>
+        /// 给当前角色设置经验值。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public ActionResult<SetCharExpReturnDto> SetCharExp(SetCharExpParamsDto model)
+        {
+            var result = new SetCharExpReturnDto();
+            using var dwUser = World.CharManager.LockAndReturnDisposer(model.Token, out var gu);
+            if (dwUser is null)
+                return Unauthorized(VWorld.GetLastErrorMessage());
+            World.CharManager.SetExp(gu.CurrentChar, model.Exp);
             return result;
         }
     }

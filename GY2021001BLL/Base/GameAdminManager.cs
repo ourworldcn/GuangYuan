@@ -63,7 +63,7 @@ namespace GuangYuan.GY001.BLL
                     disposable = null;
                 using var dwUser1 = disposable;
                 CloneUser(datas.GameChar.GameUser, user);
-                if (!World.CharManager.Id2OnlineChar.ContainsKey(user.CurrentChar.Id))   //若不是登录账户
+                if (!World.CharManager.IsOnline(user.CurrentChar.Id))   //若不是登录账户
                     user.Timeout = TimeSpan.FromMinutes(1);
             }
             datas.Account.AddRange(list.Select(c => (c.Item1, c.Item2)));

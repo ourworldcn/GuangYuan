@@ -819,6 +819,12 @@ namespace GuangYuan.GY001.BLL
                         ShenwenLevelUp(datas);
                         succ = true;
                         break;
+                    case "92f63905-a39f-4e1a-ad17-ea648a99be7a":    //神纹攻击突破
+                    case "e35d12f0-c2d6-40bf-a2b0-f04b057ff68c":    //神纹血量突破
+                    case "7fc78174-f884-4918-a4fc-b84db5360cf9":    //神纹质量突破
+                        ShenwenTupo(datas);
+                        succ = true;
+                        break;
                     default:
                         succ = false;
                         break;
@@ -1081,6 +1087,7 @@ namespace GuangYuan.GY001.BLL
             double[] probs = new double[] { 1, 1, 1, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5 };    //突破概率
             if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。"))
             {
+                datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                 return;
             }
@@ -1106,6 +1113,12 @@ namespace GuangYuan.GY001.BLL
             }
             var lvName = $"lv{pname}";
             var ssc = (int)gi.Properties.GetDecimalOrDefault($"ssc{pname}");    //突破次数
+            if(ssc>= costs.Length)
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                return;
+            }
             var cost = costs[ssc];  //所需突破石数量
             var itemBag = gc.GetItemBag();
             var tid = new Guid("A9BD0E89-1105-4A52-982A-97E6EE4AD577"); //突破石道具
@@ -1135,12 +1148,11 @@ namespace GuangYuan.GY001.BLL
             {
                 gi.Properties[$"ssc{pname}"] = ssc + 1;
                 gi.Properties[$"mlv{pname}"] = gi.Properties.GetDecimalOrDefault($"mlv{pname}") + 10;
-
             }
             else //若突破失败
             {
                 var lv = gi.Properties.GetDecimalOrDefault(lvName);
-                World.ItemManager.SetLevel(gi, lvName, (int)Math.Max(lv - 3, 0));
+                World.ItemManager.SetPropertyValue(gi, lvName, (int)Math.Max(lv - 3, 0));
             }
             datas.ChangeItems.AddToChanges(gi);
         }

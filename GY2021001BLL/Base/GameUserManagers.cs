@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OW.Game;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -455,9 +456,39 @@ namespace GuangYuan.GY001.BLL
         public GameUser GetUserFromId(Guid id) =>
             _Store._Id2Users.GetValueOrDefault(id, null);
 
+        /// <summary>
+        /// 获取指定Id的角色是否在线。
+        /// </summary>
+        /// <param name="charId"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsOnline(Guid charId) =>
+            _Store._Id2OnlineChars.ContainsKey(charId);
+
         #endregion 通过索引获取对象
 
         #region 锁定对象
+
+        /// <summary>
+        /// 锁定登入登出进程。
+        /// </summary>
+        /// <param name="loginName">如果暂存了 loginName，则返回系统对其的引用；否则返回对值为 loginName 的字符串的新引用。</param>
+        /// <param name="timeout">用于等待锁的时间。 值为 -1 毫秒表示指定无限期等待。省略或为null，则使用 Options.DefaultLockTimeout 给定的值作为超时时间。</param>
+        /// <returns></returns>
+        public bool LockLogin(ref string loginName, TimeSpan? timeout = null)
+        {
+            return World.LockString(ref loginName, timeout ?? Options.DefaultLockTimeout);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="loginName"></param>
+        /// <param name="isPulse">是否通知等待队列中的线程锁定对象状态的更改。false或默认值表示不通知。</param>
+        public void UnlockLogin(string loginName, bool isPulse = false)
+        {
+            World.UnlockString(loginName, isPulse);
+        }
 
         /// <summary>
         /// 锁定用户。务必要用<seealso cref="Unlock(GameUser)"/>解锁。两者配对使用。
@@ -716,6 +747,8 @@ namespace GuangYuan.GY001.BLL
             return Enumerable.SequenceEqual(hash, user.PwdHash);
         }
 
+        #region 注册登入登出相关
+
         /// <summary>
         /// 登录用户。
         /// </summary>
@@ -771,6 +804,62 @@ namespace GuangYuan.GY001.BLL
                 World.AddToUserContext(actionRecords);
             return gu;
         }
+
+        /// <summary>
+        /// 注销一个内存中的用户。
+        /// </summary>
+        /// <param name="gu"></param>
+        /// <param name="reason"></param>
+        /// <returns></returns>
+        public bool Logout(GameUser gu, LogoutReason reason)
+        {
+            var loginName = gu.LoginName;
+            if (!_Store._LoginName2Users.TryGetValue(loginName, out gu)) //若未知情况
+            {
+                return false;   //TO DO
+            }
+            using var dwLoginName = World.LockStringAndReturnDisposer(ref loginName, Timeout.InfiniteTimeSpan);    //锁定用户名
+            Trace.Assert(null != dwLoginName);
+            using var dwUser = this.LockAndReturnDisposer(gu, Timeout.InfiniteTimeSpan); //锁定用户
+            if (dwUser is null)  //若已被处置
+                return false;
+            List<GameActionRecord> actionRecords = new List<GameActionRecord>();
+            if (null != gu.CurrentChar) //若存在选择的角色
+            {
+                var actionRecord = new GameActionRecord()   //操做记录对象。
+                {
+                    ActionId = "Logout",
+                    ParentId = gu.CurrentChar.Id,
+                };
+                actionRecords.Add(actionRecord);
+                gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = DateTime.UtcNow;   //记录下线时间
+                try
+                {
+                    gu.InvokeLogouting(reason);
+                    gu.NodeNum = null;
+                    actionRecord.DateTimeUtc = DateTime.UtcNow;
+                }
+                catch (Exception)
+                {
+                    //TO DO
+                }
+            }
+            try
+            {
+                gu.DbContext.SaveChanges();
+                if (actionRecords.Count > 0)
+                    World.AddToUserContext(actionRecords);
+            }
+            catch (Exception err)
+            {
+                var logger = Service.GetService<ILogger<GameChar>>();
+                logger?.LogError("保存用户(Number={Number})信息时发生错误。——{err}", gu.Id, err);
+            }
+            _Store.Remove(gu);
+            gu.Dispose();
+            return true;
+        }
+
 
         /// <summary>
         /// 获取快速注册时，登录名的后缀序号。
@@ -882,60 +971,7 @@ namespace GuangYuan.GY001.BLL
             return true;
         }
 
-        /// <summary>
-        /// 注销一个内存中的用户。
-        /// </summary>
-        /// <param name="gu"></param>
-        /// <param name="reason"></param>
-        /// <returns></returns>
-        public bool Logout(GameUser gu, LogoutReason reason)
-        {
-            var loginName = gu.LoginName;
-            if (!_Store._LoginName2Users.TryGetValue(loginName, out gu)) //若未知情况
-            {
-                return false;   //TO DO
-            }
-            using var dwLoginName = World.LockStringAndReturnDisposer(ref loginName, Timeout.InfiniteTimeSpan);    //锁定用户名
-            Trace.Assert(null != dwLoginName);
-            using var dwUser = this.LockAndReturnDisposer(gu, Timeout.InfiniteTimeSpan); //锁定用户
-            if (dwUser is null)  //若已被处置
-                return false;
-            List<GameActionRecord> actionRecords = new List<GameActionRecord>();
-            if (null != gu.CurrentChar) //若存在选择的角色
-            {
-                var actionRecord = new GameActionRecord()   //操做记录对象。
-                {
-                    ActionId = "Logout",
-                    ParentId = gu.CurrentChar.Id,
-                };
-                actionRecords.Add(actionRecord);
-                gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = DateTime.UtcNow;   //记录下线时间
-                try
-                {
-                    gu.InvokeLogouting(reason);
-                    gu.NodeNum = null;
-                    actionRecord.DateTimeUtc = DateTime.UtcNow;
-                }
-                catch (Exception)
-                {
-                    //TO DO
-                }
-            }
-            try
-            {
-                gu.DbContext.SaveChanges();
-                if (actionRecords.Count > 0)
-                    World.AddToUserContext(actionRecords);
-            }
-            catch (Exception err)
-            {
-                var logger = Service.GetService<ILogger<GameChar>>();
-                logger?.LogError("保存用户(Number={Number})信息时发生错误。——{err}", gu.Id, err);
-            }
-            _Store.Remove(gu);
-            gu.Dispose();
-            return true;
-        }
+        #endregion 注册登入登出相关
 
         /// <summary>
         /// 已经登录的用变更密码。
@@ -1018,6 +1054,56 @@ namespace GuangYuan.GY001.BLL
             return result;
         }
 
+        /// <summary>
+        /// 设置角色的新经验值。应引发相关事件。
+        /// </summary>
+        /// <remarks>可从<see cref="VWorld.GetLastError"/>中获取详细的信息。</remarks>
+        /// <param name="gameChar"></param>
+        /// <param name="newExp"></param>
+        public void SetExp(GameChar gameChar, decimal newExp)
+        {
+            using var dwUser = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
+            if (dwUser is null)
+            {
+                return;
+            }
+            var e = new DynamicPropertyChangedCollection();
+            var oldExp = gameChar.Properties.GetDecimalOrDefault("exp");    //当前经验值
+            if (newExp != oldExp)
+                e.MarkAndSet(gameChar, "exp", newExp);
+            var oldLv = gameChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName); //当前等级
+            var limitSeq = gameChar.Template.Properties.GetValueOrDefault("expLimit") as IEnumerable;
+            var limit = gameChar.Properties.GetValueOrDefault("expLimit");
+            if (null != limitSeq && newExp >= oldExp)   //若需要升级
+            {
+                List<decimal> lst = new List<decimal>(limitSeq.OfType<decimal>());
+                var newLv = lst.FindIndex(c => c > newExp); //新等级
+                if (newLv != oldLv)    //若等级发生变化
+                {
+                    e.MarkAndSet(gameChar, World.PropertyManager.LevelPropertyName, newLv);
+                }
+            }
+            World.EventsManager.OnDynamicPropertyChanged(e);
+        }
+
+        /// <summary>
+        /// 给指定角色增加经验值。
+        /// </summary>
+        /// <remarks>可从<see cref="VWorld.GetLastError"/>中获取详细的信息。</remarks>
+        /// <param name="gameChar"></param>
+        /// <param name="incExp"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddExp(GameChar gameChar, decimal incExp)
+        {
+            using var dwUser = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
+            if (dwUser is null)
+            {
+                return;
+            }
+            var oldExp = gameChar.Properties.GetDecimalOrDefault("exp");    //当前经验值
+            SetExp(gameChar, oldExp + incExp);
+        }
+
         #endregion 公共方法
 
         #region 事件及相关
@@ -1042,6 +1128,13 @@ namespace GuangYuan.GY001.BLL
 
     public static class GameCharManagerExtensions
     {
+        public static IDisposable LockLoginAndReturnDisposer(this GameCharManager manager, ref string loginName, TimeSpan? timeout = null)
+        {
+            if (!manager.LockLogin(ref loginName, timeout))
+                return null;
+            return DisposerWrapper.Create(c => manager.UnlockLogin(c, false), loginName);
+        }
+
         /// <summary>
         /// 创建一个新账号并加入内存缓存。
         /// </summary>
