@@ -2,7 +2,6 @@
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Json;
@@ -37,6 +36,11 @@ namespace GuangYuan.GY001.UserDb
         public GameExtendProperty(string name)
         {
             Name = name;
+        }
+
+        public GameExtendProperty(string name, Guid id) : base(id)
+        {
+            _Name = name;
         }
 
         private string _Name;
@@ -100,6 +104,7 @@ namespace GuangYuan.GY001.UserDb
         /// 二进制值。
         /// </summary>
         public byte[] ByteArray { get; set; }
+
     }
 
     /// <summary>
@@ -122,7 +127,7 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="obj"></param>
         /// <param name="result"></param>
         /// <returns>true成功得到对象，false转化错误。</returns>
-        static public bool TryParse(GameExtendProperty obj, out ExtendPropertyDescriptor result)
+        public static bool TryParse(GameExtendProperty obj, out ExtendPropertyDescriptor result)
         {
             if (MarkIdString != obj.StringValue)    //若不是特定标记开头
             {
@@ -170,7 +175,7 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         /// <param name="srcs"></param>
         /// <param name="dests"></param>
-        static public void Fill(IEnumerable<ExtendPropertyDescriptor> srcs, ICollection<GameExtendProperty> dests)
+        public static void Fill(IEnumerable<ExtendPropertyDescriptor> srcs, ICollection<GameExtendProperty> dests)
         {
             var coll = (from src in srcs
                         where src.IsPersistence

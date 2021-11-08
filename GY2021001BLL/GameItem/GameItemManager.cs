@@ -1499,13 +1499,13 @@ namespace OW.Game.Item
 
         public static void Fill(this GameItemManager manager, GameItem gameItem, BinaryWriter writer)
         {
+            writer.Write(OwConvert.ToString(gameItem.Properties) ?? string.Empty);  //这个属性需要最先被写入
             writer.Write(gameItem.ClientGutsString ?? string.Empty);
             writer.Write(gameItem.Count);
             writer.Write(gameItem.CreateUtc);
             writer.Write(gameItem.Id);
             writer.Write(gameItem.OwnerId);
             writer.Write(gameItem.ParentId);
-            writer.Write(OwConvert.ToString(gameItem.Properties) ?? string.Empty);
             writer.Write(gameItem.TemplateId);
             writer.Write(gameItem.Children.Count);
             foreach (var item in gameItem.Children)
@@ -1536,13 +1536,13 @@ namespace OW.Game.Item
         /// <param name="gameItem"></param>
         public static void Fill(this GameItemManager manager, BinaryReader reader, GameItem gameItem)
         {
+            gameItem.PropertiesString = reader.ReadString();    //这个属性需要最先读取
             gameItem.ClientGutsString = reader.ReadString();
             gameItem.Count = reader.ReadNullableDecimal();
             gameItem.CreateUtc = reader.ReadDateTime();
             gameItem.Id = reader.ReadGuid();
             gameItem.OwnerId = reader.ReadNullableGuid();
             gameItem.ParentId = reader.ReadNullableGuid();
-            gameItem.PropertiesString = reader.ReadString();
             gameItem.TemplateId = reader.ReadGuid();
             var count = reader.ReadInt32();
             for (int i = 0; i < count; i++)

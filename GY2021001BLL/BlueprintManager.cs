@@ -841,17 +841,33 @@ namespace GuangYuan.GY001.BLL
 
         private void MountsLevelUp(ApplyBlueprintDatas datas)
         {
-            var datasInner = new ApplyBlueprintDatas(datas.World, datas.GameChar)
+            if (datas.GameItems.Count != 1)
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                return;
+            }
+            var gi = datas.GameItems[0];
+            var charLv = datas.GameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);    //角色等级
+            var giLv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName); //坐骑等级
+            var innerCount = (charLv + 1) * 2 - (giLv + 1); //计算实际可以升级的次数
+            if (innerCount <= 0) //若已经不可再升级
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                return;
+            }
+            using var datasInner = new ApplyBlueprintDatas(datas.World, datas.GameChar)
             {
                 ActionId = datas.ActionId,
-                Count = datas.Count,
+                Count = (int)innerCount,
                 Blueprint = datas.Blueprint,
                 UserContext = datas.UserContext,
             };
-            var gi = World.ItemManager.GetBody(datas.GameItems[0]);
-            datasInner.GameItems.Add(gi);
+            var body = World.ItemManager.GetBody(gi);
+            datasInner.GameItems.Add(body);
             LevelUp(datasInner);
-            datas.ChangeItems.AddToChanges(datas.GameItems[0]);
+            datas.ChangeItems.AddToChanges(gi);
             datas.ChangeItems.AddRange(datasInner.ChangeItems);
             datas.SuccCount = datasInner.SuccCount;
             datas.HasError = datasInner.HasError;
@@ -1113,7 +1129,7 @@ namespace GuangYuan.GY001.BLL
             }
             var lvName = $"lv{pname}";
             var ssc = (int)gi.Properties.GetDecimalOrDefault($"ssc{pname}");    //突破次数
-            if(ssc>= costs.Length)
+            if (ssc >= costs.Length)
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
@@ -1338,6 +1354,15 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
             }
+            var charLv = datas.GameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);    //角色等级
+            var giLv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName); //升级物品等级
+            var innerCount = (charLv - giLv); //计算实际可以升级的次数
+            if (charLv <= 0)   //若橘色等级不足
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                return;
+            }
             #endregion 等级校验
 
             LevelUp(datas);
@@ -1544,6 +1569,9 @@ namespace GuangYuan.GY001.BLL
                 var worker = gc.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);
                 worker.Count++;
                 LastChangesItems.AddToChanges(worker);
+                //计算经验值增加量
+                var exp = Math.Round(gameItem.Template.Properties.GetDecimalOrDefault("lut") / 60, MidpointRounding.ToZero);
+                World.CharManager.AddExp(gc, exp);  //增加经验值
             }
             catch (Exception)
             {

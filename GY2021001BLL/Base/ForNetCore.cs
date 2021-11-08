@@ -187,31 +187,7 @@ namespace GuangYuan.GY001.BLL
         private void Test()
         {
             var world = _Services.GetRequiredService<VWorld>();
-            using var db = world.CreateNewUserDbContext();
-            //var gi = db.GameItems.Include(c => c.Children).FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId && c.Children.Count > 0);
-            //using var ms = new MemoryStream();
-            //using var sr = new BinaryReader(ms, Encoding.UTF8, true);
-            //using var sw = new BinaryWriter(ms, Encoding.UTF8, true);
-            //world.ItemManager.Fill(gi, sw);
-            //sw.Dispose();
-            //ms.Seek(0, SeekOrigin.Begin);
-            //var gi2 = new GameItem();
-            //world.ItemManager.Fill(sr, gi2);
-            var deserializeOptions = new JsonSerializerOptions
-            {
-                Converters =
-                {
-                    new GameItemJsonConverter()
-                }
-            };
-            //var ary = db.GameChars.OrderBy(c => c.Id).Skip(100).Take(20).Select(c => c.Id).ToArray();
-
-            //var coll1 = from tmp in db.Set<GameChar>()
-            //            where ary.Contains(tmp.Id) 
-            //            select tmp;
-            //var lookup = coll1.ToLookup(c=>c.TemplateId);
-            //var r = coll1.Take(10).ToArray();
-            //db.SaveChanges();
+            //using var db = world.CreateNewUserDbContext();
         }
 
         /// <summary>
