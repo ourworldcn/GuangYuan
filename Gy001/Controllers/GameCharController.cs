@@ -618,6 +618,56 @@ namespace GY2021001WebApi.Controllers
             }
             return result;
         }
+
+        /// <summary>
+        /// 获取当前角色的变化数据。获取后可以使用ClearChangeData接口清理。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpPut]
+        public ActionResult<GetChangeDataResultDto> GetChangeData(GetChangeDataParamsDto model)
+        {
+            var result = new GetChangeDataResultDto();
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            using var dwUser = world.CharManager.LockAndReturnDisposer(model.Token, out var gu);
+            if (dwUser is null)
+                return Unauthorized("令牌错误");
+            var data = world.CharManager.GetChangeData(gu.CurrentChar);
+            if (data is null)
+            {
+                result.HasError = true;
+                result.ErrorCode = VWorld.GetLastError();
+            }
+            else
+                result.ChangeDatas.AddRange(data.Select(c => (ChangeDataDto)c));
+            return result;
+        }
+
+        /// <summary>
+        /// 清除所有变化通知数据。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <response code="401">令牌错误。</response>
+        [HttpDelete]
+        public ActionResult<ClearChangeDataResult> ClearChangeData(ClearChangeDataParamsDto model)
+        {
+            var result = new ClearChangeDataResult();
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            using var dwUser = world.CharManager.LockAndReturnDisposer(model.Token, out var gu);
+            if (dwUser is null)
+                return Unauthorized("令牌错误");
+            var data = world.CharManager.GetChangeData(gu.CurrentChar);
+            if (data is null)
+            {
+                result.HasError = true;
+                result.ErrorCode = VWorld.GetLastError();
+            }
+            else
+                data.Clear();
+            return result;
+        }
     }
 
 }

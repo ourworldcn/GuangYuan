@@ -12,6 +12,28 @@ namespace GY2021001WebApi.Models
 {
     #region 基础数据
 
+    public partial class ChangeDataDto
+    {
+        public static implicit operator ChangeDataDto(ChangeData obj)
+        {
+            var result = new ChangeDataDto()
+            {
+                ActionId = obj.ActionId,
+                NewValue = obj.NewValue,
+                ObjectId = obj.ObjectId.ToBase64String(),
+                OldValue = obj.OldValue,
+                PropertyName = obj.PropertyName,
+                TemplateId = obj.TemplateId.ToBase64String(),
+                CreateUtc = obj.CreateUtc,
+            };
+            foreach (var item in obj.Properties)
+            {
+                result.Properties[item.Key] = item.Value;
+            }
+            return result;
+        }
+    }
+
     public partial class CombatDto
     {
         public static implicit operator CombatDto(WarNewspaper obj)
@@ -21,8 +43,8 @@ namespace GY2021001WebApi.Models
                 EndUtc = obj.EndUtc,
                 Id = obj.Base64IdString,
             };
-            result.AttackerIds.AddRange(obj.AttackerIds.Select(c=>c.ToBase64String()));
-            result.DefenserIds.AddRange(obj.DefenserIds.Select(c=>c.ToBase64String()));
+            result.AttackerIds.AddRange(obj.AttackerIds.Select(c => c.ToBase64String()));
+            result.DefenserIds.AddRange(obj.DefenserIds.Select(c => c.ToBase64String()));
             foreach (var item in obj.Properties)
                 result.Properties[item.Key] = item.Value;
             return result;

@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="GuangYuan.GY001.BLL.Compiler" Collapsed="true">
-    <Position X="10.5" Y="1.5" Width="1.5" />
+    <Position X="17.25" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.ComplexWorkDatasBase">
-    <Position X="0.5" Y="10" Width="2.25" />
+    <Position X="0.5" Y="9.25" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
@@ -16,7 +16,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.BLL.WorkDataBase">
-    <Position X="3" Y="1.5" Width="2.25" />
+    <Position X="3.25" Y="0.75" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAAAACAADAAABAAAAAAABAAAACEQAAQAAAAIAAAAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
@@ -24,7 +24,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharWorkDataBase">
-    <Position X="3" Y="5.75" Width="2.25" />
+    <Position X="3.25" Y="5" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AYBAAAABACAAAAAAAAAAAAAAAAgAABAIAAAAAAABACA=</HashCode>
       <FileName>Base\Base.cs</FileName>
@@ -32,85 +32,139 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameHostedService" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="12.25" Y="2.5" Width="1.5" />
+    <Position X="15.5" Y="2.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAABEgCAAAAAAAAAgAAQAAAAAAAAAQAQAACAAAAAA=</HashCode>
+      <HashCode>AAAAABEACAAAAAAAAAgAAQAAAAAAAAAQQQAACAAAAAA=</HashCode>
       <FileName>Base\ForNetCore.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" Collapsed="true" />
   </Class>
   <Class Name="OW.Game.VWorldOptions" Collapsed="true">
-    <Position X="12.25" Y="3.5" Width="1.5" />
+    <Position X="13.75" Y="3.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAgAAAAEAAAAAAAgAAAAAAAA=</HashCode>
       <FileName>Managers\VWorld.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.VWorldInfomation" Collapsed="true">
-    <Position X="10.5" Y="3.5" Width="1.5" />
+    <Position X="19" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
       <FileName>Managers\VWorld.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.BLL.ListGameItemPolicy" Collapsed="true">
-    <Position X="13.5" Y="3.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAEAAAAAA=</HashCode>
-      <FileName>Base\VWorld.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharManagerOptions" Collapsed="true">
-    <Position X="10.5" Y="2.5" Width="1.5" />
+    <Position X="15.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAEAAABAAAAAAAAAAAAAAAAAAAAAAAAAIAAAEAA=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharManager" Collapsed="true">
-    <Position X="12.25" Y="1.5" Width="1.5" />
+    <Position X="19" Y="0.75" Width="1.5" />
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>gAAQAAAAAFMAAYAAAgzCBAIAoEAoA4AIlADQAAEEAAE=</HashCode>
+      <HashCode>gAAQAAAAAFMAAYAAAgzDBAYIoEKoA4AIlADQAAEEAAE=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.CharLoadedEventArgs" Collapsed="true">
-    <Position X="8.75" Y="1.5" Width="1.5" />
+    <Position X="15.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharManagerExtensions" Collapsed="true">
-    <Position X="8.75" Y="2.5" Width="1.5" />
+    <Position X="13.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAQAAAAAAAECAAAAAEIAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
+      <HashCode>AAAQAAAAAAAECAAAAAEIAAAAAAAAAAAAAABAAAAAABA=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.BinaryRelationshipWorkDataBase">
-    <Position X="3.5" Y="10" Width="2" />
+    <Position X="3.5" Y="9.25" Width="2" />
     <TypeIdentifier>
       <HashCode>AAQQAIAAASAAAgAAICCCAACAAgAACAQAAAAAAABCAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameItemSummery" Collapsed="true">
-    <Position X="8.75" Y="3.5" Width="1.5" />
+    <Position X="17.25" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAABAAAAAAAAAAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.RelationshipWorkDataBase">
-    <Position X="6.25" Y="10" Width="2" />
+    <Position X="6.25" Y="9.25" Width="2" />
     <TypeIdentifier>
       <HashCode>AAQQAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="OW.Game.GameEventsManagerOptions" Collapsed="true">
+    <Position X="13.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GameEvents.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.SimplePropertyChangedItem&lt;T&gt;" Collapsed="true">
+    <Position X="8.25" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAggAAAEAQAIAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GameEvents.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.SimplePropertyChangedCollection" BaseTypeListCollapsed="true">
+    <Position X="8.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAgCBAQAAAABASAAAAAAAAEAAAAAABQIAA=</HashCode>
+      <FileName>Base\GameEvents.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Items" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="OW.Game.DynamicPropertyChangedCollection" BaseTypeListCollapsed="true">
+    <Position X="11.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAEAAAAAIACBAQAAAABAQAAAAAAAAEAACAgABQIAA=</HashCode>
+      <FileName>Base\GameEvents.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Items" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="OW.Game.GameEventsManager" Collapsed="true">
+    <Position X="17.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AwAAAFAAAAAIAQAQAAIAAAAAAAAAAAAAAARAQAAgAAA=</HashCode>
+      <FileName>Base\GameEvents.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.GameEventsManagerExtensions" Collapsed="true">
+    <Position X="19" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GameEvents.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.ChangeData" Collapsed="true">
+    <Position X="13.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAQACAAAAAAAAAAAAAAAEAAAAAAAAABAAAAAAABCAAA=</HashCode>
+      <FileName>Specific\Gy001GameEventsManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="System.Collections.Generic.ICollection&lt;T&gt;" Collapsed="true">
+    <Position X="13.75" Y="5" Width="1.5" />
+    <TypeIdentifier />
+  </Interface>
   <Font Name="Microsoft YaHei UI" Size="9" />
 </ClassDiagram>

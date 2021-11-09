@@ -15,6 +15,69 @@ namespace GY2021001WebApi.Models
     #region 基础数据
 
     /// <summary>
+    /// 变化通知内容的数据传输类。
+    /// </summary>
+    [DataContract]
+    public partial class ChangeDataDto
+    {
+        /// <summary>
+        /// 行为Id，1增加（OldValue属性无效），2更改，4删除(NewValue属性无效)
+        /// </summary>
+        [DataMember]
+        public int ActionId { get; set; }
+
+        /// <summary>
+        /// 变化的对象Id。
+        /// </summary>
+        [DataMember]
+        public string ObjectId { get; set; }
+
+        /// <summary>
+        /// 变化对象的模板Id。
+        /// </summary>
+        /// <remarks>{7396db31-1d02-43d3-af05-c14f4ca2a5fc}好友位模板Id表示好友。
+        /// {0C741F97-12EC-4463-85B0-C1782656E853}邮件槽模板Id表示邮件。
+        /// 0CF39269-6301-470B-8527-07AF29C5EEEC角色的模板Id表示角色。
+        /// 其它是成就的模板Id,如{25FFBEE1-F617-49BD-B0DE-32B3E3E975CB}表示 玩家等级成就。
+        /// </remarks>
+        [DataMember]
+        public string TemplateId { get; set; }
+
+        /// <summary>
+        /// 变化的属性名。
+        /// 暂时未实现。
+        /// </summary>
+        [DataMember]
+        public string PropertyName { get; set; }
+
+        /// <summary>
+        /// 变化之前的值。
+        /// 暂时未实现。
+        /// </summary>
+        [DataMember]
+        public object OldValue { get; set; }
+
+        /// <summary>
+        /// 变化之后的值。
+        /// 暂时未实现。
+        /// </summary>
+        [DataMember]
+        public object NewValue { get; set; }
+
+        /// <summary>
+        /// 附属数据。如用户等级变化时，这里有类似{"exp",12360}的指出变化后的经验值。
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// 创建此条数据的Utc时间。
+        /// </summary>
+        public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
+
+    }
+
+    /// <summary>
     /// 战斗对象的数据传输类。
     /// </summary>
     [DataContract]
@@ -1128,6 +1191,43 @@ namespace GY2021001WebApi.Models
     #region 物品相关
 
     /// <summary>
+    /// 清除变化通知接口参数数据传输类。
+    /// </summary>
+    [DataContract]
+    public class ClearChangeDataParamsDto : TokenDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 清除变化通知接口返回值数据传输类。
+    /// </summary>
+    [DataContract]
+    public class ClearChangeDataResult : ReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 获取变化通知接口的参数传输类。
+    /// </summary>
+    [DataContract]
+    public class GetChangeDataParamsDto : TokenDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 获取变化通知接口的返回值传输类。
+    /// </summary>
+    [DataContract]
+    public class GetChangeDataResultDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 变化数据。
+        /// </summary>
+        [DataMember]
+        public List<ChangeDataDto> ChangeDatas { get; set; } = new List<ChangeDataDto>();
+    }
+
+    /// <summary>
     /// 使用物品的具体项。
     /// </summary>
     [DataContract]
@@ -1152,7 +1252,6 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public decimal Count { get; set; }
     }
-
     /// <summary>
     /// UseItems 接口使用的参数封装类。
     /// </summary>

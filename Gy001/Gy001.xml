@@ -247,6 +247,22 @@
             <param name="model"></param>
             <returns></returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetChangeData(GY2021001WebApi.Models.GetChangeDataParamsDto)">
+            <summary>
+            获取当前角色的变化数据。获取后可以使用ClearChangeData接口清理。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+            <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.ClearChangeData(GY2021001WebApi.Models.ClearChangeDataParamsDto)">
+            <summary>
+            清除所有变化通知数据。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+            <response code="401">令牌错误。</response>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
             <summary>
             世界服务器的相关操作。
@@ -294,6 +310,59 @@
             获取全服推关战力Top 50。
             </summary>
             <returns></returns>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ChangeDataDto">
+            <summary>
+            变化通知内容的数据传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangeDataDto.ActionId">
+            <summary>
+            行为Id，1增加（OldValue属性无效），2更改，4删除(NewValue属性无效)
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangeDataDto.ObjectId">
+            <summary>
+            变化的对象Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangeDataDto.TemplateId">
+            <summary>
+            变化对象的模板Id。
+            </summary>
+            <remarks>{7396db31-1d02-43d3-af05-c14f4ca2a5fc}好友位模板Id表示好友。
+            {0C741F97-12EC-4463-85B0-C1782656E853}邮件槽模板Id表示邮件。
+            0CF39269-6301-470B-8527-07AF29C5EEEC角色的模板Id表示角色。
+            其它是成就的模板Id,如{25FFBEE1-F617-49BD-B0DE-32B3E3E975CB}表示 玩家等级成就。
+            </remarks>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangeDataDto.PropertyName">
+            <summary>
+            变化的属性名。
+            暂时未实现。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangeDataDto.OldValue">
+            <summary>
+            变化之前的值。
+            暂时未实现。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangeDataDto.NewValue">
+            <summary>
+            变化之后的值。
+            暂时未实现。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangeDataDto.Properties">
+            <summary>
+            附属数据。如用户等级变化时，这里有类似{"exp",12360}的指出变化后的经验值。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangeDataDto.CreateUtc">
+            <summary>
+            创建此条数据的Utc时间。
+            </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.CombatDto">
             <summary>
@@ -1361,6 +1430,31 @@
             <summary>
             更改对象的Id。
             仅当成功返回时，此成员才有用。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ClearChangeDataParamsDto">
+            <summary>
+            清除变化通知接口参数数据传输类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ClearChangeDataResult">
+            <summary>
+            清除变化通知接口返回值数据传输类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetChangeDataParamsDto">
+            <summary>
+            获取变化通知接口的参数传输类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetChangeDataResultDto">
+            <summary>
+            获取变化通知接口的返回值传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetChangeDataResultDto.ChangeDatas">
+            <summary>
+            变化数据。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.UseItemsParamsItemDto">

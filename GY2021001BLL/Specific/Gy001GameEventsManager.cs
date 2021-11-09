@@ -23,7 +23,6 @@ namespace OW.Game
         /// </summary>
         public ChangeData()
         {
-
         }
 
         /// <summary>
@@ -68,6 +67,11 @@ namespace OW.Game
         /// 附属数据。如用户等级变化时，这里有类似{"exp",12360}的指出变化后的经验值。
         /// </summary>
         public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// 创建此条数据的Utc时间。
+        /// </summary>
+        public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -114,15 +118,15 @@ namespace OW.Game
                     break;
                 }
             }
-            CharLevelUp(args);  //角色等级变化
+            OnCharLevelUp(args);  //角色等级变化
             OnLineupChenged(args);
         }
 
         /// <summary>
-        /// 
+        /// 角色升级。
         /// </summary>
         /// <param name="e"></param>
-        private void CharLevelUp(DynamicPropertyChangedCollection e)
+        private void OnCharLevelUp(DynamicPropertyChangedCollection e)
         {
             foreach (var spcc in e.Where(c => c.Thing is GameChar)) //遍历针对角色的动态属性变化
             {
@@ -130,8 +134,8 @@ namespace OW.Game
                 {
                     if (item.Name != World.PropertyManager.LevelPropertyName)   //若不是等级变化
                         continue;
-                    var oldLv = item.HasOldValue ? (int)item.OldValue : 0;
-                    var newLv = item.HasNewValue ? (int)item.NewValue : 0;
+                    var oldLv = item.HasOldValue ? Convert.ToInt32(item.OldValue) : 0;
+                    var newLv = item.HasNewValue ? Convert.ToInt32(item.NewValue) : 0;
                     if (oldLv >= newLv)    //若不是等级增加了，容错
                         continue;
                     for (int i = oldLv; i < newLv; i++) //遍历每个增加的等级
@@ -144,6 +148,27 @@ namespace OW.Game
                             default:
                                 break;
                         }
+                    }
+                    var gc = (GameChar)spcc.Thing;
+                    //生成通知数据。
+                    var lst = World.CharManager.GetChangeData(gc);
+                    if (lst != null)
+                    {
+                        var np = new ChangeData()
+                        {
+                            ActionId = 2,
+                            NewValue = newLv,
+                            ObjectId = gc.Id,
+                            OldValue = oldLv,
+                            PropertyName = World.PropertyManager.LevelPropertyName,
+                            TemplateId = ProjectConstant.CharTemplateId,
+                        };
+                        np.Properties.Add("exp", gc.Properties.GetDecimalOrDefault("exp"));
+                        lst.Add(np);
+                    }
+                    else
+                    {
+                        //TO DO
                     }
                 }
             }

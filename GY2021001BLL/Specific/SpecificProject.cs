@@ -1,16 +1,12 @@
-﻿using Game.Social;
-using GuangYuan.GY001.BLL.Homeland;
-using GuangYuan.GY001.TemplateDb;
+﻿using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
-using OW.Game.Item;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -504,7 +500,7 @@ namespace GuangYuan.GY001.BLL
                 //扣除体力
                 var tili = gc.GetTili();
                 var fcp = tili.Name2FastChangingProperty.GetValueOrDefault("Count");
-                var pp = (decimal)parent.Properties.GetValueOrDefault("pp", 0m);
+                var pp = parent.Properties.GetDecimalOrDefault("pp", 0m);
                 if (fcp.GetCurrentValueWithUtc() < pp)
                 {
                     data.HasError = true;
@@ -527,6 +523,9 @@ namespace GuangYuan.GY001.BLL
                     }
                     fcp.LastValue -= tdt;
                 }
+                //设置角色经验增加
+                if (pp != decimal.Zero)
+                    world.CharManager.AddExp(data.GameChar, pp);    //设置经验增加
             }
             return true;
         }

@@ -1031,16 +1031,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 获取活跃用户的Id集合。
-        /// </summary>
-        /// <returns>返回的是延迟查询。在线用户在最前方，随后是下线时间降序排序的。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IQueryable<CharSpecificExpandProperty> GetActiveUserIdsQuery(DbContext db)
-        {
-            return db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);
-        }
-
-        /// <summary>
         /// 锁定一组指定Id的角色。
         /// 自动避免乱序死锁。
         /// </summary>
@@ -1102,6 +1092,24 @@ namespace GuangYuan.GY001.BLL
             }
             var oldExp = gameChar.Properties.GetDecimalOrDefault("exp");    //当前经验值
             SetExp(gameChar, oldExp + incExp);
+        }
+
+        /// <summary>
+        /// 返回对变化通知集合的引用。更改该集合将直接导致记录到数据库中。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns>返回对变化通知集合的引用,需要锁定用户才能安全访问。</returns>
+        public List<ChangeData> GetChangeData(GameChar gameChar)
+        {
+            const string NotifyChangeDataName = "0c4d549e-f4aa-4b46-936e-1a80fa0de534";
+            var epd = gameChar.ExtendPropertyDictionary.GetOrAdd(NotifyChangeDataName, c => new ExtendPropertyDescriptor()
+            {
+                IsPersistence = true,
+                Name = NotifyChangeDataName,
+                Type = typeof(List<ChangeData>),
+                Data = new List<ChangeData>(),
+            });
+            return (List<ChangeData>)epd.Data;
         }
 
         #endregion 公共方法

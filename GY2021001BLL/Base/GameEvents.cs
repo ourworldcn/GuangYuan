@@ -7,7 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Compression;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -79,7 +78,6 @@ namespace OW.Game
     {
         public SimplePropertyChangedCollection()
         {
-
         }
 
         public GameThingBase Thing { get; set; }
@@ -132,6 +130,9 @@ namespace OW.Game
 
     }
 
+    /// <summary>
+    /// 属性变化的集合。
+    /// </summary>
     public class DynamicPropertyChangedCollection : ICollection<SimplePropertyChangedCollection>
     {
         public DynamicPropertyChangedCollection()
@@ -249,6 +250,8 @@ namespace OW.Game
     /// </summary>
     public class GameEventsManager : GameManagerBase<GameEventsManagerOptions>
     {
+        #region 构造函数
+
         /// <summary>
         /// 构造函数。
         /// </summary>
@@ -270,6 +273,9 @@ namespace OW.Game
         private void Initialize()
         {
         }
+        #endregion 构造函数
+
+        #region 动态属性变化
 
         public virtual void OnDynamicPropertyChanged(DynamicPropertyChangedCollection args)
         {
@@ -307,6 +313,8 @@ namespace OW.Game
         {
 
         }
+
+        #endregion 动态属性变化
 
         #region 创建后初始化
 

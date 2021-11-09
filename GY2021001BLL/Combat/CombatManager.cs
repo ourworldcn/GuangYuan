@@ -333,12 +333,6 @@ namespace GuangYuan.GY001.BLL
             gameChar.CombatStartUtc = DateTime.UtcNow;
             data.DebugMessage = null;
             data.HasError = false;
-            if (!data.HasError)  //若成功
-            {
-                //设置角色经验增加
-                var pp = data.Template.Properties.GetDecimalOrDefault("pp");    //消耗体力
-                World.CharManager.AddExp(data.GameChar, pp);    //设置经验增加
-            }
             return;
         }
 

@@ -232,6 +232,9 @@ namespace GuangYuan.GY001.UserDb
 
         public object Data { get; set; }
 
+        /// <summary>
+        /// 是否持久化。
+        /// </summary>
         public bool IsPersistence { get; set; }
     }
 

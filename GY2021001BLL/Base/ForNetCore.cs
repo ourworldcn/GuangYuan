@@ -188,6 +188,8 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             //using var db = world.CreateNewUserDbContext();
+            var str1 = new Guid("893024d4-f02a-4a51-ba8e-0d8f2bba17d9").ToBase64String();
+            var str2 = new Guid("e7148146-87d3-48c8-b0d5-675792320f01").ToBase64String();
         }
 
         /// <summary>
