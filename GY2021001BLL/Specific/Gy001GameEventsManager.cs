@@ -132,6 +132,27 @@ namespace OW.Game
             {
                 foreach (var item in spcc)
                 {
+                    var gc = (GameChar)spcc.Thing;
+                    var lst = World.CharManager.GetChangeData(gc);  //通知数据对象
+
+                    if (lst != null && item.Name=="exp")
+                    {
+                        var np = new ChangeData()
+                        {
+                            ActionId = 2,
+                            NewValue = item.OldValue,
+                            ObjectId = gc.Id,
+                            OldValue = item.NewValue,
+                            PropertyName = "exp",
+                            TemplateId = ProjectConstant.CharTemplateId,
+                        };
+                        np.Properties.Add("exp", gc.Properties.GetDecimalOrDefault("exp"));
+                        lst.Add(np);
+                    }
+                    else
+                    {
+                        //TO DO
+                    }
                     if (item.Name != World.PropertyManager.LevelPropertyName)   //若不是等级变化
                         continue;
                     var oldLv = item.HasOldValue ? Convert.ToInt32(item.OldValue) : 0;
@@ -149,9 +170,7 @@ namespace OW.Game
                                 break;
                         }
                     }
-                    var gc = (GameChar)spcc.Thing;
                     //生成通知数据。
-                    var lst = World.CharManager.GetChangeData(gc);
                     if (lst != null)
                     {
                         var np = new ChangeData()
@@ -163,7 +182,6 @@ namespace OW.Game
                             PropertyName = World.PropertyManager.LevelPropertyName,
                             TemplateId = ProjectConstant.CharTemplateId,
                         };
-                        np.Properties.Add("exp", gc.Properties.GetDecimalOrDefault("exp"));
                         lst.Add(np);
                     }
                     else

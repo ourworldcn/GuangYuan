@@ -308,7 +308,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="token"></param>
         protected GameCharWorkDataBase([NotNull] VWorld world, [NotNull] string token) : base(world)
         {
-            Token = GameHelper.FromBase64String(token);
+            Token = OwConvert.ToGuid(token);
         }
 
         private GameChar _GameChar;
@@ -377,7 +377,7 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
-    /// 涉及到多个角色的的功能函数使用的工作数据基类。
+    /// 涉及到两个角色的的功能函数使用的工作数据基类。
     /// </summary>
     public abstract class BinaryRelationshipWorkDataBase : GameCharWorkDataBase
     {

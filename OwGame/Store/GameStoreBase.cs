@@ -204,7 +204,7 @@ namespace OW.Game.Store
         {
             if (_Properties is null) //若未初始化字典
                 return; //不变更属性
-            PropertiesString = OwConvert.ToString(Properties);
+            PropertiesString = System.OwConvert.ToString(Properties);
         }
 
         /// <summary>

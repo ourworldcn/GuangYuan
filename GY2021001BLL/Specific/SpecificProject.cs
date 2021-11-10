@@ -175,6 +175,16 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid FriendCurrencyTId = new Guid("{8DBBFD26-6B4B-4C00-B0B8-BD7A79B21CBA}");
 
         /// <summary>
+        /// 好友位的模板Id。
+        /// </summary>
+        public static readonly Guid FriendSlotTId = new Guid("7396db31-1d02-43d3-af05-c14f4ca2a5fc");
+
+        /// <summary>
+        /// 邮件槽的模板Id。
+        /// </summary>
+        public static readonly Guid MailSlotTId = new Guid("{0C741F97-12EC-4463-85B0-C1782656E853}");
+
+        /// <summary>
         /// PVP数据记录对象的模板Id。
         /// 这也是一种货币。
         /// </summary>
@@ -807,6 +817,15 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetFriendCurrency(this GameChar gameChar) =>
             gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.FriendCurrencyTId);
+
+        /// <summary>
+        /// 获取好友槽对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetFriendSlot(this GameChar gameChar) =>
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.FriendSlotTId);
 
         /// <summary>
         /// 获取PVP数据记录对象。

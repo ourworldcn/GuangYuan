@@ -153,7 +153,7 @@ namespace OW.Game.Mission
         /// <returns></returns>
         public Task<bool> ScanAsync(GameChar gameChar)
         {
-            return Task.Factory.StartNew(ScanCore, gameChar);
+            return Task.Factory.StartNew(ScanCore, gameChar, TaskCreationOptions.LongRunning);
         }
 
         /// <summary>
@@ -175,6 +175,7 @@ namespace OW.Game.Mission
             var bag = gc.GetRenwuSlot();
             decimal metrics = 0;
             var gim = World.ItemManager;
+
             foreach (var item in bag.Children)
             {
                 Guid tid = item.TemplateId;
@@ -405,6 +406,7 @@ namespace OW.Game.Mission
         {
             //mcid5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d=10;50;100,...
             var mObj = missionSlot.Children.FirstOrDefault(c => c.TemplateId == tid);   //任务/成就对象
+            var lst = World.CharManager.GetChangeData(missionSlot.GameChar);  //通知数据对象
             var keyName = $"mcid{mObj.Id}"; //键名
             var template = missionSlot.Template;    //模板数据
             var oldVal = mObj.Count.GetValueOrDefault();   //原值
@@ -417,6 +419,20 @@ namespace OW.Game.Mission
             var oldMetrics = view.Metrics.Where(c => oldVal >= c.Item1).Select(c => c.Item1); //级别完成且未领取的指标值。
             var newMetrics = view.Metrics.Where(c => newValue >= c.Item1).Select(c => c.Item1).Except(oldMetrics).Except(unpickMetrics).ToList(); //应加入的新值
             mObj.Count = newValue;  //设置指标值
+            //通知数据
+            if (newValue > oldVal)
+            {
+                var np = new ChangeData()
+                {
+                    ActionId = 2,
+                    NewValue = newValue,
+                    ObjectId = mObj.Id,
+                    OldValue = oldVal,
+                    PropertyName = "Count",
+                    TemplateId = mObj.TemplateId,
+                };
+                lst.Add(np);
+            }
             if (newMetrics.Count > 0)   //若确实有新成就
             {
                 missionSlot.Properties[keyName] = string.Join(';', newMetrics.Union(unpickMetrics).Select(c => c.ToString()));

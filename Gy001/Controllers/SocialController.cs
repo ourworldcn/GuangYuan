@@ -89,15 +89,15 @@ namespace Gy001.Controllers
         [HttpDelete]
         public ActionResult<RemoveMailsRetuenDto> RemoveMails(RemoveMailsParamsDto model)
         {
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            if (!_World.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
             {
-                return Unauthorized("令牌无效");
+                return base.Unauthorized("令牌无效");
             }
             try
             {
                 var result = new RemoveMailsRetuenDto();
                 var social = _World.SocialManager;
-                result.HasError = !social.RemoveMails(gu.CurrentChar, model.Ids.Select(c => GameHelper.FromBase64String(c)));
+                result.HasError = !social.RemoveMails(gu.CurrentChar, model.Ids.Select(c => OwConvert.ToGuid(c)));
                 if (result.HasError)
                     result.DebugMessage = VWorld.GetLastErrorMessage();
                 return result;
@@ -120,9 +120,9 @@ namespace Gy001.Controllers
         public ActionResult<GetAttachmentesRetuenDto> GetAttachmentes(GetAttachmentesParamsDto model)
         {
             var result = new GetAttachmentesRetuenDto();
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            if (!_World.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
             {
-                return Unauthorized("令牌无效");
+                return base.Unauthorized("令牌无效");
             }
             var results = new List<(Guid, GetAttachmenteItemResult)>();
             var db = _UserContext;
@@ -130,7 +130,7 @@ namespace Gy001.Controllers
             {
                 var social = _World.SocialManager;
                 var changes = new List<ChangeItem>();
-                social.GetAttachmentes(model.Ids.Select(c => GameHelper.FromBase64String(c)), gu.CurrentChar, db, changes, results);
+                social.GetAttachmentes(model.Ids.Select(c => OwConvert.ToGuid(c)), gu.CurrentChar, db, changes, results);
                 result.ChangesItems.AddRange(changes.Select(c => (ChangesItemDto)c));
                 result.Results.AddRange(results.Select(c => new GetAttachmentesResultItemDto
                 {
@@ -167,7 +167,7 @@ namespace Gy001.Controllers
                 DisplayName = model.DisplayName,
                 UserContext = _UserContext,
             };
-            data.BodyTIds.AddRange(model.BodyTIds.Select(c => GameHelper.FromBase64String(c)));
+            data.BodyTIds.AddRange(model.BodyTIds.Select(c => OwConvert.ToGuid(c)));
             using var disposer = data.LockUser();
             if (disposer is null)
             {
@@ -176,7 +176,7 @@ namespace Gy001.Controllers
             var result = new GetCharSummaryReturnDto();
             try
             {
-                data.BodyTIds.AddRange(model.BodyTIds.Select(c => GameHelper.FromBase64String(c)));
+                data.BodyTIds.AddRange(model.BodyTIds.Select(c => OwConvert.ToGuid(c)));
                 _World.SocialManager.GetCharIdsForRequestFriend(data);
                 if (data.HasError)
                 {
@@ -204,9 +204,9 @@ namespace Gy001.Controllers
         [HttpPost]
         public ActionResult<RequestFriendReturnDto> RequestFriend(RequestFriendParamsDto model)
         {
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            if (!_World.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
             {
-                return Unauthorized("令牌无效");
+                return base.Unauthorized("令牌无效");
             }
             try
             {
@@ -214,7 +214,8 @@ namespace Gy001.Controllers
                 {
                     FriendId = model.FriendId,
                 };
-                var hr = _World.SocialManager.RequestFriend(gu.CurrentChar, GameHelper.FromBase64String(model.FriendId));
+                using var datas = new RequestFriendData(_World, model.Token, OwConvert.ToGuid(model.FriendId));
+                var hr = _World.SocialManager.RequestFriend(datas);
                 switch (hr)
                 {
                     case RequestFriendResult.Success:
@@ -269,9 +270,9 @@ namespace Gy001.Controllers
         [HttpGet]
         public ActionResult<GetSocialRelationshipsReturnDto> GetSocialRelationships(string token)
         {
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(token), out GameUser gu))
+            if (!_World.CharManager.Lock(OwConvert.ToGuid(token), out GameUser gu))
             {
-                return Unauthorized("令牌无效");
+                return base.Unauthorized("令牌无效");
             }
             var db = _UserContext;
             try
@@ -308,7 +309,7 @@ namespace Gy001.Controllers
         [HttpPut]
         public ActionResult<GetSocialRelationshipsReturnDto> GetSocialRelationships(GetSocialRelationshipsParamsDto model)
         {
-            var gu = _World.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token));
+            var gu = _World.CharManager.GetUserFromToken(OwConvert.ToGuid(model.Token));
             if (gu is null)
                 return Unauthorized("令牌错误。");
             var gc = gu.CurrentChar;
@@ -355,7 +356,7 @@ namespace Gy001.Controllers
             {
                 foreach (var item in model.Items)
                 {
-                    var succ = _World.SocialManager.ConfirmFriend(gu.CurrentChar, GameHelper.FromBase64String(item.FriendId), item.IsRejected);
+                    var succ = _World.SocialManager.ConfirmFriend(gu.CurrentChar, OwConvert.ToGuid(item.FriendId), item.IsRejected);
                     var resultItem = new ConfirmRequestFriendReturnItemDto()
                     {
                         Id = item.FriendId,
@@ -382,13 +383,13 @@ namespace Gy001.Controllers
         public ActionResult<ModifySrReturnDto> RemoveFriend(ModifySrParamsDto model)
         {
             var result = new ModifySrReturnDto() { FriendId = model.FriendId };
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            if (!_World.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
             {
-                return Unauthorized("令牌无效");
+                return base.Unauthorized("令牌无效");
             }
             try
             {
-                if (!_World.SocialManager.RemoveFriend(gu.CurrentChar, GameHelper.FromBase64String(model.FriendId)))
+                if (!_World.SocialManager.RemoveFriend(gu.CurrentChar, OwConvert.ToGuid(model.FriendId)))
                     result.DebugMessage = VWorld.GetLastErrorMessage();
 
             }
@@ -414,13 +415,13 @@ namespace Gy001.Controllers
         public ActionResult<ModifySrReturnDto> SetBlack(ModifySrParamsDto model)
         {
             var result = new ModifySrReturnDto();
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            if (!_World.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
             {
-                return Unauthorized("令牌无效");
+                return base.Unauthorized("令牌无效");
             }
             try
             {
-                if (!_World.SocialManager.SetFrindless(gu.CurrentChar, GameHelper.FromBase64String(model.FriendId)))
+                if (!_World.SocialManager.SetFrindless(gu.CurrentChar, OwConvert.ToGuid(model.FriendId)))
                     result.DebugMessage = VWorld.GetLastErrorMessage();
             }
             catch (Exception err)
@@ -445,13 +446,13 @@ namespace Gy001.Controllers
         public ActionResult<RemoveBlackReturnDto> RemoveBlack(RemoveBlackParamsDto model)
         {
             var result = new RemoveBlackReturnDto();
-            if (!_World.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            if (!_World.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
             {
-                return Unauthorized("令牌无效");
+                return base.Unauthorized("令牌无效");
             }
             try
             {
-                if (!_World.SocialManager.RemoveBlack(gu.CurrentChar, GameHelper.FromBase64String(model.CharId)))
+                if (!_World.SocialManager.RemoveBlack(gu.CurrentChar, OwConvert.ToGuid(model.CharId)))
                 {
                     result.HasError = true;
                     result.DebugMessage = VWorld.GetLastErrorMessage();
@@ -482,7 +483,7 @@ namespace Gy001.Controllers
             if (gc is null)
                 return Unauthorized("令牌无效");
             PatForTiliReturnDto result = new PatForTiliReturnDto();
-            using var datas = new PatForTiliWorkData(_World, gc, GameHelper.FromBase64String(model.ObjectId), DateTime.UtcNow)
+            using var datas = new PatForTiliWorkData(_World, gc, OwConvert.ToGuid(model.ObjectId), DateTime.UtcNow)
             {
                 UserContext = _UserContext
             };
@@ -514,10 +515,10 @@ namespace Gy001.Controllers
             var result = new PatWithMountsReturnDto();
             try
             {
-                using var datas = new PatWithMountsDatas(_World, model.Token, GameHelper.FromBase64String(model.MountsId), DateTime.UtcNow)
+                using var datas = new PatWithMountsDatas(_World, model.Token, OwConvert.ToGuid(model.MountsId), DateTime.UtcNow)
                 {
                     UserContext = _UserContext,
-                    IsRemove=model.IsRemove,
+                    IsRemove= model.IsRemove,
                 };
                 using var dwChar = datas.LockUser();
                 if (dwChar is null)
@@ -551,7 +552,7 @@ namespace Gy001.Controllers
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
                                                                                     //构造调用参数
-            using var datas = new GetHomelandDataDatas(_World, model.Token, GameHelper.FromBase64String(model.OtherCharId))
+            using var datas = new GetHomelandDataDatas(_World, model.Token, OwConvert.ToGuid(model.OtherCharId))
             {
                 UserContext = _UserContext,
             };
@@ -560,7 +561,7 @@ namespace Gy001.Controllers
             if (disposer is null)   //若锁定失败
                 return StatusCode(datas.ErrorCode, datas.ErrorMessage);
             //填写其他参数
-            datas.OtherCharId = GameHelper.FromBase64String(model.OtherCharId);
+            datas.OtherCharId = OwConvert.ToGuid(model.OtherCharId);
             world.SocialManager.GetHomelandData(datas);  //调用服务
                                                          //构造返回参数
             var result = new GetHomelandDataReturnDto()
@@ -653,10 +654,10 @@ namespace Gy001.Controllers
             var result = new RequestAssistanceReturnDto()
             {
             };
-            using var datas = new RequestAssistanceDatas(_World, model.Token, GameHelper.FromBase64String(model.OtherId))
+            using var datas = new RequestAssistanceDatas(_World, model.Token, OwConvert.ToGuid(model.OtherId))
             {
                 UserContext = _UserContext,
-                RootCombatId = GameHelper.FromBase64String(model.CombatId),
+                RootCombatId = OwConvert.ToGuid(model.CombatId),
             };
             _World.SocialManager.RequestAssistance(datas);
             result.HasError = datas.HasError;

@@ -236,6 +236,7 @@ namespace GuangYuan.GY001.BLL
         private void Initialize()
         {
             VWorld world = World;
+            world.AddToUserContext("UPDATE [dbo].[GameUsers] SET [NodeNum] = null WHERE [NodeNum]=0");  //复位服务器节点号
             _LogoutTimer = new Timer(LogoutFunc, null, Options.ScanFrequencyOfLogout, Options.ScanFrequencyOfLogout);
             _SaveThread = new Thread(SaveFunc) { IsBackground = false, Priority = ThreadPriority.BelowNormal };
             _SaveThread.Start();
@@ -414,7 +415,7 @@ namespace GuangYuan.GY001.BLL
         #region 通过索引获取对象
 
         /// <summary>
-        /// 用指定的Id获取角色对象。
+        /// 用指定的Id获取角色对象。仅是在内存中的对象。
         /// </summary>
         /// <param name="id"></param>
         /// <returns>角色对象。如果没有找到则返回null。</returns>
@@ -448,7 +449,7 @@ namespace GuangYuan.GY001.BLL
             _Store._LoginName2Users.GetValueOrDefault(loginName, null);
 
         /// <summary>
-        /// 
+        /// 获取已经在内存中的用户对象。
         /// </summary>
         /// <param name="id"></param>
         /// <returns>用户对象，如果无效则返回null。</returns>
@@ -1267,7 +1268,7 @@ namespace GuangYuan.GY001.BLL
             Guid t;
             try
             {
-                t = GameHelper.FromBase64String(token);
+                t = OwConvert.ToGuid(token);
             }
             catch (Exception)
             {

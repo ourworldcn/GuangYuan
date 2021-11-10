@@ -33,7 +33,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<bool> Rename(RenameParamsDto model)
         {
             var gitm = HttpContext.RequestServices.GetRequiredService<GameCharManager>();
-            var gu = gitm.GetUserFromToken(GameHelper.FromBase64String(model.Token));
+            var gu = gitm.GetUserFromToken(OwConvert.ToGuid(model.Token));
             if (null == gu) //若令牌无效
                 return Unauthorized();
             var gc = gu.CurrentChar;
@@ -59,10 +59,10 @@ namespace GY2021001WebApi.Controllers
                 ObjectId = model.ObjectId,
             };
             var gitm = HttpContext.RequestServices.GetRequiredService<GameCharManager>();
-            var gu = gitm.GetUserFromToken(GameHelper.FromBase64String(model.Token));
+            var gu = gitm.GetUserFromToken(OwConvert.ToGuid(model.Token));
             if (null == gu) //若令牌无效
                 return Unauthorized();
-            var objectId = GameHelper.FromBase64String(model.ObjectId);
+            var objectId = OwConvert.ToGuid(model.ObjectId);
             if (gu.CurrentChar.Id == objectId)
             {
                 gu.CurrentChar.ClientGutsString = model.ClientString;
@@ -87,9 +87,9 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<ModifyClientExtendPropertyReturn> ModifyClientExtendProperty(ModifyClientExtendPropertyParamsDto model)
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
             {
-                return Unauthorized("无效令牌。");
+                return base.Unauthorized("无效令牌。");
             }
             var result = new ModifyClientExtendPropertyReturn()
             {
@@ -131,8 +131,8 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<bool> SetCombatMounts(SetCombatMountsParamsDto model)
         {
             var world = HttpContext.RequestServices.GetService<VWorld>();
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-                return Unauthorized("令牌无效");
+            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
+                return base.Unauthorized("令牌无效");
             List<GameItem> lst = null;
             try
             {
@@ -141,7 +141,7 @@ namespace GY2021001WebApi.Controllers
 
                 var zuoqiBag = gc.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId); //背包容器
                 var combatSlot = gc.GameItems.First(c => c.TemplateId == ProjectConstant.DangqianZuoqiSlotId);  //出战容器
-                if (!world.ItemManager.GetItems(model.GameItemDtos.Select(c => GameHelper.FromBase64String(c.Id)), lst, zuoqiBag.Children.Concat(combatSlot.Children)))    //获取所有坐骑对象
+                if (!world.ItemManager.GetItems(model.GameItemDtos.Select(c => OwConvert.ToGuid(c.Id)), lst, zuoqiBag.Children.Concat(combatSlot.Children)))    //获取所有坐骑对象
                     return false;
                 world.ItemManager.MoveItems(combatSlot, c => true, zuoqiBag);   //卸下所有出战坐骑
                 world.ItemManager.AddItems(lst, combatSlot);    //装上坐骑
@@ -170,7 +170,7 @@ namespace GY2021001WebApi.Controllers
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
             //构造调用参数
             var datas = new SellDatas(world, model.Token);
-            datas.SellIds.AddRange(model.Ids.Select(c => (GameHelper.FromBase64String(c.Id), c.Count)));
+            datas.SellIds.AddRange(model.Ids.Select(c => (OwConvert.ToGuid(c.Id), c.Count)));
             world.ItemManager.Sell(datas);  //调用服务
             //构造返回参数
             var result = new SellReturnDto()
@@ -195,7 +195,7 @@ namespace GY2021001WebApi.Controllers
             var result = new UseItemsReturnDto();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             using var datas = new UseItemsWorkDatas(world, model.Token) { UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>() };
-            datas.ItemIds.AddRange(model.Items.Select(c => (GameHelper.FromBase64String(c.Id), c.Count)));
+            datas.ItemIds.AddRange(model.Items.Select(c => (OwConvert.ToGuid(c.Id), c.Count)));
             try
             {
                 world.ItemManager.UseItems(datas);
@@ -229,7 +229,7 @@ namespace GY2021001WebApi.Controllers
             SetLineupDatas datas = new SetLineupDatas(HttpContext.RequestServices.GetRequiredService<VWorld>(), model.Token)
             {
             };
-            datas.Settings.AddRange(model.Settings.Select(c => (GameHelper.FromBase64String(c.Id), c.ForIndex, (decimal)c.Position)));
+            datas.Settings.AddRange(model.Settings.Select(c => (OwConvert.ToGuid(c.Id), c.ForIndex, (decimal)c.Position)));
             SetLineupReturnDto result = new SetLineupReturnDto();
             using var disposer = datas.LockUser();
             if (disposer is null)
@@ -265,8 +265,8 @@ namespace GY2021001WebApi.Controllers
             var result = new MoveItemsReturnDto();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             var gim = world.ItemManager;
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-                return Unauthorized("令牌无效");
+            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
+                return base.Unauthorized("令牌无效");
             try
             {
                 if (model.Items.Count == 0)
@@ -277,7 +277,7 @@ namespace GY2021001WebApi.Controllers
                 var gc = gu.CurrentChar;
                 var lst = new List<GameItem>();
                 var coll = from tmp in model.Items
-                           select (Id: GameHelper.FromBase64String(tmp.ItemId), tmp.Count, PId: GameHelper.FromBase64String(tmp.DestContainerId));
+                           select (Id: OwConvert.ToGuid(tmp.ItemId), tmp.Count, PId: OwConvert.ToGuid(tmp.DestContainerId));
                 var allGi = gim.GetAllChildrenDictionary(gc);
                 var (Id, Count, PId) = coll.FirstOrDefault(c => !allGi.ContainsKey(c.Id) || !allGi.ContainsKey(c.PId));
                 if (Id != Guid.Empty)
@@ -322,8 +322,8 @@ namespace GY2021001WebApi.Controllers
             var result = new List<GameItemDto>();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
 
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-                return Unauthorized("令牌无效");
+            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
+                return base.Unauthorized("令牌无效");
             try
             {
                 var gc = gu.CurrentChar;
@@ -381,13 +381,13 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<GetItemsReturnDto> GetItems(GetItemsParamsDto model)
         {
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-                return Unauthorized("令牌无效");
+            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
+                return base.Unauthorized("令牌无效");
             try
             {
                 var gc = gu.CurrentChar;
                 var result = new GetItemsReturnDto();
-                HashSet<Guid> guids = new HashSet<Guid>(model.Ids.Select(c => GameHelper.FromBase64String(c)));
+                HashSet<Guid> guids = new HashSet<Guid>(model.Ids.Select(c => OwConvert.ToGuid(c)));
                 var list = gc.AllChildren.Where(c => guids.Contains(c.Id)).ToList();
                 list.ForEach(c => c.FcpToProperties());
                 if (model.IncludeChildren)
@@ -416,7 +416,7 @@ namespace GY2021001WebApi.Controllers
             var logger = HttpContext.RequestServices.GetRequiredService<ILogger<GameCharController>>();
             var result = new GetChangesItemReturnDto();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            using var dwUser = world.CharManager.LockAndReturnDisposer(GameHelper.FromBase64String(model.Token), out GameUser gu);
+            using var dwUser = world.CharManager.LockAndReturnDisposer(OwConvert.ToGuid(model.Token), out GameUser gu);
             if (dwUser is null)
             {
                 logger.LogWarning("[{dt}]{method}锁定失败。", DateTime.UtcNow, nameof(GetChangesItem));
@@ -468,8 +468,8 @@ namespace GY2021001WebApi.Controllers
         {
             var result = new GetHomelandFenggeReturnDto() { };
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-                return Unauthorized("令牌无效");
+            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
+                return base.Unauthorized("令牌无效");
             Guid[] filterTIds = new Guid[] { ProjectConstant.WorkerOfHomelandTId, ProjectConstant.HomelandPlanBagTId, ProjectConstant.HomelandBuilderBagTId };
             string[] ary = null;
             try
@@ -547,14 +547,14 @@ namespace GY2021001WebApi.Controllers
         {
             var result = new ApplyHomelandStyleReturnDto();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
-                return Unauthorized("令牌无效");
+            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
+                return base.Unauthorized("令牌无效");
             try
             {
                 var gc = gu.CurrentChar;
                 var gitm = world.ItemTemplateManager;
                 var lstFengge = gc.GetFengges();
-                var id = GameHelper.FromBase64String(model.FanganId);
+                var id = OwConvert.ToGuid(model.FanganId);
                 var fangan = lstFengge.SelectMany(c => c.Fangans).FirstOrDefault(c => c.Id == id);
                 var gim = world.ItemManager;
                 var datas = new ActiveStyleDatas()

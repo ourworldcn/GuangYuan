@@ -81,16 +81,16 @@ namespace Gy001.Controllers
                 HasError = false,
             };
             var world = HttpContext.RequestServices.GetService<VWorld>();
-            if (!world.CharManager.Lock(GameHelper.FromBase64String(model.Token), out GameUser gu))
+            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
             {
-                return Unauthorized("令牌无效");
+                return base.Unauthorized("令牌无效");
             }
             ApplyBlueprintDatas datas = null;
             try
             {
-                datas = new ApplyBlueprintDatas(_World.Service,gu.CurrentChar)
+                datas = new ApplyBlueprintDatas(_World.Service, gu.CurrentChar)
                 {
-                    Blueprint = world.BlueprintManager.GetTemplateFromId(GameHelper.FromBase64String(model.BlueprintId)) as BlueprintTemplate,  //这里不处理是空的情况
+                    Blueprint = world.BlueprintManager.GetTemplateFromId(OwConvert.ToGuid(model.BlueprintId)) as BlueprintTemplate,  //这里不处理是空的情况
                     Count = model.Count,
                 };
                 datas.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));

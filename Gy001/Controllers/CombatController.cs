@@ -37,7 +37,7 @@ namespace GY2021001WebApi.Controllers
             var cbm = World.CombatManager;
             using var data = new StartCombatData(World, model.Token)
             {
-                Template = World.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
+                Template = World.ItemTemplateManager.GetTemplateFromeId(OwConvert.ToGuid(model.DungeonId)),
             };
             cbm.StartCombat(data);
             return (CombatStartReturnDto)data;
@@ -57,8 +57,8 @@ namespace GY2021001WebApi.Controllers
             {
                 result = new EndCombatData()
                 {
-                    GameChar = World.CharManager.GetUserFromToken(GameHelper.FromBase64String(model.Token))?.CurrentChar,
-                    Template = World.ItemTemplateManager.GetTemplateFromeId(GameHelper.FromBase64String(model.DungeonId)),
+                    GameChar = World.CharManager.GetUserFromToken(OwConvert.ToGuid(model.Token))?.CurrentChar,
+                    Template = World.ItemTemplateManager.GetTemplateFromeId(OwConvert.ToGuid(model.DungeonId)),
                     EndRequested = model.EndRequested,
                     OnlyMark = model.OnlyMark,
                     IsWin = model.IsWin,
@@ -95,11 +95,11 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<CombatEndPvpReturnDto> CombatEndPvp(CombatEndPvpParamsDto model)
         {
             var result = new CombatEndPvpReturnDto();
-            using var datas = new EndCombatPvpWorkData(World, model.Token, GameHelper.FromBase64String(model.OtherGCharId))
+            using var datas = new EndCombatPvpWorkData(World, model.Token, OwConvert.ToGuid(model.OtherGCharId))
             {
-                CombatId = GameHelper.FromBase64String(model.CombatId),
+                CombatId = OwConvert.ToGuid(model.CombatId),
                 Now = DateTime.UtcNow,
-                DungeonId = GameHelper.FromBase64String(model.DungeonId),
+                DungeonId = OwConvert.ToGuid(model.DungeonId),
                 IsWin = model.IsWin,
             };
             datas.DestroyTIds.AddRange(model.Destroies.Select(c => (ValueTuple<Guid, decimal>)c));
@@ -122,7 +122,7 @@ namespace GY2021001WebApi.Controllers
             var result = new GetCombatObjectResultDto();
             using GetCombatDatas datas = new GetCombatDatas(World, model.Token)
             {
-                CombatId = GameHelper.FromBase64String(model.CombatId),
+                CombatId = OwConvert.ToGuid(model.CombatId),
             };
             World.CombatManager.GetCombat(datas);
             result.HasError = datas.HasError;

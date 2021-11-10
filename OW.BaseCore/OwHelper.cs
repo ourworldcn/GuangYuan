@@ -3,10 +3,8 @@
  */
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
@@ -17,27 +15,27 @@ namespace System
         /// <summary>
         /// 中英文逗号数组。分割字符串常用此数组，避免生成新对象。
         /// </summary>
-        public readonly static char[] CommaArrayWithCN = new char[] { ',', '，' };
+        public static readonly char[] CommaArrayWithCN = new char[] { ',', '，' };
 
         /// <summary>
         /// 中英文分号数组。分割字符串常用此数组，避免生成新对象。
         /// </summary>
-        public readonly static char[] SemicolonArrayWithCN = new char[] { ';', '；' };
+        public static readonly char[] SemicolonArrayWithCN = new char[] { ';', '；' };
 
         /// <summary>
         /// 中英文冒号数组。分割字符串常用此数组，避免生成新对象。
         /// </summary>
-        public readonly static char[] ColonArrayWithCN = new char[] { ':', '：' };
+        public static readonly char[] ColonArrayWithCN = new char[] { ':', '：' };
 
         /// <summary>
         /// 中英文双引号。
         /// </summary>
-        public readonly static char[] DoubleQuotesWithCN = new char[] { '"', '“', '”' };
+        public static readonly char[] DoubleQuotesWithCN = new char[] { '"', '“', '”' };
 
         /// <summary>
         /// 路径分隔符。
         /// </summary>
-        public readonly static char[] PathSeparatorChar = new char[] { '\\', '/' };
+        public static readonly char[] PathSeparatorChar = new char[] { '\\', '/' };
 
         /// <summary>
         /// 试图把对象转换为数值。
@@ -46,7 +44,7 @@ namespace System
         /// <param name="result"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        static public bool TryGetDecimal(object obj, out decimal result)
+        public static bool TryGetDecimal(object obj, out decimal result)
         {
             if (obj is null)
             {
@@ -98,7 +96,7 @@ namespace System
         /// <param name="defaultVal"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        static public bool TryGetFloat(object obj, out float result)
+        public static bool TryGetFloat(object obj, out float result)
         {
             if (obj is null)
             {
@@ -146,7 +144,7 @@ namespace System
         /// <param name="result"></param>
         /// <returns>true成功转换，false未成功。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        static public bool TryGetGuid(object obj, out Guid result)
+        public static bool TryGetGuid(object obj, out Guid result)
         {
 
             if (obj is Guid id)
@@ -525,5 +523,40 @@ namespace System
             OwHelper.Fill(dic, sb);
             return sb.ToString();
         }
+
+        /// <summary>
+        /// 将字符串转换为Guid类型。
+        /// </summary>
+        /// <param name="str">可以是<see cref="Guid.TryParse(string?, out Guid)"/>接受的格式，
+        /// 也可以是Base64表示的内存数组模式，即<see cref="Guid.ToByteArray"/>的Base64编码模式。
+        /// 对于空和空字符串会返回<see cref="Guid.Empty"/></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Guid ToGuid(string str)
+        {
+            if (string.IsNullOrEmpty(str))
+                return Guid.Empty;
+            if (Guid.TryParse(str, out var result))
+                return result;
+            Span<byte> span = stackalloc byte[16];
+            if (!Convert.TryFromBase64String(str, span, out var lengthe))
+                throw new FormatException();
+            return new Guid(span);
+        }
+
+        /// <summary>
+        /// 用Base64编码Guid类型。
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string ToBase64String(this Guid guid)
+        {
+            Span<byte> span = stackalloc byte[16];
+            guid.TryWriteBytes(span);
+            return Convert.ToBase64String(span);
+        }
+
+
     }
 }

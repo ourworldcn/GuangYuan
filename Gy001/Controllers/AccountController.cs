@@ -94,7 +94,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult Nop(NopParamsDto model)
         {
             var gm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
-            return gm.Nope(GameHelper.FromBase64String(model.Token)) ? Ok() as ActionResult : Unauthorized("令牌错误。");
+            return gm.Nope(OwConvert.ToGuid(model.Token)) ? base.Ok() as ActionResult : base.Unauthorized("令牌错误。");
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<bool> ChangePwd(ChangePwdParamsDto model)
         {
             var gm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
-            Guid token = GameHelper.FromBase64String(model.Token);
+            Guid token = OwConvert.ToGuid(model.Token);
             return gm.ChangePwd(token, model.NewPwd);
         }
 

@@ -3,6 +3,7 @@ using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using OW.Game;
 using OW.Game.Mission;
+using System;
 using System.Linq;
 
 namespace Gy001.Controllers
@@ -31,7 +32,7 @@ namespace Gy001.Controllers
             using var datas = new GetRewardingDatas(World, model.Token)
             {
             };
-            datas.ItemIds.AddRange(model.ItemIds.Select(c => GameHelper.FromBase64String(c)));
+            datas.ItemIds.AddRange(model.ItemIds.Select(c => OwConvert.ToGuid(c)));
             World.MissionManager.GetRewarding(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;

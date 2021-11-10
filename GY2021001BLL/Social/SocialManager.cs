@@ -209,7 +209,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="cc">抄送人列表，当前未用，保留未null或省略。</param>
         /// <param name="sc">密件抄送列表，当前未用，保留未null或省略。</param>
 #pragma warning disable IDE0060 // 删除未使用的参数,禁用该警告，原因有些参数保留未用
-        public void SendMail([NotNull] GameMail mail, [NotNull] IEnumerable<Guid> to, Guid sendId, IEnumerable<Guid> cc = null, IEnumerable<Guid> sc = null)
+        public virtual void SendMail([NotNull] GameMail mail, [NotNull] IEnumerable<Guid> to, Guid sendId, IEnumerable<Guid> cc = null, IEnumerable<Guid> sc = null)
 #pragma warning restore IDE0060 // 删除未使用的参数
         {
             try
@@ -263,6 +263,7 @@ namespace GuangYuan.GY001.BLL
                               Mail = mail,
                               MailId = mail.Id,
                           };
+
                 }
                 GameMailAddress sender;
                 if (SocialConstant.FromSystemId == sendId)  //若是系统发送
@@ -298,12 +299,47 @@ namespace GuangYuan.GY001.BLL
                 mail.Addresses.AddRange(tos);
                 mail.Addresses.Add(sender);
                 World.AddToUserContext(new object[] { mail });
+                //发送邮件到达通知
+                Task.Run(() => NotifyMail(to));
             }
             catch
             {
             }
         }
 
+        private void NotifyMail(IEnumerable<Guid> charIds)
+        {
+            var list = new List<Guid>(charIds);
+
+            list.RemoveAll(c => //优先通知已经在内存的角色
+            {
+                using var dwUser = World.CharManager.LockOrLoad(c, out var gu);
+                if (dwUser is null)
+                    return false;
+                var gc = gu.CurrentChar;
+                //生成通知数据。
+                var lst = World.CharManager.GetChangeData(gc);
+                if (lst != null)
+                {
+                    var np = new ChangeData()
+                    {
+                        ActionId = 2,
+                        NewValue = 0,
+                        ObjectId = gc.Id,
+                        OldValue = 0,
+                        PropertyName = "Count",
+                        TemplateId = ProjectConstant.MailSlotTId,
+                    };
+                    np.Properties.Add("charId", gc.IdString);
+                    lst.Add(np);
+                    World.CharManager.NotifyChange(gu);
+                    return true;
+                }
+                else
+                    return false;
+            });
+
+        }
         /// <summary>
         /// 用指定的物品作为附件发送邮件。
         /// </summary>
@@ -600,24 +636,19 @@ namespace GuangYuan.GY001.BLL
         /// <param name="friendId">请求加好友的Id。</param>
         /// <returns>0成功发送请求。-1无法锁定账号。
         /// -2对方Id不存在。</returns>
-        public RequestFriendResult RequestFriend(GameChar gameChar, Guid friendId)
+        public RequestFriendResult RequestFriend(RequestFriendData data)
         {
-            if (!World.CharManager.Lock(gameChar.GameUser))
+            using var dwUsers = data.LockAll();
+            if (dwUsers is null)
             {
-                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+                VWorld.SetLastErrorMessage($"无法锁定指定角色。");
                 return RequestFriendResult.NotFoundThisChar;
             }
-            using var dwChar = DisposerWrapper.Create(() => World.CharManager.Unlock(gameChar.GameUser));
-            using GameUserContext db = World.CreateNewUserDbContext();
-            var objChar = db.Set<GameChar>().AsNoTracking().FirstOrDefault(c => c.Id == friendId);  //要请求的角色对象。
-            if (objChar is null)
-            {
-                VWorld.SetLastErrorMessage($"找不到指定角色的角色，Id={friendId}。");
-                return RequestFriendResult.NotFoundObjectChar;
-            }
+            GameUserContext db = data.UserContext;
+            var objChar = data.OtherChar;  //要请求的角色对象。
             //TO DO限制当日添加好友次数。
-            var sr = GetSrOrAdd(db, gameChar.Id, friendId);  //关系对象
-            var nsr = GetNSrOrAdd(db, gameChar.Id, friendId); //对方的关系对象
+            var sr = GetSrOrAdd(db, data.GameChar.Id, objChar.Id);  //关系对象
+            var nsr = GetNSrOrAdd(db, data.GameChar.Id, objChar.Id); //对方的关系对象
             if (nsr.IsBlack()) //若对方已经把当前用户加入黑名单
                 return RequestFriendResult.BlackList;
             if (sr.IsBlack())  //黑名单
@@ -640,7 +671,29 @@ namespace GuangYuan.GY001.BLL
             {
                 return RequestFriendResult.UnknowError;
             }
-            World.CharManager.Nope(gameChar.GameUser);  //重置下线计时器
+            //生成通知数据。
+            var gi = objChar.GetFriendSlot();
+            var lst = World.CharManager.GetChangeData(objChar);
+            if (lst != null && gi != null)
+            {
+                var np = new ChangeData()
+                {
+                    ActionId = 2,
+                    NewValue = 0,
+                    ObjectId = gi.Id,
+                    OldValue = 0,
+                    PropertyName = World.PropertyManager.LevelPropertyName,
+                    TemplateId = gi.TemplateId,
+                };
+                np.Properties.Add("charId", objChar.Id.ToString());
+                lst.Add(np);
+            }
+            else
+            {
+                //TO DO
+            }
+
+            World.CharManager.Nope(data.GameChar.GameUser);  //重置下线计时器
             return RequestFriendResult.Success;
         }
 
@@ -1755,5 +1808,23 @@ namespace GuangYuan.GY001.BLL
             base.Dispose(disposing);
         }
 
+    }
+
+    /// <summary>
+    /// <see cref="GameSocialManager.RequestFriend(RequestFriendData)"/>接口的工作数据块。
+    /// </summary>
+    public class RequestFriendData : BinaryRelationshipWorkDataBase
+    {
+        public RequestFriendData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
+        {
+        }
+
+        public RequestFriendData([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar, otherGCharId)
+        {
+        }
+
+        public RequestFriendData([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token, otherGCharId)
+        {
+        }
     }
 }

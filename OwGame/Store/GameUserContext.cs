@@ -187,7 +187,7 @@ namespace OW.Game.Store
             get { return _Base64IdString ??= Id.ToBase64String(); }
             set
             {
-                Id = GameHelper.FromBase64String(value);
+                Id = OwConvert.ToGuid(value);
                 _Base64IdString = value;
             }
         }

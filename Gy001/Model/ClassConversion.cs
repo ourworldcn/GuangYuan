@@ -71,7 +71,7 @@ namespace GY2021001WebApi.Models
     public partial class IdAndCountDto
     {
         public static implicit operator ValueTuple<Guid, decimal>(IdAndCountDto obj) =>
-            (GameHelper.FromBase64String(obj.Id), obj.Count);
+            (OwConvert.ToGuid(obj.Id), obj.Count);
 
         public static implicit operator IdAndCountDto(ValueTuple<Guid, decimal> obj) =>
             new IdAndCountDto { Id = obj.Item1.ToBase64String(), Count = obj.Item2 };
@@ -107,12 +107,12 @@ namespace GY2021001WebApi.Models
             //explicit
             var result = new GameItem()
             {
-                Id = GameHelper.FromBase64String(obj.Id),
+                Id = OwConvert.ToGuid(obj.Id),
                 Count = obj.Count,
                 CreateUtc = obj.CreateUtc,
-                TemplateId = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : GameHelper.FromBase64String(obj.TemplateId),
-                OwnerId = string.IsNullOrEmpty(obj.OwnerId) ? Guid.Empty : GameHelper.FromBase64String(obj.OwnerId),
-                ParentId = string.IsNullOrEmpty(obj.ParentId) ? Guid.Empty : GameHelper.FromBase64String(obj.ParentId),
+                TemplateId = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : OwConvert.ToGuid(obj.TemplateId),
+                OwnerId = string.IsNullOrEmpty(obj.OwnerId) ? Guid.Empty : OwConvert.ToGuid(obj.OwnerId),
+                ParentId = string.IsNullOrEmpty(obj.ParentId) ? Guid.Empty : OwConvert.ToGuid(obj.ParentId),
                 ClientGutsString = obj.ClientString,
             };
             foreach (var item in obj.Properties)
@@ -184,11 +184,11 @@ namespace GY2021001WebApi.Models
         {
             var result = new GameChar()
             {
-                Id = GameHelper.FromBase64String(obj.Id),
-                TemplateId = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : GameHelper.FromBase64String(obj.TemplateId),
+                Id = OwConvert.ToGuid(obj.Id),
+                TemplateId = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : OwConvert.ToGuid(obj.TemplateId),
                 CreateUtc = obj.CreateUtc,
-                GameUserId = string.IsNullOrEmpty(obj.GameUserId) ? Guid.Empty : GameHelper.FromBase64String(obj.GameUserId),
-                CurrentDungeonId = GameHelper.FromBase64String(obj.CurrentDungeonId),
+                GameUserId = string.IsNullOrEmpty(obj.GameUserId) ? Guid.Empty : OwConvert.ToGuid(obj.GameUserId),
+                CurrentDungeonId = OwConvert.ToGuid(obj.CurrentDungeonId),
                 CombatStartUtc = obj.CombatStartUtc,
             };
 
@@ -252,7 +252,7 @@ namespace GY2021001WebApi.Models
         {
             var result = new GameItemTemplate()
             {
-                Id = GameHelper.FromBase64String(obj.Id),
+                Id = OwConvert.ToGuid(obj.Id),
                 GId = obj.GId,
                 ChildrenTemplateIdString = obj.ChildrenTemplateIdString,
                 DisplayName = obj.DisplayName,
@@ -431,7 +431,7 @@ namespace GY2021001WebApi.Models
             var result = new HomelandFangan()
             {
                 ClientString = obj.ClientString,
-                Id = GameHelper.FromBase64String(obj.Id),
+                Id = OwConvert.ToGuid(obj.Id),
                 IsActived = obj.IsActived,
                 OrderNumber = obj.OrderNumber,
             };
@@ -448,11 +448,11 @@ namespace GY2021001WebApi.Models
         {
             var result = new HomelandFanganItem()
             {
-                ContainerId = GameHelper.FromBase64String(obj.ContainerId),
-                NewTemplateId = GameHelper.FromBase64String(obj.NewTemplateId),
+                ContainerId = OwConvert.ToGuid(obj.ContainerId),
+                NewTemplateId = OwConvert.ToGuid(obj.NewTemplateId),
                 ClientString = obj.ClientString,
             };
-            result.ItemIds.AddRange(obj.ItemIds.Select(c => GameHelper.FromBase64String(c)));
+            result.ItemIds.AddRange(obj.ItemIds.Select(c => OwConvert.ToGuid(c)));
             return result;
         }
 
