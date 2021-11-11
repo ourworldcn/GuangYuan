@@ -686,7 +686,7 @@ namespace GuangYuan.GY001.BLL
             //设置复仇权力
             datas.Combat = pc;
             db.Add(pc);
-            //移除击杀权
+            //移除攻击权
             todayData.LastValues.Remove(datas.GameChar.Id);
             todayData.Save();
             //设置战利品
@@ -738,17 +738,13 @@ namespace GuangYuan.GY001.BLL
             bootyOfAttacker.ForEach(c => c.FillToDictionary(World, mail.Properties));
             World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             //发送反击邮件
-            if (datas.BootyOfDefenser.Count > 0)   //若有收益
+            mail = new GameMail()
             {
-                //无收益则不发送邮件
-                mail = new GameMail()
-                {
-                };
-                mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件.ToString();
-                mail.Properties["CombatId"] = pc.Id.ToString();
-                bootyOfDefenser.ForEach(c => c.FillToDictionary(World, mail.Properties));
-                World.SocialManager.SendMail(mail, new Guid[] { datas.OtherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
-            }
+            };
+            mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件.ToString();
+            mail.Properties["CombatId"] = pc.Id.ToString();
+            bootyOfDefenser.ForEach(c => c.FillToDictionary(World, mail.Properties));
+            World.SocialManager.SendMail(mail, new Guid[] { datas.OtherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             //保存数据
             datas.Save();
             datas.HasError = false;
@@ -914,7 +910,7 @@ namespace GuangYuan.GY001.BLL
             IEnumerable<GameBooty> newBooty = Array.Empty<GameBooty>();    //协助战利品
             if (datas.IsWin)    //若赢得战斗
             {
-                var boo = datas.Combat.BootyOfAttacker(datas.UserContext);  //原始进攻方的战利品
+                var boo = oldWar.BootyOfAttacker(datas.UserContext);  //原始进攻方的战利品
                 newBooty = boo.Select(c => new GameBooty   //计算进攻方战利品
                 {
                     ParentId = pc.Id,
@@ -952,6 +948,25 @@ namespace GuangYuan.GY001.BLL
                     World.MissionManager.ScanAsync(datas.GameChar);
                 }
             }
+            //发送邮件
+            var mail = new GameMail()
+            {
+            };
+            if (datas.IsWin) //若协助成功
+            {
+                mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
+                mail.Properties["OldCombatId"] = oldWar.IdString;
+                mail.Properties["CombatId"] = pc.IdString;
+            }
+            else
+            {
+                mail.Properties["MailTypeId"] = oldView.Retaliationed ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_求助_失败_求助者.ToString();
+                mail.Properties["OldCombatId"] = oldWar.IdString;
+                mail.Properties["CombatId"] = pc.IdString;
+            }
+
+            World.SocialManager.SendMail(mail, oldWar.DefenserIds, SocialConstant.FromSystemId); //被攻击邮件
+
         }
 
         #endregion PVP相关
@@ -1385,8 +1400,9 @@ namespace GuangYuan.GY001.BLL
         {
             get
             {
-                var result = _WarNewspaper.Properties.GetGuidOrDefault("AssistanceId");
-                return result != Guid.Empty ? new Guid?(result) : null;
+                if (_WarNewspaper.Properties.ContainsKey(nameof(AssistanceId)))
+                    return null;
+                return _WarNewspaper.Properties.GetGuidOrDefault(nameof(AssistanceId));
             }
             set
             {
@@ -1395,6 +1411,15 @@ namespace GuangYuan.GY001.BLL
                 else
                     _WarNewspaper.Properties["AssistanceId"] = value.Value.ToString();
             }
+        }
+
+        /// <summary>
+        /// 获取或设置战斗结果，true进攻方胜利，false进攻方失败。null无胜负。
+        /// </summary>
+        public bool? IsAttckerWin
+        {
+            get => _WarNewspaper.Properties.Get3State();
+            set => _WarNewspaper.Properties.Set3State(value);
         }
     }
 }

@@ -5,6 +5,7 @@ using Gy001.Controllers;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using System;
 using System.Linq;
@@ -140,7 +141,7 @@ namespace GY2021001WebApi.Controllers
         }
 
         /// <summary>
-        /// 放弃pvp的反击和请求协助的权力。
+        /// 放弃pvp请求协助。目前视同协助失败。
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -148,15 +149,20 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<AbortPvpResultDto> AbortPvp(AbortPvpParamsDto model)
         {
             AbortPvpResultDto result = new AbortPvpResultDto();
+            var oldCombatId = OwConvert.ToGuid(model.CombatId); //原始战斗Id
+            var db = HttpContext.RequestServices.GetService<GY001UserContext>();
+            var oldWar = db.Set<WarNewspaper>().Find(oldCombatId);
+            using EndCombatPvpWorkData datas = new EndCombatPvpWorkData(World, model.Token, oldWar.AttackerIds.First())
+            {
+                UserContext = db,
+                CombatId = oldCombatId,
+            };
+            World.CombatManager.EndCombatPvp(datas);
+            result.HasError = datas.HasError;
+            result.ErrorCode = datas.ErrorCode;
+            result.DebugMessage = datas.ErrorMessage;
             return result;
         }
     }
 
-    public class AbortPvpParamsDto
-    {
-    }
-
-    public class AbortPvpResultDto
-    {
-    }
 }

@@ -2,7 +2,6 @@
  * 文件放置游戏专用的一些基础类
  * 一些游戏中常用的基础数据结构。
  */
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -290,6 +289,7 @@ namespace OW.Game
         /// <param name="name"></param>
         /// <param name="defaultVal"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetStringOrDefault(this IReadOnlyDictionary<string, object> dic, string name, string defaultVal = default) =>
             dic.TryGetValue(name, out var obj) && obj is string result ? result : defaultVal;
 
@@ -321,6 +321,35 @@ namespace OW.Game
             if (!dic.TryGetValue(key, out var obj))
                 return defaultVal;
             return OwHelper.TryGetBoolean(key, out var result) ? result : defaultVal;
+        }
+
+        /// <summary>
+        /// 获取三态bool类型值。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool? Get3State(this IReadOnlyDictionary<string, object> dic, [CallerMemberName] string key = null)
+        {
+            if (!dic.TryGetValue(key, out var objBool))
+                return null;
+            return OwHelper.TryGetBoolean(key, out var result) ? (bool?)result : null;
+        }
+
+        /// <summary>
+        /// 设置三态bool类型的值。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="val"></param>
+        /// <param name="key"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Set3State(this IDictionary<string, object> dic, bool? val, [CallerMemberName] string key = null)
+        {
+            if (val is null)
+                dic.Remove(key);
+            else
+                dic[key] = val.Value.ToString();
         }
     }
 

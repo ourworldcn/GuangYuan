@@ -220,7 +220,7 @@ A9BD0E89-1105-4A52-982A-97E6EE4AD577	stc=999,bd=100,it=2,sd=5,nmid=1616,dsid=171
 {82b18ec6-9190-4804-81b5-33ffa0351ade}	cap=1	合成时候锁住攻击天赋	25002			
 {b10c4510-0c8e-40ad-87bb-6f5828273e29}	cap=1	合成时候锁住质量天赋	25003			
 {8fc39339-777d-4dc5-97a2-d539d7b2d47b}	perfabs=Sheep_Skin_fatiao,nm=4000,mhp=100,atk=50,qlt=10,body=4001,bd=100	羊时装-发条1	26001			
-{e62e432b-a29c-4ddc-b3e0-c8577769ace2}	perfabs=Sheep_Skin_fatiao,nm=4001,mhp=10,atk=100,qlt=20,body=4001,bd=200	羊时装-发条2	26002			
+{e62e432b-a29c-4ddc-b3e0-c8577769ace2}	perfabs=Sheep_Skin_fatiao,nm=4001,mhp=10,atk=100,qlt=20,body=4001,bd=200,charUni=1	羊时装-发条2	26002			
 {7f129c0c-dcc2-43f7-919d-bea175792f14}	perfabs=Sheep_Skin_fatiao,nm=4002,mhp=500,atk=150,qlt=20,body=4001,bd=300	羊时装-发条3	26003			
 {8c98a98b-eae5-43d8-8173-721865e6bdc2}	perfabs=Wolf_Skin_shandian,nm=4003,mhp=60,atk=30,qlt=2,body=4002,bd=2000	狼时装-闪电1	26004			
 {75fb0845-a927-4b7e-a45d-0979d21a6222}	perfabs=Wolf_Skin_shandian,nm=4004,mhp=70,atk=40,qlt=13,body=4002,bd=2000	狼时装-闪电2	26005			

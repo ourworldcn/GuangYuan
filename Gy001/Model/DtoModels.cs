@@ -1759,6 +1759,25 @@ namespace GY2021001WebApi.Models
     #region 战斗相关
 
     /// <summary>
+    /// 放弃pvp请求协助接口参数传输类。
+    /// </summary>
+    public class AbortPvpParamsDto:TokenDtoBase
+    {
+        /// <summary>
+        /// 原始战斗的Id。协助请求是针对这场战斗发出的。
+        /// </summary>
+        public string CombatId { get; set; }
+    }
+
+    /// <summary>
+    /// 放弃pvp请求协助接口返回值传输类。
+    /// </summary>
+    public class AbortPvpResultDto:ReturnDtoBase
+    {
+    }
+
+
+    /// <summary>
     /// 开始战斗的参数传输类。
     /// </summary>
     [DataContract]
@@ -2953,17 +2972,20 @@ namespace GY2021001WebApi.Models
     /// <summary>
     /// 设置角色经验接口使用的参数传输类。
     /// </summary>
+    [DataContract]
     public class SetCharExpParamsDto : TokenDtoBase
     {
         /// <summary>
         /// 指定的经验值。
         /// </summary>
+        [DataMember]
         public decimal Exp { get; set; }
     }
 
     /// <summary>
     /// 设置角色经验接口使用的返回值传输类。
     /// </summary>
+    [DataContract]
     public class SetCharExpReturnDto : ReturnDtoBase
     {
     }

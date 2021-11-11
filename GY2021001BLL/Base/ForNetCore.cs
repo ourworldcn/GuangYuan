@@ -1,6 +1,7 @@
 ﻿using Game.Social;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Combat;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -137,7 +137,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     zhanli.StringValue = gu.CurrentChar.DisplayName;
                 }
-                world.CharManager.SetExp(gu.CurrentChar,VWorld.WorldRandom.Next(maxExp));
+                world.CharManager.SetExp(gu.CurrentChar, VWorld.WorldRandom.Next(maxExp));
                 gu.Timeout = TimeSpan.FromSeconds(1);
                 world.CharManager.Unlock(gu);
 
@@ -187,7 +187,7 @@ namespace GuangYuan.GY001.BLL
         private void Test()
         {
             var world = _Services.GetRequiredService<VWorld>();
-            //using var db = world.CreateNewUserDbContext();
+            using var db = world.CreateNewUserDbContext();
         }
 
         /// <summary>

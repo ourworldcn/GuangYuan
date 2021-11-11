@@ -1569,9 +1569,6 @@ namespace GuangYuan.GY001.BLL
                 var worker = gc.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);
                 worker.Count++;
                 LastChangesItems.AddToChanges(worker);
-                //计算经验值增加量
-                var exp = Math.Round(gameItem.Template.Properties.GetDecimalOrDefault("lut") / 60, MidpointRounding.ToZero);
-                World.CharManager.AddExp(gc, exp);  //增加经验值
             }
             catch (Exception)
             {

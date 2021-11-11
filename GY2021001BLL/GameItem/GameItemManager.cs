@@ -231,8 +231,8 @@ namespace OW.Game.Item
                 gameItem.SetPropertyValue(propName, val);
             DynamicPropertyChangedCollection args = new DynamicPropertyChangedCollection();
             var item = new SimplePropertyChangedCollection() { Thing = gameItem };
-            args.Add(item);
             item.Items.Add(new SimplePropertyChangedItem<object>(propName, oldValue, gameItem.Properties[propName]));
+            args.Add(item);
             World.EventsManager.OnDynamicPropertyChanged(args);
             return true;
         }

@@ -106,9 +106,9 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.CombatController.AbortPvp(GY2021001WebApi.Controllers.AbortPvpParamsDto)">
+        <member name="M:GY2021001WebApi.Controllers.CombatController.AbortPvp(GY2021001WebApi.Models.AbortPvpParamsDto)">
             <summary>
-            放弃pvp的反击和请求协助的权力。
+            放弃pvp请求协助。目前视同协助失败。
             </summary>
             <param name="model"></param>
             <returns></returns>
@@ -1689,6 +1689,21 @@
             家园建设方案的集合。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.AbortPvpParamsDto">
+            <summary>
+            放弃pvp请求协助接口参数传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.AbortPvpParamsDto.CombatId">
+            <summary>
+            原始战斗的Id。协助请求是针对这场战斗发出的。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.AbortPvpResultDto">
+            <summary>
+            放弃pvp请求协助接口返回值传输类。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.CombatStartParamsDto">
             <summary>
             开始战斗的参数传输类。
@@ -2358,6 +2373,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

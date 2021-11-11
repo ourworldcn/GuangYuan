@@ -1065,10 +1065,12 @@ namespace GuangYuan.GY001.BLL
             var oldLv = gameChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName); //当前等级
             var limitSeq = gameChar.Template.Properties.GetValueOrDefault("expLimit") as IEnumerable;
             var limit = gameChar.Properties.GetValueOrDefault("expLimit");
-            if (null != limitSeq && newExp >= oldExp)   //若需要升级
+            int newLv;
+            if (null != limitSeq && newExp >= oldExp)   //若经验已经变化
             {
                 List<decimal> lst = new List<decimal>(limitSeq.OfType<decimal>());
-                var newLv = lst.FindIndex(c => c > newExp); //新等级
+                newLv = lst.FindIndex(c => c > newExp); //新等级
+                newLv = newLv == -1 ? lst.Count  : newLv;
                 if (newLv != oldLv)    //若等级发生变化
                 {
                     e.MarkAndSet(gameChar, World.PropertyManager.LevelPropertyName, newLv);

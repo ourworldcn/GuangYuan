@@ -119,7 +119,30 @@ namespace OW.Game
                 }
             }
             OnCharLevelUp(args);  //角色等级变化
+            OnItemLevelUp(args);    //物品等级变化
             OnLineupChenged(args);
+        }
+
+        private void OnItemLevelUp(DynamicPropertyChangedCollection args)
+        {
+            foreach (var spcc in args.Where(c => c.Thing is GameItem)) //遍历针对角色的动态属性变化
+            {
+                var gi = (GameItem)spcc.Thing;
+                var gc = gi.GameChar;
+                var hl = gc.GetHomeland();
+                if (!hl.AllChildren.Contains(spcc.Thing))   //若不是家园建筑物
+                    continue;
+                foreach (var item in spcc)
+                {
+                    if (item.Name != World.PropertyManager.LevelPropertyName)    //若不是等级变化
+                        continue;
+                    //计算经验值增加量
+                    var seq = gi.Template.GetSequenceProperty<decimal>("lut");
+                    var time = seq[Convert.ToInt32(item.OldValue ?? 0)];
+                    var exp = Math.Round(time / 60, MidpointRounding.ToZero);
+                    World.CharManager.AddExp(gc, exp);  //增加经验值
+                }
+            }
         }
 
         /// <summary>
@@ -135,14 +158,14 @@ namespace OW.Game
                     var gc = (GameChar)spcc.Thing;
                     var lst = World.CharManager.GetChangeData(gc);  //通知数据对象
 
-                    if (lst != null && item.Name=="exp")
+                    if (lst != null && item.Name == "exp")
                     {
                         var np = new ChangeData()
                         {
                             ActionId = 2,
-                            NewValue = item.OldValue,
+                            NewValue = item.NewValue,
                             ObjectId = gc.Id,
-                            OldValue = item.NewValue,
+                            OldValue = item.OldValue,
                             PropertyName = "exp",
                             TemplateId = ProjectConstant.CharTemplateId,
                         };
