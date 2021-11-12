@@ -1761,18 +1761,21 @@ namespace GY2021001WebApi.Models
     /// <summary>
     /// 放弃pvp请求协助接口参数传输类。
     /// </summary>
-    public class AbortPvpParamsDto:TokenDtoBase
+    [DataContract]
+    public class AbortPvpParamsDto : TokenDtoBase
     {
         /// <summary>
         /// 原始战斗的Id。协助请求是针对这场战斗发出的。
         /// </summary>
+        [DataMember]
         public string CombatId { get; set; }
     }
 
     /// <summary>
     /// 放弃pvp请求协助接口返回值传输类。
     /// </summary>
-    public class AbortPvpResultDto:ReturnDtoBase
+    [DataContract]
+    public class AbortPvpResultDto : ReturnDtoBase
     {
     }
 
@@ -1954,6 +1957,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 元素中仅需Id有效即可。
         /// </summary>
+        [DataMember]
         public List<GameItemDto> GameItemDtos { get; set; } = new List<GameItemDto>();
     }
 

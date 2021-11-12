@@ -1523,6 +1523,8 @@ namespace OW.Game.Item
 
         public static IEnumerable<GameItem> ToGameItems(this GameItemManager manager, byte[] buffer)
         {
+            if (buffer is null || buffer.Length <= 0)
+                return Array.Empty<GameItem>();
             using var ms = new MemoryStream(buffer, false);
             using var reader = new BinaryReader(ms);
             return manager.ToGameItems(reader);

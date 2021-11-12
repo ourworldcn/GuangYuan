@@ -825,7 +825,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetFriendSlot(this GameChar gameChar) =>
-            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.FriendSlotTId);
+            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FriendSlotTId);
 
         /// <summary>
         /// 获取PVP数据记录对象。

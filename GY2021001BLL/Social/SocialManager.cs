@@ -687,6 +687,7 @@ namespace GuangYuan.GY001.BLL
                 };
                 np.Properties.Add("charId", objChar.Id.ToString());
                 lst.Add(np);
+                World.CharManager.NotifyChange(objChar.GameUser);
             }
             else
             {

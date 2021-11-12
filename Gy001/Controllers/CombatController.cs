@@ -151,13 +151,12 @@ namespace GY2021001WebApi.Controllers
             AbortPvpResultDto result = new AbortPvpResultDto();
             var oldCombatId = OwConvert.ToGuid(model.CombatId); //原始战斗Id
             var db = HttpContext.RequestServices.GetService<GY001UserContext>();
-            var oldWar = db.Set<WarNewspaper>().Find(oldCombatId);
-            using EndCombatPvpWorkData datas = new EndCombatPvpWorkData(World, model.Token, oldWar.AttackerIds.First())
+            using var datas = new AbortPvpDatas(World, model.Token)
             {
                 UserContext = db,
                 CombatId = oldCombatId,
             };
-            World.CombatManager.EndCombatPvp(datas);
+            World.CombatManager.AbortPvp(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;
             result.DebugMessage = datas.ErrorMessage;

@@ -825,40 +825,40 @@ namespace GuangYuan.GY001.BLL
             //计算战利品
             if (datas.IsWin) //若反击胜利
             {
-                List<GameBooty> booties = new List<GameBooty>();
-                booties.FillToBooty(world, oldWar.Properties);
-                booties.ForEach(c =>
+                List<GameBooty> booties = db.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == oldWar.Id && oldWar.AttackerIds.Contains(c.CharId) && c.Count != 0).ToList();  //原战斗的攻击者战利品
+                if (booties.Count > 0) //若有战利品
                 {
-                    c.ParentId = pc.Id;
-                    c.CharId = datas.GameChar.Id;
-                }); //设置导航数据
-                booties.ForEach(c =>
-                c.SetGameItems(world, datas.ChangeItems));  //设置实际物品数据
+                    var attackerBooties = booties.Select(c => new GameBooty()
+                    {
+                        ParentId = pc.Id,
+                        CharId = datas.GameChar.Id,
+                        TemplateId = c.TemplateId,
+                        Count = c.Count,
+                    }).ToList(); //本战斗攻击者战利品
+                    //设计：本次战斗防御者不丢失资源
+                    //设置战利品
+                    attackerBooties.ForEach(c => c.SetGameItems(world, datas.ChangeItems));
+                    db.AddRange(attackerBooties);
+                }
             }
             //发送邮件
+            var mail = new GameMail();
             if (datas.IsWin) //反击得胜
             {
                 //发送邮件
-                var mail = new GameMail()
-                {
-                };
                 mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_自己_胜利.ToString();
-                mail.Properties["OldCombatId"] = datas.CombatId.ToString();
-                mail.Properties["CombatId"] = pc.Id.ToString();
-                World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+                mail.Properties["OldCombatId"] = oldWar.IdString;
+                mail.Properties["CombatId"] = pc.IdString;
+                oldView.IsCompleted = true; //反击得胜后不可再要求协助
             }
             else //反击失败
             {
                 //发送邮件
-                var mail = new GameMail()
-                {
-                };
-                mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_自己_失败.ToString();
-                mail.Properties["OldCombatId"] = datas.CombatId.ToString();
-                mail.Properties["CombatId"] = pc.Id.ToString();
-
-                World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+                mail.Properties["MailTypeId"] = oldView.Assistanced ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_自己_失败.ToString();
+                mail.Properties["OldCombatId"] = oldWar.IdString;
+                mail.Properties["CombatId"] = pc.IdString;
             }
+            World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             //保存数据
             oldView.Retaliationed = true;
             datas.Save();
@@ -872,7 +872,7 @@ namespace GuangYuan.GY001.BLL
         {
             if (datas.Combat is null || datas.Combat.DefenserIds.Count <= 0)   //若找不到战报对象,或数据异常
                 return;
-            var oriCharId = datas.Combat.DefenserIds.First();   //原始被打角色Id
+            var world = datas.World;
             datas.OtherCharIds.AddRange(datas.Combat.DefenserIds);  //将原始战斗的防御方角色ID加入锁定范围
             using var dwUsers = datas.LockAll();    //锁定相关角色
             if (dwUsers is null)
@@ -891,7 +891,7 @@ namespace GuangYuan.GY001.BLL
             var oldView = new WarNewspaperView(oldWar, World.Service);
             var db = datas.UserContext;
             var assId = oldView.AssistanceId;
-            if (assId != datas.GameChar.Id || !oldView.Assistancing) //没有请求当前角色协助
+            if (assId != datas.GameChar.Id || !oldView.Assistancing || oldView.IsCompleted) //没有请求当前角色协助或已经结束
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
@@ -906,37 +906,37 @@ namespace GuangYuan.GY001.BLL
             datas.Combat = pc;
             db.Add(pc);
             //获取战利品
-            IEnumerable<GameBooty> oriBooty = Array.Empty<GameBooty>();    //夺回战利品
-            IEnumerable<GameBooty> newBooty = Array.Empty<GameBooty>();    //协助战利品
             if (datas.IsWin)    //若赢得战斗
             {
+                var oriBooty = db.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == oldWar.Id && oldWar.AttackerIds.Contains(c.CharId) && c.Count != 0).ToList();     //原始战斗攻击方战利品
                 var boo = oldWar.BootyOfAttacker(datas.UserContext);  //原始进攻方的战利品
-                newBooty = boo.Select(c => new GameBooty   //计算进攻方战利品
+
+                var newBooty = boo.Select(c => new GameBooty   //计算进攻方战利品
                 {
                     ParentId = pc.Id,
                     CharId = datas.GameChar.Id,
                     TemplateId = c.TemplateId,
                     Count = Math.Round(c.Count * 0.3m, MidpointRounding.AwayFromZero),
-                });
+                }).ToList();
                 db.AddRange(newBooty);  //加入数据库
-                oriBooty = boo.Select(c => new GameBooty   //计算被掠夺方战利品
+                newBooty.ForEach(c => c.SetGameItems(World, datas.ChangeItems));
+
+                var oldBooties = boo.Select(c => new GameBooty   //原始被掠夺角色的战利品
                 {
                     ParentId = pc.Id,
-                    CharId = oriCharId,
+                    CharId = oldWar.DefenserIds.First(),
                     TemplateId = c.TemplateId,
                     Count = c.Count,
-                });
+                }).ToList();
+                oldBooties.ForEach(c => c.SetGameItems(world));
             }
-            oriBooty.ToList().ForEach(c => c.SetGameItems(datas.World));    //被掠夺方战利品
-            newBooty.ToList().ForEach(c => c.SetGameItems(datas.World, datas.ChangeItems)); //进攻方战利品
             //保存数据
             //改写进攻权限
             oldView.Assistancing = false;
             oldView.Assistanced = true;
+            oldView.IsCompleted = true;
             datas.Save();
-            datas.HasError = false;
-            datas.ErrorCode = 0;
-            datas.ErrorMessage = null;
+            datas.ErrorCode = ErrorCodes.NO_ERROR;
             //计算成就数据
             if (datas.IsWin)
             {
@@ -967,6 +967,48 @@ namespace GuangYuan.GY001.BLL
 
             World.SocialManager.SendMail(mail, oldWar.DefenserIds, SocialConstant.FromSystemId); //被攻击邮件
 
+        }
+
+        /// <summary>
+        /// 放弃协助或放弃自己被打的战斗。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void AbortPvp(AbortPvpDatas datas)
+        {
+            var db = datas.UserContext;
+            var oldWar = db.Set<WarNewspaper>().Find(datas.CombatId);   //原始战斗
+            if (oldWar.DefenserIds.Contains(datas.GameChar.Id))  //自己被打直接放弃
+            {
+                var getMails = new GameSocialManager.GetMailsDatas(Service, datas.GameChar);
+                World.SocialManager.GetMails(getMails);
+                if (getMails.HasError)
+                {
+                    datas.HasError = true;
+                    datas.ErrorCode = getMails.ErrorCode;
+                    datas.ErrorMessage = getMails.ErrorMessage;
+                    return;
+                }
+                var mail = getMails.Mails.FirstOrDefault(c => c.Properties.GetGuidOrDefault("OldCombatId") == datas.CombatId && c.Properties.GetStringOrDefault("MailTypeId") == ProjectConstant.PVP系统奖励.ToString());
+                if (null != mail)
+                    db.Remove(mail);
+                var view = new WarNewspaperView(oldWar, Service)
+                {
+                    IsCompleted = true
+                };
+                db.SaveChanges();
+            }
+            else
+            {
+                using EndCombatPvpWorkData endPvpDatas = new EndCombatPvpWorkData(World, datas.GameChar, oldWar.AttackerIds.First())
+                {
+                    UserContext = db,
+                    CombatId = datas.CombatId,
+                };
+                World.CombatManager.EndCombatPvp(endPvpDatas);
+                datas.HasError = endPvpDatas.HasError;
+                datas.ErrorCode = endPvpDatas.ErrorCode;
+                datas.ErrorMessage = endPvpDatas.ErrorMessage;
+            }
         }
 
         #endregion PVP相关
@@ -1338,8 +1380,8 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public bool Assistancing
         {
-            get { return _WarNewspaper.Properties.GetBooleanOrDefaut("Assistancing", false); }
-            set { _WarNewspaper.Properties["Assistancing"] = value; }
+            get { return _WarNewspaper.Properties.GetBooleanOrDefaut(nameof(Assistancing), false); }
+            set { _WarNewspaper.Properties[nameof(Assistancing)] = value.ToString(); }
         }
 
         /// <summary>
@@ -1347,8 +1389,8 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public bool Assistanced
         {
-            get { return _WarNewspaper.Properties.GetBooleanOrDefaut("Assistanced", false); }
-            set { _WarNewspaper.Properties["Assistanced"] = value; }
+            get { return _WarNewspaper.Properties.GetBooleanOrDefaut(nameof(Assistanced), false); }
+            set { _WarNewspaper.Properties[nameof(Assistanced)] = value.ToString(); }
         }
 
         /// <summary>
@@ -1362,7 +1404,7 @@ namespace GuangYuan.GY001.BLL
             }
             set
             {
-                _WarNewspaper.Properties["Retaliationed"] = value;
+                _WarNewspaper.Properties["Retaliationed"] = value.ToString();
             }
         }
 
@@ -1400,7 +1442,7 @@ namespace GuangYuan.GY001.BLL
         {
             get
             {
-                if (_WarNewspaper.Properties.ContainsKey(nameof(AssistanceId)))
+                if (!_WarNewspaper.Properties.ContainsKey(nameof(AssistanceId)))
                     return null;
                 return _WarNewspaper.Properties.GetGuidOrDefault(nameof(AssistanceId));
             }
@@ -1421,5 +1463,37 @@ namespace GuangYuan.GY001.BLL
             get => _WarNewspaper.Properties.Get3State();
             set => _WarNewspaper.Properties.Set3State(value);
         }
+
+        /// <summary>
+        /// 获取或设置该流程是否已经结束。
+        /// </summary>
+        public bool IsCompleted
+        {
+            get { return _WarNewspaper.Properties.GetBooleanOrDefaut(nameof(IsCompleted), false); }
+            set { _WarNewspaper.Properties[nameof(IsCompleted)] = value; }
+        }
+
     }
+
+    public class AbortPvpDatas : ComplexWorkDatasBase
+    {
+        public AbortPvpDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public AbortPvpDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public AbortPvpDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 要放弃的原始战斗Id。
+        /// </summary>
+        public Guid CombatId { get; set; }
+
+    }
+
 }

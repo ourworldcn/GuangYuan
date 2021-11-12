@@ -343,9 +343,21 @@ namespace GuangYuan.GY001.BLL
 
         #region IResultWorkData接口相关
 
-        public bool HasError { get; set; }
+        private bool? _HasError;
+
+        /// <summary>
+        /// 是否有错误。不设置则使用<see cref="ErrorCode"/>来判定。
+        /// </summary>
+        public bool HasError { get => _HasError ??= ErrorCode != ErrorCodes.NO_ERROR; set => _HasError = value; }
+
+        /// <summary>
+        /// 错误码，参见 ErrorCodes。
+        /// </summary>
         public int ErrorCode { get; set; }
 
+        /// <summary>
+        /// 调试用的提示性信息。
+        /// </summary>
         private string _ErrorMessage;
 
         /// <summary>

@@ -320,7 +320,7 @@ namespace OW.Game
         {
             if (!dic.TryGetValue(key, out var obj))
                 return defaultVal;
-            return OwHelper.TryGetBoolean(key, out var result) ? result : defaultVal;
+            return OwHelper.TryGetBoolean(obj, out var result) ? result : defaultVal;
         }
 
         /// <summary>
