@@ -578,17 +578,24 @@ namespace GuangYuan.GY001.BLL
             if (dwUser is null)
                 return;
             //分不同情况调用
-            if (datas.DungeonTemplate.Id == ProjectConstant.PvpDungeonTId) //若是正常pvp
+            if (pTId == ProjectConstant.PvpDungeonTId) //若是正常pvp
             {
                 Pvp(datas);
             }
-            else if (datas.DungeonTemplate.Id == ProjectConstant.PvpForHelpDungeonTId) //若是协助pvp
+            else if (pTId == ProjectConstant.PvpForHelpDungeonTId) //若是协助pvp
             {
                 PvpForHelp(datas);
             }
-            else if (datas.DungeonTemplate.Id == ProjectConstant.PvpForRetaliationDungeonTId)   //若是反击pvp
+            else if (pTId == ProjectConstant.PvpForRetaliationDungeonTId)   //若是反击pvp
             {
                 PvpForRetaliation(datas);
+            }
+            else
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = $"未知关卡模板Id={datas.DungeonId}";
+                return;
             }
             if (!datas.HasError) //若成功
             {
@@ -934,7 +941,7 @@ namespace GuangYuan.GY001.BLL
             //改写进攻权限
             oldView.Assistancing = false;
             oldView.Assistanced = true;
-            oldView.IsCompleted = true;
+            oldView.IsCompleted = true && oldView.Retaliationed;
             datas.Save();
             datas.ErrorCode = ErrorCodes.NO_ERROR;
             //计算成就数据
@@ -1003,6 +1010,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     UserContext = db,
                     CombatId = datas.CombatId,
+                    DungeonId = new Guid("{2453A507-DA62-4B7E-8C07-FAE278B54B12}"),
                 };
                 World.CombatManager.EndCombatPvp(endPvpDatas);
                 datas.HasError = endPvpDatas.HasError;

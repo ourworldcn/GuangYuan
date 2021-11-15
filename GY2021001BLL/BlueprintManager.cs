@@ -963,9 +963,9 @@ namespace GuangYuan.GY001.BLL
                     if (datas.SuccCount == 0)
                     {
                         datas.HasError = true;
+                        datas.ErrorCode = VWorld.GetLastError();
+                        datas.DebugMessage = VWorld.GetLastErrorMessage();
                     }
-                    datas.ErrorCode = VWorld.GetLastError();
-                    datas.DebugMessage = VWorld.GetLastErrorMessage();
                     return;
                 }
                 lut = gi.GetDecimalOrDefault("lut");    //升级耗时，单位：秒

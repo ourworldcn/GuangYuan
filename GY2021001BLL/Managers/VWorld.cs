@@ -327,30 +327,36 @@ namespace OW.Game
         /// </summary>
         public GameMissionManager MissionManager { get => _GameMissionManager ??= Service.GetRequiredService<GameMissionManager>(); }
 
-        IGamePropertyManager _PropertyManager;
+        private IGamePropertyManager _PropertyManager;
 
         /// <summary>
         /// 属性管理器。
         /// </summary>
         public IGamePropertyManager PropertyManager { get => _PropertyManager ??= Service.GetRequiredService<IGamePropertyManager>(); }
 
-        GameEventsManager _EventsManager;
+        private GameEventsManager _EventsManager;
         /// <summary>
         /// 事件管理器。
         /// </summary>
         public GameEventsManager EventsManager => _EventsManager ??= Service.GetService<GameEventsManager>();
 
-        GameSchedulerManager _SchedulerManager;
+        private GameSchedulerManager _SchedulerManager;
         /// <summary>
         /// 获取任务计划管理器。
         /// </summary>
         public GameSchedulerManager SchedulerManager => _SchedulerManager ??= Service.GetService<GameSchedulerManager>();
 
-        GameAdminManager _AdminManager;
+        private GameAdminManager _AdminManager;
         /// <summary>
         /// 获取管理员服务。
         /// </summary>
         public GameAdminManager AdminManager => _AdminManager ??= Service.GetService<GameAdminManager>();
+
+        private GameShoppingManager _ShoppingManager;
+        /// <summary>
+        /// 获取商城服务。
+        /// </summary>
+        public GameShoppingManager ShoppingManager => _ShoppingManager ??= Service.GetService<GameShoppingManager>();
         #endregion 子管理器
 
         #region 对象池

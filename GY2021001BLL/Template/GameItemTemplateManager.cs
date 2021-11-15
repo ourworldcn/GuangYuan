@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -81,6 +80,11 @@ namespace GuangYuan.GY001.BLL
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _Id2Template.Value;
         }
+
+        private Lazy<ConcurrentDictionary<Guid, GameShoppingTemplate>> _Id2Shopping;
+
+        public ConcurrentDictionary<Guid, GameShoppingTemplate> Id2Shopping => _Id2Shopping.Value;
+
         #endregion 属性及相关
 
         private void Initialize()
@@ -89,6 +93,11 @@ namespace GuangYuan.GY001.BLL
             {
                 var db = TemplateContext;
                 return new ConcurrentDictionary<Guid, GameItemTemplate>(db.ItemTemplates.AsNoTracking().ToDictionary(c => c.Id));
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
+            _Id2Shopping = new Lazy<ConcurrentDictionary<Guid, GameShoppingTemplate>>(() =>
+            {
+                var db = TemplateContext;
+                return new ConcurrentDictionary<Guid, GameShoppingTemplate>(db.ShoppingTemplates.AsNoTracking().ToDictionary(c => c.Id));
             }, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 

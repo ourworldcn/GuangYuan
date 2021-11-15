@@ -4,14 +4,16 @@ using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GuangYuan.GY001.TemplateDb.Migrations
 {
     [DbContext(typeof(GY001TemplateContext))]
-    partial class GameTemplateContextModelSnapshot : ModelSnapshot
+    [Migration("20211115060112_21111503")]
+    partial class _21111503
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -247,15 +249,13 @@ namespace GuangYuan.GY001.TemplateDb.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SellPeriod")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartDateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ValidPeriod")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

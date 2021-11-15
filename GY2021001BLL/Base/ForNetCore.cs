@@ -188,6 +188,9 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
+
+            var str = "1m";
+            var b = decimal.TryParse(str[0..^1],out var val);
         }
 
         /// <summary>
@@ -351,6 +354,9 @@ namespace GuangYuan.GY001.BLL
 
             //加入管理员服务
             services.AddSingleton(c => new GameAdminManager(c, new AdminManagerOptions()));
+
+            //加入商城服务
+            services.AddSingleton(c => new GameShoppingManager(c, new GameShoppingManagerOptions { }));
         }
     }
 }

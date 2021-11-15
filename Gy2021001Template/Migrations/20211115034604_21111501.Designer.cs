@@ -4,14 +4,16 @@ using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GuangYuan.GY001.TemplateDb.Migrations
 {
     [DbContext(typeof(GY001TemplateContext))]
-    partial class GameTemplateContextModelSnapshot : ModelSnapshot
+    [Migration("20211115034604_21111501")]
+    partial class _21111501
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -226,6 +228,12 @@ namespace GuangYuan.GY001.TemplateDb.Migrations
                     b.Property<bool>("AutoUse")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ChildrenTemplateIdString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Genus")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
@@ -247,15 +255,13 @@ namespace GuangYuan.GY001.TemplateDb.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SellPeriod")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartDateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ValidPeriod")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                    b.Property<DateTime>("ValidPeriod")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
