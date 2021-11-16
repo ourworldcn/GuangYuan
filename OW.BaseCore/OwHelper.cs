@@ -557,6 +557,18 @@ namespace System
             return Convert.ToBase64String(span);
         }
 
+        public static bool TryGetDateTime(object obj, out DateTime result)
+        {
+            if (obj is DateTime dt)
+            {
+                result = dt;
+                return true;
+            }
+            if (obj is string str)
+                return DateTime.TryParse(str, out result);
+            result = default;
+            return false;
+        }
 
     }
 }

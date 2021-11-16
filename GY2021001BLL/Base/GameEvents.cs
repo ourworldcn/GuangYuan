@@ -371,7 +371,6 @@ namespace OW.Game
         /// <param name="user">null则不设置自身的导航属性。</param>
         /// <param name="displayName">昵称。为null则不设置</param>
         /// <param name="parameters"></param>
-        /// 
         public virtual void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, [AllowNull] IReadOnlyDictionary<string, object> parameters)
         {
             GameThingCreated(gameChar, template, parameters);
@@ -474,29 +473,30 @@ namespace OW.Game
         {
             GameThingLoaded(gameItem);
             //通知直接所属物品加载完毕
-            var list = gameItem.Children.ToList();
-            list.ForEach(c => GameItemLoaded(c));
-
+            var list = gameItem.Children.ToArray();
+            Array.ForEach(list, c => GameItemLoaded(c));
         }
 
         public virtual void GameCharLoaded(GameChar gameChar)
         {
             GameThingLoaded(gameChar);
             Debug.Assert(gameChar.GameUser != null && gameChar.GameUser.DbContext != null);
-            ////补足角色的槽
-            //var tt = World.ItemTemplateManager.GetTemplateFromeId(e.GameChar.TemplateId);
-            //List<Guid> ids = new List<Guid>();
-            //tt.ChildrenTemplateIds.ApartWithWithRepeated(e.GameChar.GameItems, c => c, c => c.TemplateId, ids, null, null);
-            //foreach (var item in ids.Select(c => World.ItemTemplateManager.GetTemplateFromeId(c)))
-            //{
-            //    var gameItem = World.ItemManager.CreateGameItem(item, e.GameChar.Id);
-            //    e.GameChar.GameUser.DbContext.Set<GameItem>().Add(gameItem);
-            //    e.GameChar.GameItems.Add(gameItem);
-            //}
-            ////补足所属物品的槽
-            //World.ItemManager.Normalize(e.GameChar.GameItems);
-            //通知直接所属物品加载完毕
+            //补足角色的槽
+            var tt = gameChar.Template;
+            var ids = tt.ChildrenTemplateIds.ToList();
             var list = gameChar.GameItems.ToList();
+            var exists = list.Select(c => c.TemplateId).ToList();
+            for (int i = ids.Count - 1; i >= 0; i--)
+            {
+                var tid = ids[i];
+                if (!exists.Remove(tid))    //若缺少槽
+                {
+                    var gi = new GameItem();
+                    GameItemCreated(gi, tid, null, gameChar.Id);
+                    gameChar.GameItems.Add(gi);
+                }
+            }
+            //通知直接所属物品加载完毕
             list.ForEach(c =>
             {
                 c.GameChar = gameChar;

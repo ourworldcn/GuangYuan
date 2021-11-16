@@ -12,6 +12,35 @@ namespace GY2021001WebApi.Models
 {
     #region 基础数据
 
+    public partial class ShoppingItemDto
+    {
+        public static ShoppingItemDto FromGameShoppingTemplate(GameShoppingTemplate template, GameChar gameChar)
+        {
+            DateTime dt = DateTime.UtcNow;
+            var view = new ShoppingSlotView(gameChar.GetShoppingSlot(), null);
+            var result = new ShoppingItemDto()
+            {
+                AutoUse = template.AutoUse,
+                Genus = template.Genus,
+                GroupNumber = template.GroupNumber,
+                Id = template.Id.ToBase64String(),
+                ItemTemplateId = template.ItemTemplateId.ToBase64String(),
+                MaxCount = template.MaxCount,
+                StartDateTime = template.StartDateTime,
+                SellPeriod = template.SellPeriod,
+                ValidPeriod = template.ValidPeriod,
+                Start = template.GetStart(dt),
+                End = template.GetEnd(dt),
+                CountOfBuyed = view.GetCount(template, dt),
+            };
+            foreach (var item in template.Properties)
+            {
+                result.Properties[item.Key] = item.Value;
+            }
+            return result;
+        }
+    }
+
     public partial class ChangeDataDto
     {
         public static implicit operator ChangeDataDto(ChangeData obj)

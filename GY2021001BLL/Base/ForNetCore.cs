@@ -1,7 +1,6 @@
 ﻿using Game.Social;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
-using GuangYuan.GY001.UserDb.Combat;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.EntityFrameworkCore;
@@ -188,9 +187,8 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-
-            var str = "1m";
-            var b = decimal.TryParse(str[0..^1],out var val);
+            (DateTime, decimal) vt = (DateTime.UtcNow, 1.3m);
+            var str = vt.ToString();
         }
 
         /// <summary>

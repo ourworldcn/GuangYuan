@@ -2995,5 +2995,100 @@ namespace GY2021001WebApi.Models
     }
 
     #endregion 管理相关
+
+    #region 商城相关
+
+    /// <summary>
+    /// 商城物品传输对象。
+    /// </summary>
+    [DataContract]
+    public partial class ShoppingItemDto
+    {
+        [DataMember]
+        public string Id { get; set; }
+
+        [DataMember]
+        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// 最长64个字符的字符串，用于标志一组商品，服务器不理解其具体意义。
+        /// </summary>
+        [DataMember]
+        public string Genus { get; set; }
+
+        /// <summary>
+        /// 同页签同组号的物品一同出现/消失。用于随机商店.刷新逻辑用代码实现。非随机刷商品可以不填写。
+        /// </summary>
+        [DataMember]
+        public int? GroupNumber { get; set; }
+
+        /// <summary>
+        /// 物品模板Id。
+        /// </summary>
+        [DataMember]
+        public string ItemTemplateId { get; set; }
+
+        /// <summary>
+        /// 是否自动使用。仅对可使用物品有效。
+        /// </summary>
+        [DataMember]
+        public bool AutoUse { get; set; }
+
+        /// <summary>
+        /// 首次销售日期
+        /// </summary>
+        [DataMember]
+        public DateTime StartDateTime { get; set; }
+
+        /// <summary>
+        /// 多长周期销售一次。d天,w周,m月,y年。不填写则表示无周期(唯一周期)。
+        /// </summary>
+        [DataMember]
+        public string SellPeriod { get; set; }
+
+        /// <summary>
+        /// 销售周期的单位字符(小写)。n表示无限。
+        /// </summary>
+        [DataMember]
+        public char SellPeriodUnit => string.IsNullOrWhiteSpace(SellPeriod) ? 'n' : char.ToLower(SellPeriod[^1]);
+
+        /// <summary>
+        /// 销售周期的单位的标量数值。
+        /// </summary>
+        [DataMember]
+        public decimal SellPeriodValue => !string.IsNullOrWhiteSpace(SellPeriod) && decimal.TryParse(SellPeriod[0..^1], out var val) ? val : -1;
+
+        /// <summary>
+        /// 销售的最大数量。-1表示不限制。
+        /// </summary>
+        [DataMember]
+        public decimal MaxCount { get; set; }
+
+        /// <summary>
+        /// 销售一次持续时间,d天,w周,m月,y年。仅在有效期内才出售，不填则是永久有效
+        /// </summary>
+        [DataMember]
+        public string ValidPeriod { get; set; }
+
+        /// <summary>
+        /// 购买开始的时间点。
+        /// </summary>
+        [DataMember]
+        public DateTime Start { get; set; }
+
+        /// <summary>
+        /// 此次购买结束的时间点。
+        /// </summary>
+        [DataMember]
+        public DateTime End { get; set; }
+
+        /// <summary>
+        /// 已经购买的数量。新周期此成员是0。
+        /// </summary>
+        [DataMember]
+        public decimal CountOfBuyed { get; set; }
+
+    }
+    #endregion 商城相关
 }
 #pragma warning restore IDE0074 // 使用复合分配
