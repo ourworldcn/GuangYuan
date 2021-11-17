@@ -1,7 +1,6 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
-using OW.Game.Expression;
 using OW.Game.Store;
 using System;
 using System.Collections.Concurrent;
@@ -25,40 +24,6 @@ namespace GuangYuan.GY001.UserDb
         public string Name { get; set; }
 
         public string Val { get; set; }
-    }
-
-    public class GameThingPropertyHelper : GamePropertyHelper
-    {
-        /// <summary>
-        /// 获取对象的属性、
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="propertyName"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override object GetValue(object obj, string propertyName, object defaultValue = default)
-        {
-            var _ = obj as GameItemBase;
-            var dic = _?.Properties;
-            return dic == null ? defaultValue : dic.GetValueOrDefault(propertyName, defaultValue);
-        }
-
-        /// <summary>
-        /// 设置对象的属性。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="propertyName"></param>
-        /// <param name="val"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool SetValue(object obj, string propertyName, object val)
-        {
-            var _ = obj as GameItemBase;
-            var dic = _?.Properties;
-            dic[propertyName] = val;
-            return true;
-        }
     }
 
     /// <summary>
@@ -230,20 +195,6 @@ namespace GuangYuan.GY001.UserDb
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsStc(this GameItemBase obj, out decimal result) =>
             obj.TryGetDecimalPropertyValue("stc", out result);
-
-    }
-
-    /// <summary>
-    /// <see cref="GameThingBase"/>用到的服务。
-    /// </summary>
-    public interface IGameThingHelper
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public GameItemTemplate GetTemplateFromeId(Guid id);
 
     }
 

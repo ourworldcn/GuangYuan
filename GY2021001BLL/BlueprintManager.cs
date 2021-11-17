@@ -5,7 +5,6 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
-using OW.Game.Expression;
 using OW.Game.Item;
 using OW.Game.Store;
 using System;
@@ -117,484 +116,418 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
-    public class GameManagerPropertyHelper : GameThingPropertyHelper
-    {
-        private readonly GameItemManager _Manager;
+    //public class BlueprintData
+    //{
+    //    private IServiceProvider _Service;
+    //    private readonly BlueprintTemplate _Template;
 
-        public GameManagerPropertyHelper(GameItemManager manager)
-        {
-            _Manager = manager;
-        }
+    //    public IServiceProvider Service { get => _Service; set => _Service = value; }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override object GetValue(object obj, string propertyName, object defaultValue = null)
-        {
-            if (!(obj is GameItem gameItem))
-            {
-                return defaultValue;
-            }
+    //    public BlueprintTemplate Template => _Template;
 
-            return _Manager.GetPropertyValue(gameItem, propertyName);
-        }
+    //    private readonly List<FormulaData> _Formulas;
+    //    public List<FormulaData> Formulas { get => _Formulas; }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool SetValue(object obj, string propertyName, object val)
-        {
-            if (obj is GameItem gameItem)
-                return _Manager.SetPropertyValue(gameItem, propertyName, val);
-            else
-                return false;
+    //    public BlueprintData(IServiceProvider service, BlueprintTemplate template)
+    //    {
+    //        _Service = service;
+    //        _Template = template;
+    //        _Formulas = template.FormulaTemplates.Select(c => new FormulaData(c, this)).ToList();
+    //    }
 
-        }
-    }
+    //    public void Match(ApplyBlueprintDatas datas)
+    //    {
+    //        foreach (FormulaData item in Formulas)
+    //        {
+    //            item.Match(datas);
+    //        }
+    //    }
+    //}
 
-    public class BlueprintData
-    {
-        private IServiceProvider _Service;
-        private readonly BlueprintTemplate _Template;
+    //public class FormulaData
+    //{
+    //    private readonly BpFormulaTemplate _Template;
+    //    private readonly BlueprintData _Parent;
 
-        public IServiceProvider Service { get => _Service; set => _Service = value; }
+    //    public FormulaData(BpFormulaTemplate template, BlueprintData parent)
+    //    {
+    //        _Parent = parent;
+    //        _Template = template;
+    //        _Materials = template.BptfItemTemplates.Select(c => new MaterialData(c, this)).ToList();
+    //        template.SetService(parent.Service);
+    //    }
 
-        public BlueprintTemplate Template => _Template;
+    //    public BpFormulaTemplate Template => _Template;
 
-        private readonly List<FormulaData> _Formulas;
-        public List<FormulaData> Formulas { get => _Formulas; }
+    //    public BlueprintData Parent => _Parent;
 
-        public BlueprintData(IServiceProvider service, BlueprintTemplate template)
-        {
-            _Service = service;
-            _Template = template;
-            _Formulas = template.FormulaTemplates.Select(c => new FormulaData(c, this)).ToList();
-        }
+    //    /// <summary>
+    //    /// 脚本的运行时环境。
+    //    /// </summary>
+    //    private GameExpressionRuntimeEnvironment _RuntimeEnvironment;
 
-        public void Apply(ApplyBlueprintDatas datas)
-        {
-            VWorld world = Service.GetRequiredService<VWorld>();
-            FormulaData[] formus = Formulas.OrderBy(c => c.Template.OrderNumber).ToArray();
+    //    /// <summary>
+    //    /// 脚本的运行时环境。每个公式独立。
+    //    /// </summary>
+    //    public GameExpressionRuntimeEnvironment RuntimeEnvironment => _RuntimeEnvironment ??= new GameExpressionRuntimeEnvironment(Template?.CompileEnvironment);
 
-            foreach (FormulaData item in formus)    //执行所有公式
-            {
-                if (!item.IsMatched) //若不可用
-                {
-                    continue;
-                }
+    //    private readonly List<MaterialData> _Materials;
+    //    public List<MaterialData> Materials { get => _Materials; }
 
-                if (!item.Template.ProbExpression.TryGetValue(item.RuntimeEnvironment, out object probObj) || !OwHelper.TryGetDecimal(probObj, out decimal prob))  //若无法得到命中概率
-                {
-                    continue;
-                }
+    //    public bool IsMatched { get; set; }
 
-                if (!world.IsHit((double)prob)) //若未命中
-                {
-                    continue;
-                }
+    //    /// <summary>
+    //    /// 
+    //    /// </summary>
+    //    /// <param name="datas"></param>
+    //    /// <returns></returns>
+    //    public bool Match(ApplyBlueprintDatas datas)
+    //    {
+    //        List<MaterialData> tmpList = Materials.Where(c => !c.Template.IsNew) //排除新建物品
+    //            .ToList();
+    //        List<GameItem> coll = datas.GameItems.Concat(OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children)).ToList();    //要遍历的所有物品，确保指定物品最先被匹配
+    //        RuntimeEnvironment.StartScope();
+    //        try
+    //        {
+    //            while (tmpList.Count > 0)   //当还有未匹配的原料时
+    //            {
+    //                bool succ = false;
+    //                for (int i = tmpList.Count - 1; i >= 0; i--)
+    //                {
+    //                    MaterialData item = tmpList[i];
+    //                    if (item.Match(coll, out GameItem gameItem))
+    //                    {
+    //                        tmpList.RemoveAt(i);
+    //                        while (coll.Remove(gameItem))
+    //                        {
+    //                            ;
+    //                        }
 
-                if (item.Apply(datas))   //若执行蓝图成功
-                {
-                    datas.FormulaIds.Add(item.Template.Id);
-                    if (!item.Template.IsContinue)  //若无需继续
-                    {
-                        break;
-                    }
-                }
-            }
-            ChangeItem.Reduce(datas.ChangeItems);
-            return;
-        }
+    //                        succ = true;
+    //                    }
+    //                }
+    //                if (!succ)   //若本轮没有任何一个原料匹配上
+    //                {
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //        finally
+    //        {
+    //            IsMatched = tmpList.All(c => c.Template.IsNew || c.Template.AllowEmpty);  //所有非必要或已存在原料项都匹配了则说明成功
+    //            RuntimeEnvironment.EndScope(IsMatched);
+    //        }
+    //        return IsMatched;
+    //    }
 
-        public void Match(ApplyBlueprintDatas datas)
-        {
-            foreach (FormulaData item in Formulas)
-            {
-                item.Match(datas);
-            }
-        }
-    }
+    //    public bool Apply(ApplyBlueprintDatas datas)
+    //    {
+    //        bool succ = false;
+    //        if (!IsMatched)
+    //        {
+    //            datas.DebugMessage = "未匹配的公式不能应用。";
+    //            datas.HasError = true;
+    //            return succ;
+    //        }
+    //        try
+    //        {
+    //            succ = Materials.Where(c => c.Template.IsNew).All(c => c.CreateNewItem());
 
-    public class FormulaData
-    {
-        private readonly BpFormulaTemplate _Template;
-        private readonly BlueprintData _Parent;
+    //            if (succ)
+    //            {
+    //                datas.GameChar.GameUser.DbContext.AddRange(Materials.Where(c => c.Template.IsNew).Select(c => c.GetMatched()));
+    //                succ = Materials.OrderBy(c => c.Template.PropertiesChanges)   //TO DO
+    //                    .All(c => c.Apply(datas));
+    //            }
+    //            else
+    //            {
+    //                datas.DebugMessage = "至少有一个新建物品无法创建";
+    //                datas.HasError = true;
+    //            }
+    //        }
+    //        catch (Exception err)
+    //        {
+    //            Debug.WriteLine(err.Message);   //TO DO
+    //            datas.HasError = true;
+    //        }
+    //        return succ;
+    //    }
+    //}
 
-        public FormulaData(BpFormulaTemplate template, BlueprintData parent)
-        {
-            _Parent = parent;
-            _Template = template;
-            _Materials = template.BptfItemTemplates.Select(c => new MaterialData(c, this)).ToList();
-            template.SetService(parent.Service);
-        }
+    //[DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
+    //public class MaterialData
+    //{
+    //    private readonly FormulaData _Parent;
+    //    private readonly BpItemTemplate _Template;
 
-        public BpFormulaTemplate Template => _Template;
+    //    public MaterialData(BpItemTemplate template, FormulaData parent)
+    //    {
+    //        _Parent = parent;
+    //        _Template = template;
+    //    }
 
-        public BlueprintData Parent => _Parent;
+    //    public BpItemTemplate Template => _Template;
 
-        /// <summary>
-        /// 脚本的运行时环境。
-        /// </summary>
-        private GameExpressionRuntimeEnvironment _RuntimeEnvironment;
+    //    public FormulaData Parent => _Parent;
 
-        /// <summary>
-        /// 脚本的运行时环境。每个公式独立。
-        /// </summary>
-        public GameExpressionRuntimeEnvironment RuntimeEnvironment => _RuntimeEnvironment ??= new GameExpressionRuntimeEnvironment(Template?.CompileEnvironment);
+    //    private decimal? _CountIncrement;
 
-        private readonly List<MaterialData> _Materials;
-        public List<MaterialData> Materials { get => _Materials; }
+    //    /// <summary>
+    //    /// 增量,仅计算一次，避免反复计算随机数。
+    //    /// </summary>
+    //    public decimal CountIncrement
+    //    {
+    //        get
+    //        {
+    //            if (_CountIncrement is null)    //若尚未计算
+    //            {
+    //                GetIncrement(out decimal min, out decimal max);
+    //                _CountIncrement = (decimal)VWorld.WorldRandom.NextDouble() * (max - min) + min;
+    //            }
+    //            return _CountIncrement.Value;
+    //        }
+    //    }
 
-        public bool IsMatched { get; set; }
+    //    /// <summary>
+    //    /// 数量变化的概率。
+    //    /// </summary>
+    //    public decimal CountIncrementProb
+    //    {
+    //        get
+    //        {
+    //            decimal result = decimal.Zero;
+    //            if (!Template.CountProbExpression.TryGetValue(Parent.RuntimeEnvironment, out var resultObj) || !OwHelper.TryGetDecimal(resultObj, out result))
+    //            {
+    //                Debug.Fail($"无法获取增量发生的概率。原料Id={Template.Id}({Template.Remark})");
+    //            }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="datas"></param>
-        /// <returns></returns>
-        public bool Match(ApplyBlueprintDatas datas)
-        {
-            List<MaterialData> tmpList = Materials.Where(c => !c.Template.IsNew) //排除新建物品
-                .ToList();
-            List<GameItem> coll = datas.GameItems.Concat(OwHelper.GetAllSubItemsOfTree(datas.GameChar.GameItems, c => c.Children)).ToList();    //要遍历的所有物品，确保指定物品最先被匹配
-            RuntimeEnvironment.StartScope();
-            try
-            {
-                while (tmpList.Count > 0)   //当还有未匹配的原料时
-                {
-                    bool succ = false;
-                    for (int i = tmpList.Count - 1; i >= 0; i--)
-                    {
-                        MaterialData item = tmpList[i];
-                        if (item.Match(coll, out GameItem gameItem))
-                        {
-                            tmpList.RemoveAt(i);
-                            while (coll.Remove(gameItem))
-                            {
-                                ;
-                            }
+    //            return result;
+    //        }
+    //    }
 
-                            succ = true;
-                        }
-                    }
-                    if (!succ)   //若本轮没有任何一个原料匹配上
-                    {
-                        break;
-                    }
-                }
-            }
-            finally
-            {
-                IsMatched = tmpList.All(c => c.Template.IsNew || c.Template.AllowEmpty);  //所有非必要或已存在原料项都匹配了则说明成功
-                RuntimeEnvironment.EndScope(IsMatched);
-            }
-            return IsMatched;
-        }
+    //    private decimal? _Min, _Max;
+    //    /// <summary>
+    //    /// 最小和最大的增量值。仅计算一次，后续调用返回缓存，避免多次计算随机数。
+    //    /// </summary>
+    //    public bool GetIncrement(out decimal min, out decimal max)
+    //    {
+    //        if (_Min is null)
+    //        {
+    //            Debug.Assert(_Max is null);
+    //            GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
+    //            bool succ = Template.TryGetLowerBound(env, out decimal lower);
+    //            Debug.Assert(succ);
+    //            succ = Template.TryGetUpperBound(env, out decimal upper);
+    //            Debug.Assert(succ);
+    //            _Min = Math.Min(upper, lower);
+    //            _Max = Math.Max(upper, lower);
+    //        }
+    //        min = _Min.Value;
+    //        max = _Max.Value;
+    //        return true;
+    //    }
 
-        public bool Apply(ApplyBlueprintDatas datas)
-        {
-            bool succ = false;
-            if (!IsMatched)
-            {
-                datas.DebugMessage = "未匹配的公式不能应用。";
-                datas.HasError = true;
-                return succ;
-            }
-            try
-            {
-                succ = Materials.Where(c => c.Template.IsNew).All(c => c.CreateNewItem());
+    //    /// <summary>
+    //    /// 找到匹配的原料。
+    //    /// </summary>
+    //    /// <param name="gameItems">搜索的物品集合。</param>
+    //    /// <param name="matchItem">返回true时，这个出参包含匹配的物品对象。</param>
+    //    /// <returns></returns>
+    //    public bool Match(IEnumerable<GameItem> gameItems, out GameItem matchItem)
+    //    {
+    //        bool result = false;
+    //        matchItem = null;
+    //        IEnumerable<GameItem> coll = gameItems;
+    //        GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
+    //        env.StartScope();
+    //        try
+    //        {
+    //            ConstGExpression constExpr;
+    //            string id = Template.Id.ToString();
+    //            if (env.Variables.TryGetValue(id, out GameExpressionBase oRxpr))
+    //            {
+    //                Debug.Assert(oRxpr is ConstGExpression);
+    //                constExpr = oRxpr as ConstGExpression;
+    //            }
+    //            else
+    //            {
+    //                env.Variables[id] = constExpr = new ConstGExpression();
+    //            }
 
-                if (succ)
-                {
-                    datas.GameChar.GameUser.DbContext.AddRange(Materials.Where(c => c.Template.IsNew).Select(c => c.GetMatched()));
-                    succ = Materials.OrderBy(c => c.Template.PropertiesChanges)   //TO DO
-                        .All(c => c.Apply(datas));
-                }
-                else
-                {
-                    datas.DebugMessage = "至少有一个新建物品无法创建";
-                    datas.HasError = true;
-                }
-            }
-            catch (Exception err)
-            {
-                Debug.WriteLine(err.Message);   //TO DO
-                datas.HasError = true;
-            }
-            return succ;
-        }
-    }
+    //            foreach (GameItem item in coll)
+    //            {
+    //                bool _ = constExpr.SetValue(env, item);   //设置对象
+    //                Debug.Assert(_);
+    //                if (!Template.ConditionalExpression.TryGetValue(env, out object matchObj) || !(matchObj is bool isMatth) || !isMatth) //若不符合条件
+    //                {
+    //                    continue;
+    //                }
 
-    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
-    public class MaterialData
-    {
-        private readonly FormulaData _Parent;
-        private readonly BpItemTemplate _Template;
+    //                if (OwHelper.TryGetDecimal(Template.CountProbExpression.GetValueOrDefault(env, 0), out decimal countProp) && countProp > 0) //若概率可能大于0 TO DO
+    //                {
+    //                    //校验数量
+    //                    if (OwHelper.TryGetDecimal(Template.CountLowerBoundExpression.GetValueOrDefault(env, 0), out decimal lower))
+    //                    {
+    //                        ;
+    //                    }
 
-        public MaterialData(BpItemTemplate template, FormulaData parent)
-        {
-            _Parent = parent;
-            _Template = template;
-        }
+    //                    if (OwHelper.TryGetDecimal(Template.CountUpperBoundExpression.GetValueOrDefault(env, 0), out decimal upper))
+    //                    {
+    //                        ;
+    //                    }
 
-        public BpItemTemplate Template => _Template;
+    //                    if (Math.Min(lower, upper) + (item.Count ?? 0) < 0) //若数量不够
+    //                    {
+    //                        continue;
+    //                    }
+    //                }
+    //                matchItem = item;
+    //                result = true;
+    //                break;
+    //            }
+    //        }
+    //        finally
+    //        {
+    //            env.EndScope(result);
+    //        }
+    //        return result;
+    //    }
 
-        public FormulaData Parent => _Parent;
+    //    public bool Apply(ApplyBlueprintDatas datas)
+    //    {
+    //        GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
+    //        GameItem gameItem;
+    //        GameItemManager gim;
+    //        //获取该原料对象
+    //        if (!env.Variables.TryGetValue(Template.Id.ToString(), out GameExpressionBase expr) || !expr.TryGetValue(env, out object obj) || !(obj is GameItem))
+    //        {
+    //            return false || Template.AllowEmpty;
+    //        }
+    //        else
+    //        {
+    //            gameItem = obj as GameItem;
+    //        }
+    //        //修改数量
+    //        if (!Template.CountProbExpression.TryGetValue(env, out object countPropObj) || !OwHelper.TryGetDecimal(countPropObj, out _)) //若无法获取概率
+    //        {
+    //            return false;
+    //        }
 
-        private decimal? _CountIncrement;
+    //        VWorld world = Parent.Parent.Service.GetRequiredService<VWorld>();
+    //        gim = Parent.Parent.Service.GetService<GameItemManager>();
+    //        if (world.IsHit((double)CountIncrementProb)) //若需要增量
+    //        {
+    //            decimal inc = CountIncrement;
+    //            if (gameItem.Count + inc < 0)
+    //            {
+    //                return false;
+    //            }
 
-        /// <summary>
-        /// 增量,仅计算一次，避免反复计算随机数。
-        /// </summary>
-        public decimal CountIncrement
-        {
-            get
-            {
-                if (_CountIncrement is null)    //若尚未计算
-                {
-                    GetIncrement(out decimal min, out decimal max);
-                    _CountIncrement = (decimal)VWorld.WorldRandom.NextDouble() * (max - min) + min;
-                }
-                return _CountIncrement.Value;
-            }
-        }
+    //            var count = inc + gameItem.Count.Value;
+    //            bool _ = gim.SetPropertyValue(gameItem, "count", count);
+    //            Debug.Assert(_);
+    //        }
+    //        if (!Template.PropertiesChangesExpression.TryGetValue(env, out _))
+    //        {
+    //            return false;
+    //        }
 
-        /// <summary>
-        /// 数量变化的概率。
-        /// </summary>
-        public decimal CountIncrementProb
-        {
-            get
-            {
-                decimal result = decimal.Zero;
-                if (!Template.CountProbExpression.TryGetValue(Parent.RuntimeEnvironment, out var resultObj) || !OwHelper.TryGetDecimal(resultObj, out result))
-                {
-                    Debug.Fail($"无法获取增量发生的概率。原料Id={Template.Id}({Template.Remark})");
-                }
+    //        if (gameItem.Count.Value > 0) //若有剩余
+    //        {
+    //            if (Template.IsNew)
+    //            {
+    //                datas.ChangeItems.AddToAdds(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
+    //            }
+    //            else
+    //            {
+    //                datas.ChangeItems.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
+    //            }
+    //        }
+    //        else //若没有剩余
+    //        {
+    //            datas.ChangeItems.AddToRemoves(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem.Id);
+    //        }
 
-                return result;
-            }
-        }
+    //        return true;
+    //    }
 
-        private decimal? _Min, _Max;
-        /// <summary>
-        /// 最小和最大的增量值。仅计算一次，后续调用返回缓存，避免多次计算随机数。
-        /// </summary>
-        public bool GetIncrement(out decimal min, out decimal max)
-        {
-            if (_Min is null)
-            {
-                Debug.Assert(_Max is null);
-                GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
-                bool succ = Template.TryGetLowerBound(env, out decimal lower);
-                Debug.Assert(succ);
-                succ = Template.TryGetUpperBound(env, out decimal upper);
-                Debug.Assert(succ);
-                _Min = Math.Min(upper, lower);
-                _Max = Math.Max(upper, lower);
-            }
-            min = _Min.Value;
-            max = _Max.Value;
-            return true;
-        }
+    //    private string GetDebuggerDisplay()
+    //    {
+    //        string str1 = string.IsNullOrWhiteSpace(Template?.DisplayName) ? Template?.Remark : Template?.DisplayName;
+    //        return $"{{{str1},Matched={GetMatched()}}}";
+    //    }
 
-        /// <summary>
-        /// 找到匹配的原料。
-        /// </summary>
-        /// <param name="gameItems">搜索的物品集合。</param>
-        /// <param name="matchItem">返回true时，这个出参包含匹配的物品对象。</param>
-        /// <returns></returns>
-        public bool Match(IEnumerable<GameItem> gameItems, out GameItem matchItem)
-        {
-            bool result = false;
-            matchItem = null;
-            IEnumerable<GameItem> coll = gameItems;
-            GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
-            env.StartScope();
-            try
-            {
-                ConstGExpression constExpr;
-                string id = Template.Id.ToString();
-                if (env.Variables.TryGetValue(id, out GameExpressionBase oRxpr))
-                {
-                    Debug.Assert(oRxpr is ConstGExpression);
-                    constExpr = oRxpr as ConstGExpression;
-                }
-                else
-                {
-                    env.Variables[id] = constExpr = new ConstGExpression();
-                }
+    //    /// <summary>
+    //    /// 获取改原料对象当前匹配的对象。
+    //    /// </summary>
+    //    /// <returns></returns>
+    //    //public object GetMatched()
+    //    //{
+    //    //    if (null == Template)
+    //    //    {
+    //    //        return null;
+    //    //    }
 
-                foreach (GameItem item in coll)
-                {
-                    bool _ = constExpr.SetValue(env, item);   //设置对象
-                    Debug.Assert(_);
-                    if (!Template.ConditionalExpression.TryGetValue(env, out object matchObj) || !(matchObj is bool isMatth) || !isMatth) //若不符合条件
-                    {
-                        continue;
-                    }
+    //    //    GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
+    //    //    if (!env.TryGetVariableValue(Template.Id.ToString(), out object result))
+    //    //    {
+    //    //        return null;
+    //    //    }
 
-                    if (OwHelper.TryGetDecimal(Template.CountProbExpression.GetValueOrDefault(env, 0), out decimal countProp) && countProp > 0) //若概率可能大于0 TO DO
-                    {
-                        //校验数量
-                        if (OwHelper.TryGetDecimal(Template.CountLowerBoundExpression.GetValueOrDefault(env, 0), out decimal lower))
-                        {
-                            ;
-                        }
+    //    //    return result;
+    //    //}
 
-                        if (OwHelper.TryGetDecimal(Template.CountUpperBoundExpression.GetValueOrDefault(env, 0), out decimal upper))
-                        {
-                            ;
-                        }
+    //    /// <summary>
+    //    /// 返回设置模板Id的表达式。
+    //    /// </summary>
+    //    /// <returns></returns>
+    //    //public BinaryGExpression GetSetTIdExpr()
+    //    //{
+    //    //    BinaryGExpression setTidExpr = (Template.PropertiesChangesExpression as BlockGExpression).Expressions.OfType<BinaryGExpression>().FirstOrDefault(c =>
+    //    //    {
+    //    //        if (c.Left is ReferenceGExpression refExpr && refExpr.Name == "tid" && refExpr.ObjectId == Template.Id.ToString() && c.Operator == "=")    //若是设置此条目的模板
+    //    //        {
+    //    //            return true;
+    //    //        }
 
-                        if (Math.Min(lower, upper) + (item.Count ?? 0) < 0) //若数量不够
-                        {
-                            continue;
-                        }
-                    }
-                    matchItem = item;
-                    result = true;
-                    break;
-                }
-            }
-            finally
-            {
-                env.EndScope(result);
-            }
-            return result;
-        }
+    //    //        return false;
+    //    //    });
+    //    //    return setTidExpr;
+    //    //}
 
-        public bool Apply(ApplyBlueprintDatas datas)
-        {
-            GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
-            GameItem gameItem;
-            GameItemManager gim;
-            //获取该原料对象
-            if (!env.Variables.TryGetValue(Template.Id.ToString(), out GameExpressionBase expr) || !expr.TryGetValue(env, out object obj) || !(obj is GameItem))
-            {
-                return false || Template.AllowEmpty;
-            }
-            else
-            {
-                gameItem = obj as GameItem;
-            }
-            //修改数量
-            if (!Template.CountProbExpression.TryGetValue(env, out object countPropObj) || !OwHelper.TryGetDecimal(countPropObj, out _)) //若无法获取概率
-            {
-                return false;
-            }
+    //    /// <summary>
+    //    /// 创建新建项。
+    //    /// </summary>
+    //    /// <returns>true成功创建，false该项不是新建物品或无法找到指定模板Id。</returns>
+    //    //public bool CreateNewItem()
+    //    //{
+    //    //    GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
 
-            VWorld world = Parent.Parent.Service.GetRequiredService<VWorld>();
-            gim = Parent.Parent.Service.GetService<GameItemManager>();
-            if (world.IsHit((double)CountIncrementProb)) //若需要增量
-            {
-                decimal inc = CountIncrement;
-                if (gameItem.Count + inc < 0)
-                {
-                    return false;
-                }
+    //    //    BinaryGExpression setTidExpr = GetSetTIdExpr();
+    //    //    if (null == setTidExpr || !setTidExpr.Right.TryGetValue(env, out object tidObj) || !OwHelper.TryGetGuid(tidObj, out Guid tid))
+    //    //    {
+    //    //        //datas.ErrorMessage = "未能找到新建物品的模板Id。";
+    //    //        //datas.HasError = true;
+    //    //        return false;
+    //    //    }
+    //    //    GameItemManager gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
 
-                var count = inc + gameItem.Count.Value;
-                bool _ = gim.SetPropertyValue(gameItem, "count", count);
-                Debug.Assert(_);
-            }
-            if (!Template.PropertiesChangesExpression.TryGetValue(env, out _))
-            {
-                return false;
-            }
+    //    //    GameItem gameItem = new GameItem();
+    //    //    gim.World.EventsManager.GameItemCreated(gameItem, tid, null, null);
 
-            if (gameItem.Count.Value > 0) //若有剩余
-            {
-                if (Template.IsNew)
-                {
-                    datas.ChangeItems.AddToAdds(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
-                }
-                else
-                {
-                    datas.ChangeItems.AddToChanges(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem);
-                }
-            }
-            else //若没有剩余
-            {
-                datas.ChangeItems.AddToRemoves(gameItem.ParentId ?? gameItem.OwnerId.Value, gameItem.Id);
-            }
+    //    //    string keyName = Template.Id.ToString();
+    //    //    if (env.Variables.TryGetValue(keyName, out GameExpressionBase expr) && expr is ConstGExpression)   //若已经存在该变量
+    //    //    {
+    //    //        return expr.SetValue(env, gameItem);
+    //    //    }
+    //    //    else
+    //    //    {
+    //    //        env.Variables[keyName] = new ConstGExpression(gameItem);
+    //    //    }
 
-            return true;
-        }
-
-        private string GetDebuggerDisplay()
-        {
-            string str1 = string.IsNullOrWhiteSpace(Template?.DisplayName) ? Template?.Remark : Template?.DisplayName;
-            return $"{{{str1},Matched={GetMatched()}}}";
-        }
-
-        /// <summary>
-        /// 获取改原料对象当前匹配的对象。
-        /// </summary>
-        /// <returns></returns>
-        public object GetMatched()
-        {
-            if (null == Template)
-            {
-                return null;
-            }
-
-            GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
-            if (!env.TryGetVariableValue(Template.Id.ToString(), out object result))
-            {
-                return null;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// 返回设置模板Id的表达式。
-        /// </summary>
-        /// <returns></returns>
-        public BinaryGExpression GetSetTIdExpr()
-        {
-            BinaryGExpression setTidExpr = (Template.PropertiesChangesExpression as BlockGExpression).Expressions.OfType<BinaryGExpression>().FirstOrDefault(c =>
-            {
-                if (c.Left is ReferenceGExpression refExpr && refExpr.Name == "tid" && refExpr.ObjectId == Template.Id.ToString() && c.Operator == "=")    //若是设置此条目的模板
-                {
-                    return true;
-                }
-
-                return false;
-            });
-            return setTidExpr;
-        }
-
-        /// <summary>
-        /// 创建新建项。
-        /// </summary>
-        /// <returns>true成功创建，false该项不是新建物品或无法找到指定模板Id。</returns>
-        public bool CreateNewItem()
-        {
-            GameExpressionRuntimeEnvironment env = Parent.RuntimeEnvironment;
-
-            BinaryGExpression setTidExpr = GetSetTIdExpr();
-            if (null == setTidExpr || !setTidExpr.Right.TryGetValue(env, out object tidObj) || !OwHelper.TryGetGuid(tidObj, out Guid tid))
-            {
-                //datas.ErrorMessage = "未能找到新建物品的模板Id。";
-                //datas.HasError = true;
-                return false;
-            }
-            GameItemManager gim = Parent.Parent.Service.GetRequiredService<GameItemManager>();
-
-            GameItem gameItem = new GameItem();
-            gim.World.EventsManager.GameItemCreated(gameItem, tid, null, null);
-
-            string keyName = Template.Id.ToString();
-            if (env.Variables.TryGetValue(keyName, out GameExpressionBase expr) && expr is ConstGExpression)   //若已经存在该变量
-            {
-                return expr.SetValue(env, gameItem);
-            }
-            else
-            {
-                env.Variables[keyName] = new ConstGExpression(gameItem);
-            }
-
-            return true;
-        }
-    }
+    //    //    return true;
+    //    //}
+    //}
 
     /// <summary>
     /// 使用蓝图的数据。
@@ -825,6 +758,22 @@ namespace GuangYuan.GY001.BLL
                         ShenwenTupo(datas);
                         succ = true;
                         break;
+                    case "c7051e47-0a73-4319-85dc-7b02f26f14f4": //兽栏背包扩容
+                        if(datas.GameItems.Count==0)    //若没指定物品
+                        {
+                            datas.GameItems.Add(datas.GameChar.GetShoulanBag());
+                        }
+                        LevelUp(datas);
+                        succ = true;
+                        break;
+                    case "b5288563-0543-4d4b-b466-83386ccf188c":    //孵化槽解锁
+                        if(datas.GameItems.Count==0)    //若没指定物品
+                        {
+                            datas.GameItems.Add(datas.GameChar.GetFuhuaSlot());
+                        }
+                        LevelUp(datas);
+                        succ = true;
+                        break;
                     default:
                         succ = false;
                         break;
@@ -851,6 +800,7 @@ namespace GuangYuan.GY001.BLL
             var charLv = datas.GameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);    //角色等级
             var giLv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName); //坐骑等级
             var innerCount = (charLv + 1) * 2 - (giLv + 1); //计算实际可以升级的次数
+            innerCount = Math.Min(datas.Count, innerCount);
             if (innerCount <= 0) //若已经不可再升级
             {
                 datas.HasError = true;
@@ -1609,56 +1559,35 @@ namespace GuangYuan.GY001.BLL
                 datas.GameItems.AddRange(tmpList);
                 if (!Dispatch(datas))
                 {
-                    BlueprintData data = new BlueprintData(Service, datas.Blueprint);
-                    for (int i = 0; i < datas.Count; i++)
-                    {
-                        data.Match(datas);
-                        if (!data.Formulas.Any(c => c.IsMatched))  //若已经没有符合条件的公式。
-                        {
-                            datas.DebugMessage = $"计划制造{datas.Count}次,实际成功{i}次后，原料不足";
-                            break;
-                        }
-                        foreach (FormulaData item in data.Formulas)
-                        {
-                            if (!item.IsMatched)
-                            {
-                                continue;
-                            }
+                    datas.HasError = true;
+                    datas.DebugMessage = "未知蓝图。";
+                    return;
+                    //BlueprintData data = new BlueprintData(Service, datas.Blueprint);
+                    //for (int i = 0; i < datas.Count; i++)
+                    //{
+                    //    data.Match(datas);
+                    //    if (!data.Formulas.Any(c => c.IsMatched))  //若已经没有符合条件的公式。
+                    //    {
+                    //        datas.DebugMessage = $"计划制造{datas.Count}次,实际成功{i}次后，原料不足";
+                    //        break;
+                    //    }
+                    //    foreach (FormulaData item in data.Formulas)
+                    //    {
+                    //        if (!item.IsMatched)
+                    //        {
+                    //            continue;
+                    //        }
 
-                            foreach (MaterialData meter in item.Materials)
-                            {
-                                meter.Template.VariableDeclaration.OfType<ReferenceGExpression>().All(c => c.Cache(item.RuntimeEnvironment));
-                            }
-                        }
-                        data.Apply(datas);
-                        datas.SuccCount++;
-                    }
+                    //        foreach (MaterialData meter in item.Materials)
+                    //        {
+                    //            meter.Template.VariableDeclaration.OfType<ReferenceGExpression>().All(c => c.Cache(item.RuntimeEnvironment));
+                    //        }
+                    //    }
+                    //    data.Apply(datas);
+                    //    datas.SuccCount++;
+                    //}
                 }
                 ChangeItem.Reduce(datas.ChangeItems);    //压缩变化数据
-                //switch (datas.Blueprint.Id.ToString("D").ToLower())
-                //{
-                //    case "8b4ac76c-d8cc-4300-95ca-668350149821": //针对孵化蓝图
-                //        GameItem tmp = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);  //孵化槽
-                //        ChangeItem slotFh = datas.ChangeItems.FirstOrDefault(c => c.ContainerId == tmp.Id);    //孵化容器变化数据
-                //        if (slotFh == null)
-                //        {
-                //            break;
-                //        }
-
-                //        GameItem gi = slotFh.Adds.FirstOrDefault();    //孵化的组合
-                //        if (gi == null)
-                //        {
-                //            break;
-                //        }
-
-                //        ChangeItem containerMounts = datas.ChangeItems.FirstOrDefault(c => c.ContainerId == gi.Id);    //组合容器
-                //        Debug.Assert(containerMounts.Adds.Count == 2);
-                //        gi.Children.AddRange(containerMounts.Adds);
-                //        datas.ChangeItems.Remove(containerMounts);
-                //        break;
-                //    default:
-                //        break;
-                //}
                 World.CharManager.NotifyChange(gu);
                 if (!datas.HasError) //若无错
                     World.MissionManager.ScanAsync(datas.GameChar);

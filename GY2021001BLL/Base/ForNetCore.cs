@@ -12,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OW.Game;
-using OW.Game.Expression;
 using OW.Game.Item;
 using OW.Game.Mission;
 using System;
@@ -22,8 +21,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using static GuangYuan.GY001.BLL.ShoppingSlotView;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -92,6 +93,9 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void CreateNewUserAndChar()
         {
             Task.Run(SendMail);
@@ -187,8 +191,13 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            (DateTime, decimal) vt = (DateTime.UtcNow, 1.3m);
-            var str = vt.ToString();
+            var dic = new Dictionary<string, int>();
+            Random random = new Random();
+            for (int i = 0; i < 10; i++)
+            {
+                dic.Add(i.ToString(), random.Next());
+            }
+            var str = JsonSerializer.Serialize(dic, dic.GetType());
         }
 
         /// <summary>
@@ -328,12 +337,10 @@ namespace GuangYuan.GY001.BLL
                 CombatStart = SpecificProject.CombatStart,
                 CombatEnd = SpecificProject.CombatEnd,
             }));
-            services.AddSingleton<GamePropertyHelper, GameManagerPropertyHelper>();
             services.AddSingleton(c => new BlueprintManager(c, new BlueprintManagerOptions()
             {
                 DoApply = SpecificProject.ApplyBlueprint,
             }));
-            services.AddSingleton<IGameThingHelper>(c => c.GetService<GameItemManager>());
 
             services.AddSingleton(c => new GameSocialManager(c, new SocialManagerOptions()));
             //加入任务/成就管理器

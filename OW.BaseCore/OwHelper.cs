@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 
 namespace System
@@ -570,5 +571,30 @@ namespace System
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj">null,return <see cref="string.Empty"/></param>
+        /// <returns></returns>
+        public static string ToUriString<T>(T obj) where T : new()
+        {
+            if (obj is null)
+                return string.Empty;
+            return Uri.EscapeDataString(JsonSerializer.Serialize(obj, typeof(T)));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="str"><see cref="string.IsNullOrWhiteSpace(string?)"/>return true,return new T()</param>
+        /// <returns></returns>
+        public static T FromUriString<T>(string str) where T : new()
+        {
+            if (string.IsNullOrWhiteSpace(str))
+                return new T();
+            return (T)JsonSerializer.Deserialize(Uri.UnescapeDataString(str), typeof(T));
+        }
     }
 }

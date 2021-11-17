@@ -35,7 +35,7 @@ namespace OW.Game.Item
     /// <summary>
     /// 虚拟物品管理器。
     /// </summary>
-    public class GameItemManager : GameManagerBase<GameItemManagerOptions>, IGameThingHelper, IGameItemHelper
+    public class GameItemManager : GameManagerBase<GameItemManagerOptions>
     {
         #region 构造函数
 
@@ -73,7 +73,6 @@ namespace OW.Game.Item
         /// </summary>
         /// <param name="tId"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameItemTemplate GetTemplateFromeId(Guid tId)
         {
             return ItemTemplateManager.GetTemplateFromeId(tId);
@@ -1327,6 +1326,31 @@ namespace OW.Game.Item
                            select tmp;
             var next = collNext.Take(25).ToList();
             datas.Next.AddRange(next);
+        }
+    }
+
+    public class UseItemsView
+    {
+        private readonly VWorld _World;
+        private readonly GameItem _GameItem;
+
+        public UseItemsView(GameItem gameItem, VWorld world)
+        {
+            _World = world;
+            _GameItem = gameItem;
+        }
+
+        private readonly List<(Guid, decimal, Guid)> _Datas;
+
+        public List<(Guid, decimal, Guid)> Datas
+        {
+            get
+            {
+                if (_Datas is null)
+                {
+                }
+                return _Datas;
+            }
         }
     }
 

@@ -743,9 +743,4 @@ namespace GuangYuan.GY001.UserDb
         }
     }
 
-    public interface IGameItemHelper
-    {
-        public GameChar GetChar(GameItem item);
-    }
-
 }

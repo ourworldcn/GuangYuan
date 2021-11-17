@@ -14,7 +14,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 针对坐骑/野兽相关的扩展。
     /// </summary>
-    public static class Gy001GameItemExtensions
+    public static class Gy001GameItemManagerExtensions
     {
 
         /// <summary>

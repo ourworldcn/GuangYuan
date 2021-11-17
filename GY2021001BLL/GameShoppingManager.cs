@@ -1,6 +1,8 @@
-﻿using GuangYuan.GY001.TemplateDb;
+﻿using Game.Social;
+using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using OW.Game;
+using OW.Game.Item;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -45,17 +47,74 @@ namespace GuangYuan.GY001.BLL
                 coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => IsValid(c, datas.Now));
             else
                 coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.Genus == datas.Genus && IsValid(c, datas.Now));
+            var view = new ShoppingSlotView(datas.GameChar.GetShoppingSlot(), World);
+            var dic = view.RandomGods;
+            coll = coll.AsEnumerable().Where(c => !dic.ContainsKey(c.Genus) || dic[c.Genus] == c.GroupNumber);
             datas.ShoppingTemplates.AddRange(coll);
         }
 
+        /// <summary>
+        /// 购买指定商品。
+        /// </summary>
+        /// <param name="datas">
+        /// <paramref name="datas"/>
+        /// </param>
         public void Buy(BuyDatas datas)
         {
-            
+            using var dwUser = datas.LockUser();
+            if (dwUser is null)
+                return;
+            if (!World.ItemTemplateManager.Id2Shopping.TryGetValue(datas.ShoppingId, out var template))
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "找不到商品Id";
+                return;
+            }
+            DateTime now = DateTime.UtcNow;   //当前时间
+            var view = new ShoppingSlotView(datas.GameChar.GetShoppingSlot(), World);
+            var oldCount = view.GetCount(template, now);
+            if (-1 != template.MaxCount && oldCount + datas.Count > template.MaxCount)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                datas.ErrorMessage = "指定商品剩余数量不足";
+                return;
+            }
+            //校验可购买性
+            if (template.GroupNumber.HasValue)   //若购买商品可刷新
+            {
+                if (view.RandomGods.TryGetValue(template.Genus, out var gpn) && template.GroupNumber != gpn)
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "指定商品不可购买。";
+                    return;
+                }
+            }
+            //修改数据
+            //生成物品
+            var gim = World.ItemManager;
+            var gi = new GameItem();
+            World.EventsManager.GameItemCreated(gi, template.ItemTemplateId);
+            var container = gim.GetDefaultContainer(datas.GameChar, gi);
+            List<GameItem> list = new List<GameItem>();
+            World.ItemManager.AddItem(gi, container, list, datas.ChangeItems);
+            if (list.Count > 0)    //若需要发送邮件
+            {
+                var mail = new GameMail();
+                World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, list.Select(c => (c, gim.GetDefaultContainer(datas.GameChar, c).TemplateId)));
+            }
+            //改写购买记录数据
+            view.AddItem(template, datas.Count, now);
+            World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
 
-        public void Refresh()
+        public void Refresh(RefreshDatas datas)
         {
-
+            using var dwUser = datas.LockUser();
+            if (dwUser is null)
+                return;
+            var slot = datas.GameChar.GetShoppingSlot();
+            var view = new ShoppingSlotView(slot, World);
+            var dic = view.RandomGods;
         }
 
         /// <summary>
@@ -72,10 +131,30 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
+    public class RefreshDatas : ChangeItemsWorkDatasBase
+    {
+        public RefreshDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public RefreshDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public RefreshDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 要刷新的页签(属)名。
+        /// </summary>
+        public string Genus { get; set; }
+    }
+
     /// <summary>
     /// 购买商品的接口工作数据类。
     /// </summary>
-    public class BuyDatas : ComplexWorkDatasBase
+    public class BuyDatas : ChangeItemsAndMailWorkDatsBase
     {
         public BuyDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -99,10 +178,6 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public decimal Count { get; set; }
 
-        /// <summary>
-        /// 购买后导致物品变化的数据。
-        /// </summary>
-        public List<ChangeItem> ChangeItems { get; } = new List<ChangeItem>();
     }
 
     /// <summary>
@@ -222,6 +297,30 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             return 0;
+        }
+
+        private Dictionary<string, int> _RandomGods;
+        /// <summary>
+        /// 获取当前随即商品信息。键是页签值是当前使用的组号。
+        /// </summary>
+        public Dictionary<string, int> RandomGods
+        {
+            get
+            {
+                if (_RandomGods is null)
+                {
+                    _RandomGods = OwConvert.FromUriString<Dictionary<string, int>>(_ShoppingSlot.Properties.GetStringOrDefault(nameof(RandomGods)));
+                }
+                return _RandomGods;
+            }
+        }
+
+        public void Save()
+        {
+            if (null != _RandomGods)    //若内容可能有变化
+            {
+                _ShoppingSlot.Properties[nameof(RandomGods)] = OwConvert.ToUriString(_RandomGods);
+            }
         }
     }
 

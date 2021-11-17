@@ -189,6 +189,14 @@ namespace GuangYuan.GY001.UserDb
     public class GameMailAttachment : GameObjectBase
     {
         /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public GameMailAttachment()
+        {
+
+        }
+
+        /// <summary>
         /// 获取或设置此对象所属邮件的Id。
         /// </summary>
         [ForeignKey(nameof(Mail))]

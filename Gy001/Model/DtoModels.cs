@@ -3087,7 +3087,6 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public decimal CountOfBuyed { get; set; }
-
     }
     #endregion 商城相关
 }
