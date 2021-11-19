@@ -238,7 +238,7 @@ namespace OW.Game
         public bool MarkAndRemove(GameThingBase thing, string keyName)
         {
             var item = GetOrAddItem(thing);
-            var hasOld = thing.Properties.Remove(keyName, out var oldVal);
+            var hasOld = thing.Properties.Remove(keyName, out _);
             var result = new SimplePropertyChangedItem<object>(keyName) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
             item.Add(result);
             return hasOld;

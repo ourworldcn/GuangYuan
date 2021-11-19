@@ -2439,6 +2439,46 @@
             设置角色经验接口使用的返回值传输类。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetListParamsDto">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetListParamsDto.Genus">
+            <summary>
+            页签的名字，前端与数据协商好即可。如果设置了则仅返回指定页签(属)的商品。null会返回所有商品。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetListResultDto">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetListResultDto.ShoppingItems">
+            <summary>
+            商品列表。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.BuyParamsDto">
+            <summary>
+            购买商品接口的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.BuyParamsDto.ShoppingId">
+            <summary>
+            购买商品的模板Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.BuyParamsDto.Count">
+            <summary>
+            购买的数量。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.BuyResultDto">
+            <summary>
+            购买商品的返回值封装类。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -2476,6 +2516,24 @@
             <param name="model"></param>
             <returns></returns>
             <response code="401">令牌错误。</response>
+        </member>
+        <member name="T:Gy001.Controllers.GameShoppingController">
+            <summary>
+            商城相关操作。
+            </summary>
+        </member>
+        <member name="M:Gy001.Controllers.GameShoppingController.GetList(GY2021001WebApi.Models.GetListParamsDto)">
+            <summary>
+            获取销售商品的列表。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameShoppingController.Buy(GY2021001WebApi.Models.BuyParamsDto)">
+            <summary>
+            购买商品。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="F:Gy001.Controllers.SocialController._UserContext">
             <summary>

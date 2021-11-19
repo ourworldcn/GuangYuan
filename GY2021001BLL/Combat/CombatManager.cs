@@ -1244,7 +1244,7 @@ namespace GuangYuan.GY001.BLL
             var lv = (int)gameItem.GetDecimalOrDefault("lv", decimal.Zero);
             var lvBeidong = Array.FindLastIndex(_aryLvZuoqi, c => ssc >= c);  //被动技能等级
 
-            var abi = mhp + atk * 10 + qlt * 30;    //战力
+            var abi = mhp + atk * 10 + qlt * 10;    //战力
             abi += 500 + 100 * lvZhudong;   //合并主动技能战力
             abi += 500 + 100 * lvBeidong;   //合并被动技能战力
             dic["lvzhudong"] = lvZhudong;

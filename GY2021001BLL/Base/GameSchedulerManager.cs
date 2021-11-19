@@ -254,27 +254,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 改变计划项。
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        //public bool Change(SchedulerDescriptor data)
-        //{
-        //    if (!_Id2Descriptor.TryGetValue(data.Id, out var sd))
-        //        return false;
-        //    lock (sd)
-        //    {
-        //        if (data.IsDisposed) //若已经执行
-        //            return false;
-
-        //    }
-        //    sd.Dispose();
-        //    Scheduler(data);
-
-        //    return true;
-        //}
-
-        /// <summary>
         /// 延迟任务到期时调用。派生类可以重载此函数。
         /// </summary>
         /// <param name="state"></param>

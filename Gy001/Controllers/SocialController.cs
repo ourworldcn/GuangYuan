@@ -663,15 +663,12 @@ namespace Gy001.Controllers
             result.HasError = datas.HasError;
             result.DebugMessage = datas.ErrorMessage;
             result.ErrorCode = datas.ErrorCode;
-            switch (result.ErrorCode)
+            return result.ErrorCode switch
             {
-                case ErrorCodes.ERROR_INVALID_TOKEN:
-                    return Unauthorized(result.DebugMessage);
-                case ErrorCodes.ERROR_BAD_ARGUMENTS:
-                    return BadRequest(result.DebugMessage);
-                default:
-                    return result;
-            }
+                ErrorCodes.ERROR_INVALID_TOKEN => Unauthorized(result.DebugMessage),
+                ErrorCodes.ERROR_BAD_ARGUMENTS => BadRequest(result.DebugMessage),
+                _ => result,
+            };
         }
     }
 

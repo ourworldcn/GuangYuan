@@ -65,9 +65,9 @@ namespace GuangYuan.GY001.BLL
             }
 
             //private readonly IServiceProvider _Service;
-            //private VWorld _World;
+            //private VWorld World;
 
-            //public VWorld World => _World ??= _Service.GetService<VWorld>();
+            //public VWorld World => World ??= _Service.GetService<VWorld>();
 
             internal ConcurrentDictionary<Guid, GameUser> _Token2Users = new ConcurrentDictionary<Guid, GameUser>();
             internal ConcurrentDictionary<string, GameUser> _LoginName2Users = new ConcurrentDictionary<string, GameUser>();
@@ -1063,10 +1063,9 @@ namespace GuangYuan.GY001.BLL
             if (newExp != oldExp)
                 e.MarkAndSet(gameChar, "exp", newExp);
             var oldLv = gameChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName); //当前等级
-            var limitSeq = gameChar.Template.Properties.GetValueOrDefault("expLimit") as IEnumerable;
             var limit = gameChar.Properties.GetValueOrDefault("expLimit");
             int newLv;
-            if (null != limitSeq && newExp >= oldExp)   //若经验已经变化
+            if (gameChar.Template.Properties.GetValueOrDefault("expLimit") is IEnumerable limitSeq && newExp >= oldExp)   //若经验已经变化
             {
                 List<decimal> lst = new List<decimal>(limitSeq.OfType<decimal>());
                 newLv = lst.FindIndex(c => c > newExp); //新等级

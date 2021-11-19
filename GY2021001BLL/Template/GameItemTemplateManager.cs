@@ -85,6 +85,7 @@ namespace GuangYuan.GY001.BLL
 
         public ConcurrentDictionary<Guid, GameShoppingTemplate> Id2Shopping => _Id2Shopping.Value;
 
+
         #endregion 属性及相关
 
         private void Initialize()

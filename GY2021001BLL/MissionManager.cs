@@ -77,10 +77,10 @@ namespace OW.Game.Mission
                                 if (_Template.Properties.TryGetValue($"mhtid{item}", out var mhtid))  //若有头模板id
                                 {
                                     dic["htid"] = mhtid;
-                                    dic["mbtid"] = _Template.Properties[$"mbtid{item}"];    //必须有身体模板id
+                                    dic["btid"] = _Template.Properties.GetValueOrDefault($"mbtid{item}");    //必须有身体模板id
                                 }
-                                var gi = gim.CreateItemFromDictionary(dic); //创建对象
-                                _Metrics.Add((item, gi));
+                                var gi = gim.Create(dic); //创建对象
+                                _Metrics.Add((item, gi.First()));
                             }
                             _Metrics.Sort(Comparer<(decimal, GameItem)>.Create((l, r) => decimal.Compare(l.Item1, r.Item1)));
                         }
@@ -351,7 +351,7 @@ namespace OW.Game.Mission
                        on id equals obj.Id
                        select obj;
             var objs = coll.ToList();
-            if (objs.Count != datas.ItemIds.Count()) //若长度不等
+            if (objs.Count != datas.ItemIds.Count) //若长度不等
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;

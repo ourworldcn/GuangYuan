@@ -208,9 +208,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="sendId">发件人Id.</param>
         /// <param name="cc">抄送人列表，当前未用，保留未null或省略。</param>
         /// <param name="sc">密件抄送列表，当前未用，保留未null或省略。</param>
-#pragma warning disable IDE0060 // 删除未使用的参数,禁用该警告，原因有些参数保留未用
         public virtual void SendMail([NotNull] GameMail mail, [NotNull] IEnumerable<Guid> to, Guid sendId, IEnumerable<Guid> cc = null, IEnumerable<Guid> sc = null)
-#pragma warning restore IDE0060 // 删除未使用的参数
         {
             try
             {

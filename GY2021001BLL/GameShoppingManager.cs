@@ -1,6 +1,7 @@
 ﻿using Game.Social;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Item;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -21,16 +23,41 @@ namespace GuangYuan.GY001.BLL
     /// </summary>
     public class GameShoppingManager : GameManagerBase<GameShoppingManagerOptions>
     {
+        private Lazy<Dictionary<string, int[]>> _Genus2GroupNumbers;
+        /// <summary>
+        /// 键是刷新商品的属，值刷新商品的组号。
+        /// </summary>
+        public IReadOnlyDictionary<string, int[]> Genus2GroupNumbers => _Genus2GroupNumbers.Value;
+
         public GameShoppingManager()
         {
+            Initializer();
         }
 
         public GameShoppingManager(IServiceProvider service) : base(service)
         {
+            Initializer();
         }
 
         public GameShoppingManager(IServiceProvider service, GameShoppingManagerOptions options) : base(service, options)
         {
+            Initializer();
+        }
+
+        /// <summary>
+        /// 构造函数调用的的初始化函数。
+        /// </summary>
+        private void Initializer()
+        {
+            _Genus2GroupNumbers = new Lazy<Dictionary<string, int[]>>(() =>
+            {
+                var coll = from tmp in World.ItemTemplateManager.Id2Shopping.Values
+                           where tmp.GroupNumber.HasValue
+                           group tmp by tmp.Genus into g
+                           select (g.Key, g.Select(c => c.GroupNumber.Value).ToArray());
+                return coll.ToDictionary(c => c.Key, c => c.Item2);
+
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         /// <summary>
@@ -42,15 +69,20 @@ namespace GuangYuan.GY001.BLL
             using var dwUser = datas.LockUser();
             if (dwUser is null)
                 return;
-            IEnumerable<GameShoppingTemplate> coll;
+            IEnumerable<GameShoppingTemplate> coll; //非随机刷新商品
             if (string.IsNullOrWhiteSpace(datas.Genus))
-                coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => IsValid(c, datas.Now));
+                coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => IsValid(c, datas.Now) && c.GroupNumber is null);
             else
-                coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.Genus == datas.Genus && IsValid(c, datas.Now));
-            var view = new ShoppingSlotView(datas.GameChar.GetShoppingSlot(), World);
-            var dic = view.RandomGods;
-            coll = coll.AsEnumerable().Where(c => !dic.ContainsKey(c.Genus) || dic[c.Genus] == c.GroupNumber);
+                coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.Genus == datas.Genus && IsValid(c, datas.Now) && c.GroupNumber is null);
+            var view = new ShoppingSlotView(World, datas.GameChar, datas.Now);
+            foreach (var item in Genus2GroupNumbers.Keys)
+                RefreshIfDateChanged(view, item, datas.Now);    //刷新所有日期变化后的随机商品
+            var rg = from tmp in World.ItemTemplateManager.Id2Shopping.Values   //随机刷新的商品
+                     where tmp.GroupNumber.HasValue && view.RandomGods[tmp.Genus] == tmp.GroupNumber && (string.IsNullOrWhiteSpace(datas.Genus) || tmp.Genus == datas.Genus)
+                     select tmp;
             datas.ShoppingTemplates.AddRange(coll);
+            datas.ShoppingTemplates.AddRange(rg);
+            view.Save();
         }
 
         /// <summary>
@@ -71,7 +103,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             DateTime now = DateTime.UtcNow;   //当前时间
-            var view = new ShoppingSlotView(datas.GameChar.GetShoppingSlot(), World);
+            var view = new ShoppingSlotView(World, datas.GameChar, datas.Now);
             var oldCount = view.GetCount(template, now);
             if (-1 != template.MaxCount && oldCount + datas.Count > template.MaxCount)
             {
@@ -113,8 +145,37 @@ namespace GuangYuan.GY001.BLL
             if (dwUser is null)
                 return;
             var slot = datas.GameChar.GetShoppingSlot();
-            var view = new ShoppingSlotView(slot, World);
+            var view = new ShoppingSlotView(World, datas.GameChar, datas.Now);
             var dic = view.RandomGods;
+        }
+
+        /// <summary>
+        /// 若最后刷新日期已经变化，则刷新随机刷新商品。
+        /// </summary>
+        /// <param name="view"></param>
+        /// <param name="genus"></param>
+        /// <param name="now"></param>
+        /// <returns></returns>
+        private bool RefreshIfDateChanged(ShoppingSlotView view, string genus, DateTime now)
+        {
+            if (view.RandomGodsRefreshDatetime.GetValueOrDefault(genus).Date != now.Date)
+                return Refresh(view, genus, now);
+            return false;
+        }
+
+        /// <summary>
+        /// 强制复位可刷新商品。
+        /// </summary>
+        /// <param name="view"></param>
+        /// <param name="genus">商品的属。</param>
+        /// <param name="now">当前时间。</param>
+        private bool Refresh(ShoppingSlotView view, string genus, DateTime now)
+        {
+            if (!Genus2GroupNumbers.TryGetValue(genus, out var ary))    //若不是包含随机商品的属
+                return false;
+            view.RandomGodsRefreshDatetime[genus] = now;    //设置刷新时间
+            view.RandomGods[genus] = VWorld.WorldRandom.Next(ary.Length);
+            return true;
         }
 
         /// <summary>
@@ -149,6 +210,7 @@ namespace GuangYuan.GY001.BLL
         /// 要刷新的页签(属)名。
         /// </summary>
         public string Genus { get; set; }
+        public DateTime Now { get; internal set; } = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -178,6 +240,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public decimal Count { get; set; }
 
+        public DateTime Now { get; set; } = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -223,25 +286,20 @@ namespace GuangYuan.GY001.BLL
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ShoppingSlotTId);
     }
 
-    public class ShoppingSlotView
+    public class ShoppingSlotView : GameCharWorkDataBase
     {
-        /// <summary>
-        /// 记录曾经买过商品的属性名前缀。"{BuyedPrefix}{shoppingSlot}={日期}"
-        /// </summary>
-        public const string BuyedPrefix = "buyed";
-        public const char Separator = '`';
-
-        private readonly GameItem _ShoppingSlot;
-        private readonly VWorld _World;
-
-        public ShoppingSlotView(GameItem shoppingSlot, VWorld world)
+        public ShoppingSlotView([NotNull] VWorld world, [NotNull] GameChar gameChar, DateTime now) : base(world, gameChar)
         {
-            _ShoppingSlot = shoppingSlot;
-            _World = world;
+            _Now = now;
         }
 
+        public GameItem ShoppingSlot => GameChar.GetShoppingSlot();
+
+        private DateTime _Now;
+        public DateTime Now { get => _Now; set => _Now = value; }
+
         /// <summary>
-        /// 
+        /// 增加购买记录。
         /// </summary>
         /// <param name="template"></param>
         /// <param name="count"></param>
@@ -249,59 +307,37 @@ namespace GuangYuan.GY001.BLL
         /// <returns>false 原有购买记录，true 新增了购买记录</returns>
         public bool AddItem(GameShoppingTemplate template, decimal count, DateTime now)
         {
-            var key = $"{BuyedPrefix}{template.IdString}";
-            bool succ = false;
-            if (_ShoppingSlot.Properties.ContainsKey(key))
+            var gar = new GameActionRecord()
             {
-                var ary = _ShoppingSlot.Properties.GetStringOrDefault(key).Split(Separator, StringSplitOptions.RemoveEmptyEntries);
-                if (ary.Length == 2 && OwHelper.TryGetDecimal(ary[0], out var oldCount) && OwConvert.TryGetDateTime(ary[1], out var dt))
-                {
-                    var oldStart = template.GetStart(dt);
-                    var start = template.GetStart(now);
-                    if (Math.Abs((start - oldStart).Ticks) < 10)  //若两次购买在同一个周期内，计算误差允许范围内
-                    {
-                        _ShoppingSlot.Properties[key] = $"{count + oldCount}{Separator}{now:s}";
-                        succ = true;
-                    }
-                    //若在新周期内购买
-                }
-            }
-            if (!succ)  //若在新周期内购买
-            {
-                _ShoppingSlot.Properties[key] = $"{count}{Separator}{now:s}";
-            }
-            return !succ;
+                DateTimeUtc = now,
+                ParentId = GameChar.Id,
+                ActionId = BuyRecordActionId,
+            };
+            gar.Properties["ShoppingId"] = template.IdString;
+            gar.Properties["BuyCount"] = count;
+            UserContext.Add(gar);
+            return true;
         }
 
         /// <summary>
-        /// 指定周期内指定物品购买数量。
+        /// 指定周期内指定物品已购买数量。
         /// </summary>
         /// <param name="template"></param>
         /// <param name="now"></param>
         /// <returns></returns>
         public decimal GetCount(GameShoppingTemplate template, DateTime now)
         {
-            var key = $"{BuyedPrefix}{template.IdString}";
-            if (_ShoppingSlot.Properties.ContainsKey(key))
-            {
-                var ary = _ShoppingSlot.Properties.GetStringOrDefault(key).Split(Separator, StringSplitOptions.RemoveEmptyEntries);
-                if (ary.Length == 2 && OwHelper.TryGetDecimal(ary[0], out var oldCount) && OwConvert.TryGetDateTime(ary[1], out var dt))    //若找到数据项
-                {
-                    var oldStart = template.GetStart(dt);
-                    var start = template.GetStart(now);
-                    if (Math.Abs((start - oldStart).Ticks) < 10)  //若两次购买在同一个周期内，计算误差允许范围内
-                    {
-                        return oldCount;
-                    }
-                    //若在新周期内购买
-                }
-            }
-            return 0;
+            var start = template.GetStart(now); //此周期开始时间
+            var end = template.GetStart(now);   //此周期结束时间
+            var coll = UserContext.Set<GameActionRecord>().Where(c => c.DateTimeUtc >= start && c.DateTimeUtc < end && c.ParentId == GameChar.Id && c.ActionId == BuyRecordActionId); //此周期内购买的购买记录
+            var count = coll.AsEnumerable().Where(c => c.Properties.GetGuidOrDefault("ShoppingId") == template.Id).Sum(c => c.Properties.GetDecimalOrDefault("BuyCount"));    //已经够买的数量
+            return count;
         }
 
         private Dictionary<string, int> _RandomGods;
         /// <summary>
-        /// 获取当前随即商品信息。键是页签值是当前使用的组号。
+        /// 获取当前随机商品信息。键是页签值是当前使用的组号。
+        /// 若没有给页签指定组号则自动指定一个随机组号。这相当于初始化了数据。
         /// </summary>
         public Dictionary<string, int> RandomGods
         {
@@ -309,18 +345,91 @@ namespace GuangYuan.GY001.BLL
             {
                 if (_RandomGods is null)
                 {
-                    _RandomGods = OwConvert.FromUriString<Dictionary<string, int>>(_ShoppingSlot.Properties.GetStringOrDefault(nameof(RandomGods)));
+                    _RandomGods = new Dictionary<string, int>();
+                    foreach (var item in World.ShoppingManager.Genus2GroupNumbers)
+                    {
+                        _RandomGods[item.Key] = item.Value[VWorld.WorldRandom.Next(item.Value.Length)];
+                    }
+                    var tmp = OwConvert.FromUriString<Dictionary<string, int>>(ShoppingSlot.Properties.GetStringOrDefault(nameof(RandomGods)));
+                    OwConvert.Fill(tmp, _RandomGods);
                 }
                 return _RandomGods;
             }
+        }
+
+        private Dictionary<string, DateTime> _RandomGodsRefreshDatetime;
+        /// <summary>
+        /// 刷新商品的时间。没有刷新自动补全为调用时刻刷新。键是随机商品的属，值是随机商品的最后刷新时间。
+        /// </summary>
+        public Dictionary<string, DateTime> RandomGodsRefreshDatetime
+        {
+            get
+            {
+                if (_RandomGodsRefreshDatetime is null)
+                {
+                    _RandomGodsRefreshDatetime = new Dictionary<string, DateTime>(RandomGods.Select(c => new KeyValuePair<string, DateTime>(c.Key, Now)));
+                    var tmp = OwConvert.FromUriString<Dictionary<string, DateTime>>(ShoppingSlot.Properties.GetStringOrDefault(nameof(RandomGodsRefreshDatetime)));
+                    OwConvert.Fill(tmp, _RandomGodsRefreshDatetime);
+                }
+                return _RandomGodsRefreshDatetime;
+            }
+        }
+
+        private const string BuyRecordActionId = "商城购买";
+        private ObservableCollection<GameActionRecord> _BuyRecords;
+
+        /// <summary>
+        /// 今日购买记录。
+        /// </summary>
+        public ObservableCollection<GameActionRecord> BuyRecords
+        {
+            get
+            {
+                if (_BuyRecords is null)
+                {
+                    var coll = UserContext.Set<GameActionRecord>().AsNoTracking().Where(c => c.DateTimeUtc > Now.Date && c.ParentId == GameChar.Id && c.ActionId == BuyRecordActionId);  //今日购买记录
+                    _BuyRecords = new ObservableCollection<GameActionRecord>(coll);
+                    _BuyRecords.CollectionChanged += BuyRecordsCollectionChanged;
+                }
+                return _BuyRecords;
+            }
+        }
+
+        private void BuyRecordsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    UserContext.AddRange(e.NewItems.OfType<GameActionRecord>());
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        public Dictionary<GameShoppingTemplate, decimal> GetBuyRecordes()
+        {
+            var coll = from tmp in BuyRecords
+                       group tmp.Properties.GetDecimalOrDefault("BuyCount") by tmp.Properties.GetGuidOrDefault("ShoppingId") into g
+                       select (g.Key, g.Sum());
+            return coll.Select(c => (World.ItemTemplateManager.Id2Shopping[c.Key], c.Item2)).ToDictionary(c => c.Item1, c => c.Item2);
         }
 
         public void Save()
         {
             if (null != _RandomGods)    //若内容可能有变化
             {
-                _ShoppingSlot.Properties[nameof(RandomGods)] = OwConvert.ToUriString(_RandomGods);
+                ShoppingSlot.Properties[nameof(RandomGods)] = OwConvert.ToUriString(_RandomGods);
             }
+            if (null != _RandomGodsRefreshDatetime)    //若内容可能有变化
+            {
+                ShoppingSlot.Properties[nameof(RandomGodsRefreshDatetime)] = OwConvert.ToUriString(_RandomGodsRefreshDatetime);
+            }
+            UserContext?.SaveChanges();
         }
     }
 
@@ -363,6 +472,7 @@ namespace GuangYuan.GY001.BLL
             if (_Datas is null) //若没有改变内容
                 return;
             _Dictionary[$"{_Prefix}{Key}"] = string.Join(Separator, Datas);
+
         }
 
         protected virtual void Dispose(bool disposing)

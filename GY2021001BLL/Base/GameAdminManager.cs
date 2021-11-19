@@ -171,6 +171,8 @@ namespace GuangYuan.GY001.BLL
                     destItem = destChar.GetShoulanBag();
                     destItem.Properties[ProjectConstant.ContainerCapacity] = srcItem.Properties.GetDecimalOrDefault(ProjectConstant.ContainerCapacity);
                 }
+                //等级
+                World.CharManager.SetExp(destChar, srcChar.Properties.GetDecimalOrDefault("exp"));
             }
         }
 

@@ -81,7 +81,7 @@ namespace GuangYuan.GY001.TemplateDb
         public string ValidPeriod { get; set; }
 
         [NotMapped]
-        public char ValidPeriodUnit => string.IsNullOrWhiteSpace(ValidPeriod) ? 'n' : char.ToLower(SellPeriod[^1]);
+        public char ValidPeriodUnit => string.IsNullOrWhiteSpace(ValidPeriod) ? 'n' : char.ToLower(ValidPeriod[^1]);
 
         [NotMapped]
         public decimal ValidPeriodValue => !string.IsNullOrWhiteSpace(ValidPeriod) && decimal.TryParse(ValidPeriod[0..^1], out var val) ? val : -1;

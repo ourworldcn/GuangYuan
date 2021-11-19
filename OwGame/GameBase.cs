@@ -332,7 +332,7 @@ namespace OW.Game
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool? Get3State(this IReadOnlyDictionary<string, object> dic, [CallerMemberName] string key = null)
         {
-            if (!dic.TryGetValue(key, out var objBool))
+            if (!dic.TryGetValue(key, out _))
                 return null;
             return OwHelper.TryGetBoolean(key, out var result) ? (bool?)result : null;
         }

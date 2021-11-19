@@ -1346,16 +1346,19 @@ namespace GY2021001WebApi.Models
     /// <summary>
     /// SellParamsDto的详细项。
     /// </summary>
+    [DataContract]
     public class SellParamsItemDto
     {
         /// <summary>
         /// 要卖物品的唯一Id。
         /// </summary>
+        [DataMember]
         public string Id { get; set; }
 
         /// <summary>
         /// 售卖的数量。不可堆叠物品的数量一定是1。堆叠物品指定数量要么全正好能卖出去，要么，一个也卖不出。
         /// </summary>
+        [DataMember]
         public decimal Count { get; set; }
     }
 
@@ -3087,6 +3090,62 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public decimal CountOfBuyed { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [DataContract]
+    public class GetListParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 页签的名字，前端与数据协商好即可。如果设置了则仅返回指定页签(属)的商品。null会返回所有商品。
+        /// </summary>
+        [DataMember]
+        public string Genus { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [DataContract]
+    public class GetListResultDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 商品列表。
+        /// </summary>
+        [DataMember]
+        public List<ShoppingItemDto> ShoppingItems { get; set; } = new List<ShoppingItemDto>();
+    }
+
+    /// <summary>
+    /// 购买商品接口的参数封装类。
+    /// </summary>
+    [DataContract]
+    public class BuyParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 购买商品的模板Id。
+        /// </summary>
+        [DataMember]
+        public string ShoppingId { get; set; }
+
+        /// <summary>
+        /// 购买的数量。
+        /// </summary>
+        [DataMember]
+        public decimal Count { get; set; }
+    }
+
+    /// <summary>
+    /// 购买商品的返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class BuyResultDto : ChangesReturnDtoBase
+    {
+        public BuyResultDto()
+        {
+        }
     }
     #endregion 商城相关
 }

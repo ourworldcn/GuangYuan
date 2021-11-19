@@ -511,6 +511,9 @@ namespace System
 
     }
 
+    /// <summary>
+    /// 额外的转换函数汇总类。
+    /// </summary>
     public static class OwConvert
     {
         /// <summary>
@@ -595,6 +598,20 @@ namespace System
             if (string.IsNullOrWhiteSpace(str))
                 return new T();
             return (T)JsonSerializer.Deserialize(Uri.UnescapeDataString(str), typeof(T));
+        }
+
+        /// <summary>
+        /// 复制字典中的内容。
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="src"></param>
+        /// <param name="dest">如果源字典存在与目标字典中相同的键，则用源中数据覆盖目标字典中数据。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public static void Fill<TKey, TValue>(IReadOnlyDictionary<TKey, TValue> src, IDictionary<TKey, TValue> dest)
+        {
+            foreach (var item in src)
+                dest[item.Key] = item.Value;
         }
     }
 }

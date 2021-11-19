@@ -14,10 +14,10 @@ namespace GY2021001WebApi.Models
 
     public partial class ShoppingItemDto
     {
-        public static ShoppingItemDto FromGameShoppingTemplate(GameShoppingTemplate template, GameChar gameChar)
+        public static ShoppingItemDto FromGameShoppingTemplate(GameShoppingTemplate template, GameChar gameChar, DateTime now, VWorld world)
         {
-            DateTime dt = DateTime.UtcNow;
-            var view = new ShoppingSlotView(gameChar.GetShoppingSlot(), null);
+            DateTime dt = now;
+            var view = new ShoppingSlotView(world, gameChar, now);
             var result = new ShoppingItemDto()
             {
                 AutoUse = template.AutoUse,

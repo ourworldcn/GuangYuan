@@ -440,7 +440,7 @@ namespace OW.Game
     {
         public static void MountsCreated(this GameEventsManager manager, GameItem gameItem, GameThingBase parent, GameItemTemplate headTemplate, GameItemTemplate bodyTemplate)
         {
-            manager.GameItemCreated(gameItem, null, parent is GameItem ? (GameItem)parent : null, parent is GameItem ? (Guid?)null : parent.Id,
+            manager.GameItemCreated(gameItem, null, parent is GameItem item ? item : null, parent is GameItem ? (Guid?)null : parent.Id,
                 new Dictionary<string, object>() { { "ht", headTemplate }, { "bt", bodyTemplate } });
         }
     }

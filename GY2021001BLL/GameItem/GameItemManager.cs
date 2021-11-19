@@ -1049,8 +1049,8 @@ namespace OW.Game.Item
             {
                 if (ComputeGoldPrice(item.gi, out var gold, out var dia))
                 {
-                    totalGold += gold;
-                    totalDia += dia;
+                    totalGold += gold * item.Item2;
+                    totalDia += dia * item.Item2;
                     list.Add((item.gi, item.Item2, dia, gold));
                 }
             }
@@ -1472,8 +1472,6 @@ namespace OW.Game.Item
         {
         }
 
-        private readonly List<(Guid, int, decimal)> _Settings;
-
         /// <summary>
         /// Item3是位置号，-1表示取消该坐骑在该阵容中的设置。
         /// </summary>
@@ -1593,6 +1591,7 @@ namespace OW.Game.Item
                 gameItems.Add(gi);
             }
         }
+
     }
 
     public static class BinaryExtensions

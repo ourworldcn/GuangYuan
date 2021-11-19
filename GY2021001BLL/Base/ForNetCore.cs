@@ -15,16 +15,18 @@ using OW.Game;
 using OW.Game.Item;
 using OW.Game.Mission;
 using System;
+using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using static GuangYuan.GY001.BLL.ShoppingSlotView;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -193,11 +195,10 @@ namespace GuangYuan.GY001.BLL
             using var db = world.CreateNewUserDbContext();
             var dic = new Dictionary<string, int>();
             Random random = new Random();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
             {
                 dic.Add(i.ToString(), random.Next());
             }
-            var str = JsonSerializer.Serialize(dic, dic.GetType());
         }
 
         /// <summary>
@@ -319,6 +320,16 @@ namespace GuangYuan.GY001.BLL
         {
             services.AddHostedService<GameHostedService>();
 
+            services.AddSingleton(c => new VWorld(c, new VWorldOptions()
+            {
+                //#if DEBUG
+                //                UserDbOptions = new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.EnableSensitiveDataLogging().Options,
+                //                TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.Options,
+                //#else
+                //                UserDbOptions = new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).EnableSensitiveDataLogging().Options,
+                //                TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
+                //#endif //DEBUG
+            }));
             services.TryAddTransient<HashAlgorithm>(c => SHA512.Create());
 
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
