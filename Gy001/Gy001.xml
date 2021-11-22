@@ -2439,6 +2439,21 @@
             设置角色经验接口使用的返回值传输类。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.RefreshShopParamsDto">
+            <summary>
+            刷新商城接口的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RefreshShopParamsDto.Genus">
+            <summary>
+            要刷新的页签(属)名。前端与数据约定好使用什么页签名即可。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.RefreshShopReturnDto">
+            <summary>
+            刷新商城接口的返回值封装类。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetListParamsDto">
             <summary>
             
@@ -2533,6 +2548,13 @@
             购买商品。
             </summary>
             <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameShoppingController.Refresh(GY2021001WebApi.Models.RefreshShopParamsDto)">
+            <summary>
+            刷新商城随机商品的接口。
+            </summary>
+            <param name="model">无特别参数。</param>
             <returns></returns>
         </member>
         <member name="F:Gy001.Controllers.SocialController._UserContext">

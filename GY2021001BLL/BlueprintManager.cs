@@ -361,6 +361,10 @@ namespace GuangYuan.GY001.BLL
                         LevelUp(datas);
                         succ = true;
                         break;
+                    case "c86c1851-2e6e-45ad-9a16-4a77cc81550b":    //七日签到礼包
+                        SignInOfDay7(datas);
+                        succ = true;
+                        break;
                     default:
                         succ = false;
                         break;
@@ -373,6 +377,15 @@ namespace GuangYuan.GY001.BLL
                 succ = true;
             }
             return succ;
+        }
+
+        /// <summary>
+        /// 七日签到礼包。
+        /// </summary>
+        /// <param name="datas"></param>
+        private void SignInOfDay7(ApplyBlueprintDatas datas)
+        {
+            //TO DO
         }
 
         private void MountsLevelUp(ApplyBlueprintDatas datas)

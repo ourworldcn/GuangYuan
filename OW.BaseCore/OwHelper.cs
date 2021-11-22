@@ -544,7 +544,7 @@ namespace System
                 return result;
             Span<byte> span = stackalloc byte[16];
             if (!Convert.TryFromBase64String(str, span, out var lengthe))
-                throw new FormatException();
+                throw new FormatException($"不是有效的数据格式——{str}");
             return new Guid(span);
         }
 

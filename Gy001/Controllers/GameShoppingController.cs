@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
-using System;
 using System.Linq;
 
 namespace Gy001.Controllers
@@ -31,7 +30,6 @@ namespace Gy001.Controllers
             GetListResultDto result = new GetListResultDto();
             var datas = new GetListDatas(World, model.Token)
             {
-                Now = DateTime.UtcNow,
                 Genus = model.Genus,
                 UserContext = HttpContext.RequestServices.GetService<GY001UserContext>(),
             };
@@ -55,8 +53,37 @@ namespace Gy001.Controllers
         public ActionResult<BuyResultDto> Buy(BuyParamsDto model)
         {
             BuyResultDto result = new BuyResultDto();
-            var datas = new BuyDatas(World, model.Token) { Now = DateTime.UtcNow };
+            using var datas = new BuyDatas(World, model.Token)
+            {
+                UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>()
+            };
             World.ShoppingManager.Buy(datas);
+            result.HasError = datas.HasError;
+            result.ErrorCode = datas.ErrorCode;
+            result.DebugMessage = datas.ErrorMessage;
+            if (!result.HasError)
+            {
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 刷新商城随机商品的接口。
+        /// </summary>
+        /// <param name="model">无特别参数。</param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<RefreshShopReturnDto> Refresh(RefreshShopParamsDto model)
+        {
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            var result = new RefreshShopReturnDto();
+            var db = HttpContext.RequestServices.GetRequiredService<GY001UserContext>();
+            using var datas = new RefreshDatas(World, model.Token)
+            {
+                UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>()
+            };
+            World.ShoppingManager.Refresh(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;
             result.DebugMessage = datas.ErrorMessage;

@@ -612,8 +612,8 @@ namespace OW.Game.Item
                 case 99:    //货币
                     result = gChar.GetCurrencyBag();
                     break;
-                default:
-                    result = null;
+                default:    //不认识的放入道具背包
+                    result = gChar.GetItemBag();
                     break;
             }
             return result;

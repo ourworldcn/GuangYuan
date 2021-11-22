@@ -3002,6 +3002,27 @@ namespace GY2021001WebApi.Models
     #region 商城相关
 
     /// <summary>
+    /// 刷新商城接口的参数封装类。
+    /// </summary>
+    [DataContract]
+    public class RefreshShopParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要刷新的页签(属)名。前端与数据约定好使用什么页签名即可。
+        /// </summary>
+        [DataMember]
+        public string Genus { get; set; }
+    }
+
+    /// <summary>
+    /// 刷新商城接口的返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class RefreshShopReturnDto : ChangesReturnDtoBase
+    {
+    }
+
+    /// <summary>
     /// 商城物品传输对象。
     /// </summary>
     [DataContract]

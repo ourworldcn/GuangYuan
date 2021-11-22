@@ -11,20 +11,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Item;
 using OW.Game.Mission;
 using System;
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Text.Json;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -195,10 +194,13 @@ namespace GuangYuan.GY001.BLL
             using var db = world.CreateNewUserDbContext();
             var dic = new Dictionary<string, int>();
             Random random = new Random();
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
-                dic.Add(i.ToString(), random.Next());
+                dic.Add("key" + i.ToString(), random.Next());
             }
+            //var jstr = JsonSerializer.Serialize(dic, dic.GetType());
+
+            var sbPool = world.Service.GetRequiredService<ObjectPool<StringBuilder>>();
         }
 
         /// <summary>
@@ -316,8 +318,23 @@ namespace GuangYuan.GY001.BLL
 
     public static class GameHostedServiceExtensions
     {
-        public static void AddGameManagers(this IServiceCollection services)
+        /// <summary>
+        /// 向指定服务容器添加游戏用到的各种服务。
+        /// </summary>
+        /// <param name="services"></param>
+        public static void AddGameServices(this IServiceCollection services)
         {
+            #region 基础服务
+
+            services.TryAddTransient<HashAlgorithm>(c => SHA512.Create());  //Hash服务
+
+            services.TryAddSingleton(c => ArrayPool<byte>.Create());    //字节数组池服务
+
+            services.TryAddSingleton<ObjectPool<StringBuilder>>(c => new DefaultObjectPool<StringBuilder>(new StringBuilderPooledObjectPolicy()));  //StringBuilder池服务
+            #endregion 基础服务
+
+            #region 游戏专用服务
+
             services.AddHostedService<GameHostedService>();
 
             services.AddSingleton(c => new VWorld(c, new VWorldOptions()
@@ -330,8 +347,6 @@ namespace GuangYuan.GY001.BLL
                 //                TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
                 //#endif //DEBUG
             }));
-            services.TryAddTransient<HashAlgorithm>(c => SHA512.Create());
-
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
             {
                 Loaded = SpecificProject.ItemTemplateLoaded,
@@ -373,6 +388,7 @@ namespace GuangYuan.GY001.BLL
 
             //加入商城服务
             services.AddSingleton(c => new GameShoppingManager(c, new GameShoppingManagerOptions { }));
+            #endregion  游戏专用服务
         }
     }
 }

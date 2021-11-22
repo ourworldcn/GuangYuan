@@ -50,6 +50,12 @@ E31B599A-E510-482A-889E-D364947D5638	typ=1,mis=1,sec=10,mne=211,tl=10,gold=5000,
 {f18ec7ae-66cc-44bd-a99d-250b04ff7fe8}	typ=1,mis=3,sec=2,mne=211,tl=10,gold=5000,wood=500,idl=10,sinne=71	关卡3-2	7031		97001	
 {243ae920-6929-4c08-b33d-4130b85dcb20}	typ=1,mis=3,sec=3,mne=181,tl=10,gold=5000,wood=500,idl=10,sinne=71	关卡3-3	7032			
 {285817e1-5513-4999-966c-39865e714277}	typ=1,mis=3,sec=4,mne=181,tl=10,gold=5000,wood=500,idl=10,sinne=71	关卡3-4	7033			
+{6866ccbc-3692-4095-a583-f9b31281cd04}	typ=1,mis=0,sec=1,mne=181,tl=10,gold=5000,wood=500,idl=10,sinne=71	新手引导关卡1	7501			
+{ff528e1a-0458-4531-a349-c6302a1e682f}	typ=1,mis=0,sec=2,mne=181,tl=10,gold=5000,wood=500,idl=10,sinne=71	新手引导关卡2	7502			
+{801e7fd4-7ee3-4545-91c7-962dd1e9e611}	typ=1,mis=0,sec=3,mne=181,tl=10,gold=5000,wood=500,idl=10,sinne=71	新手引导关卡3	7503			
+{8568b5a7-5404-4b6e-8573-69ca89246104}	typ=1,mis=0,sec=4,mne=181,tl=10,gold=5000,wood=500,idl=10,sinne=71	新手引导关卡4	7504			
+{991d857a-7684-4a18-b147-6deff31bf66a}	typ=1,mis=0,sec=5,mne=181,tl=10,gold=5000,wood=500,idl=10,sinne=71	新手引导关卡5	7505			
+{3f26fc94-8135-499d-b5c2-1e1218042198}	typ=1,mis=0,sec=-1,mne=211,pp=0,aml=10,mt=10,pre=4001;180;4002;180;4003;180;4004;120;4005;60;15001;15002;15003;15004;15005,gold=50000,wood=5000,idl=100,sinne=91,nm=5000	新手引导大关1	7981			
 7247239E-4EFF-4014-9780-87E1E9C253EE	typ=1,mis=1,sec=-1,mne=211,pp=5,aml=10,mt=10,pre=4001;180;4002;180;4003;180;4004;120;4005;60;15001;15002;15003;15004;15005,gold=50000,wood=5000,idl=100,sinne=91,nm=5000	大关1	7901			NULL
 {02074db9-d325-4a7f-8f0e-3b5ceb031452}	typ=1,mis=2,sec=-1,mne=211,pp=5,aml=10,mt=10,pre=4001;180;4002;180;4003;180;4004;120;4005;60;15001;15002;15003;15004;15005,gold=50000,wood=5000,idl=100,sinne=91,nm=5002	大关2	7902			
 {dc3571e4-0d16-4ca1-af29-9c7c328c10f2}	typ=1,mis=3,sec=-1,mne=211,pp=5,aml=10,mt=10,pre=4001;180;4002;180;4003;180;4004;120;4005;60;15001;15002;15003;15004;15005,gold=50000,wood=5000,idl=100,sinne=91,nm=5003	大关3	7903			
@@ -187,26 +193,26 @@ D2AE9906-F33C-493C-8BFB-A05793BB32D9	body=4007,stc=999,sg=100,it=3,bd=100,nmid=1
 {81d97b30-496f-4b6a-8121-c21fb4abf9c3}	body=4015,stc=999,sg=100,it=3,bd=100,nmid=1694,dsid=1794	质量独角兽神纹道具	17015			
 {60496609-1a11-4d7b-af06-7221ad86f5e6}	body=4016,stc=999,sg=100,it=3,bd=100,nmid=1695,dsid=1795	质量狮鹫神纹道具	17016			
 {528d85cb-4637-4a64-b7d7-06a623b65dc0}	body=4017,stc=999,sg=100,it=3,bd=100,nmid=1696,dsid=1796	质量天马神纹道具	17017			
-A9BD0E89-1105-4A52-982A-97E6EE4AD577	stc=999,bd=100,it=2,sd=5,nmid=1616,dsid=1716	突破石道具	18001			NULL
-{1dd08f32-081b-4bdb-95ea-166b1a37ac26}	stc=999,bd=200,it=2,sd=10,nmid=1617,dsid=1717	固定药水	18002			NULL
-{ac7d593c-ce82-4642-97a3-14025da633e4}	stc=999,bd=500,it=2,sd=25,nmid=1639,dsid=1739	基因蛋	18003			
-{6584e7dd-73c2-41a5-b642-dba4fe0af01e}	stc=999,bd=400,it=2,sd=20,nmid=1640,dsid=1740	塔防道具-羊	18004			
-{58513953-0a1d-4cc3-87d9-1683e0846238}	stc=999,bd=400,it=2,sd=20,nmid=1641,dsid=1741	塔防道具-狼	18005			
-{cfd72581-3d42-4738-bc90-35654a3b69f0}	stc=999,bd=400,it=2,sd=20,nmid=1642,dsid=1742	塔防道具-长颈鹿	18006			
-{1c2eb803-7eab-4a4c-b5c6-c1a93814d423}	stc=999,bd=400,it=2,sd=20,nmid=1643,dsid=1743	塔防道具-老虎	18007			
-{8eb3e134-e72c-4b8b-aad1-3a8f534e1829}	stc=999,bd=400,it=2,sd=20,nmid=1644,dsid=1744	塔防道具-柯基	18008			
-{0241c9a5-4683-4dd3-bad9-3c7964380cef}	stc=999,bd=400,it=2,sd=20,nmid=1645,dsid=1745	塔防道具-火龙	18009			
-{549c4f29-14b7-45fc-8ef8-4d5a0bfd41b4}	stc=999,bd=400,it=2,sd=20,nmid=1646,dsid=1746	塔防道具-牛	18010			
-{ea4ca4a3-90b4-4632-8f95-2afc45ba13f9}	stc=999,bd=400,it=2,sd=20,nmid=1647,dsid=1747	塔防道具-马	18011			
-{e3ae9c7b-f2d6-413e-a32a-720bc394d957}	stc=999,bd=400,it=2,sd=20,nmid=1648,dsid=1748	塔防道具-山羊	18012			
-{527c494f-8d46-4bcc-9c11-ab6fa7592d73}	stc=999,bd=400,it=2,sd=20,nmid=1649,dsid=1749	塔防道具-羊驼	18013			
-{dbb0c20b-54b3-423a-91dc-50488b37e83a}	stc=999,bd=400,it=2,sd=20,nmid=1650,dsid=1750	塔防道具-狮子	18014			
-{278ecf10-6b58-4a57-b6e3-497a0af9f29c}	stc=999,bd=400,it=2,sd=20,nmid=1651,dsid=1751	塔防道具-猫	18015			
-{d4850e65-1dbc-46af-88d1-ff90224194cc}	stc=999,bd=400,it=2,sd=20,nmid=1652,dsid=1752	塔防道具-猪	18016			
-{dcffb9a7-088d-4237-b943-72d7336c5ee8}	stc=999,bd=400,it=2,sd=20,nmid=1653,dsid=1753	塔防道具-鸡	18017			
-{5c18af81-bd4d-439a-9dfd-6587aad3b6c2}	stc=999,bd=400,it=2,sd=20,nmid=1654,dsid=1754	塔防道具-独角兽	18018			
-{3255700e-53f8-4f5d-9301-4dc830068c61}	stc=999,bd=400,it=2,sd=20,nmid=1655,dsid=1755	塔防道具-狮鹫	18019			
-{0d8bcf99-1177-40c0-9a69-a40b6c6155e4}	stc=999,bd=400,it=2,sd=20,nmid=1656,dsid=1756	塔防道具-天马	18020			
+A9BD0E89-1105-4A52-982A-97E6EE4AD577	stc=999,bd=100,it=2,sg=500,nmid=1616,dsid=1716	突破石道具	18001			NULL
+{1dd08f32-081b-4bdb-95ea-166b1a37ac26}	stc=999,bd=200,it=2,sg=1000,nmid=1617,dsid=1717	固定药水	18002			NULL
+{ac7d593c-ce82-4642-97a3-14025da633e4}	stc=999,bd=500,it=2,sg=2500,nmid=1639,dsid=1739	基因蛋	18003			
+{6584e7dd-73c2-41a5-b642-dba4fe0af01e}	stc=999,bd=400,it=2,sg=2000,nmid=1640,dsid=1740	塔防道具-羊	18004			
+{58513953-0a1d-4cc3-87d9-1683e0846238}	stc=999,bd=400,it=2,sg=2000,nmid=1641,dsid=1741	塔防道具-狼	18005			
+{cfd72581-3d42-4738-bc90-35654a3b69f0}	stc=999,bd=400,it=2,sg=2000,nmid=1642,dsid=1742	塔防道具-长颈鹿	18006			
+{1c2eb803-7eab-4a4c-b5c6-c1a93814d423}	stc=999,bd=400,it=2,sg=2000,nmid=1643,dsid=1743	塔防道具-老虎	18007			
+{8eb3e134-e72c-4b8b-aad1-3a8f534e1829}	stc=999,bd=400,it=2,sg=2000,nmid=1644,dsid=1744	塔防道具-柯基	18008			
+{0241c9a5-4683-4dd3-bad9-3c7964380cef}	stc=999,bd=400,it=2,sg=2000,nmid=1645,dsid=1745	塔防道具-火龙	18009			
+{549c4f29-14b7-45fc-8ef8-4d5a0bfd41b4}	stc=999,bd=400,it=2,sg=2000,nmid=1646,dsid=1746	塔防道具-牛	18010			
+{ea4ca4a3-90b4-4632-8f95-2afc45ba13f9}	stc=999,bd=400,it=2,sg=2000,nmid=1647,dsid=1747	塔防道具-马	18011			
+{e3ae9c7b-f2d6-413e-a32a-720bc394d957}	stc=999,bd=400,it=2,sg=2000,nmid=1648,dsid=1748	塔防道具-山羊	18012			
+{527c494f-8d46-4bcc-9c11-ab6fa7592d73}	stc=999,bd=400,it=2,sg=2000,nmid=1649,dsid=1749	塔防道具-羊驼	18013			
+{dbb0c20b-54b3-423a-91dc-50488b37e83a}	stc=999,bd=400,it=2,sg=2000,nmid=1650,dsid=1750	塔防道具-狮子	18014			
+{278ecf10-6b58-4a57-b6e3-497a0af9f29c}	stc=999,bd=400,it=2,sg=2000,nmid=1651,dsid=1751	塔防道具-猫	18015			
+{d4850e65-1dbc-46af-88d1-ff90224194cc}	stc=999,bd=400,it=2,sg=2000,nmid=1652,dsid=1752	塔防道具-猪	18016			
+{dcffb9a7-088d-4237-b943-72d7336c5ee8}	stc=999,bd=400,it=2,sg=2000,nmid=1653,dsid=1753	塔防道具-鸡	18017			
+{5c18af81-bd4d-439a-9dfd-6587aad3b6c2}	stc=999,bd=400,it=2,sg=2000,nmid=1654,dsid=1754	塔防道具-独角兽	18018			
+{3255700e-53f8-4f5d-9301-4dc830068c61}	stc=999,bd=400,it=2,sg=2000,nmid=1655,dsid=1755	塔防道具-狮鹫	18019			
+{0d8bcf99-1177-40c0-9a69-a40b6c6155e4}	stc=999,bd=400,it=2,sg=2000,nmid=1656,dsid=1756	塔防道具-天马	18020			
 {6a7b4449-d83d-4fff-99a0-d06d22d298ca}	stc=999,bd=100,it=4,sg=1000,usetid={2B83C942-1E9C-4B45-9816-AD2CBF0E473F},usecount=1000,useptid={7066A96D-F514-42C7-A30E-5E7567900AD4},nmid=1657,dsid=1757	小袋玉米	18021			
 {8e05ed2d-4a0c-4b58-8c77-dab7260f7957}	stc=999,bd=1000,it=4,sg=10000,usetid={2B83C942-1E9C-4B45-9816-AD2CBF0E473F},usecount=10000,useptid={7066A96D-F514-42C7-A30E-5E7567900AD4},nmid=1658,dsid=1758	中袋玉米	18022			
 {32cee2a7-81af-4e17-b680-0c2553c1d020}	stc=999,bd=10000,it=4,sg=100000,usetid={2B83C942-1E9C-4B45-9816-AD2CBF0E473F},usecount=100000,useptid={7066A96D-F514-42C7-A30E-5E7567900AD4},nmid=1659,dsid=1759	大袋玉米	18023			
@@ -215,29 +221,37 @@ A9BD0E89-1105-4A52-982A-97E6EE4AD577	stc=999,bd=100,it=2,sd=5,nmid=1616,dsid=171
 {0a85f12a-d89d-4058-84a4-a0e7998b9748}	stc=999,bd=10000,it=4,sg=1000000,usetid={01959584-E2C9-4E54-BBB7-FCC58A9484EC},usecount=35000,useptid={7066A96D-F514-42C7-A30E-5E7567900AD4},nmid=1662,dsid=1762	大袋木材	18026			
 {5b191535-9a8e-4f4d-acc9-a01f3960cbce}	stc=999,bd=500,it=4,sg=5000,usebpid={5b6dbed0-5323-49ea-aa55-9093dc9f1007},kts=86400,uts=28800,nmid=1663,dsid=1763	防护罩（1天）	18027			
 {2dc6f083-a1b6-419a-9573-42f228aa94e1}	stc=999,bd=1000,it=4,sg=10000,usebpid={5b6dbed0-5323-49ea-aa55-9093dc9f1007},kts=259200,uts=28800,nmid=1664,dsid=1764	防护罩（3天）	18028			
-{41bf1db5-5453-4c7f-9a2b-d597c7320ed9}	stc=999,bd=2000,it=4,sd=20000,usebpid={5b6dbed0-5323-49ea-aa55-9093dc9f1007},kts=604800,uts=28800,nmid=1665,dsid=1765	防护罩（7天）	18029			
+{41bf1db5-5453-4c7f-9a2b-d597c7320ed9}	stc=999,bd=2000,it=4,sg=20000,usebpid={5b6dbed0-5323-49ea-aa55-9093dc9f1007},kts=604800,uts=28800,nmid=1665,dsid=1765	防护罩（7天）	18029			
 {b0a92419-6daa-41c8-9074-957175fd9c3b}	cap=1	合成时候锁住血量天赋	25001			
 {82b18ec6-9190-4804-81b5-33ffa0351ade}	cap=1	合成时候锁住攻击天赋	25002			
 {b10c4510-0c8e-40ad-87bb-6f5828273e29}	cap=1	合成时候锁住质量天赋	25003			
-{8fc39339-777d-4dc5-97a2-d539d7b2d47b}	perfabs=Sheep_Skin_fatiao,nm=4000,mhp=100,atk=50,qlt=10,body=4001,bd=100	羊时装-发条1	26001			
-{e62e432b-a29c-4ddc-b3e0-c8577769ace2}	perfabs=Sheep_Skin_fatiao,nm=4001,mhp=10,atk=100,qlt=20,body=4001,bd=200,charUni=1	羊时装-发条2	26002			
-{7f129c0c-dcc2-43f7-919d-bea175792f14}	perfabs=Sheep_Skin_fatiao,nm=4002,mhp=500,atk=150,qlt=20,body=4001,bd=300	羊时装-发条3	26003			
-{8c98a98b-eae5-43d8-8173-721865e6bdc2}	perfabs=Wolf_Skin_shandian,nm=4003,mhp=60,atk=30,qlt=2,body=4002,bd=2000	狼时装-闪电1	26004			
-{75fb0845-a927-4b7e-a45d-0979d21a6222}	perfabs=Wolf_Skin_shandian,nm=4004,mhp=70,atk=40,qlt=13,body=4002,bd=2000	狼时装-闪电2	26005			
-{d99d2468-1bcb-4e07-9ea7-0da91f37f83b}	perfabs=Giraffe_Skin_yangtuo,nm=4005,mhp=80,atk=30,qlt=15,body=4003,bd=2000	长颈鹿时装-羊驼（临时）	26006			
-{ccfb4d99-54b8-47fb-a00c-493fc3aacabb}	perfabs=Tiger_Skin_nangua,nm=4006,mhp=90,atk=60,qlt=130,body=4004,bd=2000	老虎时装-南瓜	26007			
-{0fb1d4e9-fee3-4908-b7bd-5ebe83aac713}	perfabs=Corgi_Skin_piaochong,nm=4007,mhp=200,atk=321,qlt=11,body=4005,bd=2000	柯基时装-瓢虫	26008			
-{9b60f406-e009-432d-888a-9f8d4973f2c9}	perfabs=Wolf_Skin_shandian,nm=4008,mhp=220,atk=250,qlt=19,body=4006,bd=2000	龙时装-忍龙	26009			
-{8c235021-79a9-4bdd-81e1-2dd88a5d450f}	hbab=4001,hbbb=4002,hbsr=0.7,hbcb=4005,outheadtid={2F49F4FB-18B5-4656-8AB0-D701609091EB},outbodytid={FD5C7CB2-9D57-4434-B392-3334D77D734B},bd=5000	杂交图鉴柯基	30001			
-{df5b745e-41ad-4c4e-bc8a-248b81d43fd2}	hbab=4001,hbbb=4008,hbsr=0.7,hbcb=4005,outheadtid={1D18ADD5-7C0A-48EF-B32C-B1E83658B221},outbodytid={7D9F6D43-D5B3-4B09-BB6B-9C1C805442EF},bd=5000	杂交图鉴长颈鹿	30002			
-{2e0e5ee2-df79-45c7-a5b4-a940a03935a9}	hbab=4012,hbbb=4002,hbsr=0.7,hbcb=4005,outheadtid={11CB6474-04D6-46F2-B361-DC573A6A7CC2},outbodytid={D1F6E618-F7BE-4A81-A74E-121047D26A45},bd=5000	杂交图鉴老虎	30003			
-{f0556e9a-65d4-46c4-8343-43605fd4ad70}	hbab=4005,hbbb=4007,hbsr=0.7,hbcb=4005,outheadtid={fb78d56b-eaa3-40f0-be0b-9df2a1f8fd7d},outbodytid={3817b87f-372b-4b79-bc97-3044321be8c4},bd=5000	杂交图鉴猪	30004			
-{a53d50f6-d68d-47c7-a1e1-6de2928ec341}	hbab=4001,hbbb=4007,hbsr=0.7,hbcb=4005,outheadtid={7db8a3aa-0b2c-4f3a-ab86-db021175ab30},outbodytid={e5cf5686-c8d8-4c8d-8a8d-1745d64ca6e6},bd=5000	杂交图鉴山羊	30005			
-{e64468a0-ea52-40bb-afd5-29561e50eb4a}	hbab=4003,hbbb=4009,hbsr=0.7,hbcb=4005,outheadtid={b5d3d4d2-9352-40fc-8507-4c106d3efe16},outbodytid={a51e557d-8663-4fbc-90df-093966c502fa},bd=5000	杂交图鉴羊驼	30006			
-{07b50ed6-92ea-4414-8cd9-159af54c525c}	hbab=4004,hbbb=4002,hbsr=0.7,hbcb=4005,outheadtid={8b96fa63-15c1-49cb-83f4-d796209a99e1},outbodytid={e41f9fc9-698b-4db5-a596-effeeee2ab46},bd=5000	杂交图鉴狮子	30007			
-{3feaae00-e67c-42e6-a8b3-66e614ff1b16}	hbab=4007,hbbb=4008,hbsr=0.7,hbcb=4005,outheadtid={78f6e3a1-7c60-42ef-9d77-fa4a877c5df8},outbodytid={c27b4d66-6a3b-489c-84ba-60b1802ef563},bd=10000	杂交图鉴独角兽	30008			
-{86601e67-799c-458e-80d7-d0f9ae4f1617}	hbab=4011,hbbb=4014,hbsr=0.7,hbcb=4005,outheadtid={4e699e89-0b7a-4b15-a63d-a0c047a13bcf},outbodytid={63bc5cd8-d403-4db1-a1ff-a7da68dc4b03},bd=10000	杂交图鉴狮鹫	30009			
-{a8c10138-ecd5-4929-bd8c-559ffa062bb9}	hbab=4015,hbbb=4014,hbsr=0.7,hbcb=4005,outheadtid={857d566e-cd1e-4261-ac62-9585ac2646e8},outbodytid={14693f05-2a70-4fce-aed6-afd1951e4275},bd=10000	杂交图鉴天马	30010			
+{8fc39339-777d-4dc5-97a2-d539d7b2d47b}	perfabs=Sheep_Skin_fatiao,nm=4000,mhp=1000,atk=50,qlt=50,body=4001,bd=6400,charUni=1	羊时装-发条	26001			
+{e62e432b-a29c-4ddc-b3e0-c8577769ace2}	perfabs=Sheep_Skin_fatiao,nm=4001,mhp=1250,atk=10,qlt=75,body=4007,bd=6400,charUni=1	牛时装	26002			
+{7f129c0c-dcc2-43f7-919d-bea175792f14}	perfabs=Sheep_Skin_fatiao,nm=4002,mhp=500,atk=125,qlt=25,body=4008,bd=6400,charUni=1	马时装	26003			
+{8c98a98b-eae5-43d8-8173-721865e6bdc2}	perfabs=Wolf_Skin_shandian,nm=4003,mhp=400,atk=120,qlt=40,body=4002,bd=6400,charUni=1	狼时装-闪电	26004			
+{75fb0845-a927-4b7e-a45d-0979d21a6222}	perfabs=Wolf_Skin_shandian,nm=4004,mhp=850,atk=60,qlt=55,body=4009,bd=6400,charUni=1	山羊时装	26005			
+{d99d2468-1bcb-4e07-9ea7-0da91f37f83b}	perfabs=Giraffe_Skin_yangtuo,nm=4005,mhp=1200,atk=30,qlt=50,body=4003,bd=6400,charUni=1	长颈鹿时装-非洲	26006			
+{ccfb4d99-54b8-47fb-a00c-493fc3aacabb}	perfabs=Tiger_Skin_nangua,nm=4006,mhp=900,atk=60,qlt=50,body=4004,bd=6400,charUni=1	老虎时装-南瓜	26007			
+{0fb1d4e9-fee3-4908-b7bd-5ebe83aac713}	perfabs=Corgi_Skin_piaochong,nm=4007,mhp=600,atk=110,qlt=30,body=4005,bd=6400,charUni=1	柯基时装-瓢虫	26008			
+{9b60f406-e009-432d-888a-9f8d4973f2c9}	perfabs=Wolf_Skin_shandian,nm=4008,mhp=500,atk=75,qlt=75,body=4006,bd=6400,charUni=1	龙时装-忍龙	26009			
+{ed023978-4bc1-4883-b73d-94cdd48165ee}	perfabs=Wolf_Skin_shandian,nm=4009,mhp=500,atk=80,qlt=70,body=4010,bd=6400,charUni=1	羊驼时装	26010			
+{9631e335-2246-44d6-80f4-8128c476d514}	perfabs=Wolf_Skin_shandian,nm=4010,mhp=800,atk=80,qlt=40,body=4011,bd=6400,charUni=1	狮子时装	26011			
+{e1fc230e-8388-4506-8500-2acf4c3bb6cb}	perfabs=Wolf_Skin_shandian,nm=4011,mhp=200,atk=160,qlt=20,body=4012,bd=6400,charUni=1	猫时装	26012			
+{438121c1-f4d8-4754-895b-917a2225d876}	perfabs=Wolf_Skin_shandian,nm=4012,mhp=750,atk=25,qlt=100,body=4013,bd=6400,charUni=1	猪时装	26013			
+{70496c6d-430d-44a9-82e7-fc4754d91085}	perfabs=Wolf_Skin_shandian,nm=4013,mhp=1000,atk=85,qlt=15,body=4014,bd=6400,charUni=1	鸡时装	26014			
+{3d6f70e8-df34-469d-8109-3760efb2c1e4}	perfabs=Wolf_Skin_shandian,nm=4014,mhp=500,atk=80,qlt=120,body=4015,bd=6400,charUni=1	独角兽时装	26015			
+{bda05ee8-860d-4754-8782-fe0d5191098f}	perfabs=Wolf_Skin_shandian,nm=4015,mhp=500,atk=120,qlt=80,body=4016,bd=6400,charUni=1	狮鹫时装	26016			
+{1af0c836-394f-4c77-bd8e-d409f909e7c6}	perfabs=Wolf_Skin_shandian,nm=4016,mhp=1500,atk=50,qlt=50,body=4017,bd=6400,charUni=1	天马时装	26017			
+{8c235021-79a9-4bdd-81e1-2dd88a5d450f}	hbab=4001,hbbb=4002,hbsr=0.2,hbcb=4005,outheadtid={2F49F4FB-18B5-4656-8AB0-D701609091EB},outbodytid={FD5C7CB2-9D57-4434-B392-3334D77D734B},bd=5000,charUni=1	杂交图鉴柯基	30001			
+{df5b745e-41ad-4c4e-bc8a-248b81d43fd2}	hbab=4001,hbbb=4008,hbsr=0.2,hbcb=4005,outheadtid={1D18ADD5-7C0A-48EF-B32C-B1E83658B221},outbodytid={7D9F6D43-D5B3-4B09-BB6B-9C1C805442EF},bd=5000,charUni=1	杂交图鉴长颈鹿	30002			
+{2e0e5ee2-df79-45c7-a5b4-a940a03935a9}	hbab=4012,hbbb=4002,hbsr=0.2,hbcb=4005,outheadtid={11CB6474-04D6-46F2-B361-DC573A6A7CC2},outbodytid={D1F6E618-F7BE-4A81-A74E-121047D26A45},bd=5000,charUni=1	杂交图鉴老虎	30003			
+{f0556e9a-65d4-46c4-8343-43605fd4ad70}	hbab=4005,hbbb=4007,hbsr=0.2,hbcb=4005,outheadtid={fb78d56b-eaa3-40f0-be0b-9df2a1f8fd7d},outbodytid={3817b87f-372b-4b79-bc97-3044321be8c4},bd=5000,charUni=1	杂交图鉴猪	30004			
+{a53d50f6-d68d-47c7-a1e1-6de2928ec341}	hbab=4001,hbbb=4007,hbsr=0.2,hbcb=4005,outheadtid={7db8a3aa-0b2c-4f3a-ab86-db021175ab30},outbodytid={e5cf5686-c8d8-4c8d-8a8d-1745d64ca6e6},bd=5000,charUni=1	杂交图鉴山羊	30005			
+{e64468a0-ea52-40bb-afd5-29561e50eb4a}	hbab=4003,hbbb=4009,hbsr=0.2,hbcb=4005,outheadtid={b5d3d4d2-9352-40fc-8507-4c106d3efe16},outbodytid={a51e557d-8663-4fbc-90df-093966c502fa},bd=5000,charUni=1	杂交图鉴羊驼	30006			
+{07b50ed6-92ea-4414-8cd9-159af54c525c}	hbab=4004,hbbb=4002,hbsr=0.2,hbcb=4005,outheadtid={8b96fa63-15c1-49cb-83f4-d796209a99e1},outbodytid={e41f9fc9-698b-4db5-a596-effeeee2ab46},bd=5000,charUni=1	杂交图鉴狮子	30007			
+{3feaae00-e67c-42e6-a8b3-66e614ff1b16}	hbab=4007,hbbb=4008,hbsr=0.2,hbcb=4005,outheadtid={78f6e3a1-7c60-42ef-9d77-fa4a877c5df8},outbodytid={c27b4d66-6a3b-489c-84ba-60b1802ef563},bd=10000,charUni=1	杂交图鉴独角兽	30008			
+{86601e67-799c-458e-80d7-d0f9ae4f1617}	hbab=4011,hbbb=4014,hbsr=0.2,hbcb=4005,outheadtid={4e699e89-0b7a-4b15-a63d-a0c047a13bcf},outbodytid={63bc5cd8-d403-4db1-a1ff-a7da68dc4b03},bd=10000,charUni=1	杂交图鉴狮鹫	30009			
+{a8c10138-ecd5-4929-bd8c-559ffa062bb9}	hbab=4015,hbbb=4014,hbsr=0.2,hbcb=4005,outheadtid={857d566e-cd1e-4261-ac62-9585ac2646e8},outbodytid={14693f05-2a70-4fce-aed6-afd1951e4275},bd=10000,charUni=1	杂交图鉴天马	30010			
 2B83C942-1E9C-4B45-9816-AD2CBF0E473F	stc=-1	金币	99001	NULL	NULL	NULL
 3E365BEC-F83D-467D-A58C-9EBA43458682	stc=-1,count=0	钻石	99002	NULL	NULL	NULL
 01959584-E2C9-4E54-BBB7-FCC58A9484EC	stc=10000，isuni=1	木材	99003	NULL	NULL	NULL
@@ -363,7 +377,7 @@ F8B1987D-FDF3-4090-9E9B-EBAF1DB2DCCD	cap=-1	坐骑组合的身体	NULL	NULL	NULL
 {26c63192-867a-43f4-919b-10a614ee2865}	mtype=3,stc=-1,mtid1={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount1=5,mtid2={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount2=10,mtid3={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount3=15,mtid4={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount4=20,mtid5={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount5=25,mtid6={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount6=30,mtid7={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount7=40,mtid8={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount8=45,mtid9={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount9=50,nmid=3016	炮塔成就	51017			
 {03d80847-f273-413b-a2a2-81545ab03a89}	mtype=3,stc=-1,mtid1={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount1=5,mtid2={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount2=10,mtid3={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount3=15,mtid4={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount4=20,mtid5={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount5=25,mtid6={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount6=30,mtid7={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount7=40,mtid8={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount8=45,mtid9={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount9=50,nmid=3017	陷阱成就	51018			
 {5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d}	mtype=3,stc=-1,mtid1={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount1=5,mtid2={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount2=10,mtid3={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount3=15,mtid4={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount4=20,mtid5={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount5=25,mtid6={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount6=30,mtid7={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount7=40,mtid8={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount8=45,mtid9={3E365BEC-F83D-467D-A58C-9EBA43458682},mcount9=50,nmid=3018	旗帜成就	51019			
-{6bb44d6b-d02f-4e89-9009-42718087294b}	vo2=1,hat=2,fas=2,tdc=3,jsc=0,vo3=3,pvpc=4,fc=4,ttc=5,tac=6,vo4=7	等级解锁	20000000			
+{6bb44d6b-d02f-4e89-9009-42718087294b}	vo2=1,hat=2,fas=2,jsc=0,vo3=3,pvpc=4,fc=4,ttc=5,tac=6,vo4=7	等级解锁	20000000			
 {88bd69b7-5af8-49f1-9232-fc5e4f8f346d}	cf=7010,wolf=7010,zbg=7022,wc=7023,wt=7023,zkt=7033,bd=7033,tm=7033	小关ID解锁	20000001			
 {0C741F97-12EC-4463-85B0-C1782656E853}	cap=-1	邮件槽				暂未实装，仅占位用
-{9FB9BA0E-244B-4CC3-A151-461AD18E2699}		商城槽				记录和商城功能相关的一些数据
+{9FB9BA0E-244B-4CC3-A151-461AD18E2699}	msg<页签名>=100|200|500|1000|2500|5000	商城槽				记录和商城功能相关的一些数据

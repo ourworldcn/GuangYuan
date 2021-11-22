@@ -97,12 +97,7 @@ namespace Gy001
             #endregion 配置Swagger
 
             #region 配置游戏专用服务
-            services.AddGameManagers();
-
-            //services.AddTransient(options => new GY001UserContext(new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).Options));
-            //services.AddSingleton(UserDbOptions => new GY001TemplateContext(new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options));
-
-            //services.Configure<VWorldOptions>(Configuration.GetSection("VWorldOptions"));
+            services.AddGameServices();
 
 
             services.AddSingleton(c => new VWorld(c, new VWorldOptions()
