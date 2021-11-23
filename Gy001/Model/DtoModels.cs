@@ -3074,13 +3074,13 @@ namespace GY2021001WebApi.Models
         /// 销售周期的单位字符(小写)。n表示无限。
         /// </summary>
         [DataMember]
-        public char SellPeriodUnit => string.IsNullOrWhiteSpace(SellPeriod) ? 'n' : char.ToLower(SellPeriod[^1]);
+        public char SellPeriodUnit => string.IsNullOrWhiteSpace(SellPeriod) ? 'n' : char.ToLower(SellPeriod[SellPeriod.Length - 1]);
 
         /// <summary>
         /// 销售周期的单位的标量数值。
         /// </summary>
         [DataMember]
-        public decimal SellPeriodValue => !string.IsNullOrWhiteSpace(SellPeriod) && decimal.TryParse(SellPeriod[0..^1], out var val) ? val : -1;
+        public decimal SellPeriodValue => !string.IsNullOrWhiteSpace(SellPeriod) && decimal.TryParse(SellPeriod.Substring(0, SellPeriod.Length - 1), out var val) ? val : -1;
 
         /// <summary>
         /// 销售的最大数量。-1表示不限制。

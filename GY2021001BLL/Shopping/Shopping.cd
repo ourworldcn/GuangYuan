@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="GuangYuan.GY001.BLL.StringsFromDictionary" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAMABACAAAAQAAAAEAAAAAAAAABAAAAAEAgAgAAA=</HashCode>
+      <FileName>Shopping\GameShoppingBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.GameShoppingManagerOptions">
+    <Position X="1" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Shopping\GameShopping.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.GameShoppingManager" Collapsed="true">
+    <Position X="2.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQIAAAAAAABQAAAAAAgAAAAAAAACAAAIAAAAAAAABAI=</HashCode>
+      <FileName>Shopping\GameShopping.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.RefreshDatas" Collapsed="true">
+    <Position X="4.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>Shopping\GameShopping.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.BuyDatas" Collapsed="true">
+    <Position X="1" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAARAACAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Shopping\GameShopping.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.GetListDatas" Collapsed="true">
+    <Position X="2.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAAAACAAAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>Shopping\GameShopping.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.GameShoppingManagerExtensions" Collapsed="true">
+    <Position X="4.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Shopping\GameShopping.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.ShoppingSlotView">
+    <Position X="6.25" Y="3.25" Width="3" />
+    <TypeIdentifier>
+      <HashCode>EACAAYAAAAAgBAgAAIAAAAAIgCAAABAEQAAAAAAgEBA=</HashCode>
+      <FileName>Shopping\GameShopping.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

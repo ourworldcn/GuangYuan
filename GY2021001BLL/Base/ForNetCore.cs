@@ -24,6 +24,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -192,11 +193,11 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            var dic = new Dictionary<string, int>();
+            var dic = new Dictionary<Guid, int>();
             Random random = new Random();
             for (int i = 0; i < 10; i++)
             {
-                dic.Add("key" + i.ToString(), random.Next());
+                dic.Add(Guid.NewGuid(), random.Next());
             }
             //var jstr = JsonSerializer.Serialize(dic, dic.GetType());
 

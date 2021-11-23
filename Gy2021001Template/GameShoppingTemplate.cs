@@ -107,15 +107,15 @@ namespace GuangYuan.GY001.TemplateDb
                     break;
                 case 's':
                     var times = (now - templateStart).Ticks / TimeSpan.FromSeconds((double)val).Ticks;  //相隔秒数
-                    start = now.AddTicks(times * TimeSpan.FromSeconds((double)val).Ticks);
+                    start = templateStart.AddTicks(times * TimeSpan.FromSeconds((double)val).Ticks);
                     break;
                 case 'd':   //日周期
                     times = (now - templateStart).Ticks / TimeSpan.FromDays((double)val).Ticks;  //相隔日数
-                    start = now.AddTicks(times * TimeSpan.FromDays((double)val).Ticks);
+                    start = templateStart.AddTicks(times * TimeSpan.FromDays((double)val).Ticks);
                     break;
                 case 'w':   //周周期
                     times = (now - templateStart).Ticks / TimeSpan.FromDays(7 * (double)val).Ticks;  //相隔周数
-                    start = now.AddTicks(TimeSpan.FromDays(7 * (double)val).Ticks * times);
+                    start = templateStart.AddTicks(TimeSpan.FromDays(7 * (double)val).Ticks * times);
                     break;
                 case 'm':   //月周期
                     DateTime tmp;

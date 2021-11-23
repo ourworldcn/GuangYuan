@@ -31,7 +31,7 @@ namespace GY2021001WebApi.Models
                 ValidPeriod = template.ValidPeriod,
                 Start = template.GetStart(dt),
                 End = template.GetEnd(dt),
-                CountOfBuyed = view.GetCount(template, dt),
+                CountOfBuyed = view.GetCountOfBuyed(template, dt),
             };
             foreach (var item in template.Properties)
             {
