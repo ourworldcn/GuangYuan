@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using System;
 using System.Linq;
 
 namespace Gy001.Controllers
@@ -55,7 +56,9 @@ namespace Gy001.Controllers
             BuyResultDto result = new BuyResultDto();
             using var datas = new BuyDatas(World, model.Token)
             {
-                UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>()
+                UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>(),
+                ShoppingId=OwConvert.ToGuid( model.ShoppingId),
+                Count=model.Count,
             };
             World.ShoppingManager.Buy(datas);
             result.HasError = datas.HasError;

@@ -200,7 +200,7 @@ namespace GuangYuan.GY001.BLL
                 dic.Add(Guid.NewGuid(), random.Next());
             }
             //var jstr = JsonSerializer.Serialize(dic, dic.GetType());
-
+            
             var sbPool = world.Service.GetRequiredService<ObjectPool<StringBuilder>>();
         }
 

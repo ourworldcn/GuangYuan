@@ -1251,13 +1251,20 @@ namespace OW.Game.Item
                 if (bpid != Guid.Empty)    //若指定了蓝图
                 {
                     var template = bpMng.GetTemplateFromId(bpid) as BlueprintTemplate;
-                    ApplyBlueprintDatas bpDatas = new ApplyBlueprintDatas(Service, datas.GameChar)
+                    using ApplyBlueprintDatas bpDatas = new ApplyBlueprintDatas(Service, datas.GameChar)
                     {
                         Count = 1,
                         Blueprint = template,
                     };
                     bpDatas.GameItems.Add(gi);
-                    //TO DO
+                    World.BlueprintManager.ApplyBluprint(bpDatas);
+                    datas.ErrorCode = bpDatas.ErrorCode;
+                    datas.ErrorMessage = bpDatas.ErrorMessage;
+                    if (!datas.HasError)
+                    {
+                        datas.ChangeItems.AddRange(bpDatas.ChangeItems);
+                        ChangeItem.Reduce(datas.ChangeItems);
+                    }
                 }
                 else //若无蓝图
                 {

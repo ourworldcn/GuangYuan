@@ -3,13 +3,11 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using OW.Game.Item;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -346,7 +344,7 @@ namespace GuangYuan.GY001.BLL
                         succ = true;
                         break;
                     case "c7051e47-0a73-4319-85dc-7b02f26f14f4": //兽栏背包扩容
-                        if(datas.GameItems.Count==0)    //若没指定物品
+                        if (datas.GameItems.Count == 0)    //若没指定物品
                         {
                             datas.GameItems.Add(datas.GameChar.GetShoulanBag());
                         }
@@ -354,7 +352,7 @@ namespace GuangYuan.GY001.BLL
                         succ = true;
                         break;
                     case "b5288563-0543-4d4b-b466-83386ccf188c":    //孵化槽解锁
-                        if(datas.GameItems.Count==0)    //若没指定物品
+                        if (datas.GameItems.Count == 0)    //若没指定物品
                         {
                             datas.GameItems.Add(datas.GameChar.GetFuhuaSlot());
                         }
@@ -385,7 +383,23 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         private void SignInOfDay7(ApplyBlueprintDatas datas)
         {
-            //TO DO
+            const string CountKeyName = "Day7Count";
+            if (!datas.Verify(datas.GameItems.Count == 1, "物品数量不对"))
+                return;
+            var gi = datas.GameItems[0];    //物品
+            var tt = gi.Template;
+            var gc = datas.GameChar;
+            var day = (int)gc.Properties.GetDecimalOrDefault(CountKeyName) % 7; //应该获取哪天的物品
+            var tid = tt.Properties.GetGuidOrDefault($"usetid{day}");
+            var ptid = tt.Properties.GetGuidOrDefault($"useptid{day}");
+            var count = tt.Properties.GetDecimalOrDefault($"usecount{day}");
+            var parent = gc.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);  //容器
+            var dest = new GameItem();
+            World.EventsManager.GameItemCreated(dest, tid);    //创建物品
+            dest.Count = count;
+            World.ItemManager.AddItem(dest, parent, null, datas.ChangeItems);
+            
+            gc.Properties[CountKeyName] = (decimal)day + 1; //设置已经获取的天计数
         }
 
         private void MountsLevelUp(ApplyBlueprintDatas datas)
