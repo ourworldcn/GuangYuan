@@ -85,7 +85,11 @@ namespace GuangYuan.GY001.BLL
 
         public ConcurrentDictionary<Guid, GameShoppingTemplate> Id2Shopping => _Id2Shopping.Value;
 
-
+        private Lazy<ConcurrentDictionary<Guid, GameMissionTemplate>> _Id2Mission;
+        /// <summary>
+        /// 任务定义模板。
+        /// </summary>
+        public ConcurrentDictionary<Guid, GameMissionTemplate> Id2Mission => _Id2Mission.Value;
         #endregion 属性及相关
 
         private void Initialize()
@@ -97,8 +101,13 @@ namespace GuangYuan.GY001.BLL
             }, LazyThreadSafetyMode.ExecutionAndPublication);
             _Id2Shopping = new Lazy<ConcurrentDictionary<Guid, GameShoppingTemplate>>(() =>
             {
-                var db = TemplateContext;
+                using var db = World.CreateNewTemplateDbContext();
                 return new ConcurrentDictionary<Guid, GameShoppingTemplate>(db.ShoppingTemplates.AsNoTracking().ToDictionary(c => c.Id));
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
+            _Id2Mission = new Lazy<ConcurrentDictionary<Guid, GameMissionTemplate>>(() =>
+            {
+                using var db = World.CreateNewTemplateDbContext();
+                return new ConcurrentDictionary<Guid, GameMissionTemplate>(db.MissionTemplates.AsNoTracking().ToDictionary(c => c.Id));
             }, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 

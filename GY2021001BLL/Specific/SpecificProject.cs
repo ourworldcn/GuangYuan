@@ -446,7 +446,7 @@ namespace GuangYuan.GY001.BLL
         public static bool ItemTemplateLoaded(DbContext itemTemplates)
         {
             bool dbDirty = false;
-            //Comparer<GameItemTemplate> comparer = Comparer<GameItemTemplate>.Create((l, r) =>
+            //Comparer<GameItemTemplate> comparer = Comparer<GameItemTemplate>.ToGameItems((l, r) =>
             //{
             //    if (l == r)
             //        return 0;

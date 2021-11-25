@@ -9,6 +9,7 @@ using OW.Game.Item;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -79,7 +80,7 @@ namespace OW.Game.Mission
                                     dic["htid"] = mhtid;
                                     dic["btid"] = _Template.Properties.GetValueOrDefault($"mbtid{item}");    //必须有身体模板id
                                 }
-                                var gi = gim.Create(dic); //创建对象
+                                var gi = gim.ToGameItems(dic); //创建对象
                                 _Metrics.Add((item, gi.First()));
                             }
                             _Metrics.Sort(Comparer<(decimal, GameItem)>.Create((l, r) => decimal.Compare(l.Item1, r.Item1)));
@@ -442,6 +443,238 @@ namespace OW.Game.Mission
                 return false;
         }
 
+        #region 任务相关
+
+        /// <summary>
+        /// 完成任务。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void Complete(MissionCompleteDatas datas)
+        {
+            using var dwUser = datas.LockUser();
+            if (dwUser is null)
+                return;
+            if (!World.ItemTemplateManager.Id2Mission.TryGetValue(datas.MissionTId, out var template))
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "找不到指定模板";
+                return;
+            }
+            MissionView view = new MissionView(datas.World, datas.GameChar);
+            if (template.PreMissionIds.All(c => view.MissionStates.TryGetValue(c, out var state) && state == MissionState.Completion))   //若可以完成
+            {
+                //送物品
+                //保存数据
+                view.MissionStates[datas.MissionTId] = MissionState.Completion;
+                view.Save();
+                World.CharManager.NotifyChange(datas.GameChar.GameUser);
+            }
+            else //有错误
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                datas.ErrorMessage = "至少一个前置任务没有完成";
+            }
+        }
+
+        /// <summary>
+        /// 检查指定的一组任务的状态。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void GetMissionState(GetMissionStateDatas datas)
+        {
+            using var dwUser = datas.LockUser();
+            if (dwUser is null)
+                return;
+            var gitm = World.ItemTemplateManager;
+            var list = datas.TIds.Select(c =>
+            {
+                if (!gitm.Id2Mission.TryGetValue(c, out var tt))
+                    return null;
+                return tt;
+            }).Where(c => c != null).ToList();
+            if (list.Count != datas.TIds.Count)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "至少一个任务找不到模板";
+                return;
+            }
+            MissionView view = new MissionView(datas.World, datas.GameChar);
+            for (int i = 0; i < list.Count; i++)
+            {
+                var tid = datas.TIds[i];
+                if (view.MissionStates.TryGetValue(tid, out var state))
+                    datas.State.Add(state);
+                else
+                    datas.State.Add(MissionState.WaitingForActivation);
+            }
+        }
+        #endregion 任务相关
+    }
+
+    public class GetMissionStateDatas : ComplexWorkDatasBase
+    {
+        public GetMissionStateDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public GetMissionStateDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public GetMissionStateDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 任务模板Id的集合。
+        /// </summary>
+        public List<Guid> TIds { get; set; }
+
+        /// <summary>
+        /// 任务状态，索引与TIds对应。当前=9就是完成，否则就是没完成。
+        /// </summary>
+        public List<MissionState> State { get; set; }
+    }
+
+    /// <summary>
+    /// 任务的状态。
+    /// </summary>
+    [Flags]
+    public enum MissionState
+    {
+        None = 0,
+
+        /// <summary>
+        /// 任务的前置条件不满足。
+        /// </summary>
+        WaitingForActivation = 1,
+
+        /// <summary>
+        /// 任务前置条件满足，但还未开始。
+        /// </summary>
+        WaitingToRun = 2,
+
+        RunningFlag = 4,
+        /// <summary>
+        /// 进行中。
+        /// </summary>
+        Running = RunningFlag | 1,
+
+        /// <summary>
+        /// 等待子任务完成。
+        /// </summary>
+        WaitingForChildrenToComplete = RunningFlag | Running | 2,
+
+        CompletionFlag = 8,
+
+        /// <summary>
+        /// 已经完成。
+        /// </summary>
+        Completion = CompletionFlag | 1,
+
+        /// <summary>
+        /// 用户已经取消。
+        /// </summary>
+        Canceled = CompletionFlag | 2,
+
+        /// <summary>
+        /// 任务失败。
+        /// </summary>
+        Faulted = CompletionFlag | 4,
+    }
+
+    public class MissionView : GameCharWorkDataBase
+    {
+        public MissionView([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public MissionView([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public MissionView([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        Dictionary<Guid, MissionState> _MissionStates;
+        const string KeyName = "MissionStates";
+
+        /// <summary>
+        /// 任务状态字典。
+        /// </summary>
+        public Dictionary<Guid, MissionState> MissionStates
+        {
+            get
+            {
+                if (_MissionStates is null)
+                {
+                    _MissionStates = new Dictionary<Guid, MissionState>();
+                    var gep = GameChar.ExtendProperties.FirstOrDefault(c => c.Name == KeyName);
+                    if (gep != null && gep.ByteArray.Length > 0)
+                    {
+                        using (var ms = new MemoryStream(gep.ByteArray))
+                        using (var br = new BinaryReader(ms))
+                        {
+                            var count = br.ReadInt32();
+                            for (int i = 0; i < count; i++)
+                            {
+                                var key = br.ReadGuid();
+                                var val = (MissionState)br.ReadInt32();
+                                _MissionStates[key] = val;
+                            }
+                        }
+                    }
+                }
+                return _MissionStates;
+            }
+        }
+
+        public void Save()
+        {
+            if (null != _MissionStates)    //若需要存储
+            {
+                var gep = GameChar.ExtendProperties.FirstOrDefault(c => c.Name == KeyName);
+                if (gep is null)
+                {
+                    gep = new GameExtendProperty(KeyName, GameChar.Id);
+                    GameChar.ExtendProperties.Add(gep);
+                }
+                MemoryStream ms;
+                using (ms = new MemoryStream())
+                using (var bw = new BinaryWriter(ms))
+                {
+                    bw.Write(_MissionStates.Count);
+                    foreach (var item in _MissionStates)
+                    {
+                        bw.Write(item.Key);
+                        bw.Write((int)item.Value);
+                    }
+                }
+                gep.ByteArray = ms.ToArray();
+            }
+            UserContext.SaveChanges();
+        }
+    }
+
+    public class MissionCompleteDatas : ChangeItemsWorkDatasBase
+    {
+        public MissionCompleteDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public MissionCompleteDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public MissionCompleteDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 要完成任务的模板Id。
+        /// </summary>
+        public Guid MissionTId { get; set; }
     }
 
     /// <summary>

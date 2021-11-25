@@ -21,24 +21,28 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="bag"></param>
-        /// <param name="prefix"></param>
+        /// <param name="prefix">键的前缀，省略或为null表示没有前缀。</param>
         /// <returns></returns>
-        public static IEnumerable<GameItem> Create(this GameItemManager manager, IReadOnlyDictionary<string, object> bag, string prefix = "")
+        public static IEnumerable<GameItem> ToGameItems(this GameItemManager manager, IReadOnlyDictionary<string, object> bag, string prefix = null)
         {
-            string tidPrefix = prefix + "tid";
-            string tidCount = prefix + "count";
-            string htidPrefix = prefix + "htid";
-            string btidPrefix = prefix + "btid";
+            string tidPrefix = $"{prefix}tid";
+            string tidCount = $"{prefix}count";
+            string htidPrefix = $"{prefix}htid";
+            string btidPrefix = $"{prefix}btid";
+            string ptidPrefix = $"{prefix}ptid";
             var coll = bag.Keys.Where(c => c.StartsWith(tidPrefix));
             List<GameItem> result = new List<GameItem>();
             var eventManager = manager.World.EventsManager;
             foreach (var item in coll)
             {
-                var tid = bag.GetGuidOrDefault(item);
                 var indexStr = item[tidPrefix.Length..];
+                if (int.TryParse(indexStr, out _))  //若不是有效的索引
+                    continue;
+                var tid = bag.GetGuidOrDefault(item);
                 var count = bag.GetDecimalOrDefault($"{tidCount}{indexStr}");
                 var htid = bag.GetGuidOrDefault($"{htidPrefix}{indexStr}");
                 var btid = bag.GetGuidOrDefault($"{btidPrefix}{indexStr}");
+                var ptid = bag.GetGuidOrDefault($"{ptidPrefix}{indexStr}");
                 GameItem gi;
                 if (htid != Guid.Empty && btid != Guid.Empty)    //若创建生物
                 {
@@ -54,6 +58,8 @@ namespace GuangYuan.GY001.BLL
                         gi.Count = count;
                     else //若不可堆叠
                         gi.Count = 1;
+                if (ptid != Guid.Empty)    //若指定了容器模板Id
+                    gi.Properties["ptid"] = ptid.ToString();
                 result.Add(gi);
             }
             return result;

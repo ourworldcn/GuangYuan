@@ -1334,6 +1334,56 @@ namespace OW.Game.Item
             var next = collNext.Take(25).ToList();
             datas.Next.AddRange(next);
         }
+
+        /// <summary>
+        /// 追加物品，如果无法放入则发送邮件邮寄。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void AddItemsOrMail(AddItemsOrMailDatas datas)
+        {
+            using var dwUser = datas.LockUser();
+            if (dwUser is null)
+                return;
+            var container = datas.GameChar.AllChildren.ToLookup(c => c.TemplateId);
+
+            List<GameItem> re = new List<GameItem>();
+            var coll = (from tmp in datas.Items
+                        group tmp.Item1 by tmp.Item2 into g
+                        let parent = container[g.Key].FirstOrDefault()
+                        where parent != null
+                        select (g, parent)).ToList();
+
+            foreach (var item in coll)
+            {
+                AddItems(item.g, item.parent, re, datas.ChangeItems);
+            }
+            if (re.Count > 0)  //若需要发送邮件
+            {
+                var mail = new GameMail();
+                World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, re.Select(c => (c, GetDefaultContainer(datas.GameChar, c).TemplateId)));
+            }
+            ChangeItem.Reduce(datas.ChangeItems);
+        }
+    }
+
+    public class AddItemsOrMailDatas : ChangeItemsAndMailWorkDatsBase
+    {
+        public AddItemsOrMailDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public AddItemsOrMailDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public AddItemsOrMailDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 要加入的物品和指定的容器的模板Id。
+        /// </summary>
+        public List<(GameItem, Guid)> Items { get; } = new List<(GameItem, Guid)>();
     }
 
     public class UseItemsView

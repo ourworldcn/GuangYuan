@@ -44,6 +44,11 @@ namespace GuangYuan.GY001.TemplateDb
         /// 商城定义表。
         /// </summary>
         public DbSet<GameShoppingTemplate> ShoppingTemplates { get; set; }
+
+        /// <summary>
+        /// 任务定义。
+        /// </summary>
+        public DbSet<GameMissionTemplate> MissionTemplates { get; set; }
     }
 
     public static class TemplateMigrateDbInitializer
