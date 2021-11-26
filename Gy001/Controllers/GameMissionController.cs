@@ -47,5 +47,53 @@ namespace Gy001.Controllers
             return result;
         }
 
+        /// <summary>
+        /// 获取任务状态。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public ActionResult<GetMissionStateReturnDto> GetMissionState(GetMissionStateParamsDto model)
+        {
+            var result = new GetMissionStateReturnDto();
+            using GetMissionStateDatas datas = new GetMissionStateDatas(World, model.Token) { };
+            datas.TIds.AddRange(model.TIds.Select(c => OwConvert.ToGuid(c)));
+            World.MissionManager.GetMissionState(datas);
+            result.HasError = datas.HasError;
+            result.ErrorCode = datas.ErrorCode;
+            result.DebugMessage = datas.ErrorMessage;
+            if (!result.HasError)
+            {
+                result.TIds.AddRange(datas.TIds.Select(c => c.ToBase64String()));
+                result.State.AddRange(datas.State.Select(c => (int)c));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 标记完成任务。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<CompleteMissionReturnDto> Complete(CompleteMissionParamsDto model)
+        {
+            var result = new CompleteMissionReturnDto();
+            using var datas = new MissionCompleteDatas(World, model.Token)
+            {
+                MissionTId = OwConvert.ToGuid(model.MissionTId),
+            };
+            World.MissionManager.Complete(datas);
+            result.HasError = datas.HasError;
+            result.ErrorCode = datas.ErrorCode;
+            result.DebugMessage = datas.ErrorMessage;
+            if (!result.HasError)
+            {
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                result.MailIds.AddRange(datas.MailIds.Select(c => c.ToBase64String()));
+            }
+            return result;
+        }
     }
+
 }

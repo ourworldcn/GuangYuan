@@ -2337,6 +2337,46 @@
             最好使用枚举 SocialKeyTypes 类型的值填充此集合。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.CompleteMissionParamsDto">
+            <summary>
+            完成任务接口的参数数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CompleteMissionParamsDto.MissionTId">
+            <summary>
+            要完成任务的模板Id。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CompleteMissionReturnDto">
+            <summary>
+            完成任务接口的返回值数据封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetMissionStateParamsDto">
+            <summary>
+            获取任务状态接口参数的数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetMissionStateParamsDto.TIds">
+            <summary>
+            任务模板Id的集合。空集合表示所有任务状态。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetMissionStateReturnDto">
+            <summary>
+            获取任务状态接口返回值数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetMissionStateReturnDto.TIds">
+            <summary>
+            任务模板Id的集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetMissionStateReturnDto.State">
+            <summary>
+            任务状态，索引与TIds对应。当前=9就是完成，否则就是没完成。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetMissionRewardReturnDto">
             <summary>
             获取成就奖励接口GetMissionReward返回值封装类。
@@ -2531,6 +2571,20 @@
             <param name="model"></param>
             <returns></returns>
             <response code="401">令牌错误。</response>
+        </member>
+        <member name="M:Gy001.Controllers.GameMissionController.GetMissionState(GY2021001WebApi.Models.GetMissionStateParamsDto)">
+            <summary>
+            获取任务状态。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameMissionController.Complete(GY2021001WebApi.Models.CompleteMissionParamsDto)">
+            <summary>
+            标记完成任务。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="T:Gy001.Controllers.GameShoppingController">
             <summary>

@@ -460,10 +460,37 @@ namespace OW.Game.Mission
                 datas.ErrorMessage = "找不到指定模板";
                 return;
             }
-            MissionView view = new MissionView(datas.World, datas.GameChar);
+            using MissionView view = new MissionView(datas.World, datas.GameChar);
             if (template.PreMissionIds.All(c => view.MissionStates.TryGetValue(c, out var state) && state == MissionState.Completion))   //若可以完成
             {
+                if (view.MissionStates.TryGetValue(datas.MissionTId, out var state) && state == MissionState.Completion)  //若已经完成
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                    datas.ErrorMessage = "指定任务已经完成。";
+                    return;
+                }
+                var gim = World.ItemManager;
                 //送物品
+                var gis = gim.ToGameItems(template.Properties, "reward");
+                if (gis.Count() > 0)
+                {
+                    //加入物品
+                    AddItemsOrMailDatas data = new AddItemsOrMailDatas(datas.World, datas.GameChar);
+                    data.Items.AddRange(gis.Select(c =>
+                    {
+                        if (!c.Properties.Remove("ptid", out var tmp) || !OwHelper.TryGetGuid(tmp, out var id))
+                            id = Guid.Empty;
+                        return (c, id);
+                    }));
+                    gim.AddItemsOrMail(data);
+                    datas.ErrorCode = data.ErrorCode;
+                    datas.ErrorMessage = data.ErrorMessage;
+                    if (!datas.HasError)
+                    {
+                        datas.ChangeItems.AddRange(data.ChangeItems);
+                        datas.MailIds.AddRange(data.MailIds);
+                    }
+                }
                 //保存数据
                 view.MissionStates[datas.MissionTId] = MissionState.Completion;
                 view.Save();
@@ -486,19 +513,26 @@ namespace OW.Game.Mission
             if (dwUser is null)
                 return;
             var gitm = World.ItemTemplateManager;
-            var list = datas.TIds.Select(c =>
+            List<GameMissionTemplate> list;
+            if (datas.TIds.Count == 0) //若获取所有任务状态
             {
-                if (!gitm.Id2Mission.TryGetValue(c, out var tt))
-                    return null;
-                return tt;
-            }).Where(c => c != null).ToList();
+                datas.TIds.AddRange(World.ItemTemplateManager.Id2Mission.Keys);
+                list = World.ItemTemplateManager.Id2Mission.Values.ToList();
+            }
+            else
+                list = datas.TIds.Select(c =>
+                {
+                    if (!gitm.Id2Mission.TryGetValue(c, out var tt))
+                        return null;
+                    return tt;
+                }).Where(c => c != null).ToList();
             if (list.Count != datas.TIds.Count)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                 datas.ErrorMessage = "至少一个任务找不到模板";
                 return;
             }
-            MissionView view = new MissionView(datas.World, datas.GameChar);
+            using MissionView view = new MissionView(datas.World, datas.GameChar);
             for (int i = 0; i < list.Count; i++)
             {
                 var tid = datas.TIds[i];
@@ -526,14 +560,14 @@ namespace OW.Game.Mission
         }
 
         /// <summary>
-        /// 任务模板Id的集合。
+        /// 任务模板Id的集合。空集合表示所有任务状态，返回时会填写所有任务id。
         /// </summary>
-        public List<Guid> TIds { get; set; }
+        public List<Guid> TIds { get; } = new List<Guid>();
 
         /// <summary>
         /// 任务状态，索引与TIds对应。当前=9就是完成，否则就是没完成。
         /// </summary>
-        public List<MissionState> State { get; set; }
+        public List<MissionState> State { get; } = new List<MissionState>();
     }
 
     /// <summary>
@@ -657,7 +691,7 @@ namespace OW.Game.Mission
         }
     }
 
-    public class MissionCompleteDatas : ChangeItemsWorkDatasBase
+    public class MissionCompleteDatas : ChangeItemsAndMailWorkDatsBase
     {
         public MissionCompleteDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {

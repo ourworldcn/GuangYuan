@@ -2814,6 +2814,59 @@ namespace GY2021001WebApi.Models
     #region 任务成就相关
 
     /// <summary>
+    /// 完成任务接口的参数数据封装类。
+    /// </summary>
+    [DataContract]
+    public class CompleteMissionParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要完成任务的模板Id。
+        /// </summary>
+        [DataMember]
+        public string MissionTId { get; set; }
+    }
+
+    /// <summary>
+    /// 完成任务接口的返回值数据封装类。
+    /// </summary>
+    [DataContract]
+    public class CompleteMissionReturnDto : ChangesAndMailReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 获取任务状态接口参数的数据封装类。
+    /// </summary>
+    [DataContract]
+    public class GetMissionStateParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 任务模板Id的集合。空集合表示所有任务状态。
+        /// </summary>
+        [DataMember]
+        public List<string> TIds { get; set; } = new List<string>();
+    }
+
+    /// <summary>
+    /// 获取任务状态接口返回值数据封装类。
+    /// </summary>
+    [DataContract]
+    public class GetMissionStateReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 任务模板Id的集合。
+        /// </summary>
+        [DataMember]
+        public List<string> TIds { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 任务状态，索引与TIds对应。当前=9就是完成，否则就是没完成。
+        /// </summary>
+        [DataMember]
+        public List<int> State { get; set; } = new List<int>();
+    }
+
+    /// <summary>
     /// 获取成就奖励接口GetMissionReward返回值封装类。
     /// ChangesItems 包含变化数据。
     /// MailIds可能有邮件Id,若无法拾取的物品将发送邮件。

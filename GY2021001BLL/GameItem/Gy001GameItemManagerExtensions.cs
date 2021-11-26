@@ -30,13 +30,14 @@ namespace GuangYuan.GY001.BLL
             string htidPrefix = $"{prefix}htid";
             string btidPrefix = $"{prefix}btid";
             string ptidPrefix = $"{prefix}ptid";
+
             var coll = bag.Keys.Where(c => c.StartsWith(tidPrefix));
             List<GameItem> result = new List<GameItem>();
             var eventManager = manager.World.EventsManager;
             foreach (var item in coll)
             {
                 var indexStr = item[tidPrefix.Length..];
-                if (int.TryParse(indexStr, out _))  //若不是有效的索引
+                if (!int.TryParse(indexStr, out _))  //若不是有效的索引
                     continue;
                 var tid = bag.GetGuidOrDefault(item);
                 var count = bag.GetDecimalOrDefault($"{tidCount}{indexStr}");
@@ -47,6 +48,16 @@ namespace GuangYuan.GY001.BLL
                 if (htid != Guid.Empty && btid != Guid.Empty)    //若创建生物
                 {
                     gi = manager.CreateMounts(htid, btid, tid);
+                    //特殊处理野生动物
+                    var neatkPrefix = $"{prefix}neatk{indexStr}";
+                    var nemhpPrefix = $"{prefix}nemhp{indexStr}";
+                    var neqltPrefix = $"{prefix}neqlt{indexStr}";
+                    if (bag.TryGetValue(neatkPrefix, out var tmp) && OwHelper.TryGetDecimal(tmp, out var neatk))
+                        gi.Properties[nameof(neatk)] = neatk;
+                    if (bag.TryGetValue(nemhpPrefix, out tmp) && OwHelper.TryGetDecimal(tmp, out var nemhp))
+                        gi.Properties[nameof(nemhp)] = nemhp;
+                    if (bag.TryGetValue(neqltPrefix, out tmp) && OwHelper.TryGetDecimal(tmp, out var neqlt))
+                        gi.Properties[nameof(neqlt)] = neqlt;
                 }
                 else //若创建其他物品
                 {

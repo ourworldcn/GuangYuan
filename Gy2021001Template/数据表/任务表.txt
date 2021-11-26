@@ -1,0 +1,27 @@
+{5a8efd51-d520-4d16-a139-5dc3252523c2}	gid=110	关卡0.1 到达指定区域	
+{bbb63113-e900-42a0-9c6e-8389c43b3f5b}	gid=111	完成教学关卡1	
+{df9e78f5-650e-4ea3-8256-3a7fb40df92c}	gid=120	关卡0.2 出现第一波敌人	
+{ccf93c39-b7b9-4756-a3bd-8dffb9e42d2b}	gid=121	关卡0.2 出现第一波敌人	
+{ecbab7b4-4166-4eae-bb3b-31d492e47815}	gid=122	关卡0.2 出现第二波敌人	
+{c23e0a1a-e7d6-45bd-886c-cdcef344a09e}	gid=123	关卡0.2 出现第二波敌人	
+{f827c96a-862c-403d-a493-e1cc9affc493}	gid=124	完成教学关卡2	
+{51b69ad2-0a3e-40d6-93e5-bbd86c69b788}	gid=130	关卡0.3 出现第一波敌人	
+{df65fd6b-82db-47d3-a0f7-cc0b72d8ba30}	gid=131	关卡0.3 出现第一波敌人	
+{779e5583-366f-4eea-bd97-75c066ab58a6}	gid=132	完成教学关卡3	
+{82f8a166-e0f7-4ae5-89d0-00caaa5ab6a2}	gid=140	关卡0.4 主动技能	
+{75c68899-499a-4926-af10-e03231ace715}	gid=141	关卡0.4 主动技能	
+{b2b4b679-879c-4684-a2d3-95487eac9d66}	gid=142	完成教学关卡4	
+{f571d950-6649-47b7-b8db-f4471250db7e}	gid=150	关卡0.5 弹跳技能	
+{fbc9c851-6286-477e-b964-3710e9e99562}	gid=151	关卡0.5 弹跳技能	
+{99424ae9-2576-483b-b285-ed332602d81e}	gid=152	关卡0.5 弹跳技能	
+{92d2259a-5419-477b-9ba8-d89c67d898cf}	gid=153	完成教学关卡5	
+{7f253e54-afb3-4884-b089-38aa70aca621}	gid=200	预留位置	
+{1e912553-04a8-40a8-a186-3f969fb64777}	gid=210	完成全部教学关卡	
+{5197117d-25c3-4d63-bae8-7208ead850f2}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=00A57F16-A618-4E0C-849F-389A0523A631,rewardhtid0=7899623C-EA66-4A7B-91ED-F5A8987D4858,rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=992	测试用完成关卡1-给与坐骑牛	
+{ff00fdad-3d29-4cc2-a87a-d87793f141f4}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=BBC9FE07-29BD-486D-8AD6-B99DB0BD07D6,rewardhtid0=1FBD68C4-3464-4237-895D-28B6C4F974D8,rewardptid0=1630A0A1-3540-479A-B2C5-10B63E7A5774,rewardnemhp0=15,rewardneatk0=15,rewardneqlt0=15,gid=993	测试用关卡2小关5给与资质怪羊	
+{5bd1be6d-7b7b-4a3c-8200-e41d4fbaec9b}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=1FBD68C4-3464-4237-895D-28B6C4F974D8,rewardhtid0={aaa709fa-a5bf-4969-ace5-c8e9c89a5009},rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=994	测试用完成关卡2-给与坐骑鸡	
+{3df775f6-e4be-4ea0-bec6-49d0eb15c15e}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0={6e9d4d70-b4d4-434e-8379-d960f51b92c6},rewardhtid0=1FBD68C4-3464-4237-895D-28B6C4F974D8,rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=995	测试用完成关卡2-孵化鸡身子羊头	
+{4fd9e798-ac0f-4299-9cfc-0fe5a52a2f38}	rewardtid0={a53d50f6-d68d-47c7-a1e1-6de2928ec341},rewardcount0=1,rewardptid0={6437ce7b-8a03-4e67-9f89-8c9ab7141263},gid=996	测试用完成关卡3-山羊图鉴	
+{05f0b2b5-524d-4e90-b0b7-a90cbc655b54}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=2CA75715-8683-455F-A6D4-C728DBFC6573,rewardhtid0=0C5754C8-0E34-436A-81A9-5CEAFD126AB5,rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=997	测试用完成关卡5-坐骑狼	
+{ea1b7c0f-4ea2-4a02-a802-500000de6560}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0={4e2c08de-a8a5-43d7-9dc7-7dc8d9b116ca},rewardhtid0={a141fd52-a639-4465-90f4-46b0e7662955},rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=998	测试用完成关卡6-坐骑猫	
+{bc460289-a5a2-4931-963a-ad5d50a26caf}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0={c17370e5-fab5-4b3d-9dba-90c28ad03f97},rewardhtid0={ae4d0879-cf1c-4d82-8744-2de9141c5193},rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=999	测试用完成关卡7-坐骑马	

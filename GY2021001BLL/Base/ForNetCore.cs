@@ -325,7 +325,7 @@ namespace GuangYuan.GY001.BLL
         /// 向指定服务容器添加游戏用到的各种服务。
         /// </summary>
         /// <param name="services"></param>
-        public static void AddGameServices(this IServiceCollection services)
+        public static IServiceCollection AddGameServices(this IServiceCollection services)
         {
             #region 基础服务
 
@@ -392,6 +392,8 @@ namespace GuangYuan.GY001.BLL
             //加入商城服务
             services.AddSingleton(c => new GameShoppingManager(c, new GameShoppingManagerOptions { }));
             #endregion  游戏专用服务
+
+            return services;
         }
     }
 }

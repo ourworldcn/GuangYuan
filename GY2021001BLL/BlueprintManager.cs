@@ -398,7 +398,7 @@ namespace GuangYuan.GY001.BLL
             World.EventsManager.GameItemCreated(dest, tid);    //创建物品
             dest.Count = count;
             World.ItemManager.AddItem(dest, parent, null, datas.ChangeItems);
-            
+
             gc.Properties[CountKeyName] = (decimal)day + 1; //设置已经获取的天计数
         }
 
@@ -1325,7 +1325,7 @@ namespace GuangYuan.GY001.BLL
             }
             else
             {
-                cost = Math.Ceiling(tm - 5) * 10;
+                cost = Math.Ceiling(tm) * 10;
             }
 
             if (!datas.Verify(cost <= zuanshi.Count, $"需要{cost}钻石,但目前仅有{zuanshi.Count}个钻石。"))
@@ -1642,7 +1642,7 @@ namespace GuangYuan.GY001.BLL
             fcp.GetCurrentValueWithUtc();
             fcp.LastValue += 20;    //无视限制增加体力
             tili.Count = fcp.LastValue; //
-            zuanshi.Count -= 20;    //扣除钻石
+            zuanshi.Count -= 20 * 10;    //扣除钻石
             datas.ChangeItems.AddToChanges(datas.GameChar.Id, zuanshi);
             datas.ChangeItems.AddToChanges(tili);
         }
