@@ -337,7 +337,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 
+        /// 终止/结算退关副本。
         /// </summary>
         /// <param name="data">终止请求的数据封装对象。</param>
         /// <returns>true正常结束，false发生错误。</returns>

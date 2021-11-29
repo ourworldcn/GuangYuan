@@ -37,7 +37,7 @@ namespace GuangYuan.GY001.BLL
             foreach (var item in coll)
             {
                 var indexStr = item[tidPrefix.Length..];
-                if (!int.TryParse(indexStr, out _))  //若不是有效的索引
+                if (!string.IsNullOrEmpty(indexStr) && !int.TryParse(indexStr, out _))  //若不是有效的索引
                     continue;
                 var tid = bag.GetGuidOrDefault(item);
                 var count = bag.GetDecimalOrDefault($"{tidCount}{indexStr}");
@@ -61,7 +61,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 else //若创建其他物品
                 {
-                    gi = new GameItem();
+                    gi = new GameItem() { Count = count };
                     eventManager.GameItemCreated(gi, tid);
                 }
                 if (!gi.Count.HasValue)  //若需要设置数量

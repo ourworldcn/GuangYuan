@@ -201,7 +201,6 @@ namespace GuangYuan.GY001.BLL
             }
             //var jstr = JsonSerializer.Serialize(dic, dic.GetType());
             string keyPrefix = string.Empty;
-            var preStr = $"{keyPrefix}tid";
 
             var sbPool = world.Service.GetRequiredService<ObjectPool<StringBuilder>>();
         }

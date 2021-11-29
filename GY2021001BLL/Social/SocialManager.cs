@@ -350,7 +350,7 @@ namespace GuangYuan.GY001.BLL
             var gim = World.ItemManager;
             foreach (var item in gameItems)
             {
-                // TId={物品模板Id},HTId={头模板Id},BTId={身体模板Id},Count=物品数量，PTId=物品所属容器的模板Id,neatk=攻击资质,nemhp=血量资质,neqlt=质量资质。
+                // TemplateId={物品模板Id},HTId={头模板Id},BTId={身体模板Id},Count=物品数量，PTId=物品所属容器的模板Id,neatk=攻击资质,nemhp=血量资质,neqlt=质量资质。
                 var att = new GameMailAttachment();
                 var gi = item.Item1;
                 if (gim.IsMounts(gi))  //若是动物
@@ -363,7 +363,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 else
                 {
-                    att.Properties["TId"] = gi.TemplateId.ToString();
+                    att.Properties["TemplateId"] = gi.TemplateId.ToString();
                 }
                 att.Properties["Count"] = gi.Count ?? 1;
                 att.Properties["PTId"] = item.Item2.ToString();

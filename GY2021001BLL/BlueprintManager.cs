@@ -1704,7 +1704,7 @@ namespace GuangYuan.GY001.BLL
 
             if (result is null)  //若没有找到
             {
-                obj.DebugMessage = $"无法找到物品。TId={templateId},Number={id}";
+                obj.DebugMessage = $"无法找到物品。TemplateId={templateId},Number={id}";
                 obj.HasError = true;
                 if (templateId.HasValue)
                 {

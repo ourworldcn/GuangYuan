@@ -13,7 +13,7 @@ namespace GuangYuan.GY001.BLL
     public static class ProjectMissionConstant
     {
         public static readonly Guid 玩家等级成就 = new Guid("{25FFBEE1-F617-49BD-B0DE-32B3E3E975CB}");
-        public static readonly Guid 关卡成就 = new Guid("{96a36fbe-f79a-4579-932e-588772436da5}");
+        public static readonly Guid 关卡成就 = new Guid("{96a36fbe-f79a-4579-932e-588772436da5}");  //打通大章1，大章2，3，4，5，6，7，8，9，10
         public static readonly Guid 坐骑最高等级成就 = new Guid("{2f48528e-fd7f-4269-92c9-dbd6f14ffef0}");
         public static readonly Guid LV20坐骑数量 = new Guid("{7d5ad309-2614-434e-b8d3-afe4db93d8b3}");
         public static readonly Guid 关卡模式总战力成就 = new Guid("{8bba8a00-e767-4a6a-aa6b-22ef03a3f527}");
