@@ -1,4 +1,5 @@
 ﻿using Game.Social;
+using GuangYuan.GY001.BLL.Script;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.CodeAnalysis;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Item;
 using OW.Game.Mission;
+using OW.Script;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -24,7 +26,6 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -199,10 +200,6 @@ namespace GuangYuan.GY001.BLL
             {
                 dic.Add(Guid.NewGuid(), random.Next());
             }
-            //var jstr = JsonSerializer.Serialize(dic, dic.GetType());
-            string keyPrefix = string.Empty;
-
-            var sbPool = world.Service.GetRequiredService<ObjectPool<StringBuilder>>();
         }
 
         /// <summary>
@@ -272,7 +269,9 @@ namespace GuangYuan.GY001.BLL
 
             var upOperations = modelDiffer.GetDifferences(lastModel, dbContext.Model);  //这个方法返回的迁移的操作对象。
 
+#pragma warning disable CA1806 // 不要忽略方法结果
             dbContext.GetInfrastructure().GetRequiredService<IMigrationsSqlGenerator>().Generate(upOperations, dbContext.Model).ToList();   //这个方法是根据迁移对象和当前的model生成迁移sql脚本。
+#pragma warning restore CA1806 // 不要忽略方法结果
 
         }
 
@@ -390,6 +389,9 @@ namespace GuangYuan.GY001.BLL
 
             //加入商城服务
             services.AddSingleton(c => new GameShoppingManager(c, new GameShoppingManagerOptions { }));
+
+            //加入脚本服务
+            services.AddSingleton(c => new GameScriptManager(c, new GameScriptManagerOptions { }));
             #endregion  游戏专用服务
 
             return services;

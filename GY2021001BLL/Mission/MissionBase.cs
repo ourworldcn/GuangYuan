@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace OW.Game.Mission
 {
+    /// <summary>
+    /// 成就数据视图。
+    /// </summary>
     public class CharAchieveView : GameCharWorkDataBase
     {
         public CharAchieveView([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
@@ -52,16 +55,15 @@ namespace OW.Game.Mission
                     var tt = World.ItemTemplateManager.GetTemplateFromeId(TemplateId)?.Properties;
                     var gis = World.ItemManager.ToGameItems(tt, "m");
                     _TemplateMetrics = new List<decimal> { };
-                    //foreach (var key in tt.Keys.Where(c => c.StartsWith(tidKey)))
-                    //{
-                    //    var indexStr = key[tidKey.Length..];
-                    //}
-                    //var coll = from tmp in tt
-                    //           where tmp.Key.StartsWith(tidKey) //找到tid
-                    //           let indexStr = tmp.Key[tidKey.Length..]  //尾号
-                    //           let valid = string.IsNullOrEmpty(indexStr) || decimal.TryParse(indexStr, out _)  //尾号合法标志
-                    //           where valid  //合法尾号
-                    //           select tmp;
+                    var ary = tt.GetValuesWithoutPrefix("m");
+                    const string tid = "tid";
+                    const string count = "count";
+                    const string htid = "htid";
+                    const string btid = "btid";
+                    foreach (var item in ary)
+                    {
+
+                    }
                 }
                 return _TemplateMetrics;
             }

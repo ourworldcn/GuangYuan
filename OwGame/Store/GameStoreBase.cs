@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace OW.Game.Store
@@ -377,5 +378,17 @@ namespace OW.Game.Store
         }
     }
 
-
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class SimpleDynamicPropertyBaseExtensions
+    {
+        public static IEnumerable<(string, object)> RemovePrefix(this IReadOnlyDictionary<string, object> dic, string prefix)
+        {
+            var coll = from tmp in dic.Where(c => c.Key.StartsWith(prefix))
+                       let keyName = tmp.Key[prefix.Length..] //键名
+                       select (Key: keyName, tmp.Value);
+            return coll;
+        }
+    }
 }

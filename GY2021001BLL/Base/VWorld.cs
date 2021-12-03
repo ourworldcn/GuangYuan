@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Script;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
@@ -357,6 +358,12 @@ namespace OW.Game
         /// 获取商城服务。
         /// </summary>
         public GameShoppingManager ShoppingManager => _ShoppingManager ??= Service.GetService<GameShoppingManager>();
+
+        GameScriptManager _ScriptManager;
+        /// <summary>
+        /// 脚本服务。
+        /// </summary>
+        public GameScriptManager ScriptManager => _ScriptManager ??= Service.GetService<GameScriptManager>();
         #endregion 子管理器
 
         #region 对象池

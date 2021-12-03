@@ -46,6 +46,11 @@ namespace GuangYuan.GY001.TemplateDb
         /// </summary>
         public string ChildrenTemplateIdString { get; set; }
 
+        /// <summary>
+        /// 脚本，内容根据使用情况具体定义。
+        /// </summary>
+        public string Script { get; set; }
+
         private List<Guid> _ChildrenTemplateIds;
 
         /// <summary>

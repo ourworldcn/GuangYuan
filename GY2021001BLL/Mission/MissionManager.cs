@@ -31,7 +31,7 @@ namespace OW.Game.Mission
     /// <summary>
     /// 成就的辅助视图数据对象。
     /// </summary>
-    public class GameaChieveView
+    public class AchieveTemplateView
     {
         /// <summary>
         /// 送物品的前缀。
@@ -40,7 +40,7 @@ namespace OW.Game.Mission
 
         public Guid Id { get => _Template.Id; }
 
-        public GameaChieveView(VWorld world, GameItemTemplate template)
+        public AchieveTemplateView(VWorld world, GameItemTemplate template)
         {
             _Template = template;
             _World = world;
@@ -125,7 +125,6 @@ namespace OW.Game.Mission
             _MissionTemplates = new Lazy<List<GameItemTemplate>>(() => World.ItemTemplateManager.GetTemplates(c => c.CatalogNumber == 51).ToList(),
                 LazyThreadSafetyMode.ExecutionAndPublication);
 
-
         }
 
         private Lazy<List<GameItemTemplate>> _MissionTemplates;
@@ -134,15 +133,15 @@ namespace OW.Game.Mission
         /// </summary>
         public List<GameItemTemplate> MissionTemplates => _MissionTemplates.Value;
 
-        private Dictionary<Guid, GameaChieveView> _TId2Views;
+        private Dictionary<Guid, AchieveTemplateView> _TId2Views;
 
-        public Dictionary<Guid, GameaChieveView> TId2Views
+        public Dictionary<Guid, AchieveTemplateView> TId2Views
         {
             get
             {
                 if (_TId2Views is null)
                     lock (ThisLocker)
-                        _TId2Views ??= MissionTemplates.Select(c => new GameaChieveView(World, c)).ToDictionary(c => c.Id);
+                        _TId2Views ??= MissionTemplates.Select(c => new AchieveTemplateView(World, c)).ToDictionary(c => c.Id);
                 return _TId2Views;
             }
         }
