@@ -14,6 +14,21 @@ namespace GY2021001WebApi.Models
 
     #region 基础数据
 
+    [DataContract]
+    public class StringDecimalTuple
+    {
+        public StringDecimalTuple()
+        {
+
+        }
+
+        [DataMember]
+        public string Item1 { get; set; }
+
+        [DataMember]
+        public decimal Item2 { get; set; }
+    }
+
     /// <summary>
     /// 变化通知内容的数据传输类。
     /// </summary>
@@ -2812,6 +2827,46 @@ namespace GY2021001WebApi.Models
     #endregion 社交相关
 
     #region 任务成就相关
+    [DataContract]
+    public partial class GameMissionTemplateDto
+    {
+        /// <summary>
+        /// 唯一Id。
+        /// </summary>
+        [DataMember(Name = nameof(Id))]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
+        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// 一个说明性文字，服务器不使用该属性。
+        /// </summary>
+        [DataMember]
+        public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 前置任务Id集合。
+        /// </summary>
+        [DataMember]
+        public List<string> PreMissionIds { get; set; } = new List<string>();
+    }
+
+    [DataContract]
+    public class GetMissionTemplatesParamsDto : TokenDtoBase
+    {
+    }
+
+    [DataContract]
+    public class GetMissionTemplatesReturnDto : ReturnDtoBase
+    {
+        [DataMember]
+        public List<GameMissionTemplateDto> Templates { get; set; } = new List<GameMissionTemplateDto>();
+    }
 
     /// <summary>
     /// 完成任务接口的参数数据封装类。
@@ -3190,6 +3245,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<ShoppingItemDto> ShoppingItems { get; set; } = new List<ShoppingItemDto>();
+
+        /// <summary>
+        /// 刷新的金币数量。Item1=商品的属，Item2=刷新该属所需金币。
+        /// </summary>
+        [DataMember]
+        public List<StringDecimalTuple> RefreshCost { get; set; } = new List<StringDecimalTuple>();
     }
 
     /// <summary>

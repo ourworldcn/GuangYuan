@@ -311,6 +311,27 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="P:GY2021001WebApi.Models.GameMissionTemplateDto.Id">
+            <summary>
+            唯一Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameMissionTemplateDto.Properties">
+            <summary>
+            对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
+            特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，反装箱问题不大。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameMissionTemplateDto.DisplayName">
+            <summary>
+            一个说明性文字，服务器不使用该属性。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameMissionTemplateDto.PreMissionIds">
+            <summary>
+            前置任务Id集合。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.ShoppingItemDto">
             <summary>
             商城物品传输对象。
@@ -2514,6 +2535,11 @@
             商品列表。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetListResultDto.RefreshCost">
+            <summary>
+            刷新的金币数量。Item1=商品的属，Item2=刷新该属所需金币。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.BuyParamsDto">
             <summary>
             购买商品接口的参数封装类。
@@ -2538,12 +2564,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
@@ -2583,8 +2603,14 @@
             <summary>
             标记完成任务。
             </summary>
-            <param name="model"></param>
+            <param name="model">参见 CompleteMissionParamsDto。</param>
             <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameMissionController.GetMissionTemplates">
+            <summary>
+            获取任务模板数据。由于不会变化，会自动缓存(2分钟)。
+            </summary>
+            <returns><seealso cref="T:GY2021001WebApi.Models.GetMissionTemplatesReturnDto"/>。</returns>
         </member>
         <member name="T:Gy001.Controllers.GameShoppingController">
             <summary>

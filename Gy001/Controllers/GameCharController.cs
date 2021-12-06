@@ -1,6 +1,7 @@
 ﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.UserDb;
+using Gy001.Controllers;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,8 +21,12 @@ namespace GY2021001WebApi.Controllers
     /// </summary>
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class GameCharController : ControllerBase
+    public class GameCharController : GameBaseController
     {
+        public GameCharController(VWorld world) : base(world)
+        {
+        }
+
         /// <summary>
         /// 更改角色的名字。当前只能更改一次。
         /// </summary>

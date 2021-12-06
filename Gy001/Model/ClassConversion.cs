@@ -11,6 +11,23 @@ using System.Text.Json;
 namespace GY2021001WebApi.Models
 {
     #region 基础数据
+    public partial class GameMissionTemplateDto
+    {
+        public static implicit operator GameMissionTemplateDto(GameMissionTemplate obj)
+        {
+            var result = new GameMissionTemplateDto
+            {
+                DisplayName= obj.Remark,
+                Id=obj.Id.ToBase64String(),
+            };
+            result.PreMissionIds.AddRange(obj.PreMissionIds.Select(c=>c.ToBase64String()));
+            foreach (var item in obj.Properties)
+            {
+                result.Properties[item.Key] = item.Value;
+            }
+            return result;
+        }
+    }
 
     public partial class ShoppingItemDto
     {

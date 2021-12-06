@@ -1263,7 +1263,6 @@ namespace OW.Game.Item
                     if (!datas.HasError)
                     {
                         datas.ChangeItems.AddRange(bpDatas.ChangeItems);
-                        ChangeItem.Reduce(datas.ChangeItems);
                     }
                 }
                 else //若无蓝图
@@ -1364,6 +1363,7 @@ namespace OW.Game.Item
             }
             ChangeItem.Reduce(datas.ChangeItems);
         }
+
     }
 
     public class AddItemsOrMailDatas : ChangeItemsAndMailWorkDatsBase

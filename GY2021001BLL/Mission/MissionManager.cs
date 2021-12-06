@@ -541,6 +541,15 @@ namespace OW.Game.Mission
                     datas.State.Add(MissionState.WaitingForActivation);
             }
         }
+
+        /// <summary>
+        /// 获取所有任务模板数据。
+        /// </summary>
+        public IEnumerable<GameMissionTemplate> GetMissionTemplates()
+        {
+            return World.ItemTemplateManager.Id2Mission.Values;
+        }
+
         #endregion 任务相关
     }
 

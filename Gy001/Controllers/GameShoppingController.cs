@@ -41,6 +41,7 @@ namespace Gy001.Controllers
             if (!result.HasError)
             {
                 result.ShoppingItems.AddRange(datas.ShoppingTemplates.Select(c => ShoppingItemDto.FromGameShoppingTemplate(c, datas.GameChar, datas.Now, World)));
+                result.RefreshCost.AddRange(datas.RefreshGold.Select(c => new StringDecimalTuple { Item1 = c.Item1, Item2 = c.Item2 }));
             }
             return result;
         }
@@ -57,8 +58,8 @@ namespace Gy001.Controllers
             using var datas = new BuyDatas(World, model.Token)
             {
                 UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>(),
-                ShoppingId=OwConvert.ToGuid( model.ShoppingId),
-                Count=model.Count,
+                ShoppingId = OwConvert.ToGuid(model.ShoppingId),
+                Count = model.Count,
             };
             World.ShoppingManager.Buy(datas);
             result.HasError = datas.HasError;

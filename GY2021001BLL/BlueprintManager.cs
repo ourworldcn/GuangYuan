@@ -7,10 +7,12 @@ using OW.Game;
 using OW.Game.Item;
 using OW.Game.Store;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -206,11 +208,56 @@ namespace GuangYuan.GY001.BLL
         public Func<IServiceProvider, ApplyBlueprintDatas, bool> DoApply { get; set; }
     }
 
+    [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
+    public sealed class BlueprintMethodAttribute : Attribute
+    {
+        // See the attribute guidelines at 
+        //  http://go.microsoft.com/fwlink/?LinkId=85236
+        private readonly Guid _BlueprintId;
+
+        // This is a positional argument
+        public BlueprintMethodAttribute(string blueprintId)
+        {
+
+            // TODO: Implement code here
+
+            _BlueprintId = Guid.Parse(blueprintId);
+        }
+
+
+        // This is a named argument
+        public int NamedInt { get; set; }
+
+        public Guid BlueprintId { get => _BlueprintId; }
+    }
+
     /// <summary>
     /// 蓝图管理器。
     /// </summary>
     public class BlueprintManager : GameManagerBase<BlueprintManagerOptions>
     {
+        private static Dictionary<Guid, MethodInfo> _Methods;
+        /// <summary>
+        /// 处理蓝图Id，映射到处理函数。
+        /// 函数可以是私有的，但务必是实例函数。
+        /// </summary>
+        public static IReadOnlyDictionary<Guid, MethodInfo> Id2Handler
+        {
+            [MethodImpl(MethodImplOptions.Synchronized)]
+            get
+            {
+                if (_Methods is null)
+                {
+                    var coll = from tmp in typeof(BlueprintManager).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                               let attr = tmp.GetCustomAttributes(typeof(BlueprintMethodAttribute), true).FirstOrDefault() as BlueprintMethodAttribute
+                               where null != attr
+                               select (tmp, attr);
+                    _Methods = coll.ToDictionary(c => c.attr.BlueprintId, c => c.tmp);
+                }
+                return _Methods;
+            }
+        }
+
         public BlueprintManager()
         {
             Initialize();
@@ -303,10 +350,10 @@ namespace GuangYuan.GY001.BLL
                         JiasuFuhua(datas);
                         succ = true;
                         break;
-                    case "7b1348b8-87de-4c98-98b8-4705340e1ed2":  //若是增加体力
-                        AddTili(datas);
-                        succ = true;
-                        break;
+                    //case "7b1348b8-87de-4c98-98b8-4705340e1ed2":  //若是增加体力
+                    //    AddTili(datas);
+                    //    succ = true;
+                    //    break;
                     case "384ed85c-82fd-4f08-86e7-eae5ad6eef2c":    //家园所属虚拟物品内升级
                         UpgradeInHomeland(datas);
                         succ = true;
@@ -364,7 +411,14 @@ namespace GuangYuan.GY001.BLL
                         succ = true;
                         break;
                     default:
-                        succ = false;
+                        if (Id2Handler.TryGetValue(datas.Blueprint.Id, out var handler))
+                        {
+                            var paras = new object[] { datas };
+                            handler.Invoke(this, paras);
+                            succ = true;
+                        }
+                        else
+                            succ = false;
                         break;
                 }
             }
@@ -1619,6 +1673,7 @@ namespace GuangYuan.GY001.BLL
         /// 钻石买体力。
         /// </summary>
         /// <param name="datas"></param>
+        [BlueprintMethod("7b1348b8-87de-4c98-98b8-4705340e1ed2")]
         public void AddTili(ApplyBlueprintDatas datas)
         {
             var tili = datas.GameChar.GetTili();

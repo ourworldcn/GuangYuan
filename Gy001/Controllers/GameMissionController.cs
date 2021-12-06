@@ -73,7 +73,7 @@ namespace Gy001.Controllers
         /// <summary>
         /// 标记完成任务。
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="model">参见 CompleteMissionParamsDto。</param>
         /// <returns></returns>
         [HttpPost]
         public ActionResult<CompleteMissionReturnDto> Complete(CompleteMissionParamsDto model)
@@ -92,6 +92,20 @@ namespace Gy001.Controllers
                 result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
                 result.MailIds.AddRange(datas.MailIds.Select(c => c.ToBase64String()));
             }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取任务模板数据。由于不会变化，会自动缓存(2分钟)。
+        /// </summary>
+        /// <returns><seealso cref="GetMissionTemplatesReturnDto"/>。</returns>
+        [ResponseCache(Location = ResponseCacheLocation.Any, Duration = 120)]
+        [HttpGet]
+        public ActionResult<GetMissionTemplatesReturnDto> GetMissionTemplates()
+        {
+            var result = new GetMissionTemplatesReturnDto { };
+            var templates = World.MissionManager.GetMissionTemplates();
+            result.Templates.AddRange(templates.Select(c => (GameMissionTemplateDto)c));
             return result;
         }
     }

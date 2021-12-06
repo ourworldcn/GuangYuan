@@ -84,6 +84,10 @@ namespace GuangYuan.GY001.BLL
             }
             datas.ShoppingTemplates.AddRange(coll);
             datas.ShoppingTemplates.AddRange(rg);
+            var rInfos = from tmp in view.RefreshInfos
+                         let tm = Math.Clamp(tmp.Value.RefreshCount, 0, tmp.Value.CostOfGold.Length - 1)  //有效次数
+                         select (tmp.Value.Genus, tmp.Value.CostOfGold[tm]);
+            datas.RefreshGold.AddRange(rInfos);
             view.Save();
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
@@ -121,7 +125,7 @@ namespace GuangYuan.GY001.BLL
             //修改数据
             //生成物品
             var gim = World.ItemManager;
-            var gi = new GameItem();
+            var gi = new GameItem() {Count=datas.Count };
             World.EventsManager.GameItemCreated(gi, template.ItemTemplateId);
             var container = gim.GetDefaultContainer(datas.GameChar, gi);
             if (template.AutoUse)    //若自动使用
@@ -230,7 +234,7 @@ namespace GuangYuan.GY001.BLL
             var totalCost = genus.Select(c =>   //总计金币代价
             {
                 var data = view.RefreshInfos[c];
-                var cost = Math.Abs(data.CostOfGold[Math.Clamp(data.RefreshCount,0, data.CostOfGold.Length - 1)]);
+                var cost = Math.Abs(data.CostOfGold[Math.Clamp(data.RefreshCount, 0, data.CostOfGold.Length - 1)]);
                 return cost;
             }).Sum();
             if (jinbi.Count < totalCost)    //若资源不足以刷新所有属
@@ -242,7 +246,7 @@ namespace GuangYuan.GY001.BLL
             {
                 //改写金币数量
                 var data = view.RefreshInfos[item];
-                var cost = Math.Abs(data.CostOfGold[Math.Clamp(0, data.CostOfGold.Length - 1, data.RefreshCount++)]);
+                var cost = Math.Abs(data.CostOfGold[Math.Clamp(data.RefreshCount,0, data.CostOfGold.Length - 1)]);
                 jinbi.Count -= cost;
                 //改写商品数据
                 Refresh(view, item, datas.Now);
@@ -381,6 +385,12 @@ namespace GuangYuan.GY001.BLL
         public string Genus { get; set; }
 
         public List<GameShoppingTemplate> ShoppingTemplates { get; } = new List<GameShoppingTemplate>();
+
+        List<(string, decimal)> _RefreshGold;
+        /// <summary>
+        /// 刷新信息。Item1是属名，Item2是刷新金币。
+        /// </summary>
+        public List<(string, decimal)> RefreshGold => _RefreshGold ??= new List<(string, decimal)>();
     }
 
     public static class GameShoppingManagerExtensions

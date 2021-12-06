@@ -6,11 +6,15 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using OW.Game;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -320,7 +324,7 @@ namespace GuangYuan.GY001.BLL
             if (start != lastStart)    //若跨周期
                 result = template.MaxCount >= count;
             else //若同周期
-                result = template.MaxCount >= count + info.BuyCount;
+                result = -1 == template.MaxCount || template.MaxCount >= count + info.BuyCount;
             if (!result)
                 VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
             return result;
