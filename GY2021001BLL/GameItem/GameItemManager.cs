@@ -1253,7 +1253,7 @@ namespace OW.Game.Item
                     var template = bpMng.GetTemplateFromId(bpid) as BlueprintTemplate;
                     using ApplyBlueprintDatas bpDatas = new ApplyBlueprintDatas(Service, datas.GameChar)
                     {
-                        Count = 1,
+                        Count = (int)item.Item2,
                         Blueprint = template,
                     };
                     bpDatas.GameItems.Add(gi);
@@ -1263,6 +1263,7 @@ namespace OW.Game.Item
                     if (!datas.HasError)
                     {
                         datas.ChangeItems.AddRange(bpDatas.ChangeItems);
+                        gim.MoveItem(gi, item.Item2, qiwuBag, datas.ChangeItems);
                     }
                 }
                 else //若无蓝图

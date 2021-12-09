@@ -30,7 +30,7 @@ namespace GuangYuan.GY001.BLL
             string htidPrefix = $"{prefix}htid";
             string btidPrefix = $"{prefix}btid";
             string ptidPrefix = $"{prefix}ptid";
-            
+
             var coll = bag.Keys.Where(c => c.StartsWith(tidPrefix));
             List<GameItem> result = new List<GameItem>();
             var eventManager = manager.World.EventsManager;
@@ -249,6 +249,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="gameChar"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetZuojiBag(this GameChar gameChar) =>
             gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);
 

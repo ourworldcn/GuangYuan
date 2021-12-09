@@ -92,8 +92,8 @@ namespace GuangYuan.GY001.BLL
                 GameItem srcSlot, destSlot;
 
                 #region 坐骑
-                srcSlot = srcChar.GetZuoqiBag();
-                destSlot = destChar.GetZuoqiBag();
+                srcSlot = srcChar.GetZuojiBag();
+                destSlot = destChar.GetZuojiBag();
                 foreach (var srcItem in srcSlot.Children)
                 {
                     var destItem = World.ItemManager.CloneMounts(srcItem, srcItem.TemplateId);

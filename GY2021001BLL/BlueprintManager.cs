@@ -1708,6 +1708,38 @@ namespace GuangYuan.GY001.BLL
         #region 社交相关
 
         #endregion 社交相关
+
+        #region 物品使用
+
+        /// <summary>
+        /// 使用动物商店礼包。
+        /// </summary>
+        /// <param name="datas"></param>
+        [BlueprintMethod("{7c913496-da0f-443a-8f7a-d19e9f6c536e}")]
+        public void UseItemc7c913496da0f443a8f7ad19e9f6c536e(ApplyBlueprintDatas datas)
+        {
+            for (int i = 0; i < datas.Count; i++)
+            {
+                var gi = datas.GameItems[0];
+                var tt = gi.ItemTemplate;
+                var htid = tt.Properties.GetGuidOrDefault("usehtid");
+                var btid = tt.Properties.GetGuidOrDefault("usebtid");
+                var tid = tt.Properties.GetGuidOrDefault("usetid");
+                var mounts = World.ItemManager.CreateMounts(htid, btid, tid);
+                if (World.ItemManager.IsExistsMounts(datas.GameChar, mounts)) //若存在此纯种坐骑
+                {
+                    mounts.Properties["neatk"] = 80 + VWorld.WorldRandom.Next(21);
+                    mounts.Properties["nemhp"] = 80 + VWorld.WorldRandom.Next(21);
+                    mounts.Properties["neqlt"] = 80 + VWorld.WorldRandom.Next(21);
+                    World.ItemManager.AddItem(mounts, datas.GameChar.GetShoulanBag(), null, datas.ChangeItems);
+                }
+                else //若不存在该纯种坐骑
+                {
+                    World.ItemManager.AddItem(mounts, datas.GameChar.GetZuojiBag(), null, datas.ChangeItems);
+                }
+            }
+        }
+        #endregion 物品使用
     }
 
     /// <summary>

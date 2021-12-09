@@ -756,15 +756,6 @@ namespace GuangYuan.GY001.BLL
             gameChar.GameItems.FirstOrDefault(c => ProjectConstant.CurrencyBagTId == c.TemplateId);
 
         /// <summary>
-        /// 获取坐骑袋。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameItem GetZuoqiBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => ProjectConstant.ZuojiBagSlotId == c.TemplateId);
-
-        /// <summary>
         /// 获取金币对象。
         /// </summary>
         /// <param name="gameChar"></param>

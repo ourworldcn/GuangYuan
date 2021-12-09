@@ -10,15 +10,14 @@
   <Class Name="OW.Game.Item.GameItemManager" BaseTypeListCollapsed="true">
     <Position X="11" Y="1" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAgUAAAAEliggQAAUAjQACBKgIAABwMAAEAIAIAQAAA=</HashCode>
+      <HashCode>BAgUAAAAEliggQAAUAjQACBKgIAABwMAAEAIAIAQAAA=</HashCode>
       <FileName>GameItem\GameItemManager.cs</FileName>
     </TypeIdentifier>
-    <Lollipop Position="0.2" Collapsed="true" />
   </Class>
   <Class Name="OW.Game.Item.GetRankOfTuiguanDatas" Collapsed="true">
     <Position X="13.5" Y="1" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AgABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <HashCode>AgABAAAAAAAAACAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
       <FileName>GameItem\GameItemManager.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -53,7 +52,7 @@
   <Class Name="OW.Game.Item.GameItemManagerExtensions" Collapsed="true">
     <Position X="7.5" Y="2" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>QACAAAAAAAAUAAAAQIAiAMAAgAAACAAAAAAAAAAgAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAEAAACAAAAAAAAAAAAAA=</HashCode>
       <FileName>GameItem\GameItemManager.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -69,13 +68,6 @@
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAEAAAA=</HashCode>
       <FileName>GameItem\GameItemManager.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="GuangYuan.GY001.BLL.Gy001GameItemExtensions" Collapsed="true">
-    <Position X="7.5" Y="3" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>gAIAARAAAAAgAAAAAAAAAAAAIAAACAEAAAAAEIEACBA=</HashCode>
-      <FileName>GameItem\Gy001GameItemExtensions.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />

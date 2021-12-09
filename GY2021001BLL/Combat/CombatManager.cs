@@ -1261,7 +1261,7 @@ namespace GuangYuan.GY001.BLL
         public decimal GetTotalAbility(GameChar gc)
         {
             var dic = new Dictionary<string, double>();
-            var bag = gc.GetZuoqiBag();
+            var bag = gc.GetZuojiBag();
             var gim = World.ItemManager;
             var gis = bag.Children.Where(c => gim.IsChunzhongMounts(c));
             decimal result = 0;

@@ -200,6 +200,8 @@ namespace GuangYuan.GY001.BLL
             {
                 dic.Add(Guid.NewGuid(), random.Next());
             }
+            var str = "kdlsf";
+            var b = str.StartsWith(string.Empty);
         }
 
         /// <summary>
