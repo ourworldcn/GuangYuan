@@ -642,6 +642,7 @@ namespace GuangYuan.GY001.BLL
                 datas.HasError = true;
                 return;
             }
+            
             var pvpObject = datas.GameChar.GetPvpObject();  //PVP对象
             using var todayData = TodayDataWrapper<Guid>.Create(pvpObject.Properties, pvpChar, datas.Now);
             if (!todayData.LastValues.Contains(datas.OtherChar.Id))  //若不能攻击

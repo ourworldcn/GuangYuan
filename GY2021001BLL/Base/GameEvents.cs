@@ -361,6 +361,15 @@ namespace OW.Game
                     return r;
                 }));
             }
+            //追加一些可识别的属性
+            if (null != parameters)
+            {
+                if (parameters.TryGetValue("ptid", out var tmp))
+                    gameItem.Properties["ptid"] = tmp;
+                if (parameters.TryGetValue("count", out tmp) && OwHelper.TryGetDecimal(tmp, out var deci) && gameItem.GameChar != null) //若可以设置
+                    gameItem.Count = deci;
+            }
+
         }
 
         /// <summary>

@@ -351,7 +351,7 @@ namespace OW.Game
         }
 
         /// <summary>
-        /// 
+        /// 创建物品/道具。
         /// </summary>
         /// <param name="gameItem"></param>
         /// <param name="template"></param>

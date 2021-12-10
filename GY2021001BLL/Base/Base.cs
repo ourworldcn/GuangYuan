@@ -272,6 +272,15 @@ namespace GuangYuan.GY001.BLL
         //{
         //     Dispose();
         //}
+
+        /// <summary>
+        /// 保存数据。
+        /// 该实现仅在<see cref="UserContext"/>有效时保存数据。若其后备字段未生成有效实例则立即返回。
+        /// </summary>
+        public virtual void Save()
+        {
+            _UserContext?.SaveChanges();
+        }
     }
 
     /// <summary>

@@ -1718,6 +1718,9 @@ namespace GuangYuan.GY001.BLL
         [BlueprintMethod("{7c913496-da0f-443a-8f7a-d19e9f6c536e}")]
         public void UseItemc7c913496da0f443a8f7ad19e9f6c536e(ApplyBlueprintDatas datas)
         {
+            using var dw = datas.LockUser();
+            if (dw is null)
+                return;
             for (int i = 0; i < datas.Count; i++)
             {
                 var gi = datas.GameItems[0];
@@ -1737,6 +1740,105 @@ namespace GuangYuan.GY001.BLL
                 {
                     World.ItemManager.AddItem(mounts, datas.GameChar.GetZuojiBag(), null, datas.ChangeItems);
                 }
+            }
+        }
+
+        /// <summary>
+        /// 防护罩使用。
+        /// </summary>
+        /// <param name="datas"></param>
+        [BlueprintMethod("{5b6dbed0-5323-49ea-aa55-9093dc9f1007}")]
+        public void UseItem5b6dbed0532349eaaa559093dc9f1007(ApplyBlueprintDatas datas)
+        {
+            using var dw = datas.LockUser();
+            if (dw is null)
+                return;
+            var gc = datas.GameChar;
+            using var view = new PvpWarFreeCardsView(World, gc) { NowUtc = DateTime.UtcNow };
+            for (int i = 0; i < datas.Count; i++)
+            {
+                if (view.ExpireUtc.HasValue && view.ExpireUtc > view.NowUtc && view.ExpireUtc - view.NowUtc > view.Uts) //若不可重叠
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                    break;
+                }
+                var gi = datas.GameItems[0];
+                var kts = gi.GetDecimalOrDefault("kts");
+                view.ExpireUtc ??= view.NowUtc;
+                view.ExpireUtc += TimeSpan.FromSeconds((double)kts);
+            }
+            view.Save();
+        }
+
+        /// <summary>
+        /// 免战信息视图。
+        /// </summary>
+        public class PvpWarFreeCardsView : GameCharWorkDataBase
+        {
+            public PvpWarFreeCardsView([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+            {
+            }
+
+            public PvpWarFreeCardsView([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+            {
+            }
+
+            public PvpWarFreeCardsView([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+            {
+            }
+
+            /// <summary>
+            /// 角色是否在免战状态。
+            /// </summary>
+            public bool IsWarFree
+            {
+                get
+                {
+                    return ExpireUtc >= NowUtc;
+                }
+            }
+
+            /// <summary>
+            /// 当前时间。
+            /// </summary>
+            public DateTime NowUtc { get; set; }
+
+            /// <summary>
+            /// 到期时间。
+            /// </summary>
+            public DateTime? ExpireUtc
+            {
+                get
+                {
+                    var tmp = GameChar.Properties.GetDateTimeOrDefault("PvpWarFreeCardsExpire", DateTime.MinValue);
+                    if (tmp == DateTime.MinValue)
+                        return null;
+                    return tmp;
+                }
+                set
+                {
+                    if (value is null)
+                        GameChar.Properties.Remove("PvpWarFreeCardsExpire");
+                    else
+                        GameChar.Properties["PvpWarFreeCardsExpire"] = value.Value.ToString("s");
+                }
+            }
+
+            /// <summary>
+            /// 允许的重叠使用时间。
+            /// </summary>
+            public TimeSpan Uts
+            {
+                get => TimeSpan.FromSeconds((double)GameChar.Properties.GetDecimalOrDefault("uts"));
+                set => GameChar.Properties["uts"] = (decimal)value.TotalSeconds;
+            }
+
+            /// <summary>
+            /// 保存数据。
+            /// </summary>
+            public override void Save()
+            {
+                base.Save();
             }
         }
         #endregion 物品使用

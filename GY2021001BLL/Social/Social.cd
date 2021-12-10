@@ -1,18 +1,90 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
   <Class Name="GuangYuan.GY001.BLL.RequestAssistanceDatas" Collapsed="true">
-    <Position X="2.25" Y="4" Width="1.5" />
+    <Position X="1.5" Y="3.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAABAAgAAAAABAAAAAAAAAAAAACAAAAAAAAAA=</HashCode>
       <FileName>Social\SocialWorkDatas.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.BLL.SocialPvpCombatExtensions" Collapsed="true">
-    <Position X="4" Y="4" Width="1.5" />
+  <Class Name="GuangYuan.GY001.BLL.SocialManagerOptions" Collapsed="true">
+    <Position X="5" Y="3.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAICAAAAAIAAAAgAAAAAAAAAIAAgAAAAAAA=</HashCode>
-      <FileName>Social\SocialWorkDatas.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Social\SocialManager.cs</FileName>
     </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.GetGeneralCharSummaryDatas" Collapsed="true">
+    <Position X="3.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIBAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Social\SocialManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.GameSocialManager">
+    <Position X="7" Y="1.25" Width="2.75" />
+    <NestedTypes>
+      <Class Name="GuangYuan.GY001.BLL.GameSocialManager.GetMailsDatas" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Social\SocialManager.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="GuangYuan.GY001.BLL.GameSocialManager.PatForTiliWorkData" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Social\SocialManager.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="GuangYuan.GY001.BLL.GameSocialManager.PatWithMountsDatas" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Social\SocialManager.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+      <Class Name="GuangYuan.GY001.BLL.GameSocialManager.GetPvpCharsWorkDatas" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Social\SocialManager.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>ASAAAAGAAIQSAYAxAAQAAABEAAAAQAwAAACYgoECiBA=</HashCode>
+      <FileName>Social\SocialManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.GetHomelandDataDatas" Collapsed="true">
+    <Position X="5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAiAggAAAAAAAAAAAAAAACAAAUAAAAAEAAAA=</HashCode>
+      <FileName>Social\SocialManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.GetCharIdsForRequestFriendDatas" Collapsed="true">
+    <Position X="1.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAGAAAACAAAAAIAAAAAAAAAAAAAAAAIAAAAAQAAAA=</HashCode>
+      <FileName>Social\SocialManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.ChangeItemsAndMailWorkDatsBase" Collapsed="true">
+    <Position X="1.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQCAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Social\SocialManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.RequestFriendData" Collapsed="true">
+    <Position X="3.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Social\SocialManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GuangYuan.GY001.BLL.Social.FriendDataView" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="3.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAIIAEjgCAAAAAAAQCAAABQAAADAAEAAAAggAAAA=</HashCode>
+      <FileName>Social\FriendDatas.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
   </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />
 </ClassDiagram>

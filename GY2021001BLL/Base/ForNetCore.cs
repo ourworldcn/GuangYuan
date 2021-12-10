@@ -59,7 +59,7 @@ namespace GuangYuan.GY001.BLL
 #if DEBUG
                 thread.Start();
 #else
-               thread.Start();
+                thread.Start();
 #endif
                 Task.Run(CreateGameManager);
                 var logger = _Services.GetService<ILogger<GameHostedService>>();
@@ -202,6 +202,10 @@ namespace GuangYuan.GY001.BLL
             }
             var str = "kdlsf";
             var b = str.StartsWith(string.Empty);
+            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+            var ary = new byte[32];
+            var ary1 = pool.Rent(32);
+            pool.Return(ary);
         }
 
         /// <summary>
