@@ -66,6 +66,19 @@
             <param name="model"></param>
             <returns></returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.ImportUsers(Microsoft.AspNetCore.Http.IFormFile)">
+            <summary>
+            上传
+            </summary>
+            <param name="file"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.ExportUsers(GY2021001WebApi.Controllers.AdminController.ExportUsersParaamsDto)">
+            <summary>
+            导出用户。
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
             战斗相关的操作。这里的功能以后可能依据需求改为Udp。
@@ -2564,6 +2577,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

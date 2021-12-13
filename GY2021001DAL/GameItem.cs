@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 namespace GuangYuan.GY001.UserDb
 {
@@ -213,6 +214,7 @@ namespace GuangYuan.GY001.UserDb
 
         }
 
+        [JsonIgnore]
         [NotMapped]
         public override DbContext DbContext => GameChar.DbContext;
 
@@ -250,6 +252,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 所属槽导航属性。
         /// </summary>
+        [JsonIgnore]
         public virtual GameItem Parent { get; set; }
 
         /// <summary>
@@ -261,13 +264,14 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 拥有的子物品或槽。
         /// </summary>
-        public virtual List<GameItem> Children { get; } = new List<GameItem>();
+        public virtual List<GameItem> Children { get; set; } = new List<GameItem>();
 
         /// <summary>
         /// 获取该物品直接或间接下属对象的枚举数。深度优先。
         /// </summary>
         /// <returns>枚举数。不包含自己。枚举过程中不能更改树节点的关系。</returns>
         [NotMapped]
+        [JsonIgnore]
         public IEnumerable<GameItem> AllChildren
         {
             get
@@ -293,6 +297,7 @@ namespace GuangYuan.GY001.UserDb
         /// 获取或设置所属的角色对象。没有设置关系可能返回null。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public GameChar GameChar
         {
             get
@@ -314,6 +319,7 @@ namespace GuangYuan.GY001.UserDb
         /// 容器的Id。可能返回容器Id。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public Guid? ContainerId => (ParentId ?? Parent?.Id) ?? OwnerId;
 
         /// <summary>
@@ -387,6 +393,7 @@ namespace GuangYuan.GY001.UserDb
         /// 试图转换为<see cref="GameItemTemplate"/>,如果不能转化则返回null。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public GameItemTemplate ItemTemplate
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

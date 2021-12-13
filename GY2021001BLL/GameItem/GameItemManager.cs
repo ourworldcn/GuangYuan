@@ -1779,27 +1779,18 @@ namespace OW.Game.Item
                 writer.WriteNull(nameof(value.Count));
             else
                 writer.WriteNumber(nameof(value.Count), value.Count.Value);
-            writer.WriteStartObject(nameof(value.Properties));
-            foreach (var item in value.Properties)
-            {
-                if (item.Value is null)
-                    writer.WriteNull(item.Key);
-                else
-                    writer.WriteString(item.Key, item.Value.ToString());
-            }
-            writer.WriteEndObject();
-            writer.WriteStartArray(nameof(value.Children));
-            foreach (var item in value.Children)
-            {
-                Write(writer, item, options);
-            }
-            writer.WriteEndArray();
+            writer.WriteString(nameof(value.ClientGutsString), value.ClientGutsString);
+            writer.WriteString(nameof(value.CreateUtc), value.CreateUtc);
+            writer.WriteString(nameof(value.OrderNumber), value.OrderNumber.ToString());
             if (value.OwnerId is null)
                 writer.WriteNull(nameof(value.OwnerId));
             else
                 writer.WriteString(nameof(value.OwnerId), value.OwnerId.Value);
-            writer.WriteString(nameof(value.ClientGutsString), value.ClientGutsString);
-            writer.WriteString(nameof(value.CreateUtc), value.CreateUtc);
+            writer.WriteString(nameof(value.Properties),value.PropertiesString);
+
+            writer.WritePropertyName(nameof(value.Children));
+            JsonSerializer.Serialize(writer,value.Children,typeof(List<GameItem>), options);
+
             writer.WriteEndObject();
         }
     }

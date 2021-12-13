@@ -12,6 +12,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 namespace GuangYuan.GY001.UserDb
 {
@@ -227,6 +228,7 @@ namespace GuangYuan.GY001.UserDb
         public Guid TemplateId { get; set; }
 
         [NotMapped]
+        [JsonIgnore]
         public abstract DbContext DbContext { get; }
 
         #region 快速变化属性相关
@@ -237,6 +239,7 @@ namespace GuangYuan.GY001.UserDb
         /// 快速变化属性。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public Dictionary<string, FastChangingProperty> Name2FastChangingProperty
         {
             get
@@ -290,6 +293,7 @@ namespace GuangYuan.GY001.UserDb
         /// 扩展属性的封装字典。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
         {
             get
@@ -311,6 +315,7 @@ namespace GuangYuan.GY001.UserDb
         /// 模板对象。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public GameThingTemplateBase Template { get; set; }
 
         private ObservableCollection<GameExtendProperty> _ExtendProperties;
@@ -319,6 +324,7 @@ namespace GuangYuan.GY001.UserDb
         /// 通用扩展属性。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public ObservableCollection<GameExtendProperty> ExtendProperties
         {
             get

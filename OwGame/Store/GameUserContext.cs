@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -163,6 +164,7 @@ namespace OW.Game.Store
         /// 获取或设置Id的字符串表现形式。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public string IdString
         {
             get
@@ -182,6 +184,7 @@ namespace OW.Game.Store
         /// 获取或设置Id的Base64字符串表现形式。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public string Base64IdString
         {
             get { return _Base64IdString ??= Id.ToBase64String(); }

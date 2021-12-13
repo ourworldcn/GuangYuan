@@ -1,7 +1,6 @@
 Add-Migration 21082501 -Context GY001TemplateContext
 Add-Migration 21082501 -Context GY001UserContext
 
-select * from master.dbo.sysprocesses where dbid = DB_ID('GY2021001Dev') --取活动链接数量
 
 fcpifhcd=1	增量
 fcpdfhcd=1	计算间隔，单位：秒
@@ -30,3 +29,5 @@ begin
 end
 GO
 
+
+select * from master.dbo.sysprocesses where dbid = DB_ID('GY2021001Dev') --取活动链接数量

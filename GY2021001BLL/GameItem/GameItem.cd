@@ -70,5 +70,26 @@
       <FileName>GameItem\GameItemManager.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="OW.Game.Item.AddItemsOrMailDatas" Collapsed="true">
+    <Position X="1.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameItem\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.UseItemsView" Collapsed="true">
+    <Position X="1.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAgAAAAEAAAgAAA=</HashCode>
+      <FileName>GameItem\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.BinaryExtensions" Collapsed="true">
+    <Position X="3" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAAAAAAACAAAAAAAAgAAAAAAAAEAAAQ=</HashCode>
+      <FileName>GameItem\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />
 </ClassDiagram>

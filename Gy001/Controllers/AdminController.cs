@@ -1,9 +1,14 @@
 ﻿using GuangYuan.GY001.BLL;
 using Gy001.Controllers;
 using GY2021001WebApi.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OW.Game;
+using System.Buffers;
+using System.IO;
 using System.Linq;
+using System.Net.Mime;
+using System.Text;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -65,6 +70,54 @@ namespace GY2021001WebApi.Controllers
             World.CharManager.SetExp(gu.CurrentChar, model.Exp);
             return result;
         }
+
+        /// <summary>
+        /// 上传
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult ImportUsers(IFormFile file)
+        {
+            using (var stream = file.OpenReadStream())
+            {
+                var trustedFileNameForFileStorage = Path.GetRandomFileName();
+                using var sr = new StreamReader(stream);
+
+                var r = sr.ReadLine();
+                //await WriteFileAsync(stream, Path.Combine(_targetFilePath, trustedFileNameForFileStorage));
+            }
+            return Ok();
+        }
+
+        public class ExportUsersParaamsDto
+        {
+            public string Prefix { get; set; }
+
+            public int StartIndex { get; set; }
+
+            public int EndIndex { get; set; }
+        }
+        /// <summary>
+        /// 导出用户。
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut]
+        //[ProducesResponseType(typeof(FileResult), Status200OK)]
+        public FileResult ExportUsers(ExportUsersParaamsDto model)
+        {
+            string str = "test:this is a test of downfile";
+            MemoryStream ms = new MemoryStream();
+            var buff = Encoding.UTF8.GetBytes(str);
+            ms.Write(buff, 0, buff.Length);
+            ms.Seek(0, SeekOrigin.Begin);
+
+            var actionresult = new FileStreamResult(ms, "application/text");
+            actionresult.FileDownloadName = "zCarinfos.txt";
+            return actionresult;
+        }
+
+
     }
 
 }

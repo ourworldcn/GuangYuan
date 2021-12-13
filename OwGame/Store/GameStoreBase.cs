@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -7,6 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 namespace OW.Game.Store
 {
@@ -139,7 +141,18 @@ namespace OW.Game.Store
         /// 属性字符串。格式如:atk=20.5,tid=933323D7-3A9B-4B0A-9072-E6AAD3FAC411,def=10|20|30,
         /// 数字，时间，Guid，字符串。
         /// </summary>
-        public string PropertiesString { get => _PropertiesString; set => _PropertiesString = value; }
+        public string PropertiesString
+        {
+            get => _PropertiesString;
+            set
+            {
+                if (!ReferenceEquals(_PropertiesString, value))
+                {
+                    _PropertiesString = value;
+                    _Properties = null;
+                }
+            }
+        }
 
         private volatile bool _IsDisposed;
 
@@ -174,6 +187,7 @@ namespace OW.Game.Store
         /// 频繁发生变化的战斗属性，请另行生成对象。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public Dictionary<string, object> Properties
         {
             get
@@ -191,6 +205,7 @@ namespace OW.Game.Store
         /// 对象是否已经被处置。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public bool IsDisposed
         {
             get => _IsDisposed;
@@ -205,13 +220,14 @@ namespace OW.Game.Store
         {
             if (_Properties is null) //若未初始化字典
                 return; //不变更属性
-            PropertiesString = System.OwConvert.ToString(Properties);
+            _PropertiesString = OwConvert.ToString(Properties); //写入字段而非属性，写入属性导致字典需要重新初始化。
         }
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public bool SuppressSave { get; set; }
 
         /// <summary>
@@ -226,7 +242,7 @@ namespace OW.Game.Store
                 {
                     // TODO: 释放托管状态(托管对象)
                 }
-
+                
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
                 _Properties = null;

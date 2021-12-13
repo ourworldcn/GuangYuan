@@ -26,6 +26,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -194,18 +195,11 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            var dic = new Dictionary<Guid, int>();
-            Random random = new Random();
-            for (int i = 0; i < 10; i++)
-            {
-                dic.Add(Guid.NewGuid(), random.Next());
-            }
-            var str = "kdlsf";
-            var b = str.StartsWith(string.Empty);
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            var ary = new byte[32];
-            var ary1 = pool.Rent(32);
-            pool.Return(ary);
+            var gi = db.Set<GameItem>().First(c => c.TemplateId == ProjectConstant.CurrencyBagTId);
+            var options = new JsonSerializerOptions() {IgnoreReadOnlyProperties=false, MaxDepth=64};
+            //options.Converters.Add(new GameItemJsonConverter());
+            var str = JsonSerializer.Serialize(gi, typeof(GameItem), options);
+            var gi2 = JsonSerializer.Deserialize(str, typeof(GameItem), options);
         }
 
         /// <summary>
