@@ -231,6 +231,12 @@ namespace GuangYuan.GY001.UserDb
         [JsonIgnore]
         public abstract DbContext DbContext { get; }
 
+        /// <summary>
+        /// 记录一些额外的信息，通常这些信息用于排序，加速查找符合特定要求的对象。此字段被索引。
+        /// </summary>
+        [MaxLength(64)]
+        public string ExPropertyString { get; set; }
+
         #region 快速变化属性相关
 
         private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
@@ -284,7 +290,6 @@ namespace GuangYuan.GY001.UserDb
         }
 
         #endregion 快速变化属性相关
-
 
         #region 通用扩展属性及相关
         private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;

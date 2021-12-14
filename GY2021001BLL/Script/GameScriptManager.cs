@@ -59,7 +59,7 @@ namespace GuangYuan.GY001.BLL.Script
 
         IEnumerable<Assembly> GetAssemblies()
         {
-            List<Assembly> result = new List<Assembly>(AppDomain.CurrentDomain.GetAssemblies().Where(c => !c.IsDynamic ));
+            List<Assembly> result = new List<Assembly>(AppDomain.CurrentDomain.GetAssemblies().Where(c => !c.IsDynamic));
             return result;
         }
 

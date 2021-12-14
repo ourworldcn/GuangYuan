@@ -74,9 +74,9 @@ namespace OW.Game.Mission
         {
         }
 
-        public void Save()
+        public override void Save()
         {
-
+            base.Save();
         }
     }
 }

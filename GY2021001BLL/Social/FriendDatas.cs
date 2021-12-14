@@ -127,13 +127,13 @@ namespace GuangYuan.GY001.BLL.Social
         /// 获取新的可申请好友名单。
         /// </summary>
         /// <param name="bodyTIds">按展示坐骑身体模板Id过滤，如果是空则不过滤。</param>
+        /// <returns></returns>
         public IQueryable<Guid> RefreshLastList(IEnumerable<Guid> bodyTIds)
         {
             IQueryable<Guid> result;
             var db = DbCoutext;
             IQueryable<GameSocialRelationship> shows;
             shows = db.Set<GameSocialRelationship>().Where(c => bodyTIds.Contains(c.Id2) && c.KeyType == SocialConstant.HomelandShowKeyType);  //展示坐骑
-
             var activeChars = db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);  //活跃用户
             var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
             var todayList = TodayIds;   //今日已经刷过的用户

@@ -9,11 +9,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 
 namespace GuangYuan.GY001.BLL
@@ -1069,7 +1072,7 @@ namespace GuangYuan.GY001.BLL
             {
                 List<decimal> lst = new List<decimal>(limitSeq.OfType<decimal>());
                 newLv = lst.FindIndex(c => c > newExp); //新等级
-                newLv = newLv == -1 ? lst.Count  : newLv;
+                newLv = newLv == -1 ? lst.Count : newLv;
                 if (newLv != oldLv)    //若等级发生变化
                 {
                     e.MarkAndSet(gameChar, World.PropertyManager.LevelPropertyName, newLv);
@@ -1309,5 +1312,7 @@ namespace GuangYuan.GY001.BLL
 
 
         #endregion 项目特定
+
     }
+
 }

@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace GuangYuan.GY001.UserDb
 {
@@ -96,6 +97,7 @@ namespace GuangYuan.GY001.UserDb
         /// 管理该用户数据存储的上下文。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public DbContext DbContext { get; set; }
 
         /// <summary>
@@ -104,12 +106,14 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         /// <value>当前角色对象，null用户尚未选择角色。</value>
         [NotMapped]
+        [JsonIgnore]
         public GameChar CurrentChar { get; set; }
 
         /// <summary>
         /// 记录服务提供者。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public IServiceProvider Services { get; set; }
 
         #endregion 非数据库属性

@@ -3,6 +3,7 @@ using Gy001.Controllers;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
 using OW.Game;
 using System.Buffers;
 using System.IO;
@@ -19,11 +20,9 @@ namespace GY2021001WebApi.Controllers
     [ApiController]
     public class AdminController : GameBaseController
     {
-        private readonly VWorld _World;
 
-        public AdminController(VWorld world)
+        public AdminController(VWorld world) : base(world)
         {
-            _World = world;
         }
 
         /// <summary>
@@ -35,7 +34,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<CloneAccountReturnDto> CloneAccount(CloneAccountParamsDto model)
         {
             var result = new CloneAccountReturnDto();
-            using var datas = new CloneUserDatas(_World, model.Token)
+            using var datas = new CloneUserDatas(World, model.Token)
             {
                 Count = model.Count,
                 LoginNamePrefix = model.LoginNamePrefix,
@@ -90,14 +89,6 @@ namespace GY2021001WebApi.Controllers
             return Ok();
         }
 
-        public class ExportUsersParaamsDto
-        {
-            public string Prefix { get; set; }
-
-            public int StartIndex { get; set; }
-
-            public int EndIndex { get; set; }
-        }
         /// <summary>
         /// 导出用户。
         /// </summary>
@@ -106,15 +97,28 @@ namespace GY2021001WebApi.Controllers
         //[ProducesResponseType(typeof(FileResult), Status200OK)]
         public FileResult ExportUsers(ExportUsersParaamsDto model)
         {
-            string str = "test:this is a test of downfile";
-            MemoryStream ms = new MemoryStream();
-            var buff = Encoding.UTF8.GetBytes(str);
-            ms.Write(buff, 0, buff.Length);
-            ms.Seek(0, SeekOrigin.Begin);
+            var tempFileName = Path.GetTempFileName();
+            var fullPath = Path.Combine(Path.GetTempPath(), tempFileName);
+            using (var stream = new FileStream(fullPath, FileMode.Truncate))
+            {
+                using ExportUsersDatas dates = new ExportUsersDatas(World, model.Token)
+                {
+                    LoginNamePrefix = model.Prefix,
+                    StartIndex = model.StartIndex,
+                    EndIndex = model.EndIndex,
+                    Store = stream,
+                };
+                World.AdminManager.ExportUsers(dates);
+                if (dates.HasError)
+                {
+                    Response.StatusCode = 500;
+                    return null;
+                }
 
-            var actionresult = new FileStreamResult(ms, "application/text");
-            actionresult.FileDownloadName = "zCarinfos.txt";
-            return actionresult;
+            }
+
+            var result = new PhysicalFileResult(fullPath, "application/text") { FileDownloadName = "Gy001UsersInfo.txt" };
+            return result;
         }
 
 

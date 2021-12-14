@@ -568,9 +568,9 @@ namespace GuangYuan.GY001.BLL
 
         #endregion 关系数据相关
 
-        public virtual void Save()
+        public override void Save()
         {
-            UserContext.SaveChanges();
+            base.Save();
         }
 
     }

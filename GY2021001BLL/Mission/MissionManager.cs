@@ -182,8 +182,9 @@ namespace OW.Game.Mission
                 var str = tid.ToString();   //其中 GUID 的值表示为一系列小写的十六进制位，这些十六进制位分别以 8 个、4 个、4 个、4 个和 12 个位为一组并由连字符分隔开。 例如，返回值可以是“382c74c3-721d-4f34-80e5-57657b6cbc27”。 
                 switch (str)
                 {
-                    case "8bba8a00-e767-4a6a-aa6b-22ef03a3f527": //	关卡模式总战力成就	51005
                     case "814e47cd-8bdf-4efc-bd26-61af57b7fcf8": //	孵化成就	51007
+                        
+                    case "8bba8a00-e767-4a6a-aa6b-22ef03a3f527": //	关卡模式总战力成就	51005
                     case "42d3236c-ea7c-4444-898e-469aac1fda07": //	累计访问好友天次成就	51011
 
                     case "6f8f5d48-e4b4-4e37-a48f-f8b6badc6f44": //	pvp进攻成就	51013
@@ -672,7 +673,7 @@ namespace OW.Game.Mission
             }
         }
 
-        public void Save()
+        public override void Save()
         {
             if (null != _MissionStates)    //若需要存储
             {
@@ -695,7 +696,7 @@ namespace OW.Game.Mission
                 }
                 gep.ByteArray = ms.ToArray();
             }
-            UserContext.SaveChanges();
+            base.Save();
         }
     }
 

@@ -367,7 +367,7 @@ namespace GuangYuan.GY001.BLL
 
         private const string BuyRecordActionId = "商城购买";
 
-        public void Save()
+        public override void Save()
         {
             if (null != _RefreshInfos)    //若可能发生变化
             {
@@ -377,7 +377,7 @@ namespace GuangYuan.GY001.BLL
             {
                 ShoppingSlot.Properties[nameof(GoodsInfos)] = OwConvert.ToUriString(_GoodsInfos);
             }
-            UserContext?.SaveChanges();
+            base.Save();
         }
 
     }

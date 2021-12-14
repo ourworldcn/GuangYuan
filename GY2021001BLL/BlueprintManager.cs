@@ -5,6 +5,7 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Item;
+using OW.Game.Mission;
 using OW.Game.Store;
 using System;
 using System.Buffers;
@@ -1345,6 +1346,8 @@ namespace GuangYuan.GY001.BLL
                     mail.Properties["MailTypeId"] = ProjectConstant.孵化补给动物.ToString();
                     social.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId,
                         new ValueTuple<GameItem, Guid>[] { (gameItem, ProjectConstant.ShoulanSlotId) });
+                    gim.ForceDelete(gameItem);
+                    datas.ChangeItems.AddToRemoves(slotSl.Id,gameItem.Id);
                 }
 
             }
@@ -1355,6 +1358,15 @@ namespace GuangYuan.GY001.BLL
                 gameItem.Properties["neqlt"] = 10m;
                 gim.MoveItem(gameItem, 1, slotZq, datas.ChangeItems);
             }
+            //成就
+            var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.孵化成就);
+            if (null != mission)   //若找到成就对象
+            {
+                var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
+                mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
+                World.MissionManager.ScanAsync(datas.GameChar);
+            }
+            World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
 
         /// <summary>

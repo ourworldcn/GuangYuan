@@ -14,6 +14,12 @@ namespace GuangYuan.GY001.UserDb
     public class GY001UserContext : GameUserContext
     {
 
+        //[DbFunction(nameof(dbf),"dbo")]
+        //public static void dbf()
+        //{
+
+        //}
+
         public GY001UserContext()
         {
 
@@ -36,6 +42,7 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameItem>().HasIndex(c => c.OwnerId);
             modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.Count }).IsUnique(false);
             modelBuilder.Entity<GameItem>().HasIndex(c => c.Count).IsUnique(false);
+            modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExPropertyString }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
             //通用扩展属性
             modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.Id, c.Name });

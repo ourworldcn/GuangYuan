@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace GuangYuan.GY001.UserDb
 {
@@ -30,6 +31,7 @@ namespace GuangYuan.GY001.UserDb
         /// 角色对象的导航属性。
         /// </summary>
         [ForeignKey(nameof(Id))]
+        [JsonIgnore]
         public virtual GameChar GameChar { get; set; }
 
         /// <summary>

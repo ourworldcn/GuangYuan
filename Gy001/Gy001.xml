@@ -73,7 +73,7 @@
             <param name="file"></param>
             <returns></returns>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.AdminController.ExportUsers(GY2021001WebApi.Controllers.AdminController.ExportUsersParaamsDto)">
+        <member name="M:GY2021001WebApi.Controllers.AdminController.ExportUsers(GY2021001WebApi.Models.ExportUsersParaamsDto)">
             <summary>
             导出用户。
             </summary>
@@ -1389,6 +1389,26 @@
             <summary>
             操作导致发送了邮件的Id集合。
             如果是空集合则表示没有发送邮件。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ExportUsersParaamsDto">
+            <summary>
+            导出用户信息的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ExportUsersParaamsDto.Prefix">
+            <summary>
+            登录名的前缀。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ExportUsersParaamsDto.StartIndex">
+            <summary>
+            登录名的起始后缀。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ExportUsersParaamsDto.EndIndex">
+            <summary>
+            登录名的终止后缀。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.QuicklyRegisterReturnDto">

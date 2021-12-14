@@ -11,9 +11,42 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace GuangYuan.GY001.UserDb
 {
+    /// <summary>
+    /// 角色的类型。
+    /// </summary>
+    [Flags]
+    public enum CharType : byte
+    {
+        /// <summary>
+        /// 普通角色。
+        /// </summary>
+        Unknow = 0,
+        /// <summary>
+        /// 机器人。
+        /// </summary>
+        Robot = 1,
+        /// <summary>
+        /// Npc有些轻度游戏中没有npc。
+        /// </summary>
+        Npc = 2,
+        /// <summary>
+        /// 有管理员权力的角色。
+        /// </summary>
+        Admin = 4,
+        /// <summary>
+        /// 开发时的测试账号。
+        /// </summary>
+        Test = 8,
+        /// <summary>
+        /// 特殊的贵宾角色。
+        /// </summary>
+        Vip = 16,
+    }
+
     [Table("GameChars")]
     public class GameChar : GameCharBase, IDisposable
     {
@@ -73,6 +106,7 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         /// <returns>枚举数。不包含自己。枚举过程中不能更改树节点的关系。</returns>
         [NotMapped]
+        [JsonIgnore]
         public IEnumerable<GameItem> AllChildren
         {
             get
@@ -95,6 +129,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 所属用户的导航属性。
         /// </summary>
+        [JsonIgnore]
         public virtual GameUser GameUser { get; set; }
 
         /// <summary>
@@ -106,6 +141,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 用户所处地图区域的Id,这也可能是战斗关卡的Id。如果没有在战斗场景中，则可能是空。
         /// </summary>
+        [JsonIgnore]
         public Guid? CurrentDungeonId { get; set; }
 
         /// <summary>
@@ -134,6 +170,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 保存未能发送给客户端的变化数据。
         /// </summary>
+        [JsonIgnore]
         public List<ChangeItem> ChangesItems => _ChangesItems;
 
         /// <summary>
@@ -146,6 +183,11 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         //[ForeignKey(nameof(Id))]
         public virtual CharSpecificExpandProperty SpecificExpandProperties { get; set; }
+
+        /// <summary>
+        /// 用户的类型。
+        /// </summary>
+        public CharType CharType { get; set; }
 
         /// <summary>
         /// 客户端的属性。
@@ -193,6 +235,7 @@ namespace GuangYuan.GY001.UserDb
         /// 获取此对象所处的用户数据库上下文对象。
         /// </summary>
         [NotMapped]
+        [JsonIgnore]
         public override DbContext DbContext => GameUser.DbContext;
 
         // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器

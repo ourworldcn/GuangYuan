@@ -1,12 +1,15 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Item;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -212,6 +215,79 @@ namespace GuangYuan.GY001.BLL
                 sb.Append(PwdChars[VWorld.WorldRandom.Next(length)]);
             return sb.ToString();
         }
+
+        /// <summary>
+        /// 导出用户存储在指定流对象中。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void ExportUsers(ExportUsersDatas datas)
+        {
+            using (var dw = datas.LockUser())   //尽早解锁避免连锁死锁问题
+            {
+                if (dw is null)
+                    return;
+                World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
+            }
+            //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
+            //{
+            //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+            //    return;
+            //}
+            var db = datas.UserContext;
+            var lns = db.Set<GameUser>().Where(c => EF.Functions.Like(c.LoginName, $"{datas.LoginNamePrefix}%")).Select(c => c.LoginName).
+                 AsEnumerable().Where(c =>
+                 {
+                     var suffix = c[datas.LoginNamePrefix.Length..];
+                     return int.TryParse(suffix, out var index) && index >= datas.StartIndex && index <= datas.EndIndex;
+                 });
+            JsonSerializerOptions options = new JsonSerializerOptions();
+            using var writer = new Utf8JsonWriter(datas.Store);
+            writer.WriteStartArray();
+            foreach (var ln in lns)
+            {
+                using var dwu = World.CharManager.LockOrLoad(ln, out var gu);
+                if (dwu is null)    //忽略错误
+                    continue;
+                JsonSerializer.Serialize(writer, gu, typeof(GameUser), options);
+            }
+            writer.WriteEndArray();
+        }
+
+    }
+
+    public class ExportUsersDatas : ComplexWorkDatasBase
+    {
+        public ExportUsersDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public ExportUsersDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public ExportUsersDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 登录名的前缀部分。
+        /// </summary>
+        public string LoginNamePrefix { get; set; }
+
+        /// <summary>
+        /// 后缀数字开始索引。
+        /// </summary>
+        public int StartIndex { get; set; }
+
+        /// <summary>
+        /// 后缀数字截至索引。
+        /// </summary>
+        public int EndIndex { get; set; }
+
+        /// <summary>
+        /// 存储的流对象。会向其追加数据。
+        /// </summary>
+        public Stream Store { get; set; }
     }
 
     /// <summary>

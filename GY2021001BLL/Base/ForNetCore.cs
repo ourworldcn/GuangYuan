@@ -195,11 +195,7 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            var gi = db.Set<GameItem>().First(c => c.TemplateId == ProjectConstant.CurrencyBagTId);
-            var options = new JsonSerializerOptions() {IgnoreReadOnlyProperties=false, MaxDepth=64};
-            //options.Converters.Add(new GameItemJsonConverter());
-            var str = JsonSerializer.Serialize(gi, typeof(GameItem), options);
-            var gi2 = JsonSerializer.Deserialize(str, typeof(GameItem), options);
+
         }
 
         /// <summary>

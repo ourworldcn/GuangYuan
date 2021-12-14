@@ -981,6 +981,27 @@ namespace GY2021001WebApi.Models
     #region 账号管理相关
 
     /// <summary>
+    /// 导出用户信息的参数封装类。
+    /// </summary>
+    public class ExportUsersParaamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 登录名的前缀。
+        /// </summary>
+        public string Prefix { get; set; }
+
+        /// <summary>
+        /// 登录名的起始后缀。
+        /// </summary>
+        public int StartIndex { get; set; }
+
+        /// <summary>
+        /// 登录名的终止后缀。
+        /// </summary>
+        public int EndIndex { get; set; }
+    }
+
+    /// <summary>
     /// 快速隐式注册接口的返回类。
     /// </summary>
     [DataContract]
