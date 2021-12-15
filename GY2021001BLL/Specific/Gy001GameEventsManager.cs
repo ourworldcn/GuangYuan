@@ -272,19 +272,6 @@ namespace OW.Game
             user.CurrentChar = gc;
             var gt = World.ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
             GameCharCreated(gc, gt, user, parameters?.GetValueOrDefault(nameof(GameChar.DisplayName)) as string, new Dictionary<string, object>());
-            //生成缓存数据
-            var sep = new CharSpecificExpandProperty
-            {
-                CharLevel = (int)gc.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName),
-                LastPvpScore = 1000,
-                PvpScore = 1000,
-                Id = gc.Id,
-                GameChar = gc,
-                FrinedCount = 0,
-                FrinedMaxCount = 10,
-                LastLogoutUtc = DateTime.UtcNow,
-            };
-            gc.SpecificExpandProperties = sep;
         }
 
         public override void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, [AllowNull] IReadOnlyDictionary<string, object> parameters)
@@ -398,8 +385,6 @@ namespace OW.Game
                 var tmp = JsonSerializer.Deserialize<List<ChangesItemSummary>>(exProp.Text);
                 gameChar.ChangesItems.AddRange(ChangesItemSummary.ToChangesItem(tmp, gameChar));
             }
-            //加载扩展属性
-            gameChar.SpecificExpandProperties = gameChar.DbContext.Set<CharSpecificExpandProperty>().Find(gameChar.Id);
             //清除锁定属性槽内物品，放回道具背包中
             var gim = World.ItemManager;
             var daojuBag = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包
@@ -425,7 +410,6 @@ namespace OW.Game
                     ts = dt - now;
                 var tm = new Timer(World.BlueprintManager.LevelUpCompleted, ValueTuple.Create(gameChar.Id, item.Id), ts, Timeout.InfiniteTimeSpan);
             }
-
         }
 
         public override void GameUserLoaded(GameUser user, DbContext context)

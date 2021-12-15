@@ -216,7 +216,7 @@ namespace GuangYuan.GY001.UserDb
 
         [JsonIgnore]
         [NotMapped]
-        public override DbContext DbContext => GameChar.DbContext;
+        public override DbContext DbContext => GameChar?.DbContext;
 
         private decimal? _Count;
 

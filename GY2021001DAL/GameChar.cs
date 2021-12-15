@@ -95,7 +95,7 @@ namespace GuangYuan.GY001.UserDb
                 }
                 return _GameItems;
             }
-            internal set
+            set
             {
                 _GameItems = value;
             }
@@ -179,12 +179,6 @@ namespace GuangYuan.GY001.UserDb
         public const string ChangesItemExPropertyName = "{BAD410C8-6393-44B4-9EB1-97F91ED11C12}";
 
         /// <summary>
-        /// 角色对象的扩展属性的导航属性。
-        /// </summary>
-        //[ForeignKey(nameof(Id))]
-        public virtual CharSpecificExpandProperty SpecificExpandProperties { get; set; }
-
-        /// <summary>
         /// 用户的类型。
         /// </summary>
         public CharType CharType { get; set; }
@@ -226,7 +220,6 @@ namespace GuangYuan.GY001.UserDb
                 _GameItems = null;
                 _ChangesItems = null;
                 GameUser = null;
-                SpecificExpandProperties = null;
                 base.Dispose(disposing);
             }
         }
@@ -236,7 +229,7 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         [NotMapped]
         [JsonIgnore]
-        public override DbContext DbContext => GameUser.DbContext;
+        public override DbContext DbContext => GameUser?.DbContext;
 
         // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~GameChar()

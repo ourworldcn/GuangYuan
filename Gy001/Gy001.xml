@@ -66,11 +66,12 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.AdminController.ImportUsers(Microsoft.AspNetCore.Http.IFormFile)">
+        <member name="M:GY2021001WebApi.Controllers.AdminController.ImportUsers(Microsoft.AspNetCore.Http.IFormFile,System.String)">
             <summary>
             上传
             </summary>
             <param name="file"></param>
+            <param name="token">令牌。</param>
             <returns></returns>
         </member>
         <member name="M:GY2021001WebApi.Controllers.AdminController.ExportUsers(GY2021001WebApi.Models.ExportUsersParaamsDto)">

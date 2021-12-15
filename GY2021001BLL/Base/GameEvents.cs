@@ -506,7 +506,8 @@ namespace OW.Game
                 }
             }
             //通知直接所属物品加载完毕
-            list.ForEach(c =>
+            var tmp = gameChar.GameItems.ToArray();
+            Array.ForEach(tmp, c =>
             {
                 c.GameChar = gameChar;
                 GameItemLoaded(c);

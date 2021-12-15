@@ -329,18 +329,29 @@ namespace GuangYuan.GY001.UserDb
         /// 通用扩展属性。
         /// </summary>
         [NotMapped]
-        [JsonIgnore]
+        //[JsonIgnore]
         public ObservableCollection<GameExtendProperty> ExtendProperties
         {
             get
             {
-                if (_ExtendProperties is null)
+                if (_ExtendProperties is null && DbContext!=null)
                 {
-                    var coll = DbContext.Set<GameExtendProperty>().Where(c => c.Id == Id);
-                    _ExtendProperties = new ObservableCollection<GameExtendProperty>(coll);
-                    _ExtendProperties.CollectionChanged += GameExtendPropertiesCollectionChanged;
+                    try
+                    {
+                        var coll = DbContext.Set<GameExtendProperty>().Where(c => c.Id == Id);
+                        _ExtendProperties = new ObservableCollection<GameExtendProperty>(coll);
+                        _ExtendProperties.CollectionChanged += GameExtendPropertiesCollectionChanged;
+                    }
+                    catch (Exception)
+                    {
+
+                    }
                 }
                 return _ExtendProperties;
+            }
+            set
+            {
+                _ExtendProperties = value;
             }
         }
 

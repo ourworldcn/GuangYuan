@@ -74,6 +74,9 @@ namespace GuangYuan.GY001.BLL
 
             internal ConcurrentDictionary<Guid, GameUser> _Token2Users = new ConcurrentDictionary<Guid, GameUser>();
             internal ConcurrentDictionary<string, GameUser> _LoginName2Users = new ConcurrentDictionary<string, GameUser>();
+            /// <summary>
+            /// 键是用户对象Id,值用户对象。
+            /// </summary>
             internal ConcurrentDictionary<Guid, GameUser> _Id2Users = new ConcurrentDictionary<Guid, GameUser>();
             internal ConcurrentDictionary<Guid, GameChar> _Id2GChars = new ConcurrentDictionary<Guid, GameChar>();
 
@@ -179,6 +182,26 @@ namespace GuangYuan.GY001.BLL
             #endregion IDisposable接口及相关
         }
 
+        /// <summary>
+        /// 设置好友搜索优先度。
+        /// </summary>
+        /// <param name="gameChar">角色对象。</param>
+        /// <param name="dateTime">时间。</param>
+        public void SetSearchFriendPriority(GameChar gameChar, DateTime dateTime)
+        {
+            using var dw = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
+            if (dw is null)
+                throw new TimeoutException("无法锁定用户对象");
+            var slot = gameChar.GetFriendSlot();
+            var lv = (int)gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+            var str = $"{lv:d4}{dateTime:s}";
+            if (str != slot.ExPropertyString)
+            {
+                slot.ExPropertyString = str;
+                World.CharManager.NotifyChange(gameChar.GameUser);
+            }
+        }
+
         #region 字段
 
         /// <summary>
@@ -268,6 +291,8 @@ namespace GuangYuan.GY001.BLL
             if (!Lock(gu))
                 return null;
             _Store.Add(gu);
+            if (gu.CurrentChar != null)
+                SetSearchFriendPriority(gu.CurrentChar, DateTime.UtcNow);
             return gu;
         }
 
@@ -454,7 +479,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 获取已经在内存中的用户对象。
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">用户对象的Id。</param>
         /// <returns>用户对象，如果无效则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameUser GetUserFromId(Guid id) =>
@@ -794,7 +819,7 @@ namespace GuangYuan.GY001.BLL
                 var gc = gu.CurrentChar;
                 _Store._Id2OnlineChars.AddOrUpdate(gc.Id, gc, (c1, c2) => gc);  //标记在线
 
-                gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = new DateTime(9999, 1, 1);   //标记在线
+                SetSearchFriendPriority(gc, DateTime.MaxValue);
                 actionRecords.Add(new GameActionRecord()    //写入登录日志
                 {
                     ActionId = "Login",
@@ -836,7 +861,8 @@ namespace GuangYuan.GY001.BLL
                     ParentId = gu.CurrentChar.Id,
                 };
                 actionRecords.Add(actionRecord);
-                gu.CurrentChar.SpecificExpandProperties.LastLogoutUtc = DateTime.UtcNow;   //记录下线时间
+                if (IsOnline(gu.CurrentChar.Id))    //若用户登录了
+                    SetSearchFriendPriority(gu.CurrentChar, DateTime.UtcNow);
                 try
                 {
                     gu.InvokeLogouting(reason);
@@ -859,6 +885,7 @@ namespace GuangYuan.GY001.BLL
                 var logger = Service.GetService<ILogger<GameChar>>();
                 logger?.LogError("保存用户(Number={Number})信息时发生错误。——{err}", gu.Id, err);
             }
+
             _Store.Remove(gu);
             gu.Dispose();
             return true;
@@ -975,6 +1002,35 @@ namespace GuangYuan.GY001.BLL
             return true;
         }
 
+        /// <summary>
+        /// 删除指定Id的用户和所有附属信息。
+        /// </summary>
+        /// <param name="loginName"></param>
+        /// <returns></returns>
+        public bool Delete(string loginName)
+        {
+            var ln = loginName;
+            using var dwLn = World.LockStringAndReturnDisposer(ref ln, Options.DefaultLockTimeout); //锁定登录等相关进程
+            if (dwLn is null)
+                return false;
+            var gu = GetUserFromLoginName(ln);
+            if (null != gu)    //若已经加载到内存中
+            {
+                if (!Logout(gu, LogoutReason.SystemShutdown))
+                    throw new InvalidOperationException();
+            }
+            using var db = World.CreateNewUserDbContext();
+            var gcIds = db.GameUsers.Where(c => c.LoginName == ln).SelectMany(c => c.GameChars.Select(c => c.Id)).ToArray();
+            var sql = $"DELETE FROM [dbo].[GameItems] where [id] in ('{string.Join("','", gcIds.Select(c => c.ToString()))}')";
+            db.Database.ExecuteSqlRaw(sql);
+            sql = $"";
+            /* from tgc in db.GameChars
+                        where tgc.GameUser.LoginName == ln
+                        select tgc.Id;*/
+
+            return true;
+        }
+
         #endregion 注册登入登出相关
 
         /// <summary>
@@ -992,21 +1048,6 @@ namespace GuangYuan.GY001.BLL
             gu.PwdHash = ha.ComputeHash(Encoding.UTF8.GetBytes(newPwd));
             NotifyChange(gu);
             return true;
-        }
-
-        /// <summary>
-        /// 向指定角色追加一组直属的数据。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="gameItems"></param>
-        /// <param name="db">使用的数据库上下文。</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddGameItems(GameChar gameChar, IEnumerable<GameItem> gameItems, DbContext db)
-        {
-            foreach (var item in gameItems)
-                item.OwnerId = gameChar.Id;
-            db.Set<GameItem>().AddRange(gameItems);
-            gameChar.GameItems.AddRange(gameItems);
         }
 
         /// <summary>

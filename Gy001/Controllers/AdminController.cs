@@ -7,6 +7,7 @@ using Microsoft.Extensions.FileProviders;
 using OW.Game;
 using System.Buffers;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Mime;
 using System.Text;
@@ -74,19 +75,18 @@ namespace GY2021001WebApi.Controllers
         /// 上传
         /// </summary>
         /// <param name="file"></param>
+        /// <param name="token">令牌。</param>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult ImportUsers(IFormFile file)
+        public ActionResult ImportUsers(IFormFile file, string token)
         {
-            using (var stream = file.OpenReadStream())
-            {
-                var trustedFileNameForFileStorage = Path.GetRandomFileName();
-                using var sr = new StreamReader(stream);
-
-                var r = sr.ReadLine();
-                //await WriteFileAsync(stream, Path.Combine(_targetFilePath, trustedFileNameForFileStorage));
-            }
-            return Ok();
+            using var stream = file.OpenReadStream();
+            using var datas = new ImportUsersDatas(World, token) { Store = stream };
+            World.AdminManager.ImportUsers(datas);
+            if (datas.HasError)
+                return BadRequest();
+            else
+                return Ok();
         }
 
         /// <summary>
@@ -108,16 +108,24 @@ namespace GY2021001WebApi.Controllers
                     EndIndex = model.EndIndex,
                     Store = stream,
                 };
+#if DEBUG
+#else
+                using var cStream = new BrotliStream(stream, CompressionMode.Compress);
+                dates.Store=cStream;
+#endif
                 World.AdminManager.ExportUsers(dates);
                 if (dates.HasError)
                 {
                     Response.StatusCode = 500;
                     return null;
                 }
-
             }
-
-            var result = new PhysicalFileResult(fullPath, "application/text") { FileDownloadName = "Gy001UsersInfo.txt" };
+#if DEBUG
+            string fileDownloadName = "Gy001UsersInfo.txt";
+#else
+            string fileDownloadName = "Gy001UsersInfo.bin";
+#endif
+            var result = new PhysicalFileResult(fullPath, "application/text") { FileDownloadName = fileDownloadName };
             return result;
         }
 

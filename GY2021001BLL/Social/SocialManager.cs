@@ -613,8 +613,11 @@ namespace GuangYuan.GY001.BLL
             summary.DisplayName = gameChar.DisplayName;
             summary.Level = (int)gameChar.Properties.GetDecimalOrDefault("lv", decimal.Zero);
             summary.CombatCap = 4000;
-            summary.LastLogoutDatetime = gameChar.SpecificExpandProperties.LastLogoutUtc == new DateTime(9999, 1, 1) ? new DateTime?() : gameChar.SpecificExpandProperties.LastLogoutUtc;
-
+            var coll1 = from tmp in db.Set<GameActionRecord>().AsNoTracking()
+                        where tmp.ActionId == "Logout"
+                        orderby tmp.DateTimeUtc descending
+                        select tmp.DateTimeUtc;
+            summary.LastLogoutDatetime = World.CharManager.IsOnline(gameChar.Id) ? new DateTime?() : coll1.FirstOrDefault();
             var str = "for10=";
             var bags = db.Set<GameItem>().Where(c => c.OwnerId == gameChar.Id && c.TemplateId == ProjectConstant.ZuojiBagSlotId);  //坐骑背包
             var mounts = db.Set<GameItem>().Where(c => c.PropertiesString.Contains(str)); //展示坐骑

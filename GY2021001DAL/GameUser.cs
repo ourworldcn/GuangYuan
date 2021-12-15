@@ -64,7 +64,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 导航到多个角色的属性。
         /// </summary>
-        public virtual List<GameChar> GameChars => _GameChars;
+        public virtual List<GameChar> GameChars { get => _GameChars; set => _GameChars = value; }
 
         /// <summary>
         /// 创建该对象的通用协调时间。
@@ -91,6 +91,7 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         /// <value>默认值15分钟。</value>
         [NotMapped]
+        [JsonConverter(typeof(TimeSpanJsonConverter))]
         public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(15);
 
         /// <summary>

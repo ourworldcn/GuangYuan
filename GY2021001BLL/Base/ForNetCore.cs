@@ -195,7 +195,9 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-
+            TimeSpan ts = DateTime.Now - DateTime.UtcNow;
+            var str = ts.ToString("G");
+            var tmp = TimeSpan.Parse(str);
         }
 
         /// <summary>

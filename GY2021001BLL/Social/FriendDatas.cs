@@ -134,46 +134,45 @@ namespace GuangYuan.GY001.BLL.Social
             var db = DbCoutext;
             IQueryable<GameSocialRelationship> shows;
             shows = db.Set<GameSocialRelationship>().Where(c => bodyTIds.Contains(c.Id2) && c.KeyType == SocialConstant.HomelandShowKeyType);  //展示坐骑
-            var activeChars = db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);  //活跃用户
-            var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
+            //var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
             var todayList = TodayIds;   //今日已经刷过的用户
             var notAllows = World.SocialManager.GetFriendsOrRequestingOrBlackIds(GameChar.Id, db);  //好友或黑名单
             var tmpStr1 = $"{SocialConstant.ConfirmedFriendPName}=0";
             var frees = db.Set<GameSocialRelationship>().Where(c => c.PropertiesString.Contains(tmpStr1)).GroupBy(c => c.Id).Where(c => c.Count() >= 20).Select(c => c.Key); //未处理好友申请数量>20
+            var slotTId = ProjectConstant.FriendSlotTId;
             if (bodyTIds.Any())
-                result = from chars in activeChars
-                         where chars.Id != GameChar.Id  //不能查出自己
-                         join tmp in shows
-                         on chars.Id equals tmp.Id
-                         where allows.Any(c => c.Id == chars.Id) && !frees.Any(c => c == chars.Id) && !todayList.Contains(chars.Id) && !notAllows.Contains(chars.Id)
-                         group chars by tmp.Id into g
+                result = from tmp in shows
+                         where tmp.Id != GameChar.Id  //不能查出自己
+                         where /*allows.Any(c => c.Id == tmp.Id) &&*/ !frees.Any(c => c == tmp.Id) && !todayList.Contains(tmp.Id) && !notAllows.Contains(tmp.Id)
+                         group tmp by tmp.Id into g
                          //where g.Count()>0
                          orderby g.Count() descending
                          select g.Key;
             else
-                result = from chars in activeChars
-                         where allows.Any(c => c.Id == chars.Id) && !frees.Any(c => c == chars.Id) && !TodayIds.Contains(chars.Id) && !notAllows.Contains(chars.Id)
-                         where chars.Id != GameChar.Id  //不能查出自己
-                         group chars by chars.Id into g
-                         select g.Key;
+                result = from gi in db.Set<GameItem>()
+                         where gi.TemplateId == slotTId && gi.Id != GameChar.Id  //不能查出自己
+                         orderby gi.ExPropertyString descending
+                         let gcId = gi.OwnerId ?? Guid.Empty
+                         where /*allows.Any(c => c.Id == gcId) &&*/ !frees.Any(c => c == gcId) && !TodayIds.Contains(gcId) && !notAllows.Contains(gcId)
+                         select gcId;
             return result;
         }
 
         public IQueryable<Guid> RefreshLastList(string displayName)
         {
             var db = DbCoutext;
-            var activeChars = db.Set<CharSpecificExpandProperty>().OrderByDescending(c => c.LastLogoutUtc);  //活跃用户
-            var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
+            //var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
             var notAllows = World.SocialManager.GetFriendsOrRequestingOrBlackIds(GameChar.Id, db);  //好友或黑名单
             var tmpStr1 = $"{SocialConstant.ConfirmedFriendPName}=0";
             var frees = db.Set<GameSocialRelationship>().Where(c => c.PropertiesString.Contains(tmpStr1)).GroupBy(c => c.Id).Where(c => c.Count() >= 20).Select(c => c.Key); //未处理好友申请数量>20
+            var slotTId = ProjectConstant.FriendSlotTId;
             IQueryable<Guid> result;
-            result = from tmp in activeChars
+            result = from tmp in db.Set<GameItem>().Where(c => c.TemplateId == slotTId)
+                     orderby tmp.ExPropertyString descending
                      join gameChar in db.Set<GameChar>()
-                     on tmp.Id equals gameChar.Id
-                     where gameChar.DisplayName == displayName
-                     where allows.Any(c => c.Id == tmp.Id) && !frees.Any(c => c == tmp.Id) && !notAllows.Contains(tmp.Id)
-                     orderby tmp.LastLogoutUtc descending
+                     on tmp.OwnerId.Value equals gameChar.Id
+                     where EF.Functions.Like(gameChar.DisplayName, $"%{displayName}%")
+                     where /*allows.Any(c => c.Id == gameChar.Id) &&*/ !frees.Any(c => c == gameChar.Id) && !notAllows.Contains(gameChar.Id)
                      select tmp.Id;
             return result;
         }

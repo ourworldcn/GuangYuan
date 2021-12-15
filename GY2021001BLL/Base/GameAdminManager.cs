@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -227,12 +228,12 @@ namespace GuangYuan.GY001.BLL
                 if (dw is null)
                     return;
                 World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
+                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
+                //{
+                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                //    return;
+                //}
             }
-            //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
-            //{
-            //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-            //    return;
-            //}
             var db = datas.UserContext;
             var lns = db.Set<GameUser>().Where(c => EF.Functions.Like(c.LoginName, $"{datas.LoginNamePrefix}%")).Select(c => c.LoginName).
                  AsEnumerable().Where(c =>
@@ -253,6 +254,47 @@ namespace GuangYuan.GY001.BLL
             writer.WriteEndArray();
         }
 
+        public void ImportUsers(ImportUsersDatas datas)
+        {
+            using (var dw = datas.LockUser())   //尽早解锁避免连锁死锁问题
+            {
+                if (dw is null)
+                    return;
+                World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
+                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
+                //{
+                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                //    return;
+                //}
+            }
+            var ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store).Result;
+            Array.ForEach(ary, gu =>
+            {
+                gu.Services = World.Service;
+                gu.DbContext = World.CreateNewUserDbContext();
+                gu.GameChars.ForEach(gc =>
+                {
+                    gc.GameItems.ForEach(gi => gi.GameChar = gc);
+                });
+            });
+        }
+    }
+
+    public class ImportUsersDatas : ComplexWorkDatasBase
+    {
+        public ImportUsersDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public ImportUsersDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public ImportUsersDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        public Stream Store { get; set; }
     }
 
     public class ExportUsersDatas : ComplexWorkDatasBase

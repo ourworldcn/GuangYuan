@@ -37,4 +37,17 @@ namespace System.Text.Json.Serialization
         public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options) =>
             writer.WriteBase64StringValue(value.ToByteArray());
     }
+
+    public class TimeSpanJsonConverter : JsonConverter<TimeSpan>
+    {
+        public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return TimeSpan.Parse(reader.GetString());
+        }
+
+        public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.ToString("G"));
+        }
+    }
 }

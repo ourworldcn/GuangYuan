@@ -65,13 +65,6 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => new { c.ParentId, c.ActionId }).IsUnique(false);
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.ActionId).IsUnique(false);
 
-            //角色特定的扩展属性
-            modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.State).IsUnique(false);
-            modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.PveCScore).IsUnique(false);
-            modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.PvpScore).IsUnique(false);
-            modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.PveTScore).IsUnique(false);
-            modelBuilder.Entity<CharSpecificExpandProperty>().HasIndex(c => c.LastLogoutUtc).IsUnique(false);
-
             //战利品
             modelBuilder.Entity<GameBooty>().HasIndex(c => new { c.ParentId, c.CharId }).IsUnique(false);
 
