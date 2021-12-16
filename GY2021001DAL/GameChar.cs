@@ -34,7 +34,7 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         Npc = 2,
         /// <summary>
-        /// 有管理员权力的角色。
+        /// 有管理员权力的角色。一般是运营人员。
         /// </summary>
         Admin = 4,
         /// <summary>
@@ -45,6 +45,11 @@ namespace GuangYuan.GY001.UserDb
         /// 特殊的贵宾角色。
         /// </summary>
         Vip = 16,
+
+        /// <summary>
+        /// 超管，一般是开发团队人员。
+        /// </summary>
+        SuperAdmin=32,
     }
 
     [Table("GameChars")]

@@ -4,6 +4,7 @@ using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Net.Http.Headers;
 using OW.Game;
 using System.Buffers;
 using System.IO;
@@ -72,7 +73,7 @@ namespace GY2021001WebApi.Controllers
         }
 
         /// <summary>
-        /// 上传
+        /// 上传用户数据。
         /// </summary>
         /// <param name="file"></param>
         /// <param name="token">令牌。</param>
@@ -82,6 +83,13 @@ namespace GY2021001WebApi.Controllers
         {
             using var stream = file.OpenReadStream();
             using var datas = new ImportUsersDatas(World, token) { Store = stream };
+#if DEBUG
+            using var cStream = new BrotliStream(stream, CompressionMode.Decompress);
+            datas.Store = cStream;
+#else
+            using var cStream = new BrotliStream(stream, CompressionMode.Decompress);
+            datas.Store = cStream;
+#endif
             World.AdminManager.ImportUsers(datas);
             if (datas.HasError)
                 return BadRequest();
@@ -101,7 +109,7 @@ namespace GY2021001WebApi.Controllers
             var fullPath = Path.Combine(Path.GetTempPath(), tempFileName);
             using (var stream = new FileStream(fullPath, FileMode.Truncate))
             {
-                using ExportUsersDatas dates = new ExportUsersDatas(World, model.Token)
+                using ExportUsersDatas datas = new ExportUsersDatas(World, model.Token)
                 {
                     LoginNamePrefix = model.Prefix,
                     StartIndex = model.StartIndex,
@@ -109,23 +117,50 @@ namespace GY2021001WebApi.Controllers
                     Store = stream,
                 };
 #if DEBUG
+                using var cStream = new BrotliStream(stream, CompressionMode.Compress);
+                datas.Store = cStream;
 #else
                 using var cStream = new BrotliStream(stream, CompressionMode.Compress);
-                dates.Store=cStream;
+                datas.Store=cStream;
 #endif
-                World.AdminManager.ExportUsers(dates);
-                if (dates.HasError)
+                World.AdminManager.ExportUsers(datas);
+                if (datas.HasError)
                 {
                     Response.StatusCode = 500;
                     return null;
                 }
+                else
+                    datas.Store.Flush();
             }
 #if DEBUG
-            string fileDownloadName = "Gy001UsersInfo.txt";
+            //string fileDownloadName = "Gy001UsersInfo.txt";
+            string fileDownloadName = "Gy001UsersInfo.bin";
 #else
             string fileDownloadName = "Gy001UsersInfo.bin";
 #endif
-            var result = new PhysicalFileResult(fullPath, "application/text") { FileDownloadName = fileDownloadName };
+            var result = new PhysicalFileResult(fullPath, MediaTypeNames.Application.Octet) { FileDownloadName = fileDownloadName };
+            return result;
+        }
+
+        /// <summary>
+        /// 获取服务器的一些统计数据。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns><seealso cref="GetInfosResultDto"/></returns>
+        [HttpPut]
+        public ActionResult<GetInfosResultDto> GetInfos(GetInfosParamsDto model)
+        {
+            using var datas = new GetInfosDatas(World, model.Token);
+            World.AdminManager.GetInfos(datas);
+            var result = new GetInfosResultDto()
+            {
+                DebugMessage = datas.ErrorMessage,
+                ErrorCode = datas.ErrorCode,
+                HasError = datas.HasError,
+                LoadRate = datas.LoadRate,
+                OnlineCount = datas.OnlineCount,
+                TotalCount = datas.TotalCount,
+            };
             return result;
         }
 

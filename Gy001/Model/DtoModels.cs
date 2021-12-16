@@ -981,6 +981,34 @@ namespace GY2021001WebApi.Models
     #region 账号管理相关
 
     /// <summary>
+    /// 获取服务器的返回值封装类。未来此类可能添加多个属性。
+    /// </summary>
+    public class GetInfosResultDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 在线用户数。
+        /// </summary>
+        public int OnlineCount { get; set; }
+
+        /// <summary>
+        /// 内存中总计用户数。
+        /// </summary>
+        public int TotalCount { get; set; }
+
+        /// <summary>
+        /// 负载率。[0,1]之间的一个数。
+        /// </summary>
+        public decimal LoadRate { get; set; }
+    }
+
+    /// <summary>
+    /// 获取服务器的参数封装类。
+    /// </summary>
+    public class GetInfosParamsDto : TokenDtoBase
+    {
+    }
+
+    /// <summary>
     /// 导出用户信息的参数封装类。
     /// </summary>
     public class ExportUsersParaamsDto : TokenDtoBase

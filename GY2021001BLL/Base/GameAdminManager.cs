@@ -254,6 +254,10 @@ namespace GuangYuan.GY001.BLL
             writer.WriteEndArray();
         }
 
+        /// <summary>
+        /// 导入用户数据。
+        /// </summary>
+        /// <param name="datas"></param>
         public void ImportUsers(ImportUsersDatas datas)
         {
             using (var dw = datas.LockUser())   //尽早解锁避免连锁死锁问题
@@ -268,16 +272,79 @@ namespace GuangYuan.GY001.BLL
                 //}
             }
             var ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store).Result;
-            Array.ForEach(ary, gu =>
+            //Array.ForEach(ary, gu =>
+            //{
+            //    gu.Services = World.Service;
+            //    gu.DbContext = World.CreateNewUserDbContext();
+            //    gu.GameChars.ForEach(gc =>
+            //    {
+            //        gc.GameItems.ForEach(gi => gi.GameChar = gc);
+            //    });
+            //});
+            var lns = ary.Select(c => c.LoginName);
+            if (!World.CharManager.Delete(lns))
             {
-                gu.Services = World.Service;
-                gu.DbContext = World.CreateNewUserDbContext();
-                gu.GameChars.ForEach(gc =>
-                {
-                    gc.GameItems.ForEach(gi => gi.GameChar = gc);
-                });
-            });
+                datas.HasError = true;
+                datas.ErrorMessage = "至少有一个用户不能正常添加";
+                return;
+            }
+            using var db = World.CreateNewUserDbContext();
+            db.AddRange(ary);
+            db.SaveChanges();
+
         }
+
+        /// <summary>
+        /// 获取服务器的一些统计信息。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void GetInfos(GetInfosDatas datas)
+        {
+            using (var dw = datas.LockUser())
+            {
+                if (dw is null)
+                    return;
+                World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
+                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
+                //{
+                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                //    return;
+                //}
+            }
+            datas.OnlineCount = World.CharManager.Id2OnlineChar.Count;
+            datas.TotalCount = World.CharManager.Id2GameChar.Count;
+            datas.LoadRate = (decimal)World.CharManager.Id2GameChar.Count / Environment.ProcessorCount / 10000;
+        }
+    }
+
+    public class GetInfosDatas : ComplexWorkDatasBase
+    {
+        public GetInfosDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public GetInfosDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public GetInfosDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 在线用户数。
+        /// </summary>
+        public int OnlineCount { get; set; }
+
+        /// <summary>
+        /// 内存中总计用户数。
+        /// </summary>
+        public int TotalCount { get; set; }
+
+        /// <summary>
+        /// 负载率。[0,1]之间的一个数。
+        /// </summary>
+        public decimal LoadRate { get; set; }
     }
 
     public class ImportUsersDatas : ComplexWorkDatasBase

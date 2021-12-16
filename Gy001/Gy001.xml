@@ -68,7 +68,7 @@
         </member>
         <member name="M:GY2021001WebApi.Controllers.AdminController.ImportUsers(Microsoft.AspNetCore.Http.IFormFile,System.String)">
             <summary>
-            上传
+            上传用户数据。
             </summary>
             <param name="file"></param>
             <param name="token">令牌。</param>
@@ -79,6 +79,13 @@
             导出用户。
             </summary>
             <returns></returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.GetInfos(GY2021001WebApi.Models.GetInfosParamsDto)">
+            <summary>
+            获取服务器的一些统计数据。
+            </summary>
+            <param name="model"></param>
+            <returns><seealso cref="T:GY2021001WebApi.Models.GetInfosResultDto"/></returns>
         </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
@@ -1390,6 +1397,31 @@
             <summary>
             操作导致发送了邮件的Id集合。
             如果是空集合则表示没有发送邮件。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetInfosResultDto">
+            <summary>
+            获取服务器的返回值封装类。未来此类可能添加多个属性。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetInfosResultDto.OnlineCount">
+            <summary>
+            在线用户数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetInfosResultDto.TotalCount">
+            <summary>
+            内存中总计用户数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetInfosResultDto.LoadRate">
+            <summary>
+            负载率。[0,1]之间的一个数。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetInfosParamsDto">
+            <summary>
+            获取服务器的参数封装类。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.ExportUsersParaamsDto">

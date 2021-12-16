@@ -1005,28 +1005,48 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 删除指定Id的用户和所有附属信息。
         /// </summary>
-        /// <param name="loginName"></param>
-        /// <returns></returns>
-        public bool Delete(string loginName)
+        /// <param name="loginNames"></param>
+        /// <returns>true 成功删除所有用户信息，false至少有一个用户无法删除。</returns>
+        public bool Delete(IEnumerable<string> loginNames)
         {
-            var ln = loginName;
-            using var dwLn = World.LockStringAndReturnDisposer(ref ln, Options.DefaultLockTimeout); //锁定登录等相关进程
-            if (dwLn is null)
-                return false;
-            var gu = GetUserFromLoginName(ln);
-            if (null != gu)    //若已经加载到内存中
+            var lns = loginNames.OrderBy(c => c);
+            var list = new List<IDisposable>();
+
+            foreach (var ln in lns) //注销所有用户并锁定其登录进程
             {
-                if (!Logout(gu, LogoutReason.SystemShutdown))
-                    throw new InvalidOperationException();
+                string tmp = ln;
+                var disper = World.LockStringAndReturnDisposer(ref tmp, Options.DefaultLockTimeout); //锁定登录等相关进程
+                if (disper is null)
+                {
+                    using var dwsTmp = DisposerWrapper.Create(list);
+                    return false;
+                }
+                list.Add(disper);
+                var gu = GetUserFromLoginName(tmp);
+                if (null != gu)    //若已经加载到内存中
+                {
+                    if (!Logout(gu, LogoutReason.SystemShutdown))
+                        throw new InvalidOperationException();
+                }
             }
+            using var dws = DisposerWrapper.Create(list);   //最终清理
             using var db = World.CreateNewUserDbContext();
-            var gcIds = db.GameUsers.Where(c => c.LoginName == ln).SelectMany(c => c.GameChars.Select(c => c.Id)).ToArray();
-            var sql = $"DELETE FROM [dbo].[GameItems] where [id] in ('{string.Join("','", gcIds.Select(c => c.ToString()))}')";
+
+            var gcIds = db.GameUsers.Where(c => loginNames.Contains(c.LoginName)).SelectMany(c => c.GameChars.Select(c => c.Id)).ToArray(); //涉及的角色Id
+
+            var sqlWhereIn = $" ('{string.Join("','", gcIds.Select(c => c.ToString()))}')";
+            var sql = $"DELETE FROM [dbo].[GameItems] where [OwnerId] in {sqlWhereIn}"; //清理角色下属物品
             db.Database.ExecuteSqlRaw(sql);
-            sql = $"";
-            /* from tgc in db.GameChars
-                        where tgc.GameUser.LoginName == ln
-                        select tgc.Id;*/
+            sql = $"DELETE FROM [dbo].[SocialRelationships] WHERE [Id] in {sqlWhereIn} OR [Id2] in {sqlWhereIn}";
+            db.Database.ExecuteSqlRaw(sql); //清理角色的社交关系
+
+            sql = $"DELETE FROM [dbo].[GameUsers] where [LoginName] in ('{string.Join("','", loginNames.Select(c=>c.ToString()))}')";
+            db.Database.ExecuteSqlRaw(sql); //清理用户及角色对象
+
+            var sqlGen = "DELETE FROM [dbo].[ExtendProperties]" +
+                " WHERE not exists(select * from[dbo].[GameItems] as [gis] where gis.Id =[ExtendProperties].[Id]) and" +
+                " not exists(select * from[dbo].[GameChars] as [gcs] where gcs.Id =[ExtendProperties].[Id])";   //清理所有没有依附主体的扩展对象
+            db.Database.ExecuteSqlRaw(sqlGen);
 
             return true;
         }

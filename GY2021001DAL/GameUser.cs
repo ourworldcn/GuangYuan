@@ -20,6 +20,10 @@ namespace GuangYuan.GY001.UserDb
         Timeout,
         UserRequest,
         SystemShutdown,
+        /// <summary>
+        /// 某种原因被强制下线。
+        /// </summary>
+        Force,
     }
 
     /// <summary>
@@ -74,6 +78,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 当前承载此用户的服务器节点号。空则表示此用户尚未被任何节点承载（未在线）。但有节点号，不代表用户登录，可能只是维护等其他目的将用户承载到服务器中。
         /// </summary>
+        [JsonIgnore]
         public int? NodeNum { get; set; }
         #region 非数据库属性
 
@@ -118,6 +123,22 @@ namespace GuangYuan.GY001.UserDb
         public IServiceProvider Services { get; set; }
 
         #endregion 非数据库属性
+
+        #region 扩展属性
+
+        /// <summary>
+        /// 禁言到期时间。
+        /// </summary>
+        [NotMapped, JsonIgnore]
+        public DateTime? SilenceUtc { get; set; }
+
+        /// <summary>
+        /// 封停账号到期时间。
+        /// </summary>
+        [NotMapped, JsonIgnore]
+        public DateTime? BlockUtc { get; set; }
+
+        #endregion 扩展属性
 
         #region IDisposable 接口相关
 
