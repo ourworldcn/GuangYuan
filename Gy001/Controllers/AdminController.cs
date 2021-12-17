@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
 using OW.Game;
+using System;
 using System.Buffers;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Mime;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace GY2021001WebApi.Controllers
@@ -32,7 +34,10 @@ namespace GY2021001WebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        /// <response code="401">令牌无效。</response>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult<CloneAccountReturnDto> CloneAccount(CloneAccountParamsDto model)
         {
             var result = new CloneAccountReturnDto();
@@ -152,19 +157,52 @@ namespace GY2021001WebApi.Controllers
         {
             using var datas = new GetInfosDatas(World, model.Token);
             World.AdminManager.GetInfos(datas);
-            var result = new GetInfosResultDto()
+            var result = new GetInfosResultDto() { };
+            result.FillFrom(datas);
+            if (!result.HasError)
             {
-                DebugMessage = datas.ErrorMessage,
-                ErrorCode = datas.ErrorCode,
-                HasError = datas.HasError,
-                LoadRate = datas.LoadRate,
-                OnlineCount = datas.OnlineCount,
-                TotalCount = datas.TotalCount,
-            };
+                result.LoadRate = datas.LoadRate;
+                result.OnlineCount = datas.OnlineCount;
+                result.TotalCount = datas.TotalCount;
+            }
             return result;
         }
 
+        /// <summary>
+        /// 重启服务器。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<ReturnDtoBase> Reboot(TokenDtoBase model)
+        {
+            using var datas = new RebootDatas(World, model.Token);
+            World.AdminManager.Reboot(datas);
+            var result = new ReturnDtoBase()
+            {
+            };
+            result.FillFrom(datas);
+            return result;
+        }
 
+        /// <summary>
+        /// 封停账号。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<BlockUserReturnDto> BlockUser(BlockUserParamsDto model)
+        {
+            BlockDatas datas = new BlockDatas(World,model.Token)
+            {
+                LoginName = model.LoginName,
+                BlockUtc=model.BlockUtc,
+            };
+            World.AdminManager.Block(datas);
+            var result = new BlockUserReturnDto();
+            result.FillFrom(datas);
+            return result;
+        }
     }
 
 }

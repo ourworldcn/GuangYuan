@@ -471,6 +471,16 @@ namespace GuangYuan.GY001.UserDb
             Template = template;
         }
 
+        public override void OnJsonDeserialized()
+        {
+#if !NET5_0_OR_GREATER
+            Children.ForEach(c => c.Parent = this);
+#endif
+            base.OnJsonDeserialized();
+#if !NET5_0_OR_GREATER
+            Children.ForEach(c => c.OnJsonDeserialized());
+#endif
+        }
         #region IDisposable接口相关
 
         /// <summary>

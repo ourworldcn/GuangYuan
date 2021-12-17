@@ -58,6 +58,7 @@
             </summary>
             <param name="model"></param>
             <returns></returns>
+            <response code="401">令牌无效。</response>
         </member>
         <member name="M:GY2021001WebApi.Controllers.AdminController.SetCharExp(GY2021001WebApi.Models.SetCharExpParamsDto)">
             <summary>
@@ -86,6 +87,20 @@
             </summary>
             <param name="model"></param>
             <returns><seealso cref="T:GY2021001WebApi.Models.GetInfosResultDto"/></returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.Reboot(GY2021001WebApi.Models.TokenDtoBase)">
+            <summary>
+            重启服务器。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.BlockUser(GY2021001WebApi.Models.BlockUserParamsDto)">
+            <summary>
+            封停账号。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
@@ -331,6 +346,26 @@
             获取全服推关战力Top 50。
             </summary>
             <returns></returns>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ReturnDtoBase">
+            <summary>
+            返回数据对象的基类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ReturnDtoBase.HasError">
+            <summary>
+            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ReturnDtoBase.DebugMessage">
+            <summary>
+            调试信息。调试状态下返回时填写。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ReturnDtoBase.ErrorCode">
+            <summary>
+            详细错误码。
+            </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.GameMissionTemplateDto.Id">
             <summary>
@@ -1358,26 +1393,6 @@
             最多有多少数据。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.ReturnDtoBase">
-            <summary>
-            返回数据对象的基类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ReturnDtoBase.HasError">
-            <summary>
-            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ReturnDtoBase.DebugMessage">
-            <summary>
-            调试信息。调试状态下返回时填写。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ReturnDtoBase.ErrorCode">
-            <summary>
-            详细错误码。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.ChangesReturnDtoBase">
             <summary>
             带变化物品集合的返回数据对象基类。
@@ -1397,6 +1412,16 @@
             <summary>
             操作导致发送了邮件的Id集合。
             如果是空集合则表示没有发送邮件。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.BlockUserParamsDto.LoginName">
+            <summary>
+            封停账号的登录名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.BlockUserParamsDto.BlockUtc">
+            <summary>
+            封停的截止时间点，使用Utc时间。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetInfosResultDto">

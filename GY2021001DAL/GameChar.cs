@@ -49,7 +49,7 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 超管，一般是开发团队人员。
         /// </summary>
-        SuperAdmin=32,
+        SuperAdmin = 32,
     }
 
     [Table("GameChars")]
@@ -205,6 +205,18 @@ namespace GuangYuan.GY001.UserDb
                 }).Data as Dictionary<string, string>;
             }
         }
+
+        public override void OnJsonDeserialized()
+        {
+#if !NET5_0_OR_GREATER
+            GameItems.ForEach(c => c.GameChar = this);
+#endif
+            base.OnJsonDeserialized();
+#if !NET5_0_OR_GREATER
+            GameItems.ForEach(c => c.OnJsonDeserialized());
+#endif
+        }
+
         #region IDisposable接口相关
 
         /// <summary>

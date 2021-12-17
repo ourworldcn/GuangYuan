@@ -814,6 +814,8 @@ namespace GuangYuan.GY001.BLL
                     return null;
                 if (!IsPwd(gu, pwd))   //若密码错误
                     return null;
+                if (gu.BlockUtc != null && gu.BlockUtc > DateTime.UtcNow)  //若被封停
+                    return null;
                 //初始化属性
                 gu.LastModifyDateTimeUtc = DateTime.UtcNow;
                 var gc = gu.CurrentChar;
@@ -1040,12 +1042,13 @@ namespace GuangYuan.GY001.BLL
             sql = $"DELETE FROM [dbo].[SocialRelationships] WHERE [Id] in {sqlWhereIn} OR [Id2] in {sqlWhereIn}";
             db.Database.ExecuteSqlRaw(sql); //清理角色的社交关系
 
-            sql = $"DELETE FROM [dbo].[GameUsers] where [LoginName] in ('{string.Join("','", loginNames.Select(c=>c.ToString()))}')";
+            sql = $"DELETE FROM [dbo].[GameUsers] where [LoginName] in ('{string.Join("','", loginNames.Select(c => c.ToString()))}')";
             db.Database.ExecuteSqlRaw(sql); //清理用户及角色对象
 
             var sqlGen = "DELETE FROM [dbo].[ExtendProperties]" +
                 " WHERE not exists(select * from[dbo].[GameItems] as [gis] where gis.Id =[ExtendProperties].[Id]) and" +
-                " not exists(select * from[dbo].[GameChars] as [gcs] where gcs.Id =[ExtendProperties].[Id])";   //清理所有没有依附主体的扩展对象
+                " not exists(select * from [dbo].[GameChars] as [gcs] where gcs.Id =[ExtendProperties].[Id])" +
+                " and not exists(select * from [dbo].[GameUsers] as [gus] where gus.Id =[ExtendProperties].[Id])";   //清理所有没有依附主体的扩展对象
             db.Database.ExecuteSqlRaw(sqlGen);
 
             return true;

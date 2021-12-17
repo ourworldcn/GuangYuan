@@ -813,7 +813,7 @@ namespace GY2021001WebApi.Models
     /// 返回数据对象的基类。
     /// </summary>
     [DataContract]
-    public class ReturnDtoBase
+    public partial class ReturnDtoBase
     {
         /// <summary>
         /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
@@ -980,30 +980,56 @@ namespace GY2021001WebApi.Models
 
     #region 账号管理相关
 
+    [DataContract]
+    public class BlockUserParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 封停账号的登录名。
+        /// </summary>
+        [DataMember]
+        public string LoginName { get; set; }
+
+        /// <summary>
+        /// 封停的截止时间点，使用Utc时间。
+        /// </summary>
+        [DataMember]
+        public DateTime BlockUtc { get; set; }
+    }
+
+    [DataContract]
+    public class BlockUserReturnDto : ReturnDtoBase
+    {
+    }
+
     /// <summary>
     /// 获取服务器的返回值封装类。未来此类可能添加多个属性。
     /// </summary>
+    [DataContract]
     public class GetInfosResultDto : ReturnDtoBase
     {
         /// <summary>
         /// 在线用户数。
         /// </summary>
+        [DataMember]
         public int OnlineCount { get; set; }
 
         /// <summary>
         /// 内存中总计用户数。
         /// </summary>
+        [DataMember]
         public int TotalCount { get; set; }
 
         /// <summary>
         /// 负载率。[0,1]之间的一个数。
         /// </summary>
+        [DataMember]
         public decimal LoadRate { get; set; }
     }
 
     /// <summary>
     /// 获取服务器的参数封装类。
     /// </summary>
+    [DataContract]
     public class GetInfosParamsDto : TokenDtoBase
     {
     }
@@ -1011,21 +1037,25 @@ namespace GY2021001WebApi.Models
     /// <summary>
     /// 导出用户信息的参数封装类。
     /// </summary>
+    [DataContract]
     public class ExportUsersParaamsDto : TokenDtoBase
     {
         /// <summary>
         /// 登录名的前缀。
         /// </summary>
+        [DataMember]
         public string Prefix { get; set; }
 
         /// <summary>
         /// 登录名的起始后缀。
         /// </summary>
+        [DataMember]
         public int StartIndex { get; set; }
 
         /// <summary>
         /// 登录名的终止后缀。
         /// </summary>
+        [DataMember]
         public int EndIndex { get; set; }
     }
 

@@ -272,6 +272,12 @@ namespace GuangYuan.GY001.BLL
                 //}
             }
             var ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store).Result;
+            Array.ForEach(ary, c =>
+            {
+                c.Services = Service;
+                c.DbContext = World.CreateNewUserDbContext();
+                c.OnJsonDeserialized();
+            });
             //Array.ForEach(ary, gu =>
             //{
             //    gu.Services = World.Service;
@@ -288,10 +294,9 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = "至少有一个用户不能正常添加";
                 return;
             }
-            using var db = World.CreateNewUserDbContext();
-            db.AddRange(ary);
-            db.SaveChanges();
+            Array.ForEach(ary, c => { c.DbContext.SaveChanges(); });
 
+            Array.ForEach(ary, c => { c.Dispose(); });
         }
 
         /// <summary>
@@ -315,7 +320,99 @@ namespace GuangYuan.GY001.BLL
             datas.TotalCount = World.CharManager.Id2GameChar.Count;
             datas.LoadRate = (decimal)World.CharManager.Id2GameChar.Count / Environment.ProcessorCount / 10000;
         }
+
+        /// <summary>
+        /// 重启服务器。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void Reboot(RebootDatas datas)
+        {
+            using (var dw = datas.LockUser())
+            {
+                if (dw is null)
+                    return;
+                World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
+                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
+                //{
+                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                //    return;
+                //}
+            }
+            foreach (var gc in World.CharManager.Id2GameChar.Values)
+            {
+                World.CharManager.Logout(gc.GameUser, LogoutReason.SystemShutdown);
+            }
+        }
+
+        /// <summary>
+        /// 封停账号。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void Block(BlockDatas datas)
+        {
+            using (var dw = datas.LockUser())
+            {
+                if (dw is null)
+                    return;
+                World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
+                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
+                //{
+                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                //    return;
+                //}
+            }
+            using var dwUser = World.CharManager.LockOrLoad(datas.LoginName, out var gu);
+            if (dwUser is null)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_USER;
+                return;
+            }
+            gu.BlockUtc = datas.BlockUtc;
+            World.CharManager.NotifyChange(gu);
+            return;
+        }
     }
+
+    public class BlockDatas : ComplexWorkDatasBase
+    {
+        public BlockDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public BlockDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public BlockDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 封停账号的登录名。
+        /// </summary>
+        public string LoginName { get; set; }
+
+        /// <summary>
+        /// 封停的截止时间点，使用Utc时间。
+        /// </summary>
+        public DateTime BlockUtc { get; set; }
+    }
+
+    public class RebootDatas : ComplexWorkDatasBase
+    {
+        public RebootDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public RebootDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public RebootDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+    }
+
 
     public class GetInfosDatas : ComplexWorkDatasBase
     {

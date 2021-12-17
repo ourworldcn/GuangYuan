@@ -12,6 +12,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace GuangYuan.GY001.UserDb
@@ -237,6 +238,14 @@ namespace GuangYuan.GY001.UserDb
         [MaxLength(64)]
         public string ExPropertyString { get; set; }
 
+        /// <summary>
+        /// Json反序列化后调用。
+        /// </summary>
+        public virtual void OnJsonDeserialized()
+        {
+            if (ExtendProperties != null)
+                DbContext.AddRange(ExtendProperties);
+        }
         #region 快速变化属性相关
 
         private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
@@ -334,7 +343,7 @@ namespace GuangYuan.GY001.UserDb
         {
             get
             {
-                if (_ExtendProperties is null && DbContext!=null)
+                if (_ExtendProperties is null && DbContext != null)
                 {
                     try
                     {
@@ -351,7 +360,14 @@ namespace GuangYuan.GY001.UserDb
             }
             set
             {
+                if (null != _ExtendProperties)
+                    _ExtendProperties.CollectionChanged -= GameExtendPropertiesCollectionChanged;
                 _ExtendProperties = value;
+                if (null != _ExtendProperties)
+                {
+                    DbContext?.AddRange(value);
+                    value.CollectionChanged += GameExtendPropertiesCollectionChanged;
+                }
             }
         }
 

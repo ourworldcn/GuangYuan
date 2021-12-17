@@ -79,6 +79,31 @@ namespace GuangYuan.GY001.BLL
         /// 操作试图超过实施定义的限制。
         /// </summary>
         public const int ERROR_IMPLEMENTATION_LIMIT = 1292;
+
+        /// <summary>
+        /// 无效的账号名称。
+        /// </summary>
+        public const int ERROR_INVALID_ACCOUNT_NAME = 1315;
+
+        /// <summary>
+        /// 指定账号已经存在。
+        /// </summary>
+        public const int ERROR_USER_EXISTS = 1316;
+
+        /// <summary>
+        /// 用户名或密码错误。
+        /// </summary>
+        public const int ERROR_LOGON_FAILURE = 1326;
+
+        /// <summary>
+        /// 无效的ACL——权限令牌包含的权限不足,权限不够。
+        /// </summary>
+        public const int ERROR_INVALID_ACL = 1336;
+
+        /// <summary>
+        /// 无法登录，通常是被封停账号。
+        /// </summary>
+        public const int ERROR_LOGON_NOT_GRANTED = 1380;
     }
 
     /// <summary>
