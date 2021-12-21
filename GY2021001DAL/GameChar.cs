@@ -206,17 +206,6 @@ namespace GuangYuan.GY001.UserDb
             }
         }
 
-        public override void OnJsonDeserialized()
-        {
-#if !NET5_0_OR_GREATER
-            GameItems.ForEach(c => c.GameChar = this);
-#endif
-            base.OnJsonDeserialized();
-#if !NET5_0_OR_GREATER
-            GameItems.ForEach(c => c.OnJsonDeserialized());
-#endif
-        }
-
         #region IDisposable接口相关
 
         /// <summary>

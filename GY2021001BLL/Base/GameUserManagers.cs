@@ -1033,18 +1033,21 @@ namespace GuangYuan.GY001.BLL
             }
             using var dws = DisposerWrapper.Create(list);   //最终清理
             using var db = World.CreateNewUserDbContext();
-
+            string sql;
             var gcIds = db.GameUsers.Where(c => loginNames.Contains(c.LoginName)).SelectMany(c => c.GameChars.Select(c => c.Id)).ToArray(); //涉及的角色Id
+            if (gcIds.Length > 0)
+            {
+                var sqlWhereIn = $" ('{string.Join("','", gcIds.Select(c => c.ToString()))}')";
+                sql = $"DELETE FROM [dbo].[GameItems] where [OwnerId] in {sqlWhereIn}"; //清理角色下属物品
+                db.Database.ExecuteSqlRaw(sql);
+                sql = $"DELETE FROM [dbo].[SocialRelationships] WHERE [Id] in {sqlWhereIn} OR [Id2] in {sqlWhereIn}";
+                db.Database.ExecuteSqlRaw(sql); //清理角色的社交关系
 
-            var sqlWhereIn = $" ('{string.Join("','", gcIds.Select(c => c.ToString()))}')";
-            var sql = $"DELETE FROM [dbo].[GameItems] where [OwnerId] in {sqlWhereIn}"; //清理角色下属物品
-            db.Database.ExecuteSqlRaw(sql);
-            sql = $"DELETE FROM [dbo].[SocialRelationships] WHERE [Id] in {sqlWhereIn} OR [Id2] in {sqlWhereIn}";
-            db.Database.ExecuteSqlRaw(sql); //清理角色的社交关系
-
-            sql = $"DELETE FROM [dbo].[GameUsers] where [LoginName] in ('{string.Join("','", loginNames.Select(c => c.ToString()))}')";
-            db.Database.ExecuteSqlRaw(sql); //清理用户及角色对象
-
+                sql = $"DELETE FROM [dbo].[GameUsers] where [LoginName] in ('{string.Join("','", loginNames.Select(c => c.ToString()))}')";
+                db.Database.ExecuteSqlRaw(sql); //清理用户及角色对象
+            }
+            sql = $"DELETE FROM [dbo].[GameItems] where   [OwnerId] IS NULL and NOT EXISTS (SELECT 1 FROM [dbo].[GameItems] as st WHERE [dbo].[GameItems].[ParentId]=st.ID)"; //清理残余物品对象;
+            while (db.Database.ExecuteSqlRaw(sql) > 0) ;
             var sqlGen = "DELETE FROM [dbo].[ExtendProperties]" +
                 " WHERE not exists(select * from[dbo].[GameItems] as [gis] where gis.Id =[ExtendProperties].[Id]) and" +
                 " not exists(select * from [dbo].[GameChars] as [gcs] where gcs.Id =[ExtendProperties].[Id])" +

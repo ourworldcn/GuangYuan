@@ -418,6 +418,14 @@ namespace OW.Game
             user.CurrentChar = user.GameChars[0];   //项目特定:一个用户有且仅有一个角色
             GameCharLoaded(user.CurrentChar);
         }
+
+        #region Json反序列化
+        public override void JsonDeserialized(GameUser gameUser)
+        {
+            gameUser.CurrentChar = gameUser.GameChars.FirstOrDefault();
+            base.JsonDeserialized(gameUser);
+        }
+        #endregion Json反序列化
     }
 
     public static class Gy001GameEventsManagerExtensions

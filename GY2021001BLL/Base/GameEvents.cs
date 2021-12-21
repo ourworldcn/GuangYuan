@@ -2,6 +2,7 @@
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -532,6 +533,37 @@ namespace OW.Game
         }
         #endregion 加载后初始化
 
+        #region Json反序列化
+        public virtual void ThingBaseJsonDeserialized(GameThingBase thingBase)
+        {
+            thingBase.Template = World.ItemTemplateManager.GetTemplateFromeId(thingBase.TemplateId);
+            var db = thingBase.DbContext;
+            db.AddRange(thingBase.ExtendProperties);
+        }
+
+        public virtual void JsonDeserialized(GameItem gameItem)
+        {
+            ThingBaseJsonDeserialized(gameItem);
+            gameItem.Children.ForEach(c => c.Parent = gameItem);
+            gameItem.Children.ForEach(c => JsonDeserialized(c));
+        }
+
+        public virtual void JsonDeserialized(GameChar gameChar)
+        {
+            ThingBaseJsonDeserialized(gameChar);
+            gameChar.GameItems.ForEach(c => c.GameChar = gameChar);
+            gameChar.GameItems.ForEach(c => JsonDeserialized(c));
+        }
+
+        public virtual void JsonDeserialized(GameUser gameUser)
+        {
+            gameUser.Services ??= Service;
+            gameUser.DbContext ??= gameUser.Services.GetService<VWorld>().CreateNewUserDbContext();
+            gameUser.GameChars.ForEach(c => c.GameUser = gameUser);
+            gameUser.GameChars.ForEach(c => JsonDeserialized(c));
+            gameUser.DbContext.Add(gameUser);
+        }
+        #endregion Json反序列化
     }
 
     public static class GameEventsManagerExtensions

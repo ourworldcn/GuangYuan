@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace OW.Game
 {
@@ -257,6 +258,8 @@ namespace OW.Game
                 return guid;
             else if (obj is Guid val)
                 return val;
+            else if (obj is JsonElement json)
+                return OwConvert.ToGuid(json.GetString());
             else
                 return defaultVal;
         }

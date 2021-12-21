@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net.Mime;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -193,13 +194,50 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<BlockUserReturnDto> BlockUser(BlockUserParamsDto model)
         {
-            BlockDatas datas = new BlockDatas(World,model.Token)
+            BlockDatas datas = new BlockDatas(World, model.Token)
             {
                 LoginName = model.LoginName,
-                BlockUtc=model.BlockUtc,
+                BlockUtc = model.BlockUtc,
             };
             World.AdminManager.Block(datas);
             var result = new BlockUserReturnDto();
+            result.FillFrom(datas);
+            return result;
+        }
+
+        /// <summary>
+        /// 强制下线。
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<LetOutReturnDto> LetOut(LetOutParamsDto model)
+        {
+            LetOutDatas datas = new LetOutDatas(World, model.Token)
+            {
+                LoginName = model.LoginName
+            };
+            World.AdminManager.LetOut(datas);
+            var result = new LetOutReturnDto();
+            result.FillFrom(datas);
+            return result;
+        }
+
+        /// <summary>
+        /// 通过给特定角色或所有角色发送物品。
+        /// </summary>
+        /// <param name="model">参数封装对象。</param>
+        /// <returns>返回值封装对象。</returns>
+        [HttpPost]
+        public ActionResult<SendThingsReturnDto> SendThings(SendThingsParamsDto model)
+        {
+            SendThingDatas datas = new SendThingDatas(World, model.Token);
+            datas.Tos.AddRange(model.Tos);
+            foreach (var item in model.Propertyies)
+            {
+                datas.Propertyies[item.Key] = item.Value is JsonElement json ? json.ToString() : item.Value;
+            }
+            World.AdminManager.SendThing(datas);
+            var result = new SendThingsReturnDto();
             result.FillFrom(datas);
             return result;
         }

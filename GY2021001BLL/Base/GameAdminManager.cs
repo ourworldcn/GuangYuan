@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.TemplateDb;
+﻿using Game.Social;
+using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
@@ -32,9 +33,65 @@ namespace GuangYuan.GY001.BLL
         {
         }
 
+        /// <summary>
+        /// 发送邮件，寄送物品。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void SendThing(SendThingDatas datas)
+        {
+            using (var dw = datas.LockUser())
+            {
+                if (dw is null)
+                    return;
+                World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
+                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
+                //{
+                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                //    return;
+                //}
+            }
+            var gis = World.ItemManager.ToGameItems(datas.Propertyies);
+            var coll = gis.Select(c => (c, c.Properties.GetGuidOrDefault("ptid")));
+            var mail = new GameMail() { };
+            World.SocialManager.SendMail(mail, datas.Tos.Select(c => OwConvert.ToGuid(c)), SocialConstant.FromSystemId, coll);
+        }
+
+        /// <summary>
+        /// 强制下线。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void LetOut(LetOutDatas datas)
+        {
+            using (var dw = datas.LockUser())
+            {
+                if (dw is null)
+                    return;
+                World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
+                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
+                //{
+                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                //    return;
+                //}
+            }
+            var gu = World.CharManager.GetUserFromLoginName(datas.LoginName);
+            if (gu is null)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_USER;
+                datas.ErrorMessage = "无此用户或不在线";
+                return;
+            }
+            var succ = World.CharManager.Logout(gu, LogoutReason.Force);
+            if (!succ)
+            {
+                datas.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
+                return;
+            }
+            return;
+        }
+
         public void CloneUser(CloneUserDatas datas)
         {
-            const string prefix = "vip";
+            string prefix = datas.LoginNamePrefix ?? "vip";
             var context = datas.UserContext;
             var loginNames = context.Set<GameUser>().Where(c => c.LoginName.StartsWith(prefix)).Select(c => (c.LoginName));    //获取已有登录名
             var listNames = loginNames.ToList();
@@ -46,7 +103,7 @@ namespace GuangYuan.GY001.BLL
             List<(string, string, string)> list = new List<(string, string, string)>();
             for (int i = 0; i < datas.Count; i++)   //生成账号数据
             {
-                list.Add(($"vip{lastIndex + 1 + i}", NewPassword(4), CnNames.GetName(VWorld.IsHit(0.5))));
+                list.Add(($"{prefix}{lastIndex + 1 + i}", NewPassword(4), CnNames.GetName(VWorld.IsHit(0.5))));
             }
             foreach (var item in list)  //生成账号
             {
@@ -98,6 +155,12 @@ namespace GuangYuan.GY001.BLL
                 #region 坐骑
                 srcSlot = srcChar.GetZuojiBag();
                 destSlot = destChar.GetZuojiBag();
+                //清理目标已有坐骑
+                destSlot.Children.RemoveAll(c =>
+                {
+                    destUser.DbContext.Remove(c);
+                    return true;
+                });
                 foreach (var srcItem in srcSlot.Children)
                 {
                     var destItem = World.ItemManager.CloneMounts(srcItem, srcItem.TemplateId);
@@ -272,21 +335,8 @@ namespace GuangYuan.GY001.BLL
                 //}
             }
             var ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store).Result;
-            Array.ForEach(ary, c =>
-            {
-                c.Services = Service;
-                c.DbContext = World.CreateNewUserDbContext();
-                c.OnJsonDeserialized();
-            });
-            //Array.ForEach(ary, gu =>
-            //{
-            //    gu.Services = World.Service;
-            //    gu.DbContext = World.CreateNewUserDbContext();
-            //    gu.GameChars.ForEach(gc =>
-            //    {
-            //        gc.GameItems.ForEach(gi => gi.GameChar = gc);
-            //    });
-            //});
+            var eve = World.EventsManager;
+            Array.ForEach(ary, c => eve.JsonDeserialized(c));
             var lns = ary.Select(c => c.LoginName);
             if (!World.CharManager.Delete(lns))
             {
@@ -371,6 +421,65 @@ namespace GuangYuan.GY001.BLL
             World.CharManager.NotifyChange(gu);
             return;
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class SendThingDatas : ComplexWorkDatasBase
+    {
+        public SendThingDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public SendThingDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public SendThingDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 要送的物品，tid&lt;数字后缀&gt;=模板物品Id，count&lt;数字后缀&gt;=数量，如果是生物则用htid,btid分别指出头身模板Id。
+        /// 例如<code>
+        ///             Propertyies["tid1"]=new Guid("{2B83C942-1E9C-4B45-9816-AD2CBF0E473F}");   //金币
+        ///             Propertyies["count1"]= 1000;   //金币数量
+        ///             Propertyies["ptid1"]= new Guid("{7066A96D-F514-42C7-A30E-5E7567900AD4}");   //父容器模板Id
+        ///             Propertyies["tid2"]=new Guid("{3E365BEC-F83D-467D-A58C-9EBA43458682}");   //钻石
+        ///             Propertyies["count2"]= 100;   //钻石数量
+        ///             Propertyies["ptid2"]= new Guid("{7066A96D-F514-42C7-A30E-5E7567900AD4}");   //父容器模板Id
+        /// </code>
+        /// </summary>
+        public Dictionary<string, object> Propertyies { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// 发送给角色的Id。"{DA5B83F6-BB73-4961-A431-96177DE82BFF}"表示发送给所有角色。
+        /// </summary>
+        public List<string> Tos { get; set; } = new List<string>();
+    }
+
+    /// <summary>
+    /// 强制下线。
+    /// </summary>
+    public class LetOutDatas : ComplexWorkDatasBase
+    {
+        public LetOutDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public LetOutDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public LetOutDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 强制下线的用户。
+        /// </summary>
+        public string LoginName { get; set; }
     }
 
     public class BlockDatas : ComplexWorkDatasBase

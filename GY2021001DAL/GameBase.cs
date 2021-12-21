@@ -238,14 +238,6 @@ namespace GuangYuan.GY001.UserDb
         [MaxLength(64)]
         public string ExPropertyString { get; set; }
 
-        /// <summary>
-        /// Json反序列化后调用。
-        /// </summary>
-        public virtual void OnJsonDeserialized()
-        {
-            if (ExtendProperties != null)
-                DbContext.AddRange(ExtendProperties);
-        }
         #region 快速变化属性相关
 
         private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;

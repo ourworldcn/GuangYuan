@@ -981,6 +981,50 @@ namespace GY2021001WebApi.Models
     #region 账号管理相关
 
     [DataContract]
+    public class SendThingsParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要送的物品，tid&lt;数字后缀&gt;=模板物品Id，count&lt;数字后缀&gt;=数量，如果是生物则用htid,btid分别指出头身模板Id。
+        /// 例如<code>
+        ///             Propertyies["tid1"]=new Guid("{2B83C942-1E9C-4B45-9816-AD2CBF0E473F}");   //金币
+        ///             Propertyies["count1"]= 1000;   //金币数量
+        ///             Propertyies["ptid1"]= new Guid("{7066A96D-F514-42C7-A30E-5E7567900AD4}");   //父容器模板Id
+        ///             Propertyies["tid2"]=new Guid("{3E365BEC-F83D-467D-A58C-9EBA43458682}");   //钻石
+        ///             Propertyies["count2"]= 100;   //钻石数量
+        ///             Propertyies["ptid2"]= new Guid("{7066A96D-F514-42C7-A30E-5E7567900AD4}");   //父容器模板Id
+        /// </code>
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, object> Propertyies { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// 发送给角色的Id。"{DA5B83F6-BB73-4961-A431-96177DE82BFF}"表示发送给所有角色。
+        /// </summary>
+        [DataMember]
+        public List<string> Tos { get; set; } = new List<string>();
+    }
+
+    [DataContract]
+    public class SendThingsReturnDto : ReturnDtoBase
+    {
+    }
+
+    [DataContract]
+    public class LetOutParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要强制下线的用户登录名。
+        /// </summary>
+        [DataMember]
+        public string LoginName { get; set; }
+    }
+
+    [DataContract]
+    public class LetOutReturnDto : ReturnDtoBase
+    {
+    }
+
+    [DataContract]
     public class BlockUserParamsDto : TokenDtoBase
     {
         /// <summary>

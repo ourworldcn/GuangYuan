@@ -53,7 +53,7 @@
   <Class Name="GuangYuan.GY001.UserDb.GameItem">
     <Position X="4.25" Y="12.75" Width="2" />
     <TypeIdentifier>
-      <HashCode>AIhABAIIACAAEQAGAAAEQAUAAAAAAAAAMkYAAAAAACg=</HashCode>
+      <HashCode>AIBABAIIACAAEAAGIAAEQAUAAAAAAAAAIkYAAAAAACg=</HashCode>
       <FileName>GameItem.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -74,7 +74,7 @@
   <Class Name="GuangYuan.GY001.UserDb.GameUser">
     <Position X="13" Y="4" Width="2" />
     <TypeIdentifier>
-      <HashCode>gMhAAAAAgCAgAQgQAAAQAAEAAAAAAgIAEQAAAAIAIAI=</HashCode>
+      <HashCode>gMBIAAABgCAwAQgQIAAQAAEAAAEAAgIAAQAgIAIAIAI=</HashCode>
       <FileName>GameUser.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
@@ -85,12 +85,11 @@
   <Class Name="GuangYuan.GY001.UserDb.GameChar">
     <Position X="7.5" Y="12" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>BIgIEAAAACAAgCAAAAIAAAEgAAAAAAAAGAAAhIAAABg=</HashCode>
+      <HashCode>BIAIEAAAASAAgCAAIAIAAAEAAAAAAAAACAAAhIAAABg=</HashCode>
       <FileName>GameChar.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
       <Property Name="GameUser" />
-      <Property Name="SpecificExpandProperties" />
     </ShowAsAssociation>
     <ShowAsCollectionAssociation>
       <Property Name="GameItems" />
@@ -113,13 +112,6 @@
     <Position X="16" Y="1.5" Width="1.5" />
     <TypeIdentifier />
   </Class>
-  <Class Name="GuangYuan.GY001.UserDb.CharSpecificExpandProperty">
-    <Position X="11.25" Y="12.5" Width="3" />
-    <TypeIdentifier>
-      <HashCode>AIAIAAAAAAAAAAAAAAAIAAAAIAAABSAAAAAAJAAAAAI=</HashCode>
-      <FileName>CharSpecificExpandProperty.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="GuangYuan.GY001.UserDb.GameBlueprint">
     <Position X="10.75" Y="4" Width="1.5" />
     <TypeIdentifier>
@@ -138,7 +130,7 @@
   <Class Name="GuangYuan.GY001.UserDb.GameThingBase">
     <Position X="5.25" Y="4" Width="3.25" />
     <TypeIdentifier>
-      <HashCode>BAgIAAAAAGAxAAAAAAAEAAEAAAACAADAEABAIQAAAAA=</HashCode>
+      <HashCode>BAAIAAAAAGAxAAAAIAAEAAEAACACAADAAABAIQAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -146,7 +138,7 @@
   <Class Name="GuangYuan.GY001.UserDb.GameExtendProperty">
     <Position X="0.5" Y="4" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>AABAAAAAAAAAAAAEAESAIAQAAAAAAEIgAAAACAAAAAA=</HashCode>
+      <HashCode>AABAAAAAAAAAAAAUAESAIAQAAAAAAAIgAAAACAAAAAA=</HashCode>
       <FileName>GameExtendProperty.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -182,7 +174,7 @@
   <Enum Name="GuangYuan.GY001.UserDb.LogoutReason" Collapsed="true">
     <Position X="16" Y="4.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>gAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIAAAAAAAAAAAA=</HashCode>
+      <HashCode>gAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIAAAAAAAAIAAA=</HashCode>
       <FileName>GameUser.cs</FileName>
     </TypeIdentifier>
   </Enum>

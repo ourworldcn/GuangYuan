@@ -207,11 +207,6 @@ namespace GuangYuan.GY001.UserDb
 
         #endregion 扩展属性
 
-        public virtual void OnJsonDeserialized()
-        {
-            GameChars.ForEach(c => c.GameUser = this);
-            GameChars.ForEach(c => c.OnJsonDeserialized());
-        }
         #region IDisposable 接口相关
 
         /// <summary>

@@ -78,12 +78,22 @@ namespace System
                 case TypeCode.Char:
                 case TypeCode.DateTime:
                 case TypeCode.Empty:
-                case TypeCode.Object:
                 case TypeCode.DBNull:
                 case TypeCode.Boolean:
                 default:
                     result = decimal.Zero;
                     succ = false;
+                    break;
+                case TypeCode.Object:
+                    if (obj is JsonElement json)
+                    {
+                        succ = json.TryGetDecimal(out result);
+                    }
+                    else
+                    {
+                        result = decimal.Zero;
+                        succ = false;
+                    }
                     break;
             }
             return succ;
