@@ -252,7 +252,10 @@ namespace GuangYuan.GY001.BLL
                 Refresh(view, item, datas.Now);
             }
             if (0 < genus.Count)
+            {
                 datas.ChangeItems.AddToChanges(jinbi);
+                view.Save();
+            }
             ChangeItem.Reduce(datas.ChangeItems);
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }

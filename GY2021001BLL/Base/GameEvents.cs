@@ -551,6 +551,7 @@ namespace OW.Game
         public virtual void JsonDeserialized(GameChar gameChar)
         {
             ThingBaseJsonDeserialized(gameChar);
+            gameChar.DbContext.AddRange(gameChar.GameItems);
             gameChar.GameItems.ForEach(c => c.GameChar = gameChar);
             gameChar.GameItems.ForEach(c => JsonDeserialized(c));
         }

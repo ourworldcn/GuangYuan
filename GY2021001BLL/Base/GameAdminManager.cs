@@ -109,7 +109,7 @@ namespace GuangYuan.GY001.BLL
             {
                 using var dwUser = World.CharManager.LockOrLoad(item.Item1, out var user);
                 IDisposable disposable;
-                if (dwUser is null)
+                if (dwUser is null) //若没有已经存在的用户
                 {
                     if (VWorld.GetLastError() != ErrorCodes.ERROR_NO_SUCH_USER) //若未知错误
                         continue;
@@ -126,6 +126,7 @@ namespace GuangYuan.GY001.BLL
                 CloneUser(datas.GameChar.GameUser, user);
                 if (!World.CharManager.IsOnline(user.CurrentChar.Id))   //若不是登录账户
                     user.Timeout = TimeSpan.FromMinutes(1);
+                World.CharManager.NotifyChange(user);
             }
             datas.Account.AddRange(list.Select(c => (c.Item1, c.Item2)));
         }
@@ -158,7 +159,7 @@ namespace GuangYuan.GY001.BLL
                 //清理目标已有坐骑
                 destSlot.Children.RemoveAll(c =>
                 {
-                    destUser.DbContext.Remove(c);
+                    //destUser.DbContext.Remove(c);
                     return true;
                 });
                 foreach (var srcItem in srcSlot.Children)
