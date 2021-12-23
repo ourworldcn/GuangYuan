@@ -239,123 +239,6 @@ namespace OW.Game
         #endregion IDisposable接口及相关
     }
 
-    public static class StringObjectDictionaryExtensions
-    {
-        /// <summary>
-        /// 获取指定键的值，并转换为Guid类型，如果没有指定键或不能转换则返回默认值。
-        /// </summary>
-        /// <param name="dic"></param>
-        /// <param name="name"></param>
-        /// <param name="defaultVal"></param>
-        /// <returns></returns>
-        public static Guid GetGuidOrDefault(this IReadOnlyDictionary<string, object> dic, string name, Guid defaultVal = default)
-        {
-            if (!dic.TryGetValue(name, out var obj))
-                return defaultVal;
-            if (obj is null)
-                return defaultVal;
-            else if (obj is string str && Guid.TryParse(str, out var guid))
-                return guid;
-            else if (obj is Guid val)
-                return val;
-            else if (obj is JsonElement json)
-                return OwConvert.ToGuid(json.GetString());
-            else
-                return defaultVal;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static decimal GetDecimalOrDefault(this IReadOnlyDictionary<string, object> dic, string name, decimal defaultVal = default) =>
-            dic.TryGetValue(name, out var obj) && OwHelper.TryGetDecimal(obj, out var result) ? result : defaultVal;
-
-        /// <summary>
-        /// 获取指定键值，并尽可能转换为日期。
-        /// </summary>
-        /// <param name="dic"></param>
-        /// <param name="name"></param>
-        /// <param name="defaultVal"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DateTime GetDateTimeOrDefault(this IReadOnlyDictionary<string, object> dic, string name, DateTime defaultVal = default)
-        {
-            if (!dic.TryGetValue(name, out var obj))
-                return defaultVal;
-            if (obj is DateTime result)
-                return result;
-            return obj is string str && DateTime.TryParse(str, out result) ? result : defaultVal;
-        }
-
-        /// <summary>
-        /// 获取指定键值的值，或转换为字符串。
-        /// </summary>
-        /// <param name="dic"></param>
-        /// <param name="name"></param>
-        /// <param name="defaultVal"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string GetStringOrDefault(this IReadOnlyDictionary<string, object> dic, string name, string defaultVal = default) =>
-            dic.TryGetValue(name, out var obj) && obj is string result ? result : defaultVal;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="dic"></param>
-        /// <param name="key"></param>
-        /// <param name="defaultVal"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetFloatOrDefalut(this IReadOnlyDictionary<string, object> dic, string key, float defaultVal = default)
-        {
-            if (!dic.TryGetValue(key, out var obj))
-                return defaultVal;
-            return OwHelper.TryGetFloat(obj, out var result) ? result : defaultVal;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="dic"></param>
-        /// <param name="key"></param>
-        /// <param name="defaultVal"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetBooleanOrDefaut(this IReadOnlyDictionary<string, object> dic, string key, bool defaultVal = default)
-        {
-            if (!dic.TryGetValue(key, out var obj))
-                return defaultVal;
-            return OwHelper.TryGetBoolean(obj, out var result) ? result : defaultVal;
-        }
-
-        /// <summary>
-        /// 获取三态bool类型值。
-        /// </summary>
-        /// <param name="dic"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool? Get3State(this IReadOnlyDictionary<string, object> dic, [CallerMemberName] string key = null)
-        {
-            if (!dic.TryGetValue(key, out _))
-                return null;
-            return OwHelper.TryGetBoolean(key, out var result) ? (bool?)result : null;
-        }
-
-        /// <summary>
-        /// 设置三态bool类型的值。
-        /// </summary>
-        /// <param name="dic"></param>
-        /// <param name="val"></param>
-        /// <param name="key"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Set3State(this IDictionary<string, object> dic, bool? val, [CallerMemberName] string key = null)
-        {
-            if (val is null)
-                dic.Remove(key);
-            else
-                dic[key] = val.Value.ToString();
-        }
-    }
-
     /// <summary>
     /// 渐变属性封装类。
     /// </summary>
@@ -479,7 +362,7 @@ namespace OW.Game
             switch (propertyNamePrefix)
             {
                 case 'i':
-                    if (!OwHelper.TryGetDecimal(val, out var dec))
+                    if (!OwConvert.TryGetDecimal(val, out var dec))
                     {
                         return false;
                     }
@@ -487,7 +370,7 @@ namespace OW.Game
                     Increment = dec;
                     break;
                 case 'd':
-                    if (!OwHelper.TryGetDecimal(val, out dec))
+                    if (!OwConvert.TryGetDecimal(val, out dec))
                     {
                         return false;
                     }
@@ -495,7 +378,7 @@ namespace OW.Game
                     Delay = TimeSpan.FromSeconds((double)dec);
                     break;
                 case 'm':
-                    if (!OwHelper.TryGetDecimal(val, out dec))
+                    if (!OwConvert.TryGetDecimal(val, out dec))
                     {
                         return false;
                     }
@@ -503,7 +386,7 @@ namespace OW.Game
                     MaxValue = dec;
                     break;
                 case 'c':   //当前刷新后的最后值
-                    if (!OwHelper.TryGetDecimal(val, out dec))
+                    if (!OwConvert.TryGetDecimal(val, out dec))
                     {
                         return false;
                     }
@@ -512,7 +395,7 @@ namespace OW.Game
                     LastDateTime = DateTime.UtcNow;
                     break;
                 case 'l':
-                    if (!OwHelper.TryGetDecimal(val, out dec))
+                    if (!OwConvert.TryGetDecimal(val, out dec))
                     {
                         return false;
                     }

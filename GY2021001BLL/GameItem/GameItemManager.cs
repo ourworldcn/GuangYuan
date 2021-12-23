@@ -144,7 +144,7 @@ namespace OW.Game.Item
             }
             else if (propName.Equals("pid", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (!OwHelper.TryGetGuid(val, out var pid))
+                if (!OwConvert.TryGetGuid(val, out var pid))
                     return false;
                 gameItem.ParentId = pid;
             }
@@ -397,7 +397,7 @@ namespace OW.Game.Item
         {
             if (!container.Properties.TryGetValue(ProjectConstant.ContainerCapacity, out object obj))   //若没有属性,视同非容器
                 return 0;
-            if (!OwHelper.TryGetDecimal(obj, out var result))
+            if (!OwConvert.TryGetDecimal(obj, out var result))
                 return 0;
             return result switch
             {

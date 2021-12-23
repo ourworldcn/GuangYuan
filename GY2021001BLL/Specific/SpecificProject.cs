@@ -501,7 +501,7 @@ namespace GuangYuan.GY001.BLL
             var gc = data.GameChar;
             var cm = world.CombatManager;
             var parent = cm.GetParent(data.Template);   //取大关
-            if (parent.TryGetPropertyValue("minCE", out var minCEObj) && OwHelper.TryGetDecimal(minCEObj, out _))  //若需要校验战力
+            if (parent.TryGetPropertyValue("minCE", out var minCEObj) && OwConvert.TryGetDecimal(minCEObj, out _))  //若需要校验战力
             {
                 //TO DO
             }
@@ -590,11 +590,11 @@ namespace GuangYuan.GY001.BLL
                 var bodyTemplate = gitm.GetTemplateFromeId(body.TemplateId);
                 var result = gim.CreateMounts(headTemplate, bodyTemplate);
 
-                if (c.Properties.TryGetValue("neatk", out object valObj) && OwHelper.TryGetDecimal(valObj, out var dec))
+                if (c.Properties.TryGetValue("neatk", out object valObj) && OwConvert.TryGetDecimal(valObj, out var dec))
                     result.Properties["neatk"] = dec;
-                if (c.Properties.TryGetValue("neqlt", out valObj) && OwHelper.TryGetDecimal(valObj, out dec))
+                if (c.Properties.TryGetValue("neqlt", out valObj) && OwConvert.TryGetDecimal(valObj, out dec))
                     result.Properties["neqlt"] = dec;
-                if (c.Properties.TryGetValue("nemhp", out valObj) && OwHelper.TryGetDecimal(valObj, out dec))
+                if (c.Properties.TryGetValue("nemhp", out valObj) && OwConvert.TryGetDecimal(valObj, out dec))
                     result.Properties["nemhp"] = dec;
                 return result;
             });

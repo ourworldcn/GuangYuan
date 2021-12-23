@@ -1,280 +1,102 @@
-[
-  {
-    "Id": "d2c2e718-26e9-46af-83a2-01519e44e8d6",
-    "Number": 1,
-    "Fangans": [
-      {
-        "Id": "0551db6a-5aef-4418-9820-6eaaaaceff4c",
-        "OrderNumber": 0,
-        "FanganItems": [
-          {
-            "ItemIds": [
-              "bcfdaae0-ce63-4baf-aa42-c4c1470f73df",
-              "5be4803f-e31d-445b-a655-8120e5669fa2",
-              "cb5fa573-34f4-4635-ae4b-b51f375ae1b1",
-              "b1835d61-6abf-4d7a-a2d7-0f1f1b0ea0ca"
-            ],
-            "ContainerId": "8218c88a-e9e4-4670-96ef-b99551bea494",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "bcfdaae0-ce63-4baf-aa42-c4c1470f73df",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-              "73a51aeb-c5d8-4ade-adfa-78717d1c121c",
-              "68732277-429e-46f4-83c4-41c8fdd224c4",
-              "0d84fc42-38f6-4c2a-911e-9008dfd654db",
-              "8029dc46-d320-4c5a-a7f0-ac978084c19e",
-              "1c820113-3f31-4218-9a4b-7374b0068c9c"
-            ],
-            "ContainerId": "5be4803f-e31d-445b-a655-8120e5669fa2",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "73a51aeb-c5d8-4ade-adfa-78717d1c121c",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "68732277-429e-46f4-83c4-41c8fdd224c4",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "0d84fc42-38f6-4c2a-911e-9008dfd654db",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "8029dc46-d320-4c5a-a7f0-ac978084c19e",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "1c820113-3f31-4218-9a4b-7374b0068c9c",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-              "bd12807f-765c-44ec-a988-3202fecc211c",
-              "febcb0a8-89a0-4d05-844c-8146cd330ffe",
-              "958801b7-b09e-42c0-817d-51aced5b57c8",
-              "17a5442e-e590-4168-80e6-c10f4bd51ce3",
-              "cbc77689-9541-436b-8b9a-ee34c69a3b56",
-              "8a8a2908-750c-4eed-94de-43ceb18017a4",
-              "0d84fc42-38f6-4c2a-911e-9008dfd654db"
-            ],
-            "ContainerId": "cb5fa573-34f4-4635-ae4b-b51f375ae1b1",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "bd12807f-765c-44ec-a988-3202fecc211c",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "febcb0a8-89a0-4d05-844c-8146cd330ffe",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "958801b7-b09e-42c0-817d-51aced5b57c8",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "17a5442e-e590-4168-80e6-c10f4bd51ce3",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "cbc77689-9541-436b-8b9a-ee34c69a3b56",
-            "NewTemplateId": "e31939bd-7056-4293-9a55-6c9ee0cd4681",
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "8a8a2908-750c-4eed-94de-43ceb18017a4",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "b1835d61-6abf-4d7a-a2d7-0f1f1b0ea0ca",
-            "NewTemplateId": null,
-            "ClientString": null
-          }
-        ],
-        "IsActived": true,
-        "ClientString": "{\u0022f4ASvVx27ESpiDIC/swhHA==\u0022:{\u0022x\u0022:24,\u0022y\u0022:0,\u0022z\u0022:7,\u0022magnitude\u0022:25.0,\u0022sqrMagnitude\u0022:625},\u0022qLC8/qCJBU2ETIFGzTMP/g==\u0022:{\u0022x\u0022:19,\u0022y\u0022:0,\u0022z\u0022:28,\u0022magnitude\u0022:33.83785,\u0022sqrMagnitude\u0022:1145},\u0022iXbHy0GVa0OLmu40xpo7Vg==\u0022:{\u0022x\u0022:0,\u0022y\u0022:0,\u0022z\u0022:0,\u0022magnitude\u0022:0.0,\u0022sqrMagnitude\u0022:0},\u0022CCmKigx17U6U3kPOsYAXpA==\u0022:{\u0022x\u0022:7,\u0022y\u0022:0,\u0022z\u0022:7,\u0022magnitude\u0022:9.899495,\u0022sqrMagnitude\u0022:98},\u0022QvyEDfY4KkyRHpAI39ZU2w==\u0022:{\u0022x\u0022:-7,\u0022y\u0022:0,\u0022z\u0022:-4,\u0022magnitude\u0022:8.062258,\u0022sqrMagnitude\u0022:65}}"
+{
+  "Mails": [
+    {
+      "Subject": null,
+      "Body": null,
+      "CreateUtc": "2021-12-22T07:35:17.2407777",
+      "From": {
+        "Id": "FUGD0X2GOke2/Jpq1xL7/g==",
+        "DisplayName": "System",
+        "ThingId": "D6i5IUifCkGAbhcJrRAlIA==",
+        "Kind": 1
       },
-      {
-        "Id": "8568d07f-7abd-4312-b4e2-1dcf020b5b9c",
-        "OrderNumber": 1,
-        "FanganItems": [
-          {
-            "ItemIds": [
-              "bcfdaae0-ce63-4baf-aa42-c4c1470f73df",
-              "5be4803f-e31d-445b-a655-8120e5669fa2",
-              "cb5fa573-34f4-4635-ae4b-b51f375ae1b1",
-              "b1835d61-6abf-4d7a-a2d7-0f1f1b0ea0ca"
-            ],
-            "ContainerId": "8218c88a-e9e4-4670-96ef-b99551bea494",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "bcfdaae0-ce63-4baf-aa42-c4c1470f73df",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-              "73a51aeb-c5d8-4ade-adfa-78717d1c121c",
-              "68732277-429e-46f4-83c4-41c8fdd224c4",
-              "0d84fc42-38f6-4c2a-911e-9008dfd654db",
-              "8029dc46-d320-4c5a-a7f0-ac978084c19e",
-              "1c820113-3f31-4218-9a4b-7374b0068c9c"
-            ],
-            "ContainerId": "5be4803f-e31d-445b-a655-8120e5669fa2",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "73a51aeb-c5d8-4ade-adfa-78717d1c121c",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "68732277-429e-46f4-83c4-41c8fdd224c4",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "0d84fc42-38f6-4c2a-911e-9008dfd654db",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "8029dc46-d320-4c5a-a7f0-ac978084c19e",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "1c820113-3f31-4218-9a4b-7374b0068c9c",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-              "bd12807f-765c-44ec-a988-3202fecc211c",
-              "febcb0a8-89a0-4d05-844c-8146cd330ffe",
-              "958801b7-b09e-42c0-817d-51aced5b57c8",
-              "17a5442e-e590-4168-80e6-c10f4bd51ce3",
-              "cbc77689-9541-436b-8b9a-ee34c69a3b56",
-              "8a8a2908-750c-4eed-94de-43ceb18017a4"
-            ],
-            "ContainerId": "cb5fa573-34f4-4635-ae4b-b51f375ae1b1",
-            "NewTemplateId": "234f8c55-4c3c-4406-ad38-081d29564f20",
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "bd12807f-765c-44ec-a988-3202fecc211c",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "febcb0a8-89a0-4d05-844c-8146cd330ffe",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "958801b7-b09e-42c0-817d-51aced5b57c8",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "17a5442e-e590-4168-80e6-c10f4bd51ce3",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "cbc77689-9541-436b-8b9a-ee34c69a3b56",
-            "NewTemplateId": "e31939bd-7056-4293-9a55-6c9ee0cd4681",
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "8a8a2908-750c-4eed-94de-43ceb18017a4",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [
-            ],
-            "ContainerId": "b1835d61-6abf-4d7a-a2d7-0f1f1b0ea0ca",
-            "NewTemplateId": null,
-            "ClientString": null
+      "To": [
+        {
+          "Id": "6HHqxjmNlUmG6df/IWGO+g==",
+          "DisplayName": null,
+          "ThingId": "cRGQzmKBdky6S/Ul71YqJw==",
+          "Kind": 2
+        }
+      ],
+      "Attachmentes": [
+        {
+          "IdDeleted": false,
+          "Id": "+N63YsjsyEqZ+oRi8KUcuA==",
+          "Properties": {
+            "TemplateId": "8c235021-79a9-4bdd-81e1-2dd88a5d450f",
+            "Count": 1,
+            "PTId": "2baa3fcd-2be8-4096-916a-ff2d47e084ef"
           }
-        ],
-        "IsActived": false,
-        "ClientString": null
+        },
+        {
+          "IdDeleted": false,
+          "Id": "4NPtvK8ZIEytxplL0Ilw+Q==",
+          "Properties": {
+            "TemplateId": "a9bd0e89-1105-4a52-982a-97e6ee4ad577",
+            "Count": 1,
+            "PTId": "2baa3fcd-2be8-4096-916a-ff2d47e084ef"
+          }
+        },
+        {
+          "IdDeleted": false,
+          "Id": "lw/EzbjdkEmxaLuDV7zWzg==",
+          "Properties": {
+            "TemplateId": "e62e432b-a29c-4ddc-b3e0-c8577769ace2",
+            "Count": 1,
+            "PTId": "2baa3fcd-2be8-4096-916a-ff2d47e084ef"
+          }
+        }
+      ],
+      "Id": "CRRZ2o1qt0a0LlNqE6t3Tw==",
+      "Properties": {
+        "FromSystem": 1
       }
-    ],
-    "ClientString": null
-  }
-]
+    },
+    {
+      "Subject": null,
+      "Body": null,
+      "CreateUtc": "2021-12-22T07:35:17.0493275",
+      "From": {
+        "Id": "uL4yzwLlDEWXzLVzhaO32Q==",
+        "DisplayName": "System",
+        "ThingId": "D6i5IUifCkGAbhcJrRAlIA==",
+        "Kind": 1
+      },
+      "To": [
+        {
+          "Id": "vtedyKYpckK96O+2flhl+Q==",
+          "DisplayName": null,
+          "ThingId": "cRGQzmKBdky6S/Ul71YqJw==",
+          "Kind": 2
+        }
+      ],
+      "Attachmentes": [
+        {
+          "IdDeleted": false,
+          "Id": "HLK1lNANVUiGDTrrCH4ioA==",
+          "Properties": {
+            "TemplateId": "2b83c942-1e9c-4b45-9816-ad2cbf0e473f",
+            "Count": 10000,
+            "PTId": "7066a96d-f514-42c7-a30e-5e7567900ad4"
+          }
+        },
+        {
+          "IdDeleted": false,
+          "Id": "M+zJIJz6REuTdkMkGuyKMg==",
+          "Properties": {
+            "TemplateId": "3e365bec-f83d-467d-a58c-9eba43458682",
+            "Count": 1000,
+            "PTId": "7066a96d-f514-42c7-a30e-5e7567900ad4"
+          }
+        }
+      ],
+      "Id": "8/+vnCkX5ECXB7ZwDgCTJg==",
+      "Properties": {
+        "FromSystem": 1
+      }
+    }
+  ],
+  "HasError": false,
+  "DebugMessage": null,
+  "ErrorCode": 0
+}

@@ -368,6 +368,47 @@ namespace OW.Game
                 gameItem.Children.Add(body);
             }
         }
+
+        /// <summary>
+        /// 创建物品/道具。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="parameters">理解tid,ptid,count,htid,btid,neatk,nemhp,neqlt属性，若htid,btid都存在则自动创建相应的头和身体。</param>
+        public override void GameItemCreated([NotNull] GameItem gameItem, [NotNull] IReadOnlyDictionary<string, object> parameters)
+        {
+            base.GameItemCreated(gameItem, parameters);
+            if (gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi)   //若是生物且可能有相应的初始化参数
+            {
+                var gitm = World.ItemTemplateManager;
+                //获取头模板
+                var htid = parameters.GetGuidOrDefault("htid");
+                var headTemplate = gitm.GetTemplateFromeId(htid);
+                if (headTemplate is null)
+                    return;
+                //获取身体模板
+                var btid = parameters.GetGuidOrDefault("btid");
+                var bodyTemplate = gitm.GetTemplateFromeId(btid);
+                if (bodyTemplate is null)
+                    return;
+                //创建头对象
+                var head = new GameItem() { };
+                GameItemCreated(head, headTemplate, gameItem, null, null);
+                head.Count = 1;
+                gameItem.Children.Add(head);
+                //创建身体对象
+                var body = new GameItem();
+                GameItemCreated(body, bodyTemplate, gameItem, null, null);
+                body.Count = 1;
+                gameItem.Children.Add(body);
+                //处理资质数值
+                if (parameters.TryGetValue("neatk", out var neatkObj) && OwConvert.TryGetDecimal(neatkObj, out var neatk))    //若指定了攻击资质
+                    gameItem.Properties["neatk"] = neatk;
+                if (parameters.TryGetValue("nemhp", out var nemhpObj) && OwConvert.TryGetDecimal(nemhpObj, out var nemhp))    //若指定了血量资质
+                    gameItem.Properties["nemhp"] = nemhp;
+                if (parameters.TryGetValue("neqlt", out var neqltObj) && OwConvert.TryGetDecimal(neqltObj, out var neqlt))    //若指定了质量资质
+                    gameItem.Properties["neqlt"] = neqlt;
+            }
+        }
         #endregion 创建后初始化
 
         /// <summary>

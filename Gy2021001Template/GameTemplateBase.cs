@@ -152,7 +152,7 @@ namespace GuangYuan.GY001.TemplateDb
         public string GetIndexPropertyName(string sequencePropertyName)
         {
             string specName = LevelPrefix + sequencePropertyName;
-            return Properties.TryGetValue(specName, out var indexObj) && OwHelper.TryGetDecimal(indexObj, out _) ? specName : LevelPrefix;
+            return Properties.TryGetValue(specName, out var indexObj) && OwConvert.TryGetDecimal(indexObj, out _) ? specName : LevelPrefix;
         }
         #endregion 序列属性相关
 
@@ -192,7 +192,7 @@ namespace GuangYuan.GY001.TemplateDb
         {
             var seq = obj.GetSequenceProperty<decimal>(name);
             if (seq is null) //若非序列属性
-                return obj.TryGetPropertyValue(name, out var resultObj) && OwHelper.TryGetDecimal(resultObj, out var result) ? result : default;
+                return obj.TryGetPropertyValue(name, out var resultObj) && OwConvert.TryGetDecimal(resultObj, out var result) ? result : default;
             else //是序列属性
                 return seq[lv];
         }

@@ -478,7 +478,7 @@ namespace OW.Game.Mission
                     AddItemsOrMailDatas data = new AddItemsOrMailDatas(datas.World, datas.GameChar);
                     data.Items.AddRange(gis.Select(c =>
                     {
-                        if (!c.Properties.Remove("ptid", out var tmp) || !OwHelper.TryGetGuid(tmp, out var id))
+                        if (!c.Properties.Remove("ptid", out var tmp) || !OwConvert.TryGetGuid(tmp, out var id))
                             id = Guid.Empty;
                         return (c, id);
                     }));

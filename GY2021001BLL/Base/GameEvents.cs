@@ -367,10 +367,26 @@ namespace OW.Game
             {
                 if (parameters.TryGetValue("ptid", out var tmp))
                     gameItem.Properties["ptid"] = tmp;
-                if (parameters.TryGetValue("count", out tmp) && OwHelper.TryGetDecimal(tmp, out var deci) && gameItem.GameChar != null) //若可以设置
+                if (parameters.TryGetValue("count", out tmp) && OwConvert.TryGetDecimal(tmp, out var deci) && gameItem.GameChar != null) //若可以设置
                     gameItem.Count = deci;
             }
 
+        }
+
+        /// <summary>
+        /// 初始化一个物品，
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="parameters">理解tid,ptid,count三个属性。</param>
+        public virtual void GameItemCreated([NotNull] GameItem gameItem, [NotNull] IReadOnlyDictionary<string, object> parameters)
+        {
+            var tid = parameters.GetGuidOrDefault("tid");
+            var template = World.ItemTemplateManager.GetTemplateFromeId(tid);
+            var count = parameters.GetDecimalOrDefault("count");
+            var ptid = parameters.GetGuidOrDefault("ptid");
+            gameItem.Count = count;
+            gameItem.Properties["ptid"] = ptid.ToString();
+            GameItemCreated(gameItem, template, null, null, parameters);
         }
 
         /// <summary>

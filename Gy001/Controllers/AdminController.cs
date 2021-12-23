@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.UserDb;
 using Gy001.Controllers;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
@@ -230,7 +231,7 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<SendThingsReturnDto> SendThings(SendThingsParamsDto model)
         {
-            SendThingDatas datas = new SendThingDatas(World, model.Token);
+            SendThingDatas datas = new SendThingDatas(World, model.Token) { Mail = (GameMail)model.Mail };
             datas.Tos.AddRange(model.Tos);
             foreach (var item in model.Propertyies)
             {

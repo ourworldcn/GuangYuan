@@ -2,6 +2,7 @@
 using OW.Game;
 using OW.Game.Store;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -26,6 +27,17 @@ namespace Game.Social
             result.From = obj.From;
             result.Attachmentes.AddRange(obj.Attachmentes.Select(c => (GameMailAttachmentDto)c));
 
+            return result;
+        }
+
+        static public explicit operator GameMail(GameMailDto obj)
+        {
+            var result = new GameMail()
+            {
+                Subject = obj.Subject,
+                Body = obj.Body,
+                CreateUtc = obj.CreateUtc,
+            };
             return result;
         }
     }

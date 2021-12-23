@@ -154,7 +154,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static decimal? GetPriceWithDiamond(this GameItemTemplate templat) =>
-            templat.TryGetPropertyValue("bd", out var sdObj) && OwHelper.TryGetDecimal(sdObj, out var sd) ? new decimal?(sd) : null;
+            templat.TryGetPropertyValue("bd", out var sdObj) && OwConvert.TryGetDecimal(sdObj, out var sd) ? new decimal?(sd) : null;
 
         /// <summary>
         /// 获取这个模板指出的物品是否是免费的（钻石计价）。
@@ -163,7 +163,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsFree(this GameItemTemplate templat) =>
-            !templat.TryGetPropertyValue("bd", out var sdObj) || !OwHelper.TryGetDecimal(sdObj, out var sd) || sd <= 0;
+            !templat.TryGetPropertyValue("bd", out var sdObj) || !OwConvert.TryGetDecimal(sdObj, out var sd) || sd <= 0;
 
     }
 

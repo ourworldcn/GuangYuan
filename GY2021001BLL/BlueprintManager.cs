@@ -407,10 +407,6 @@ namespace GuangYuan.GY001.BLL
                         LevelUp(datas);
                         succ = true;
                         break;
-                    case "c86c1851-2e6e-45ad-9a16-4a77cc81550b":    //七日签到礼包
-                        SignInOfDay7(datas);
-                        succ = true;
-                        break;
                     default:
                         if (Id2Handler.TryGetValue(datas.Blueprint.Id, out var handler))
                         {
@@ -433,9 +429,10 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 七日签到礼包。
+        /// 三十日签到礼包。
         /// </summary>
         /// <param name="datas"></param>
+        [BlueprintMethod("c86c1851-2e6e-45ad-9a16-4a77cc81550b")]
         private void SignInOfDay7(ApplyBlueprintDatas datas)
         {
             const string CountKeyName = "Day7Count";
@@ -444,6 +441,7 @@ namespace GuangYuan.GY001.BLL
             var gi = datas.GameItems[0];    //物品
             var tt = gi.Template;
             var gc = datas.GameChar;
+
             var day = (int)gc.Properties.GetDecimalOrDefault(CountKeyName) % 7; //应该获取哪天的物品
             var tid = tt.Properties.GetGuidOrDefault($"usetid{day}");
             var ptid = tt.Properties.GetGuidOrDefault($"useptid{day}");
@@ -980,7 +978,7 @@ namespace GuangYuan.GY001.BLL
                 _ => null,
             };
 
-            if (!src.TryGetPropertyValueWithFcp("Count", DateTime.UtcNow, true, out object countObj, out DateTime dt) || !OwHelper.TryGetDecimal(countObj, out decimal count))
+            if (!src.TryGetPropertyValueWithFcp("Count", DateTime.UtcNow, true, out object countObj, out DateTime dt) || !OwConvert.TryGetDecimal(countObj, out decimal count))
             {
                 datas.DebugMessage = "未知原因无法获取收获数量。";
                 datas.HasError = true;
@@ -1031,7 +1029,7 @@ namespace GuangYuan.GY001.BLL
             GameItemManager gim = World.ItemManager;
             GameItemTemplate template = gim.GetTemplateFromeId(gi.TemplateId); //物品的模板对象
             #region 等级校验
-            if (template.TryGetPropertyValue("mbnlv", out object mbnlvObj) && OwHelper.TryGetDecimal(mbnlvObj, out decimal mbnlv))    //若需要根据主控室等级限定升级
+            if (template.TryGetPropertyValue("mbnlv", out object mbnlvObj) && OwConvert.TryGetDecimal(mbnlvObj, out decimal mbnlv))    //若需要根据主控室等级限定升级
             {
                 GameItem mb = hl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);    //主控室
                 decimal mbLv = mb.GetDecimalOrDefault(GameThingTemplateBase.LevelPrefix, 0m); //当前主控室等级
@@ -1054,7 +1052,7 @@ namespace GuangYuan.GY001.BLL
             LevelUp(datas);
             if (datas.HasError)
                 return;
-            if (!datas.Verify(OwHelper.TryGetDecimal(gi.GetPropertyValueOrDefault(ProjectConstant.LevelPropertyName, 0m), out decimal lvDec), "级别属性类型错误。"))
+            if (!datas.Verify(OwConvert.TryGetDecimal(gi.GetPropertyValueOrDefault(ProjectConstant.LevelPropertyName, 0m), out decimal lvDec), "级别属性类型错误。"))
             {
                 return;
             }
@@ -1347,7 +1345,7 @@ namespace GuangYuan.GY001.BLL
                     social.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId,
                         new ValueTuple<GameItem, Guid>[] { (gameItem, ProjectConstant.ShoulanSlotId) });
                     gim.ForceDelete(gameItem);
-                    datas.ChangeItems.AddToRemoves(slotSl.Id,gameItem.Id);
+                    datas.ChangeItems.AddToRemoves(slotSl.Id, gameItem.Id);
                 }
 
             }
@@ -1737,6 +1735,7 @@ namespace GuangYuan.GY001.BLL
             {
                 var gi = datas.GameItems[0];
                 var tt = gi.ItemTemplate;
+                var coll = tt.Properties.GetValuesWithoutPrefix("use");
                 var htid = tt.Properties.GetGuidOrDefault("usehtid");
                 var btid = tt.Properties.GetGuidOrDefault("usebtid");
                 var tid = tt.Properties.GetGuidOrDefault("usetid");

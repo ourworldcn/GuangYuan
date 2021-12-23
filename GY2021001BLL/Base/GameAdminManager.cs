@@ -458,6 +458,8 @@ namespace GuangYuan.GY001.BLL
         /// 发送给角色的Id。"{DA5B83F6-BB73-4961-A431-96177DE82BFF}"表示发送给所有角色。
         /// </summary>
         public List<string> Tos { get; set; } = new List<string>();
+
+        public GameMail Mail { get; set; }
     }
 
     /// <summary>

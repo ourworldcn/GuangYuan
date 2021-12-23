@@ -1002,6 +1002,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<string> Tos { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 要发送的邮件。
+        /// </summary>
+        [DataMember]
+        public GameMailDto Mail { get; set; }
     }
 
     [DataContract]

@@ -52,11 +52,11 @@ namespace GuangYuan.GY001.BLL
                     var neatkPrefix = $"{prefix}neatk{indexStr}";
                     var nemhpPrefix = $"{prefix}nemhp{indexStr}";
                     var neqltPrefix = $"{prefix}neqlt{indexStr}";
-                    if (bag.TryGetValue(neatkPrefix, out var tmp) && OwHelper.TryGetDecimal(tmp, out var neatk))
+                    if (bag.TryGetValue(neatkPrefix, out var tmp) && OwConvert.TryGetDecimal(tmp, out var neatk))
                         gi.Properties[nameof(neatk)] = neatk;
-                    if (bag.TryGetValue(nemhpPrefix, out tmp) && OwHelper.TryGetDecimal(tmp, out var nemhp))
+                    if (bag.TryGetValue(nemhpPrefix, out tmp) && OwConvert.TryGetDecimal(tmp, out var nemhp))
                         gi.Properties[nameof(nemhp)] = nemhp;
-                    if (bag.TryGetValue(neqltPrefix, out tmp) && OwHelper.TryGetDecimal(tmp, out var neqlt))
+                    if (bag.TryGetValue(neqltPrefix, out tmp) && OwConvert.TryGetDecimal(tmp, out var neqlt))
                         gi.Properties[nameof(neqlt)] = neqlt;
                 }
                 else //若创建其他物品

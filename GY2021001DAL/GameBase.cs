@@ -102,11 +102,11 @@ namespace GuangYuan.GY001.UserDb
         public static FastChangingProperty FromDictionary(IReadOnlyDictionary<string, object> dic, string name, string classPrefix = DefaultClassPrefix)
         {
             Debug.Assert(!name.StartsWith(classPrefix), $"主名称不能以{classPrefix}开头。");
-            if (!dic.TryGetValue($"{classPrefix}i{name}", out var piObj) || !OwHelper.TryGetDecimal(piObj, out var pi)) return null;
-            if (!dic.TryGetValue($"{classPrefix}d{name}", out var pdObj) || !OwHelper.TryGetDecimal(pdObj, out var pd)) return null;
-            if (!dic.TryGetValue($"{classPrefix}m{name}", out var pmObj) || !OwHelper.TryGetDecimal(pmObj, out var pm)) return null;
+            if (!dic.TryGetValue($"{classPrefix}i{name}", out var piObj) || !OwConvert.TryGetDecimal(piObj, out var pi)) return null;
+            if (!dic.TryGetValue($"{classPrefix}d{name}", out var pdObj) || !OwConvert.TryGetDecimal(pdObj, out var pd)) return null;
+            if (!dic.TryGetValue($"{classPrefix}m{name}", out var pmObj) || !OwConvert.TryGetDecimal(pmObj, out var pm)) return null;
 
-            OwHelper.TryGetDecimal(dic.GetValueOrDefault($"{classPrefix}c{name}", 0m), out var pc);
+            OwConvert.TryGetDecimal(dic.GetValueOrDefault($"{classPrefix}c{name}", 0m), out var pc);
             if (!dic.TryGetValue($"{classPrefix}t{name}", out var tmpl) || !(tmpl is string strl) || !DateTime.TryParse(strl, out var pt))
                 pt = DateTime.UtcNow;
             return new FastChangingProperty(TimeSpan.FromSeconds((double)pd), pi, pm, pc, pt) { Tag = name };
@@ -158,7 +158,7 @@ namespace GuangYuan.GY001.UserDb
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetDecimalPropertyValue(this GameItemBase obj, string propertyName, out decimal result)
         {
-            if (obj.TryGetPropertyValue(propertyName, out var tmp) && OwHelper.TryGetDecimal(tmp, out result))
+            if (obj.TryGetPropertyValue(propertyName, out var tmp) && OwConvert.TryGetDecimal(tmp, out result))
                 return true;
             result = default;
             return false;
@@ -174,7 +174,7 @@ namespace GuangYuan.GY001.UserDb
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static decimal GetDecimalOrDefault(this GameItemBase obj, string propertyName, decimal defaultVal = decimal.Zero) =>
-            obj.TryGetPropertyValue(propertyName, out var stcObj) && OwHelper.TryGetDecimal(stcObj, out var dec) ? dec : defaultVal;
+            obj.TryGetPropertyValue(propertyName, out var stcObj) && OwConvert.TryGetDecimal(stcObj, out var dec) ? dec : defaultVal;
 
         /// <summary>
         /// 获取堆叠上限。
