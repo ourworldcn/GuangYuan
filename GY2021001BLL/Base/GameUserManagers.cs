@@ -776,6 +776,40 @@ namespace GuangYuan.GY001.BLL
             return Enumerable.SequenceEqual(hash, user.PwdHash);
         }
 
+        /// <summary>
+        /// 设置新密码。
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="pwd"></param>
+        /// <returns></returns>
+        public bool SetPwd(GameUser user,string pwd)
+        {
+            using var dwGu = this.LockAndReturnDisposer(user);
+            if (dwGu is null) //若没有成功锁定
+                return false;
+            using var hash = Service.GetService<HashAlgorithm>();
+            var pwdHash = hash.ComputeHash(Encoding.UTF8.GetBytes(pwd));
+            user.PwdHash = pwdHash;
+            return true;
+        }
+
+        /// <summary>
+        /// 已经登录的用变更密码。
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="newPwd"></param>
+        /// <returns></returns>
+        public bool ChangePwd(Guid token, string newPwd)
+        {
+            using var dwGu = this.LockAndReturnDisposer(token, out var gu);
+            if (dwGu is null) //若没找到登录用户
+                return false;
+            using var ha = Service.GetService<HashAlgorithm>();
+            gu.PwdHash = ha.ComputeHash(Encoding.UTF8.GetBytes(newPwd));
+            NotifyChange(gu);
+            return true;
+        }
+
         #region 注册登入登出相关
 
         /// <summary>
@@ -1058,23 +1092,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         #endregion 注册登入登出相关
-
-        /// <summary>
-        /// 已经登录的用变更密码。
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="newPwd"></param>
-        /// <returns></returns>
-        public bool ChangePwd(Guid token, string newPwd)
-        {
-            using var dwGu = this.LockAndReturnDisposer(token, out var gu);
-            if (dwGu is null) //若没找到登录用户
-                return false;
-            using var ha = Service.GetService<HashAlgorithm>();
-            gu.PwdHash = ha.ComputeHash(Encoding.UTF8.GetBytes(newPwd));
-            NotifyChange(gu);
-            return true;
-        }
 
         /// <summary>
         /// 修改客户端字符串。

@@ -89,6 +89,10 @@ namespace GuangYuan.GY001.BLL
             return;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="datas"></param>
         public void CloneUser(CloneUserDatas datas)
         {
             string prefix = datas.LoginNamePrefix ?? "vip";
@@ -123,7 +127,7 @@ namespace GuangYuan.GY001.BLL
                 else
                     disposable = null;
                 using var dwUser1 = disposable;
-                CloneUser(datas.GameChar.GameUser, user);
+                CloneUser(datas.GameChar.GameUser, user);   //World.EventsManager.Clone(datas.GameChar.GameUser, user);
                 if (!World.CharManager.IsOnline(user.CurrentChar.Id))   //若不是登录账户
                     user.Timeout = TimeSpan.FromMinutes(1);
                 World.CharManager.NotifyChange(user);
@@ -136,7 +140,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="srcUser"></param>
         /// <param name="destUser"></param>
-        private void CloneUser(GameUser srcUser, GameUser destUser)
+        public void CloneUser(GameUser srcUser, GameUser destUser)
         {
             for (int i = 0; i < srcUser.GameChars.Count; i++)
             {

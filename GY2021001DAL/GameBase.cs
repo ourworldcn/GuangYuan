@@ -348,6 +348,11 @@ namespace GuangYuan.GY001.UserDb
 
                     }
                 }
+                else if (DbContext == null)
+                {
+                    _ExtendProperties = new ObservableCollection<GameExtendProperty>();
+                    _ExtendProperties.CollectionChanged += GameExtendPropertiesCollectionChanged;
+                }
                 return _ExtendProperties;
             }
             set

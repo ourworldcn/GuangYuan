@@ -581,6 +581,132 @@ namespace OW.Game
             gameUser.DbContext.Add(gameUser);
         }
         #endregion Json反序列化
+
+        #region 复制信息相关
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        public virtual void Clone(GameUser src, GameUser dest)
+        {
+            dest.Services = Service;
+            dest.DbContext = World.CreateNewUserDbContext();
+            dest.Region = src.Region;
+            OwHelper.Copy(src.Properties, dest.Properties);
+            Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
+            foreach (var item in src.GameChars)
+            {
+                var gc = new GameChar()
+                {
+                    GameUserId = dest.Id,
+                    GameUser = dest,
+                };
+                dest.GameChars.Add(gc);
+                Clone(item, gc);
+            }
+            dest.DbContext.Add(dest);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        public virtual void Clone(GameChar src, GameChar dest)
+        {
+            CloneThingBase(src, dest);
+            dest.CharType = src.CharType;
+            dest.CombatStartUtc = src.CombatStartUtc;
+            dest.CurrentDungeonId = src.CurrentDungeonId;
+            dest.DisplayName = CnNames.GetName(World.IsHit(0.5));
+            foreach (var item in src.GameItems)
+            {
+                var gi = new GameItem()
+                {
+                    OwnerId = dest.Id,
+                    GameChar = dest,
+                };
+                dest.GameItems.Add(gi);
+                Clone(item, gi);
+            }
+            Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        public virtual void Clone(GameItem src, GameItem dest)
+        {
+            CloneThingBase(src, dest);
+            dest.Count = src.Count;
+            foreach (var item in src.Children)
+            {
+                var subItem = new GameItem()
+                {
+                    ParentId = dest.Id,
+                    Parent = dest,
+                };
+                dest.Children.Add(subItem);
+                Clone(item, subItem);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        public virtual void CloneThingBase(GameThingBase src, GameThingBase dest)
+        {
+            dest.TemplateId = src.TemplateId;
+            dest.Template = src.Template;
+            dest.ClientGutsString = src.ClientGutsString;
+            dest.ExPropertyString = src.ExPropertyString;
+            OwHelper.Copy(src.Properties, dest.Properties);
+
+            Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        /// <param name="destId">目标<see cref="GameExtendProperty"/>对象的Id属性。</param>
+        public void Clone(IEnumerable<GameExtendProperty> src, ICollection<GameExtendProperty> dest, Guid destId)
+        {
+            foreach (var item in src)
+            {
+                var exp = new GameExtendProperty(item.Name, destId) { };
+                CloneExtendProperty(item, exp, destId);
+                dest.Add(exp);
+            }
+        }
+
+        /// <summary>
+        /// 克隆一个新的<see cref="GameExtendProperty"/>对象。
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        /// <param name="destId">目标<see cref="GameExtendProperty"/>对象的 Id 属性。</param>
+        public void CloneExtendProperty(GameExtendProperty src, GameExtendProperty dest, Guid destId)
+        {
+            dest.Id = destId;
+            dest.Name = src.Name;
+            dest.ByteArray = (byte[])src.ByteArray.Clone();
+            dest.DateTimeValue = src.DateTimeValue;
+            dest.DecimalValue = src.DecimalValue;
+            dest.GuidValue = src.GuidValue;
+            dest.IntValue = src.IntValue;
+            dest.StringValue = src.StringValue;
+            dest.Text = src.Text;
+            OwHelper.Copy(src.Properties, dest.Properties);
+        }
+        #endregion 复制信息相关
     }
 
     public static class GameEventsManagerExtensions

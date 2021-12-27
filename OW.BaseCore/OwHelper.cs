@@ -38,6 +38,22 @@ namespace System
         public static readonly char[] PathSeparatorChar = new char[] { '\\', '/' };
 
         /// <summary>
+        /// 复制字典。
+        /// </summary>
+        /// <typeparam name="Tkey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Copy<Tkey, TValue>(IReadOnlyDictionary<Tkey, TValue> src, IDictionary<Tkey, TValue> dest)
+        {
+            foreach (var item in src)
+            {
+                dest[item.Key] = item.Value;
+            }
+        }
+
+        /// <summary>
         /// 四舍五入取整。
         /// </summary>
         /// <param name="result"></param>

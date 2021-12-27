@@ -85,6 +85,7 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         [JsonIgnore]
         public int? NodeNum { get; set; }
+
         #region 非数据库属性
 
         [NotMapped]
