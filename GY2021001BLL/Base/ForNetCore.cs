@@ -190,58 +190,16 @@ namespace GuangYuan.GY001.BLL
         /// L2 缓存:	1.5 MB
         /// L3 缓存:	12.0 MB
         /// </remarks>
-        //[Conditional("DEBUG")]
+        [Conditional("DEBUG")]
         private void Test()
         {
             var str1 = "sdjfsl";
             var b1 = str1[^0..];
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            TimeSpan ts = DateTime.Now - DateTime.UtcNow;
-            var str = ts.ToString("G");
-            var tmp = TimeSpan.Parse(str);
-            //var id = new Guid("5EBBCFA9-4179-4E68-83B1-A5D6237E31D0");
-            var id = new Guid("CE901171-8162-4C76-BA4B-F525EF562A27");
-            var mail = new GameMail()
-            {
-            };
-            List<(GameItem, Guid)> list = new List<(GameItem, Guid)>();
-            //金币
-            var gold = new GameItem() { Count = 10000 };
-            world.EventsManager.GameItemCreated(gold, ProjectConstant.JinbiId);
-            list.Add((gold, ProjectConstant.CurrencyBagTId));
-            //钻石
-            var zuanshi = new GameItem() { Count = 1000 };
-            world.EventsManager.GameItemCreated(zuanshi, ProjectConstant.ZuanshiId);
-            list.Add((zuanshi, ProjectConstant.CurrencyBagTId));
-            world.SocialManager.SendMail(mail, new Guid[] { id }, SocialConstant.FromSystemId, list);
-
-            //道具
-            mail = new GameMail();
-            var daoju = new GameItem();
-            world.EventsManager.GameItemCreated(daoju, ProjectConstant.ZuanshiId);
-            list.Add((zuanshi, ProjectConstant.DaojuBagSlotId));
-
-            List<Guid> daojus = new List<Guid>()
-            {
-                new Guid("A9BD0E89-1105-4A52-982A-97E6EE4AD577"),
-                new Guid("{1dd08f32-081b-4bdb-95ea-166b1a37ac26}"),
-                new Guid("{ac7d593c-ce82-4642-97a3-14025da633e4}"),
-                new Guid("{e62e432b-a29c-4ddc-b3e0-c8577769ace2}"),
-                new Guid("{8c235021-79a9-4bdd-81e1-2dd88a5d450f}"),
-                new Guid("{8fc39339-777d-4dc5-97a2-d539d7b2d47b}"),
-                new Guid("{7f129c0c-dcc2-43f7-919d-bea175792f14}"),
-                new Guid("{df5b745e-41ad-4c4e-bc8a-248b81d43fd2}"),
-            };
-            list.Clear();
-            for (int i = 0; i < 3; i++)
-            {
-                var gi = new GameItem() { Count = 1 };
-                world.EventsManager.GameItemCreated(gi, daojus[i]);
-                list.Add((gi, ProjectConstant.DaojuBagSlotId));
-            }
-            world.SocialManager.SendMail(mail, new Guid[] { id }, SocialConstant.FromSystemId, list);
-
+            var prefix = "vip";
+            //var query = db.Set<GameUser>().Where(c => c.LoginName.StartsWith(prefix)).OrderBy(c => c.LoginName.Remove(prefix.Length)).Select(c => (c.LoginName));    //获取已有登录名
+            //var coll = query.Take(1).ToArray();
         }
 
         /// <summary>

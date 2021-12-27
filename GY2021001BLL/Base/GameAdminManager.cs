@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -90,7 +91,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 
+        /// 复制当前账号。
         /// </summary>
         /// <param name="datas"></param>
         public void CloneUser(CloneUserDatas datas)
@@ -104,148 +105,38 @@ namespace GuangYuan.GY001.BLL
                      var str = c[prefix.Length..];
                      return int.TryParse(str, out var number) ? number : 0;
                  }).Max();   //最大尾号
-            List<(string, string, string)> list = new List<(string, string, string)>();
-            for (int i = 0; i < datas.Count; i++)   //生成账号数据
+            List<(string, string, string)> list = new List<(string, string, string)>(); //(登录名，密码，角色名)
+            List<GameUser> users = new List<GameUser>();
+            for (int i = 0; i < datas.Count; i++)   //生成账号登录数据
             {
                 list.Add(($"{prefix}{lastIndex + 1 + i}", NewPassword(4), CnNames.GetName(VWorld.IsHit(0.5))));
             }
-            foreach (var item in list)  //生成账号
+            using var dwLns = OwHelper.LockWithOrder(list.Select(c => c.Item1).OrderBy(c => c),
+                (ln, timeout) => World.LockStringAndReturnDisposer(ref ln, timeout), TimeSpan.FromSeconds(5));   //锁定所有登录名。
+            if (dwLns is null)  //若锁定超时
             {
-                using var dwUser = World.CharManager.LockOrLoad(item.Item1, out var user);
-                IDisposable disposable;
-                if (dwUser is null) //若没有已经存在的用户
-                {
-                    if (VWorld.GetLastError() != ErrorCodes.ERROR_NO_SUCH_USER) //若未知错误
-                        continue;
-                    user = World.CharManager.CreateNewUserAndLock(item.Item1, item.Item2);
-                    if (user is null) //若未知错误
-                        continue;
-                    user.CurrentChar.DisplayName = item.Item3;
-                    user.Timeout = TimeSpan.FromSeconds(1);
-                    disposable = DisposerWrapper.Create(c => World.CharManager.Unlock(c), user);
-                }
-                else
-                    disposable = null;
-                using var dwUser1 = disposable;
-                CloneUser(datas.GameChar.GameUser, user);   //World.EventsManager.Clone(datas.GameChar.GameUser, user);
-                if (!World.CharManager.IsOnline(user.CurrentChar.Id))   //若不是登录账户
-                    user.Timeout = TimeSpan.FromMinutes(1);
-                World.CharManager.NotifyChange(user);
+                datas.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
+                return;
             }
+            list.ForEach(c =>   //生成账号
+            {
+                var gu = new GameUser()
+                {
+                    LoginName = c.Item1,
+                };
+                World.CharManager.SetPwd(gu, c.Item2);
+                World.EventsManager.Clone(datas.GameChar.GameUser, gu);
+                users.Add(gu);
+            });
+            if (!World.CharManager.Delete(list.Select(c => c.Item1)))
+            {
+                datas.HasError = true;
+                datas.ErrorMessage = "至少有一个账户无法覆盖信息。";
+                return;
+            }
+            users.ForEach(c => c.DbContext.SaveChanges());
             datas.Account.AddRange(list.Select(c => (c.Item1, c.Item2)));
-        }
-
-        /// <summary>
-        /// 复制一个账号信息到另一个账号。
-        /// </summary>
-        /// <param name="srcUser"></param>
-        /// <param name="destUser"></param>
-        public void CloneUser(GameUser srcUser, GameUser destUser)
-        {
-            for (int i = 0; i < srcUser.GameChars.Count; i++)
-            {
-                var srcChar = srcUser.GameChars[i];
-                GameChar destChar;
-                if (i >= destUser.GameChars.Count)
-                {
-                    var charTemplate = World.ItemTemplateManager.GetTemplateFromeId(ProjectConstant.CharTemplateId);
-                    destChar = new GameChar();
-                    World.EventsManager.GameCharCreated(destChar, charTemplate, destUser, CnNames.GetName(World.IsHit(0.5)), null); //TO DO
-                    destUser.GameChars.Add(destChar);
-                }
-                else
-                    destChar = destUser.GameChars[i];
-                GameItem srcSlot, destSlot;
-
-                #region 坐骑
-                srcSlot = srcChar.GetZuojiBag();
-                destSlot = destChar.GetZuojiBag();
-                //清理目标已有坐骑
-                destSlot.Children.RemoveAll(c =>
-                {
-                    //destUser.DbContext.Remove(c);
-                    return true;
-                });
-                foreach (var srcItem in srcSlot.Children)
-                {
-                    var destItem = World.ItemManager.CloneMounts(srcItem, srcItem.TemplateId);
-                    World.ItemManager.ForcedAdd(destItem, destSlot);
-                }
-                #endregion 坐骑
-
-                #region 动物
-                srcSlot = srcChar.GetShoulanBag();
-                destSlot = destChar.GetShoulanBag();
-                foreach (var srcItem in srcSlot.Children)
-                {
-                    var destItem = World.ItemManager.CloneMounts(srcItem, srcItem.TemplateId);
-                    World.ItemManager.ForcedAdd(destItem, destSlot);
-                }
-                #endregion 动物
-
-                #region 货币
-                srcSlot = srcChar.GetCurrencyBag();
-                destSlot = destChar.GetCurrencyBag();
-                foreach (var srcItem in srcSlot.Children)
-                {
-                    var destItem = destSlot.Children.FirstOrDefault(c => c.TemplateId == srcItem.TemplateId);
-                    if (destItem is null)
-                    {
-                        destItem = new GameItem();
-                        World.EventsManager.GameItemCreated(destItem, srcItem.TemplateId);
-                        World.ItemManager.Clone(srcItem, destItem);
-                        World.ItemManager.AddItem(destItem, destSlot);
-                    }
-                    else
-                        World.ItemManager.Clone(srcItem, destItem);
-                }
-                #endregion 货币
-
-                #region 道具
-                srcSlot = srcChar.GetItemBag();
-                destSlot = destChar.GetItemBag();
-                foreach (var srcItem in srcSlot.Children)
-                {
-                    var destItem = destSlot.Children.FirstOrDefault(c => c.TemplateId == srcItem.TemplateId);
-                    if (destItem is null)
-                    {
-                        destItem = new GameItem();
-                        World.EventsManager.GameItemCreated(destItem, srcItem.TemplateId);
-                        World.ItemManager.Clone(srcItem, destItem);
-                        World.ItemManager.AddItem(destItem, destSlot);
-                    }
-                    else
-                        World.ItemManager.Clone(srcItem, destItem);
-                }
-                #endregion 道具
-
-                #region 时装
-                srcSlot = srcChar.GetShizhuangBag();
-                destSlot = destChar.GetShizhuangBag();
-                foreach (var srcItem in srcSlot.Children)
-                {
-                    var destItem = destSlot.Children.FirstOrDefault(c => c.TemplateId == srcItem.TemplateId);
-                    if (destItem is null)
-                    {
-                        destItem = new GameItem();
-                        World.EventsManager.GameItemCreated(destItem, srcItem.TemplateId);
-                        World.ItemManager.Clone(srcItem, destItem);
-                        World.ItemManager.AddItem(destItem, destSlot);
-                    }
-                    else
-                        World.ItemManager.Clone(srcItem, destItem);
-                }
-                #endregion 时装
-                //背包容量
-                {
-                    GameItem srcItem, destItem;
-                    srcItem = srcChar.GetShoulanBag();
-                    destItem = destChar.GetShoulanBag();
-                    destItem.Properties[ProjectConstant.ContainerCapacity] = srcItem.Properties.GetDecimalOrDefault(ProjectConstant.ContainerCapacity);
-                }
-                //等级
-                World.CharManager.SetExp(destChar, srcChar.Properties.GetDecimalOrDefault("exp"));
-            }
+            Task.Run(() => users.ForEach(c => c.Dispose()));
         }
 
         private List<char> _PwdChars;

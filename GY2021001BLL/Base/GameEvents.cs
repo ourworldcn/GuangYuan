@@ -585,14 +585,15 @@ namespace OW.Game
         #region 复制信息相关
 
         /// <summary>
-        /// 
+        /// 复制账号信息。
         /// </summary>
         /// <param name="src"></param>
         /// <param name="dest"></param>
         public virtual void Clone(GameUser src, GameUser dest)
         {
-            dest.Services = Service;
-            dest.DbContext = World.CreateNewUserDbContext();
+            dest.Services ??= Service;
+            var world = dest.Services.GetRequiredService<VWorld>();
+            dest.DbContext ??= world.CreateNewUserDbContext();
             dest.Region = src.Region;
             OwHelper.Copy(src.Properties, dest.Properties);
             Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
@@ -631,7 +632,6 @@ namespace OW.Game
                 dest.GameItems.Add(gi);
                 Clone(item, gi);
             }
-            Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
         }
 
         /// <summary>
@@ -697,7 +697,7 @@ namespace OW.Game
         {
             dest.Id = destId;
             dest.Name = src.Name;
-            dest.ByteArray = (byte[])src.ByteArray.Clone();
+            dest.ByteArray = (byte[])src.ByteArray?.Clone();
             dest.DateTimeValue = src.DateTimeValue;
             dest.DecimalValue = src.DecimalValue;
             dest.GuidValue = src.GuidValue;

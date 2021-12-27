@@ -782,7 +782,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="user"></param>
         /// <param name="pwd"></param>
         /// <returns></returns>
-        public bool SetPwd(GameUser user,string pwd)
+        public bool SetPwd(GameUser user, string pwd)
         {
             using var dwGu = this.LockAndReturnDisposer(user);
             if (dwGu is null) //若没有成功锁定
@@ -1066,7 +1066,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             using var dws = DisposerWrapper.Create(list);   //最终清理
-            using var db = World.CreateNewUserDbContext();
+            using var db = World.CreateNewUserDbContext(); db.Database.SetCommandTimeout(TimeSpan.FromMinutes(1));
             string sql;
             var gcIds = db.GameUsers.Where(c => loginNames.Contains(c.LoginName)).SelectMany(c => c.GameChars.Select(c => c.Id)).ToArray(); //涉及的角色Id
             if (gcIds.Length > 0)
