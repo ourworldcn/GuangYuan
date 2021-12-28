@@ -53,7 +53,13 @@ namespace GuangYuan.GY001.BLL
             }
             var gis = World.ItemManager.ToGameItems(datas.Propertyies);
             var coll = gis.Select(c => (c, c.Properties.GetGuidOrDefault("ptid")));
-            var mail = new GameMail() { };
+            var mail = new GameMail()
+            {
+                Body = datas.Mail.Body,
+                Subject=datas.Mail.Subject,
+                CreateUtc=datas.Mail.CreateUtc,
+            };
+            OwHelper.Copy(datas.Mail.Properties, mail.Properties);
             World.SocialManager.SendMail(mail, datas.Tos.Select(c => OwConvert.ToGuid(c)), SocialConstant.FromSystemId, coll);
         }
 
@@ -230,7 +236,7 @@ namespace GuangYuan.GY001.BLL
                 //    return;
                 //}
             }
-            var ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store).Result;
+            GameUser[] ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store).Result;
             var eve = World.EventsManager;
             Array.ForEach(ary, c => eve.JsonDeserialized(c));
             var lns = ary.Select(c => c.LoginName);

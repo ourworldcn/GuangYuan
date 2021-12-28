@@ -981,6 +981,21 @@ namespace GY2021001WebApi.Models
     #region 账号管理相关
 
     [DataContract]
+    public class DeleteUsersParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要删除的用户的登录名的集合。
+        /// </summary>
+        [DataMember]
+        public List<string> LoginNames { get; set; } = new List<string>();
+    }
+
+    [DataContract]
+    public class DeleteUsersResultDto : ReturnDtoBase
+    {
+    }
+
+    [DataContract]
     public class SendThingsParamsDto : TokenDtoBase
     {
         /// <summary>

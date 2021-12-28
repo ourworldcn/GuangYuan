@@ -340,7 +340,7 @@ namespace OW.Game
             GameThingCreated(gameItem, template, parameters);
             var gpm = World.PropertyManager;
             var gt = gameItem.Template;
-            if (gt.Properties.TryGetValue("Count", out var countObj)) //若指定了初始数量
+            if (gt.Properties.TryGetValue("Count", out var countObj) || gt.Properties.TryGetValue("count", out countObj)) //若指定了初始数量
                 gameItem.Count = Convert.ToDecimal(countObj);
             else
                 gameItem.Count ??= gt.Properties.ContainsKey(gpm.StackUpperLimit) ? 0 : 1;
@@ -622,6 +622,7 @@ namespace OW.Game
             dest.CombatStartUtc = src.CombatStartUtc;
             dest.CurrentDungeonId = src.CurrentDungeonId;
             dest.DisplayName = CnNames.GetName(World.IsHit(0.5));
+            List<GameItem> list = new List<GameItem>();
             foreach (var item in src.GameItems)
             {
                 var gi = new GameItem()
@@ -631,7 +632,9 @@ namespace OW.Game
                 };
                 dest.GameItems.Add(gi);
                 Clone(item, gi);
+                list.Add(gi);
             }
+            dest.DbContext.AddRange(list);
         }
 
         /// <summary>
@@ -667,8 +670,8 @@ namespace OW.Game
             dest.ClientGutsString = src.ClientGutsString;
             dest.ExPropertyString = src.ExPropertyString;
             OwHelper.Copy(src.Properties, dest.Properties);
-
-            Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
+            if (null != dest.DbContext)
+                Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
         }
 
         /// <summary>

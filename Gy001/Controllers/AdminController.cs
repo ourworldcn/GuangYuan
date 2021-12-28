@@ -32,6 +32,24 @@ namespace GY2021001WebApi.Controllers
         }
 
         /// <summary>
+        /// 删除指定登录名的一组用户。目前除了整体回滚数据库以外，无法恢复该操作，请慎重使用。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        public ActionResult<DeleteUsersResultDto> DeleteUsers(DeleteUsersParamsDto model)
+        {
+            var result = new DeleteUsersResultDto();
+            result.HasError = !World.CharManager.Delete(model.LoginNames);
+            if (result.HasError)
+            {
+                result.ErrorCode = VWorld.GetLastError();
+                result.DebugMessage = VWorld.GetLastErrorMessage();
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 复制账号。
         /// </summary>
         /// <param name="model"></param>

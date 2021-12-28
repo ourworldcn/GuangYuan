@@ -1315,9 +1315,9 @@ namespace OW.Game.Item
                         where parent != null
                         select (g, parent)).ToList();
 
-            foreach (var item in coll)
+            foreach (var (g, parent) in coll)
             {
-                AddItems(item.g, item.parent, re, datas.ChangeItems);
+                AddItems(g, parent, re, datas.ChangeItems);
             }
             if (re.Count > 0)  //若需要发送邮件
             {

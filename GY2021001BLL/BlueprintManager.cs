@@ -693,7 +693,7 @@ namespace GuangYuan.GY001.BLL
                 //gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
                 if (gameItem.TemplateId == ProjectConstant.MainControlRoomSlotId) //如果是主控室升级
                 {
-                    IEnumerable<MainbaseUpgradePrv> coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv + 1);
+                    IEnumerable<MainbaseUpgradePrv> coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv);
                     List<GameItem> addItems = new List<GameItem>();
                     foreach (MainbaseUpgradePrv item in coll)
                     {

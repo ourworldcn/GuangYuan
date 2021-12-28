@@ -52,6 +52,13 @@
             与账号相关的操作控制器。
             </summary>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.DeleteUsers(GY2021001WebApi.Models.DeleteUsersParamsDto)">
+            <summary>
+            删除指定登录名的一组用户。目前除了整体回滚数据库以外，无法恢复该操作，请慎重使用。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:GY2021001WebApi.Controllers.AdminController.CloneAccount(GY2021001WebApi.Models.CloneAccountParamsDto)">
             <summary>
             复制账号。
@@ -1427,6 +1434,11 @@
             如果是空集合则表示没有发送邮件。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.DeleteUsersParamsDto.LoginNames">
+            <summary>
+            要删除的用户的登录名的集合。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.SendThingsParamsDto.Propertyies">
             <summary>
             要送的物品，tid&lt;数字后缀&gt;=模板物品Id，count&lt;数字后缀&gt;=数量，如果是生物则用htid,btid分别指出头身模板Id。
@@ -2696,6 +2708,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

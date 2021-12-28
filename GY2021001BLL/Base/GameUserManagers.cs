@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -11,6 +12,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -1067,30 +1069,56 @@ namespace GuangYuan.GY001.BLL
             }
             using var dws = DisposerWrapper.Create(list);   //最终清理
             using var db = World.CreateNewUserDbContext(); db.Database.SetCommandTimeout(TimeSpan.FromMinutes(1));
-            string sql;
-            var gcIds = db.GameUsers.Where(c => loginNames.Contains(c.LoginName)).SelectMany(c => c.GameChars.Select(c => c.Id)).ToArray(); //涉及的角色Id
-            if (gcIds.Length > 0)
-            {
-                var sqlWhereIn = $" ('{string.Join("','", gcIds.Select(c => c.ToString()))}')";
-                sql = $"DELETE FROM [dbo].[GameItems] where [OwnerId] in {sqlWhereIn}"; //清理角色下属物品
-                db.Database.ExecuteSqlRaw(sql);
-                sql = $"DELETE FROM [dbo].[SocialRelationships] WHERE [Id] in {sqlWhereIn} OR [Id2] in {sqlWhereIn}";
-                db.Database.ExecuteSqlRaw(sql); //清理角色的社交关系
-
-                sql = $"DELETE FROM [dbo].[GameUsers] where [LoginName] in ('{string.Join("','", loginNames.Select(c => c.ToString()))}')";
-                db.Database.ExecuteSqlRaw(sql); //清理用户及角色对象
-            }
-            sql = $"DELETE FROM [dbo].[GameItems] where   [OwnerId] IS NULL and NOT EXISTS (SELECT 1 FROM [dbo].[GameItems] as st WHERE [dbo].[GameItems].[ParentId]=st.ID)"; //清理残余物品对象;
-            while (db.Database.ExecuteSqlRaw(sql) > 0) ;
-            var sqlGen = "DELETE FROM [dbo].[ExtendProperties]" +
-                " WHERE not exists(select * from[dbo].[GameItems] as [gis] where gis.Id =[ExtendProperties].[Id]) and" +
-                " not exists(select * from [dbo].[GameChars] as [gcs] where gcs.Id =[ExtendProperties].[Id])" +
-                " and not exists(select * from [dbo].[GameUsers] as [gus] where gus.Id =[ExtendProperties].[Id])";   //清理所有没有依附主体的扩展对象
-            db.Database.ExecuteSqlRaw(sqlGen);
-
+            DeleteCore(loginNames, db);
             return true;
         }
 
+        /// <summary>
+        /// 删除指定用户名的一组用户及相关所有数据。调用者要自己处理缓存和锁定问题。
+        /// </summary>
+        /// <param name="loginNames"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        protected bool DeleteCore(IEnumerable<string> loginNames, DbContext context)
+        {
+            List<Guid> ids = new List<Guid>();  //所有删除实体的Id集合。
+            var userIds = context.Set<GameUser>().Where(c => loginNames.Contains(c.LoginName)).Select(c => c.Id).ToArray();    //删除的用户id集合
+            if (userIds.Length <= 0)
+                return true;
+            ids.AddRange(userIds);
+            var charIds = context.Set<GameChar>().Where(c => userIds.Contains(c.GameUserId)).Select(c => c.Id).ToArray();  //删除的角色Id集合
+            ids.AddRange(charIds);
+            //Remove<GameUser>(c => userIds.Contains(c.Id), context);
+            var str = $"DELETE FROM [dbo].[GameUsers] WHERE [Id] in ('{string.Join("','", userIds)}')";
+            context.Database.ExecuteSqlRaw(str); //删除用户和角色
+
+            if (0 <= charIds.Length)    //若有要删除的角色
+            {
+                var itemIds = Remove<GameItem>(c => c.OwnerId.HasValue && charIds.Contains(c.OwnerId.Value), context);  //角色直接拥有的对象Id集合
+                while (itemIds.Count > 0)
+                {
+                    ids.AddRange(itemIds);
+                    itemIds = Remove<GameItem>(c => c.ParentId.HasValue && itemIds.Contains(c.ParentId.Value), context);   //需要删除的物品对象id集合
+                }
+            }
+
+            //删除扩展属性
+            str = $"DELETE FROM [dbo].[ExtendProperties] WHERE [Id] in ('{string.Join("','", ids)}')";
+            context.Database.ExecuteSqlRaw(str);
+            return true;
+        }
+
+        private List<Guid> Remove<T>(Expression<Func<T, bool>> whereFunc, DbContext context) where T : GuidKeyObjectBase
+        {
+            var result = context.Set<T>().Where(whereFunc).Select(c => c.Id).ToList();
+            if (result.Count > 0)
+            {
+                var tableName = context.Model.FindEntityType(typeof(T)).GetTableName();
+                var sqlStr = $"DELETE FROM {tableName} WHERE {nameof(GuidKeyObjectBase.Id)} in ('{string.Join("','", result)}')";
+                context.Database.ExecuteSqlRaw(sqlStr);
+            }
+            return result;
+        }
         #endregion 注册登入登出相关
 
         /// <summary>
@@ -1394,7 +1422,14 @@ namespace GuangYuan.GY001.BLL
             return manager.LockAndReturnDisposer(gameUser, timeout);
         }
 
-
+        //public static List<Guid> RemoveAndReturnIds<T>(this DbSet<T> set, Func<T, bool> whereFunc) where T : GuidKeyObjectBase
+        //{
+        //    var result = set.Where(whereFunc).Select(c => c.Id).ToList();
+        //    if (result.Count > 0)
+        //    {
+        //    }
+        //    return result;
+        //}
         #endregion 项目特定
 
     }

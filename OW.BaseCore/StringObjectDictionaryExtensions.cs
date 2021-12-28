@@ -89,8 +89,13 @@ namespace System.Collections.Generic
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetDecimal(this IReadOnlyDictionary<string, object> dic, string name, out decimal result)
         {
-            result = default;
-            return dic.TryGetValue(name, out var obj) && OwConvert.TryGetDecimal(obj, out result);
+            if (dic.TryGetValue(name, out var obj) && OwConvert.TryGetDecimal(obj, out result))
+                return true;
+            else
+            {
+                result = default;
+                return false;
+            }
         }
 
         /// <summary>

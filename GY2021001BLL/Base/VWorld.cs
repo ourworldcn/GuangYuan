@@ -253,7 +253,7 @@ namespace OW.Game
                 }
                 if (innerWorkdItems.Count > 0) //容错
                 {
-                    workItem = innerWorkdItems[innerWorkdItems.Count - 1];
+                    workItem = innerWorkdItems[^1];
                     try
                     {
                         if (workItem.Item2 is string sql)   //若是一个需要立即执行的命令

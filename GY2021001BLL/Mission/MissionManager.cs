@@ -472,7 +472,7 @@ namespace OW.Game.Mission
                 var gim = World.ItemManager;
                 //送物品
                 var gis = gim.ToGameItems(template.Properties, "reward");
-                if (gis.Count() > 0)
+                if (gis.Any())
                 {
                     //加入物品
                     AddItemsOrMailDatas data = new AddItemsOrMailDatas(datas.World, datas.GameChar);

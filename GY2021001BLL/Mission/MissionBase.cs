@@ -56,10 +56,6 @@ namespace OW.Game.Mission
                     var gis = World.ItemManager.ToGameItems(tt, "m");
                     _TemplateMetrics = new List<decimal> { };
                     var ary = tt.GetValuesWithoutPrefix("m");
-                    const string tid = "tid";
-                    const string count = "count";
-                    const string htid = "htid";
-                    const string btid = "btid";
                     foreach (var item in ary)
                     {
 

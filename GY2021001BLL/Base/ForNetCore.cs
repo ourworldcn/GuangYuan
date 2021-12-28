@@ -197,7 +197,7 @@ namespace GuangYuan.GY001.BLL
             var b1 = str1[^0..];
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            var prefix = "vip";
+            //world.CharManager.DeleteCore(new string[] { "zctest102","zctest101"}, db);
             //var query = db.Set<GameUser>().Where(c => c.LoginName.StartsWith(prefix)).OrderBy(c => c.LoginName.Remove(prefix.Length)).Select(c => (c.LoginName));    //获取已有登录名
             //var coll = query.Take(1).ToArray();
         }

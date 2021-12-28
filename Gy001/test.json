@@ -3,97 +3,65 @@
     {
       "Subject": null,
       "Body": null,
-      "CreateUtc": "2021-12-22T07:35:17.2407777",
+      "CreateUtc": "2021-12-28T02:29:31.5256998",
       "From": {
-        "Id": "FUGD0X2GOke2/Jpq1xL7/g==",
+        "Id": "EU2ul2FlrU6fFP8IYogl0w==",
         "DisplayName": "System",
         "ThingId": "D6i5IUifCkGAbhcJrRAlIA==",
         "Kind": 1
       },
       "To": [
         {
-          "Id": "6HHqxjmNlUmG6df/IWGO+g==",
+          "Id": "Qh4tOi9NakG+lcdqreaGNQ==",
           "DisplayName": null,
-          "ThingId": "cRGQzmKBdky6S/Ul71YqJw==",
+          "ThingId": "6zgsN3hgg0W2gWTZ4Vn2/w==",
           "Kind": 2
         }
       ],
-      "Attachmentes": [
-        {
-          "IdDeleted": false,
-          "Id": "+N63YsjsyEqZ+oRi8KUcuA==",
-          "Properties": {
-            "TemplateId": "8c235021-79a9-4bdd-81e1-2dd88a5d450f",
-            "Count": 1,
-            "PTId": "2baa3fcd-2be8-4096-916a-ff2d47e084ef"
-          }
-        },
-        {
-          "IdDeleted": false,
-          "Id": "4NPtvK8ZIEytxplL0Ilw+Q==",
-          "Properties": {
-            "TemplateId": "a9bd0e89-1105-4a52-982a-97e6ee4ad577",
-            "Count": 1,
-            "PTId": "2baa3fcd-2be8-4096-916a-ff2d47e084ef"
-          }
-        },
-        {
-          "IdDeleted": false,
-          "Id": "lw/EzbjdkEmxaLuDV7zWzg==",
-          "Properties": {
-            "TemplateId": "e62e432b-a29c-4ddc-b3e0-c8577769ace2",
-            "Count": 1,
-            "PTId": "2baa3fcd-2be8-4096-916a-ff2d47e084ef"
-          }
-        }
-      ],
-      "Id": "CRRZ2o1qt0a0LlNqE6t3Tw==",
-      "Properties": {
-        "FromSystem": 1
-      }
+      "Attachmentes": [],
+      "Id": "zdO6hMcr7UWIw07IJxofDg==",
+      "Properties": { "FromSystem": 1 }
     },
     {
-      "Subject": null,
-      "Body": null,
-      "CreateUtc": "2021-12-22T07:35:17.0493275",
+      "Subject": "带附件,不使用邮件模板",
+      "Body": "2222222222222",
+      "CreateUtc": "2021-12-28T02:36:57.4914643",
       "From": {
-        "Id": "uL4yzwLlDEWXzLVzhaO32Q==",
+        "Id": "eJNNoUyn9k2h6xS3PqiYxQ==",
         "DisplayName": "System",
         "ThingId": "D6i5IUifCkGAbhcJrRAlIA==",
         "Kind": 1
       },
       "To": [
         {
-          "Id": "vtedyKYpckK96O+2flhl+Q==",
+          "Id": "uP13LX+lJEitS1s/u9Xh7A==",
           "DisplayName": null,
-          "ThingId": "cRGQzmKBdky6S/Ul71YqJw==",
+          "ThingId": "6zgsN3hgg0W2gWTZ4Vn2/w==",
           "Kind": 2
         }
       ],
       "Attachmentes": [
         {
           "IdDeleted": false,
-          "Id": "HLK1lNANVUiGDTrrCH4ioA==",
+          "Id": "WFhMjJeGd0eVchFAOrWDvg==",
           "Properties": {
-            "TemplateId": "2b83c942-1e9c-4b45-9816-ad2cbf0e473f",
-            "Count": 10000,
-            "PTId": "7066a96d-f514-42c7-a30e-5e7567900ad4"
+            "TemplateId": "e3ae9c7b-f2d6-413e-a32a-720bc394d957",
+            "Count": 3,
+            "PTId": "2baa3fcd-2be8-4096-916a-ff2d47e084ef"
           }
         },
         {
           "IdDeleted": false,
-          "Id": "M+zJIJz6REuTdkMkGuyKMg==",
+          "Id": "AJk/d0uHx0mx03el58sLSA==",
           "Properties": {
-            "TemplateId": "3e365bec-f83d-467d-a58c-9eba43458682",
-            "Count": 1000,
-            "PTId": "7066a96d-f514-42c7-a30e-5e7567900ad4"
+            "TemplateId": "dcffb9a7-088d-4237-b943-72d7336c5ee8",
+            "Count": 3,
+            "PTId": "2baa3fcd-2be8-4096-916a-ff2d47e084ef"
           }
         }
       ],
-      "Id": "8/+vnCkX5ECXB7ZwDgCTJg==",
-      "Properties": {
-        "FromSystem": 1
-      }
+      "Id": "Cs0yP6TYwUy0vaSO9Dopuw==",
+      "Properties": { "FromSystem": 1 }
     }
   ],
   "HasError": false,

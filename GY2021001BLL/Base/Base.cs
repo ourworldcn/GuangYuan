@@ -44,6 +44,9 @@ namespace GuangYuan.GY001.BLL
     public static class ErrorCodes
     {
         public const int NO_ERROR = 0;
+        /// <summary>
+        /// 超时，没有在指定时间内完成操作，通常是锁定超时。
+        /// </summary>
         public const int WAIT_TIMEOUT = 258;
         public const int ERROR_INVALID_TOKEN = 315;
         public const int ERROR_NO_SUCH_USER = 1317;
