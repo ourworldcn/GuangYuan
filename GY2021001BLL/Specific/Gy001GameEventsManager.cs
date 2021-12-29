@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 
@@ -380,47 +381,93 @@ namespace OW.Game
             }
         }
 
+        private static readonly string[] _GameItemCreatedKeyNames = new string[] { "htid", "htt", "btid", "btt", "neatk", "nemhp", "neqlt" };
         /// <summary>
         /// 创建物品/道具。
         /// </summary>
         /// <param name="gameItem"></param>
-        /// <param name="parameters">理解tid,ptid,count,htid,btid,neatk,nemhp,neqlt属性，若htid,btid都存在则自动创建相应的头和身体。</param>
-        public override void GameItemCreated([NotNull] GameItem gameItem, [NotNull] IReadOnlyDictionary<string, object> parameters)
+        /// <param name="propertyBag">理解"htid", "htt", "btid", "btt", "neatk", "nemhp", "neqlt" 属性，
+        /// htt优先于htid,btt优先于btid，头身都存在则自动创建相应的头和身体。</param>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public override void GameItemCreated([NotNull] GameItem gameItem, [NotNull] IReadOnlyDictionary<string, object> propertyBag)
         {
-            base.GameItemCreated(gameItem, parameters);
+            base.GameItemCreated(gameItem, propertyBag);
             if (gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi)   //若是生物且可能有相应的初始化参数
             {
                 var gitm = World.ItemTemplateManager;
-                //获取头模板
-                var htid = parameters.GetGuidOrDefault("htid");
-                var headTemplate = gitm.GetTemplateFromeId(htid);
-                if (headTemplate is null)
-                    return;
-                //获取身体模板
-                var btid = parameters.GetGuidOrDefault("btid");
-                var bodyTemplate = gitm.GetTemplateFromeId(btid);
-                if (bodyTemplate is null)
-                    return;
-                //创建头对象
-                var head = new GameItem() { };
-                GameItemCreated(head, headTemplate, gameItem, null, null);
-                head.Count = 1;
-                gameItem.Children.Add(head);
-                //创建身体对象
-                var body = new GameItem();
-                GameItemCreated(body, bodyTemplate, gameItem, null, null);
-                body.Count = 1;
-                gameItem.Children.Add(body);
                 //处理资质数值
-                if (parameters.TryGetValue("neatk", out var neatkObj) && OwConvert.TryGetDecimal(neatkObj, out var neatk))    //若指定了攻击资质
+                if (propertyBag.TryGetDecimal("neatk", out var neatk))    //若指定了攻击资质
                     gameItem.Properties["neatk"] = neatk;
-                if (parameters.TryGetValue("nemhp", out var nemhpObj) && OwConvert.TryGetDecimal(nemhpObj, out var nemhp))    //若指定了血量资质
+                if (propertyBag.TryGetDecimal("nemhp", out var nemhp))    //若指定了血量资质
                     gameItem.Properties["nemhp"] = nemhp;
-                if (parameters.TryGetValue("neqlt", out var neqltObj) && OwConvert.TryGetDecimal(neqltObj, out var neqlt))    //若指定了质量资质
+                if (propertyBag.TryGetDecimal("neqlt", out var neqlt))    //若指定了质量资质
                     gameItem.Properties["neqlt"] = neqlt;
+                //处理身体和头的数据
+                //获取头模板
+                GameItemTemplate htt = null;
+                if (propertyBag.TryGetValue("htt", out var httObj))   //若直接找到了头模板
+                    htt = httObj as GameItemTemplate;
+                if (htt is null && propertyBag.TryGetGuid("htid", out var htid))   //若找到头模板id
+                    htt = gitm.GetTemplateFromeId(htid);
+                //获取身体模板
+                GameItemTemplate btt = null;
+                if (propertyBag.TryGetValue("htt", out var bttObj))   //若直接找到了头模板
+                    btt = bttObj as GameItemTemplate;
+                if (btt is null && propertyBag.TryGetGuid("btid", out var btid))   //若找到头模板id
+                    btt = gitm.GetTemplateFromeId(btid);
+                if (null != btt && null != htt)   //若头身模板都已找到
+                {
+                    var head = new GameItem() { };    //头对象
+                    var body = new GameItem() { };    //身体对象
+                    gameItem.Children.Add(head);
+                    gameItem.Children.Add(body);
+                    var subDic = new Dictionary<string, object>(propertyBag);   //属性包
+                    foreach (var item in _GameItemCreatedKeyNames)  //去掉已经识别处理的属性
+                        subDic.Remove(item);
+                    subDic["parent"] = gameItem;    //指向自己
+                    subDic["count"] = 1m;    //数量
+                    //初始化头对象
+                    subDic["tt"] = htt;
+                    GameItemCreated(head, subDic);
+                    //初始化身体对象
+                    subDic["tt"] = btt;
+                    GameItemCreated(body, subDic);
+                }
             }
         }
         #endregion 创建后初始化
+
+        #region 转换为字典属性包
+
+        /// <summary>
+        /// 将指定对象的主要属性提取到指定字典中，以备可以使用<see cref="GameItemCreated(GameItem, IReadOnlyDictionary{string, object})"/>进行恢复。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="propertyBag"></param>
+        /// <param name="prefix"></param>
+        /// <param name="suffix"></param>
+        public override void Copy(GameItem gameItem, IDictionary<string, object> propertyBag, string prefix = null, string suffix = null)
+        {
+            //"htid", "htt", "btid", "btt", "neatk", "nemhp", "neqlt"
+            base.Copy(gameItem, propertyBag, prefix, suffix);
+            prefix ??= string.Empty;
+            suffix ??= string.Empty;
+            propertyBag[$"{prefix}tid{suffix}"] = gameItem.TemplateId.ToString();
+            var props = gameItem.Properties;
+            if (gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi)   //若是生物且可能有相应的初始化参数
+            {
+                //处理资质数值
+                if (props.TryGetDecimal("neatk", out var neatk))    //若指定了攻击资质
+                    propertyBag[$"{prefix}neatk{suffix}"] = neatk;
+                if (props.TryGetDecimal("nemhp", out var nemhp))    //若指定了血量资质
+                    propertyBag[$"{prefix}nemhp{suffix}"] = nemhp;
+                if (props.TryGetDecimal("neqlt", out var neqlt))    //若指定了质量资质
+                    propertyBag[$"{prefix}neqlt{suffix}"] = neqlt;
+                propertyBag[$"{prefix}htid{suffix}"] = World.ItemManager.GetHeadTemplate(gameItem).Id.ToString();
+                propertyBag[$"{prefix}btid{suffix}"] = World.ItemManager.GetBodyTemplate(gameItem).Id.ToString();
+            }
+        }
+        #endregion 转换为字典属性包
 
         /// <summary>
         /// 未发送给客户端的数据保存在<see cref="GameThingBase.ExtendProperties"/>中使用的属性名称。

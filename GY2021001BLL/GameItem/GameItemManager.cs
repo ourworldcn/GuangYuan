@@ -707,6 +707,30 @@ namespace OW.Game.Item
         }
 
         /// <summary>
+        /// 加入非堆叠物品，
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="parent"></param>
+        /// <param name="changeItems"></param>
+        private bool AddItemNoStack(GameItem gameItem, GameObjectBase parent, ICollection<ChangeItem> changeItems = null)
+        {
+            Debug.Assert(!gameItem.IsStc(out var stc),"只能针对非堆叠物品。");
+            gameItem.Count ??= 1;
+            var upper = GetCapacity(parent) ?? -1;    //TO DO 暂时未限制是否是容器
+
+            IList<GameItem> children = GetChildrenCollection(parent);
+            if (-1 != upper && children.Count >= upper)  //若超过容量
+            {
+                return false;
+            }
+            var succ = ForcedAdd(gameItem, parent);
+            changeItems?.AddToAdds(parent.Id, gameItem);
+            if (this.IsMounts(gameItem)) //若是坐骑
+                World.CombatManager.UpdatePveInfo(gameItem.GameChar);
+            return true;
+        }
+
+        /// <summary>
         /// 按堆叠要求将物品拆分未多个。
         /// </summary>
         /// <param name="gameItem">要拆分的物品。返回时该物品<see cref="GameItem.Count"/>可能被改变。
@@ -1748,10 +1772,10 @@ namespace OW.Game.Item
                 writer.WriteNull(nameof(value.OwnerId));
             else
                 writer.WriteString(nameof(value.OwnerId), value.OwnerId.Value);
-            writer.WriteString(nameof(value.Properties),value.PropertiesString);
+            writer.WriteString(nameof(value.Properties), value.PropertiesString);
 
             writer.WritePropertyName(nameof(value.Children));
-            JsonSerializer.Serialize(writer,value.Children,typeof(List<GameItem>), options);
+            JsonSerializer.Serialize(writer, value.Children, typeof(List<GameItem>), options);
 
             writer.WriteEndObject();
         }

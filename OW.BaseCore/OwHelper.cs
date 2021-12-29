@@ -44,13 +44,20 @@ namespace System
         /// <typeparam name="TValue"></typeparam>
         /// <param name="src"></param>
         /// <param name="dest"></param>
+        /// <param name="predicate">过滤器，返回false则不会复制，省略或者为null，则不调用过滤器。</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Copy<Tkey, TValue>(IReadOnlyDictionary<Tkey, TValue> src, IDictionary<Tkey, TValue> dest)
+        public static void Copy<Tkey, TValue>(IReadOnlyDictionary<Tkey, TValue> src, IDictionary<Tkey, TValue> dest, Func<Tkey, bool> predicate = null)
         {
-            foreach (var item in src)
-            {
-                dest[item.Key] = item.Value;
-            }
+            if (predicate is null)
+                foreach (var item in src)
+                    dest[item.Key] = item.Value;
+            else
+                foreach (var item in src)
+                {
+                    if (!predicate(item.Key))
+                        continue;
+                    dest[item.Key] = item.Value;
+                }
         }
 
         /// <summary>

@@ -348,25 +348,15 @@ namespace GuangYuan.GY001.BLL
         public void SendMail(GameMail mail, IEnumerable<Guid> tos, Guid senderId, IEnumerable<(GameItem, Guid)> gameItems)
         {
             var gim = World.ItemManager;
+            var eveMng = World.EventsManager;
             foreach (var item in gameItems)
             {
-                // tid={物品模板Id},HTId={头模板Id},btid={身体模板Id},count=物品数量，ptid=物品所属容器的模板Id,neatk=攻击资质,nemhp=血量资质,neqlt=质量资质。
+                // tid={物品模板Id},htid={头模板Id},btid={身体模板Id},count=物品数量，ptid=物品所属容器的模板Id,neatk=攻击资质,nemhp=血量资质,neqlt=质量资质。
                 var att = new GameMailAttachment();
                 var gi = item.Item1;
-                if (gim.IsMounts(gi))  //若是动物
-                {
-                    att.Properties["htid"] = gim.GetHeadTemplate(gi).Id.ToString();
-                    att.Properties["btid"] = gim.GetBodyTemplate(gi).Id.ToString();
-                    att.Properties["neatk"] = gi.Properties.GetValueOrDefault("neatk");
-                    att.Properties["nemhp"] = gi.Properties.GetValueOrDefault("nemhp");
-                    att.Properties["neqlt"] = gi.Properties.GetValueOrDefault("neqlt");
-                }
-                else
-                {
-                    att.Properties["tid"] = gi.TemplateId.ToString();
-                }
-                att.Properties["count"] = gi.Count ?? 1;
+                eveMng.Copy(gi, att.Properties);
                 att.Properties["ptid"] = item.Item2.ToString();
+                att.Properties["count"] = gi.Count ?? 1;
                 mail.Attachmentes.Add(att);
             }
             SendMail(mail, tos, senderId);
@@ -408,12 +398,9 @@ namespace GuangYuan.GY001.BLL
                         results?.Add((item.Id, GetAttachmenteItemResult.Done));
                         continue;
                     }
-                    var tid = item.Properties.GetGuidOrDefault(SocialConstant.SentTIdPName, Guid.Empty);
-                    var count = item.Properties.GetDecimalOrDefault(SocialConstant.SentCountPName, decimal.Zero);
                     var ptid = item.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty);
                     var gameItem = new GameItem();  //物品
-                    World.EventsManager.GameItemCreated(gameItem, tid, null, null, null);
-                    gameItem.Count = count;
+                    World.EventsManager.GameItemCreated(gameItem, item.Properties);
                     GameObjectBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
                     if (parent is null)
                     {

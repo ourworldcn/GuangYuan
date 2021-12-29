@@ -373,20 +373,56 @@ namespace OW.Game
 
         }
 
+        private static readonly string[] _GameItemCreatedKeyNames = new string[] { "tid", "tt", "count", "Count", "ownerid", "parent", "ptid" };
+
         /// <summary>
         /// 初始化一个物品，
         /// </summary>
         /// <param name="gameItem"></param>
-        /// <param name="parameters">理解tid,ptid,count三个属性。</param>
-        public virtual void GameItemCreated([NotNull] GameItem gameItem, [NotNull] IReadOnlyDictionary<string, object> parameters)
+        /// <param name="propertyBag">tid(模板id),tt(直接指定模板对象，该属性优先于tid属性，必须是GameThingTemplateBase对象或其派生类),未指定模板不会报错。
+        /// count或Count(数量),如果存在则强行指定数量。否则若指定了模板则在模板内寻找数量属性，再次，在GameThingCreated后Count属性还是空，则堆叠物品初始化为0，非堆叠物品初始化为1.
+        /// ptid(父容器模板id),parent(直接指定父容器对象，必须是GameItem或其派生类),ownerid(拥有者id属性)属性。ownerid最优先，它存在则忽略另外两个属性，parent次之，忽略ptid属性，两者都没有则会试图找到ptid属性并记录以备之后使用
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public virtual void GameItemCreated([NotNull] GameItem gameItem, [NotNull] IReadOnlyDictionary<string, object> propertyBag)
         {
-            var tid = parameters.GetGuidOrDefault("tid");
-            var template = World.ItemTemplateManager.GetTemplateFromeId(tid);
-            var count = parameters.GetDecimalOrDefault("count");
-            var ptid = parameters.GetGuidOrDefault("ptid");
-            gameItem.Count = count;
-            gameItem.Properties["ptid"] = ptid.ToString();
-            GameItemCreated(gameItem, template, null, null, parameters);
+            //设置本类型特有属性
+            //设置模板
+            if (propertyBag.TryGetValue("tt", out var ttObj) && ttObj is GameThingTemplateBase tt)
+                GameThingCreated(gameItem, tt, propertyBag);
+            else if (propertyBag.TryGetGuid("tid", out var tid))
+                GameThingCreated(gameItem, tid, propertyBag);
+            //设置数量
+            var gpm = World.PropertyManager;
+            tt = gameItem.Template;
+            if (propertyBag.TryGetDecimal("Count", out var count) || propertyBag.TryGetDecimal("count", out count)) //若指定了初始数量
+                gameItem.Count = count;
+            else if (null != tt)
+            {
+                if (tt.Properties.TryGetDecimal("Count", out count) || tt.Properties.TryGetDecimal("count", out count)) //若制定了模板且其中指定了初始数量
+                    gameItem.Count = count;
+                else
+                    gameItem.Count ??= tt.Properties.ContainsKey(gpm.StackUpperLimit) ? 0 : 1;
+            }
+
+            //设置导航关系
+            if (propertyBag.TryGetGuid("ownerid", out var ownerid)) //若指定了拥有者id
+                gameItem.OwnerId = ownerid;
+            else if (propertyBag.TryGetValue("parent", out var parentObj) && parentObj is GameItem parent) //若指定了父容器
+            {
+                gameItem.ParentId = parent.Id;
+                gameItem.Parent = parent;
+            }
+            else if (propertyBag.TryGetValue("ptid", out var ptid))
+                gameItem.Properties["ptid"] = ptid;
+            //追加子对象
+            if (tt.ChildrenTemplateIds.Count > 0)
+            {
+                gameItem.Children.AddRange(tt.ChildrenTemplateIds.Select(c => new GameItem()));
+                var subpb = new Dictionary<string, object>(propertyBag.Where(c => !_GameItemCreatedKeyNames.Contains(c.Key)));  //去掉已经识别处理的属性
+                subpb["parent"] = gameItem; //指向自己作为父容器
+                gameItem.Children.ForEach(c => GameItemCreated(c, subpb));
+            }
         }
 
         /// <summary>
@@ -452,6 +488,12 @@ namespace OW.Game
         }
 
         #region 保护方法
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="templateId"></param>
+        /// <param name="parameters"></param>
         protected void GameThingCreated(GameThingBase thing, Guid templateId, IReadOnlyDictionary<string, object> parameters)
         {
             var template = World.ItemTemplateManager.GetTemplateFromeId(templateId);
@@ -493,6 +535,34 @@ namespace OW.Game
         #endregion 保护方法
 
         #endregion 创建后初始化
+
+        #region 转换为字典属性包
+
+        /// <summary>
+        /// 将指定对象的主要属性提取到指定字典中，以备可以使用<see cref="GameItemCreated(GameItem, IReadOnlyDictionary{string, object})"/>进行恢复。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="propertyBag"></param>
+        /// <param name="prefix"></param>
+        /// <param name="suffix"></param>
+        public virtual void Copy(GameItem gameItem, IDictionary<string, object> propertyBag, string prefix = null, string suffix = null)
+        {
+            //{ "tid", "tt", "count", "Count", "ownerid", "parent", "ptid" };
+            prefix ??= string.Empty;
+            suffix ??= string.Empty;
+            propertyBag[$"{prefix}tid{suffix}"] = gameItem.TemplateId.ToString();
+            if (gameItem.Count != null)
+                propertyBag[$"{prefix}count{suffix}"] = gameItem.Count;
+            if (gameItem.OwnerId != null)
+                propertyBag[$"{prefix}ownerid{suffix}"] = gameItem.OwnerId;
+            else if (gameItem.Parent != null)
+                propertyBag[$"{prefix}ptid{suffix}"] = gameItem.Parent.TemplateId.ToString();
+            else if (gameItem.ParentId != null)
+                propertyBag[$"{prefix}ptid{suffix}"] = gameItem.ParentId.Value.ToString();
+            else if (gameItem.Properties.TryGetGuid("ptid", out var ptid))
+                propertyBag[$"{prefix}ptid{suffix}"] = ptid.ToString();
+        }
+        #endregion 转换为字典属性包
 
         #region 加载后初始化
         public virtual void GameItemLoaded(GameItem gameItem)

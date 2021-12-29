@@ -140,11 +140,17 @@ namespace System
                 result = id;
                 return true;
             }
-            else if (obj is string str && Guid.TryParse(str, out result))
+            else if (obj is string str)
             {
-                return true;
+                if (str.EndsWith("=="))
+                {
+                    result = ToGuid(str);
+                    return true;
+                }
+                else if (Guid.TryParse(str, out result))
+                    return true;
             }
-            else if (obj is byte[] ary && ary.Length == 16)
+            if (obj is byte[] ary && ary.Length == 16)
             {
                 try
                 {
