@@ -247,7 +247,7 @@ namespace GuangYuan.GY001.TemplateDb
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         //public bool TryGetUpperBound(GameExpressionRuntimeEnvironment env, out decimal result)
         //{
-        //    if (!CountUpperBoundExpression.TryGetValue(env, out var obj) || !OwConvert.TryGetDecimal(obj, out result))
+        //    if (!CountUpperBoundExpression.TryGetValue(env, out var obj) || !OwConvert.TryToDecimal(obj, out result))
         //    {
         //        result = decimal.Zero;
         //        return false;
@@ -258,7 +258,7 @@ namespace GuangYuan.GY001.TemplateDb
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         //public bool TryGetLowerBound(GameExpressionRuntimeEnvironment env, out decimal result)
         //{
-        //    if (!CountLowerBoundExpression.TryGetValue(env, out var obj) || !OwConvert.TryGetDecimal(obj, out result))
+        //    if (!CountLowerBoundExpression.TryGetValue(env, out var obj) || !OwConvert.TryToDecimal(obj, out result))
         //    {
         //        result = decimal.Zero;
         //        return false;

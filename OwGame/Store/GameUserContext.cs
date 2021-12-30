@@ -195,6 +195,22 @@ namespace OW.Game.Store
             }
         }
 
+        private Dictionary<string, object> _RuntimeProperties;
+
+        /// <summary>
+        /// 存储一些运行时需要用的到的属性，使用者自己定义。
+        /// </summary>
+        [NotMapped, JsonIgnore]
+        public Dictionary<string, object> RuntimeProperties
+        {
+            get => _RuntimeProperties ??= new Dictionary<string, object>();
+        }
+
+        /// <summary>
+        /// 存储RuntimeProperties属性的后备字段是否已经初始化。
+        /// </summary>
+        public bool IsCreatedOfRuntimeProperties => _RuntimeProperties != null;
+
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
@@ -212,6 +228,8 @@ namespace OW.Game.Store
                 // TODO: 将大型字段设置为 null
                 _Base64IdString = null;
                 _IdString = null;
+                if (null != _RuntimeProperties)
+                    _RuntimeProperties = null;
                 base.Dispose(disposing);
             }
         }

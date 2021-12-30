@@ -375,10 +375,6 @@ namespace GuangYuan.GY001.BLL
                         BuyPveCount(datas);
                         succ = true;
                         break;
-                    case "6a0c5697-4228-4ec9-a69e-28d61bd52b32":    //坐骑等级提升
-                        MountsLevelUp(datas);
-                        succ = true;
-                        break;
                     case "3af71bc0-db28-4f42-a1ca-38fb5b5030cc":    //攻击神纹升级
                     case "d40c1818-06cf-4d19-9f6e-5ba54472b6fc":    //血量神纹升级
                     case "dd999eee-9d4e-40de-bff9-16d5054d139b":    //质量神纹升级
@@ -428,6 +424,7 @@ namespace GuangYuan.GY001.BLL
             return succ;
         }
 
+        const string Day30CountKeyName = "Day30Count";
         /// <summary>
         /// 三十日签到礼包。
         /// </summary>
@@ -435,26 +432,34 @@ namespace GuangYuan.GY001.BLL
         [BlueprintMethod("c86c1851-2e6e-45ad-9a16-4a77cc81550b")]
         private void SignInOfDay7(ApplyBlueprintDatas datas)
         {
-            const string CountKeyName = "Day7Count";
             if (!datas.Verify(datas.GameItems.Count == 1, "物品数量不对"))
                 return;
             var gi = datas.GameItems[0];    //物品
             var tt = gi.Template;
             var gc = datas.GameChar;
 
-            var day = (int)gc.Properties.GetDecimalOrDefault(CountKeyName) % 7; //应该获取哪天的物品
-            var tid = tt.Properties.GetGuidOrDefault($"usetid{day}");
-            var ptid = tt.Properties.GetGuidOrDefault($"useptid{day}");
-            var count = tt.Properties.GetDecimalOrDefault($"usecount{day}");
-            var parent = gc.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);  //容器
-            var dest = new GameItem();
-            World.EventsManager.GameItemCreated(dest, tid);    //创建物品
-            dest.Count = count;
-            World.ItemManager.AddItem(dest, parent, null, datas.ChangeItems);
+            var coll = StringObjectDictionaryExtensions.GetValuesWithoutPrefix(tt.Properties, "use");
+            var totalDay = gc.Properties.GetDecimalOrDefault(Day30CountKeyName);
+            var day = (int)totalDay % 30; //应该获取哪天的物品
+            var indexStr = day.ToString();  //前缀字符串
+            var dic = coll.First(c => c.Key == indexStr).ToDictionary(c => c.Item1, c => c.Item2);
 
-            gc.Properties[CountKeyName] = (decimal)day + 1; //设置已经获取的天计数
+            var eveMng = World.EventsManager;
+            var dest = new GameItem();
+            eveMng.GameItemCreated(dest, dic);    //创建物品
+
+            var gim = World.ItemManager;
+            var parent = gc.AllChildren.FirstOrDefault(c => c.TemplateId == dest.Properties.GetGuidOrDefault("ptid"));
+            gim.AddItem(dest, parent, null, datas.ChangeItems);
+
+            gc.Properties[Day30CountKeyName] = totalDay + 1; //设置已经获取的天计数
         }
 
+        /// <summary>
+        /// 坐骑等级提升。
+        /// </summary>
+        /// <param name="datas"></param>
+        [BlueprintMethod("6a0c5697-4228-4ec9-a69e-28d61bd52b32")]
         private void MountsLevelUp(ApplyBlueprintDatas datas)
         {
             if (datas.GameItems.Count != 1)
@@ -978,7 +983,7 @@ namespace GuangYuan.GY001.BLL
                 _ => null,
             };
 
-            if (!src.TryGetPropertyValueWithFcp("Count", DateTime.UtcNow, true, out object countObj, out DateTime dt) || !OwConvert.TryGetDecimal(countObj, out decimal count))
+            if (!src.TryGetPropertyValueWithFcp("Count", DateTime.UtcNow, true, out object countObj, out DateTime dt) || !OwConvert.TryToDecimal(countObj, out decimal count))
             {
                 datas.DebugMessage = "未知原因无法获取收获数量。";
                 datas.HasError = true;
@@ -1029,7 +1034,7 @@ namespace GuangYuan.GY001.BLL
             GameItemManager gim = World.ItemManager;
             GameItemTemplate template = gim.GetTemplateFromeId(gi.TemplateId); //物品的模板对象
             #region 等级校验
-            if (template.TryGetPropertyValue("mbnlv", out object mbnlvObj) && OwConvert.TryGetDecimal(mbnlvObj, out decimal mbnlv))    //若需要根据主控室等级限定升级
+            if (template.TryGetPropertyValue("mbnlv", out object mbnlvObj) && OwConvert.TryToDecimal(mbnlvObj, out decimal mbnlv))    //若需要根据主控室等级限定升级
             {
                 GameItem mb = hl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);    //主控室
                 decimal mbLv = mb.GetDecimalOrDefault(GameThingTemplateBase.LevelPrefix, 0m); //当前主控室等级
@@ -1052,7 +1057,7 @@ namespace GuangYuan.GY001.BLL
             LevelUp(datas);
             if (datas.HasError)
                 return;
-            if (!datas.Verify(OwConvert.TryGetDecimal(gi.GetPropertyValueOrDefault(ProjectConstant.LevelPropertyName, 0m), out decimal lvDec), "级别属性类型错误。"))
+            if (!datas.Verify(OwConvert.TryToDecimal(gi.GetPropertyValueOrDefault(ProjectConstant.LevelPropertyName, 0m), out decimal lvDec), "级别属性类型错误。"))
             {
                 return;
             }

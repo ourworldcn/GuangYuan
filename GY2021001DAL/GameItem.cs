@@ -371,7 +371,7 @@ namespace GuangYuan.GY001.UserDb
                         return false;
                     }
                     var ary = coll.Where(c => c.TemplateId == MucaiStoreTId).ToArray();   //取所有木材仓库对象
-                    if (!OwConvert.TryGetDecimal(Properties.GetValueOrDefault(StackUpperLimit, 0m), out var myselfStc))
+                    if (!OwConvert.TryToDecimal(Properties.GetValueOrDefault(StackUpperLimit, 0m), out var myselfStc))
                         myselfStc = 0;
                     result = ary.Any(c => c.GetStc() >= decimal.MaxValue) ? -1 : ary.Sum(c => c.GetStc()) + myselfStc;
                     succ = true;
@@ -415,7 +415,7 @@ namespace GuangYuan.GY001.UserDb
             if (!TryGetPropertyValue(indexPName, out var resultObj))    //若没有找到索引属性的值
                 result = 0;
             else //若找到索引属性
-                result = OwConvert.TryGetDecimal(resultObj, out var resultDec) ? OwHelper.RoundWithAwayFromZero(resultDec) : -1;
+                result = OwConvert.TryToDecimal(resultObj, out var resultDec) ? OwHelper.RoundWithAwayFromZero(resultDec) : -1;
             return result;
         }
 
@@ -434,7 +434,7 @@ namespace GuangYuan.GY001.UserDb
                 {
                     var indexName = template.GetIndexPropertyName(key); //索引属性名
                     if ((TryGetPropertyValue(indexName, out var indexObj) || template.TryGetPropertyValue(indexName, out indexObj)) &&
-                        OwConvert.TryGetDecimal(indexObj, out var index))
+                        OwConvert.TryToDecimal(indexObj, out var index))
                     {
                         index = Math.Round(index, MidpointRounding.AwayFromZero);
                         SetPropertyValue(key, ary[(int)index]);
@@ -449,16 +449,16 @@ namespace GuangYuan.GY001.UserDb
             {
                 var currentVal = GetPropertyValueOrDefault(key);
                 var oldVal = Template.GetPropertyValue(key);    //模板值
-                if (oldVal is decimal[] ary && OwConvert.TryGetDecimal(currentVal, out var currentDec))   //若是一个序列属性
+                if (oldVal is decimal[] ary && OwConvert.TryToDecimal(currentVal, out var currentDec))   //若是一个序列属性
                 {
                     var lv = GetIndexPropertyValue(key);    //当前等级
                     var nVal = currentDec - ary[lv] + template.GetSequencePropertyValueOrDefault<decimal>(key, lv); //求新值
                     SetPropertyValue(key, nVal);
                 }
-                else if (OwConvert.TryGetDecimal(currentVal, out var dec)) //若是一个数值属性
+                else if (OwConvert.TryToDecimal(currentVal, out var dec)) //若是一个数值属性
                 {
-                    OwConvert.TryGetDecimal(Template.GetPropertyValue(key, 0), out var nDec);    //当前模板中该属性
-                    OwConvert.TryGetDecimal(template.GetPropertyValue(key), out var tDec);
+                    OwConvert.TryToDecimal(Template.GetPropertyValue(key, 0), out var nDec);    //当前模板中该属性
+                    OwConvert.TryToDecimal(template.GetPropertyValue(key), out var tDec);
                     var nVal = dec - nDec + tDec;
                     SetPropertyValue(key, nVal);
                 }

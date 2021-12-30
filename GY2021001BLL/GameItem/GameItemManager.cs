@@ -144,7 +144,7 @@ namespace OW.Game.Item
             }
             else if (propName.Equals("pid", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (!OwConvert.TryGetGuid(val, out var pid))
+                if (!OwConvert.TryToGuid(val, out var pid))
                     return false;
                 gameItem.ParentId = pid;
             }
@@ -397,7 +397,7 @@ namespace OW.Game.Item
         {
             if (!container.Properties.TryGetValue(ProjectConstant.ContainerCapacity, out object obj))   //若没有属性,视同非容器
                 return 0;
-            if (!OwConvert.TryGetDecimal(obj, out var result))
+            if (!OwConvert.TryToDecimal(obj, out var result))
                 return 0;
             return result switch
             {
@@ -639,13 +639,24 @@ namespace OW.Game.Item
             Debug.Assert(null != children);
             if (!stcItem.IsStc(out var stc)) //若不可堆叠
             {
-                gameItem.Count ??= 1;
-                var upper = GetCapacity(parent) ?? -1;    //TO DO 暂时未限制是否是容器
-
-                if (-1 != upper && children.Count >= upper)  //若超过容量
+                if (parent is GameItemBase gib) //若是容器
                 {
-                    remainder?.Add(gameItem);
-                    return;
+                    var freeCap = GetFreeCapacity(gib);
+                    if (freeCap == 0)   //若不可再放入物品
+                    {
+                        remainder?.Add(gameItem);
+                        return;
+                    }
+                }
+                if (parent is GameItem gi && gi.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(gameItem) && this.IsExistsMounts(gi.GameChar, gameItem))  //若要放入坐骑且有同款坐骑
+                {
+                    var bag = gi.GameChar.GetShoulanBag();  //兽栏
+                    if (GetFreeCapacity(bag) == 0) //若兽栏满
+                    {
+                        remainder.Add(gameItem);
+                        return;
+                    }
+                    parent = bag;
                 }
                 var succ = ForcedAdd(gameItem, parent);
                 changeItems?.AddToAdds(parent.Id, gameItem);
@@ -714,7 +725,7 @@ namespace OW.Game.Item
         /// <param name="changeItems"></param>
         private bool AddItemNoStack(GameItem gameItem, GameObjectBase parent, ICollection<ChangeItem> changeItems = null)
         {
-            Debug.Assert(!gameItem.IsStc(out var stc),"只能针对非堆叠物品。");
+            Debug.Assert(!gameItem.IsStc(out var stc), "只能针对非堆叠物品。");
             gameItem.Count ??= 1;
             var upper = GetCapacity(parent) ?? -1;    //TO DO 暂时未限制是否是容器
 
@@ -952,12 +963,19 @@ namespace OW.Game.Item
         /// 获取指定物品的直接父容器。
         /// </summary>
         /// <param name="gameItem"></param>
+        /// <param name="gameChar"></param>
         /// <returns>返回父容器可能是另一个物品或角色对象，没有找到则返回null。</returns>
         /// <exception cref="ArgumentNullException"><paramref name="gameItem"/>是null。</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameObjectBase GetContainer(GameItem gameItem)
+        public GameObjectBase GetContainer(GameItem gameItem, GameChar gameChar = null)
         {
-            return gameItem.Parent as GameObjectBase ?? (gameItem.OwnerId is null ? null : World.CharManager.GetCharFromId(gameItem.OwnerId.Value));
+            var result = gameItem.Parent as GameObjectBase ?? (gameItem.OwnerId is null ? null : World.CharManager.GetCharFromId(gameItem.OwnerId.Value));
+            if (result is null && gameChar != null)
+            {
+                var ptid = gameChar.Properties.GetGuidOrDefault("ptid");
+                result = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
+            }
+            return result;
         }
 
         /// <summary>

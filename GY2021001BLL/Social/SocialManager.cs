@@ -370,7 +370,8 @@ namespace GuangYuan.GY001.BLL
         /// <param name="db">访问公共数据使用的数据库上下文对象。</param>
         /// <param name="changes"></param>
         /// <param name="results">每一项的获取结果。</param>
-        public bool GetAttachmentes(IEnumerable<Guid> attachmentesIds, GameChar gameChar, DbContext db, IList<ChangeItem> changes = null, ICollection<(Guid, GetAttachmenteItemResult)> results = null)
+        public bool GetAttachmentes(IEnumerable<Guid> attachmentesIds, GameChar gameChar, DbContext db, IList<ChangeItem> changes = null,
+            ICollection<(Guid, GetAttachmenteItemResult)> results = null)
         {
             using var dwChar = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
             //附件Id是IdMark.Id,角色Id是IdMark.Id
@@ -382,18 +383,20 @@ namespace GuangYuan.GY001.BLL
                         on id equals att.Id
                         select att    //所有属于该玩家且被指定的附件
             ).ToList();
+
             if (atts.Count < attachmentesIds.Count())
             {
                 VWorld.SetLastErrorMessage("至少有一个附件不属于指定角色。");
                 return false;
-            };
+            }
             var gim = World.ItemManager;
             bool dirty = false;
+            List<GameItem> remainder = new List<GameItem>();
             foreach (var item in atts)  //遍历附件
             {
                 try
                 {
-                    if (!item.RemovedIds.Add(gcId))  //若已经被领取
+                    if (item.RemovedIds.Contains(gcId))  //若已经被领取
                     {
                         results?.Add((item.Id, GetAttachmenteItemResult.Done));
                         continue;
@@ -412,8 +415,15 @@ namespace GuangYuan.GY001.BLL
                             continue;
                         }
                     }
-                    gim.AddItem(gameItem, parent, null, changes);   //TO DO
+                    remainder.Clear();
+                    gim.AddItem(gameItem, parent, remainder, changes);
+                    if (remainder.Count > 0)
+                    {
+                        results?.Add((item.Id, GetAttachmenteItemResult.Full));
+                        continue;
+                    }
                     results?.Add((item.Id, GetAttachmenteItemResult.Success));
+                    item.RemovedIds.Add(gcId);
 
                     dirty = true;
                 }

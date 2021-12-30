@@ -22,7 +22,7 @@ namespace System
         /// <param name="result"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static bool TryGetDecimal(object obj, out decimal result)
+        public static bool TryToDecimal(object obj, out decimal result)
         {
             if (obj is null)
             {
@@ -84,7 +84,7 @@ namespace System
         /// <param name="defaultVal"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static bool TryGetFloat(object obj, out float result)
+        public static bool TryToFloat(object obj, out float result)
         {
             if (obj is null)
             {
@@ -126,15 +126,43 @@ namespace System
         }
 
         /// <summary>
+        /// 又字符串试图转换为Guid类型。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryToGuid(string str, out Guid result)
+        {
+            if (string.IsNullOrWhiteSpace(str))
+            {
+                result = default;
+                return false;
+            }
+            else if (str.EndsWith("=="))
+            {
+                Span<byte> buff = stackalloc byte[16];
+                if (!Convert.TryFromBase64String(str, buff, out var length) || length != 16)
+                {
+                    result = default;
+                    return false;
+                }
+                result = new Guid(buff);
+                return true;
+            }
+            else
+                return Guid.TryParse(str, out result);
+        }
+
+        /// <summary>
         /// 尽可能转换为Guid类型。
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="result"></param>
         /// <returns>true成功转换，false未成功。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static bool TryGetGuid(object obj, out Guid result)
+        public static bool TryToGuid(object obj, out Guid result)
         {
-
             if (obj is Guid id)
             {
                 result = id;
@@ -142,15 +170,9 @@ namespace System
             }
             else if (obj is string str)
             {
-                if (str.EndsWith("=="))
-                {
-                    result = ToGuid(str);
-                    return true;
-                }
-                else if (Guid.TryParse(str, out result))
-                    return true;
+                return TryToGuid(str, out result);
             }
-            if (obj is byte[] ary && ary.Length == 16)
+            else if (obj is byte[] ary && ary.Length == 16)
             {
                 try
                 {
@@ -178,7 +200,7 @@ namespace System
         /// <param name="result"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static bool TryGetBoolean(object obj, out bool result)
+        public static bool TryToBoolean(object obj, out bool result)
         {
             if (obj is bool b)
             {
@@ -187,7 +209,7 @@ namespace System
             }
             else if (obj is string str && bool.TryParse(str, out result))
                 return true;
-            else if (TryGetDecimal(obj, out var deci))
+            else if (TryToDecimal(obj, out var deci))
             {
                 result = deci != decimal.Zero;
                 return true;
@@ -219,14 +241,11 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Guid ToGuid(string str)
         {
-            if (string.IsNullOrEmpty(str))
+            if (string.IsNullOrWhiteSpace(str))
                 return Guid.Empty;
-            if (Guid.TryParse(str, out var result))
-                return result;
-            Span<byte> span = stackalloc byte[16];
-            if (!Convert.TryFromBase64String(str, span, out var lengthe))
+            if (!TryToGuid(str, out var result))
                 throw new FormatException($"不是有效的数据格式——{str}");
-            return new Guid(span);
+            return result;
         }
 
         /// <summary>

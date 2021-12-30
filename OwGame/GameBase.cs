@@ -362,7 +362,7 @@ namespace OW.Game
             switch (propertyNamePrefix)
             {
                 case 'i':
-                    if (!OwConvert.TryGetDecimal(val, out var dec))
+                    if (!OwConvert.TryToDecimal(val, out var dec))
                     {
                         return false;
                     }
@@ -370,7 +370,7 @@ namespace OW.Game
                     Increment = dec;
                     break;
                 case 'd':
-                    if (!OwConvert.TryGetDecimal(val, out dec))
+                    if (!OwConvert.TryToDecimal(val, out dec))
                     {
                         return false;
                     }
@@ -378,7 +378,7 @@ namespace OW.Game
                     Delay = TimeSpan.FromSeconds((double)dec);
                     break;
                 case 'm':
-                    if (!OwConvert.TryGetDecimal(val, out dec))
+                    if (!OwConvert.TryToDecimal(val, out dec))
                     {
                         return false;
                     }
@@ -386,7 +386,7 @@ namespace OW.Game
                     MaxValue = dec;
                     break;
                 case 'c':   //当前刷新后的最后值
-                    if (!OwConvert.TryGetDecimal(val, out dec))
+                    if (!OwConvert.TryToDecimal(val, out dec))
                     {
                         return false;
                     }
@@ -395,7 +395,7 @@ namespace OW.Game
                     LastDateTime = DateTime.UtcNow;
                     break;
                 case 'l':
-                    if (!OwConvert.TryGetDecimal(val, out dec))
+                    if (!OwConvert.TryToDecimal(val, out dec))
                     {
                         return false;
                     }

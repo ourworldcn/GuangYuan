@@ -125,12 +125,12 @@ namespace GuangYuan.GY001.BLL
             //修改数据
             //生成物品
             var gim = World.ItemManager;
-            var gi = new GameItem() {Count=datas.Count };
+            var gi = new GameItem() { Count = datas.Count };
             World.EventsManager.GameItemCreated(gi, template.ItemTemplateId);
             var container = gim.GetDefaultContainer(datas.GameChar, gi);
             if (template.AutoUse)    //若自动使用
             {
-                gim.ForcedAdd(gi, datas.GameChar.GetItemBag()); //暂存到道具背包
+                gim.ForcedAdd(gi, datas.GameChar.GetShoppingSlot()); //暂存到商城槽
                 using var useItemsDatas = new UseItemsWorkDatas(World, datas.GameChar)
                 {
                     UserContext = datas.UserContext,
@@ -246,7 +246,7 @@ namespace GuangYuan.GY001.BLL
             {
                 //改写金币数量
                 var data = view.RefreshInfos[item];
-                var cost = Math.Abs(data.CostOfGold[Math.Clamp(data.RefreshCount,0, data.CostOfGold.Length - 1)]);
+                var cost = Math.Abs(data.CostOfGold[Math.Clamp(data.RefreshCount, 0, data.CostOfGold.Length - 1)]);
                 jinbi.Count -= cost;
                 //改写商品数据
                 Refresh(view, item, datas.Now);

@@ -1,6 +1,7 @@
 ﻿/*
  * 文件放置游戏专用的一些基础类
  */
+using Microsoft.Extensions.ObjectPool;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -36,6 +37,24 @@ namespace System
         /// 路径分隔符。
         /// </summary>
         public static readonly char[] PathSeparatorChar = new char[] { '\\', '/' };
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        static OwHelper()
+        {
+            StringObjectDictionaryDefaultPool ??= new DefaultObjectPool<Dictionary<string, object>>(new StringObjectDictionaryPooledObjectPolicy());
+        }
+        #region 属性
+        class StringObjectDictionaryPooledObjectPolicy : DefaultPooledObjectPolicy<Dictionary<string, object>>
+        {
+            public override bool Return(Dictionary<string, object> obj)
+            {
+                obj.Clear();
+                return true;
+            }
+        }
+        public readonly static ObjectPool<Dictionary<string, object>> StringObjectDictionaryDefaultPool;
+
+        #endregion 属性
 
         /// <summary>
         /// 复制字典。
@@ -118,7 +137,7 @@ namespace System
             foreach (var item in dic)
             {
                 stringBuilder.Append(item.Key).Append('=');
-                if (OwConvert.TryGetDecimal(item.Value, out _))   //如果可以转换为数字
+                if (OwConvert.TryToDecimal(item.Value, out _))   //如果可以转换为数字
                 {
                     stringBuilder.Append(item.Value.ToString()).Append(',');
                 }

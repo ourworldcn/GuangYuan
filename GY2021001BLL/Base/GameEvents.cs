@@ -367,7 +367,7 @@ namespace OW.Game
             {
                 if (parameters.TryGetValue("ptid", out var tmp))
                     gameItem.Properties["ptid"] = tmp;
-                if (parameters.TryGetValue("count", out tmp) && OwConvert.TryGetDecimal(tmp, out var deci) && gameItem.GameChar != null) //若可以设置
+                if (parameters.TryGetValue("count", out tmp) && OwConvert.TryToDecimal(tmp, out var deci) && gameItem.GameChar != null) //若可以设置
                     gameItem.Count = deci;
             }
 

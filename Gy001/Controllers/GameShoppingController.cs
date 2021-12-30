@@ -48,6 +48,7 @@ namespace Gy001.Controllers
 
         /// <summary>
         /// 购买商品。
+        /// 签到礼包的总签到次数在GameChar的动态属性中，键名Day30Count。
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
