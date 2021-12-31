@@ -2,8 +2,8 @@
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.ObjectPool;
 using OW.Game;
-using OW.Game.Item;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
@@ -56,8 +55,8 @@ namespace GuangYuan.GY001.BLL
             var mail = new GameMail()
             {
                 Body = datas.Mail.Body,
-                Subject=datas.Mail.Subject,
-                CreateUtc=datas.Mail.CreateUtc,
+                Subject = datas.Mail.Subject,
+                CreateUtc = datas.Mail.CreateUtc,
             };
             OwHelper.Copy(datas.Mail.Properties, mail.Properties);
             World.SocialManager.SendMail(mail, datas.Tos.Select(c => OwConvert.ToGuid(c)), SocialConstant.FromSystemId, coll);
@@ -175,11 +174,18 @@ namespace GuangYuan.GY001.BLL
         /// <returns>生成新密码。</returns>
         public string NewPassword(int bits)
         {
-            StringBuilder sb = new StringBuilder();
-            var length = PwdChars.Count;
-            for (int i = 0; i < bits; i++)
-                sb.Append(PwdChars[VWorld.WorldRandom.Next(length)]);
-            return sb.ToString();
+            StringBuilder sb = StringBuilderPool.Shared.Get();
+            try
+            {
+                var length = PwdChars.Count;
+                for (int i = 0; i < bits; i++)
+                    sb.Append(PwdChars[VWorld.WorldRandom.Next(length)]);
+                return sb.ToString();
+            }
+            finally
+            {
+                StringBuilderPool.Shared.Return(sb);
+            }
         }
 
         /// <summary>

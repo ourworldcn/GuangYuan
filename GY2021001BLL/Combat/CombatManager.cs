@@ -430,8 +430,10 @@ namespace GuangYuan.GY001.BLL
                     var changes = new List<ChangeItem>();
                     //移动收益槽数据到各自背包。
                     //金币
-
                     gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar.GetCurrencyBag(), changes);
+                    //木材
+                    gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.MucaiId, gameChar.GetCurrencyBag(), changes);
+
                     //野生怪物
                     var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
                     gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi, shoulan, changes);
@@ -642,7 +644,7 @@ namespace GuangYuan.GY001.BLL
                 datas.HasError = true;
                 return;
             }
-            
+
             var pvpObject = datas.GameChar.GetPvpObject();  //PVP对象
             using var todayData = TodayDataWrapper<Guid>.Create(pvpObject.Properties, pvpChar, datas.Now);
             if (!todayData.LastValues.Contains(datas.OtherChar.Id))  //若不能攻击

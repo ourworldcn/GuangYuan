@@ -1629,6 +1629,7 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public bool IncludeChildren { get; set; }
+
     }
 
     /// <summary>
@@ -1647,6 +1648,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<GameItemDto> GameItems { get; set; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 如果获取了指定角色的接口，则这里返回角色信息。
+        /// </summary>
+        [DataMember]
+        public GameCharDto GameChar { get; set; }
     }
 
     /// <summary>

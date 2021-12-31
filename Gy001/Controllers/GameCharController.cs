@@ -401,6 +401,24 @@ namespace GY2021001WebApi.Controllers
 
                 var coll = list.Select(c => GameItemDto.FromGameItem(c, model.IncludeChildren));
                 result.GameItems.AddRange(coll);
+                if (model.Ids.Contains(gc.Id.ToBase64String())) //若需要获取角色信息
+                {
+                    var gcDto = new GameCharDto()
+                    {
+                        Id = gc.Id.ToBase64String(),
+                        ClientGutsString = gc.ClientGutsString,
+                        CreateUtc = gc.CreateUtc,
+                        DisplayName = gc.DisplayName,
+                        GameUserId = gc.GameUserId.ToBase64String(),
+                        TemplateId = gc.TemplateId.ToBase64String(),
+                        CurrentDungeonId = gc.CurrentDungeonId?.ToBase64String(),
+                        CombatStartUtc = gc.CombatStartUtc,
+                    };
+                    OwHelper.Copy(gc.Properties, gcDto.Properties);
+                    result.GameChar = gcDto;
+                }
+
+
                 return result;
             }
             finally

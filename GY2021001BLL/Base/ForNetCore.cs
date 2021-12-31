@@ -197,6 +197,7 @@ namespace GuangYuan.GY001.BLL
             var b1 = str1[^0..];
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
+
         }
 
         /// <summary>
@@ -328,7 +329,7 @@ namespace GuangYuan.GY001.BLL
 
             services.TryAddSingleton(c => ArrayPool<byte>.Create());    //字节数组池服务
 
-            services.TryAddSingleton<ObjectPool<StringBuilder>>(c => new DefaultObjectPool<StringBuilder>(new StringBuilderPooledObjectPolicy()));  //StringBuilder池服务
+            services.TryAddSingleton<ObjectPool<StringBuilder>>(c => StringBuilderPool.Shared);  //StringBuilder池服务
             #endregion 基础服务
 
             #region 游戏专用服务

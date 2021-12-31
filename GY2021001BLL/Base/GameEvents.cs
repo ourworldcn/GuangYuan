@@ -3,6 +3,7 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -404,7 +405,6 @@ namespace OW.Game
                 else
                     gameItem.Count ??= tt.Properties.ContainsKey(gpm.StackUpperLimit) ? 0 : 1;
             }
-
             //设置导航关系
             if (propertyBag.TryGetGuid("ownerid", out var ownerid)) //若指定了拥有者id
                 gameItem.OwnerId = ownerid;
@@ -416,12 +416,19 @@ namespace OW.Game
             else if (propertyBag.TryGetValue("ptid", out var ptid))
                 gameItem.Properties["ptid"] = ptid;
             //追加子对象
-            if (tt.ChildrenTemplateIds.Count > 0)
+            if (tt.ChildrenTemplateIds.Count > 0)   //若存在子对象
             {
-                gameItem.Children.AddRange(tt.ChildrenTemplateIds.Select(c => new GameItem()));
-                var subpb = new Dictionary<string, object>(propertyBag.Where(c => !_GameItemCreatedKeyNames.Contains(c.Key)));  //去掉已经识别处理的属性
+                var subpb = DictionaryPool<string, object>.Shared.Get();    //漏掉返回池中不是大问题
+                OwHelper.Copy(propertyBag, subpb, c => !_GameItemCreatedKeyNames.Contains(c));
                 subpb["parent"] = gameItem; //指向自己作为父容器
-                gameItem.Children.ForEach(c => GameItemCreated(c, subpb));
+                foreach (var item in tt.ChildrenTemplateIds)
+                {
+                    var gi = new GameItem();
+                    gameItem.Children.Add(gi);
+                    subpb["tid"] = item.ToString();  //设置模板Id
+                    GameItemCreated(gi, subpb);
+                }
+                DictionaryPool<string, object>.Shared.Return(subpb);
             }
         }
 

@@ -144,6 +144,9 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public int RefreshCount { get; set; }
 
+        /// <summary>
+        /// 刷新用的金币价格。
+        /// </summary>
         [JsonIgnore]
         public decimal[] CostOfGold { get; set; }
 
@@ -204,16 +207,16 @@ namespace GuangYuan.GY001.BLL
                             CostOfGold = template.GetSequenceProperty<decimal>($"{prefix}{item}"),
                         };
                     }
+                    foreach (var item in _RefreshInfos) //写入刷新代价
+                    {
+                        item.Value.CostOfGold = template.GetSequenceProperty<decimal>($"{prefix}{item.Key}");
+                    }
                     foreach (var item in _RefreshInfos.Where(c => c.Value.RefreshLastDateTime.Date != Now.Date))  //自动刷新今日未刷新的物品
                     {
                         //TO DO 未定义同组的刷新周期问题
                         item.Value.GroupNumber = rnd.Next(item.Value.CostOfGold.Length);
                         item.Value.RefreshLastDateTime = Now;
                         item.Value.RefreshCount = 0;
-                    }
-                    foreach (var item in _RefreshInfos)
-                    {
-                        item.Value.CostOfGold = template.GetSequenceProperty<decimal>($"{prefix}{item.Key}");
                     }
                 }
                 return _RefreshInfos;

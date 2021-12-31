@@ -1,6 +1,7 @@
 ﻿/*
  * 文件放置游戏专用的一些基础类
  */
+using Microsoft.Extensions.ObjectPool;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -226,9 +227,16 @@ namespace System
         /// <returns></returns>
         public static string ToString(IReadOnlyDictionary<string, object> dic)
         {
-            StringBuilder sb = new StringBuilder();
-            OwHelper.Fill(dic, sb);
-            return sb.ToString();
+            StringBuilder sb = StringBuilderPool.Shared.Get();
+            try
+            {
+                OwHelper.Fill(dic, sb);
+                return sb.ToString();
+            }
+            finally
+            {
+                StringBuilderPool.Shared.Return(sb);
+            }
         }
 
         /// <summary>

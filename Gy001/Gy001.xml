@@ -1849,6 +1849,11 @@
             返回的物品信息。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetItemsReturnDto.GameChar">
+            <summary>
+            如果获取了指定角色的接口，则这里返回角色信息。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetChangesItemParamsDto">
             <summary>
             GetChangesItem 的参数封装类。
@@ -2708,12 +2713,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

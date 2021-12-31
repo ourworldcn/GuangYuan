@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Store;
 using System;
@@ -976,18 +977,25 @@ namespace GuangYuan.GY001.BLL
                 }
                 if (string.IsNullOrEmpty(pwd))   //若需要生成密码
                 {
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < 12; i++)
+                    StringBuilder sb = StringBuilderPool.Shared.Get();
+                    try
                     {
-                        var rndNum = rnd.Next(52);
-                        char c;
-                        if (rndNum > 25)   //若是大写
-                            c = Convert.ToChar(Convert.ToByte('A') + rndNum % 26);
-                        else //小写
-                            c = Convert.ToChar(Convert.ToByte('a') + rndNum);
-                        sb.Append(c);
+                        for (int i = 0; i < 12; i++)
+                        {
+                            var rndNum = rnd.Next(52);
+                            char c;
+                            if (rndNum > 25)   //若是大写
+                                c = Convert.ToChar(Convert.ToByte('A') + rndNum % 26);
+                            else //小写
+                                c = Convert.ToChar(Convert.ToByte('a') + rndNum);
+                            sb.Append(c);
+                        }
+                        pwd = sb.ToString();
                     }
-                    pwd = sb.ToString();
+                    finally
+                    {
+                        StringBuilderPool.Shared.Return(sb);
+                    }
                 }
                 using var dwLn = World.LockStringAndReturnDisposer(ref loginName, Options.DefaultLockTimeout);
                 if (dwLn is null)   //若锁定失败

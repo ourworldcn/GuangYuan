@@ -2,6 +2,7 @@
  * 文件放置游戏专用的一些基础类
  */
 using Microsoft.Extensions.ObjectPool;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -38,21 +39,10 @@ namespace System
         /// </summary>
         public static readonly char[] PathSeparatorChar = new char[] { '\\', '/' };
 
-        [MethodImpl(MethodImplOptions.Synchronized)]
         static OwHelper()
         {
-            StringObjectDictionaryDefaultPool ??= new DefaultObjectPool<Dictionary<string, object>>(new StringObjectDictionaryPooledObjectPolicy());
         }
         #region 属性
-        class StringObjectDictionaryPooledObjectPolicy : DefaultPooledObjectPolicy<Dictionary<string, object>>
-        {
-            public override bool Return(Dictionary<string, object> obj)
-            {
-                obj.Clear();
-                return true;
-            }
-        }
-        public readonly static ObjectPool<Dictionary<string, object>> StringObjectDictionaryDefaultPool;
 
         #endregion 属性
 
@@ -386,4 +376,5 @@ namespace System
         }
 
     }
+
 }

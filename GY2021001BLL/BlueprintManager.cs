@@ -430,7 +430,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="datas"></param>
         [BlueprintMethod("c86c1851-2e6e-45ad-9a16-4a77cc81550b")]
-        private void SignInOfDay7(ApplyBlueprintDatas datas)
+        private void SignInOfDay30(ApplyBlueprintDatas datas)
         {
             if (!datas.Verify(datas.GameItems.Count == 1, "物品数量不对"))
                 return;
@@ -451,6 +451,12 @@ namespace GuangYuan.GY001.BLL
             var gim = World.ItemManager;
             var parent = gc.AllChildren.FirstOrDefault(c => c.TemplateId == dest.Properties.GetGuidOrDefault("ptid"));
             gim.AddItem(dest, parent, null, datas.ChangeItems);
+            //送固定物品
+            dic = coll.First(c => c.Key == string.Empty).ToDictionary(c => c.Item1, c => c.Item2);
+            var dest2 = new GameItem();
+            eveMng.GameItemCreated(dest2, dic);    //创建物品
+            var parent2 = gc.AllChildren.FirstOrDefault(c => c.TemplateId == dest2.Properties.GetGuidOrDefault("ptid"));
+            gim.AddItem(dest2, parent2, null, datas.ChangeItems);
 
             gc.Properties[Day30CountKeyName] = totalDay + 1; //设置已经获取的天计数
         }
@@ -470,7 +476,7 @@ namespace GuangYuan.GY001.BLL
             }
             var gi = datas.GameItems[0];
             var charLv = datas.GameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);    //角色等级
-            var giLv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName); //坐骑等级
+            var giLv = World.ItemManager.GetBody(gi).Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName); //坐骑等级
             var innerCount = (charLv + 1) * 2 - (giLv + 1); //计算实际可以升级的次数
             innerCount = Math.Min(datas.Count, innerCount);
             if (innerCount <= 0) //若已经不可再升级

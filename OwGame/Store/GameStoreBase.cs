@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.ObjectPool;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -194,7 +195,7 @@ namespace OW.Game.Store
             {
                 if (_Properties is null)
                 {
-                    _Properties = new Dictionary<string, object>();
+                    _Properties = DictionaryPool<string,object>.Shared.Get();
                     OwHelper.Fill(PropertiesString, _Properties);
                 }
                 return _Properties;
@@ -242,10 +243,14 @@ namespace OW.Game.Store
                 {
                     // TODO: 释放托管状态(托管对象)
                 }
-                
+
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                _Properties = null;
+                if (null != _Properties)
+                {
+                    DictionaryPool<string,object>.Shared.Return(_Properties);
+                    _Properties = null;
+                }
                 _PropertiesString = null;
                 _IsDisposed = true;
             }

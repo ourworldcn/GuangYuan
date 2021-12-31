@@ -132,7 +132,7 @@ namespace System.Collections.Generic
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DateTime GetDateTimeOrDefault(this IReadOnlyDictionary<string, object> dic, string name, DateTime defaultVal = default) =>
-            OwConvert.TryGetDateTime(name, out var result) ? result : defaultVal;
+            dic.TryGetDateTime(name, out var result) ? result : defaultVal;
 
         /// <summary>
         /// 获取指定键值的值，或转换为字符串。
