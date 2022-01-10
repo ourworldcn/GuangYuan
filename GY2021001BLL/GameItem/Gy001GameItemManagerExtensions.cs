@@ -500,7 +500,7 @@ namespace GuangYuan.GY001.BLL
             var btid = manager.GetBodyTemplate(gameItem)?.Id;
             if (!htid.HasValue || !btid.HasValue)  //若缺少Id存在
                 return false;
-            return bag.Children.Any(c => manager.GetHeadTemplate(c)?.Id == htid || manager.GetBodyTemplate(c)?.Id == btid);
+            return bag.Children.Any(c => manager.GetHeadTemplate(c)?.Id == htid && manager.GetBodyTemplate(c)?.Id == btid);
         }
         /// <summary>
         /// 获取物品的身体模板。

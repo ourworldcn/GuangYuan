@@ -549,7 +549,7 @@ namespace OW.Game
         /// 将指定对象的主要属性提取到指定字典中，以备可以使用<see cref="GameItemCreated(GameItem, IReadOnlyDictionary{string, object})"/>进行恢复。
         /// </summary>
         /// <param name="gameItem"></param>
-        /// <param name="propertyBag"></param>
+        /// <param name="propertyBag">可以处理"tid", "count", "ownerid", "ptid" 等几个属性。</param>
         /// <param name="prefix"></param>
         /// <param name="suffix"></param>
         public virtual void Copy(GameItem gameItem, IDictionary<string, object> propertyBag, string prefix = null, string suffix = null)
@@ -564,11 +564,10 @@ namespace OW.Game
                 propertyBag[$"{prefix}ownerid{suffix}"] = gameItem.OwnerId;
             else if (gameItem.Parent != null)
                 propertyBag[$"{prefix}ptid{suffix}"] = gameItem.Parent.TemplateId.ToString();
-            else if (gameItem.ParentId != null)
-                propertyBag[$"{prefix}ptid{suffix}"] = gameItem.ParentId.Value.ToString();
             else if (gameItem.Properties.TryGetGuid("ptid", out var ptid))
                 propertyBag[$"{prefix}ptid{suffix}"] = ptid.ToString();
         }
+
         #endregion 转换为字典属性包
 
         #region 加载后初始化

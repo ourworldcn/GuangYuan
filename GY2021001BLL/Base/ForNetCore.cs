@@ -52,7 +52,7 @@ namespace GuangYuan.GY001.BLL
             Test();
             var result = Task.Factory.StartNew(c =>
             {
-                Thread thread = new Thread(CreateNewUserAndChar)
+                Thread thread = new Thread(() => CreateNewUserAndChar())
                 {
                     IsBackground = true,
                     Priority = ThreadPriority.Lowest,
@@ -62,13 +62,17 @@ namespace GuangYuan.GY001.BLL
 #else
                 thread.Start();
 #endif
-                Task.Run(CreateGameManager);
+                Task.Run(CreateGameManager);    //强制初始化所有服务以加速
                 var logger = _Services.GetService<ILogger<GameHostedService>>();
                 logger.LogInformation("游戏虚拟世界服务成功上线。");
             }, _Services, cancellationToken);
             return result;
         }
 
+        /// <summary>
+        /// 给指定账号发送测试邮件。
+        /// </summary>
+        [Conditional("DEBUG")]
         private void SendMail()
         {
             var world = _Services.GetRequiredService<VWorld>();
@@ -100,9 +104,10 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 
         /// </summary>
+        [Conditional("DEBUG")]
         private void CreateNewUserAndChar()
         {
-            Task.Run(SendMail);
+            Task.Run(() => SendMail());
 #if DEBUG
             var maxCount = 1500;
 #else

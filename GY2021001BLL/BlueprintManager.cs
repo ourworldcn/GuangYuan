@@ -351,14 +351,10 @@ namespace GuangYuan.GY001.BLL
                         JiasuFuhua(datas);
                         succ = true;
                         break;
-                    //case "7b1348b8-87de-4c98-98b8-4705340e1ed2":  //若是增加体力
-                    //    AddTili(datas);
+                    //case "384ed85c-82fd-4f08-86e7-eae5ad6eef2c":    //家园所属虚拟物品内升级
+                    //    UpgradeInHomeland(datas);
                     //    succ = true;
                     //    break;
-                    case "384ed85c-82fd-4f08-86e7-eae5ad6eef2c":    //家园所属虚拟物品内升级
-                        UpgradeInHomeland(datas);
-                        succ = true;
-                        break;
                     case "06bdaa5c-3d88-4279-9826-8f5a554ab588":    //加速主控室/玉米地/树林/炮台/旗子/陷阱/捕兽竿升级
                         HastenOnHomeland(datas);
                         succ = true;
@@ -1015,6 +1011,7 @@ namespace GuangYuan.GY001.BLL
         /// 家园内部相关物品升级。
         /// </summary>
         /// <param name="datas"></param>
+        [BlueprintMethod("384ed85c-82fd-4f08-86e7-eae5ad6eef2c")]
         private void UpgradeInHomeland(ApplyBlueprintDatas datas)
         {
             DateTime dt = DateTime.UtcNow;  //尽早确定开始时间
@@ -1345,6 +1342,7 @@ namespace GuangYuan.GY001.BLL
                 gameItem.Properties["neatk"] = Math.Round(gameItem.GetDecimalOrDefault("neatk"), MidpointRounding.AwayFromZero);
                 gameItem.Properties["nemhp"] = Math.Round(gameItem.GetDecimalOrDefault("nemhp"), MidpointRounding.AwayFromZero);
                 gameItem.Properties["neqlt"] = Math.Round(gameItem.GetDecimalOrDefault("neqlt"), MidpointRounding.AwayFromZero);
+                var oldpid = gameItem.ParentId;
                 if (!gim.MoveItem(gameItem, 1, slotSl, datas.ChangeItems))   //若无法放入
                 {
                     //发邮件
@@ -1356,7 +1354,7 @@ namespace GuangYuan.GY001.BLL
                     social.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId,
                         new ValueTuple<GameItem, Guid>[] { (gameItem, ProjectConstant.ShoulanSlotId) });
                     gim.ForceDelete(gameItem);
-                    datas.ChangeItems.AddToRemoves(slotSl.Id, gameItem.Id);
+                    datas.ChangeItems.AddToRemoves(oldpid.Value, gameItem.Id);
                 }
 
             }
@@ -1713,7 +1711,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
 
-            if (!datas.Verify(zuanshi.Count > 20, $"需要20钻石，但目前仅有{zuanshi.Count}。"))
+            if (!datas.Verify(zuanshi.Count >= 200, $"需要200钻石，但目前仅有{zuanshi.Count}。"))
             {
                 return;
             }

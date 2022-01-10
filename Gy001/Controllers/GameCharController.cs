@@ -448,7 +448,9 @@ namespace GY2021001WebApi.Controllers
             try
             {
                 var gc = gu.CurrentChar;
+#if DEBUG
                 logger.LogDebug($"[{DateTime.UtcNow}] Call GetChangesItem");
+#endif //DEBUG
                 result.Changes.AddRange(gc.ChangesItems.Select(c => (ChangesItemDto)c));
                 //gc.ChangesItems.Clear();
             }

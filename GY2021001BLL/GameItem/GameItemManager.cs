@@ -631,7 +631,7 @@ namespace OW.Game.Item
         /// <param name="changeItems">变化的数据。可以是null或省略，此时忽略。
         /// 基于堆叠限制和容量限制，无法放入的部分。实际是<paramref name="gameItem"/>对象或拆分后的对象集合，对于可堆叠对象可能修改了<see cref="GameItem.Count"/>属性。若没有剩余则返回null。
         /// </param>
-        /// <returns>放入后的对象，如果是不可堆叠或堆叠后有剩余则是 <paramref name="gameItem"/>和堆叠对象，否则是容器内原有对象。返回空集合，因容量限制没有放入任何物品。</returns>
+        /// <returns>放入后的对象，如果是不可堆叠或堆叠后有剩余则是 <paramref name="gameItem"/> 和堆叠对象，否则是容器内原有对象。返回空集合，因容量限制没有放入任何物品。</returns>
         public void AddItem(GameItem gameItem, GameObjectBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
         {
             IList<GameItem> children = GetChildrenCollection(parent);
@@ -688,7 +688,7 @@ namespace OW.Game.Item
                 {
                     return;
                 }
-                else  //放入剩余物品,容错
+                else if (gameItem.Template == null || !gameItem.Template.Properties.TryGetDecimal("isuni", out var isuni) || isuni != decimal.One) //放入剩余物品,容错
                 {
                     var tmp = new List<GameItem>();
                     SplitItem(gameItem, tmp, parent);
@@ -711,6 +711,10 @@ namespace OW.Game.Item
                         changeItems?.Add(_);
                     foreach (var item in tmp)   //未能加入的
                         remainder?.Add(item);
+                }
+                else
+                {
+                    remainder.Add(gameItem);
                 }
                 //当有剩余物品
                 return;

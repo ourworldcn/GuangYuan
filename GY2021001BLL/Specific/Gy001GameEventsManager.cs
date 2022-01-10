@@ -443,19 +443,18 @@ namespace OW.Game
         /// 将指定对象的主要属性提取到指定字典中，以备可以使用<see cref="GameItemCreated(GameItem, IReadOnlyDictionary{string, object})"/>进行恢复。
         /// </summary>
         /// <param name="gameItem"></param>
-        /// <param name="propertyBag"></param>
+        /// <param name="propertyBag">额外可以处理 neatk，nemhp，neqlt属性。对生物额处理neqlt，btid</param>
         /// <param name="prefix"></param>
         /// <param name="suffix"></param>
         public override void Copy(GameItem gameItem, IDictionary<string, object> propertyBag, string prefix = null, string suffix = null)
         {
             //"htid", "htt", "btid", "btt", "neatk", "nemhp", "neqlt"
             base.Copy(gameItem, propertyBag, prefix, suffix);
-            prefix ??= string.Empty;
-            suffix ??= string.Empty;
-            propertyBag[$"{prefix}tid{suffix}"] = gameItem.TemplateId.ToString();
-            var props = gameItem.Properties;
-            if (gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi)   //若是生物且可能有相应的初始化参数
+            if (World.ItemManager.IsMounts(gameItem))   //若是生物且可能有相应的初始化参数
             {
+                prefix ??= string.Empty;
+                suffix ??= string.Empty;
+                var props = gameItem.Properties;
                 //处理资质数值
                 if (props.TryGetDecimal("neatk", out var neatk))    //若指定了攻击资质
                     propertyBag[$"{prefix}neatk{suffix}"] = neatk;
@@ -463,8 +462,8 @@ namespace OW.Game
                     propertyBag[$"{prefix}nemhp{suffix}"] = nemhp;
                 if (props.TryGetDecimal("neqlt", out var neqlt))    //若指定了质量资质
                     propertyBag[$"{prefix}neqlt{suffix}"] = neqlt;
-                propertyBag[$"{prefix}htid{suffix}"] = World.ItemManager.GetHeadTemplate(gameItem).Id.ToString();
-                propertyBag[$"{prefix}btid{suffix}"] = World.ItemManager.GetBodyTemplate(gameItem).Id.ToString();
+                propertyBag[$"{prefix}htid{suffix}"] = World.ItemManager.GetHeadTemplate(gameItem).IdString;
+                propertyBag[$"{prefix}btid{suffix}"] = World.ItemManager.GetBodyTemplate(gameItem).IdString;
             }
         }
         #endregion 转换为字典属性包
