@@ -12,7 +12,7 @@ namespace GuangYuan.GY001.BLL
     public static class GameBootyExtensions
     {
         /// <summary>
-        /// 设置实际的物品增减。
+        /// 根据战利品数据设置实际的物品数量。
         /// </summary>
         /// <param name="booty"></param>
         /// <param name="world"></param>
@@ -20,17 +20,30 @@ namespace GuangYuan.GY001.BLL
         public static void SetGameItems(this GameBooty booty, VWorld world, ICollection<ChangeItem> changes = null)
         {
             var gc = world.CharManager.GetCharFromId(booty.CharId);
+            var hl = gc.GetHomeland();
             GameItem gi = new GameItem();
             world.EventsManager.GameItemCreated(gi, booty.TemplateId, null, null, null);
             gi.Count = booty.Count;
             var gim = world.ItemManager;
             GameItem parent;
-            if (booty.TemplateId == ProjectConstant.JinbiId)
+            if (booty.TemplateId == ProjectConstant.JinbiId)    //若是战利品
             {
+                //{
+                //    var yumiTian = hl.AllChildren.First(c => c.TemplateId == ProjectConstant.YumitianTId);
+                //    var fcpCount = yumiTian.Name2FastChangingProperty["Count"];
+                //    fcpCount.GetCurrentValueWithUtc();
+                //    fcpCount.LastValue += booty.Count;
+                //}
                 parent = gc.GetJinbi().Parent;
             }
             else if (booty.TemplateId == ProjectConstant.MucaiId)
             {
+                //{
+                //    var mucaiShu = hl.AllChildren.First(c => c.TemplateId == ProjectConstant.MucaishuTId);
+                //    var fcpCount = mucaiShu.Name2FastChangingProperty["Count"];
+                //    fcpCount.GetCurrentValueWithUtc();
+                //    fcpCount.LastValue += booty.Count;
+                //}
                 parent = gc.GetMucai().Parent;
             }
             else if (booty.TemplateId == ProjectConstant.MucaishuTId)

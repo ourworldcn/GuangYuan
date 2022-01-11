@@ -138,6 +138,7 @@ namespace Gy001
                 app.UseDeveloperExceptionPage();
                 //app.UseExceptionHandler(build => build.Run(ExceptionHandler));
             }
+            
             #endregion 启用通用服务
 
             #region 启用中间件服务生成Swagger

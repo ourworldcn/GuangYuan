@@ -25,26 +25,31 @@ namespace GuangYuan.GY001.UserDb
         /// 普通角色。
         /// </summary>
         Unknow = 0,
+
         /// <summary>
         /// 机器人。
         /// </summary>
         Robot = 1,
+
         /// <summary>
         /// Npc有些轻度游戏中没有npc。
         /// </summary>
         Npc = 2,
-        /// <summary>
-        /// 有管理员权力的角色。一般是运营人员。
-        /// </summary>
-        Admin = 4,
+
         /// <summary>
         /// 开发时的测试账号。
         /// </summary>
         Test = 8,
+
         /// <summary>
         /// 特殊的贵宾角色。
         /// </summary>
-        Vip = 16,
+        Vip = 4,
+
+        /// <summary>
+        /// 有管理员权力的角色。一般是运营人员。
+        /// </summary>
+        Admin = 16,
 
         /// <summary>
         /// 超管，一般是开发团队人员。
@@ -107,7 +112,7 @@ namespace GuangYuan.GY001.UserDb
         }
 
         /// <summary>
-        /// 获取该物品直接或间接下属对象的枚举数。深度优先。
+        /// 获取该物品直接或间接下属对象的枚举数。广度优先。
         /// </summary>
         /// <returns>枚举数。不包含自己。枚举过程中不能更改树节点的关系。</returns>
         [NotMapped]
@@ -117,11 +122,10 @@ namespace GuangYuan.GY001.UserDb
             get
             {
                 foreach (var item in GameItems)
-                {
                     yield return item;
+                foreach (var item in GameItems)
                     foreach (var item2 in item.AllChildren)
                         yield return item2;
-                }
             }
         }
 

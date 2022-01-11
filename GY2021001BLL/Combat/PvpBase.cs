@@ -135,12 +135,13 @@ namespace GuangYuan.GY001.BLL
                 jinbiOfAttacker *= dMucaiCount * 0.1m;
                 mucaiOfAttacker *= dMucaiCount * 0.1m;
             }
-            if (World.CharManager.IsOnline(OtherCharId))    //若防御方在线
+            if (World.CharManager.IsOnline(OtherCharId) || OtherChar.CharType.HasFlag(CharType.Npc))    //若防御方在线或是机器人
             {
                 jinbiOfDefenser = decimal.Zero;
                 mucaiShuOfDefenser = decimal.Zero;
                 mucaiOfDefenser = decimal.Zero;
             }
+
             //进攻方收益
             if (jinbiOfAttacker != decimal.Zero)
                 bootyOfAttacker?.Add((ProjectConstant.JinbiId, jinbiOfAttacker));
@@ -153,6 +154,33 @@ namespace GuangYuan.GY001.BLL
                 bootyOfDefenser?.Add((ProjectConstant.MucaishuTId, mucaiShuOfDefenser));
             if (mucaiOfDefenser != decimal.Zero)
                 bootyOfDefenser?.Add((ProjectConstant.MucaiId, mucaiOfDefenser));
+        }
+
+        /// <summary>
+        /// 计算战利品。
+        /// </summary>
+        /// <param name="attackerBooty"></param>
+        /// <param name="defencerBooty"></param>
+        public void GetBooty(ICollection<GameBooty> attackerBooty, ICollection<GameBooty> defencerBooty)
+        {
+            var dHl = OtherChar.GetHomeland();
+            var dYumi = dHl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId); //防御方玉米田
+            
+            var dMucaiShu = dHl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId);   //防御方木材树
+            var dMucai = OtherChar.GetMucai();  //防御方木材货币数
+            if (IsWin)   //若击溃主控室
+            {
+
+            }
+            else //若未击溃主控室
+            {
+                var dMucaiCount = DestroyTIds.Count(c => c.Item1 == ProjectConstant.MucaiStoreTId);   //击溃木材仓库的数量
+
+            }
+            if (World.CharManager.IsOnline(OtherCharId) || OtherChar.CharType.HasFlag(CharType.Npc))    //若防御方在线或是机器人
+            {
+
+            }
         }
 
         private List<(Guid, decimal)> _BootyOfAttacker;
