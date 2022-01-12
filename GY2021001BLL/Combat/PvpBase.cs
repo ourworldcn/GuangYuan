@@ -165,22 +165,67 @@ namespace GuangYuan.GY001.BLL
         {
             var dHl = OtherChar.GetHomeland();
             var dYumi = dHl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId); //防御方玉米田
-            
+
             var dMucaiShu = dHl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId);   //防御方木材树
             var dMucai = OtherChar.GetMucai();  //防御方木材货币数
+            var eventMng = World.EventsManager;
+            var lvAtt = GameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);   //进攻方等级
+            var aMucai = new GameBooty() { CharId = GameChar.Id };   //攻击方木材
+            aMucai.Properties["tid"] = ProjectConstant.MucaiId.ToString();
+
+            var aJinbi = new GameBooty() { CharId = GameChar.Id };   //攻击方金币
+            aJinbi.Properties["tid"] = ProjectConstant.JinbiId.ToString();
+
+            var defMucai = new GameBooty() { CharId = OtherChar.Id };   //防御方木材
+            defMucai.Properties["tid"] = ProjectConstant.JinbiId.ToString();
+
+            var defShu = new GameBooty() { CharId = OtherChar.Id };   //防御方木材树
+            defShu.Properties["tid"] = ProjectConstant.MucaishuTId.ToString();
+
+            var defJinbi = new GameBooty() { CharId = OtherChar.Id };   //防御方金币
+            defJinbi.Properties["tid"] = ProjectConstant.JinbiId.ToString();
+
+            var defYumi = new GameBooty() { CharId = OtherChar.Id };    //防御方玉米田
+            defYumi.Properties["tid"] = ProjectConstant.YumitianTId.ToString();
+
+            var attJinbiBase = lvAtt * 30 + dMucai.Count.Value * 0.2m + dMucaiShu.Count.Value * 0.5m;   //进攻方获得金币的基数
+            var attMucaiBase = lvAtt * 100 + dYumi.Count.Value * 0.5m;  //进攻方获得木材的基数
+            var defYumiBase = dYumi.Count.Value * 0.5m; //防御方玉米损失基数
+            var defMucaiBase = dMucai.Count.Value * 0.2m;   //防御方木材损失基数
+            var defMucaiShuBase = dMucaiShu.Count.Value * 0.5m; //防御方木材树损失基数
             if (IsWin)   //若击溃主控室
             {
-
+                //攻击方木材
+                aMucai.Properties["count"] = Math.Round(attMucaiBase, MidpointRounding.AwayFromZero);
+                //攻击方获得金币
+                aJinbi.Properties["count"] = Math.Round(attJinbiBase, MidpointRounding.AwayFromZero);
+                //防御方玉米田损失
+                defYumi.Properties["count"] = -Math.Round(defYumiBase, MidpointRounding.AwayFromZero);
+                //防御方木材损失
+                defMucai.Properties["count"] = -Math.Round(defMucaiBase, MidpointRounding.AwayFromZero);
+                defShu.Properties["count"] = -Math.Round(defMucaiShuBase, MidpointRounding.AwayFromZero);
             }
             else //若未击溃主控室
             {
                 var dMucaiCount = DestroyTIds.Count(c => c.Item1 == ProjectConstant.MucaiStoreTId);   //击溃木材仓库的数量
-
+                //攻击方木材
+                aMucai.Properties["count"] = Math.Round(attMucaiBase * dMucaiCount * 0.1m, MidpointRounding.AwayFromZero);
+                //攻击方获得金币
+                aJinbi.Properties["count"] = Math.Round(attJinbiBase * dMucaiCount * 0.1m, MidpointRounding.AwayFromZero);
             }
-            if (World.CharManager.IsOnline(OtherCharId) || OtherChar.CharType.HasFlag(CharType.Npc))    //若防御方在线或是机器人
+            if (!World.CharManager.IsOnline(OtherCharId) && !OtherChar.CharType.HasFlag(CharType.Npc))    //若防御方不在线在线且不是机器人
             {
-
+                if (defYumi.Properties.GetDecimalOrDefault("count", decimal.Zero) != decimal.Zero)  //若要记录防御方损失玉米
+                    defencerBooty.Add(defYumi);
+                if (defMucai.Properties.GetDecimalOrDefault("count", decimal.Zero) != decimal.Zero)  //若要记录防御方损失木材
+                    defencerBooty.Add(defMucai);
+                if (defShu.Properties.GetDecimalOrDefault("count", decimal.Zero) != decimal.Zero)  //若要记录防御方损失木材树
+                    defencerBooty.Add(defShu);
             }
+            if (aJinbi.Properties.GetDecimalOrDefault("count", decimal.Zero) != decimal.Zero)  //若要记录进攻方获得金币
+                attackerBooty.Add(aJinbi);
+            if (aMucai.Properties.GetDecimalOrDefault("count", decimal.Zero) != decimal.Zero)  //若要记录进攻方获得木材
+                attackerBooty.Add(aMucai);
         }
 
         private List<(Guid, decimal)> _BootyOfAttacker;
