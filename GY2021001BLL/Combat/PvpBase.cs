@@ -99,64 +99,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 计算战斗收益。
-        /// </summary>
-        /// <param name="bootyOfAttacker">进攻方收益。为空则不设置。</param>
-        /// <param name="bootyOfDefenser">防御方收益。为空则不设置。</param>
-        private void ComputeBooty([AllowNull] List<(Guid, decimal)> bootyOfAttacker, [AllowNull] List<(Guid, decimal)> bootyOfDefenser)
-        {
-            int dMucaiCount; //摧毁木材仓库数
-            if (DestroyTIds.Any(c => c.Item1 == ProjectConstant.MucaiStoreTId))
-                dMucaiCount = (int)DestroyTIds.First(c => c.Item1 == ProjectConstant.MucaiStoreTId).Item2;
-            else
-                dMucaiCount = 0;
-            var dYumi = OtherChar.GetHomeland().AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId); //防御方玉米田
-            var dt = Now;
-            var dJinbi = dYumi.Name2FastChangingProperty["Count"].GetCurrentValue(ref dt); //防御方玉米田存量
-            var dMucaiShu = OtherChar.GetHomeland().AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId);   //防御方木材树
-            dt = Now;
-            var dMucai = dMucaiShu.Name2FastChangingProperty["Count"].GetCurrentValue(ref dt);  //防御方木材树的数量
-            var lvAttacker = GameChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);    //进攻方等级
-            var lvDefenser = OtherChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);    //防御方等级
-            var mucaiRank = OtherChar.GetMucai().Count.Value; //防御方仓库内木材
-            var jinbiOfAttacker = lvAttacker * 100 + dJinbi * 0.5m;  //进攻方获益金币基数
-            var mucaiOfAttacker = lvAttacker * 30 + dMucai * 0.5m + mucaiRank * 0.2m; //进攻方获益木材基数
-            var jinbiOfDefenser = 0m;    //防御方金币获益
-            var mucaiShuOfDefenser = 0m;    //防御方木材树获益
-            var mucaiOfDefenser = 0m;    //防御方木材仓库获益
-            if (IsWin)   //进攻方获胜
-            {
-                jinbiOfDefenser = -dJinbi * 0.5m;
-                mucaiShuOfDefenser = -dMucai * 0.5m;
-                mucaiOfDefenser = -mucaiRank * 0.2m;
-            }
-            else //进攻方未获胜
-            {
-                jinbiOfAttacker *= dMucaiCount * 0.1m;
-                mucaiOfAttacker *= dMucaiCount * 0.1m;
-            }
-            if (World.CharManager.IsOnline(OtherCharId) || OtherChar.CharType.HasFlag(CharType.Npc))    //若防御方在线或是机器人
-            {
-                jinbiOfDefenser = decimal.Zero;
-                mucaiShuOfDefenser = decimal.Zero;
-                mucaiOfDefenser = decimal.Zero;
-            }
-
-            //进攻方收益
-            if (jinbiOfAttacker != decimal.Zero)
-                bootyOfAttacker?.Add((ProjectConstant.JinbiId, jinbiOfAttacker));
-            if (mucaiOfAttacker != decimal.Zero)
-                bootyOfAttacker?.Add((ProjectConstant.MucaiId, jinbiOfAttacker));
-            //防御方收益
-            if (jinbiOfDefenser != decimal.Zero)
-                bootyOfDefenser?.Add((ProjectConstant.JinbiId, jinbiOfDefenser));
-            if (mucaiShuOfDefenser != decimal.Zero)
-                bootyOfDefenser?.Add((ProjectConstant.MucaishuTId, mucaiShuOfDefenser));
-            if (mucaiOfDefenser != decimal.Zero)
-                bootyOfDefenser?.Add((ProjectConstant.MucaiId, mucaiOfDefenser));
-        }
-
-        /// <summary>
         /// 计算战利品。
         /// </summary>
         /// <param name="attackerBooty"></param>
@@ -226,43 +168,6 @@ namespace GuangYuan.GY001.BLL
                 attackerBooty.Add(aJinbi);
             if (aMucai.Properties.GetDecimalOrDefault("count", decimal.Zero) != decimal.Zero)  //若要记录进攻方获得木材
                 attackerBooty.Add(aMucai);
-        }
-
-        private List<(Guid, decimal)> _BootyOfAttacker;
-        /// <summary>
-        /// 进攻者战利品。
-        /// Item1=模板Id,Item2=数量
-        /// </summary>
-        public List<(Guid, decimal)> BootyOfAttacker
-        {
-            get
-            {
-                if (_BootyOfAttacker is null)
-                {
-                    NormalizeDestroyTIds();
-                    _BootyOfAttacker = new List<(Guid, decimal)>();
-                    ComputeBooty(_BootyOfAttacker, null);
-                }
-                return _BootyOfAttacker;
-            }
-        }
-
-        private List<(Guid, decimal)> _BootyOfDefenser;
-        /// <summary>
-        /// 防御者战利品。
-        /// </summary>
-        public List<(Guid, decimal)> BootyOfDefenser
-        {
-            get
-            {
-                if (_BootyOfDefenser is null)
-                {
-                    NormalizeDestroyTIds();
-                    _BootyOfDefenser = new List<(Guid, decimal)>();
-                    ComputeBooty(null, _BootyOfDefenser);
-                }
-                return _BootyOfDefenser;
-            }
         }
 
         /// <summary>

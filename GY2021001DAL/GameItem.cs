@@ -509,7 +509,7 @@ namespace GuangYuan.GY001.UserDb
     public static class GameItemExtensions
     {
         /// <summary>
-        /// 
+        /// 获取堆叠空余数量。
         /// </summary>
         /// <param name="obj"></param>
         /// <returns>堆叠空余数量，不可堆叠将返回0，不限制将返回<see cref="decimal.MaxValue"/></returns>

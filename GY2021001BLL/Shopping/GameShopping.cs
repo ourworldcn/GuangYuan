@@ -135,7 +135,8 @@ namespace GuangYuan.GY001.BLL
                 {
                     UserContext = datas.UserContext,
                 };
-                useItemsDatas.ItemIds.Add((gi.Id, gi.Count.Value));
+                useItemsDatas.ItemId = gi.Id;
+                useItemsDatas.Count = (int)gi.Count.Value;
                 World.ItemManager.UseItems(useItemsDatas);
                 if (useItemsDatas.HasError)
                 {

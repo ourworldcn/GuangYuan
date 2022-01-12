@@ -286,7 +286,8 @@ namespace OW.Game
             GameCharCreated(gc, gt, user, parameters?.GetValueOrDefault(nameof(GameChar.DisplayName)) as string, new Dictionary<string, object>());
         }
 
-        public override void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, [AllowNull] IReadOnlyDictionary<string, object> parameters)
+        public override void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, 
+            [AllowNull] IReadOnlyDictionary<string, object> parameters)
         {
             base.GameCharCreated(gameChar, template, user, displayName, parameters);
             var gitm = World.ItemTemplateManager;
@@ -347,6 +348,7 @@ namespace OW.Game
             World.CombatManager.UpdatePveInfo(gameChar);
             //不可加入pvp排名信息
             //World.CombatManager.UpdatePvpInfo(gameChar);
+            World.ItemManager.ComputeMucaiStc(gameChar);
         }
 
         /// <summary>
@@ -508,6 +510,7 @@ namespace OW.Game
                     ts = dt - now;
                 var tm = new Timer(World.BlueprintManager.LevelUpCompleted, ValueTuple.Create(gameChar.Id, item.Id), ts, Timeout.InfiniteTimeSpan);
             }
+            World.ItemManager.ComputeMucaiStc(gameChar);
         }
 
         public override void GameUserLoaded(GameUser user, DbContext context)

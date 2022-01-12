@@ -116,12 +116,11 @@ namespace GY2021001WebApi.Models
             var result = new GameBootyDto()
             {
                 CharId = obj.CharId.ToBase64String(),
-                Count = obj.Count,
+                Count = obj.Properties.GetDecimalOrDefault("count"),
                 ParentId = obj.ParentId.ToBase64String(),
-                TemplateId = obj.TemplateId.ToBase64String(),
+                TemplateId = obj.Properties.GetGuidOrDefault("tid").ToBase64String(),
             };
-            foreach (var item in obj.Properties)
-                result.Properties[item.Key] = item.Value;
+            OwHelper.Copy(obj.Properties, result.Properties);
             return result;
         }
     }

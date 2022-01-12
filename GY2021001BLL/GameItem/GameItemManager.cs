@@ -60,6 +60,19 @@ namespace OW.Game.Item
         #endregion
 
         /// <summary>
+        /// 刷新指定角色的木材堆叠上限属性。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        public void ComputeMucaiStc(GameChar gameChar)
+        {
+            var mucai = gameChar.GetMucai();
+            var stc = mucai.Template.Properties.GetDecimalOrDefault("stc");
+            var coll = gameChar.GetHomeland().AllChildren.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);
+            stc += coll.Sum(c => c.Properties.GetDecimalOrDefault("stc"));
+            mucai.Properties["stc"] = stc;
+        }
+
+        /// <summary>
         /// 获取对象的模板。
         /// </summary>
         /// <param name="gameObject"></param>
@@ -714,10 +727,49 @@ namespace OW.Game.Item
                 }
                 else
                 {
-                    remainder.Add(gameItem);
+                    remainder?.Add(gameItem);
                 }
                 //当有剩余物品
                 return;
+            }
+        }
+
+        /// <summary>
+        /// 测试指定物品是否可以完整的放入指定容器中。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public bool IsAllowAdd(GameItem gameItem, GameObjectBase parent)
+        {
+            IList<GameItem> children = GetChildrenCollection(parent);
+            var stcItem = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId) ?? gameItem;
+            if (!stcItem.IsStc(out var stc)) //若不可堆叠
+            {
+                if (parent is GameItemBase gib) //若是容器
+                {
+                    var freeCap = GetFreeCapacity(gib);
+                    if (freeCap == 0)   //若不可再放入物品
+                    {
+                        return false;
+                    }
+                }
+                if (parent is GameItem gi && gi.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(gameItem) && this.IsExistsMounts(gi.GameChar, gameItem))  //若要放入坐骑且有同款坐骑
+                {
+                    var bag = gi.GameChar.GetShoulanBag();  //兽栏
+                    if (GetFreeCapacity(bag) == 0) //若兽栏满
+                    {
+                        return false;
+                    }
+                    parent = bag;
+                }
+                return true;
+            }
+            else //若可以堆叠
+            {
+                var dest = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && c.GetNumberOfStackRemainder() > 0);    //找到已有的物品且尚可加入堆叠的
+                var re = dest?.GetNumberOfStackRemainder() ?? decimal.MaxValue;
+                return re >= gameItem.Count;
             }
         }
 
@@ -1251,30 +1303,28 @@ namespace OW.Game.Item
             var gim = World.ItemManager;
             var qiwuBag = datas.GameChar.GetQiwuBag();
             var bpMng = datas.World.BlueprintManager;
-            for (int i = 0; i < datas.Items.Count; i++)
+            GameItem gi = datas.Item.Item1;
+            var item = datas.Item.Item1;
+            var bpid = gi.Properties.GetGuidOrDefault("usebpid", Guid.Empty);
+            if (bpid != Guid.Empty)    //若指定了蓝图
             {
-                var item = datas.Items[i];
-                GameItem gi = item.Item1;
-                var bpid = gi.Properties.GetGuidOrDefault("usebpid", Guid.Empty);
-                if (bpid != Guid.Empty)    //若指定了蓝图
+                var template = bpMng.GetTemplateFromId(bpid) as BlueprintTemplate;
+                using ApplyBlueprintDatas bpDatas = new ApplyBlueprintDatas(Service, datas.GameChar)
                 {
-                    var template = bpMng.GetTemplateFromId(bpid) as BlueprintTemplate;
-                    using ApplyBlueprintDatas bpDatas = new ApplyBlueprintDatas(Service, datas.GameChar)
-                    {
-                        Count = (int)item.Item2,
-                        Blueprint = template,
-                    };
-                    bpDatas.GameItems.Add(gi);
-                    World.BlueprintManager.ApplyBluprint(bpDatas);
-                    datas.ErrorCode = bpDatas.ErrorCode;
-                    datas.ErrorMessage = bpDatas.ErrorMessage;
-                    if (!datas.HasError)
-                    {
-                        datas.ChangeItems.AddRange(bpDatas.ChangeItems);
-                        gim.MoveItem(gi, item.Item2, qiwuBag, datas.ChangeItems);
-                    }
+                    Count = datas.Count,
+                    Blueprint = template,
+                };
+                bpDatas.GameItems.Add(gi);
+                World.BlueprintManager.ApplyBluprint(bpDatas);
+                datas.ErrorCode = bpDatas.ErrorCode;
+                datas.ErrorMessage = bpDatas.ErrorMessage;
+                if (!datas.HasError)
+                {
+                    datas.ChangeItems.AddRange(bpDatas.ChangeItems);
                 }
-                else //若无蓝图
+            }
+            else //若未指定蓝图
+                for (int i = 0; i < datas.Count; i++)   //多次单个使用物品
                 {
                     //准备数据
                     var tid = gi.Properties.GetGuidOrDefault("usetid", Guid.Empty);
@@ -1295,12 +1345,21 @@ namespace OW.Game.Item
                     //生成新物品
                     var giAdd = new GameItem();
                     World.EventsManager.GameItemCreated(giAdd, tid);
-                    giAdd.Count = count * item.Item2;
+                    giAdd.Count = count;
                     //修改数据
-                    gim.AddItem(giAdd, parent, null, datas.ChangeItems);    //加入新物品
-                    gim.MoveItem(gi, item.Item2, qiwuBag, datas.ChangeItems);
+                    if (IsAllowAdd(giAdd, parent))
+                    {
+                        gim.AddItem(giAdd, parent, null, datas.ChangeItems);    //加入新物品
+                        datas.SuccCount++;
+                        gi.Count -= 1;
+                        if (gi.Count > 0)
+                            datas.ChangeItems.AddToChanges(gi);
+                        else
+                            datas.ChangeItems.AddToRemoves(gi.ParentId.Value, gi.Id);
+                    }
+                    else
+                        break;
                 }
-            }
             ChangeItem.Reduce(datas.ChangeItems);
             if (datas.ChangeItems.Count > 0)
                 World.CharManager.NotifyChange(datas.GameChar.GameUser);
@@ -1464,41 +1523,39 @@ namespace OW.Game.Item
         {
         }
 
-        private List<(Guid, decimal)> _ItemIds;
-
         /// <summary>
         /// 要使用物品的唯一Id集合。
         /// </summary>
-        public List<(Guid, decimal)> ItemIds => _ItemIds ??= new List<(Guid, decimal)>();
+        public Guid ItemId { get; set; }
 
-        private List<(GameItem, decimal)> _Items;
+        /// <summary>
+        /// 要使用的数量。
+        /// </summary>
+        public int Count { get; set; }
 
+        private Tuple<GameItem, decimal> _Item;
         /// <summary>
         /// 要使用的物品。
         /// </summary>
-        public List<(GameItem, decimal)> Items
+        public Tuple<GameItem, decimal> Item
         {
             get
             {
-                if (ItemIds.Select(c => c.Item1).Distinct().Count() != ItemIds.Count)
+                if (_Item is null)
                 {
-                    throw new ArgumentException("有重复的物品Id。");
+                    var gi = GameChar.AllChildren.FirstOrDefault(c => c.Id == ItemId);
+                    if (gi is null)
+                        throw new ArgumentException("有一个Id不是有效物品。");
+                    _Item = Tuple.Create(gi, (decimal)Count);
                 }
-                if (_Items is null)
-                {
-                    var coll = from gi in GameChar.AllChildren
-                               join id in ItemIds
-                               on gi.Id equals id.Item1
-                               select (gi, id.Item2);
-                    var list = coll.ToList();
-                    if (list.Count != _ItemIds.Count)
-                        throw new ArgumentException("至少有一个Id不是有效物品。");
-                    _Items = list;
-                }
-                return _Items;
+                return _Item;
             }
         }
 
+        /// <summary>
+        /// 实际成功使用的次数。
+        /// </summary>
+        public int SuccCount { get; set; }
     }
 
     /// <summary>

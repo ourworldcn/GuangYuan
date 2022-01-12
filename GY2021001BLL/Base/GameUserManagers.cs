@@ -1430,14 +1430,6 @@ namespace GuangYuan.GY001.BLL
             return manager.LockAndReturnDisposer(gameUser, timeout);
         }
 
-        //public static List<Guid> RemoveAndReturnIds<T>(this DbSet<T> set, Func<T, bool> whereFunc) where T : GuidKeyObjectBase
-        //{
-        //    var result = set.Where(whereFunc).Select(c => c.Id).ToList();
-        //    if (result.Count > 0)
-        //    {
-        //    }
-        //    return result;
-        //}
         #endregion 项目特定
 
     }

@@ -1429,7 +1429,7 @@ namespace GY2021001WebApi.Models
         /// 使用物品。
         /// </summary>
         [DataMember]
-        public List<UseItemsParamsItemDto> Items { get; set; } = new List<UseItemsParamsItemDto>();
+        public UseItemsParamsItemDto Item { get; set; } = new UseItemsParamsItemDto();
     }
 
     /// <summary>
@@ -1444,6 +1444,12 @@ namespace GY2021001WebApi.Models
         public UseItemsReturnDto()
         {
         }
+
+        /// <summary>
+        /// 实际成功使用的次数。
+        /// </summary>
+        [DataMember]
+        public int SuccCount { get; set; }
     }
 
     /// <summary>

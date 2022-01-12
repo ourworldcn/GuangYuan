@@ -1722,7 +1722,7 @@
             构造函数。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.UseItemsParamsDto.Items">
+        <member name="P:GY2021001WebApi.Models.UseItemsParamsDto.Item">
             <summary>
             使用物品。
             </summary>
@@ -1735,6 +1735,11 @@
         <member name="M:GY2021001WebApi.Models.UseItemsReturnDto.#ctor">
             <summary>
             构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.UseItemsReturnDto.SuccCount">
+            <summary>
+            实际成功使用的次数。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.ApplyBlueprintParamsDto">
@@ -2713,12 +2718,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

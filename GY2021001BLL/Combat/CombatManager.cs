@@ -701,36 +701,23 @@ namespace GuangYuan.GY001.BLL
             todayData.Save();
             //设置战利品
             List<GameBooty> bootyOfAttacker = new List<GameBooty>();
-            foreach (var item in datas.BootyOfAttacker) //进攻方战利品
+            List<GameBooty> bootyOfDefenser = new List<GameBooty>();
+            datas.GetBooty(bootyOfAttacker, bootyOfDefenser);
+            foreach (var item in bootyOfAttacker) //进攻方战利品
             {
-                var booty = new GameBooty()
-                {
-                    ParentId = pc.Id,
-                    CharId = datas.GameChar.Id,
-                    TemplateId = item.Item1,
-                    Count = item.Item2,
-                };
-                booty.SetGameItems(World, datas.ChangeItems);   //设置物品实际增减
+                item.ParentId = pc.Id;
+                item.SetGameItems(World, datas.ChangeItems);   //设置物品实际增减
                 datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
-                bootyOfAttacker.Add(booty);
             }
             db.AddRange(bootyOfAttacker);
 
-            List<GameBooty> bootyOfDefenser = new List<GameBooty>();
             if (!World.CharManager.IsOnline(datas.OtherCharId))    //若不在线
             {
-                foreach (var item in datas.BootyOfDefenser) //防御方战利品
+                foreach (var item in bootyOfDefenser) //防御方战利品
                 {
-                    var booty = new GameBooty()
-                    {
-                        ParentId = pc.Id,
-                        CharId = datas.OtherCharId,
-                        TemplateId = item.Item1,
-                        Count = item.Item2,
-                    };
-                    booty.SetGameItems(World);   //设置物品实际增减
+                    item.ParentId = pc.Id;
+                    item.SetGameItems(World);   //设置物品实际增减
                     datas.World.CharManager.NotifyChange(datas.OtherChar.GameUser);
-                    bootyOfDefenser.Add(booty);
                 }
                 db.AddRange(bootyOfDefenser);
             }
@@ -835,15 +822,19 @@ namespace GuangYuan.GY001.BLL
             //计算战利品
             if (datas.IsWin) //若反击胜利
             {
-                List<GameBooty> booties = db.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == oldWar.Id && oldWar.AttackerIds.Contains(c.CharId) && c.Count != 0).ToList();  //原战斗的攻击者战利品
+                List<GameBooty> booties = db.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == oldWar.Id && oldWar.AttackerIds.Contains(c.CharId)).ToList();  //原战斗的攻击者战利品
                 if (booties.Count > 0) //若有战利品
                 {
-                    var attackerBooties = booties.Select(c => new GameBooty()
+                    var attackerBooties = booties.Select(c =>
                     {
-                        ParentId = pc.Id,
-                        CharId = datas.GameChar.Id,
-                        TemplateId = c.TemplateId,
-                        Count = c.Count,
+                        var r = new GameBooty()
+                        {
+                            ParentId = pc.Id,
+                            CharId = datas.GameChar.Id,
+                        };
+                        r.Properties["tid"] = c.Properties["tid"];
+                        r.Properties["count"] = c.Properties["count"];
+                        return r;
                     }).ToList(); //本战斗攻击者战利品
                     //设计：本次战斗防御者不丢失资源
                     //设置战利品
@@ -918,25 +909,36 @@ namespace GuangYuan.GY001.BLL
             //获取战利品
             if (datas.IsWin)    //若赢得战斗
             {
-                var oriBooty = db.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == oldWar.Id && oldWar.AttackerIds.Contains(c.CharId) && c.Count != 0).ToList();     //原始战斗攻击方战利品
+                var oriBooty = db.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == oldWar.Id && oldWar.AttackerIds.Contains(c.CharId)).ToList();     //原始战斗攻击方战利品
                 var boo = oldWar.BootyOfAttacker(datas.UserContext);  //原始进攻方的战利品
 
-                var newBooty = boo.Select(c => new GameBooty   //计算进攻方战利品
+                var newBooty = boo.Select(c =>
                 {
-                    ParentId = pc.Id,
-                    CharId = datas.GameChar.Id,
-                    TemplateId = c.TemplateId,
-                    Count = Math.Round(c.Count * 0.3m, MidpointRounding.AwayFromZero),
+                    var r = new GameBooty   //计算进攻方战利品
+                    {
+                        ParentId = pc.Id,
+                        CharId = datas.GameChar.Id,
+                    };
+                    r.Properties["count"] = Math.Round(c.Properties.GetDecimalOrDefault("count") * 0.3m, MidpointRounding.AwayFromZero);
+                    if (r.Properties.GetDecimalOrDefault("count") == decimal.Zero)
+                        return null;
+                    r.Properties["tid"] = c.Properties["tid"];
+                    return r;
                 }).ToList();
+                newBooty.RemoveAll(c => c is null); //去掉空引用
                 db.AddRange(newBooty);  //加入数据库
                 newBooty.ForEach(c => c.SetGameItems(World, datas.ChangeItems));
 
-                var oldBooties = boo.Select(c => new GameBooty   //原始被掠夺角色的战利品
+                var oldBooties = boo.Select(c =>
                 {
-                    ParentId = pc.Id,
-                    CharId = oldWar.DefenserIds.First(),
-                    TemplateId = c.TemplateId,
-                    Count = c.Count,
+                    var r = new GameBooty   //原始被掠夺角色的战利品
+                    {
+                        ParentId = pc.Id,
+                        CharId = oldWar.DefenserIds.First(),
+                    };
+                    r.Properties["tid"] = c.Properties["tid"];
+                    r.Properties["count"] = c.Properties["count"];
+                    return r;
                 }).ToList();
                 oldBooties.ForEach(c => c.SetGameItems(world));
             }

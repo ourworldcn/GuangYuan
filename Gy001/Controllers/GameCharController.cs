@@ -200,7 +200,8 @@ namespace GY2021001WebApi.Controllers
             var result = new UseItemsReturnDto();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             using var datas = new UseItemsWorkDatas(world, model.Token) { UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>() };
-            datas.ItemIds.AddRange(model.Items.Select(c => (OwConvert.ToGuid(c.Id), c.Count)));
+            datas.ItemId = OwConvert.ToGuid(model.Item.Id);
+            datas.Count = (int)model.Item.Count;
             try
             {
                 world.ItemManager.UseItems(datas);
@@ -212,6 +213,7 @@ namespace GY2021001WebApi.Controllers
                     result.DebugMessage = datas.ErrorMessage;
                     if (!result.HasError)
                         result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                    result.SuccCount = datas.SuccCount;
                 }
             }
             catch (Exception err)
