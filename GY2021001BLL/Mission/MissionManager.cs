@@ -183,14 +183,13 @@ namespace OW.Game.Mission
                 switch (str)
                 {
                     case "814e47cd-8bdf-4efc-bd26-61af57b7fcf8": //	孵化成就	51007
-                        
+
                     case "8bba8a00-e767-4a6a-aa6b-22ef03a3f527": //	关卡模式总战力成就	51005
                     case "42d3236c-ea7c-4444-898e-469aac1fda07": //	累计访问好友天次成就	51011
 
                     case "6f8f5d48-e4b4-4e37-a48f-f8b6badc6f44": //	pvp进攻成就	51013
                     case "c20cc819-dc76-482f-a3c4-cfd32b8b83c7": //	pvp防御成就	51014
                     case "6817d0d6-ad3d-4dd1-a8f5-4368ac5a568d": //	pvp助战成就	51015
-
                     case "5c3d9daf-fe89-43a4-93f8-7abdc85418e5": //	累计塔防模式次数成就	51012
                     case "96a36fbe-f79a-4579-932e-588772436da5": //	关卡成就	51002
                         {
@@ -211,7 +210,7 @@ namespace OW.Game.Mission
                     case "7d5ad309-2614-434e-b8d3-afe4db93d8b3": //	lv20坐骑数量	51004
                         {
                             var zuoqiBag = gc.GetZuojiBag();
-                            metrics = zuoqiBag.Children.Count(c => gim.GetBody(c).Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName) >= 20);
+                            metrics = zuoqiBag.Children.Count(c => gim.GetBody(c)?.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName) >= 19);
                         }
                         break;
                     case "49ee3541-3a6e-4d05-85b0-566c6bfecde2": //	纯种坐骑数量成就	51006
@@ -401,7 +400,7 @@ namespace OW.Game.Mission
         /// </summary>
         /// <param name="missionSlot">任务/成就槽对象。</param>
         /// <param name="tid">任务/成就模板Id。</param>
-        /// <param name="newValue"></param>
+        /// <param name="newValue">新的指标值。</param>
         /// <returns></returns>
         private bool SetNewValue(GameItem missionSlot, Guid tid, decimal newValue)
         {
@@ -413,9 +412,9 @@ namespace OW.Game.Mission
             var oldVal = mObj.Count.GetValueOrDefault();   //原值
             var unpickMetrics = missionSlot.Properties.GetStringOrDefault(keyName, string.Empty).Split(OwHelper.SemicolonArrayWithCN, StringSplitOptions.RemoveEmptyEntries)
                 .Select(c => decimal.Parse(c)).ToArray();   //未领奖励的指标值
-            if (!TId2Views.TryGetValue(tid, out var view))
+            if (!TId2Views.TryGetValue(tid, out var view))  //若找不到指定成就对象
             {
-                throw new InvalidOperationException("找不到指定模板id的对象。");
+                return false;   //可能被数据删除，此处容错
             }
             var oldMetrics = view.Metrics.Where(c => oldVal >= c.Item1).Select(c => c.Item1); //级别完成且未领取的指标值。
             var newMetrics = view.Metrics.Where(c => newValue >= c.Item1).Select(c => c.Item1).Except(oldMetrics).Except(unpickMetrics).ToList(); //应加入的新值
@@ -443,6 +442,45 @@ namespace OW.Game.Mission
                 return false;
         }
 
+        /// <summary>
+        /// 对指定成就设置新的指标值。
+        /// </summary>
+        /// <param name="missionSlot">任务/成就槽对象。</param>
+        /// <param name="tid">任务/成就模板Id。</param>
+        /// <param name="newValue">新的指标值。</param>
+        /// <returns></returns>
+        public virtual bool SetMetrics(GameItem missionSlot, Guid tid, decimal newValue)
+        {
+            return SetNewValue(missionSlot, tid, newValue);
+        }
+
+        /// <summary>
+        /// 获取指定成就当前指标值。
+        /// </summary>
+        /// <param name="missionSlot">任务/成就槽对象。</param>
+        /// <param name="tid">任务/成就模板Id。</param>
+        /// <returns>当前指标值。</returns>
+        public virtual decimal GetMetrics(GameItem missionSlot, Guid tid)
+        {
+            var mObj = missionSlot.Children.FirstOrDefault(c => c.TemplateId == tid);   //任务/成就对象
+            if (mObj is null)
+                return decimal.Zero;
+            var oldVal = mObj.Count.GetValueOrDefault();   //原值
+            return oldVal;
+        }
+
+        /// <summary>
+        /// 增加指定成就的指标值。
+        /// </summary>
+        /// <param name="missionSlot">任务/成就槽对象。</param>
+        /// <param name="tid">任务/成就模板Id。</param>
+        /// <param name="value">增量值。</param>
+        /// <returns></returns>
+        public virtual bool AddMetrics(GameItem missionSlot, Guid tid, decimal value)
+        {
+            var oldValue = GetMetrics(missionSlot, tid);
+            return SetMetrics(missionSlot, tid, value + oldValue);
+        }
         #region 任务相关
 
         /// <summary>

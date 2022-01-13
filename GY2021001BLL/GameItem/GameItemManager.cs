@@ -516,12 +516,13 @@ namespace OW.Game.Item
         /// <param name="filter"></param>
         /// <param name="dest"></param>
         /// <param name="changes">变化的数据。可以是null或省略，此时忽略。</param>
-        public void MoveItems(GameObjectBase src, Func<GameItem, bool> filter, GameObjectBase dest, ICollection<ChangeItem> changes = null)
+        /// <param name="remainder">无法移动的物品。</param>
+        public void MoveItems(GameObjectBase src, Func<GameItem, bool> filter, GameObjectBase dest, ICollection<ChangeItem> changes = null, ICollection<GameItem> remainder = null)
         {
             var tmp = World.ObjectPoolListGameItem.Get();
             var adds = World.ObjectPoolListGameItem.Get();
-            var remainder = World.ObjectPoolListGameItem.Get();
             var remainder2 = World.ObjectPoolListGameItem.Get();
+            remainder ??= new List<GameItem>();
             try
             {
                 //移动物品
@@ -566,7 +567,6 @@ namespace OW.Game.Item
             finally
             {
                 World.ObjectPoolListGameItem.Return(remainder2);
-                World.ObjectPoolListGameItem.Return(remainder);
                 World.ObjectPoolListGameItem.Return(adds);
                 World.ObjectPoolListGameItem.Return(tmp);
             }
@@ -1422,7 +1422,14 @@ namespace OW.Game.Item
 
             foreach (var (g, parent) in coll)
             {
-                AddItems(g, parent, re, datas.ChangeItems);
+                foreach (var item in g)
+                {
+                    if (parent.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(item) && this.IsExistsMounts(datas.GameChar, item))   //若向坐骑背包放入重复坐骑
+                        AddItem(item, datas.GameChar.GetShoulanBag(), re, datas.ChangeItems);
+                    else
+                        AddItem(item, parent, re, datas.ChangeItems);
+                }
+                //AddItems(g, parent, re, datas.ChangeItems);
             }
             if (re.Count > 0)  //若需要发送邮件
             {

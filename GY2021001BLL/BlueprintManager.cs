@@ -497,6 +497,14 @@ namespace GuangYuan.GY001.BLL
             datas.HasError = datasInner.HasError;
             datas.ErrorCode = datasInner.ErrorCode;
             datas.DebugMessage = datasInner.DebugMessage;
+            //设置成就数据
+            World.MissionManager.ScanAsync(datas.GameChar);
+            //if (body.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName) >= 19)    //达到20级
+            //{
+            //    var bag = datas.GameChar.GetZuojiBag();
+            //    var metrics = bag.Children.Count(c => World.ItemManager.GetBody(c)?.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName) >= 19);
+            //    World.MissionManager.SetMetrics(datas.GameChar.GetRenwuSlot(), ProjectMissionConstant.LV20坐骑数量, metrics);
+            //}
         }
 
         #region 通用功能
@@ -720,6 +728,10 @@ namespace GuangYuan.GY001.BLL
                             gim.AddItem(tmp, gc.GetHomeland(), null, LastChangesItems);
                         }
                     }
+                }
+                if (gameItem.TemplateId == ProjectConstant.MucaiStoreTId)
+                {
+                    gim.ComputeMucaiStc(gc);
                 }
                 LastChangesItems.AddToChanges(gameItem.ContainerId.Value, gameItem);
                 var worker = gc.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);
@@ -1121,7 +1133,7 @@ namespace GuangYuan.GY001.BLL
                 decimal cost = tm switch //需要花费的钻石
                 {
                     _ when tm <= 5m => 0,
-                    _ => Math.Ceiling(tm - 5) * 10,
+                    _ => Math.Floor(tm) * 10,
                 };
                 if (cost > 0)   //若需要钻石
                 {

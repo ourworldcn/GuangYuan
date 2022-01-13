@@ -7,6 +7,7 @@ using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -19,6 +20,50 @@ namespace OW.Game
     public class GameEventsManagerOptions
     {
 
+    }
+
+    public class GamePropertyChangedItem<T>
+    {
+        /// <summary>
+        /// 获取或设置变化的对象。
+        /// </summary>
+        public object Object { get; set; }
+
+        /// <summary>
+        /// 属性的名字。
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// 指示<see cref="OldValue"/>中的值是否有意义。
+        /// </summary>
+        public bool HasOldValue { get; set; }
+
+        /// <summary>
+        /// 就值。
+        /// </summary>
+        public T OldValue { get; set; }
+
+        /// <summary>
+        /// 指示<see cref="NewValue"/>中的值是否有意义。
+        /// </summary>
+        public bool HasNewValue { get; set; }
+
+        /// <summary>
+        /// 新值。
+        /// </summary>
+        public T NewValue { get; set; }
+
+        public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
+
+    }
+
+    public class GameCollectionChangedItem<T> : GamePropertyChangedItem<T>
+    {
+        public NotifyCollectionChangedAction Action { get; set; }
+
+        public IList<object> NewItems { get; } = new List<object>();
+        public IList<object> OldItems { get; } = new List<object>();
     }
 
     public class SimplePropertyChangedItem<T>
@@ -605,6 +650,8 @@ namespace OW.Game
                 c.GameChar = gameChar;
                 GameItemLoaded(c);
             });
+            //增加推关战力
+            World.CombatManager.UpdatePveInfo(gameChar);
         }
 
         public virtual void GameUserLoaded(GameUser user, DbContext context)

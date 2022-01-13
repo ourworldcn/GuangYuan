@@ -302,14 +302,7 @@ namespace GuangYuan.GY001.UserDb
         {
             get
             {
-                GameItem tmp;
-                for (tmp = this; tmp != null && tmp._GameChar is null; tmp = tmp.Parent)
-                {
-                    ;
-                }
-
-                return tmp?._GameChar;
-
+                return _GameChar ?? Parent?.GameChar;
             }
             set => _GameChar = value;
         }

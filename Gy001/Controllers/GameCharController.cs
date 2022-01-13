@@ -335,7 +335,7 @@ namespace GY2021001WebApi.Controllers
             {
                 var gc = gu.CurrentChar;
                 var gim = world.ItemManager;
-                List<GameItem> lst = new List<GameItem>();
+                List<(GameItem, GameThingBase)> lst = new List<(GameItem, GameThingBase)>();
                 foreach (var item in model.Items)
                 {
                     GameItem gi = (GameItem)item;
@@ -343,26 +343,26 @@ namespace GY2021001WebApi.Controllers
                     {
                         var mounts = gim.CreateMounts(gi, ProjectConstant.ZuojiZuheRongqi);
                         mounts.ParentId = gi.ParentId;
-                        lst.Add(mounts);
+                        lst.Add((mounts, gc.AllChildren.FirstOrDefault(c => c.Id == OwConvert.ToGuid(item.ParentId))));
                     }
                     else
                     {
                         var tmp = new GameItem();
                         world.EventsManager.GameItemCreated(tmp, gi.TemplateId, null, null);
                         tmp.Count = gi.Count;
-                        lst.Add(tmp);
+                        lst.Add((tmp, gc.AllChildren.FirstOrDefault(c => c.Id == OwConvert.ToGuid(item.ParentId))));
                     }
                 }
                 var dic = OwHelper.GetAllSubItemsOfTree(gc.GameItems, c => c.Children).ToDictionary(c => c.Id);
                 List<ChangeItem> changes = new List<ChangeItem>();
                 foreach (var item in lst)   //加入
                 {
-                    if (item.ParentId == gc.Id)
-                        gim.AddItems(new GameItem[] { item }, gc, null, changes);
+                    if (item.Item1.ParentId == gc.Id)
+                        gim.AddItems(new GameItem[] { item.Item1 }, gc, null, changes);
                     else
                     {
-                        var parent = gim.GetDefaultContainer(gc, item);
-                        gim.AddItems(new GameItem[] { item }, parent, null, changes);
+                        var parent = item.Item2;
+                        gim.AddItems(new GameItem[] { item.Item1 }, parent, null, changes);
                     }
 
                 }

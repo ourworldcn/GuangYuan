@@ -483,7 +483,7 @@ namespace GuangYuan.GY001.BLL
             var bt = manager.GetBodyTemplate(gameItem);
             if (ht is null || bt is null)
                 return false;
-            return ht.GenusCode == bt.GenusCode;
+            return ht.Sequence == bt.Sequence;
         }
 
         /// <summary>

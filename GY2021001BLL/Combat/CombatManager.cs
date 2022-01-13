@@ -433,7 +433,7 @@ namespace GuangYuan.GY001.BLL
                     gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar.GetCurrencyBag(), changes);
                     //木材
                     gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.MucaiId, gameChar.GetCurrencyBag(), changes);
-
+                    shouyiSlot.Children.RemoveAll(c => c.TemplateId == ProjectConstant.MucaiId);
                     //野生怪物
                     var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
                     gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi, shoulan, changes);
@@ -465,7 +465,7 @@ namespace GuangYuan.GY001.BLL
                             World.MissionManager.ScanAsync(data.GameChar);
                         }
                     }
-                    else if (data.Template.Properties.GetDecimalOrDefault("typ") == 1)   //若是塔防
+                    else if (data.IsWin && data.Template.Properties.GetDecimalOrDefault("typ") == 2)   //若是塔防
                     {
                         var mission = data.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.累计塔防模式次数成就);
                         if (null != mission)   //若找到成就对象
@@ -765,7 +765,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
                     mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
-                    World.MissionManager.ScanAsync(datas.GameChar);
+                    World.MissionManager.ScanAsync(datas.OtherChar);
                 }
             }
         }
@@ -1222,12 +1222,12 @@ namespace GuangYuan.GY001.BLL
             mhp += (double)ary.Sum(c => c.GetDecimalOrDefault("mhp", decimal.Zero));
             qlt += (double)ary.Sum(c => c.GetDecimalOrDefault("qlt", decimal.Zero));
 
-            var gc = gim.GetChar(gameItem);
+            var gc = gameItem.GameChar;
             if (null == gc)
                 return false;
             //获取对应神纹
-            var slotShenwen = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShenWenSlotId);
-            if (null == slotShenwen)
+            var slotShenwen = gc.GetShenwenBag();
+            if (slotShenwen is null)
                 return false;
             var shenwen = slotShenwen.Children.FirstOrDefault(c =>
             {
@@ -1243,11 +1243,11 @@ namespace GuangYuan.GY001.BLL
             dic["mhp"] = mhp;
             dic["qlt"] = qlt;
             //计算主动技能等级
-            var ssc = shenwen.GetDecimalOrDefault("sscatk", decimal.Zero) + shenwen.GetDecimalOrDefault("sscmhp", decimal.Zero) + shenwen.GetDecimalOrDefault("sscqlt", decimal.Zero);
-            int lvZhudong = Array.FindLastIndex(_aryTupo, c => ssc >= c); //主动技能等级
+            //var ssc = shenwen.GetDecimalOrDefault("sscatk", decimal.Zero) + shenwen.GetDecimalOrDefault("sscmhp", decimal.Zero) + shenwen.GetDecimalOrDefault("sscqlt", decimal.Zero);
+            var lv = (int)body.GetDecimalOrDefault("lv", decimal.Zero);
+            int lvZhudong = Array.FindLastIndex(_aryLvZuoqi, c => lv >= c); //主动技能等级
             //计算被动技能等级
-            var lv = (int)gameItem.GetDecimalOrDefault("lv", decimal.Zero);
-            var lvBeidong = Array.FindLastIndex(_aryLvZuoqi, c => ssc >= c);  //被动技能等级
+            var lvBeidong = Array.FindLastIndex(_aryLvZuoqi, c => lv >= c);  //被动技能等级
 
             var abi = mhp + atk * 10 + qlt * 10;    //战力
             abi += 500 + 100 * lvZhudong;   //合并主动技能战力
