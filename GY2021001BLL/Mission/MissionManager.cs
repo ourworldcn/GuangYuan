@@ -527,6 +527,7 @@ namespace OW.Game.Mission
                     {
                         datas.ChangeItems.AddRange(data.ChangeItems);
                         datas.MailIds.AddRange(data.MailIds);
+                        ScanAsync(datas.GameChar);
                     }
                 }
                 //保存数据
