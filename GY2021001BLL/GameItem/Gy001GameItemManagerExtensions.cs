@@ -527,10 +527,7 @@ namespace GuangYuan.GY001.BLL
         {
             var result = new GameItem();
             manager.World.EventsManager.GameItemCreated(result, gameItem.TemplateId);
-            foreach (var item in gameItem.Properties)
-            {
-                result.Properties[item.Key] = item.Value;
-            }
+            OwHelper.Copy(gameItem.Properties, result.Properties);
             result.Count = gameItem.Count;
             foreach (var item in gameItem.Children)
             {
@@ -552,10 +549,7 @@ namespace GuangYuan.GY001.BLL
         {
             destItem.TemplateId = srcItem.TemplateId;
             destItem.Template = srcItem.Template;
-            foreach (var item in srcItem.Properties)
-            {
-                destItem.Properties[item.Key] = item.Value;
-            }
+            OwHelper.Copy(srcItem.Properties, destItem.Properties);
             destItem.Count = srcItem.Count;
             foreach (var item in srcItem.Children)
             {

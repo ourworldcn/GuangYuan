@@ -4,10 +4,12 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
+using OW.Game.Store;
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -22,6 +24,37 @@ namespace OW.Game
 
     }
 
+    /// <summary>
+    /// 提供可重复使用 <see cref="SimplePropertyChangedItem{T}"/> 类型实例的资源池。
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class SimplePropertyChangedItemPool<T>
+    {
+        public static readonly ObjectPool<SimplePropertyChangedItem<T>> Shared;
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        static SimplePropertyChangedItemPool()
+        {
+            Shared = new DefaultObjectPool<SimplePropertyChangedItem<T>>(new SimplePropertyChangedItemPooledObjectPolicy());
+        }
+
+        private class SimplePropertyChangedItemPooledObjectPolicy : DefaultPooledObjectPolicy<SimplePropertyChangedItem<T>>
+        {
+            public override bool Return(SimplePropertyChangedItem<T> obj)
+            {
+                obj.Object = default;
+                obj.Name = default;
+                obj.HasOldValue = default;
+                obj.OldValue = default;
+                obj.HasNewValue = default;
+                obj.NewValue = default;
+                obj.DateTimeUtc = default;
+                obj.Tag = default;
+                return true;
+            }
+        }
+    }
+
     public class SimplePropertyChangedItem<T>
     {
         public SimplePropertyChangedItem()
@@ -29,20 +62,23 @@ namespace OW.Game
 
         }
 
-        public SimplePropertyChangedItem(string name)
+        public SimplePropertyChangedItem(T obj, string name)
         {
             Name = name;
+            Object = obj;
         }
 
         /// <summary>
         /// 构造函数。
         /// 无论<paramref name="newValue"/>和<paramref name="oldValue"/>给定任何值，<see cref="HasOldValue"/>和<see cref="HasNewValue"/>都设置为true。
         /// </summary>
+        /// <param name="obj"></param>
         /// <param name="name"></param>
         /// <param name="oldValue"></param>
         /// <param name="newValue"></param>
-        public SimplePropertyChangedItem(string name, T oldValue, T newValue)
+        public SimplePropertyChangedItem(T obj, string name, T oldValue, T newValue)
         {
+            Object = obj;
             Name = name;
             OldValue = oldValue;
             NewValue = newValue;
@@ -50,9 +86,16 @@ namespace OW.Game
         }
 
         /// <summary>
+        /// 指出是什么对象变化了属性。
+        /// </summary>
+        public object Object { get; set; }
+
+        /// <summary>
         /// 属性的名字。
         /// </summary>
         public string Name { get; set; }
+
+        #region 旧值相关
 
         /// <summary>
         /// 指示<see cref="OldValue"/>中的值是否有意义。
@@ -60,9 +103,23 @@ namespace OW.Game
         public bool HasOldValue { get; set; }
 
         /// <summary>
-        /// 就值。
+        /// 获取或设置旧值。
         /// </summary>
         public T OldValue { get; set; }
+
+        public bool TryGetOldValue([MaybeNullWhen(false)] out T result)
+        {
+            if (!HasOldValue)
+            {
+                result = default;
+                return false;
+            }
+            result = OldValue;
+            return true;
+        }
+        #endregion 旧值相关
+
+        #region 新值相关
 
         /// <summary>
         /// 指示<see cref="NewValue"/>中的值是否有意义。
@@ -74,10 +131,20 @@ namespace OW.Game
         /// </summary>
         public T NewValue { get; set; }
 
+        #endregion 新值相关
+
+        /// <summary>
+        /// 属性发生变化的时间点。Utc计时。
+        /// </summary>
         public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 事件发起方可以在这里记录一些额外信息。
+        /// </summary>
+        public object Tag { get; set; }
     }
 
-    public class SimplePropertyChangedCollection : ICollection<SimplePropertyChangedItem<object>>
+    public class SimplePropertyChangedCollection : Collection<SimplePropertyChangedItem<object>>
     {
         public SimplePropertyChangedCollection()
         {
@@ -85,108 +152,19 @@ namespace OW.Game
 
         public GameThingBase Thing { get; set; }
 
-        public List<SimplePropertyChangedItem<object>> Items { get; } = new List<SimplePropertyChangedItem<object>>();
-
         public object Tag { get; set; }
 
-        #region ICollection<SimplePropertyChangedItem<object>>接口
-
-        public int Count => ((ICollection<SimplePropertyChangedItem<object>>)Items).Count;
-
-        public bool IsReadOnly => ((ICollection<SimplePropertyChangedItem<object>>)Items).IsReadOnly;
-
-        public void Add(SimplePropertyChangedItem<object> item)
-        {
-            ((ICollection<SimplePropertyChangedItem<object>>)Items).Add(item);
-        }
-
-        public void Clear()
-        {
-            ((ICollection<SimplePropertyChangedItem<object>>)Items).Clear();
-        }
-
-        public bool Contains(SimplePropertyChangedItem<object> item)
-        {
-            return ((ICollection<SimplePropertyChangedItem<object>>)Items).Contains(item);
-        }
-
-        public void CopyTo(SimplePropertyChangedItem<object>[] array, int arrayIndex)
-        {
-            ((ICollection<SimplePropertyChangedItem<object>>)Items).CopyTo(array, arrayIndex);
-        }
-
-        public IEnumerator<SimplePropertyChangedItem<object>> GetEnumerator()
-        {
-            return ((IEnumerable<SimplePropertyChangedItem<object>>)Items).GetEnumerator();
-        }
-
-        public bool Remove(SimplePropertyChangedItem<object> item)
-        {
-            return ((ICollection<SimplePropertyChangedItem<object>>)Items).Remove(item);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable)Items).GetEnumerator();
-        }
-        #endregion ICollection<SimplePropertyChangedItem<object>>接口
 
     }
 
     /// <summary>
     /// 属性变化的集合。
     /// </summary>
-    public class DynamicPropertyChangedCollection : ICollection<SimplePropertyChangedCollection>
+    public class DynamicPropertyChangedCollection : Collection<SimplePropertyChangedCollection>
     {
         public DynamicPropertyChangedCollection()
         {
-
         }
-
-        public List<SimplePropertyChangedCollection> Items { get; } = new List<SimplePropertyChangedCollection>();
-
-        #region ICollection<DynamicPropertyChangedItem>接口
-
-        public int Count => ((ICollection<SimplePropertyChangedCollection>)Items).Count;
-
-        public bool IsReadOnly => ((ICollection<SimplePropertyChangedCollection>)Items).IsReadOnly;
-
-        public void Add(SimplePropertyChangedCollection item)
-        {
-            var changedItem = GetOrAddItem(item.Thing);
-            changedItem.Items.AddRange(item.Items);
-        }
-
-        public void Clear()
-        {
-            ((ICollection<SimplePropertyChangedCollection>)Items).Clear();
-        }
-
-        public bool Contains(SimplePropertyChangedCollection item)
-        {
-            return ((ICollection<SimplePropertyChangedCollection>)Items).Contains(item);
-        }
-
-        public void CopyTo(SimplePropertyChangedCollection[] array, int arrayIndex)
-        {
-            ((ICollection<SimplePropertyChangedCollection>)Items).CopyTo(array, arrayIndex);
-        }
-
-        public IEnumerator<SimplePropertyChangedCollection> GetEnumerator()
-        {
-            return ((IEnumerable<SimplePropertyChangedCollection>)Items).GetEnumerator();
-        }
-
-        public bool Remove(SimplePropertyChangedCollection item)
-        {
-            return ((ICollection<SimplePropertyChangedCollection>)Items).Remove(item);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable)Items).GetEnumerator();
-        }
-        #endregion ICollection<DynamicPropertyChangedItem>接口
 
         /// <summary>
         /// 获取或添加变化项。
@@ -213,7 +191,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.TryGetValue(keyName, out var oldVal);
-            var result = new SimplePropertyChangedItem<object>(keyName, oldVal, default) { HasOldValue = hasOld };
+            var result = new SimplePropertyChangedItem<object>(null, name: keyName, oldValue: oldVal, newValue: default) { HasOldValue = hasOld };
             item.Add(result);
         }
 
@@ -227,7 +205,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.TryGetValue(keyName, out var oldVal);
-            var result = new SimplePropertyChangedItem<object>(keyName, oldVal, newValue) { HasOldValue = hasOld, HasNewValue = true, };
+            var result = new SimplePropertyChangedItem<object>(null, name: keyName, oldValue: oldVal, newValue: newValue) { HasOldValue = hasOld, HasNewValue = true, };
             item.Add(result);
             thing.Properties[keyName] = newValue;
         }
@@ -242,7 +220,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.Remove(keyName, out _);
-            var result = new SimplePropertyChangedItem<object>(keyName) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
+            var result = new SimplePropertyChangedItem<object>(keyName, null) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
             item.Add(result);
             return hasOld;
         }
@@ -279,6 +257,11 @@ namespace OW.Game
         #endregion 构造函数
 
         #region 动态属性变化
+
+        public virtual void OnPropertyChanged(SimplePropertyChangedItem<object> arg)
+        {
+
+        }
 
         public virtual void OnDynamicPropertyChanged(DynamicPropertyChangedCollection args)
         {
@@ -801,6 +784,92 @@ namespace OW.Game
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void GameItemCreated(this GameEventsManager manager, GameItem gameItem, GameItemTemplate template) =>
                     manager.GameItemCreated(gameItem, template, null, null);
+
+        /// <summary>
+        /// 获取或初始化事件数据对象的列表。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static List<SimplePropertyChangedItem<object>> GetOrCreateEventArgsList(this GameChar gameChar)
+        {
+            if (gameChar.RuntimeProperties.TryGetValue("EventArgsList", out var listObj) && listObj is List<SimplePropertyChangedItem<object>> list)
+                return list;
+            list = new List<SimplePropertyChangedItem<object>>();
+            gameChar.RuntimeProperties["EventArgsList"] = list;
+            return list;
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        /// <param name="newValue"></param>
+        /// <param name="tag">附属信息。</param>
+        public static void SetDynamicPropertyAndDelayRaiseEvent(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object newValue, object tag)
+        {
+            var arg = SimplePropertyChangedItemPool<object>.Shared.Get();
+            arg.Object = obj; arg.Name = name; arg.DateTimeUtc = DateTime.UtcNow; arg.Tag = tag;
+            if (obj.Properties.TryGetValue(name, out var oldValue))
+            {
+                arg.OldValue = oldValue;
+                arg.HasOldValue = true;
+            }
+            obj.Properties[name] = newValue;
+            arg.HasNewValue = true;
+            gameChar.GetOrCreateEventArgsList().Add(arg);
+        }
+
+        /// <summary>
+        /// 删除指定属性。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        /// <param name="tag"></param>
+        public static void RemoveDynamicPropertyAndDelayRaiseEvent(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object tag)
+        {
+            var arg = SimplePropertyChangedItemPool<object>.Shared.Get();
+            arg.Object = obj; arg.Name = name; arg.DateTimeUtc = DateTime.UtcNow; arg.Tag = tag;
+            if (obj.Properties.Remove(name, out var oldValue))
+            {
+                arg.OldValue = oldValue;
+                arg.HasOldValue = true;
+            }
+            gameChar.GetOrCreateEventArgsList().Add(arg);
+        }
+
+        /// <summary>
+        /// 将缓存的属性变化事件数据全部引发。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="gameChar"></param>
+        public static bool RaiseEvent(this GameEventsManager manager, GameChar gameChar)
+        {
+            List<Exception> excps = new List<Exception>();
+            bool succ = false;
+            for (var list = gameChar.GetOrCreateEventArgsList(); list.Count > 0; list = gameChar.GetOrCreateEventArgsList())    //若存在数据
+            {
+                gameChar.RuntimeProperties.Remove("EventArgsList"); //从临界状态移除
+                succ = true;
+                foreach (var item in list)
+                {
+                    try
+                    {
+                        manager.OnPropertyChanged(item);
+                    }
+                    catch (Exception excp)
+                    {
+                        excps.Add(excp);
+                    }
+                }
+                list.ForEach(c => SimplePropertyChangedItemPool<object>.Shared.Return(c));  //放入池中备用
+            }
+            if (excps.Count > 0)    //若需要引发工程中堆积的异常
+                throw new AggregateException(excps);
+            return succ;
+        }
     }
 
 

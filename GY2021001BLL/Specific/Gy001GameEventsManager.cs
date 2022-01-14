@@ -119,7 +119,7 @@ namespace OW.Game
             foreach (var item in mrs)
             {
                 var gi = item.Thing as GameItem;
-                foreach (var sunItem in item.Items.Where(c => c.Name == ProjectConstant.LevelPropertyName)) //若主控室升级了
+                foreach (var sunItem in item.Where(c => c.Name == ProjectConstant.LevelPropertyName)) //若主控室升级了
                 {
                     var newLv = gi.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
                     var oldLv = Convert.ToDecimal(sunItem.OldValue);
