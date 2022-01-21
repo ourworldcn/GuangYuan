@@ -7,6 +7,7 @@ using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 
 namespace GY2021001WebApi.Models
@@ -349,7 +350,9 @@ namespace GY2021001WebApi.Models
             {
                 CurrentDateTime = obj.CurrentDateTime,
                 StartDateTime = obj.StartDateTime,
+                Version = obj.Version,
             };
+            
             return result;
         }
     }

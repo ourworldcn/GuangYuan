@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -59,6 +60,11 @@ namespace OW.Game
         /// 服务器的当前时间。
         /// </summary>
         public DateTime CurrentDateTime { get; set; }
+
+        /// <summary>
+        /// 产品版本，格式为 主版本号.次要版本号.修正号，修正号仅仅是修复bug等，只要主要和次要版本号一致就是兼容版本。
+        /// </summary>
+        public string Version { get; internal set; }
     }
 
     /// <summary>
@@ -521,8 +527,9 @@ namespace OW.Game
             {
                 StartDateTime = StartDateTimeUtc,
                 CurrentDateTime = DateTime.UtcNow,
+                Version= Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion,
             };
-
+        
         /// <summary>
         /// 测试指定概率数值是否命中。
         /// </summary>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Buffers;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -41,7 +42,6 @@ namespace Microsoft.Extensions.ObjectPool
         static StringBuilderPool()
         {
             Shared ??= new DefaultObjectPoolProvider().CreateStringBuilderPool();
-
         }
     }
 }

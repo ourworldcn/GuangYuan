@@ -77,75 +77,6 @@ namespace System
         public static int RoundWithAwayFromZero(decimal result) => (int)Math.Round(result, MidpointRounding.AwayFromZero);
 
         /// <summary>
-        /// 用字串形式属性，填充属性字典。
-        /// </summary>
-        /// <param name="str"></param>
-        /// <param name="dic"></param>
-        public static void Fill(string str, IDictionary<string, object> dic)
-        {
-            if (string.IsNullOrWhiteSpace(str))
-                return;
-            var coll = str.Replace(Environment.NewLine, " ").Trim(' ', '"').Split(CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var item in coll)
-            {
-                var guts = item.Split('=', StringSplitOptions.RemoveEmptyEntries);
-                if (2 != guts.Length)
-                {
-                    if (item.IndexOf('=') <= 0 || item.Count(c => c == '=') != 1)  //若是xxx= 格式，解释为xxx=null
-                        throw new InvalidCastException($"数据格式错误:'{guts}'");   //TO DO
-                }
-                var keyName = string.Intern(guts[0].Trim());
-                var val = guts.Length < 2 ? null : guts?[1]?.Trim();
-                if (val is null)
-                {
-                    dic[keyName] = null;
-                }
-                else if (val.Contains('|'))  //若是序列属性
-                {
-                    var seq = val.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                    var ary = seq.Select(c => decimal.Parse(c.Trim())).ToArray();
-                    dic[keyName] = ary;
-                }
-                else if (decimal.TryParse(val, out decimal num))   //若是数值属性
-                {
-                    dic[keyName] = num;
-                }
-                else //若是字符串属性
-                {
-                    dic[keyName] = val;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 从属性字典获取字符串表现形式,填充到<see cref="StringBuilder"/>对象。
-        /// </summary>
-        /// <param name="dic"></param>
-        /// <param name="stringBuilder"></param>
-        public static void Fill(IReadOnlyDictionary<string, object> dic, StringBuilder stringBuilder)
-        {
-            foreach (var item in dic)
-            {
-                stringBuilder.Append(item.Key).Append('=');
-                if (OwConvert.TryToDecimal(item.Value, out _))   //如果可以转换为数字
-                {
-                    stringBuilder.Append(item.Value.ToString()).Append(',');
-                }
-                else if (item.Value is decimal[])
-                {
-                    var ary = item.Value as decimal[];
-                    stringBuilder.AppendJoin('|', ary.Select(c => c.ToString())).Append(',');
-                }
-                else //字符串
-                {
-                    stringBuilder.Append(item.Value?.ToString()).Append(',');
-                }
-            }
-            if (stringBuilder.Length > 0 && stringBuilder[^1] == ',')   //若尾部是逗号
-                stringBuilder.Remove(stringBuilder.Length - 1, 1);
-        }
-
-        /// <summary>
         /// 遍历一个树结构的所有子项。深度优先算法遍历子树。
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -224,7 +155,6 @@ namespace System
             if (null != leftOnly)
                 foreach (var item in leftDic.SelectMany(c => c.Value))
                     leftOnly.Add(item);
-
         }
 
         /// <summary>

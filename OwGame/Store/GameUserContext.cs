@@ -211,6 +211,7 @@ namespace OW.Game.Store
         /// <summary>
         /// 存储RuntimeProperties属性的后备字段是否已经初始化。
         /// </summary>
+        [NotMapped, JsonIgnore]
         public bool IsCreatedOfRuntimeProperties => _RuntimeProperties != null;
 
         /// <summary>

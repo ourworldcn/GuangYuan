@@ -3,6 +3,7 @@
  */
 using Microsoft.Extensions.ObjectPool;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -220,6 +221,77 @@ namespace System
         }
         #endregion 试图转换类型
 
+        #region 字典相关转换
+
+        /// <summary>
+        /// 从属性字典获取字符串表现形式,填充到<see cref="StringBuilder"/>对象。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="stringBuilder"></param>
+        public static void Copy(IReadOnlyDictionary<string, object> dic, StringBuilder stringBuilder)
+        {
+            foreach (var item in dic)
+            {
+                stringBuilder.Append(item.Key).Append('=');
+                if (TryToDecimal(item.Value, out _))   //如果可以转换为数字
+                {
+                    stringBuilder.Append(item.Value.ToString()).Append(',');
+                }
+                else if (item.Value is decimal[])
+                {
+                    var ary = item.Value as decimal[];
+                    stringBuilder.AppendJoin('|', ary.Select(c => c.ToString())).Append(',');
+                }
+                else //字符串
+                {
+                    stringBuilder.Append(item.Value?.ToString()).Append(',');
+                }
+            }
+            if (stringBuilder.Length > 0 && stringBuilder[^1] == ',')   //若尾部是逗号
+                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+        }
+
+        /// <summary>
+        /// 用字串形式属性，填充属性字典。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="dic"></param>
+        public static void Copy(string str, IDictionary<string, object> dic)
+        {
+            if (string.IsNullOrWhiteSpace(str))
+                return;
+            var coll = str.Replace(Environment.NewLine, " ").Trim(' ', '"').Split(OwHelper.CommaArrayWithCN, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var item in coll)
+            {
+                var guts = item.Split('=', StringSplitOptions.RemoveEmptyEntries);
+                if (2 != guts.Length)
+                {
+                    if (item.IndexOf('=') <= 0 || item.Count(c => c == '=') != 1)  //若是xxx= 格式，解释为xxx=null
+                        throw new InvalidCastException($"数据格式错误:'{guts}'");   //TO DO
+                }
+                var keyName = string.Intern(guts[0].Trim());
+                var val = guts.Length < 2 ? null : guts?[1]?.Trim();
+                if (val is null)
+                {
+                    dic[keyName] = null;
+                }
+                else if (val.Contains('|'))  //若是序列属性
+                {
+                    var seq = val.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                    var ary = seq.Select(c => decimal.Parse(c.Trim())).ToArray();
+                    dic[keyName] = ary;
+                }
+                else if (decimal.TryParse(val, out decimal num))   //若是数值属性
+                {
+                    dic[keyName] = num;
+                }
+                else //若是字符串属性
+                {
+                    dic[keyName] = val;
+                }
+            }
+        }
+
         /// <summary>
         /// 从属性字典获取字符串表现形式。
         /// </summary>
@@ -230,7 +302,7 @@ namespace System
             StringBuilder sb = StringBuilderPool.Shared.Get();
             try
             {
-                OwHelper.Fill(dic, sb);
+                Copy(dic, sb);
                 return sb.ToString();
             }
             finally
@@ -238,6 +310,8 @@ namespace System
                 StringBuilderPool.Shared.Return(sb);
             }
         }
+
+        #endregion 字典相关转换
 
         /// <summary>
         /// 将字符串转换为Guid类型。

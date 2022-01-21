@@ -20,6 +20,7 @@ using OW.Script;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -109,9 +110,9 @@ namespace GuangYuan.GY001.BLL
         {
             Task.Run(() => SendMail());
 #if DEBUG
-            var maxCount = 1500;
+            var maxCount = 150;
 #else
-            var maxCount = 1500;
+            var maxCount = 15;
 #endif
             var world = _Services.GetRequiredService<VWorld>();
             var logger = _Services.GetService<ILogger<GameHostedService>>();
@@ -202,7 +203,10 @@ namespace GuangYuan.GY001.BLL
             var b1 = str1[^0..];
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-
+            //var query = db.ExtendProperties.Where(c => c.Text.Length > 10240).Take(10);
+            //var coll = new ObservableCollection<GameExtendProperty>(query);
+            //var str = JsonSerializer.Serialize(coll);
+            //var ss = JsonSerializer.Deserialize(str, typeof(List<GameExtendProperty>));
         }
 
         /// <summary>

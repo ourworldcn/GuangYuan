@@ -807,6 +807,13 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public DateTime CurrentDateTime { get; set; }
+
+        /// <summary>
+        /// 服务器的当前版本号。
+        /// 格式为：主版本号.次要版本号.修正号，修正号仅仅是修复bug等，只要主要和次要版本号一致就是同一个版本。
+        /// </summary>
+        [DataMember]
+        public string Version { get; set; }
     }
 
     /// <summary>

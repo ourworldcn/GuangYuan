@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -242,7 +243,19 @@ namespace GuangYuan.GY001.BLL
                 //    return;
                 //}
             }
-            GameUser[] ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store).Result;
+            JsonSerializerOptions options = new JsonSerializerOptions() { };
+#if DEBUG
+            var buff = ArrayPool<byte>.Shared.Rent(16*1024 * 1024);
+            var s = datas.Store.Read(buff, 0, buff.Length);
+            var str = Encoding.UTF8.GetString(buff, 0, s);
+            GameUser[] ary = JsonSerializer.Deserialize<GameUser[]>(str);
+            ArrayPool<byte>.Shared.Return(buff);
+#else
+            //var buff = ArrayPool<byte>.Shared.Rent(102400);
+            //var s = datas.Store.Read(buff, 0, buff.Length);
+            //var str = Encoding.UTF8.GetString(buff,0,s);
+            GameUser[] ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store, options).Result;
+#endif
             var eve = World.EventsManager;
             Array.ForEach(ary, c => eve.JsonDeserialized(c));
             var lns = ary.Select(c => c.LoginName);

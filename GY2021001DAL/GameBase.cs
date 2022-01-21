@@ -326,15 +326,17 @@ namespace GuangYuan.GY001.UserDb
 
         private ObservableCollection<GameExtendProperty> _ExtendProperties;
 
+        bool _ExtendPropertiesInited;
         /// <summary>
         /// 通用扩展属性。
         /// </summary>
         [NotMapped]
-        //[JsonIgnore]
         public ObservableCollection<GameExtendProperty> ExtendProperties
         {
             get
             {
+                if (_ExtendPropertiesInited)    //为使用json反序列化需要，强制被设置null后，不能返回有效实例，否则报错
+                    return _ExtendProperties;
                 if (_ExtendProperties is null && DbContext != null)
                 {
                     try
@@ -365,6 +367,7 @@ namespace GuangYuan.GY001.UserDb
                     DbContext?.AddRange(value);
                     value.CollectionChanged += GameExtendPropertiesCollectionChanged;
                 }
+                _ExtendPropertiesInited = true;
             }
         }
 

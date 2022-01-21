@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>84749311-3dcb-4fe7-b997-900da8e7f19c</UserSecretsId>
+    <AssemblyVersion>1.0.1.1587</AssemblyVersion>
+    <FileVersion>1.0.1.1432</FileVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -42,6 +45,21 @@
     <ProjectReference Include="..\GY2021001DAL\GY001UserDb.csproj" />
     <ProjectReference Include="..\Gy2021001Template\Gy001TemplateDb.csproj" />
     <ProjectReference Include="..\OwGame\OwGameBaseCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties _1filenesting_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

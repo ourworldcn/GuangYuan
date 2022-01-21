@@ -220,7 +220,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.Remove(keyName, out _);
-            var result = new SimplePropertyChangedItem<object>(keyName, null) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
+            var result = new SimplePropertyChangedItem<object>( null,keyName) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
             item.Add(result);
             return hasOld;
         }

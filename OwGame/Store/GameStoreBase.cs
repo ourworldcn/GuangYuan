@@ -196,7 +196,7 @@ namespace OW.Game.Store
                 if (_Properties is null)
                 {
                     _Properties = DictionaryPool<string,object>.Shared.Get();
-                    OwHelper.Fill(PropertiesString, _Properties);
+                    OwConvert.Copy(PropertiesString, _Properties);
                 }
                 return _Properties;
             }

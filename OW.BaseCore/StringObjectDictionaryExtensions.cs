@@ -124,6 +124,29 @@ namespace System.Collections.Generic
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryGetString(this IReadOnlyDictionary<string, object> dic, string name, out string result)
+        {
+            if (!dic.TryGetValue(name, out var obj))
+            {
+                result = default;
+                return false;
+            }
+            result = obj switch
+            {
+                _ when obj is string => (string)obj,
+                _ => obj.ToString(),
+            };
+            return true;
+        }
+
+        /// <summary>
         /// 获取指定键值，并尽可能转换为日期。
         /// </summary>
         /// <param name="dic"></param>
@@ -143,7 +166,7 @@ namespace System.Collections.Generic
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetStringOrDefault(this IReadOnlyDictionary<string, object> dic, string name, string defaultVal = default) =>
-            dic.TryGetValue(name, out var obj) && obj is string result ? result : defaultVal;
+            dic.TryGetString(name, out var obj) ? obj : defaultVal;
 
         /// <summary>
         /// 

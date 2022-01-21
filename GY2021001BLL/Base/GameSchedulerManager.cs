@@ -42,7 +42,7 @@ namespace GuangYuan.GY001.BLL
                 ServiceTypeName = Uri.UnescapeDataString(obj.Properties.GetStringOrDefault(nameof(ServiceTypeName))),   //服务名
                 MethodName = obj.Properties.GetStringOrDefault(nameof(MethodName)), //记录方法名
             };
-            OwHelper.Fill(Uri.UnescapeDataString(obj.Properties.GetStringOrDefault(nameof(Properties))), result.Properties);
+            OwConvert.Copy(Uri.UnescapeDataString(obj.Properties.GetStringOrDefault(nameof(Properties))), result.Properties);
             return result;
         }
 
