@@ -35,6 +35,74 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 设置战斗积分。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void SetCombatScore(SetCombatScoreDatas datas)
+        {
+            if (datas.EndIndex < datas.StartIndex)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "StartIndex 要小于或等于 EndIndex。";
+                return;
+            }
+            var db = datas.UserContext;
+            var loginNames = new List<string>();  //登录名数组
+            for (int i = datas.StartIndex; i <= datas.EndIndex; i++)
+            {
+                loginNames.Add($"{datas.Prefix}{i}");
+            }
+            var userIds = db.Set<GameChar>().Where(c => loginNames.Contains(c.GameUser.LoginName)).Select(c => c.Id).ToArray();
+            using var dwUsers = World.CharManager.LockOrLoadWithCharIds(userIds, userIds.Length * World.CharManager.Options.DefaultLockTimeout);    //顺序连锁
+            foreach (var item in loginNames)
+            {
+                var gu = World.CharManager.GetUserFromLoginName(item);
+                if (gu is null)
+                    continue;
+                gu.CurrentChar.GetPvpObject().Count = datas.PvpScore;
+                //gu.CurrentChar.GetPveT().Count = datas.PveScore;
+                World.CharManager.NotifyChange(gu);
+            }
+
+        }
+
+        /// <summary>
+        /// 给指定的一组账号增加权限。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void AddPowers(AddPowersDatas datas)
+        {
+            if (datas.EndIndex < datas.StartIndex)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "StartIndex 要小于或等于 EndIndex。";
+                return;
+            }
+            if (!datas.GameChar.CharType.HasFlag(CharType.SuperAdmin))   //若不是超管
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                datas.ErrorMessage = "需要超管权限";
+                return;
+            }
+            var loginNames = new List<string>();  //登录名数组
+            for (int i = datas.StartIndex; i <= datas.EndIndex; i++)
+            {
+                loginNames.Add($"{datas.Prefix}{i}");
+            }
+            var db = datas.UserContext;
+            var userIds = db.Set<GameChar>().Where(c => loginNames.Contains(c.GameUser.LoginName)).Select(c => c.Id).ToArray();
+            using var dwUsers = World.CharManager.LockOrLoadWithCharIds(userIds, userIds.Length * World.CharManager.Options.DefaultLockTimeout);    //顺序连锁
+            foreach (var item in loginNames)
+            {
+                var gu = World.CharManager.GetUserFromLoginName(item);
+                if (gu is null)
+                    continue;
+                gu.CurrentChar.CharType |= datas.CharType;
+                World.CharManager.NotifyChange(gu);
+            }
+        }
+
+        /// <summary>
         /// 发送邮件，寄送物品。
         /// </summary>
         /// <param name="datas"></param>
@@ -245,7 +313,7 @@ namespace GuangYuan.GY001.BLL
             }
             JsonSerializerOptions options = new JsonSerializerOptions() { };
 #if DEBUG
-            var buff = ArrayPool<byte>.Shared.Rent(16*1024 * 1024);
+            var buff = ArrayPool<byte>.Shared.Rent(16 * 1024 * 1024);
             var s = datas.Store.Read(buff, 0, buff.Length);
             var str = Encoding.UTF8.GetString(buff, 0, s);
             GameUser[] ary = JsonSerializer.Deserialize<GameUser[]>(str);
@@ -342,6 +410,87 @@ namespace GuangYuan.GY001.BLL
             World.CharManager.NotifyChange(gu);
             return;
         }
+    }
+
+    /// <summary>
+    /// 设置战斗积分接口的数据封装类。
+    /// </summary>
+    public class SetCombatScoreDatas : ComplexWorkDatasBase
+    {
+        public SetCombatScoreDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public SetCombatScoreDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public SetCombatScoreDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 前缀。
+        /// </summary>
+        public string Prefix { get; set; }
+
+        /// <summary>
+        /// 起始索引号。
+        /// </summary>
+        public int StartIndex { get; set; }
+
+        /// <summary>
+        /// 终止索引号。
+        /// </summary>
+        public int EndIndex { get; set; }
+
+        /// <summary>
+        /// 设置或获取pvp等级分。
+        /// </summary>
+        public int? PvpScore { get; set; }
+
+        /// <summary>
+        /// 设置或获取pve等级分。
+        /// </summary>
+        public int? PveScore { get; set; }
+    }
+
+    /// <summary>
+    /// 追加权限接口的数据封装类。
+    /// </summary>
+    public class AddPowersDatas : ComplexWorkDatasBase
+    {
+        public AddPowersDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public AddPowersDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public AddPowersDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 前缀。
+        /// </summary>
+        public string Prefix { get; set; }
+
+        /// <summary>
+        /// 起始索引号。
+        /// </summary>
+        public int StartIndex { get; set; }
+
+        /// <summary>
+        /// 终止索引号。
+        /// </summary>
+        public int EndIndex { get; set; }
+
+        /// <summary>
+        /// 权限的按位组合。
+        /// </summary>
+        public CharType CharType { get; set; }
     }
 
     /// <summary>

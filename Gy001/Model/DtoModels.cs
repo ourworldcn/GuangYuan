@@ -3,6 +3,7 @@
  * 目前使用C# 7.3版本语法。
  */
 using Game.Social;
+using GuangYuan.GY001.UserDb;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -3199,6 +3200,44 @@ namespace GY2021001WebApi.Models
 
     #region 管理相关
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [DataContract]
+    public class AddPowersParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 前缀。
+        /// </summary>
+        public string Prefix { get; set; }
+
+        /// <summary>
+        /// 起始索引号。
+        /// </summary>
+        public int StartIndex { get; set; }
+
+        /// <summary>
+        /// 终止索引号。
+        /// </summary>
+        public int EndIndex { get; set; }
+
+        /// <summary>
+        /// 权限的按位组合。
+        /// </summary>
+        public CharType CharType { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [DataContract]
+    public class AddPowersReturnDto : ReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     [DataContract]
     public class AccountSummery
     {

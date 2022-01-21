@@ -155,7 +155,7 @@ namespace GuangYuan.GY001.BLL
                 //攻击方获得金币
                 aJinbi.Properties["count"] = Math.Round(attJinbiBase * dMucaiCount * 0.1m, MidpointRounding.AwayFromZero);
             }
-            if (!World.CharManager.IsOnline(OtherCharId) && !OtherChar.CharType.HasFlag(CharType.Npc))    //若防御方不在线在线且不是机器人
+            if (!World.CharManager.IsOnline(OtherCharId) && !OtherChar.CharType.HasFlag(CharType.Robot))    //若防御方不在线在线且不是机器人
             {
                 if (defYumi.Properties.GetDecimalOrDefault("count", decimal.Zero) != decimal.Zero)  //若要记录防御方损失玉米
                     defencerBooty.Add(defYumi);

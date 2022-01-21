@@ -52,6 +52,13 @@
             与账号相关的操作控制器。
             </summary>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.AddPowers(GY2021001WebApi.Models.AddPowersParamsDto)">
+            <summary>
+            给指定的一组用户追加权限。只有超级管理员账号可以成功调用该函数。当前版本可以给其他用户设置超管权限。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:GY2021001WebApi.Controllers.AdminController.DeleteUsers(GY2021001WebApi.Models.DeleteUsersParamsDto)">
             <summary>
             删除指定登录名的一组用户。目前除了整体回滚数据库以外，无法恢复该操作，请慎重使用。
@@ -2608,6 +2615,41 @@
         <member name="P:GY2021001WebApi.Models.GetRankOfTuiguanForMeReturnDto.Scope">
             <summary>
             自己的战力积分。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.AddPowersParamsDto">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.AddPowersParamsDto.Prefix">
+            <summary>
+            前缀。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.AddPowersParamsDto.StartIndex">
+            <summary>
+            起始索引号。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.AddPowersParamsDto.EndIndex">
+            <summary>
+            终止索引号。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.AddPowersParamsDto.CharType">
+            <summary>
+            权限的按位组合。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.AddPowersReturnDto">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.AccountSummery">
+            <summary>
+            
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.AccountSummery.LoginName">

@@ -66,6 +66,7 @@ namespace GuangYuan.GY001.BLL
                 Task.Run(CreateGameManager);    //强制初始化所有服务以加速
                 var logger = _Services.GetService<ILogger<GameHostedService>>();
                 logger.LogInformation("游戏虚拟世界服务成功上线。");
+
             }, _Services, cancellationToken);
             return result;
         }

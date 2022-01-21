@@ -32,6 +32,27 @@ namespace GY2021001WebApi.Controllers
         }
 
         /// <summary>
+        /// 给指定的一组用户追加权限。只有超级管理员账号可以成功调用该函数。当前版本可以给其他用户设置超管权限。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<AddPowersReturnDto> AddPowers(AddPowersParamsDto model)
+        {
+            using var datas = new AddPowersDatas(World, model.Token)
+            {
+                CharType = model.CharType,
+                EndIndex = model.EndIndex,
+                StartIndex = model.StartIndex,
+                Prefix = model.Prefix,
+            };
+            World.AdminManager.AddPowers(datas);
+            var result = new AddPowersReturnDto();
+            result.FillFrom(datas);
+            return result;
+        }
+
+        /// <summary>
         /// 删除指定登录名的一组用户。目前除了整体回滚数据库以外，无法恢复该操作，请慎重使用。
         /// </summary>
         /// <param name="model"></param>

