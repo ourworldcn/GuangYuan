@@ -52,6 +52,19 @@
             与账号相关的操作控制器。
             </summary>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.#ctor(OW.Game.VWorld)">
+            <summary>
+            构造函数。
+            </summary>
+            <param name="world"></param>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.SetCombatScore(GY2021001WebApi.Models.SetCombatScoreParamsDto)">
+            <summary>
+            设置pvp积分，超管和运营可以使用此功能。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:GY2021001WebApi.Controllers.AdminController.AddPowers(GY2021001WebApi.Models.AddPowersParamsDto)">
             <summary>
             给指定的一组用户追加权限。只有超级管理员账号可以成功调用该函数。当前版本可以给其他用户设置超管权限。
@@ -2615,6 +2628,31 @@
         <member name="P:GY2021001WebApi.Models.GetRankOfTuiguanForMeReturnDto.Scope">
             <summary>
             自己的战力积分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.Prefix">
+            <summary>
+            前缀。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.StartIndex">
+            <summary>
+            起始索引号。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.EndIndex">
+            <summary>
+            终止索引号。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.PvpScore">
+            <summary>
+            设置或获取pvp等级分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.PveScore">
+            <summary>
+            保留未用，设置或获取pve等级分。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.AddPowersParamsDto">

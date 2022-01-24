@@ -3200,6 +3200,45 @@ namespace GY2021001WebApi.Models
 
     #region 管理相关
 
+    [DataContract]
+    public class SetCombatScoreParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 前缀。
+        /// </summary>
+        [DataMember]
+        public string Prefix { get; set; }
+
+        /// <summary>
+        /// 起始索引号。
+        /// </summary>
+        [DataMember]
+        public int StartIndex { get; set; }
+
+        /// <summary>
+        /// 终止索引号。
+        /// </summary>
+        [DataMember]
+        public int EndIndex { get; set; }
+
+        /// <summary>
+        /// 设置或获取pvp等级分。
+        /// </summary>
+        [DataMember]
+        public int? PvpScore { get; set; }
+
+        /// <summary>
+        /// 保留未用，设置或获取pve等级分。
+        /// </summary>
+        [DataMember]
+        public int? PveScore { get; set; }
+    }
+
+    [DataContract]
+    public class SetCombatScoreReturnDto : ReturnDtoBase
+    {
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -3209,21 +3248,25 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 前缀。
         /// </summary>
+        [DataMember]
         public string Prefix { get; set; }
 
         /// <summary>
         /// 起始索引号。
         /// </summary>
+        [DataMember]
         public int StartIndex { get; set; }
 
         /// <summary>
         /// 终止索引号。
         /// </summary>
+        [DataMember]
         public int EndIndex { get; set; }
 
         /// <summary>
         /// 权限的按位组合。
         /// </summary>
+        [DataMember]
         public CharType CharType { get; set; }
     }
 

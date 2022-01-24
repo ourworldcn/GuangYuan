@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -46,6 +47,12 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = "StartIndex 要小于或等于 EndIndex。";
                 return;
             }
+            if (!datas.GameChar.CharType.HasFlag(CharType.SuperAdmin) && !datas.GameChar.CharType.HasFlag(CharType.Admin))   //若权限不够
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
+                datas.ErrorMessage = "权限不够";
+                return;
+            }
             var db = datas.UserContext;
             var loginNames = new List<string>();  //登录名数组
             for (int i = datas.StartIndex; i <= datas.EndIndex; i++)
@@ -67,6 +74,15 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 是否有超管或运营的权限。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool IsSuperAdminOrAdmin(GameChar gameChar) =>
+            gameChar.CharType.HasFlag(CharType.SuperAdmin) || gameChar.CharType.HasFlag(CharType.Admin);
+
+        /// <summary>
         /// 给指定的一组账号增加权限。
         /// </summary>
         /// <param name="datas"></param>
@@ -80,7 +96,7 @@ namespace GuangYuan.GY001.BLL
             }
             if (!datas.GameChar.CharType.HasFlag(CharType.SuperAdmin))   //若不是超管
             {
-                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
                 datas.ErrorMessage = "需要超管权限";
                 return;
             }
@@ -113,11 +129,11 @@ namespace GuangYuan.GY001.BLL
                 if (dw is null)
                     return;
                 World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
-                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
-                //{
-                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                //    return;
-                //}
+                if (!IsSuperAdminOrAdmin(datas.GameChar))    //若没有权限
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
+                    return;
+                }
             }
             var gis = World.ItemManager.ToGameItems(datas.Propertyies);
             var coll = gis.Select(c => (c, c.Properties.GetGuidOrDefault("ptid")));
@@ -142,11 +158,11 @@ namespace GuangYuan.GY001.BLL
                 if (dw is null)
                     return;
                 World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
-                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
-                //{
-                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                //    return;
-                //}
+                if (!IsSuperAdminOrAdmin(datas.GameChar))    //若没有权限
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
+                    return;
+                }
             }
             var gu = World.CharManager.GetUserFromLoginName(datas.LoginName);
             if (gu is null)
@@ -170,6 +186,11 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void CloneUser(CloneUserDatas datas)
         {
+            if (!IsSuperAdminOrAdmin(datas.GameChar))    //若没有权限
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
+                return;
+            }
             string prefix = datas.LoginNamePrefix ?? "vip";
             var context = datas.UserContext;
             var loginNames = context.Set<GameUser>().Where(c => c.LoginName.StartsWith(prefix)).Select(c => (c.LoginName));    //获取已有登录名
@@ -268,11 +289,11 @@ namespace GuangYuan.GY001.BLL
                 if (dw is null)
                     return;
                 World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
-                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
-                //{
-                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                //    return;
-                //}
+                if (!IsSuperAdminOrAdmin(datas.GameChar))    //若没有权限
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
+                    return;
+                }
             }
             var db = datas.UserContext;
             var lns = db.Set<GameUser>().Where(c => EF.Functions.Like(c.LoginName, $"{datas.LoginNamePrefix}%")).Select(c => c.LoginName).
@@ -305,11 +326,11 @@ namespace GuangYuan.GY001.BLL
                 if (dw is null)
                     return;
                 World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
-                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
-                //{
-                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                //    return;
-                //}
+                if (!IsSuperAdminOrAdmin(datas.GameChar))    //若没有权限
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
+                    return;
+                }
             }
             JsonSerializerOptions options = new JsonSerializerOptions() { };
 #if DEBUG
@@ -349,11 +370,11 @@ namespace GuangYuan.GY001.BLL
                 if (dw is null)
                     return;
                 World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
-                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
-                //{
-                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                //    return;
-                //}
+                if (!IsSuperAdminOrAdmin(datas.GameChar))    //若没有权限
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
+                    return;
+                }
             }
             datas.OnlineCount = World.CharManager.Id2OnlineChar.Count;
             datas.TotalCount = World.CharManager.Id2GameChar.Count;
@@ -371,11 +392,11 @@ namespace GuangYuan.GY001.BLL
                 if (dw is null)
                     return;
                 World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
-                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
-                //{
-                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                //    return;
-                //}
+                if (!IsSuperAdminOrAdmin(datas.GameChar))    //若没有权限
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
+                    return;
+                }
             }
             foreach (var gc in World.CharManager.Id2GameChar.Values)
             {
@@ -394,11 +415,11 @@ namespace GuangYuan.GY001.BLL
                 if (dw is null)
                     return;
                 World.CharManager.Nope(datas.GameChar.GameUser);    //延迟登出时间
-                //if (!datas.GameChar.CharType.HasFlag(CharType.Admin))    //若没有权限
-                //{
-                //    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                //    return;
-                //}
+                if (!IsSuperAdminOrAdmin(datas.GameChar))    //若没有权限
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
+                    return;
+                }
             }
             using var dwUser = World.CharManager.LockOrLoad(datas.LoginName, out var gu);
             if (dwUser is null)

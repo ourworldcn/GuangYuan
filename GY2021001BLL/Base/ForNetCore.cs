@@ -21,6 +21,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -204,6 +205,8 @@ namespace GuangYuan.GY001.BLL
             var b1 = str1[^0..];
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
+            var exp = new Win32Exception(ErrorCodes.ERROR_NO_SUCH_PRIVILEGE);
+            var str = exp.Message;
             //var query = db.ExtendProperties.Where(c => c.Text.Length > 10240).Take(10);
             //var coll = new ObservableCollection<GameExtendProperty>(query);
             //var str = JsonSerializer.Serialize(coll);

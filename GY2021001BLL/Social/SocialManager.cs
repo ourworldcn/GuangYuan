@@ -7,6 +7,7 @@ using OW.Game;
 using OW.Game.Item;
 using OW.Game.Store;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -14,6 +15,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
@@ -81,14 +83,27 @@ namespace GuangYuan.GY001.BLL
             Initialize();
         }
 
+        private Timer _Timer;
+
+        protected Timer Timer => _Timer;
+
         /// <summary>
         /// 初始化函数。
         /// </summary>
         private void Initialize()
         {
+            //清理邮件
+            _Timer = new Timer(c =>
+            {
+                if (Environment.HasShutdownStarted)
+                    return;
+                var sql = "DELETE FROM [dbo].[Mails] WHERE DATEDIFF(day, [CreateUtc], GETUTCDATE())> 7";
+                ((VWorld)c).AddToUserContext(sql);
+            }, World, TimeSpan.Zero, TimeSpan.FromDays(1));
         }
 
         #endregion 构造函数及相关
+
 
         public void GetGeneralCharSummary(GetGeneralCharSummaryDatas datas)
         {
@@ -214,6 +229,7 @@ namespace GuangYuan.GY001.BLL
             {
                 mail.GenerateIdIfEmpty();
                 IEnumerable<GameMailAddress> tos;
+                using var db = World.CreateNewUserDbContext();
                 if (to.Contains(SocialConstant.ToAllId)) //若是所有人群发所有人
                 {
                     //tos = from gc in db.GameChars
@@ -226,7 +242,6 @@ namespace GuangYuan.GY001.BLL
                     //          Mail = mail,
                     //          MailId = mail.Id,
                     //      };
-                    using var db = World.CreateNewUserDbContext();
                     tos = from gc in db.GameChars.AsNoTracking()
                           select new GameMailAddress()
                           {
@@ -298,22 +313,26 @@ namespace GuangYuan.GY001.BLL
                 mail.Addresses.Add(sender);
                 World.AddToUserContext(new object[] { mail });
                 //发送邮件到达通知
-                Task.Run(() => NotifyMail(to));
+                var ids = tos.Select(c => c.ThingId).ToArray();
+                Task.Run(() => NotifyMail(ids));
             }
             catch
             {
             }
         }
 
-        private void NotifyMail(IEnumerable<Guid> charIds)
+        /// <summary>
+        /// 发送邮件到达标志。
+        /// </summary>
+        /// <param name="charIds">角色id，无法识别通用角色Id。需要展开。</param>
+        private void NotifyMail(Guid[] charIds)
         {
             var list = new List<Guid>(charIds);
-
-            list.RemoveAll(c => //优先通知已经在内存的角色
+            Array.ForEach(charIds, c => //优先通知已经在内存的角色
             {
                 using var dwUser = World.CharManager.LockOrLoad(c, out var gu);
                 if (dwUser is null)
-                    return false;
+                    return;
                 var gc = gu.CurrentChar;
                 //生成通知数据。
                 var lst = World.CharManager.GetChangeData(gc);
@@ -331,10 +350,10 @@ namespace GuangYuan.GY001.BLL
                     np.Properties.Add("charId", gc.IdString);
                     lst.Add(np);
                     World.CharManager.NotifyChange(gu);
-                    return true;
+                    return;
                 }
                 else
-                    return false;
+                    return;
             });
 
         }

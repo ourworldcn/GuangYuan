@@ -26,9 +26,33 @@ namespace GY2021001WebApi.Controllers
     [ApiController]
     public class AdminController : GameBaseController
     {
-
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="world"></param>
         public AdminController(VWorld world) : base(world)
         {
+        }
+
+        /// <summary>
+        /// 设置pvp积分，超管和运营可以使用此功能。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<SetCombatScoreReturnDto> SetCombatScore(SetCombatScoreParamsDto model)
+        {
+            using var datas = new SetCombatScoreDatas(World, model.Token)
+            {
+                Prefix = model.Prefix,
+                StartIndex = model.StartIndex,
+                EndIndex = model.EndIndex,
+                PveScore = model.PveScore,
+            };
+            World.AdminManager.SetCombatScore(datas);
+            var result = new SetCombatScoreReturnDto();
+            result.FillFrom(datas);
+            return result;
         }
 
         /// <summary>

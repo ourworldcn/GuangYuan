@@ -64,6 +64,11 @@ namespace GuangYuan.GY001.BLL
         public const int ERROR_BAD_ARGUMENTS = 160;
 
         /// <summary>
+        /// 没有足够的权限来完成请求的操作
+        /// </summary>
+        public const int ERROR_NO_SUCH_PRIVILEGE = 1313;
+
+        /// <summary>
         /// 没有足够资源完成操作。
         /// </summary>
         public const int RPC_S_OUT_OF_RESOURCES = 1721;

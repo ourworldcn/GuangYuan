@@ -10,6 +10,7 @@ namespace GuangYuan.GY001.UserDb
     /// <summary>
     /// 邮件地址的类型。
     /// </summary>
+    [Flags]
     public enum MailAddressKind
     {
         /// <summary>
