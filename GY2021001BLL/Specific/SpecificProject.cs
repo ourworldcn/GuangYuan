@@ -41,6 +41,8 @@ namespace GuangYuan.GY001.BLL
     {
         #region 固定模板Id
 
+        public static readonly Guid AllChanged = new Guid("{8DE0E03B-D138-43D3-8CCE-E519C9DA3065}");
+
         #region 废弃模板Id
 
         /// <summary>

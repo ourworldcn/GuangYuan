@@ -87,6 +87,8 @@ namespace GuangYuan.GY001.BLL
 
         protected Timer Timer => _Timer;
 
+        private Timer _TimerOfDay;  //每日0点清理任务计时器
+
         /// <summary>
         /// 初始化函数。
         /// </summary>
@@ -100,6 +102,29 @@ namespace GuangYuan.GY001.BLL
                 var sql = "DELETE FROM [dbo].[Mails] WHERE DATEDIFF(day, [CreateUtc], GETUTCDATE())> 7";
                 ((VWorld)c).AddToUserContext(sql);
             }, World, TimeSpan.Zero, TimeSpan.FromDays(1));
+            DateTime utcNow = DateTime.UtcNow;
+            _TimerOfDay = new Timer(c =>
+            {
+                foreach (var gc in World.CharManager.Id2GameChar.Values)
+                {
+                    using var dwUser = World.CharManager.LockAndReturnDisposer(gc.GameUser);
+                    if (dwUser is null)
+                        continue;
+                    var list = World.CharManager.GetChangeData(gc);
+                    var np = new ChangeData()
+                    {
+                        ActionId = 2,
+                        NewValue = 0,
+                        ObjectId = gc.Id,
+                        OldValue = 0,
+                        PropertyName = ProjectConstant.AllChanged.ToString(),
+                        TemplateId = ProjectConstant.MailSlotTId,
+                    };
+                    np.Properties.Add("charId", gc.IdString);
+                    list.Add(np);
+                    World.CharManager.NotifyChange(gc.GameUser);
+                }
+            }, null, utcNow.Date + TimeSpan.FromDays(1) - utcNow, TimeSpan.FromDays(1));
         }
 
         #endregion 构造函数及相关
@@ -330,10 +355,11 @@ namespace GuangYuan.GY001.BLL
             var list = new List<Guid>(charIds);
             Array.ForEach(charIds, c => //优先通知已经在内存的角色
             {
-                using var dwUser = World.CharManager.LockOrLoad(c, out var gu);
-                if (dwUser is null)
+                var gc = World.CharManager.GetCharFromId(c);
+                if (gc is null) //若不在内存中
                     return;
-                var gc = gu.CurrentChar;
+                var gu = gc.GameUser;
+                using var dwUser = World.CharManager.LockAndReturnDisposer(gu, Timeout.InfiniteTimeSpan);
                 //生成通知数据。
                 var lst = World.CharManager.GetChangeData(gc);
                 if (lst != null)
@@ -1635,19 +1661,26 @@ namespace GuangYuan.GY001.BLL
                               on bag.Id equals gi.ParentId
                               where gi.TemplateId == pvpObjectTId
                               select gi.Id).ToArray();  //pvp对象Id集合
+            int lv = 4;
+            var lvStr = lv.ToString("D10");
+            var allow = from gi in context.Set<GameItem>()
+                        join bag in context.Set<GameItem>() on gi.ParentId equals bag.Id
+                        join gc in context.Set<GameChar>() on bag.OwnerId equals gc.Id
+                        where gi.TemplateId== pvpObjectTId && string.Compare(gc.ExPropertyString, lvStr) >= 0
+                        select gi.Id;   //可以参与pvp的角色
 
             var lower = (from tmp in gameItemsQuery //取下手
-                         where tmp.Count < gcPvpObject.Count && !excludeIds.Contains(tmp.Id)
+                         where tmp.Count < gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
                          orderby tmp.Count descending
                          select tmp).Take(maxCount);
 
             var equals = (from tmp in gameItemsQuery //取平手
-                          where tmp.Count == gcPvpObject.Count && !excludeIds.Contains(tmp.Id)
+                          where tmp.Count == gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
                           orderby tmp.Count descending
                           select tmp).Take(maxCount);
 
             var higher = (from tmp in gameItemsQuery //取上手
-                          where tmp.Count > gcPvpObject.Count && !excludeIds.Contains(tmp.Id)
+                          where tmp.Count > gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
                           orderby tmp.Count
                           select tmp).Take(maxCount);
             var list = lower.Concat(equals).Concat(higher).ToList();

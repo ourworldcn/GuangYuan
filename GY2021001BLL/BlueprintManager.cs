@@ -339,10 +339,6 @@ namespace GuangYuan.GY001.BLL
             {
                 switch (datas.Blueprint.IdString)
                 {
-                    case "8b4ac76c-d8cc-4300-95ca-668350149821":    //若是孵化
-                        Fuhua(datas);
-                        succ = true;
-                        break;
                     case "7f35cda3-316d-4be6-9ccf-c348bb7dd28b":    //若是取蛋
                         GetFhResult(datas);
                         succ = true;
@@ -1434,6 +1430,7 @@ namespace GuangYuan.GY001.BLL
         /// 孵化坐骑/动物。
         /// </summary>
         /// <param name="datas"></param>
+        [BlueprintMethod("8b4ac76c-d8cc-4300-95ca-668350149821")]
         public void Fuhua(ApplyBlueprintDatas datas)
         {
             if (!datas.Verify(datas.GameItems.Count == 2, "必须指定双亲"))

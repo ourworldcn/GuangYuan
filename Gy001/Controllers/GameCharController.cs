@@ -650,7 +650,7 @@ namespace GY2021001WebApi.Controllers
         /// 获取当前角色的变化数据。获取后可以使用ClearChangeData接口清理。
         /// </summary>
         /// <param name="model"></param>
-        /// <returns></returns>
+        /// <returns>返回值ChangeDatas集合中莫格元素的 PropertyName 属性是8de0e03b-d138-43d3-8cce-e519c9da3065 表示指定对象发生了多处变化，需要全部刷新。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPut]
         public ActionResult<GetChangeDataResultDto> GetChangeData(GetChangeDataParamsDto model)

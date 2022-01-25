@@ -122,6 +122,19 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorCode = VWorld.GetLastError();
                 return;
             }
+            //计算价格，修改资源
+            var cost = GetCost(template, datas.Count, datas.GameChar);
+            if (cost.Any(c => c.Item1.Count + c.Item2 < 0))
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "至少有一项货币不足。";
+                return;
+            }
+            foreach (var item in cost.Where(c => c.Item2 != 0))
+            {
+                item.Item1.Count += item.Item2;
+                datas.ChangeItems.AddToChanges(item.Item1);
+            }
             //修改数据
             //生成物品
             var gim = World.ItemManager;
@@ -157,13 +170,6 @@ namespace GuangYuan.GY001.BLL
                     World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, list.Select(c => (c, gim.GetDefaultContainer(datas.GameChar, c).TemplateId)));
                 }
             }
-            //计算价格，修改资源
-            var cost = GetCost(template, datas.GameChar);
-            foreach (var item in cost.Where(c => c.Item2 != 0))
-            {
-                item.Item1.Count += item.Item2;
-                datas.ChangeItems.AddToChanges(item.Item1);
-            }
             //改写购买记录数据
             view.AddItem(template, datas.Count);
             view.Save();
@@ -174,34 +180,35 @@ namespace GuangYuan.GY001.BLL
         /// 获取售价。
         /// </summary>
         /// <param name="template"></param>
+        /// <param name="count">数量</param>
         /// <param name="gameChar"></param>
         /// <returns>售价的集合，可能是空集合，如签到礼包没有售价。</returns>
-        private IEnumerable<(GameItem, decimal)> GetCost(GameShoppingTemplate template, GameChar gameChar)
+        private IEnumerable<(GameItem, decimal)> GetCost(GameShoppingTemplate template, decimal count, GameChar gameChar)
         {
             List<(GameItem, decimal)> result = new List<(GameItem, decimal)>();
             var gitm = World.ItemTemplateManager;
             if (template.Properties.ContainsKey("bd"))   //若有钻石售价
             {
-                result.Add((gameChar.GetZuanshi(), -Math.Abs(template.Properties.GetDecimalOrDefault("bd"))));
+                result.Add((gameChar.GetZuanshi(), -Math.Abs(template.Properties.GetDecimalOrDefault("bd")) * count));
             }
             else
             {
                 var tt = gitm.GetTemplateFromeId(template.ItemTemplateId);
                 if (tt != null && tt.Properties.ContainsKey("bd"))    //若有基础模板钻石售价
                 {
-                    result.Add((gameChar.GetZuanshi(), -Math.Abs(tt.Properties.GetDecimalOrDefault("bd"))));
+                    result.Add((gameChar.GetZuanshi(), -Math.Abs(tt.Properties.GetDecimalOrDefault("bd")) * count));
                 }
             }
             if (template.Properties.ContainsKey("bg"))   //若有金币售价
             {
-                result.Add((gameChar.GetJinbi(), -Math.Abs(template.Properties.GetDecimalOrDefault("bg"))));
+                result.Add((gameChar.GetJinbi(), -Math.Abs(template.Properties.GetDecimalOrDefault("bg")) * count));
             }
             else
             {
                 var tt = gitm.GetTemplateFromeId(template.ItemTemplateId);
                 if (tt != null && tt.Properties.ContainsKey("bg"))    //若有基础模板金币售价
                 {
-                    result.Add((gameChar.GetJinbi(), -Math.Abs(tt.Properties.GetDecimalOrDefault("bg"))));
+                    result.Add((gameChar.GetJinbi(), -Math.Abs(tt.Properties.GetDecimalOrDefault("bg")) * count));
                 }
             }
             return result;

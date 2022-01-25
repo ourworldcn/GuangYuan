@@ -32,6 +32,7 @@ namespace GY2021001WebApi.Models
 
     /// <summary>
     /// 变化通知内容的数据传输类。
+    /// PropertyName 属性是8de0e03b-d138-43d3-8cce-e519c9da3065 表示指定对象发生了多处变化，需要全部刷新。
     /// </summary>
     [DataContract]
     public partial class ChangeDataDto
@@ -60,8 +61,7 @@ namespace GY2021001WebApi.Models
         public string TemplateId { get; set; }
 
         /// <summary>
-        /// 变化的属性名。
-        /// 暂时未实现。
+        /// 变化的属性名。8de0e03b-d138-43d3-8cce-e519c9da3065 表示指定对象发生了多处变化，需要全部刷新。
         /// </summary>
         [DataMember]
         public string PropertyName { get; set; }

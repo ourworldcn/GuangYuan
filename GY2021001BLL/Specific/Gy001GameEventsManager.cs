@@ -205,6 +205,7 @@ namespace OW.Game
                                 break;
                         }
                     }
+                    gc.ExPropertyString = newLv.ToString("D10");
                     //生成通知数据。
                     if (lst != null)
                     {
@@ -511,6 +512,9 @@ namespace OW.Game
                 var tm = new Timer(World.BlueprintManager.LevelUpCompleted, ValueTuple.Create(gameChar.Id, item.Id), ts, Timeout.InfiniteTimeSpan);
             }
             World.ItemManager.ComputeMucaiStc(gameChar);
+            //复位角色级别缓存字符串
+            var lv = (int)gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+            gameChar.ExPropertyString = lv.ToString("D10");
         }
 
         public override void GameUserLoaded(GameUser user, DbContext context)

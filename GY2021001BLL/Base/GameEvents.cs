@@ -28,14 +28,22 @@ namespace OW.Game
     /// 提供可重复使用 <see cref="SimplePropertyChangedItem{T}"/> 类型实例的资源池。
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SimplePropertyChangedItemPool<T>
+    public class SimplePropertyChangedItemPool<T> : DefaultObjectPool<SimplePropertyChangedItem<T>>
     {
         public static readonly ObjectPool<SimplePropertyChangedItem<T>> Shared;
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         static SimplePropertyChangedItemPool()
         {
-            Shared = new DefaultObjectPool<SimplePropertyChangedItem<T>>(new SimplePropertyChangedItemPooledObjectPolicy());
+            Shared = new SimplePropertyChangedItemPool<T>(new SimplePropertyChangedItemPooledObjectPolicy());
+        }
+
+        public SimplePropertyChangedItemPool(IPooledObjectPolicy<SimplePropertyChangedItem<T>> policy) : base(policy)
+        {
+        }
+
+        public SimplePropertyChangedItemPool(IPooledObjectPolicy<SimplePropertyChangedItem<T>> policy, int maximumRetained) : base(policy, maximumRetained)
+        {
         }
 
         private class SimplePropertyChangedItemPooledObjectPolicy : DefaultPooledObjectPolicy<SimplePropertyChangedItem<T>>
@@ -53,8 +61,23 @@ namespace OW.Game
                 return true;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override SimplePropertyChangedItem<T> Get()
+        {
+            var result = base.Get();
+            result.DateTimeUtc = DateTime.UtcNow;
+            return result;
+        }
     }
 
+    /// <summary>
+    /// 属性变化的数据封装类。
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class SimplePropertyChangedItem<T>
     {
         public SimplePropertyChangedItem()
@@ -107,15 +130,16 @@ namespace OW.Game
         /// </summary>
         public T OldValue { get; set; }
 
+        /// <summary>
+        /// 试图获取旧值。
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetOldValue([MaybeNullWhen(false)] out T result)
         {
-            if (!HasOldValue)
-            {
-                result = default;
-                return false;
-            }
-            result = OldValue;
-            return true;
+            result = HasOldValue ? OldValue : default;
+            return HasOldValue;
         }
         #endregion 旧值相关
 
@@ -130,6 +154,18 @@ namespace OW.Game
         /// 新值。
         /// </summary>
         public T NewValue { get; set; }
+
+        /// <summary>
+        /// 试图获取新值。
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetNewValue([MaybeNullWhen(false)] out T result)
+        {
+            result = HasNewValue ? NewValue : default;
+            return HasNewValue;
+        }
 
         #endregion 新值相关
 
@@ -220,7 +256,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.Remove(keyName, out _);
-            var result = new SimplePropertyChangedItem<object>( null,keyName) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
+            var result = new SimplePropertyChangedItem<object>(null, keyName) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
             item.Add(result);
             return hasOld;
         }
