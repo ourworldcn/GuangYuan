@@ -1685,6 +1685,93 @@ namespace GuangYuan.GY001.BLL
         }
         #endregion 合成相关
 
+        #region 技能升级相关
+
+        /// <summary>
+        /// 主动技能升级。
+        /// </summary>
+        /// <param name="datas"></param>
+        [BlueprintMethod("{B0680E76-809F-4C23-98A1-BE330816BF39}")] //主动技能升级
+        public void ZhudongLU(ApplyBlueprintDatas datas)
+        {
+            var giIds = new HashSet<Guid>(datas.GameItems.Select(c => c.Id));   //Id集合
+            var gi = datas.GameChar.GetZuojiBag().Children.FirstOrDefault(c => giIds.Contains(c.Id));   //可能的坐骑
+            if (gi is null)  //若没有找到坐骑
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "没有找到坐骑";
+                return;
+            }
+            var count = datas.Count;
+            var seq = gi.Template.Properties.GetValueOrDefault("psshuse") as decimal[];    //获取消耗资源序列
+            //获取耗材
+            var tt = World.ItemManager.GetHeadTemplate(gi); //获取模板
+            var haocaiTId = tt.Properties.GetGuidOrDefault("pssh"); //获取耗材对象TId
+            var haocai = datas.GameChar.GetItemBag().Children.FirstOrDefault(c => c.TemplateId == haocaiTId);
+            if (haocai is null)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "没有升级所需道具。";
+                return;
+            }
+            //逐次升级
+            for (int i = datas.Count - 1; i >= 0; i--)
+            {
+                var lv = (int)gi.Properties.GetDecimalOrDefault("pslv");  //获取当前技能等级
+                if (lv >= seq.Length)   //若已经到达最后级别
+                {
+                    if (i == datas.Count - 1)    //若没有升级成功过
+                    {
+                        datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                        datas.DebugMessage = "已达顶级";
+                        return;
+                    }
+                    else //若已升级到顶
+                    {
+                        return; //不报错
+                    }
+                }
+                var cost = Math.Abs(seq[lv]);   //耗材消耗数量
+                //验证资源
+                if (haocai.Count - cost < 0) //若耗材不够
+                {
+                    if (i == datas.Count - 1)    //若没有升级成功过
+                    {
+                        datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                        datas.DebugMessage = "耗材不足";
+                        return;
+                    }
+                    else //若曾经成功过
+                    {
+                        return;
+                    }
+                }
+            }
+            ChangeItem.Reduce(datas.ChangeItems);
+        }
+
+        /// <summary>
+        /// 被动技能升级。
+        /// </summary>
+        /// <param name="datas"></param>
+        [BlueprintMethod("{2CD84BF4-26F5-48DA-A463-289779C28DCA}")] //被动技能升级
+        public void BeidongLU(ApplyBlueprintDatas datas)
+        {
+
+        }
+
+        /// <summary>
+        /// 跳跃技能升级。
+        /// </summary>
+        /// <param name="datas"></param>
+        [BlueprintMethod("{DC5D14A9-CB50-440B-BB88-487A4CC663D9}")] //跳跃技能升级
+        public void TiaoyueLU(ApplyBlueprintDatas datas)
+        {
+
+        }
+
+        #endregion 技能升级相关
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Verify(ApplyBlueprintDatas datas, IEnumerable<GameItem> gameItems, Guid containerTId, Guid itemTId)
         {
