@@ -1355,7 +1355,10 @@ namespace OW.Game.Item
                         if (gi.Count > 0)
                             datas.ChangeItems.AddToChanges(gi);
                         else
+                        {
                             datas.ChangeItems.AddToRemoves(gi.ParentId.Value, gi.Id);
+                            World.ItemManager.ForceDelete(gi);
+                        }
                     }
                     else
                         break;

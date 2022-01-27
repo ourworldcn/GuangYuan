@@ -48,6 +48,7 @@ namespace GY2021001WebApi.Controllers
                 StartIndex = model.StartIndex,
                 EndIndex = model.EndIndex,
                 PveScore = model.PveScore,
+                PvpScore=model.PvpScore,
             };
             World.AdminManager.SetCombatScore(datas);
             var result = new SetCombatScoreReturnDto();

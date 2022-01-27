@@ -66,9 +66,12 @@ namespace GuangYuan.GY001.BLL
                 var gu = World.CharManager.GetUserFromLoginName(item);
                 if (gu is null)
                     continue;
-                gu.CurrentChar.GetPvpObject().Count = datas.PvpScore;
-                //gu.CurrentChar.GetPveT().Count = datas.PveScore;
-                World.CharManager.NotifyChange(gu);
+                if (!(datas.PvpScore is null))
+                {
+                    gu.CurrentChar.GetPvpObject().Count = datas.PvpScore;
+                    //gu.CurrentChar.GetPveT().Count = datas.PveScore;
+                    World.CharManager.NotifyChange(gu);
+                }
             }
 
         }

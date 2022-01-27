@@ -160,12 +160,12 @@ namespace GuangYuan.GY001.BLL
         public static (Guid, Guid, decimal)? GetTujianResult(this GameItemManager mng, GameChar gameChar, GameItemTemplate t1Body, GameItemTemplate t2Body)
         {
             var gitm = mng.Service.GetRequiredService<GameItemTemplateManager>();
-            var tujianBag = gameChar.GetZuojiBag(); //图鉴背包
+            var tujianBag = gameChar.GetTujianBag(); //图鉴背包
             var tujian = tujianBag.Children.FirstOrDefault(c => //图鉴
             {
                 var bd1 = c.Template.Properties.GetDecimalOrDefault("hbab");
                 var bd2 = c.Template.Properties.GetDecimalOrDefault("hbbb");
-                return bd1 == t1Body.CatalogNumber && bd2 == t2Body.CatalogNumber || bd2 == t1Body.CatalogNumber && bd1 == t2Body.CatalogNumber;
+                return bd1 == t1Body.GId && bd2 == t2Body.GId || bd2 == t1Body.GId && bd1 == t2Body.GId;
             });
             if (tujian is null)
                 return null;

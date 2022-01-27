@@ -1248,30 +1248,6 @@ namespace GuangYuan.GY001.BLL
                     datas.HasError = true;
                     datas.DebugMessage = "未知蓝图。";
                     return;
-                    //BlueprintData data = new BlueprintData(Service, datas.Blueprint);
-                    //for (int i = 0; i < datas.Count; i++)
-                    //{
-                    //    data.Match(datas);
-                    //    if (!data.Formulas.Any(c => c.IsMatched))  //若已经没有符合条件的公式。
-                    //    {
-                    //        datas.DebugMessage = $"计划制造{datas.Count}次,实际成功{i}次后，原料不足";
-                    //        break;
-                    //    }
-                    //    foreach (FormulaData item in data.Formulas)
-                    //    {
-                    //        if (!item.IsMatched)
-                    //        {
-                    //            continue;
-                    //        }
-
-                    //        foreach (MaterialData meter in item.Materials)
-                    //        {
-                    //            meter.Template.VariableDeclaration.OfType<ReferenceGExpression>().All(c => c.Cache(item.RuntimeEnvironment));
-                    //        }
-                    //    }
-                    //    data.Apply(datas);
-                    //    datas.SuccCount++;
-                    //}
                 }
                 ChangeItem.Reduce(datas.ChangeItems);    //压缩变化数据
                 World.CharManager.NotifyChange(gu);
@@ -1694,6 +1670,7 @@ namespace GuangYuan.GY001.BLL
         [BlueprintMethod("{B0680E76-809F-4C23-98A1-BE330816BF39}")] //主动技能升级
         public void ZhudongLU(ApplyBlueprintDatas datas)
         {
+            const string prefix = "sk"; //前缀
             var giIds = new HashSet<Guid>(datas.GameItems.Select(c => c.Id));   //Id集合
             var gi = datas.GameChar.GetZuojiBag().Children.FirstOrDefault(c => giIds.Contains(c.Id));   //可能的坐骑
             if (gi is null)  //若没有找到坐骑
@@ -1702,22 +1679,40 @@ namespace GuangYuan.GY001.BLL
                 datas.DebugMessage = "没有找到坐骑";
                 return;
             }
-            var count = datas.Count;
-            var seq = gi.Template.Properties.GetValueOrDefault("psshuse") as decimal[];    //获取消耗资源序列
             //获取耗材
-            var tt = World.ItemManager.GetHeadTemplate(gi); //获取模板
-            var haocaiTId = tt.Properties.GetGuidOrDefault("pssh"); //获取耗材对象TId
-            var haocai = datas.GameChar.GetItemBag().Children.FirstOrDefault(c => c.TemplateId == haocaiTId);
+            var tt = World.ItemManager.GetBodyTemplate(gi); //获取模板
+            var costTId = tt.Properties.GetGuidOrDefault($"{prefix}sh"); //获取耗材对象TId
+            SkillLUCore(datas, prefix, costTId);
+        }
+
+        /// <summary>
+        /// 设计技能的核心逻辑。
+        /// </summary>
+        /// <param name="datas"></param>
+        /// <param name="prefix"></param>
+        /// <param name="costTId">耗材的模板id。</param>
+        void SkillLUCore(ApplyBlueprintDatas datas, string prefix, Guid costTId)
+        {
+            var giIds = new HashSet<Guid>(datas.GameItems.Select(c => c.Id));   //Id集合
+            var gi = datas.GameChar.GetZuojiBag().Children.FirstOrDefault(c => giIds.Contains(c.Id));   //可能的坐骑
+            if (gi is null)  //若没有找到坐骑
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "没有找到坐骑";
+                return;
+            }
+            var seq = gi.Template.Properties.GetValueOrDefault($"{prefix}shuse") as decimal[];    //获取消耗资源序列
+            //获取耗材
+            var haocai = datas.GameChar.GetItemBag().Children.FirstOrDefault(c => c.TemplateId == costTId);
             if (haocai is null)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                 datas.DebugMessage = "没有升级所需道具。";
                 return;
             }
-            //逐次升级
-            for (int i = datas.Count - 1; i >= 0; i--)
+            for (int i = datas.Count - 1; i >= 0; i--)  //逐次升级
             {
-                var lv = (int)gi.Properties.GetDecimalOrDefault("pslv");  //获取当前技能等级
+                var lv = (int)gi.Properties.GetDecimalOrDefault($"{prefix}lv");  //获取当前技能等级
                 if (lv >= seq.Length)   //若已经到达最后级别
                 {
                     if (i == datas.Count - 1)    //若没有升级成功过
@@ -1746,8 +1741,24 @@ namespace GuangYuan.GY001.BLL
                         return;
                     }
                 }
+                //修改数据
+                haocai.Count -= cost;
+                if (haocai.Count <= 0) //若耗材已经用完
+                {
+                    datas.ChangeItems.AddToRemoves(haocai.ParentId.Value, haocai.Id);
+                    World.ItemManager.ForceDelete(haocai);
+                }
+                else
+                {
+                    datas.ChangeItems.AddToChanges(haocai);
+                }
+                gi.Properties[$"{prefix}lv"] = (decimal)lv + 1;
+                datas.ChangeItems.AddToChanges(gi);
+                datas.SuccCount++;
             }
             ChangeItem.Reduce(datas.ChangeItems);
+            if (datas.SuccCount > 0)
+                World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
 
         /// <summary>
@@ -1757,7 +1768,19 @@ namespace GuangYuan.GY001.BLL
         [BlueprintMethod("{2CD84BF4-26F5-48DA-A463-289779C28DCA}")] //被动技能升级
         public void BeidongLU(ApplyBlueprintDatas datas)
         {
-
+            const string prefix = "ps"; //前缀
+            var giIds = new HashSet<Guid>(datas.GameItems.Select(c => c.Id));   //Id集合
+            var gi = datas.GameChar.GetZuojiBag().Children.FirstOrDefault(c => giIds.Contains(c.Id));   //可能的坐骑
+            if (gi is null)  //若没有找到坐骑
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "没有找到坐骑";
+                return;
+            }
+            //获取耗材
+            var tt = World.ItemManager.GetHeadTemplate(gi); //获取模板
+            var costTId = tt.Properties.GetGuidOrDefault($"{prefix}sh"); //获取耗材对象TId
+            SkillLUCore(datas, prefix, costTId);
         }
 
         /// <summary>
@@ -1767,7 +1790,19 @@ namespace GuangYuan.GY001.BLL
         [BlueprintMethod("{DC5D14A9-CB50-440B-BB88-487A4CC663D9}")] //跳跃技能升级
         public void TiaoyueLU(ApplyBlueprintDatas datas)
         {
-
+            const string prefix = "js"; //前缀
+            var giIds = new HashSet<Guid>(datas.GameItems.Select(c => c.Id));   //Id集合
+            var gi = datas.GameChar.GetZuojiBag().Children.FirstOrDefault(c => giIds.Contains(c.Id));   //可能的坐骑
+            if (gi is null)  //若没有找到坐骑
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "没有找到坐骑";
+                return;
+            }
+            //获取耗材
+            var tt = World.ItemManager.GetHeadTemplate(gi); //获取模板
+            var costTId = tt.Properties.GetGuidOrDefault($"{prefix}sh"); //获取耗材对象TId
+            SkillLUCore(datas, prefix, costTId);
         }
 
         #endregion 技能升级相关
