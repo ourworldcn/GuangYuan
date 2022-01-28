@@ -1,4 +1,5 @@
 using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.AspNetCore.Builder;
@@ -111,6 +112,7 @@ namespace Gy001
 #endif //DEBUG
             }));
             services.Replace(ServiceDescriptor.Singleton<GameEventsManager>(c => new Gy001GameEventsManager(c, new Gy001GameEventsManagerOptions())));
+            services.Replace(ServiceDescriptor.Singleton<GamePropertyChangeManager>(c => new Gy001GamePropertyChangeManager(c, new GamePropertyChangeManagerOptions())));
             #endregion 配置游戏专用服务
         }
 

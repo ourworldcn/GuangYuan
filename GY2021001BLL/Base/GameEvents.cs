@@ -8,6 +8,7 @@ using OW.Game.Store;
 using System;
 using System.Buffers;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -114,7 +115,7 @@ namespace OW.Game
         public object Object { get; set; }
 
         /// <summary>
-        /// 属性的名字。
+        /// 属性的名字。事件发送者和处理者约定好即可，也可能是对象的其他属性名，如Children可以表示集合变化。
         /// </summary>
         public string Name { get; set; }
 
@@ -294,6 +295,10 @@ namespace OW.Game
 
         #region 动态属性变化
 
+        /// <summary>
+        /// 动态属性发生变化。
+        /// </summary>
+        /// <param name="arg"></param>
         public virtual void OnPropertyChanged(SimplePropertyChangedItem<object> arg)
         {
 
@@ -821,40 +826,38 @@ namespace OW.Game
         public static void GameItemCreated(this GameEventsManager manager, GameItem gameItem, GameItemTemplate template) =>
                     manager.GameItemCreated(gameItem, template, null, null);
 
+        #region 属性变化事件相关
+
         /// <summary>
         /// 获取或初始化事件数据对象的列表。
         /// </summary>
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static List<SimplePropertyChangedItem<object>> GetOrCreateEventArgsList(this GameChar gameChar)
-        {
-            if (gameChar.RuntimeProperties.TryGetValue("EventArgsList", out var listObj) && listObj is List<SimplePropertyChangedItem<object>> list)
-                return list;
-            list = new List<SimplePropertyChangedItem<object>>();
-            gameChar.RuntimeProperties["EventArgsList"] = list;
-            return list;
-        }
+        public static ConcurrentQueue<SimplePropertyChangedItem<object>> GetOrCreateEventArgsList(this GameChar gameChar) =>
+            gameChar.RuntimeProperties.GetOrAdd("EventArgsList", c => new ConcurrentQueue<SimplePropertyChangedItem<object>>()) as ConcurrentQueue<SimplePropertyChangedItem<object>>;
 
         /// <summary>
+        /// 设置属性并发送变化事件数据。
         /// </summary>
         /// <param name="gameChar"></param>
         /// <param name="obj"></param>
         /// <param name="name"></param>
         /// <param name="newValue"></param>
         /// <param name="tag">附属信息。</param>
-        public static void SetDynamicPropertyAndDelayRaiseEvent(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object newValue, object tag)
+        public static void PostDynamicPropertyChanged(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object newValue, object tag)
         {
             var arg = SimplePropertyChangedItemPool<object>.Shared.Get();
-            arg.Object = obj; arg.Name = name; arg.DateTimeUtc = DateTime.UtcNow; arg.Tag = tag;
+            arg.Object = obj; arg.Name = name; arg.Tag = tag;
             if (obj.Properties.TryGetValue(name, out var oldValue))
             {
                 arg.OldValue = oldValue;
                 arg.HasOldValue = true;
             }
             obj.Properties[name] = newValue;
+            arg.NewValue = newValue;
             arg.HasNewValue = true;
-            gameChar.GetOrCreateEventArgsList().Add(arg);
+            gameChar.GetOrCreateEventArgsList().Enqueue(arg);
         }
 
         /// <summary>
@@ -864,16 +867,16 @@ namespace OW.Game
         /// <param name="obj"></param>
         /// <param name="name"></param>
         /// <param name="tag"></param>
-        public static void RemoveDynamicPropertyAndDelayRaiseEvent(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object tag)
+        public static void PostDynamicPropertyRemoved(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object tag)
         {
             var arg = SimplePropertyChangedItemPool<object>.Shared.Get();
-            arg.Object = obj; arg.Name = name; arg.DateTimeUtc = DateTime.UtcNow; arg.Tag = tag;
             if (obj.Properties.Remove(name, out var oldValue))
             {
+                arg.Object = obj; arg.Name = name; arg.Tag = tag;
                 arg.OldValue = oldValue;
                 arg.HasOldValue = true;
+                gameChar.GetOrCreateEventArgsList().Enqueue(arg);
             }
-            gameChar.GetOrCreateEventArgsList().Add(arg);
         }
 
         /// <summary>
@@ -881,31 +884,32 @@ namespace OW.Game
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="gameChar"></param>
-        public static bool RaiseEvent(this GameEventsManager manager, GameChar gameChar)
+        public static bool DispatcherDynamicProperty(this GameEventsManager manager, GameChar gameChar)
         {
             List<Exception> excps = new List<Exception>();
             bool succ = false;
-            for (var list = gameChar.GetOrCreateEventArgsList(); list.Count > 0; list = gameChar.GetOrCreateEventArgsList())    //若存在数据
+            var list = gameChar.GetOrCreateEventArgsList();
+            SimplePropertyChangedItem<object> item;
+            while (!list.IsEmpty)    //若存在数据
             {
-                gameChar.RuntimeProperties.Remove("EventArgsList"); //从临界状态移除
+                for (var b = list.TryDequeue(out item); !b; b = list.TryDequeue(out item)) ;
                 succ = true;
-                foreach (var item in list)
+                try
                 {
-                    try
-                    {
-                        manager.OnPropertyChanged(item);
-                    }
-                    catch (Exception excp)
-                    {
-                        excps.Add(excp);
-                    }
+                    manager.OnPropertyChanged(item);
                 }
-                list.ForEach(c => SimplePropertyChangedItemPool<object>.Shared.Return(c));  //放入池中备用
+                catch (Exception excp)
+                {
+                    excps.Add(excp);
+                }
+                SimplePropertyChangedItemPool<object>.Shared.Return(item);  //放入池中备用
             }
             if (excps.Count > 0)    //若需要引发工程中堆积的异常
                 throw new AggregateException(excps);
             return succ;
         }
+        #endregion 属性变化事件相关
+
     }
 
 

@@ -398,6 +398,9 @@ namespace GuangYuan.GY001.BLL
 
             //加入脚本服务
             services.AddSingleton(c => new GameScriptManager(c, new GameScriptManagerOptions { }));
+            
+            //加入属性变化管理器
+            services.TryAddSingleton(c => new GamePropertyChangeManager(c, new GamePropertyChangeManagerOptions() { }));
             #endregion  游戏专用服务
 
             return services;

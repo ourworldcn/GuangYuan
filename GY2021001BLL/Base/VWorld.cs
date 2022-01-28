@@ -370,6 +370,14 @@ namespace OW.Game
         /// 脚本服务。
         /// </summary>
         public GameScriptManager ScriptManager => _ScriptManager ??= Service.GetService<GameScriptManager>();
+
+        GamePropertyChangeManager _PropertyChangeManager;
+
+        /// <summary>
+        /// 属性变化管理器。
+        /// </summary>
+        public GamePropertyChangeManager PropertyChangeManager => _PropertyChangeManager ??= Service.GetService<GamePropertyChangeManager>();
+
         #endregion 子管理器
 
         #region 对象池
@@ -527,9 +535,9 @@ namespace OW.Game
             {
                 StartDateTime = StartDateTimeUtc,
                 CurrentDateTime = DateTime.UtcNow,
-                Version= Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion,
+                Version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion,
             };
-        
+
         /// <summary>
         /// 测试指定概率数值是否命中。
         /// </summary>

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.ObjectPool;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -196,16 +197,17 @@ namespace OW.Game.Store
             }
         }
 
-        private Dictionary<string, object> _RuntimeProperties;
+        private ConcurrentDictionary<string, object> _RuntimeProperties;
 
         /// <summary>
         /// 存储一些运行时需要用的到的属性，使用者自己定义。
         /// 这些存储的属性不会被持久化。
         /// </summary>
         [NotMapped, JsonIgnore]
-        public Dictionary<string, object> RuntimeProperties
+        public ConcurrentDictionary<string, object> RuntimeProperties
         {
-            get => _RuntimeProperties ??= new Dictionary<string, object>();
+            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
+            get => _RuntimeProperties ??= new ConcurrentDictionary<string, object>();
         }
 
         /// <summary>
