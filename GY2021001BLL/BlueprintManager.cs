@@ -57,6 +57,21 @@ namespace GuangYuan.GY001.BLL
             var dic = GameItem.Properties;
             var bag = GameChar.GetCurrencyBag();
 
+            #region 计算通用代价
+            var collCost = GameItem.Properties.GetValuesWithoutPrefix("luc").ToList();   //获取代价
+            foreach (var costItem in collCost)
+            {
+                var item = costItem.FirstOrDefault();    //获取
+                if (!OwConvert.TryToGuid(item.Item1, out var tid) || !OwConvert.TryToDecimal(item.Item2, out var count))    //若没有合法的数据
+                    return null;
+                var gi = GameChar.AllChildren.FirstOrDefault(c => c.TemplateId == tid);
+                if (gi is null) //若找不到指定的道具
+                    return null;
+                result.Add((gi, -Math.Abs(count)));
+            }
+            #endregion 计算通用代价
+
+            #region 计算非通用代价
             var dia = dic.GetDecimalOrDefault("lud", decimal.Zero); //钻石
             if (dia != decimal.Zero)   //若有钻石消耗
             {
@@ -80,6 +95,7 @@ namespace GuangYuan.GY001.BLL
                 var gi = GameChar.GetMucai();
                 result.Add((gi, wood));
             }
+            #endregion 计算非通用代价
             return result;
         }
 
@@ -744,6 +760,7 @@ namespace GuangYuan.GY001.BLL
         /// 通用的升级函数。
         /// </summary>
         /// <param name="datas"></param>
+        [BlueprintMethod("{7D17BE11-02A0-473A-A2AF-87029393C530}")]
         public void LevelUp(ApplyBlueprintDatas datas)
         {
             var gim = World.ItemManager;
@@ -802,7 +819,6 @@ namespace GuangYuan.GY001.BLL
                     datas.DebugMessage = "已达最大等级";
                     return;
                 }
-
                 var luDatas = new LevelUpDatas(World, datas.GameChar)
                 {
                     GameItem = datas.GameItems[0],

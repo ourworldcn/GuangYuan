@@ -1568,7 +1568,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 获取该用户的指定指定日期的可pvp对象。
+        /// 获取该用户的指定日期的可pvp对象。
         /// </summary>
         /// <param name="datas"></param>
         /// <returns>返回当前的pvp对象Id列表。如果没有则自动生成。
@@ -1652,9 +1652,11 @@ namespace GuangYuan.GY001.BLL
         public IEnumerable<Guid> RefreshPvpList(GameChar gameChar, DbContext context, IEnumerable<Guid> excludes = null)
         {
             var maxCount = 3;   //总计获取的数量
-            var gcPvpObject = gameChar.GetPvpObject();
-            var pvpObjectTId = ProjectConstant.PvpObjectTId;  //PVP对象Id
-            var gameItemsQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId).AsNoTracking();    //查询的基础集合
+            var diff = 100; //分差
+            var gcPvpObject = gameChar.GetPvpObject();  //当前用户pvp数据对象
+            var pvpObjectTId = ProjectConstant.PvpObjectTId;  //PVP对象模板Id
+            var pvpObjectQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId).AsNoTracking();    //查询的基础集合
+
             IEnumerable<Guid> excludeCharIds = excludes is null ? new Guid[] { gameChar.Id } : excludes.Append(gameChar.Id);   //排除的角色Id集合
             var excludeIds = (from bag in context.Set<GameItem>().Where(c => c.OwnerId.HasValue && excludeCharIds.Contains(c.OwnerId.Value)).AsNoTracking()
                               join gi in context.Set<GameItem>().AsNoTracking()
@@ -1666,20 +1668,20 @@ namespace GuangYuan.GY001.BLL
             var allow = from gi in context.Set<GameItem>()
                         join bag in context.Set<GameItem>() on gi.ParentId equals bag.Id
                         join gc in context.Set<GameChar>() on bag.OwnerId equals gc.Id
-                        where gi.TemplateId== pvpObjectTId && string.Compare(gc.ExPropertyString, lvStr) >= 0
+                        where gi.TemplateId == pvpObjectTId && string.Compare(gc.ExPropertyString, lvStr) >= 0
                         select gi.Id;   //可以参与pvp的角色
 
-            var lower = (from tmp in gameItemsQuery //取下手
+            var lower = (from tmp in pvpObjectQuery //取下手
                          where tmp.Count < gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
                          orderby tmp.Count descending
                          select tmp).Take(maxCount);
 
-            var equals = (from tmp in gameItemsQuery //取平手
+            var equals = (from tmp in pvpObjectQuery //取平手
                           where tmp.Count == gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
                           orderby tmp.Count descending
                           select tmp).Take(maxCount);
 
-            var higher = (from tmp in gameItemsQuery //取上手
+            var higher = (from tmp in pvpObjectQuery //取上手
                           where tmp.Count > gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
                           orderby tmp.Count
                           select tmp).Take(maxCount);

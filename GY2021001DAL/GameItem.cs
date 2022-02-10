@@ -1,9 +1,11 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
@@ -502,6 +504,74 @@ namespace GuangYuan.GY001.UserDb
     public static class GameItemExtensions
     {
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        /// <param name="newValue"></param>
+        /// <param name="tag"></param>
+        /// <param name="changes">变化数据的集合，如果值变化了，将向此集合追加变化数据对象。若省略或为null则不追加。</param>
+        /// <returns>true设置了变化数据，false,新值与旧值没有变化。</returns>
+        public static bool SetPropertyAndReturnChangedItem(this GameItem obj, string name, object newValue, [AllowNull] object tag = null,
+            [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        {
+            if (0 == string.Compare(name, "count")) //若是Count属性
+            {
+                if (newValue is null)    //若新值是null
+                {
+                    if (obj.Count is null)   //若原值也是空
+                        return false;
+                    else if (null != changes)  //若需要变化数据
+                    {
+                        var item = GamePropertyChangedItemPool<object>.Shared.Get();
+                        item.Object = obj; item.PropertyName = name; item.Tag = tag;
+                        item.HasOldValue = true;
+                        item.OldValue = obj.Count.Value;
+                        changes.Add(item);
+                    }
+                    obj.Count = null;
+                    return true;
+                }
+                else    //若新值不是null
+                {
+                    if (!OwConvert.TryToDecimal(newValue, out var newCount))    //若无法转换为decimal
+                        throw new ArgumentException("必须能转换为decimal类型", nameof(newValue));
+                    if (obj.Count is null || obj.Count.Value != newCount)  //若有变化
+                    {
+                        if (null != changes)  //若需要变化数据
+                        {
+                            var item = GamePropertyChangedItemPool<object>.Shared.Get();
+                            item.Object = obj; item.PropertyName = name; item.Tag = tag;
+                            if (!(obj.Count is null))
+                            {
+                                item.HasOldValue = true;
+                                item.OldValue = obj.Count.Value;
+                            }
+                            item.HasNewValue = true;
+                            item.NewValue = newValue;
+                            changes.Add(item);
+                        }
+                        obj.Count = newCount;
+                        return true;
+                    }
+                    else //若无变化
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+                return SimpleDynamicPropertyBaseExtensions.SetPropertyAndReturnChangedItem(obj, name, newValue, tag, changes);
+        }
+
+        public static void ToE(IEnumerable<GamePropertyChangedItem<object>> src, ICollection<ChangeItem> dest)
+        {
+            var coll = from tmp in src
+                       group tmp by tmp.Object;
+            coll.Select(c => c.Key);
+        }
+
+        /// <summary>
         /// 获取堆叠空余数量。
         /// </summary>
         /// <param name="obj"></param>
@@ -515,6 +585,7 @@ namespace GuangYuan.GY001.UserDb
         }
 
     }
+
     /// <summary>
     /// 记录虚拟物品、资源变化的类。
     /// </summary>
@@ -654,6 +725,13 @@ namespace GuangYuan.GY001.UserDb
     /// </summary>
     public static class ChangesItemExtensions
     {
+        public static void ToE(IEnumerable<GamePropertyChangedItem<object>> src, ICollection<ChangeItem> dest)
+        {
+            var coll = from tmp in src
+                       group tmp by tmp.Object;
+            coll.Select(c => c.Key);
+        }
+
         /// <summary>
         /// 追加物品到追加数据中。
         /// </summary>

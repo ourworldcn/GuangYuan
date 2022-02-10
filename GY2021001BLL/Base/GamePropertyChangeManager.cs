@@ -85,12 +85,12 @@ namespace GuangYuan.GY001.BLL
             List<Exception> excps = new List<Exception>();
             bool succ = false;
             var list = gameChar.GetOrCreateEventArgsList();
-            SimplePropertyChangedItem<object> item;
+            GamePropertyChangedItem<object> item;
             while (!list.IsEmpty)    //若存在数据
             {
                 for (var b = list.TryDequeue(out item); !b; b = list.TryDequeue(out item)) ;
                 succ = true;
-                var key = (item.Object.GetType(), item.Name);
+                var key = (item.Object.GetType(), item.PropertyName);
                 if (!_MemberInfos.Contains(key)) //若没有找到指定的处理函数
                 {
                 }
@@ -110,7 +110,7 @@ namespace GuangYuan.GY001.BLL
                         }
                     }
                 }
-                SimplePropertyChangedItemPool<object>.Shared.Return(item);  //放入池中备用
+                GamePropertyChangedItemPool<object>.Shared.Return(item);  //放入池中备用
             }
             if (excps.Count > 0)    //若需要引发工程中堆积的异常
                 throw new AggregateException(excps);
@@ -135,8 +135,8 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ConcurrentQueue<SimplePropertyChangedItem<object>> GetOrCreateEventArgsList(this GameChar gameChar) =>
-            gameChar.RuntimeProperties.GetOrAdd("EventArgsList", c => new ConcurrentQueue<SimplePropertyChangedItem<object>>()) as ConcurrentQueue<SimplePropertyChangedItem<object>>;
+        public static ConcurrentQueue<GamePropertyChangedItem<object>> GetOrCreateEventArgsList(this GameChar gameChar) =>
+            gameChar.RuntimeProperties.GetOrAdd("EventArgsList", c => new ConcurrentQueue<GamePropertyChangedItem<object>>()) as ConcurrentQueue<GamePropertyChangedItem<object>>;
 
     }
 }

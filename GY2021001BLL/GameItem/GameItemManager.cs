@@ -243,7 +243,7 @@ namespace OW.Game.Item
                 gameItem.SetPropertyValue(propName, val);
             DynamicPropertyChangedCollection args = new DynamicPropertyChangedCollection();
             var item = new SimplePropertyChangedCollection() { Thing = gameItem };
-            item.Add(new SimplePropertyChangedItem<object>(null, name: propName, oldValue: oldValue, newValue: gameItem.Properties[propName]));
+            item.Add(new GamePropertyChangedItem<object>(null, name: propName, oldValue: oldValue, newValue: gameItem.Properties[propName]));
             args.Add(item);
             World.EventsManager.OnDynamicPropertyChanged(args);
             return true;
@@ -692,9 +692,8 @@ namespace OW.Game.Item
                 if (null != dest)  //若存在同类物品
                 {
                     var redCount = Math.Min(dest.GetNumberOfStackRemainder(), gameItem.Count ?? 0);   //移动的数量
-                    dest.Count = dest.Count.Value + redCount;
-                    gameItem.Count -= redCount;
-                    changeItems?.AddToChanges(parent.Id, dest);
+                    ForcedAddCount(gameItem, -redCount, changeItems);
+                    ForcedAddCount(dest, redCount, changeItems);
                     result.Add(dest);
                 }
                 if (gameItem.Count <= 0)   //若已经全部堆叠进入
@@ -779,7 +778,7 @@ namespace OW.Game.Item
         /// <param name="gameItem"></param>
         /// <param name="parent"></param>
         /// <param name="changeItems"></param>
-        private bool AddItemNoStack(GameItem gameItem, GameObjectBase parent, ICollection<ChangeItem> changeItems = null)
+        private bool AddItemNoneStack(GameItem gameItem, GameObjectBase parent, ICollection<ChangeItem> changeItems = null)
         {
             Debug.Assert(!gameItem.IsStc(out var stc), "只能针对非堆叠物品。");
             gameItem.Count ??= 1;
@@ -876,6 +875,48 @@ namespace OW.Game.Item
         }
 
         /// <summary>
+        /// 设置数量属性，并考虑自动删除对象等事项。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="count"></param>
+        /// <param name="changes">变化数据，可以是空表示不记录变化数据。</param>
+        public virtual bool ForcedSetCount(GameItem gameItem, decimal count, [AllowNull] ICollection<ChangeItem> changes = null)
+        {
+            gameItem.Count = count;
+            if (decimal.Zero == gameItem.Count)   //若已经变为0
+            {
+                if (!gameItem.IsStc(out _) || gameItem.Parent.TemplateId != ProjectConstant.CurrencyBagTId)   //若应删除对象
+                {
+                    var pid = gameItem.ParentId ?? gameItem.OwnerId.Value;
+                    if (!ForceDelete(gameItem)) //若无法删除
+                        return false;
+                    changes?.AddToRemoves(pid, gameItem.Id);
+                }
+                else //不用删除对象
+                {
+                    changes?.AddToChanges(gameItem);
+                }
+            }
+            else //非0
+            {
+                changes?.AddToChanges(gameItem);
+            }
+            return true;
+
+        }
+
+        /// <summary>
+        /// 强制修改数量。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="count"></param>
+        /// <param name="changes">变化数据，可以是空表示不记录变化数据。</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool ForcedAddCount(GameItem gameItem, decimal count, [AllowNull] ICollection<ChangeItem> changes = null) =>
+            ForcedSetCount(gameItem, gameItem.Count.GetValueOrDefault() + count, changes);
+
+        /// <summary>
         /// 强制移动物品。无视容量限制堆叠规则。
         /// </summary>
         /// <param name="gameItem"></param>
@@ -916,10 +957,10 @@ namespace OW.Game.Item
         public bool ForceDelete(GameItem gameItem, DbContext db = null)
         {
             var gc = gameItem.GameChar;   //保存所属角色
+            db ??= gc?.GameUser?.DbContext;
             bool result = ForceRemove(gameItem);
             if (result)   //若成功移除关系
             {
-                db ??= gc?.GameUser?.DbContext;
                 if (!(db is null) && db.Entry(gameItem).State != EntityState.Detached)  //若非新加入的物品
                     db.Remove(gameItem);
             }

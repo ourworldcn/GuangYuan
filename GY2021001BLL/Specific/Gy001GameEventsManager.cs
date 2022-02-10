@@ -119,7 +119,7 @@ namespace OW.Game
             foreach (var item in mrs)
             {
                 var gi = item.Thing as GameItem;
-                foreach (var sunItem in item.Where(c => c.Name == ProjectConstant.LevelPropertyName)) //若主控室升级了
+                foreach (var sunItem in item.Where(c => c.PropertyName == ProjectConstant.LevelPropertyName)) //若主控室升级了
                 {
                     var newLv = gi.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
                     var oldLv = Convert.ToDecimal(sunItem.OldValue);
@@ -146,7 +146,7 @@ namespace OW.Game
                     continue;
                 foreach (var item in spcc)
                 {
-                    if (item.Name != World.PropertyManager.LevelPropertyName)    //若不是等级变化
+                    if (item.PropertyName != World.PropertyManager.LevelPropertyName)    //若不是等级变化
                         continue;
                     //计算经验值增加量
                     var seq = gi.Template.GetSequenceProperty<decimal>("lut");
@@ -170,7 +170,7 @@ namespace OW.Game
                     var gc = (GameChar)spcc.Thing;
                     var lst = World.CharManager.GetChangeData(gc);  //通知数据对象
 
-                    if (lst != null && item.Name == "exp")
+                    if (lst != null && item.PropertyName == "exp")
                     {
                         var np = new ChangeData()
                         {
@@ -188,7 +188,7 @@ namespace OW.Game
                     {
                         //TO DO
                     }
-                    if (item.Name != World.PropertyManager.LevelPropertyName)   //若不是等级变化
+                    if (item.PropertyName != World.PropertyManager.LevelPropertyName)   //若不是等级变化
                         continue;
                     var oldLv = item.HasOldValue ? Convert.ToInt32(item.OldValue) : 0;
                     var newLv = item.HasNewValue ? Convert.ToInt32(item.NewValue) : 0;
@@ -265,7 +265,7 @@ namespace OW.Game
         /// <returns></returns>
         private bool IsLineup0(SimplePropertyChangedCollection coll)
         {
-            return coll.Any(c => c.Name.StartsWith(ProjectConstant.ZhenrongPropertyName) && int.TryParse(c.Name[ProjectConstant.ZhenrongPropertyName.Length..], out var ln) && ln == 0);
+            return coll.Any(c => c.PropertyName.StartsWith(ProjectConstant.ZhenrongPropertyName) && int.TryParse(c.PropertyName[ProjectConstant.ZhenrongPropertyName.Length..], out var ln) && ln == 0);
         }
 
         #endregion 阵容相关

@@ -202,10 +202,12 @@ namespace GuangYuan.GY001.BLL
         [Conditional("DEBUG")]
         private void Test()
         {
-            var str1 = "sdjfsl";
-            var b1 = str1[^0..];
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
+            Expression<Func<GameItem, bool>> s = (GameItem c) => c.Id == ProjectConstant.PvpObjectTId;
+
+            var pvpObjectQuery = db.Set<GameItem>().Where(s).AsNoTracking();    //查询的基础集合
+            var tst = GamePropertyChangedItemPool<object>.Shared.Get();
         }
 
         /// <summary>
@@ -398,7 +400,7 @@ namespace GuangYuan.GY001.BLL
 
             //加入脚本服务
             services.AddSingleton(c => new GameScriptManager(c, new GameScriptManagerOptions { }));
-            
+
             //加入属性变化管理器
             services.TryAddSingleton(c => new GamePropertyChangeManager(c, new GamePropertyChangeManagerOptions() { }));
             #endregion  游戏专用服务

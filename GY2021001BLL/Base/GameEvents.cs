@@ -25,163 +25,7 @@ namespace OW.Game
 
     }
 
-    /// <summary>
-    /// 提供可重复使用 <see cref="SimplePropertyChangedItem{T}"/> 类型实例的资源池。
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class SimplePropertyChangedItemPool<T> : DefaultObjectPool<SimplePropertyChangedItem<T>>
-    {
-        public static readonly ObjectPool<SimplePropertyChangedItem<T>> Shared;
-
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        static SimplePropertyChangedItemPool()
-        {
-            Shared = new SimplePropertyChangedItemPool<T>(new SimplePropertyChangedItemPooledObjectPolicy());
-        }
-
-        public SimplePropertyChangedItemPool(IPooledObjectPolicy<SimplePropertyChangedItem<T>> policy) : base(policy)
-        {
-        }
-
-        public SimplePropertyChangedItemPool(IPooledObjectPolicy<SimplePropertyChangedItem<T>> policy, int maximumRetained) : base(policy, maximumRetained)
-        {
-        }
-
-        private class SimplePropertyChangedItemPooledObjectPolicy : DefaultPooledObjectPolicy<SimplePropertyChangedItem<T>>
-        {
-            public override bool Return(SimplePropertyChangedItem<T> obj)
-            {
-                obj.Object = default;
-                obj.Name = default;
-                obj.HasOldValue = default;
-                obj.OldValue = default;
-                obj.HasNewValue = default;
-                obj.NewValue = default;
-                obj.DateTimeUtc = default;
-                obj.Tag = default;
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override SimplePropertyChangedItem<T> Get()
-        {
-            var result = base.Get();
-            result.DateTimeUtc = DateTime.UtcNow;
-            return result;
-        }
-    }
-
-    /// <summary>
-    /// 属性变化的数据封装类。
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class SimplePropertyChangedItem<T>
-    {
-        public SimplePropertyChangedItem()
-        {
-
-        }
-
-        public SimplePropertyChangedItem(T obj, string name)
-        {
-            Name = name;
-            Object = obj;
-        }
-
-        /// <summary>
-        /// 构造函数。
-        /// 无论<paramref name="newValue"/>和<paramref name="oldValue"/>给定任何值，<see cref="HasOldValue"/>和<see cref="HasNewValue"/>都设置为true。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="name"></param>
-        /// <param name="oldValue"></param>
-        /// <param name="newValue"></param>
-        public SimplePropertyChangedItem(T obj, string name, T oldValue, T newValue)
-        {
-            Object = obj;
-            Name = name;
-            OldValue = oldValue;
-            NewValue = newValue;
-            HasOldValue = HasNewValue = true;
-        }
-
-        /// <summary>
-        /// 指出是什么对象变化了属性。
-        /// </summary>
-        public object Object { get; set; }
-
-        /// <summary>
-        /// 属性的名字。事件发送者和处理者约定好即可，也可能是对象的其他属性名，如Children可以表示集合变化。
-        /// </summary>
-        public string Name { get; set; }
-
-        #region 旧值相关
-
-        /// <summary>
-        /// 指示<see cref="OldValue"/>中的值是否有意义。
-        /// </summary>
-        public bool HasOldValue { get; set; }
-
-        /// <summary>
-        /// 获取或设置旧值。
-        /// </summary>
-        public T OldValue { get; set; }
-
-        /// <summary>
-        /// 试图获取旧值。
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetOldValue([MaybeNullWhen(false)] out T result)
-        {
-            result = HasOldValue ? OldValue : default;
-            return HasOldValue;
-        }
-        #endregion 旧值相关
-
-        #region 新值相关
-
-        /// <summary>
-        /// 指示<see cref="NewValue"/>中的值是否有意义。
-        /// </summary>
-        public bool HasNewValue { get; set; }
-
-        /// <summary>
-        /// 新值。
-        /// </summary>
-        public T NewValue { get; set; }
-
-        /// <summary>
-        /// 试图获取新值。
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetNewValue([MaybeNullWhen(false)] out T result)
-        {
-            result = HasNewValue ? NewValue : default;
-            return HasNewValue;
-        }
-
-        #endregion 新值相关
-
-        /// <summary>
-        /// 属性发生变化的时间点。Utc计时。
-        /// </summary>
-        public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// 事件发起方可以在这里记录一些额外信息。
-        /// </summary>
-        public object Tag { get; set; }
-    }
-
-    public class SimplePropertyChangedCollection : Collection<SimplePropertyChangedItem<object>>
+    public class SimplePropertyChangedCollection : Collection<GamePropertyChangedItem<object>>
     {
         public SimplePropertyChangedCollection()
         {
@@ -228,7 +72,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.TryGetValue(keyName, out var oldVal);
-            var result = new SimplePropertyChangedItem<object>(null, name: keyName, oldValue: oldVal, newValue: default) { HasOldValue = hasOld };
+            var result = new GamePropertyChangedItem<object>(null, name: keyName, oldValue: oldVal, newValue: default) { HasOldValue = hasOld };
             item.Add(result);
         }
 
@@ -237,12 +81,12 @@ namespace OW.Game
         /// </summary>
         /// <param name="thing"></param>
         /// <param name="keyName"></param>
-        /// <param name="newValue">无论设置任何值，总会将<see cref="SimplePropertyChangedItem{T}.HasNewValue"/>设置为true。</param>
+        /// <param name="newValue">无论设置任何值，总会将<see cref="GamePropertyChangedItem{T}.HasNewValue"/>设置为true。</param>
         public void MarkAndSet(GameThingBase thing, string keyName, object newValue)
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.TryGetValue(keyName, out var oldVal);
-            var result = new SimplePropertyChangedItem<object>(null, name: keyName, oldValue: oldVal, newValue: newValue) { HasOldValue = hasOld, HasNewValue = true, };
+            var result = new GamePropertyChangedItem<object>(null, name: keyName, oldValue: oldVal, newValue: newValue) { HasOldValue = hasOld, HasNewValue = true, };
             item.Add(result);
             thing.Properties[keyName] = newValue;
         }
@@ -257,7 +101,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.Remove(keyName, out _);
-            var result = new SimplePropertyChangedItem<object>(null, keyName) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
+            var result = new GamePropertyChangedItem<object>(null, keyName) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
             item.Add(result);
             return hasOld;
         }
@@ -299,7 +143,7 @@ namespace OW.Game
         /// 动态属性发生变化。
         /// </summary>
         /// <param name="arg"></param>
-        public virtual void OnPropertyChanged(SimplePropertyChangedItem<object> arg)
+        public virtual void OnPropertyChanged(GamePropertyChangedItem<object> arg)
         {
 
         }
@@ -311,7 +155,7 @@ namespace OW.Game
             {
                 foreach (var subItem in item)
                 {
-                    if (subItem.Name == lvName)
+                    if (subItem.PropertyName == lvName)
                     {
                         OnLvChanged(item.Thing, (int)Convert.ToDecimal(subItem.NewValue));
                         break;
@@ -834,8 +678,8 @@ namespace OW.Game
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ConcurrentQueue<SimplePropertyChangedItem<object>> GetOrCreateEventArgsList(this GameChar gameChar) =>
-            gameChar.RuntimeProperties.GetOrAdd("EventArgsList", c => new ConcurrentQueue<SimplePropertyChangedItem<object>>()) as ConcurrentQueue<SimplePropertyChangedItem<object>>;
+        public static ConcurrentQueue<GamePropertyChangedItem<object>> GetOrCreateEventArgsList(this GameChar gameChar) =>
+            gameChar.RuntimeProperties.GetOrAdd("EventArgsList", c => new ConcurrentQueue<GamePropertyChangedItem<object>>()) as ConcurrentQueue<GamePropertyChangedItem<object>>;
 
         /// <summary>
         /// 设置属性并发送变化事件数据。
@@ -847,8 +691,8 @@ namespace OW.Game
         /// <param name="tag">附属信息。</param>
         public static void PostDynamicPropertyChanged(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object newValue, object tag)
         {
-            var arg = SimplePropertyChangedItemPool<object>.Shared.Get();
-            arg.Object = obj; arg.Name = name; arg.Tag = tag;
+            var arg = GamePropertyChangedItemPool<object>.Shared.Get();
+            arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
             if (obj.Properties.TryGetValue(name, out var oldValue))
             {
                 arg.OldValue = oldValue;
@@ -869,10 +713,10 @@ namespace OW.Game
         /// <param name="tag"></param>
         public static void PostDynamicPropertyRemoved(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object tag)
         {
-            var arg = SimplePropertyChangedItemPool<object>.Shared.Get();
+            var arg = GamePropertyChangedItemPool<object>.Shared.Get();
             if (obj.Properties.Remove(name, out var oldValue))
             {
-                arg.Object = obj; arg.Name = name; arg.Tag = tag;
+                arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
                 arg.OldValue = oldValue;
                 arg.HasOldValue = true;
                 gameChar.GetOrCreateEventArgsList().Enqueue(arg);
@@ -889,7 +733,7 @@ namespace OW.Game
             List<Exception> excps = new List<Exception>();
             bool succ = false;
             var list = gameChar.GetOrCreateEventArgsList();
-            SimplePropertyChangedItem<object> item;
+            GamePropertyChangedItem<object> item;
             while (!list.IsEmpty)    //若存在数据
             {
                 for (var b = list.TryDequeue(out item); !b; b = list.TryDequeue(out item)) ;
@@ -902,7 +746,7 @@ namespace OW.Game
                 {
                     excps.Add(excp);
                 }
-                SimplePropertyChangedItemPool<object>.Shared.Return(item);  //放入池中备用
+                GamePropertyChangedItemPool<object>.Shared.Return(item);  //放入池中备用
             }
             if (excps.Count > 0)    //若需要引发工程中堆积的异常
                 throw new AggregateException(excps);

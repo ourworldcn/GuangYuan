@@ -195,7 +195,7 @@ namespace OW.Game.Store
             {
                 if (_Properties is null)
                 {
-                    _Properties = DictionaryPool<string,object>.Shared.Get();
+                    _Properties = DictionaryPool<string, object>.Shared.Get();
                     OwConvert.Copy(PropertiesString, _Properties);
                 }
                 return _Properties;
@@ -248,7 +248,7 @@ namespace OW.Game.Store
                 // TODO: 将大型字段设置为 null
                 if (null != _Properties)
                 {
-                    DictionaryPool<string,object>.Shared.Return(_Properties);
+                    DictionaryPool<string, object>.Shared.Return(_Properties);
                     _Properties = null;
                 }
                 _PropertiesString = null;
@@ -410,6 +410,41 @@ namespace OW.Game.Store
                        let keyName = tmp.Key[prefix.Length..] //键名
                        select (Key: keyName, tmp.Value);
             return coll;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        /// <param name="newValue"></param>
+        /// <param name="tag"></param>
+        /// <param name="changes">变化数据的集合，如果值变化了，将向此集合追加变化数据对象。若省略或为null则不追加。</param>
+        /// <returns>true设置了变化数据，false,新值与旧值没有变化。</returns>
+        public static bool SetPropertyAndReturnChangedItem(this SimpleDynamicPropertyBase obj, string name, object newValue, [AllowNull] object tag = null,
+            [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        {
+            bool result;
+            var isExists = obj.Properties.TryGetValue(name, out var oldValue);  //存在旧值
+            if (!isExists || !Equals(oldValue, newValue)) //若新值和旧值不相等
+            {
+                if (null != changes)    //若需要设置变化数据
+                {
+                    var item = GamePropertyChangedItemPool<object>.Shared.Get();
+                    item.Object = obj; item.PropertyName = name; item.Tag = tag;
+                    if (isExists)
+                        item.OldValue = oldValue;
+                    item.HasOldValue = isExists;
+                    item.NewValue = newValue;
+                    item.HasNewValue = true;
+                    changes.Add(item);
+                }
+                obj.Properties[name] = newValue;
+                result = true;
+            }
+            else
+                result = false;
+            return result;
         }
     }
 }

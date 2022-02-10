@@ -3,6 +3,7 @@
  */
 using Microsoft.Extensions.ObjectPool;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -24,7 +25,7 @@ namespace System
         /// <param name="result"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static bool TryToDecimal(object obj, out decimal result)
+        public static bool TryToDecimal([AllowNull]object obj, out decimal result)
         {
             if (obj is null)
             {
@@ -134,7 +135,7 @@ namespace System
         /// <param name="result"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryToGuid(string str, out Guid result)
+        public static bool TryToGuid([AllowNull]string str, out Guid result)
         {
             if (string.IsNullOrWhiteSpace(str))
             {

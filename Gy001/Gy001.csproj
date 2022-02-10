@@ -3,9 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>84749311-3dcb-4fe7-b997-900da8e7f19c</UserSecretsId>
-    <AssemblyVersion>1.0.1.1587</AssemblyVersion>
-    <FileVersion>1.0.1.1432</FileVersion>
+    <AssemblyVersion>1.0.1.0209</AssemblyVersion>
+    <FileVersion>1.0.1.0209</FileVersion>
     <Version>1.0.1</Version>
+    <Authors>zc</Authors>
+    <Company>GuangYuan</Company>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
