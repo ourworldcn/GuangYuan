@@ -1598,7 +1598,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             var lv = (int)datas.PvpObject.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);    //级别数据
-            if (lv >= datas.PvpObject.Template.GetMaxLevel(pricePName) - 1 && datas.IsRefresh)  //若当日已经不可再刷
+            if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel(pricePName) - 1 && datas.IsRefresh)  //若当日已经不可再刷
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;

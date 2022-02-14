@@ -209,7 +209,7 @@ namespace OW.Game
             //设置本类型特有属性
             GameThingCreated(gameItem, template, parameters);
             var gpm = World.PropertyManager;
-            var gt = gameItem.Template;
+            var gt = gameItem.GetTemplate();
             if (gt.Properties.TryGetValue("Count", out var countObj) || gt.Properties.TryGetValue("count", out countObj)) //若指定了初始数量
                 gameItem.Count = Convert.ToDecimal(countObj);
             else
@@ -264,7 +264,7 @@ namespace OW.Game
                 GameThingCreated(gameItem, tid, propertyBag);
             //设置数量
             var gpm = World.PropertyManager;
-            tt = gameItem.Template;
+            tt = gameItem.GetTemplate();
             if (propertyBag.TryGetDecimal("Count", out var count) || propertyBag.TryGetDecimal("count", out count)) //若指定了初始数量
                 gameItem.Count = count;
             else if (null != tt)
@@ -312,7 +312,7 @@ namespace OW.Game
         public virtual void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, [AllowNull] IReadOnlyDictionary<string, object> parameters)
         {
             GameThingCreated(gameChar, template, parameters);
-            var gt = gameChar.Template;
+            var gt = gameChar.GetTemplate();
             //初始化本类型特殊数据
             if (null != user)
             {
@@ -387,7 +387,7 @@ namespace OW.Game
             var gpm = World.PropertyManager;
             //初始化自身属性
             thing.TemplateId = template.Id;
-            thing.Template = template;
+            thing.SetTemplate(template);
             var coll = gpm is null ? template.Properties : gpm.Filter(template.Properties);
             var dic = thing.Properties;
             foreach (var item in coll)   //复制属性
@@ -453,7 +453,7 @@ namespace OW.Game
             GameThingLoaded(gameChar);
             Debug.Assert(gameChar.GameUser != null && gameChar.GameUser.DbContext != null);
             //补足角色的槽
-            var tt = gameChar.Template;
+            var tt = gameChar.GetTemplate();
             var ids = tt.ChildrenTemplateIds.ToList();
             var list = gameChar.GameItems.ToList();
             var exists = list.Select(c => c.TemplateId).ToList();
@@ -490,16 +490,14 @@ namespace OW.Game
         /// 加载后初始化。
         /// </summary>
         /// <param name="thing"></param>
-        protected virtual void GameThingLoaded(GameThingBase thing)
-        {
-            thing.Template = World.ItemTemplateManager.GetTemplateFromeId(thing.TemplateId);
-        }
+        protected virtual void GameThingLoaded(GameThingBase thing) =>
+            thing.SetTemplate(World.ItemTemplateManager.GetTemplateFromeId(thing.TemplateId));
         #endregion 加载后初始化
 
         #region Json反序列化
         public virtual void ThingBaseJsonDeserialized(GameThingBase thingBase)
         {
-            thingBase.Template = World.ItemTemplateManager.GetTemplateFromeId(thingBase.TemplateId);
+            thingBase.SetTemplate(World.ItemTemplateManager.GetTemplateFromeId(thingBase.TemplateId));
             var db = thingBase.DbContext;
             db.AddRange(thingBase.ExtendProperties);
         }
@@ -613,7 +611,7 @@ namespace OW.Game
         public virtual void CloneThingBase(GameThingBase src, GameThingBase dest)
         {
             dest.TemplateId = src.TemplateId;
-            dest.Template = src.Template;
+            dest.SetTemplate(src.GetTemplate());
             dest.ClientGutsString = src.ClientGutsString;
             dest.ExPropertyString = src.ExPropertyString;
             OwHelper.Copy(src.Properties, dest.Properties);

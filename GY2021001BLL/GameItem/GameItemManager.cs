@@ -66,7 +66,7 @@ namespace OW.Game.Item
         public void ComputeMucaiStc(GameChar gameChar)
         {
             var mucai = gameChar.GetMucai();
-            var stc = mucai.Template.Properties.GetDecimalOrDefault("stc");
+            var stc = mucai.GetTemplate().Properties.GetDecimalOrDefault("stc");
             var coll = gameChar.GetHomeland().AllChildren.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);
             stc += coll.Sum(c => c.Properties.GetDecimalOrDefault("stc"));
             mucai.Properties["stc"] = stc;
@@ -79,7 +79,7 @@ namespace OW.Game.Item
         /// <returns>如果无效的模板Id，则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameItemTemplate GetTemplate(GameItemBase gameObject) =>
-            gameObject.Template as GameItemTemplate ?? ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
+            gameObject.GetTemplate() as GameItemTemplate ?? ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
 
         /// <summary>
         /// <inheritdoc/>
@@ -700,7 +700,7 @@ namespace OW.Game.Item
                 {
                     return;
                 }
-                else if (gameItem.Template == null || !gameItem.Template.Properties.TryGetDecimal("isuni", out var isuni) || isuni != decimal.One) //放入剩余物品,容错
+                else if (gameItem.GetTemplate() == null || !gameItem.GetTemplate().Properties.TryGetDecimal("isuni", out var isuni) || isuni != decimal.One) //放入剩余物品,容错
                 {
                     var tmp = new List<GameItem>();
                     SplitItem(gameItem, tmp, parent);
@@ -982,7 +982,7 @@ namespace OW.Game.Item
             foreach (var (tmp, tt) in coll)
             {
                 tmp.GenerateIdIfEmpty();
-                tmp.Template = tt;
+                tmp.SetTemplate(tt);
                 adds.Clear();
                 tmp.Children.ApartWithWithRepeated(tt.ChildrenTemplateIds, c => c.TemplateId, c => c, null, null, adds);
                 foreach (var addItem in adds)

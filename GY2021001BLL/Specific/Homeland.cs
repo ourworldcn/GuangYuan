@@ -259,7 +259,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetDikuaiCount(this GameChar gameChar) =>
-            gameChar.GetHomeland().Children.Count(c => ((c.Template as GameItemTemplate)?.GetDikuaiIndex() ?? 0) >= 0);
+            gameChar.GetHomeland().Children.Count(c => (c.GetTemplate()?.GetDikuaiIndex() ?? 0) >= 0);
 
         /// <summary>
         /// 获得地块信息。
@@ -287,7 +287,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameItem"></param>
         /// <returns>地块号，如果不是地块则返回-1。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetDikuaiIndex(this GameItem gameItem) => (gameItem.Template as GameItemTemplate)?.GetDikuaiIndex() ?? -1;
+        public static int GetDikuaiIndex(this GameItem gameItem) => gameItem.GetTemplate()?.GetDikuaiIndex() ?? -1;
 
         /// <summary>
         /// 获取模板的风格号，如果不是风格则返回-1。
@@ -295,7 +295,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameItem"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetFenggeNumber(this GameItem gameItem) => (gameItem.Template as GameItemTemplate)?.GetFenggeNumber() ?? -1;
+        public static int GetFenggeNumber(this GameItem gameItem) => gameItem.GetTemplate()?.GetFenggeNumber() ?? -1;
 
         /// <summary>
         /// 获取角色当前的风格号。

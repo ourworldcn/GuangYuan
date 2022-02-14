@@ -110,7 +110,7 @@ namespace GuangYuan.GY001.BLL
             if (null != errItem.Item1)  //若有资源不足
             {
                 VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
-                VWorld.SetLastErrorMessage($"{errItem.Item1.Template.DisplayName} 不足。");
+                VWorld.SetLastErrorMessage($"{errItem.Item1.GetTemplate().DisplayName} 不足。");
                 return false;
             }
             cost.ForEach(c => c.Item1.Count += c.Item2);    //应用资源损耗
@@ -443,7 +443,7 @@ namespace GuangYuan.GY001.BLL
             if (!datas.Verify(datas.GameItems.Count == 1, "物品数量不对"))
                 return;
             var gi = datas.GameItems[0];    //物品
-            var tt = gi.Template;
+            var tt = gi.GetTemplate();
             var gc = datas.GameChar;
 
             var coll = StringObjectDictionaryExtensions.GetValuesWithoutPrefix(tt.Properties, "use");
@@ -538,7 +538,7 @@ namespace GuangYuan.GY001.BLL
             }
             var gi = datas.GameItems[0];    //升级的神纹
             var gc = datas.GameChar;
-            if (!datas.Verify(gc.GetShenwenBag().Children.Contains(gi) && gi.ItemTemplate.CatalogNumber == 10, "要升级的不是一个神纹对象。"))
+            if (!datas.Verify(gc.GetShenwenBag().Children.Contains(gi) && gi.GetTemplate().CatalogNumber == 10, "要升级的不是一个神纹对象。"))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                 return;
@@ -803,7 +803,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
 
-            var template = gi.Template;
+            var template = gi.GetTemplate();
             int lv;
             for (int i = 0; i < datas.Count; i++)
             {
@@ -1194,7 +1194,7 @@ namespace GuangYuan.GY001.BLL
             DateTime dt = DateTime.UtcNow;  //当前时间
             if (td.TryGetPropertyValue("ltlv", out var ltlvObj) && DateTime.TryParse(ltlvObj as string, out var ltlv))  //若找到上次升级时间属性
             {
-                if (dt.Date <= ltlv.Date && !datas.Verify(td.Template.GetMaxLevel("lud") > lv + 1, "已经用尽全部购买次数。"))
+                if (dt.Date <= ltlv.Date && !datas.Verify(td.GetTemplate().GetMaxLevel("lud") > lv + 1, "已经用尽全部购买次数。"))
                     return;
             }
             else
@@ -1717,7 +1717,7 @@ namespace GuangYuan.GY001.BLL
                 datas.DebugMessage = "没有找到坐骑";
                 return;
             }
-            var seq = gi.Template.Properties.GetValueOrDefault($"{prefix}shuse") as decimal[];    //获取消耗资源序列
+            var seq = gi.GetTemplate().Properties.GetValueOrDefault($"{prefix}shuse") as decimal[];    //获取消耗资源序列
             //获取耗材
             var haocai = datas.GameChar.GetItemBag().Children.FirstOrDefault(c => c.TemplateId == costTId);
             if (haocai is null)
@@ -1890,7 +1890,7 @@ namespace GuangYuan.GY001.BLL
             for (int i = 0; i < datas.Count; i++)
             {
                 var gi = datas.GameItems[0];
-                var tt = gi.ItemTemplate;
+                var tt = gi.GetTemplate();
                 var coll = tt.Properties.GetValuesWithoutPrefix("use");
                 var htid = tt.Properties.GetGuidOrDefault("usehtid");
                 var btid = tt.Properties.GetGuidOrDefault("usebtid");

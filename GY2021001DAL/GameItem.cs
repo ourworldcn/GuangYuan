@@ -12,6 +12,45 @@ using System.Text.Json.Serialization;
 
 namespace GuangYuan.GY001.UserDb
 {
+    public static class GameThingExtensions
+    {
+        /// <summary>
+        /// 获取模板对象。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <returns>如果未设置可能返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameThingTemplateBase GetTemplate(this GameThingBase thing) =>
+            thing.RuntimeProperties.GetValueOrDefault("Template") as GameThingTemplateBase;
+
+        /// <summary>
+        /// 设置模板对象。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="template"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetTemplate(this GameThingBase thing, GameThingTemplateBase template) =>
+            thing.RuntimeProperties["Template"] = template;
+
+        /// <summary>
+        /// 获取模板对象。
+        /// </summary>
+        /// <param name="gi"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItemTemplate GetTemplate(this GameItem gi) =>
+            gi.RuntimeProperties.GetValueOrDefault("Template") as GameItemTemplate;
+
+        /// <summary>
+        /// 设置模板对象。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="template"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetTemplate(this GameItem thing, GameItemTemplate template) =>
+            thing.RuntimeProperties["Template"] = template;
+    }
+
     /// <summary>
     /// 游戏内部事物的基类。
     /// </summary>
@@ -69,8 +108,8 @@ namespace GuangYuan.GY001.UserDb
                     else
                     {
                         succ = Properties.TryGetValue(propertyName, out result);
-                        if (!succ && null != Template)
-                            succ = Template.TryGetPropertyValue(propertyName, out result);
+                        if (!succ && null != this.GetTemplate())
+                            succ = this.GetTemplate().TryGetPropertyValue(propertyName, out result);
                     }
                     break;
             }
@@ -323,7 +362,7 @@ namespace GuangYuan.GY001.UserDb
         /// <returns></returns>
         public override string ToString()
         {
-            var result = (Template as GameItemTemplate)?.DisplayName ?? (Template as GameItemTemplate)?.Remark;
+            var result = this.GetTemplate()?.DisplayName ?? this.GetTemplate()?.Remark;
             if (string.IsNullOrWhiteSpace(result))
             {
                 return base.ToString();
@@ -385,17 +424,6 @@ namespace GuangYuan.GY001.UserDb
         }
 
         /// <summary>
-        /// 试图转换为<see cref="GameItemTemplate"/>,如果不能转化则返回null。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public GameItemTemplate ItemTemplate
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Template as GameItemTemplate;
-        }
-
-        /// <summary>
         /// 获取指定属性的当前级别索引值。
         /// </summary>
         /// <param name="name"></param>
@@ -403,9 +431,9 @@ namespace GuangYuan.GY001.UserDb
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetIndexPropertyValue(string name)
         {
-            if (!Template.TryGetPropertyValue(name, out var tVal) || !(tVal is decimal[]))  //若不是序列属性
+            if (!this.GetTemplate().TryGetPropertyValue(name, out var tVal) || !(tVal is decimal[]))  //若不是序列属性
                 return -1;
-            var indexPName = Template.GetIndexPropertyName(name);   //其索引属性名
+            var indexPName = this.GetTemplate().GetIndexPropertyName(name);   //其索引属性名
             int result;
             if (!TryGetPropertyValue(indexPName, out var resultObj))    //若没有找到索引属性的值
                 result = 0;
@@ -443,7 +471,7 @@ namespace GuangYuan.GY001.UserDb
             foreach (var key in keysBoth)   //遍历两者皆有的属性
             {
                 var currentVal = GetPropertyValueOrDefault(key);
-                var oldVal = Template.GetPropertyValue(key);    //模板值
+                var oldVal = this.GetTemplate().GetPropertyValue(key);    //模板值
                 if (oldVal is decimal[] ary && OwConvert.TryToDecimal(currentVal, out var currentDec))   //若是一个序列属性
                 {
                     var lv = GetIndexPropertyValue(key);    //当前等级
@@ -452,7 +480,7 @@ namespace GuangYuan.GY001.UserDb
                 }
                 else if (OwConvert.TryToDecimal(currentVal, out var dec)) //若是一个数值属性
                 {
-                    OwConvert.TryToDecimal(Template.GetPropertyValue(key, 0), out var nDec);    //当前模板中该属性
+                    OwConvert.TryToDecimal(this.GetTemplate().GetPropertyValue(key, 0), out var nDec);    //当前模板中该属性
                     OwConvert.TryToDecimal(template.GetPropertyValue(key), out var tDec);
                     var nVal = dec - nDec + tDec;
                     SetPropertyValue(key, nVal);
@@ -463,7 +491,7 @@ namespace GuangYuan.GY001.UserDb
                 }
             }
             TemplateId = template.Id;
-            Template = template;
+            this.SetTemplate((GameThingTemplateBase)template);
         }
 
         #region IDisposable接口相关

@@ -317,13 +317,6 @@ namespace GuangYuan.GY001.UserDb
             }
         }
 
-        /// <summary>
-        /// 模板对象。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public GameThingTemplateBase Template { get; set; }
-
         private ObservableCollection<GameExtendProperty> _ExtendProperties;
 
         bool _ExtendPropertiesInited;
@@ -438,7 +431,6 @@ namespace GuangYuan.GY001.UserDb
                 // TODO: 将大型字段设置为 null
                 _ExtendPropertyDictionary = null;
                 _ExtendProperties = null;
-                Template = null;
                 _Name2FastChangingProperty = null;
                 base.Dispose(disposing);
             }

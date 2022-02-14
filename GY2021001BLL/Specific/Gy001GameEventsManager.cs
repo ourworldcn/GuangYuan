@@ -149,7 +149,7 @@ namespace OW.Game
                     if (item.PropertyName != World.PropertyManager.LevelPropertyName)    //若不是等级变化
                         continue;
                     //计算经验值增加量
-                    var seq = gi.Template.GetSequenceProperty<decimal>("lut");
+                    var seq = gi.GetTemplate().GetSequenceProperty<decimal>("lut");
                     var time = seq[Convert.ToInt32(item.OldValue ?? 0)];
                     var exp = Math.Round(time / 60, MidpointRounding.ToZero);
                     World.CharManager.AddExp(gc, exp);  //增加经验值

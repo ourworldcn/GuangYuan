@@ -1211,7 +1211,7 @@ namespace GuangYuan.GY001.BLL
             var oldLv = gameChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName); //当前等级
             var limit = gameChar.Properties.GetValueOrDefault("expLimit");
             int newLv;
-            if (gameChar.Template.Properties.GetValueOrDefault("expLimit") is IEnumerable limitSeq && newExp >= oldExp)   //若经验已经变化
+            if (gameChar.GetTemplate().Properties.GetValueOrDefault("expLimit") is IEnumerable limitSeq && newExp >= oldExp)   //若经验已经变化
             {
                 List<decimal> lst = new List<decimal>(limitSeq.OfType<decimal>());
                 newLv = lst.FindIndex(c => c > newExp); //新等级

@@ -66,11 +66,43 @@ namespace GuangYuan.GY001.BLL
                 thread.Start();
 #endif
                 Task.Run(CreateGameManager);    //强制初始化所有服务以加速
+                Task.Run(SetDbConfig);  //设置数据库配置项
                 var logger = _Services.GetService<ILogger<GameHostedService>>();
                 logger.LogInformation("游戏虚拟世界服务成功上线。");
-
             }, _Services, cancellationToken);
             return result;
+        }
+
+        /// <summary>
+        /// 设置数据库选项。
+        /// </summary>
+        void SetDbConfig()
+        {
+            //设置sql server使用内存，避免sql server 贪婪使用内存导致内存过大
+            var world = _Services.GetRequiredService<VWorld>();
+            using var db = world.CreateNewUserDbContext();
+            var sql = @$"EXEC sys.sp_configure N'show advanced options', N'1'  RECONFIGURE WITH OVERRIDE;" +
+                "EXEC sys.sp_configure N'max server memory (MB)', N'4096';" +
+                "RECONFIGURE WITH OVERRIDE;" +
+                "EXEC sys.sp_configure N'show advanced options', N'0'  RECONFIGURE WITH OVERRIDE;";
+            try
+            {
+                db.Database.ExecuteSqlRaw(sql);
+            }
+            catch (Exception)
+            {
+            }
+            try
+            {
+                sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = NONE)";
+                db.Database.ExecuteSqlRaw(sql);
+            }
+            catch (Exception)
+            {
+            }
+#if !DEBUG  //若正式运行版本
+
+#endif
         }
 
         /// <summary>

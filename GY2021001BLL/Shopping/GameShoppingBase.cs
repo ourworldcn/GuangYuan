@@ -194,7 +194,7 @@ namespace GuangYuan.GY001.BLL
                     var dic = World.ShoppingManager.Genus2GroupNumbers;
                     var addGenus = dic.Keys.Except(_RefreshInfos.Keys);   //需要添加的品类
                     var rnd = VWorld.WorldRandom;
-                    var template = ShoppingSlot.Template;
+                    var template = ShoppingSlot.GetTemplate();
                     const string prefix = "msg";   //TO DO
                     foreach (var item in addGenus)
                     {

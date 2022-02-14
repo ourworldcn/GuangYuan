@@ -1194,7 +1194,7 @@ namespace GuangYuan.GY001.BLL
             var body = gim.GetBody(gameItem);   //身体对象
             if (body is null)
                 return false;
-            var bodyGid = (int)((GameItemTemplate)body.Template).GId; //身体Id
+            var bodyGid = (int)body.GetTemplate().GId; //身体Id
             //计算本体属性
             var head = gim.GetHead(gameItem);
             if (null == head)

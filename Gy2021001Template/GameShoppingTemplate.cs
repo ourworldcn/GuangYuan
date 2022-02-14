@@ -6,6 +6,50 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace GuangYuan.GY001.TemplateDb
 {
     /// <summary>
+    /// 卡池数据模板。
+    /// </summary>
+    public class GameCardPoolTemplate : GameTemplateBase
+    {
+        /// <summary>
+        /// 卡池标识。
+        /// </summary>
+        public string CardPoolGroupString { get; set; }
+
+        /// <summary>
+        /// 奖池标识。
+        /// </summary>
+        public string SubCardPoolString { get; set; }
+
+        /// <summary>
+        /// 是否自动使用获得的物品。
+        /// </summary>
+        public bool AutoUse { get; set; }
+
+        /// <summary>
+        /// 起始日期，此日期及之后此物品才会出现在卡池内。
+        /// </summary>
+        public DateTime StartDateTime { get; set; }
+
+        /// <summary>
+        /// 终止日期，此日期及之前此物品才会出现在卡池内
+        /// </summary>
+        public DateTime EndDateTime { get; set; }
+
+        /// <summary>
+        /// 周期。d天,w周,m月,y年。不填写则表示无周期(唯一周期)。
+        /// </summary>
+        [MaxLength(64)]
+        public string SellPeriod { get; set; }
+
+        /// <summary>
+        /// 周期开始后持续有效时间,d天,w周,m月,y年。仅在有效期内才出售，不填则是永久有效（在起止期间和周期的约束下）
+        /// </summary>
+        [MaxLength(64)]
+        public string ValidPeriod { get; set; }
+
+    }
+
+    /// <summary>
     /// 商品表数据。
     /// </summary>
     public class GameShoppingTemplate : GameTemplateBase

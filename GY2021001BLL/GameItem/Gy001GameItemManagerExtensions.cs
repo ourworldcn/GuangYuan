@@ -163,8 +163,8 @@ namespace GuangYuan.GY001.BLL
             var tujianBag = gameChar.GetTujianBag(); //图鉴背包
             var tujian = tujianBag.Children.FirstOrDefault(c => //图鉴
             {
-                var bd1 = c.Template.Properties.GetDecimalOrDefault("hbab");
-                var bd2 = c.Template.Properties.GetDecimalOrDefault("hbbb");
+                var bd1 = c.GetTemplate().Properties.GetDecimalOrDefault("hbab");
+                var bd2 = c.GetTemplate().Properties.GetDecimalOrDefault("hbbb");
                 return bd1 == t1Body.GId && bd2 == t2Body.GId || bd2 == t1Body.GId && bd1 == t2Body.GId;
             });
             if (tujian is null)
@@ -548,7 +548,7 @@ namespace GuangYuan.GY001.BLL
         public static void Clone(this GameItemManager manager, GameItem srcItem, GameItem destItem)
         {
             destItem.TemplateId = srcItem.TemplateId;
-            destItem.Template = srcItem.Template;
+            destItem.SetTemplate(srcItem.GetTemplate());
             OwHelper.Copy(srcItem.Properties, destItem.Properties);
             destItem.Count = srcItem.Count;
             foreach (var item in srcItem.Children)

@@ -1,0 +1,20 @@
+cphquang	连中次数包含所有抽法
+cph10t	10抽连中次数
+cph1t	1抽连中次数
+cpuhquang	连续不中次数包含所有抽法
+cpuh10t	10抽连续不中次数
+cpuh1t	1抽连续不中次数
+
+cph0lv	大奖卡池连中次数包含的所有抽法
+cph0lv10t	大奖卡池10抽连中次数
+cph0lv1t	大奖卡池1抽连中次数
+cpuh0lvquang	大奖卡池连续不中次数包含所有抽法
+cpuh0lv10t	大奖卡池10抽连续不中次数
+cpuh0lv1t	大奖卡池1抽连续不中次数
+
+cph1lv	中奖卡池连中次数包含所有抽法
+cph1lv10t	中奖卡池10抽连中次数
+cph1lv1t	中奖卡池1抽连中次数
+cpuh1lvquang	中奖卡池连续不中次数包含所有抽法
+cpuh1lv10t	中奖卡池10抽连续不中次数
+cpuh1lv1t	中奖卡池1抽连续不中次数

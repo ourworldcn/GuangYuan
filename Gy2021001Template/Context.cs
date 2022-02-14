@@ -49,6 +49,11 @@ namespace GuangYuan.GY001.TemplateDb
         /// 任务定义。
         /// </summary>
         public DbSet<GameMissionTemplate> MissionTemplates { get; set; }
+
+        /// <summary>
+        /// 卡池定义表。
+        /// </summary>
+        public DbSet<GameCardPoolTemplate> CardPoolTemplates { get; set; }
     }
 
     public static class TemplateMigrateDbInitializer

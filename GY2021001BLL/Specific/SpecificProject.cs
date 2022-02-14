@@ -723,7 +723,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameItem"></param>
         /// <returns>如果不能得到正确的模板对象则返回-1。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetCatalogNumber(this GameItem gameItem) => gameItem.ItemTemplate?.CatalogNumber ?? -1;
+        public static int GetCatalogNumber(this GameItem gameItem) => gameItem.GetTemplate()?.CatalogNumber ?? -1;
     }
 
     /// <summary>
