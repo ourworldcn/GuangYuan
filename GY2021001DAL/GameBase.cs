@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
@@ -233,10 +234,46 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public decimal? OrderbyDecimal { get; set; }
 
+        #region 扩展对象相关
+
         /// <summary>
         /// 二进制数据。
         /// </summary>
         public byte[] BinaryArray { get; set; }
+
+        /// <summary>
+        /// 指定<see cref="BinaryArray"/>中存储的对象类型。
+        /// 成功调用<see cref="GetBinaryObjectOrDefault{T}(T)"/>可以自动设置该字段。
+        /// 未能设置该值则对象不会被自动序列化到数据库中。
+        /// </summary>
+        Type _BinaryObjectType;
+
+        /// <summary>
+        /// 暂存<see cref="BinaryArray"/>内存储的对象表示形式。
+        /// </summary>
+        object _BinaryObject;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="creator">null或省略则调用默认构造函数创建新对象。</param>
+        /// <returns>返回的对象更改后在保存时可以自动保存最新值，但值类型无法自动保存，建议这里仅保存引用型可以Json序列化的对象。</returns>
+        public T GetBinaryObject<T>(Func<T> creator = null)
+        {
+            if (_BinaryObjectType is null)   //若尚未初始化
+            {
+                if (BinaryArray is null || BinaryArray.Length <= 0)
+                    _BinaryObject = creator is null ? TypeDescriptor.CreateInstance(null, typeof(T), null, null) : creator();
+                else
+                    _BinaryObject = JsonSerializer.Deserialize<T>(BinaryArray);
+                _BinaryObjectType = typeof(T);
+            }
+            return (T)_BinaryObject;    //若试图更改为不可转化的类型 则抛出异常
+        }
+
+        #endregion 扩展对象相关
+
         #region 快速变化属性相关
 
         private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;
@@ -289,6 +326,17 @@ namespace GuangYuan.GY001.UserDb
             }
         }
 
+        /// <summary>
+        /// 获取指定名称的属性值，如果快变属性存在则返回快变属性的当前值，如果在两处都没有没有找到该名称的属性或无法转化为数值，则返回指定的默认值。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public decimal GetPropertyWithFcpOrDefalut(string name, decimal defaultValue = default)
+        {
+            return Name2FastChangingProperty.TryGetValue(name, out var fcp) ? fcp.GetCurrentValueWithUtc() : Properties.GetDecimalOrDefault(name, defaultValue);
+        }
         #endregion 快速变化属性相关
 
         #region 通用扩展属性及相关
@@ -406,6 +454,17 @@ namespace GuangYuan.GY001.UserDb
                 //foreach (var item in removeItems)
                 //    ExtendProperties.Remove(item);
             }
+            if (null != _BinaryObjectType) //若需持久化对象值
+            {
+                if (_BinaryObject is null)
+                {
+                    BinaryArray = null;
+                }
+                else
+                {
+                    BinaryArray = JsonSerializer.SerializeToUtf8Bytes(_BinaryObject, _BinaryObjectType);
+                }
+            }
             if (null != _Name2FastChangingProperty)   //若需要写入快速变化属性
                 foreach (var item in _Name2FastChangingProperty)
                 {
@@ -431,6 +490,7 @@ namespace GuangYuan.GY001.UserDb
                 _ExtendPropertyDictionary = null;
                 _ExtendProperties = null;
                 _Name2FastChangingProperty = null;
+                _BinaryObject = null;
                 base.Dispose(disposing);
             }
         }

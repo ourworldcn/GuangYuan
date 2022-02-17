@@ -2,6 +2,7 @@
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.Extensions.DependencyInjection;
+using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Item;
 using System;
