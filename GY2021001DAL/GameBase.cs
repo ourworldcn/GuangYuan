@@ -214,16 +214,6 @@ namespace GuangYuan.GY001.UserDb
         }
 
         /// <summary>
-        /// 客户端要记录的一些属性，这个属性客户端可以随意更改，服务器不使用。
-        /// </summary>
-        public string ClientGutsString { get; set; }
-
-        /// <summary>
-        /// 创建该对象的通用协调时间。
-        /// </summary>
-        public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
         /// 模板Id。
         /// </summary>
         public Guid TemplateId { get; set; }
@@ -238,6 +228,15 @@ namespace GuangYuan.GY001.UserDb
         [MaxLength(64)]
         public string ExPropertyString { get; set; }
 
+        /// <summary>
+        /// 用于排序搜索使用的字段。
+        /// </summary>
+        public decimal? OrderbyDecimal { get; set; }
+
+        /// <summary>
+        /// 二进制数据。
+        /// </summary>
+        public byte[] BinaryArray { get; set; }
         #region 快速变化属性相关
 
         private Dictionary<string, FastChangingProperty> _Name2FastChangingProperty;

@@ -612,7 +612,6 @@ namespace OW.Game
         {
             dest.TemplateId = src.TemplateId;
             dest.SetTemplate(src.GetTemplate());
-            dest.ClientGutsString = src.ClientGutsString;
             dest.ExPropertyString = src.ExPropertyString;
             OwHelper.Copy(src.Properties, dest.Properties);
             if (null != dest.DbContext)

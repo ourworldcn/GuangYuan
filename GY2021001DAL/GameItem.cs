@@ -285,12 +285,6 @@ namespace GuangYuan.GY001.UserDb
         }
 
         /// <summary>
-        /// 如果物品处于某个容器中，则这个成员指示其所处位置号，从0开始，但未必连续,序号相同则顺序随机。
-        /// </summary>
-        [NotMapped] //TO DO
-        public int OrderNumber { get; set; }
-
-        /// <summary>
         /// 所属槽导航属性。
         /// </summary>
         [JsonIgnore]

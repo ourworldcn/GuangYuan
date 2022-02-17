@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Item;
 using System;
@@ -70,7 +71,7 @@ namespace GY2021001WebApi.Controllers
             var objectId = OwConvert.ToGuid(model.ObjectId);
             if (gu.CurrentChar.Id == objectId)
             {
-                gu.CurrentChar.ClientGutsString = model.ClientString;
+                gu.CurrentChar.SetClientString(model.ClientString);
                 gitm.NotifyChange(gu);
             }
             else
@@ -408,7 +409,7 @@ namespace GY2021001WebApi.Controllers
                     var gcDto = new GameCharDto()
                     {
                         Id = gc.Id.ToBase64String(),
-                        ClientGutsString = gc.ClientGutsString,
+                        ClientGutsString = gc.GetClientString(),
                         CreateUtc = gc.CreateUtc,
                         DisplayName = gc.DisplayName,
                         GameUserId = gc.GameUserId.ToBase64String(),

@@ -172,7 +172,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<byte>("CharType")
                         .HasColumnType("tinyint");
 
-                    b.Property<string>("ClientGutsString")
+                    b.Property<string>("ClientString")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("CombatStartUtc")
@@ -260,7 +260,7 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ClientGutsString")
+                    b.Property<string>("ClientString")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("Count")

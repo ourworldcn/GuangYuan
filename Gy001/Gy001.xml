@@ -689,11 +689,6 @@
             物品模板的Id。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.GameItemDto.CreateUtc">
-            <summary>
-            创建该对象的通用协调时间。
-            </summary>
-        </member>
         <member name="P:GY2021001WebApi.Models.GameItemDto.Count">
             <summary>
             数量。

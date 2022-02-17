@@ -561,12 +561,6 @@ namespace GY2021001WebApi.Models
         public string TemplateId { get; set; }
 
         /// <summary>
-        /// 创建该对象的通用协调时间。
-        /// </summary>
-        [DataMember]
-        public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
         /// 数量。
         /// </summary>
         [DataMember(Name = nameof(Count))]

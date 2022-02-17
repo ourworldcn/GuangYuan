@@ -550,7 +550,7 @@ namespace GuangYuan.GY001.BLL.Homeland
                 //    HomelandFengge tmp;
                 //    if (hpo is null || string.IsNullOrWhiteSpace(hpo.Text)) //若未初始化
                 //    {
-                //        tmp = new HomelandFengge() { Number = item.Number, ClientString = item.ClientGutsString };
+                //        tmp = new HomelandFengge() { Number = item.Number, ClientString = item.ClientString };
                 //    }
                 //    else
                 //    {

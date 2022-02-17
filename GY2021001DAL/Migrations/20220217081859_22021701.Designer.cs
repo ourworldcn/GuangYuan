@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    [Migration("20220112033401_22011201")]
-    partial class _22011201
+    [Migration("20220217081859_22021701")]
+    partial class _22021701
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -112,11 +112,11 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<byte[]>("BinaryArray")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<byte>("CharType")
                         .HasColumnType("tinyint");
-
-                    b.Property<string>("ClientString")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("CombatStartUtc")
                         .HasColumnType("datetime2");
@@ -137,6 +137,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.Property<Guid>("GameUserId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("OrderbyDecimal")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
@@ -203,18 +206,18 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ClientString")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("BinaryArray")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<decimal?>("Count")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("CreateUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("ExPropertyString")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
+
+                    b.Property<decimal?>("OrderbyDecimal")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid?>("OwnerId")
                         .HasColumnType("uniqueidentifier");
@@ -230,15 +233,13 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Count");
-
                     b.HasIndex("OwnerId");
 
                     b.HasIndex("ParentId");
 
                     b.HasIndex("TemplateId", "Count");
 
-                    b.HasIndex("TemplateId", "ExPropertyString")
+                    b.HasIndex("TemplateId", "ExPropertyString", "OrderbyDecimal")
                         .HasAnnotation("SqlServer:Include", new[] { "ParentId" });
 
                     b.ToTable("GameItems");

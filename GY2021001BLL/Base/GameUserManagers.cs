@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
+using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Store;
 using System;
@@ -1168,7 +1169,7 @@ namespace GuangYuan.GY001.BLL
                 var thing = OwHelper.GetAllSubItemsOfTree(gameChar.GameItems, c => c.Children).FirstOrDefault(c => c.Id == thingId);
                 if (null == thing)
                     return false;
-                thing.ClientGutsString = guts;
+                thing.SetClientString(guts);
             }
             finally
             {

@@ -4,6 +4,7 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
+using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Store;
 using System;
@@ -883,9 +884,13 @@ namespace OW.Game.Item
         public virtual bool ForcedSetCount(GameItem gameItem, decimal count, [AllowNull] ICollection<ChangeItem> changes = null)
         {
             gameItem.Count = count;
-            if (decimal.Zero == gameItem.Count)   //若已经变为0
+            if( gameItem.Parent is null)    //若设置的是游离对象
             {
-                if (!gameItem.IsStc(out _) || gameItem.Parent.TemplateId != ProjectConstant.CurrencyBagTId)   //若应删除对象
+
+            }
+            else if (decimal.Zero == gameItem.Count )   //若已经变为0
+            {
+                if (!gameItem.IsStc(out _) || gameItem.Parent?.TemplateId != ProjectConstant.CurrencyBagTId)   //若应删除对象
                 {
                     var pid = gameItem.ParentId ?? gameItem.OwnerId.Value;
                     if (!ForceDelete(gameItem)) //若无法删除
@@ -1696,9 +1701,9 @@ namespace OW.Game.Item
         public static void Fill(this GameItemManager manager, GameItem gameItem, BinaryWriter writer)
         {
             writer.Write(OwConvert.ToString(gameItem.Properties) ?? string.Empty);  //这个属性需要最先被写入
-            writer.Write(gameItem.ClientGutsString ?? string.Empty);
+            writer.Write(gameItem.GetClientString() ?? string.Empty);
             writer.Write(gameItem.Count);
-            writer.Write(gameItem.CreateUtc);
+            writer.Write(DateTime.UtcNow);   //TO DO 保留二进制兼容性
             writer.Write(gameItem.Id);
             writer.Write(gameItem.OwnerId);
             writer.Write(gameItem.ParentId);
@@ -1735,9 +1740,9 @@ namespace OW.Game.Item
         public static void Fill(this GameItemManager manager, BinaryReader reader, GameItem gameItem)
         {
             gameItem.PropertiesString = reader.ReadString();    //这个属性需要最先读取
-            gameItem.ClientGutsString = reader.ReadString();
+            gameItem.SetClientString(reader.ReadString());
             gameItem.Count = reader.ReadNullableDecimal();
-            gameItem.CreateUtc = reader.ReadDateTime();
+            _ = reader.ReadDateTime();  //TO DO 保留二进制兼容性
             gameItem.Id = reader.ReadGuid();
             gameItem.OwnerId = reader.ReadNullableGuid();
             gameItem.ParentId = reader.ReadNullableGuid();
@@ -1874,40 +1879,4 @@ namespace OW.Game.Item
         }
     }
 
-    public class GameItemJsonConverter : JsonConverter<GameItem>
-    {
-        public override GameItem Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            var result = new GameItem();
-
-            reader.Read();
-
-            result.Id = reader.GetGuid();
-            return result;
-        }
-
-        public override void Write(Utf8JsonWriter writer, GameItem value, JsonSerializerOptions options)
-        {
-            writer.WriteStartObject();
-            writer.WriteString(nameof(value.Id), value.Id);
-            writer.WriteString(nameof(value.TemplateId), value.TemplateId);
-            if (value.Count is null)
-                writer.WriteNull(nameof(value.Count));
-            else
-                writer.WriteNumber(nameof(value.Count), value.Count.Value);
-            writer.WriteString(nameof(value.ClientGutsString), value.ClientGutsString);
-            writer.WriteString(nameof(value.CreateUtc), value.CreateUtc);
-            writer.WriteString(nameof(value.OrderNumber), value.OrderNumber.ToString());
-            if (value.OwnerId is null)
-                writer.WriteNull(nameof(value.OwnerId));
-            else
-                writer.WriteString(nameof(value.OwnerId), value.OwnerId.Value);
-            writer.WriteString(nameof(value.Properties), value.PropertiesString);
-
-            writer.WritePropertyName(nameof(value.Children));
-            JsonSerializer.Serialize(writer, value.Children, typeof(List<GameItem>), options);
-
-            writer.WriteEndObject();
-        }
-    }
 }

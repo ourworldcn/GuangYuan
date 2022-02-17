@@ -3,6 +3,7 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
+using OW.Extensions.Game.Store;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -167,11 +168,9 @@ namespace GY2021001WebApi.Models
             {
                 Id = OwConvert.ToGuid(obj.Id),
                 Count = obj.Count,
-                CreateUtc = obj.CreateUtc,
                 TemplateId = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : OwConvert.ToGuid(obj.TemplateId),
                 OwnerId = string.IsNullOrEmpty(obj.OwnerId) ? Guid.Empty : OwConvert.ToGuid(obj.OwnerId),
                 ParentId = string.IsNullOrEmpty(obj.ParentId) ? Guid.Empty : OwConvert.ToGuid(obj.ParentId),
-                ClientGutsString = obj.ClientString,
             };
             foreach (var item in obj.Properties)
             {
@@ -193,10 +192,9 @@ namespace GY2021001WebApi.Models
                 Id = obj.Id.ToBase64String(),
                 Count = obj.Count,
                 TemplateId = obj.TemplateId.ToBase64String(),
-                CreateUtc = obj.CreateUtc,
                 OwnerId = obj.OwnerId?.ToBase64String(),
                 ParentId = obj.ParentId?.ToBase64String(),
-                ClientString = obj.ClientGutsString,
+                ClientString = obj.GetClientString(),
             };
             foreach (var item in obj.Name2FastChangingProperty)
             {
@@ -218,10 +216,9 @@ namespace GY2021001WebApi.Models
                 Id = obj.Id.ToBase64String(),
                 Count = obj.Count,
                 TemplateId = obj.TemplateId.ToBase64String(),
-                CreateUtc = obj.CreateUtc,
                 OwnerId = obj.OwnerId?.ToBase64String(),
                 ParentId = obj.ParentId?.ToBase64String(),
-                ClientString = obj.ClientGutsString,
+                ClientString = obj.GetClientString(),
             };
             if (obj.Name2FastChangingProperty.TryGetValue("Count", out var fcp))
                 result.Count = fcp.LastValue;
@@ -267,7 +264,7 @@ namespace GY2021001WebApi.Models
             var result = new GameCharDto()
             {
                 Id = obj.Id.ToBase64String(),
-                ClientGutsString = obj.ClientGutsString,
+                ClientGutsString = obj.GetClientString(),
                 CreateUtc = obj.CreateUtc,
                 DisplayName = obj.DisplayName,
                 GameUserId = obj.GameUserId.ToBase64String(),

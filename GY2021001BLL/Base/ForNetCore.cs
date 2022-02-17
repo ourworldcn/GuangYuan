@@ -70,6 +70,10 @@ namespace GuangYuan.GY001.BLL
                 var logger = _Services.GetService<ILogger<GameHostedService>>();
                 logger.LogInformation("游戏虚拟世界服务成功上线。");
             }, _Services, cancellationToken);
+
+            #region 版本升级
+
+            #endregion 版本升级
             return result;
         }
 
@@ -240,6 +244,8 @@ namespace GuangYuan.GY001.BLL
 
             var pvpObjectQuery = db.Set<GameItem>().Where(s).AsNoTracking();    //查询的基础集合
             var tst = GamePropertyChangedItemPool<object>.Shared.Get();
+            var sds = Uri.EscapeDataString("count=1,ds='1'\"");
+            var sss = Uri.UnescapeDataString(sds);
         }
 
         /// <summary>
