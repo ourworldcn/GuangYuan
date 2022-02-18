@@ -106,9 +106,9 @@ namespace GuangYuan.GY001.BLL
         public void GetBooty(ICollection<GameBooty> attackerBooty, ICollection<GameBooty> defencerBooty)
         {
             var dHl = OtherChar.GetHomeland();
-            var dYumi = dHl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId); //防御方玉米田
+            var dYumi = dHl.GetAllChildren().FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId); //防御方玉米田
 
-            var dMucaiShu = dHl.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId);   //防御方木材树
+            var dMucaiShu = dHl.GetAllChildren().FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId);   //防御方木材树
             var dMucai = OtherChar.GetMucai();  //防御方木材货币数
             var eventMng = World.EventsManager;
             var lvAtt = GameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);   //进攻方等级

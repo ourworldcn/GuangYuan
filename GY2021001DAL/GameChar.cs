@@ -105,8 +105,8 @@ namespace GuangYuan.GY001.UserDb
             {
                 if (null == _GameItems)
                 {
-                    _GameItems = DbContext.Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ThenInclude(c => c.Children).ToList();
-                    _GameItems.ForEach(c => c.GameChar = this);
+                    _GameItems = GetDbContext().Set<GameItem>().Where(c => c.OwnerId == Id).Include(c => c.Children).ThenInclude(c => c.Children).ThenInclude(c => c.Children).ToList();
+                    _GameItems.ForEach(c => c.SetGameChar(this));
                 }
                 return _GameItems;
             }
@@ -129,7 +129,7 @@ namespace GuangYuan.GY001.UserDb
                 foreach (var item in GameItems)
                     yield return item;
                 foreach (var item in GameItems)
-                    foreach (var item2 in item.AllChildren)
+                    foreach (var item2 in item.GetAllChildren())
                         yield return item2;
             }
         }
@@ -242,9 +242,10 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 获取此对象所处的用户数据库上下文对象。
         /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public override DbContext DbContext => GameUser?.DbContext;
+        public override DbContext GetDbContext()
+        {
+            return GameUser?.DbContext;
+        }
 
         // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~GameChar()

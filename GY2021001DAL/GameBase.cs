@@ -19,17 +19,6 @@ using System.Text.Json.Serialization;
 namespace GuangYuan.GY001.UserDb
 {
     /// <summary>
-    /// 存储设置的模型类。
-    /// </summary>
-    public class GameSetting
-    {
-        [Key]
-        public string Name { get; set; }
-
-        public string Val { get; set; }
-    }
-
-    /// <summary>
     /// 
     /// </summary>
     public static class FastChangingPropertyExtensions
@@ -149,22 +138,58 @@ namespace GuangYuan.GY001.UserDb
     /// </summary>
     public static class GameThingBaseExtensions
     {
+        #region 获取属性相关
+
         /// <summary>
-        /// 获取指定属性的数值形式。
+        /// 获取属性，如果没有则寻找模板内同名属性。
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param name="thing"></param>
         /// <param name="propertyName"></param>
         /// <param name="result"></param>
-        /// <returns>true指定属性存在且能转换为数值形式；否则返回false。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGetDecimalPropertyValue(this GameItemBase obj, string propertyName, out decimal result)
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static bool TryGetProperty(this GameThingBase thing, string propertyName, out object result)
         {
-            if (obj.TryGetPropertyValue(propertyName, out var tmp) && OwConvert.TryToDecimal(tmp, out result))
+            if (thing.Properties.TryGetValue(propertyName, out result))
                 return true;
-            result = default;
-            return false;
+            var tt = thing.GetTemplate();
+            if (tt is null)
+                return false;
+            return tt.TryGetPropertyValue(propertyName, out result);
         }
 
+        /// <summary>
+        /// 获取指定属性并从模板(如果有)中寻找，如果都没找到则返回<paramref name="defaultValue"/>
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static object GetPropertyOrDefault(this GameThingBase thing, string propertyName, object defaultValue = default) =>
+            thing.TryGetProperty(propertyName, out var result) ? result : defaultValue;
+
+        /// <summary>
+        /// 获取指定名称的属性，且优先考虑快速渐变属性。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static bool TryGetPropertyWithFcp(this GameThingBase thing, string name, out decimal result)
+        {
+            if (thing.Name2FastChangingProperty.TryGetValue(name, out var fcp))
+            {
+                result = fcp.GetCurrentValueWithUtc();
+                return true;
+            }
+            if (!thing.TryGetProperty(name, out var obj))
+            {
+                result = default;
+                return false;
+            }
+            return OwConvert.TryToDecimal(obj, out result);
+        }
 
         /// <summary>
         /// 获取指定的属性值并转换为<see cref="decimal"/>,如果找不到，或不能转换则返回指定默认值。
@@ -174,8 +199,10 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="defaultVal"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static decimal GetDecimalOrDefault(this GameItemBase obj, string propertyName, decimal defaultVal = decimal.Zero) =>
-            obj.TryGetPropertyValue(propertyName, out var stcObj) && OwConvert.TryToDecimal(stcObj, out var dec) ? dec : defaultVal;
+        public static decimal GetDecimalWithFcpOrDefault(this GameThingBase obj, string propertyName, decimal defaultVal = decimal.Zero) =>
+            obj.TryGetPropertyWithFcp(propertyName, out var result) ? result : defaultVal;
+
+        #endregion 获取属性相关
 
         /// <summary>
         /// 获取堆叠上限。
@@ -185,7 +212,7 @@ namespace GuangYuan.GY001.UserDb
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static decimal GetStc(this GameItemBase obj)
         {
-            var stc = obj.GetDecimalOrDefault("stc", 1);
+            var stc = obj.GetDecimalWithFcpOrDefault("stc", 1);
             return stc == -1 ? decimal.MaxValue : stc;
         }
 
@@ -197,7 +224,19 @@ namespace GuangYuan.GY001.UserDb
         /// <returns>true可堆叠，false不可堆叠。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsStc(this GameItemBase obj, out decimal result) =>
-            obj.TryGetDecimalPropertyValue("stc", out result);
+            obj.TryGetPropertyWithFcp("stc", out result);
+
+        /// <summary>
+        /// 获取指定名称的属性值，如果快变属性存在则返回快变属性的当前值，如果在两处都没有没有找到该名称的属性或无法转化为数值，则返回指定的默认值。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static decimal GetPropertyWithFcpOrDefalut(this GameThingBase thing, string name, decimal defaultValue = default)
+        {
+            return thing.TryGetPropertyWithFcp(name, out var result) ? result : defaultValue;
+        }
 
     }
 
@@ -219,9 +258,7 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public Guid TemplateId { get; set; }
 
-        [NotMapped]
-        [JsonIgnore]
-        public abstract DbContext DbContext { get; }
+        public abstract DbContext GetDbContext();
 
         /// <summary>
         /// 记录一些额外的信息，通常这些信息用于排序，加速查找符合特定要求的对象。此字段被索引。
@@ -326,17 +363,6 @@ namespace GuangYuan.GY001.UserDb
             }
         }
 
-        /// <summary>
-        /// 获取指定名称的属性值，如果快变属性存在则返回快变属性的当前值，如果在两处都没有没有找到该名称的属性或无法转化为数值，则返回指定的默认值。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public decimal GetPropertyWithFcpOrDefalut(string name, decimal defaultValue = default)
-        {
-            return Name2FastChangingProperty.TryGetValue(name, out var fcp) ? fcp.GetCurrentValueWithUtc() : Properties.GetDecimalOrDefault(name, defaultValue);
-        }
         #endregion 快速变化属性相关
 
         #region 通用扩展属性及相关
@@ -377,11 +403,11 @@ namespace GuangYuan.GY001.UserDb
             {
                 if (_ExtendPropertiesInited)    //为使用json反序列化需要，强制被设置null后，不能返回有效实例，否则报错
                     return _ExtendProperties;
-                if (_ExtendProperties is null && DbContext != null)
+                if (_ExtendProperties is null && GetDbContext() != null)
                 {
                     try
                     {
-                        var coll = DbContext.Set<GameExtendProperty>().Where(c => c.Id == Id);
+                        var coll = GetDbContext().Set<GameExtendProperty>().Where(c => c.Id == Id);
                         _ExtendProperties = new ObservableCollection<GameExtendProperty>(coll);
                         _ExtendProperties.CollectionChanged += GameExtendPropertiesCollectionChanged;
                     }
@@ -390,7 +416,7 @@ namespace GuangYuan.GY001.UserDb
 
                     }
                 }
-                else if (DbContext == null)
+                else if (GetDbContext() == null)
                 {
                     _ExtendProperties = new ObservableCollection<GameExtendProperty>();
                     _ExtendProperties.CollectionChanged += GameExtendPropertiesCollectionChanged;
@@ -404,7 +430,7 @@ namespace GuangYuan.GY001.UserDb
                 _ExtendProperties = value;
                 if (null != _ExtendProperties)
                 {
-                    DbContext?.AddRange(value);
+                    GetDbContext()?.AddRange(value);
                     value.CollectionChanged += GameExtendPropertiesCollectionChanged;
                 }
                 _ExtendPropertiesInited = true;
@@ -420,18 +446,18 @@ namespace GuangYuan.GY001.UserDb
                     {
                         item.Id = Id;
                     }
-                    DbContext.Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
+                    GetDbContext().Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    DbContext.Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
+                    GetDbContext().Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     throw new NotSupportedException();
                 case NotifyCollectionChangedAction.Move:
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    DbContext.Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
-                    DbContext.Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
+                    GetDbContext().Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
+                    GetDbContext().Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
                     break;
                 default:
                     break;

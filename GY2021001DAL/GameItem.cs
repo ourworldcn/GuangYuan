@@ -77,44 +77,6 @@ namespace GuangYuan.GY001.UserDb
         }
 
         #endregion 构造函数
-        /// <summary>
-        /// 获取指定名称的属性名。调用<see cref="TryGetPropertyValue(string, out object)"/>来实现。
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <param name="defaultVal"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object GetPropertyValueOrDefault(string propertyName, object defaultVal = default) =>
-            TryGetPropertyValue(propertyName, out var result) ? result : defaultVal;
-
-        /// <summary>
-        /// 获取指定属性名称的属性值。
-        /// </summary>
-        /// <param name="propertyName">动态属性的名称。</param>
-        /// <param name="result">动态属性的值。</param>
-        /// <returns>true成功返回属性，false未找到属性。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public virtual bool TryGetPropertyValue(string propertyName, out object result)
-        {
-            bool succ;
-            switch (propertyName)
-            {
-                default:
-                    if (Name2FastChangingProperty.TryGetValue(propertyName, out var fcp))   //若存在渐变属性
-                    {
-                        succ = true;
-                        result = fcp.GetCurrentValueWithUtc();
-                    }
-                    else
-                    {
-                        succ = Properties.TryGetValue(propertyName, out result);
-                        if (!succ && null != this.GetTemplate())
-                            succ = this.GetTemplate().TryGetPropertyValue(propertyName, out result);
-                    }
-                    break;
-            }
-            return succ;
-        }
 
         /// <summary>
         /// 设置一个属性。
@@ -129,7 +91,7 @@ namespace GuangYuan.GY001.UserDb
             switch (propertyName)
             {
                 default:
-                    succ = TryGetPropertyValue(propertyName, out var oldVal);
+                    succ = this.TryGetProperty(propertyName, out var oldVal);
                     if (!succ || !Equals(oldVal, val))
                     {
                         Properties[propertyName] = val;
@@ -141,57 +103,6 @@ namespace GuangYuan.GY001.UserDb
         }
 
         #region 快速变化属性相关
-
-        /// <summary>
-        /// 获取属性，且考虑是否刷新并写入快速变化属性。
-        /// </summary>
-        /// <param name="name">要获取值的属性名。</param>
-        /// <param name="refreshDate">当有快速变化属性时，刷新时间，如果为null则不刷新。</param>
-        /// <param name="writeDictionary">当有快速变化属性时，是否写入<see cref="Properties"/>属性。</param>
-        /// <param name="result">属性的当前返回值。对快速变化属性是其<see cref="FastChangingProperty.LastValue"/>,是否在之前刷新取决于<paramref name="refresh"/>参数。</param>
-        /// <param name="refreshDatetime">如果是快速变化属性且需要刷新，则此处返回实际的计算时间。
-        /// 如果找到的不是快速渐变属性返回<see cref="DateTime.MinValue"/></param>
-        /// <returns>true成功找到属性。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public virtual bool TryGetPropertyValueWithFcp(string name, DateTime? refreshDate, bool writeDictionary, out object result, out DateTime refreshDatetime)
-        {
-            bool succ;
-            if (Name2FastChangingProperty.TryGetValue(name, out var fcp)) //若找到快速变化属性
-            {
-                if (refreshDate.HasValue) //若需要刷新
-                {
-                    refreshDatetime = refreshDate.Value;
-                    result = fcp.GetCurrentValue(ref refreshDatetime);
-                }
-                else
-                {
-                    refreshDatetime = DateTime.MinValue;
-                    result = fcp.LastValue;
-                }
-                if (writeDictionary)
-                    fcp.ToGameThing(this);
-                succ = true;
-            }
-            else //若是其他属性
-            {
-                refreshDatetime = DateTime.MinValue;
-                succ = Properties.TryGetValue(name, out result);
-            }
-            return succ;
-        }
-
-        /// <summary>
-        ///  获取属性，若是快速变化属性时会自动用当前时间刷新且写入<see cref="Properties"/>。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetPropertyValueWithFcp(string name, out object result)
-        {
-            DateTime dt = DateTime.UtcNow;
-            return TryGetPropertyValueWithFcp(name, dt, true, out result, out _);
-        }
 
         #endregion 快速变化属性相关
 
@@ -255,9 +166,10 @@ namespace GuangYuan.GY001.UserDb
 
         }
 
-        [JsonIgnore]
-        [NotMapped]
-        public override DbContext DbContext => GameChar?.DbContext;
+        public override DbContext GetDbContext()
+        {
+            return this.GetGameChar()?.GetDbContext();
+        }
 
         private decimal? _Count;
 
@@ -302,53 +214,9 @@ namespace GuangYuan.GY001.UserDb
         public virtual List<GameItem> Children { get; set; } = new List<GameItem>();
 
         /// <summary>
-        /// 获取该物品直接或间接下属对象的枚举数。深度优先。
-        /// </summary>
-        /// <returns>枚举数。不包含自己。枚举过程中不能更改树节点的关系。</returns>
-        [NotMapped]
-        [JsonIgnore]
-        public IEnumerable<GameItem> AllChildren
-        {
-            get
-            {
-                foreach (var item in Children)
-                {
-                    yield return item;
-                    foreach (var item2 in item.AllChildren)
-                    {
-                        yield return item2;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// 所属角色Id或其他关联对象的Id。
         /// </summary>
         public Guid? OwnerId { get; set; }
-
-        private GameChar _GameChar;
-        /// <summary>
-        /// 获取或设置所属的角色对象。没有设置关系可能返回null。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public GameChar GameChar
-        {
-            get
-            {
-                return _GameChar ?? Parent?.GameChar;
-            }
-            set => _GameChar = value;
-        }
-
-
-        /// <summary>
-        /// 容器的Id。可能返回容器Id。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public Guid? ContainerId => (ParentId ?? Parent?.Id) ?? OwnerId;
 
         /// <summary>
         /// 
@@ -380,43 +248,6 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public const string StackUpperLimit = "stc";
 
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <param name="propertyName"><inheritdoc/></param>
-        /// <param name="result"><inheritdoc/></param>
-        /// <returns><inheritdoc/></returns>
-        public override bool TryGetPropertyValue(string propertyName, out object result)
-        {
-            bool succ;
-            switch (propertyName)
-            {
-                case StackUpperLimit when TemplateId == MucaiId: //对木材特殊处理 TO DO应控制反转完成该工作
-                    var coll = Parent?.AllChildren ?? GameChar?.GameItems;
-                    if (coll is null)
-                    {
-                        result = 0m;
-                        return false;
-                    }
-                    var ary = coll.Where(c => c.TemplateId == MucaiStoreTId).ToArray();   //取所有木材仓库对象
-                    if (!OwConvert.TryToDecimal(Properties.GetValueOrDefault(StackUpperLimit, 0m), out var myselfStc))
-                        myselfStc = 0;
-                    result = ary.Any(c => c.GetStc() >= decimal.MaxValue) ? -1 : ary.Sum(c => c.GetStc()) + myselfStc;
-                    succ = true;
-                    break;
-                case "count":
-                case "Count":
-                    var obj = Count;
-                    succ = obj.HasValue;
-                    result = obj ?? 0;
-                    break;
-                default:
-                    succ = base.TryGetPropertyValue(propertyName, out result);
-                    break;
-            }
-            return succ;
-        }
-
         #region IDisposable接口相关
 
         /// <summary>
@@ -436,7 +267,6 @@ namespace GuangYuan.GY001.UserDb
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
                 Parent = null;
-                _GameChar = null;
                 base.Dispose(disposing);
             }
         }
@@ -454,6 +284,18 @@ namespace GuangYuan.GY001.UserDb
 
     public static class GameItemExtensions
     {
+        public static IEnumerable<GameItem> GetAllChildren(this GameItem gameItem)
+        {
+            foreach (var item in gameItem.Children)
+            {
+                yield return item;
+                foreach (var item2 in item.GetAllChildren())
+                {
+                    yield return item2;
+                }
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -533,6 +375,72 @@ namespace GuangYuan.GY001.UserDb
             if (!obj.IsStc(out decimal stc))
                 return 0;
             return -1 == stc ? decimal.MaxValue : Math.Max(0, stc - obj.Count.Value);
+        }
+
+        /// <summary>
+        /// 获取或设置所属的角色对象。没有设置关系可能返回null。
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameChar GetGameChar(this GameItem obj)
+        {
+            return obj.RuntimeProperties.GetValueOrDefault("GameChar", null) as GameChar ?? obj.Parent?.GetGameChar();
+        }
+
+        /// <summary>
+        /// 获取或设置所属的角色对象。没有设置关系可能返回null。
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetGameChar(this GameItem obj, GameChar value)
+        {
+            if (value is null)
+                obj.RuntimeProperties.Remove("GameChar", out _);
+            else
+                obj.RuntimeProperties["GameChar"] = value;
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="propertyName"><inheritdoc/></param>
+        /// <param name="result"><inheritdoc/></param>
+        /// <returns><inheritdoc/></returns>
+        public static bool TryGetProperty(this GameItem gameItem, string propertyName, out object result)
+        {
+            bool succ;
+            switch (propertyName)
+            {
+                case GameItem.StackUpperLimit when gameItem.TemplateId == GameItem.MucaiId: //对木材特殊处理 TO DO应控制反转完成该工作
+                    var coll = gameItem.Parent?.GetAllChildren() ?? gameItem.GetGameChar()?.GameItems;
+                    if (coll is null)
+                    {
+                        result = 0m;
+                        return false;
+                    }
+                    var ary = coll.Where(c => c.TemplateId == GameItem.MucaiStoreTId).ToArray();   //取所有木材仓库对象
+                    if (!OwConvert.TryToDecimal(gameItem.Properties.GetValueOrDefault(GameItem.StackUpperLimit, 0m), out var myselfStc))
+                        myselfStc = 0;
+                    result = ary.Any(c => c.GetStc() >= decimal.MaxValue) ? -1 : ary.Sum(c => c.GetStc()) + myselfStc;
+                    succ = true;
+                    break;
+                case "count":
+                case "Count":
+                    var obj = gameItem.Count;
+                    succ = obj.HasValue;
+                    result = obj ?? 0;
+                    break;
+                default:
+                    succ = ((GameThingBase)gameItem).TryGetProperty(propertyName, out result);
+                    break;
+            }
+            return succ;
+        }
+
+        /// <summary>
+        /// 容器的Id。可能返回容器Id。
+        /// </summary>
+        public static Guid? GetContainerId(this GameItem gameItem)
+        {
+            return (gameItem.ParentId ?? gameItem.Parent?.Id) ?? gameItem.OwnerId;
         }
 
     }
@@ -676,6 +584,7 @@ namespace GuangYuan.GY001.UserDb
     /// </summary>
     public static class ChangesItemExtensions
     {
+
         public static void ToE(IEnumerable<GamePropertyChangedItem<object>> src, ICollection<ChangeItem> dest)
         {
             var coll = from tmp in src
@@ -708,7 +617,7 @@ namespace GuangYuan.GY001.UserDb
         public static void AddToAdds(this ICollection<ChangeItem> coll, params GameItem[] items)
         {
             foreach (var item in items)
-                coll.AddToAdds(item.ContainerId.Value, item);
+                coll.AddToAdds(item.GetContainerId().Value, item);
         }
 
         /// <summary>
@@ -767,7 +676,7 @@ namespace GuangYuan.GY001.UserDb
             //    item.change.Changes.Add(item.item);
             //}
             foreach (var item in items)
-                coll.AddToChanges(item.ContainerId.Value, item);
+                coll.AddToChanges(item.GetContainerId().Value, item);
         }
     }
 

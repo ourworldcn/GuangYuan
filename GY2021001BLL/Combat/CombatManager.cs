@@ -1200,29 +1200,29 @@ namespace GuangYuan.GY001.BLL
             if (null == head)
                 return false;
             double atk = 0, qlt = 0, mhp = 0;
-            atk += (double)head.GetDecimalOrDefault("atk", decimal.Zero);
-            atk += (double)body.GetDecimalOrDefault("atk", decimal.Zero);
+            atk += (double)head.GetDecimalWithFcpOrDefault("atk", decimal.Zero);
+            atk += (double)body.GetDecimalWithFcpOrDefault("atk", decimal.Zero);
 
-            mhp += (double)head.GetDecimalOrDefault("mhp", decimal.Zero);
-            mhp += (double)body.GetDecimalOrDefault("mhp", decimal.Zero);
+            mhp += (double)head.GetDecimalWithFcpOrDefault("mhp", decimal.Zero);
+            mhp += (double)body.GetDecimalWithFcpOrDefault("mhp", decimal.Zero);
 
-            qlt += (double)head.GetDecimalOrDefault("qlt", decimal.Zero);
-            qlt += (double)body.GetDecimalOrDefault("qlt", decimal.Zero);
+            qlt += (double)head.GetDecimalWithFcpOrDefault("qlt", decimal.Zero);
+            qlt += (double)body.GetDecimalWithFcpOrDefault("qlt", decimal.Zero);
 
             //计算资质加成
-            var neatk = gameItem.GetDecimalOrDefault("neatk", decimal.Zero);
-            var nemhp = gameItem.GetDecimalOrDefault("nemhp", decimal.Zero);
-            var neqlt = gameItem.GetDecimalOrDefault("nemhp", decimal.Zero);
+            var neatk = gameItem.GetDecimalWithFcpOrDefault("neatk", decimal.Zero);
+            var nemhp = gameItem.GetDecimalWithFcpOrDefault("nemhp", decimal.Zero);
+            var neqlt = gameItem.GetDecimalWithFcpOrDefault("nemhp", decimal.Zero);
             atk *= (double)(100 + neatk) / 100;
             mhp *= (double)(100 + nemhp) / 100;
             qlt *= (double)(100 + neqlt) / 100;
             //计算其他加成，如时装
             var ary = gameItem.Children.Where(c => c.Id != head.Id && c.Id != body.Id).ToArray();
-            atk += (double)ary.Sum(c => c.GetDecimalOrDefault("atk", decimal.Zero));
-            mhp += (double)ary.Sum(c => c.GetDecimalOrDefault("mhp", decimal.Zero));
-            qlt += (double)ary.Sum(c => c.GetDecimalOrDefault("qlt", decimal.Zero));
+            atk += (double)ary.Sum(c => c.GetDecimalWithFcpOrDefault("atk", decimal.Zero));
+            mhp += (double)ary.Sum(c => c.GetDecimalWithFcpOrDefault("mhp", decimal.Zero));
+            qlt += (double)ary.Sum(c => c.GetDecimalWithFcpOrDefault("qlt", decimal.Zero));
 
-            var gc = gameItem.GameChar;
+            var gc = gameItem.GetGameChar();
             if (null == gc)
                 return false;
             //获取对应神纹
@@ -1231,20 +1231,20 @@ namespace GuangYuan.GY001.BLL
                 return false;
             var shenwen = slotShenwen.Children.FirstOrDefault(c =>
             {
-                if (!c.TryGetPropertyValue("body", out var bodyObj) || !OwConvert.TryToDecimal(bodyObj, out var bodyDec))
+                if (!c.TryGetProperty("body", out var bodyObj) || !OwConvert.TryToDecimal(bodyObj, out var bodyDec))
                     return false;
                 return bodyDec == bodyGid;
             });
             //计算神纹加成
-            atk += (double)shenwen.GetDecimalOrDefault("atk", decimal.Zero);
-            mhp += (double)shenwen.GetDecimalOrDefault("mhp", decimal.Zero);
-            qlt += (double)shenwen.GetDecimalOrDefault("qlt", decimal.Zero);
+            atk += (double)shenwen.GetDecimalWithFcpOrDefault("atk", decimal.Zero);
+            mhp += (double)shenwen.GetDecimalWithFcpOrDefault("mhp", decimal.Zero);
+            qlt += (double)shenwen.GetDecimalWithFcpOrDefault("qlt", decimal.Zero);
             dic["atk"] = atk;
             dic["mhp"] = mhp;
             dic["qlt"] = qlt;
             //计算主动技能等级
-            //var ssc = shenwen.GetDecimalOrDefault("sscatk", decimal.Zero) + shenwen.GetDecimalOrDefault("sscmhp", decimal.Zero) + shenwen.GetDecimalOrDefault("sscqlt", decimal.Zero);
-            var lv = (int)body.GetDecimalOrDefault("lv", decimal.Zero);
+            //var ssc = shenwen.GetDecimalWithFcpOrDefault("sscatk", decimal.Zero) + shenwen.GetDecimalWithFcpOrDefault("sscmhp", decimal.Zero) + shenwen.GetDecimalWithFcpOrDefault("sscqlt", decimal.Zero);
+            var lv = (int)body.GetDecimalWithFcpOrDefault("lv", decimal.Zero);
             int lvZhudong = Array.FindLastIndex(_aryLvZuoqi, c => lv >= c); //主动技能等级
             //计算被动技能等级
             var lvBeidong = Array.FindLastIndex(_aryLvZuoqi, c => lv >= c);  //被动技能等级
@@ -1297,16 +1297,16 @@ namespace GuangYuan.GY001.BLL
         public void AddCombatProperties(GameItemBase thing, IReadOnlyDictionary<string, float> dic)
         {
             thing.Properties["atk"] = (float)thing.Properties.GetDecimalOrDefault("atk") + dic.GetValueOrDefault("atk");
-            thing.Properties["mhp"] = (float)thing.GetDecimalOrDefault("mhp") + dic.GetValueOrDefault("mhp");
-            thing.Properties["qlt"] = (float)thing.GetDecimalOrDefault("qlt") + dic.GetValueOrDefault("qlt");
+            thing.Properties["mhp"] = (float)thing.GetDecimalWithFcpOrDefault("mhp") + dic.GetValueOrDefault("mhp");
+            thing.Properties["qlt"] = (float)thing.GetDecimalWithFcpOrDefault("qlt") + dic.GetValueOrDefault("qlt");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void MultCombatProperties(GameItemBase thing, IReadOnlyDictionary<string, float> dic)
         {
-            thing.Properties["atk"] = (float)thing.GetDecimalOrDefault("atk") * dic.GetValueOrDefault("atk");
-            thing.Properties["mhp"] = (float)thing.GetDecimalOrDefault("mhp") * dic.GetValueOrDefault("mhp");
-            thing.Properties["qlt"] = (float)thing.GetDecimalOrDefault("qlt") * dic.GetValueOrDefault("qlt");
+            thing.Properties["atk"] = (float)thing.GetDecimalWithFcpOrDefault("atk") * dic.GetValueOrDefault("atk");
+            thing.Properties["mhp"] = (float)thing.GetDecimalWithFcpOrDefault("mhp") * dic.GetValueOrDefault("mhp");
+            thing.Properties["qlt"] = (float)thing.GetDecimalWithFcpOrDefault("qlt") * dic.GetValueOrDefault("qlt");
         }
 
         /// <summary>

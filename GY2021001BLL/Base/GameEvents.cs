@@ -169,7 +169,7 @@ namespace OW.Game
             gameThing.RemoveFastChangingProperty(ProjectConstant.UpgradeTimeName);
             //扫描成就
             if (!(gameThing is GameChar gc))
-                gc = (gameThing as GameItem)?.GameChar;
+                gc = (gameThing as GameItem)?.GetGameChar();
             if (null != gc)
                 World.MissionManager.ScanAsync(gc);
             return false;
@@ -237,7 +237,7 @@ namespace OW.Game
             {
                 if (parameters.TryGetValue("ptid", out var tmp))
                     gameItem.Properties["ptid"] = tmp;
-                if (parameters.TryGetValue("count", out tmp) && OwConvert.TryToDecimal(tmp, out var deci) && gameItem.GameChar != null) //若可以设置
+                if (parameters.TryGetValue("count", out tmp) && OwConvert.TryToDecimal(tmp, out var deci) && gameItem.GetGameChar() != null) //若可以设置
                     gameItem.Count = deci;
             }
 
@@ -330,12 +330,13 @@ namespace OW.Game
                 };
                 var coll = gt.ChildrenTemplateIds.Select(c =>
                     {
-                        GameItem gi = new GameItem() { GameChar = gameChar };
+                        GameItem gi = new GameItem();
+                        gi.SetGameChar(gameChar);
                         GameItemCreated(gi, c, null, gameChar.Id, dic);
                         return gi;
                     }).ToArray();
                 gameChar.GameItems.AddRange(coll);
-                gameChar.DbContext.AddRange(coll); //将直接孩子加入数据库
+                gameChar.GetDbContext().AddRange(coll); //将直接孩子加入数据库
             }
         }
 
@@ -471,7 +472,7 @@ namespace OW.Game
             var tmp = gameChar.GameItems.ToArray();
             Array.ForEach(tmp, c =>
             {
-                c.GameChar = gameChar;
+                c.SetGameChar(gameChar);
                 GameItemLoaded(c);
             });
             //增加推关战力
@@ -498,7 +499,7 @@ namespace OW.Game
         public virtual void ThingBaseJsonDeserialized(GameThingBase thingBase)
         {
             thingBase.SetTemplate(World.ItemTemplateManager.GetTemplateFromeId(thingBase.TemplateId));
-            var db = thingBase.DbContext;
+            var db = thingBase.GetDbContext();
             db.AddRange(thingBase.ExtendProperties);
         }
 
@@ -512,8 +513,8 @@ namespace OW.Game
         public virtual void JsonDeserialized(GameChar gameChar)
         {
             ThingBaseJsonDeserialized(gameChar);
-            gameChar.DbContext.AddRange(gameChar.GameItems);
-            gameChar.GameItems.ForEach(c => c.GameChar = gameChar);
+            gameChar.GetDbContext().AddRange(gameChar.GameItems);
+            gameChar.GameItems.ForEach(c => c.SetGameChar(gameChar));
             gameChar.GameItems.ForEach(c => JsonDeserialized(c));
         }
 
@@ -573,13 +574,13 @@ namespace OW.Game
                 var gi = new GameItem()
                 {
                     OwnerId = dest.Id,
-                    GameChar = dest,
                 };
+                gi.SetGameChar(dest);
                 dest.GameItems.Add(gi);
                 Clone(item, gi);
                 list.Add(gi);
             }
-            dest.DbContext.AddRange(list);
+            dest.GetDbContext().AddRange(list);
         }
 
         /// <summary>
@@ -614,7 +615,7 @@ namespace OW.Game
             dest.SetTemplate(src.GetTemplate());
             dest.ExPropertyString = src.ExPropertyString;
             OwHelper.Copy(src.Properties, dest.Properties);
-            if (null != dest.DbContext)
+            if (null != dest.GetDbContext())
                 Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
         }
 

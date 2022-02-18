@@ -274,19 +274,19 @@ namespace OW.Game.Mission
                     case "26c63192-867a-43f4-919b-10a614ee2865": //	炮塔成就	51017
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.AllChildren.Where(c => c.GetTemplate().CatalogNumber == 40).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 40).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
                         }
                         break;
                     case "03d80847-f273-413b-a2a2-81545ab03a89": //	陷阱成就	51018
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.AllChildren.Where(c => c.GetTemplate().CatalogNumber == 41).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 41).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
                         }
                         break;
                     case "5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d": //	旗帜成就	51019
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.AllChildren.Where(c => c.GetTemplate().CatalogNumber == 42).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 42).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
                         }
                         break;
                     default:
@@ -406,7 +406,7 @@ namespace OW.Game.Mission
         {
             //mcid5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d=10;50;100,...
             var mObj = missionSlot.Children.FirstOrDefault(c => c.TemplateId == tid);   //任务/成就对象
-            var lst = World.CharManager.GetChangeData(missionSlot.GameChar);  //通知数据对象
+            var lst = World.CharManager.GetChangeData(missionSlot.GetGameChar());  //通知数据对象
             var keyName = $"mcid{mObj.Id}"; //键名
             var template = missionSlot.GetTemplate();    //模板数据
             var oldVal = mObj.Count.GetValueOrDefault();   //原值

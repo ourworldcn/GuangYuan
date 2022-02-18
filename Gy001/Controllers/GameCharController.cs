@@ -508,7 +508,7 @@ namespace GY2021001WebApi.Controllers
                 //if (fengges.Count == 0) //若未初始化
                 gc.MergeFangans(fengges, gitm);
                 result.Plans.AddRange(fengges.Select(c => (HomelandFenggeDto)c));
-                ary = gc.GetHomeland().AllChildren.Where(c => filterTIds.Contains(c.TemplateId)).Select(c => c.Id.ToBase64String()).ToArray(); //排除的容器Id集合
+                ary = gc.GetHomeland().GetAllChildren().Where(c => filterTIds.Contains(c.TemplateId)).Select(c => c.Id.ToBase64String()).ToArray(); //排除的容器Id集合
             }
             catch (Exception err)
             {

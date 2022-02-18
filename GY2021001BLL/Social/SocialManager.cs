@@ -1495,7 +1495,7 @@ namespace GuangYuan.GY001.BLL
                 datas.CurrentFengge = fengge;
                 //获取家园地块数据
                 var hl = objChar.GetHomeland();
-                var dikuais = hl.AllChildren.Where(c => gitm.GetTemplateFromeId(c.TemplateId).CatalogNumber / 100 == 1);  //获取地块
+                var dikuais = hl.GetAllChildren().Where(c => gitm.GetTemplateFromeId(c.TemplateId).CatalogNumber / 100 == 1);  //获取地块
                 datas.Lands.AddRange(dikuais);
                 //获取阵容数据
                 var lineupNumbers = datas.CurrentFengge.Fangans.Select(c => 10000 + datas.CurrentFengge.Number * 10 + c.OrderNumber); //阵容号集合
@@ -1597,14 +1597,14 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
             }
-            var lv = (int)datas.PvpObject.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);    //级别数据
+            var lv = (int)datas.PvpObject.GetDecimalWithFcpOrDefault(ProjectConstant.LevelPropertyName);    //级别数据
             if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel(pricePName) - 1 && datas.IsRefresh)  //若当日已经不可再刷
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;
                 return;
             }
-            var priceD = datas.PvpObject.GetDecimalOrDefault(pricePName); //钻石计费的代价
+            var priceD = datas.PvpObject.GetDecimalWithFcpOrDefault(pricePName); //钻石计费的代价
             var dia = datas.GameChar.GetZuanshi();  //钻石
             if (datas.IsRefresh || !todayData.HasData) //若强制刷新或需要刷新
             {

@@ -99,8 +99,7 @@ namespace OW.Extensions.Game.Store
                 if (newValue is decimal[] ary)   //若是一个序列属性
                 {
                     var indexName = template.GetIndexPropertyName(key); //索引属性名
-                    if ((@this.TryGetPropertyValue(indexName, out var indexObj) || template.TryGetPropertyValue(indexName, out indexObj)) &&
-                        OwConvert.TryToDecimal(indexObj, out var index))
+                    if (@this.TryGetPropertyWithFcp(indexName, out var index) || template.Properties.TryGetDecimal(indexName, out index))
                     {
                         index = Math.Round(index, MidpointRounding.AwayFromZero);
                         @this.SetPropertyValue(key, ary[(int)index]);
@@ -113,7 +112,7 @@ namespace OW.Extensions.Game.Store
             }
             foreach (var key in keysBoth)   //遍历两者皆有的属性
             {
-                var currentVal = @this.GetPropertyValueOrDefault(key);
+                var currentVal = @this.GetPropertyOrDefault(key);
                 var oldVal = @this.GetTemplate().GetPropertyValue(key);    //模板值
                 if (oldVal is decimal[] ary && OwConvert.TryToDecimal(currentVal, out var currentDec))   //若是一个序列属性
                 {
@@ -150,11 +149,49 @@ namespace OW.Extensions.Game.Store
                 return -1;
             var indexPName = @this.GetTemplate().GetIndexPropertyName(name);   //其索引属性名
             int result;
-            if (!@this.TryGetPropertyValue(indexPName, out var resultObj))    //若没有找到索引属性的值
+            if (!@this.TryGetProperty(indexPName, out var resultObj))    //若没有找到索引属性的值
                 result = 0;
             else //若找到索引属性
                 result = OwConvert.TryToDecimal(resultObj, out var resultDec) ? OwHelper.RoundWithAwayFromZero(resultDec) : -1;
             return result;
+        }
+
+        /// <summary>
+        /// 获取属性，且考虑是否刷新并写入快速变化属性。
+        /// </summary>
+        /// <param name="name">要获取值的属性名。</param>
+        /// <param name="refreshDate">当有快速变化属性时，刷新时间，如果为null则不刷新。</param>
+        /// <param name="writeDictionary">当有快速变化属性时，是否写入<see cref="Properties"/>属性。</param>
+        /// <param name="result">属性的当前返回值。对快速变化属性是其<see cref="FastChangingProperty.LastValue"/>,是否在之前刷新取决于<paramref name="refresh"/>参数。</param>
+        /// <param name="refreshDatetime">如果是快速变化属性且需要刷新，则此处返回实际的计算时间。
+        /// 如果找到的不是快速渐变属性返回<see cref="DateTime.MinValue"/></param>
+        /// <returns>true成功找到属性。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static bool TryGetPropertyValueWithFcp(this GameItem gameItem,string name, DateTime? refreshDate, bool writeDictionary, out object result, out DateTime refreshDatetime)
+        {
+            bool succ;
+            if (gameItem.Name2FastChangingProperty.TryGetValue(name, out var fcp)) //若找到快速变化属性
+            {
+                if (refreshDate.HasValue) //若需要刷新
+                {
+                    refreshDatetime = refreshDate.Value;
+                    result = fcp.GetCurrentValue(ref refreshDatetime);
+                }
+                else
+                {
+                    refreshDatetime = DateTime.MinValue;
+                    result = fcp.LastValue;
+                }
+                if (writeDictionary)
+                    fcp.ToGameThing(gameItem);
+                succ = true;
+            }
+            else //若是其他属性
+            {
+                refreshDatetime = DateTime.MinValue;
+                succ = gameItem.Properties.TryGetValue(name, out result);
+            }
+            return succ;
         }
 
         #endregion 待重构代码

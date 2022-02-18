@@ -68,7 +68,7 @@ namespace OW.Game.Item
         {
             var mucai = gameChar.GetMucai();
             var stc = mucai.GetTemplate().Properties.GetDecimalOrDefault("stc");
-            var coll = gameChar.GetHomeland().AllChildren.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);
+            var coll = gameChar.GetHomeland().GetAllChildren().Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);
             stc += coll.Sum(c => c.Properties.GetDecimalOrDefault("stc"));
             mucai.Properties["stc"] = stc;
         }
@@ -211,7 +211,7 @@ namespace OW.Game.Item
             }
             else if (propName.StartsWith(ProjectConstant.LevelPropertyName))  //若是一个级别属性
             {
-                var olv = gameItem.GetDecimalOrDefault(propName, 0m);    //当前等级
+                var olv = gameItem.GetDecimalWithFcpOrDefault(propName, 0m);    //当前等级
                 var nlv = Convert.ToDecimal(val);   //新等级
                 if (olv != nlv)    //若需要改变等级
                 {
@@ -450,7 +450,7 @@ namespace OW.Game.Item
                 stcMucai = stcMucai == -1 ? decimal.MaxValue : stcMucai;
                 var hl = gameChar.GetHomeland();
 
-                var coll = hl.AllChildren.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId).Select(c => GetMaxStc(c)).Append(stcMucai);
+                var coll = hl.GetAllChildren().Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId).Select(c => GetMaxStc(c)).Append(stcMucai);
                 if (coll.Any(c => decimal.MaxValue == c))
                     return decimal.MaxValue;
                 else
@@ -662,9 +662,9 @@ namespace OW.Game.Item
                         return;
                     }
                 }
-                if (parent is GameItem gi && gi.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(gameItem) && this.IsExistsMounts(gi.GameChar, gameItem))  //若要放入坐骑且有同款坐骑
+                if (parent is GameItem gi && gi.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(gameItem) && this.IsExistsMounts(gi.GetGameChar(), gameItem))  //若要放入坐骑且有同款坐骑
                 {
-                    var bag = gi.GameChar.GetShoulanBag();  //兽栏
+                    var bag = gi.GetGameChar().GetShoulanBag();  //兽栏
                     if (GetFreeCapacity(bag) == 0) //若兽栏满
                     {
                         remainder.Add(gameItem);
@@ -675,7 +675,7 @@ namespace OW.Game.Item
                 var succ = ForcedAdd(gameItem, parent);
                 changeItems?.AddToAdds(parent.Id, gameItem);
                 if (this.IsMounts(gameItem)) //若是坐骑
-                    World.CombatManager.UpdatePveInfo(gameItem.GameChar);
+                    World.CombatManager.UpdatePveInfo(gameItem.GetGameChar());
                 return;
             }
             else //若可堆叠
@@ -754,9 +754,9 @@ namespace OW.Game.Item
                         return false;
                     }
                 }
-                if (parent is GameItem gi && gi.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(gameItem) && this.IsExistsMounts(gi.GameChar, gameItem))  //若要放入坐骑且有同款坐骑
+                if (parent is GameItem gi && gi.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(gameItem) && this.IsExistsMounts(gi.GetGameChar(), gameItem))  //若要放入坐骑且有同款坐骑
                 {
-                    var bag = gi.GameChar.GetShoulanBag();  //兽栏
+                    var bag = gi.GetGameChar().GetShoulanBag();  //兽栏
                     if (GetFreeCapacity(bag) == 0) //若兽栏满
                     {
                         return false;
@@ -793,7 +793,7 @@ namespace OW.Game.Item
             var succ = ForcedAdd(gameItem, parent);
             changeItems?.AddToAdds(parent.Id, gameItem);
             if (this.IsMounts(gameItem)) //若是坐骑
-                World.CombatManager.UpdatePveInfo(gameItem.GameChar);
+                World.CombatManager.UpdatePveInfo(gameItem.GetGameChar());
             return true;
         }
 
@@ -810,7 +810,7 @@ namespace OW.Game.Item
             var stcItem = gameItem;
             if (gameItem.TemplateId == ProjectConstant.MucaiId)  //若是木材
             {
-                var gameCher = parent as GameChar ?? (parent as GameItem)?.GameChar;
+                var gameCher = parent as GameChar ?? (parent as GameItem)?.GetGameChar();
                 stcItem = gameCher.GetMucai();
             }
             if (!stcItem.IsStc(out var stc)) //若不可堆叠
@@ -961,7 +961,7 @@ namespace OW.Game.Item
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ForceDelete(GameItem gameItem, DbContext db = null)
         {
-            var gc = gameItem.GameChar;   //保存所属角色
+            var gc = gameItem.GetGameChar();   //保存所属角色
             db ??= gc?.GameUser?.DbContext;
             bool result = ForceRemove(gameItem);
             if (result)   //若成功移除关系
@@ -1263,8 +1263,8 @@ namespace OW.Game.Item
             }
             else
             {
-                gold = item.GetDecimalOrDefault("sg");
-                dia = item.GetDecimalOrDefault("sd");
+                gold = item.GetDecimalWithFcpOrDefault("sg");
+                dia = item.GetDecimalWithFcpOrDefault("sd");
             }
             return true;
         }

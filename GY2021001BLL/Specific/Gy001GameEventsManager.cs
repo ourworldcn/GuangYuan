@@ -140,9 +140,9 @@ namespace OW.Game
             foreach (var spcc in args.Where(c => c.Thing is GameItem)) //遍历针对角色的动态属性变化
             {
                 var gi = (GameItem)spcc.Thing;
-                var gc = gi.GameChar;
+                var gc = gi.GetGameChar();
                 var hl = gc.GetHomeland();
-                if (!hl.AllChildren.Contains(spcc.Thing))   //若不是家园建筑物
+                if (!hl.GetAllChildren().Contains(spcc.Thing))   //若不是家园建筑物
                     continue;
                 foreach (var item in spcc)
                 {
@@ -231,7 +231,7 @@ namespace OW.Game
         #region 阵容相关
         private void OnLineupChenged(DynamicPropertyChangedCollection args)
         {
-            var chars = args.Where(c => IsLineup0(c)).Select(c => c.Thing).OfType<GameItem>().Select(c => c.GameChar).Distinct();
+            var chars = args.Where(c => IsLineup0(c)).Select(c => c.Thing).OfType<GameItem>().Select(c => c.GetGameChar()).Distinct();
             Dictionary<string, double> dic = new Dictionary<string, double>();
             foreach (var gc in chars)   //遍历每个角色
             {
@@ -497,7 +497,7 @@ namespace OW.Game
             gim.MoveItems(slot, c => true, daojuBag);
             //挂接升级回调
             var hl = gameChar.GetHomeland();
-            foreach (var item in hl.AllChildren)
+            foreach (var item in hl.GetAllChildren())
             {
                 if (!item.Name2FastChangingProperty.TryGetValue(ProjectConstant.UpgradeTimeName, out var fcp))
                     continue;
