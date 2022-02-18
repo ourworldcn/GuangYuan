@@ -11,7 +11,7 @@ namespace OW.Game
     /// <summary>
     /// 属性变化的数据封装类。
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">变化的属性值类型，使用强类型可以避免对值类型拆装箱操作。</typeparam>
     public class GamePropertyChangedItem<T>
     {
         public GamePropertyChangedItem()

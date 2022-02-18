@@ -47,6 +47,112 @@ namespace GuangYuan.GY001.TemplateDb
         [MaxLength(64)]
         public string ValidPeriod { get; set; }
 
+        /// <summary>
+        /// 销售周期的单位的标量数值。
+        /// </summary>
+        [NotMapped]
+        public decimal SellPeriodValue => !string.IsNullOrWhiteSpace(SellPeriod) && decimal.TryParse(SellPeriod[0..^1], out var val) ? val : -1;
+
+        /// <summary>
+        /// 销售周期的单位字符(小写)。n表示无限。
+        /// </summary>
+        [NotMapped]
+        public char SellPeriodUnit => string.IsNullOrWhiteSpace(SellPeriod) ? 'n' : char.ToLower(SellPeriod[^1]);
+
+        [NotMapped]
+        public char ValidPeriodUnit => string.IsNullOrWhiteSpace(ValidPeriod) ? 'n' : char.ToLower(ValidPeriod[^1]);
+
+        [NotMapped]
+        public decimal ValidPeriodValue => !string.IsNullOrWhiteSpace(ValidPeriod) && decimal.TryParse(ValidPeriod[0..^1], out var val) ? val : -1;
+
+    }
+
+    public static class GameCardPoolTemplateExtensions
+    {
+        /// <summary>
+        /// 获取最近开始周期起始时间。
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="now"></param>
+        /// <returns></returns>
+        public static DateTime GetStart(this GameCardPoolTemplate template, DateTime now)
+        {
+            DateTime start; //最近一个周期的开始时间
+            DateTime templateStart = template.StartDateTime;
+            var val = template.SellPeriodValue;
+            switch (template.SellPeriodUnit)
+            {
+                case 'n':   //无限
+                    start = templateStart;
+                    break;
+                case 's':
+                    var times = (now - templateStart).Ticks / TimeSpan.FromSeconds((double)val).Ticks;  //相隔秒数
+                    start = templateStart.AddTicks(times * TimeSpan.FromSeconds((double)val).Ticks);
+                    break;
+                case 'd':   //日周期
+                    times = (now - templateStart).Ticks / TimeSpan.FromDays((double)val).Ticks;  //相隔日数
+                    start = templateStart.AddTicks(times * TimeSpan.FromDays((double)val).Ticks);
+                    break;
+                case 'w':   //周周期
+                    times = (now - templateStart).Ticks / TimeSpan.FromDays(7 * (double)val).Ticks;  //相隔周数
+                    start = templateStart.AddTicks(TimeSpan.FromDays(7 * (double)val).Ticks * times);
+                    break;
+                case 'm':   //月周期
+                    DateTime tmp;
+                    for (tmp = templateStart; tmp <= now; tmp = tmp.AddMonths(((int)val)))
+                    {
+                    }
+                    start = tmp.AddMonths(-((int)val));
+                    break;
+                case 'y':   //年周期
+                    for (tmp = templateStart; tmp <= now; tmp = tmp.AddYears(((int)val)))
+                    {
+                    }
+                    start = tmp.AddYears(-(int)val);
+                    break;
+                default:
+                    throw new InvalidOperationException("无效的周期表示符。");
+            }
+            return start;
+
+        }
+
+        /// <summary>
+        /// 获取指定时间点所处周期的结束时间点。
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="now"></param>
+        /// <returns></returns>
+        public static DateTime GetEnd(this GameCardPoolTemplate template, DateTime now)
+        {
+            DateTime result; //最近一个周期的开始时间
+            var val = template.ValidPeriodValue;
+            var start = GetStart(template, now);    //周期开始时间
+            switch (template.ValidPeriodUnit)
+            {
+                case 'n':   //无限
+                    result = DateTime.MaxValue;
+                    break;
+                case 's':
+                    result = start + TimeSpan.FromSeconds((double)val);
+                    break;
+                case 'd':   //日周期
+                    result = start + TimeSpan.FromDays((double)val);
+                    break;
+                case 'w':   //周周期
+                    result = start + TimeSpan.FromDays((double)val * 7);
+                    break;
+                case 'm':   //月周期
+                    result = start.AddMonths((int)val);
+                    break;
+                case 'y':   //年周期
+                    result = start.AddYears((int)val);
+                    break;
+                default:
+                    throw new InvalidOperationException("无效的周期表示符。");
+            }
+            return result;
+        }
     }
 
     /// <summary>

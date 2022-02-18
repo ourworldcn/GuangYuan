@@ -81,8 +81,16 @@ namespace GuangYuan.GY001.BLL
             get => _Id2Template.Value;
         }
 
-        private Lazy<ConcurrentDictionary<Guid, GameShoppingTemplate>> _Id2Shopping;
+        Lazy<ConcurrentDictionary<Guid, GameCardPoolTemplate>> _Id2CardPool;
+        /// <summary>
+        /// 获取卡池设置数据。
+        /// </summary>
+        public ConcurrentDictionary<Guid, GameCardPoolTemplate> Id2CardPool => _Id2CardPool.Value;
 
+        private Lazy<ConcurrentDictionary<Guid, GameShoppingTemplate>> _Id2Shopping;
+        /// <summary>
+        /// 获取商城设置数据。
+        /// </summary>
         public ConcurrentDictionary<Guid, GameShoppingTemplate> Id2Shopping => _Id2Shopping.Value;
 
         private Lazy<ConcurrentDictionary<Guid, GameMissionTemplate>> _Id2Mission;
@@ -108,6 +116,11 @@ namespace GuangYuan.GY001.BLL
             {
                 using var db = World.CreateNewTemplateDbContext();
                 return new ConcurrentDictionary<Guid, GameMissionTemplate>(db.MissionTemplates.AsNoTracking().ToDictionary(c => c.Id));
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
+            _Id2CardPool = new Lazy<ConcurrentDictionary<Guid, GameCardPoolTemplate>>(() =>
+            {
+                using var db = World.CreateNewTemplateDbContext();
+                return new ConcurrentDictionary<Guid, GameCardPoolTemplate>(db.CardPoolTemplates.AsNoTracking().ToDictionary(c => c.Id));
             }, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 

@@ -597,4 +597,27 @@ namespace GY2021001WebApi.Models
         }
     }
     #endregion  排行相关
+
+    #region 商城相关
+    public partial class GameCardTemplateDto
+    {
+        public static implicit operator GameCardTemplateDto(GameCardPoolTemplate obj)
+        {
+            var result = new GameCardTemplateDto()
+            {
+                AutoUse=obj.AutoUse,
+                CardPoolGroupString=obj.CardPoolGroupString,
+                EndDateTime=obj.EndDateTime,
+                Id=obj.Id.ToBase64String(),
+                Remark=obj.Remark,
+                SellPeriod=obj.SellPeriod,
+                StartDateTime=obj.StartDateTime,
+                SubCardPoolString=obj.SubCardPoolString,
+                ValidPeriod=obj.ValidPeriod,
+            };
+            OwHelper.Copy(obj.Properties, result.Properties);
+            return result;
+        }
+    }
+    #endregion 商城相关
 }

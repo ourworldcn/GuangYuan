@@ -3350,6 +3350,91 @@ namespace GY2021001WebApi.Models
     #region 商城相关
 
     /// <summary>
+    /// 卡池配置项。
+    /// </summary>
+    [DataContract]
+    public partial class GameCardTemplateDto
+    {
+        /// <summary>
+        /// 唯一标识。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 属性字符串。
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// 注释。
+        /// </summary>
+        [DataMember]
+        public string Remark { get; set; }
+
+        /// <summary>
+        /// 卡池标识。
+        /// </summary>
+        [DataMember]
+        public string CardPoolGroupString { get; set; }
+
+        /// <summary>
+        /// 奖池标识。
+        /// </summary>
+        [DataMember]
+        public string SubCardPoolString { get; set; }
+
+        /// <summary>
+        /// 是否自动使用获得的物品。
+        /// </summary>
+        [DataMember]
+        public bool AutoUse { get; set; }
+
+        /// <summary>
+        /// 起始日期，此日期及之后此物品才会出现在卡池内。
+        /// </summary>
+        [DataMember]
+        public DateTime StartDateTime { get; set; }
+
+        /// <summary>
+        /// 终止日期，此日期及之前此物品才会出现在卡池内
+        /// </summary>
+        [DataMember]
+        public DateTime EndDateTime { get; set; }
+
+        /// <summary>
+        /// 周期。d天,w周,m月,y年。不填写则表示无周期(唯一周期)。
+        /// </summary>
+        [DataMember]
+        public string SellPeriod { get; set; }
+
+        /// <summary>
+        /// 周期开始后持续有效时间,d天,w周,m月,y年。仅在有效期内才出售，不填则是永久有效（在起止期间和周期的约束下）
+        /// </summary>
+        [DataMember]
+        public string ValidPeriod { get; set; }
+
+        ///// <summary>
+        ///// 销售周期的单位的标量数值。
+        ///// </summary>
+        ////[NotMapped]
+        ////public decimal SellPeriodValue => !string.IsNullOrWhiteSpace(SellPeriod) && decimal.TryParse(SellPeriod[0..^1], out var val) ? val : -1;
+
+        ///// <summary>
+        ///// 销售周期的单位字符(小写)。n表示无限。
+        ///// </summary>
+        ////[NotMapped]
+        ////public char SellPeriodUnit => string.IsNullOrWhiteSpace(SellPeriod) ? 'n' : char.ToLower(SellPeriod[^1]);
+
+        ////[NotMapped]
+        ////public char ValidPeriodUnit => string.IsNullOrWhiteSpace(ValidPeriod) ? 'n' : char.ToLower(ValidPeriod[^1]);
+
+        ////[NotMapped]
+        ////public decimal ValidPeriodValue => !string.IsNullOrWhiteSpace(ValidPeriod) && decimal.TryParse(ValidPeriod[0..^1], out var val) ? val : -1;
+    }
+
+    /// <summary>
     /// 刷新商城接口的参数封装类。
     /// </summary>
     [DataContract]

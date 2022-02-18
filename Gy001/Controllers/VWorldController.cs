@@ -121,6 +121,17 @@ namespace GY2021001WebApi.Controllers
             }
             return result;
         }
+
+        /// <summary>
+        /// 获取所有卡池数据。
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [ResponseCache(Location = ResponseCacheLocation.Any, Duration = 120)]
+        public ActionResult<List<GameCardTemplateDto>> GetCardPoolTemplates()
+        {
+            return _World.ItemTemplateManager.Id2CardPool.Values.Select(c => (GameCardTemplateDto)c).ToList();
+        }
     }
 
 }

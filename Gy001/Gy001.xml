@@ -387,6 +387,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.VWorldController.GetCardPoolTemplates">
+            <summary>
+            获取所有卡池数据。
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Models.ReturnDtoBase">
             <summary>
             返回数据对象的基类。
@@ -1196,6 +1202,61 @@
         <member name="P:GY2021001WebApi.Models.RankDataItemDto.DisplayName">
             <summary>
             角色的昵称。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GameCardTemplateDto">
+            <summary>
+            卡池配置项。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.Id">
+            <summary>
+            唯一标识。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.Properties">
+            <summary>
+            属性字符串。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.Remark">
+            <summary>
+            注释。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.CardPoolGroupString">
+            <summary>
+            卡池标识。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.SubCardPoolString">
+            <summary>
+            奖池标识。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.AutoUse">
+            <summary>
+            是否自动使用获得的物品。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.StartDateTime">
+            <summary>
+            起始日期，此日期及之后此物品才会出现在卡池内。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.EndDateTime">
+            <summary>
+            终止日期，此日期及之前此物品才会出现在卡池内
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.SellPeriod">
+            <summary>
+            周期。d天,w周,m月,y年。不填写则表示无周期(唯一周期)。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.ValidPeriod">
+            <summary>
+            周期开始后持续有效时间,d天,w周,m月,y年。仅在有效期内才出售，不填则是永久有效（在起止期间和周期的约束下）
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
@@ -2799,12 +2860,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
