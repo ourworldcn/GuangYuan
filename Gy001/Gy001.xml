@@ -2796,6 +2796,22 @@
             设置角色经验接口使用的返回值传输类。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetCurrentCardPoolParamsDto">
+            <summary>
+            GetCurrentCardPool接口参数数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetCurrentCardPoolParamsDto.NowUtc">
+            <summary>
+            可以指定一个时间点。省略则使用调用时刻的时间点。
+            时间要使用UTC时间。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetCurrentCardPoolReturnDto">
+            <summary>
+            GetCurrentCardPool接口返回数据封装类。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.RefreshShopParamsDto">
             <summary>
             刷新商城接口的参数封装类。
@@ -2860,6 +2876,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
@@ -2933,6 +2955,13 @@
             </summary>
             <param name="model">无特别参数。</param>
             <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameShoppingController.GetCurrentCardPool(GY2021001WebApi.Models.GetCurrentCardPoolParamsDto)">
+            <summary>
+            获取指定时间点有效的卡池信息。
+            </summary>
+            <param name="model"><seealso cref="T:GY2021001WebApi.Models.GetCurrentCardPoolParamsDto"/></param>
+            <returns><seealso cref="T:GY2021001WebApi.Models.GetCurrentCardPoolReturnDto"/></returns>
         </member>
         <member name="F:Gy001.Controllers.SocialController._UserContext">
             <summary>

@@ -311,6 +311,198 @@ namespace GuangYuan.GY001.BLL
             var end = template.GetEnd(now);
             return now >= start && now <= end;
         }
+
+        #region 卡池相关
+
+        Dictionary<string, Dictionary<string, GameCardPoolTemplate[]>> _CardTemplates;
+
+        /// <summary>
+        /// 卡池Id 奖池Id两级分类的模板数据集合。
+        /// </summary>
+        public Dictionary<string, Dictionary<string, GameCardPoolTemplate[]>> CardTemplates
+        {
+            get
+            {
+                if (_CardTemplates is null)
+                    lock (ThisLocker)
+                        if (_CardTemplates is null)
+                        {
+                            var coll = from tmp in World.ItemTemplateManager.Id2CardPool.Values
+                                       group tmp by tmp.CardPoolGroupString into g
+                                       select (g.Key, g.GroupBy(c => c.SubCardPoolString));
+                            _CardTemplates = coll.ToDictionary(c => c.Key, c =>
+                                {
+                                    return c.Item2.ToDictionary(d => d.Key, d => d.ToArray());
+                                });
+
+                        }
+                return _CardTemplates;
+            }
+        }
+
+        /// <summary>
+        /// 获取指定时间点有效的卡池数据。
+        /// 仅针对时间条件进行过滤，不考虑每个角色的不同情况。
+        /// </summary>
+        /// <param name="now"></param>
+        /// <returns></returns>
+        public IEnumerable<GameCardPoolTemplate> GetCurrentCardPoolsCore(DateTime now)
+        {
+            var result = from tmp in World.ItemTemplateManager.Id2CardPool.Values
+                         where tmp.GetStart(now) <= now && tmp.GetEnd(now) >= now
+                         select tmp;
+            return result;
+        }
+
+        /// <summary>
+        /// 获取按日期过滤过的有效模板集合。
+        /// </summary>
+        /// <param name="templates"></param>
+        /// <param name="nowUtc">在这个时间点有效的物品集合。</param>
+        /// <returns></returns>
+        public IEnumerable<GameCardPoolTemplate> GetTemplate(IEnumerable<GameCardPoolTemplate> templates, DateTime nowUtc)
+        {
+            var result = from tmp in World.ItemTemplateManager.Id2CardPool.Values
+                         where tmp.GetStart(nowUtc) >= tmp.StartDateTime && tmp.GetEnd(nowUtc) <= tmp.EndDateTime
+                         select tmp;
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nowUtc"></param>
+        /// <returns></returns>
+        private Dictionary<string, ILookup<string, GameCardPoolTemplate>> GetCardPoolTemplate(DateTime nowUtc)
+        {
+            var coll = from tmp in GetCurrentCardPoolsCore(nowUtc)
+                       group tmp by tmp.CardPoolGroupString;
+            var result = coll.ToDictionary(c => c.Key, c =>
+              {
+                  return c.ToLookup(c => c.SubCardPoolString);
+              });
+
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="datas">
+        /// <see cref="ErrorCodes.RPC_S_OUT_OF_RESOURCES"/> 表示没有足够的抽奖卷。
+        /// </param>
+        public void Choujiang(ChoujiangDatas datas)
+        {
+            using var dwUser = datas.LockUser();
+            if (dwUser is null) //若无法锁定用户
+                return;
+            var coll = GetCurrentCardPoolsCore(DateTime.UtcNow).Where(c => c.CardPoolGroupString == datas.CardPoolId);
+            //检查资源
+            //实际抽奖
+        }
+
+        void Choujiang1(ChoujiangDatas datas)
+        {
+            var coll = GetCurrentCardPoolsCore(DateTime.UtcNow).Where(c => c.CardPoolGroupString == datas.CardPoolId);
+            for (int i = 0; i < datas.LotteryTypeCount1; i++)
+            {
+
+            }
+        }
+
+        void Choujiang10(ChoujiangDatas datas, DateTime nowUtc)
+        {
+            var coll = from tmp in GetCurrentCardPoolsCore(DateTime.UtcNow)
+                       where tmp.CardPoolGroupString == datas.CardPoolId
+                       group tmp by tmp.SubCardPoolString;
+            //计算概率
+            var probs = coll.Select(c => (c.Key, c.First(c => c.Properties.ContainsKey("cpprob")).Properties.GetDecimalOrDefault("cpprob")));
+            var probDenominator = probs.Sum(c => c.Item2);  //计算分母
+            var probDic = probs.Select(c => (c.Key, c.Item2 / probDenominator)).ToDictionary(c => c.Key, c => c.Item2);    //加权后的概率
+            //获取适用的模板
+            var templates = CardTemplates;   //奖池的模板
+            if (!templates.TryGetValue(datas.CardPoolId, out var subCardPool))    //若未找到卡池
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "没有找到指定的卡池。";
+                return;
+            }
+
+            for (int i = 0; i < datas.LotteryTypeCount10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    var idProb = OwHelper.RandomSelect(probDic, c => c.Value, VWorld.WorldRandom.NextDouble()); //命中的奖池
+                    if(!subCardPool.TryGetValue(idProb.Key,out var tts))
+                    {
+                        datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                        datas.ErrorMessage = "没有找到指定的讲池。";
+                        return;
+                    }
+                    var tt = tts.Skip(VWorld.WorldRandom.Next(tts.Count())).First();    //概率命中的模板
+                    
+                }
+            }
+        }
+
+        #endregion 卡池相关
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ChoujiangDatas : ComplexWorkDatasBase
+    {
+        public ChoujiangDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public ChoujiangDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public ChoujiangDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 10连抽的次数。这个属性是1，代表一次10连抽，要消耗10个抽奖卷。
+        /// </summary>
+        public int LotteryTypeCount10 { get; set; }
+
+        /// <summary>
+        /// 单抽次数。
+        /// </summary>
+        public int LotteryTypeCount1 { get; set; }
+
+        /// <summary>
+        /// 卡池号。要在哪一个卡池内抽奖。
+        /// </summary>
+        public string CardPoolId { get; set; }
+
+        #region 内部使用属性
+        /// <summary>
+        /// 使用的时间点。
+        /// </summary>
+        public DateTime NowUtc { get; set; } = DateTime.UtcNow;
+
+
+        public Dictionary<string, Dictionary<string, GameCardPoolTemplate>> _Templates;
+        public Dictionary<string, Dictionary<string, GameCardPoolTemplate>> Templates
+        {
+            get
+            {
+                if (_Templates is null)
+                    lock (this)
+                        if (_Templates is null)
+                        {
+
+                        }
+                return _Templates;
+            }
+        }
+        #endregion 内部使用属性
+
     }
 
     public class RefreshDatas : ChangeItemsWorkDatasBase

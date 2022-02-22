@@ -28,7 +28,7 @@ namespace OW.Game
         }
 
         /// <summary>
-        /// 同步锁
+        /// 同步锁对象。
         /// </summary>
         protected readonly object ThisLocker = new object();
 

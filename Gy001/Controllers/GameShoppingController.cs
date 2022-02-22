@@ -98,6 +98,24 @@ namespace Gy001.Controllers
             }
             return result;
         }
+
+        #region 卡池相关
+
+        /// <summary>
+        /// 获取指定时间点有效的卡池信息。
+        /// </summary>
+        /// <param name="model"><seealso cref="GetCurrentCardPoolParamsDto"/></param>
+        /// <returns><seealso cref="GetCurrentCardPoolReturnDto"/></returns>
+        [HttpPut]
+        public ActionResult<GetCurrentCardPoolReturnDto> GetCurrentCardPool(GetCurrentCardPoolParamsDto model)
+        {
+            var result = new GetCurrentCardPoolReturnDto();
+            var coll = World.ShoppingManager.GetCurrentCardPoolsCore(model.NowUtc);
+            result.Templates.AddRange(coll.Select(c => (GameCardTemplateDto)c));
+            return result;
+        }
+
+        #endregion 卡池相关
     }
 
 }

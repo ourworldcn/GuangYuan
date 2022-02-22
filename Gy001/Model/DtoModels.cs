@@ -3350,6 +3350,29 @@ namespace GY2021001WebApi.Models
     #region 商城相关
 
     /// <summary>
+    /// GetCurrentCardPool接口参数数据封装类。
+    /// </summary>
+    [DataContract]
+    public class GetCurrentCardPoolParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 可以指定一个时间点。省略则使用调用时刻的时间点。
+        /// 时间要使用UTC时间。
+        /// </summary>
+        [DataMember(IsRequired = false)]
+        public DateTime NowUtc { get; set; } = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// GetCurrentCardPool接口返回数据封装类。
+    /// </summary>
+    public class GetCurrentCardPoolReturnDto : ReturnDtoBase
+    {
+        [DataMember]
+        public List<GameCardTemplateDto> Templates { get; set; } = new List<GameCardTemplateDto>();
+    }
+
+    /// <summary>
     /// 卡池配置项。
     /// </summary>
     [DataContract]
