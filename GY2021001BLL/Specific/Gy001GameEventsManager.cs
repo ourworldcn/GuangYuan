@@ -287,7 +287,7 @@ namespace OW.Game
             GameCharCreated(gc, gt, user, parameters?.GetValueOrDefault(nameof(GameChar.DisplayName)) as string, new Dictionary<string, object>());
         }
 
-        public override void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, 
+        public override void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName,
             [AllowNull] IReadOnlyDictionary<string, object> parameters)
         {
             base.GameCharCreated(gameChar, template, user, displayName, parameters);
@@ -398,14 +398,40 @@ namespace OW.Game
             if (gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi)   //若是生物且可能有相应的初始化参数
             {
                 var gitm = World.ItemTemplateManager;
-                //处理资质数值
+
+                #region 处理资质数值
                 if (propertyBag.TryGetDecimal("neatk", out var neatk))    //若指定了攻击资质
                     gameItem.Properties["neatk"] = neatk;
                 if (propertyBag.TryGetDecimal("nemhp", out var nemhp))    //若指定了血量资质
                     gameItem.Properties["nemhp"] = nemhp;
                 if (propertyBag.TryGetDecimal("neqlt", out var neqlt))    //若指定了质量资质
                     gameItem.Properties["neqlt"] = neqlt;
-                //处理身体和头的数据
+                #endregion 处理资质数值
+
+                #region  处理随机资质数据
+                var nneatk = 0m;
+                bool b = propertyBag.TryGetDecimal("nneatk", out nneatk);
+                var mneatk = 100m;
+                b |= propertyBag.TryGetDecimal("mneatk", out mneatk);
+                if (b)   //若需要随机资质值
+                    gameItem.Properties["neatk"] = (decimal)VWorld.WorldRandom.Next((int)nneatk, (int)mneatk + 1);
+
+                var nnemhp = 0m;
+                b = propertyBag.TryGetDecimal("nnemhp", out nnemhp);
+                var mnemhp = 100m;
+                b |= propertyBag.TryGetDecimal("mnemhp", out mnemhp);
+                if (b)   //若需要随机资质值
+                    gameItem.Properties["nemhp"] = (decimal)VWorld.WorldRandom.Next((int)nnemhp, (int)mnemhp + 1);
+
+                var nneqlt = 0m;
+                b = propertyBag.TryGetDecimal("nneqlt", out nneqlt);
+                var mneqlt = 100m;
+                b |= propertyBag.TryGetDecimal("mneqlt", out mneqlt);
+                if (b)   //若需要随机资质值
+                    gameItem.Properties["neqlt"] = (decimal)VWorld.WorldRandom.Next((int)nneqlt, (int)mneqlt + 1);
+                #endregion 处理随机资质数据
+
+                #region 处理身体和头的数据
                 //获取头模板
                 GameItemTemplate htt = null;
                 if (propertyBag.TryGetValue("htt", out var httObj))   //若直接找到了头模板
@@ -436,6 +462,7 @@ namespace OW.Game
                     subDic["tt"] = btt;
                     GameItemCreated(body, subDic);
                 }
+                #endregion 处理身体和头的数据
             }
         }
         #endregion 创建后初始化

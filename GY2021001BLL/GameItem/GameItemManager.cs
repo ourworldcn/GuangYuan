@@ -735,6 +735,28 @@ namespace OW.Game.Item
         }
 
         /// <summary>
+        /// 将一个物品放入容器(自动识别容器)。根据属性确定是否可以合并堆叠。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="gameChar"></param>
+        /// <param name="remainder"></param>
+        /// <param name="changeItems"></param>
+        public void AddItem(GameItem gameItem, GameChar gameChar, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
+        {
+            if (!gameItem.Properties.TryGetGuid("ptid", out var ptid))
+            {
+                throw new InvalidOperationException("无合适的容器模板Id。");
+            }
+
+            GameObjectBase container;
+            if (gameItem.TemplateId == ptid)
+                container = gameChar;
+            else
+                container = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
+            AddItem(gameItem, container, remainder, changeItems);
+        }
+
+        /// <summary>
         /// 测试指定物品是否可以完整的放入指定容器中。
         /// </summary>
         /// <param name="gameItem"></param>
@@ -884,11 +906,11 @@ namespace OW.Game.Item
         public virtual bool ForcedSetCount(GameItem gameItem, decimal count, [AllowNull] ICollection<ChangeItem> changes = null)
         {
             gameItem.Count = count;
-            if( gameItem.Parent is null)    //若设置的是游离对象
+            if (gameItem.Parent is null)    //若设置的是游离对象
             {
 
             }
-            else if (decimal.Zero == gameItem.Count )   //若已经变为0
+            else if (decimal.Zero == gameItem.Count)   //若已经变为0
             {
                 if (!gameItem.IsStc(out _) || gameItem.Parent?.TemplateId != ProjectConstant.CurrencyBagTId)   //若应删除对象
                 {

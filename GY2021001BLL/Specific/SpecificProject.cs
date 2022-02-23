@@ -381,6 +381,8 @@ namespace GuangYuan.GY001.BLL
         #endregion 类别号
 
         #region 战斗常量
+
+
         /// <summary>
         /// 主动pvp大关卡模板Id。
         /// </summary>
@@ -397,6 +399,15 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid PvpForHelpDungeonTId = new Guid("{7A313D1C-7A53-4810-9586-6B52147D64C3}");
 
         #endregion 战斗常量
+
+        #region 抽奖常量
+
+        /// <summary>
+        /// 抽奖券的模板Id。
+        /// </summary>
+        public static readonly Guid ChoujiangjuanTId = new Guid("{72f6c788-89a7-49cf-a359-756474079d9a}");
+
+        #endregion 抽奖常量
 
         #region 蓝图常量
         /// <summary>

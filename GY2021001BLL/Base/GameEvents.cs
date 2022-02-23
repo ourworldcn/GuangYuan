@@ -257,12 +257,14 @@ namespace OW.Game
         public virtual void GameItemCreated([NotNull] GameItem gameItem, [NotNull] IReadOnlyDictionary<string, object> propertyBag)
         {
             //设置本类型特有属性
-            //设置模板
+            #region 设置模板
             if (propertyBag.TryGetValue("tt", out var ttObj) && ttObj is GameThingTemplateBase tt)
                 GameThingCreated(gameItem, tt, propertyBag);
             else if (propertyBag.TryGetGuid("tid", out var tid))
                 GameThingCreated(gameItem, tid, propertyBag);
-            //设置数量
+            #endregion 设置模板
+
+            #region 设置数量
             var gpm = World.PropertyManager;
             tt = gameItem.GetTemplate();
             if (propertyBag.TryGetDecimal("Count", out var count) || propertyBag.TryGetDecimal("count", out count)) //若指定了初始数量
@@ -274,7 +276,9 @@ namespace OW.Game
                 else
                     gameItem.Count ??= tt.Properties.ContainsKey(gpm.StackUpperLimit) ? 0 : 1;
             }
-            //设置导航关系
+            #endregion 设置数量
+
+            #region 设置导航关系
             if (propertyBag.TryGetGuid("ownerid", out var ownerid)) //若指定了拥有者id
                 gameItem.OwnerId = ownerid;
             else if (propertyBag.TryGetValue("parent", out var parentObj) && parentObj is GameItem parent) //若指定了父容器
@@ -284,7 +288,9 @@ namespace OW.Game
             }
             else if (propertyBag.TryGetValue("ptid", out var ptid))
                 gameItem.Properties["ptid"] = ptid;
-            //追加子对象
+            #endregion 设置导航关系
+
+            #region 追加子对象
             if (tt.ChildrenTemplateIds.Count > 0)   //若存在子对象
             {
                 var subpb = DictionaryPool<string, object>.Shared.Get();    //漏掉返回池中不是大问题
@@ -299,6 +305,7 @@ namespace OW.Game
                 }
                 DictionaryPool<string, object>.Shared.Return(subpb);
             }
+            #endregion 追加子对象
         }
 
         /// <summary>
