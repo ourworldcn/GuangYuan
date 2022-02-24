@@ -18,28 +18,6 @@ namespace GuangYuan.GY001.BLL
     public static class Gy001GameItemManagerExtensions
     {
         /// <summary>
-        /// 用字典中的属性创建一组对象。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="bag"></param>
-        /// <param name="prefix">键的前缀，省略或为null表示没有前缀。</param>
-        /// <returns></returns>
-        public static IEnumerable<GameItem> ToGameItems(this GameItemManager manager, IReadOnlyDictionary<string, object> bag, string prefix = null)
-        {
-            var props = bag.GetValuesWithoutPrefix(prefix);
-            var dics = props.Select(c => c.ToDictionary(c2 => c2.Item1, c2 => c2.Item2));
-            var eventMng = manager.World.EventsManager;
-            List<GameItem> result = new List<GameItem>();
-            foreach (var item in dics)
-            {
-                var gi = new GameItem();
-                eventMng.GameItemCreated(gi, item);
-                result.Add(gi);
-            }
-            return result;
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="manager"></param>

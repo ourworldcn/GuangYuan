@@ -3,6 +3,7 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.ObjectPool;
 using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Item;
@@ -520,6 +521,42 @@ namespace GuangYuan.GY001.BLL
             //}
         }
 
+        /// <summary>
+        /// 抽奖物品杂交坐骑包。
+        /// </summary>
+        /// <param name="datas"></param>
+        [BlueprintMethod("20913e62-2f84-4b78-9733-aa91aee4bd94")]
+        void Lott1(ApplyBlueprintDatas datas)
+        {
+            var gitm = World.ItemTemplateManager;
+            var gameItem = datas.GameItems[0];
+            for (int i = 0; i < datas.Count; i++)
+            {
+                var head = gitm.HeadTemplates.Values.Skip(VWorld.WorldRandom.Next(gitm.HeadTemplates.Count)).First();
+                var body = gitm.BodyTemplates.Values.Skip(VWorld.WorldRandom.Next(gitm.BodyTemplates.Count)).First();
+                var propBag = DictionaryPool<string, object>.Shared.Get();
+                OwHelper.Copy(datas.GameItems[0].Properties, propBag);
+                propBag["htid"] = head.Id;
+                propBag["btid"] = body.Id;
+                propBag["tid"] = ProjectConstant.ZuojiZuheRongqi;
+                var gi = new GameItem() { Count = 1 };
+                World.EventsManager.GameItemCreated(gi, propBag);
+                if (World.ItemManager.IsExistsMounts(datas.GameChar, gi))    //若已经存在此类坐骑
+                {
+                    World.ItemManager.AddItem(gi, datas.GameChar.GetShoulanBag(), null, datas.ChangeItems);
+                }
+                else //若没有此种坐骑
+                {
+                    gi.Properties["neatk"] = 0m;
+                    gi.Properties["nemhp"] = 0m;
+                    gi.Properties["neqlt"] = 0m;
+                    World.ItemManager.AddItem(gi, datas.GameChar.GetZuojiBag(), null, datas.ChangeItems);
+                }
+                DictionaryPool<string, object>.Shared.Return(propBag);
+                datas.SuccCount++;
+            }
+            World.ItemManager.ForcedAddCount(gameItem, -datas.SuccCount, datas.ChangeItems);
+        }
         #region 通用功能
 
         #endregion 通用功能
@@ -1084,7 +1121,7 @@ namespace GuangYuan.GY001.BLL
             LevelUp(datas);
             if (datas.HasError)
                 return;
-            if (!datas.Verify(gi.TryGetPropertyWithFcp(ProjectConstant.LevelPropertyName,  out decimal lvDec), "级别属性类型错误。"))
+            if (!datas.Verify(gi.TryGetPropertyWithFcp(ProjectConstant.LevelPropertyName, out decimal lvDec), "级别属性类型错误。"))
             {
                 return;
             }

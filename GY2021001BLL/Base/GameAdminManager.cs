@@ -4,6 +4,7 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
+using OW.Game.Item;
 using System;
 using System.Buffers;
 using System.Collections.Generic;

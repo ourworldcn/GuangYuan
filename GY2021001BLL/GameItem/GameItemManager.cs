@@ -735,6 +735,37 @@ namespace OW.Game.Item
         }
 
         /// <summary>
+        /// 增加或使用物品。调用者需要自己锁定角色对象。
+        /// </summary>
+        /// <param name="gameItems"></param>
+        /// <param name="parent"></param>
+        /// <param name="autoUse"></param>
+        /// <param name="remainder"></param>
+        /// <param name="changeItems"></param>
+        public void AddOrUseItems(IEnumerable<GameItem> gameItems, GameChar parent, bool autoUse, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
+        {
+            if (autoUse) //若要自动使用
+            {
+                var container = parent.GetShoppingSlot();   //礼包槽
+                foreach (var item in gameItems)  //逐个增加
+                    World.ItemManager.AddItem(item, container, null, changeItems);
+                foreach (var item in gameItems)  //逐个使用
+                {
+                    using var useData = new UseItemsWorkDatas(World, parent) { Count = (int)item.Count.GetValueOrDefault(1), ItemId = item.Id };
+                    World.ItemManager.UseItems(useData);
+                    if (useData.HasError)
+                        throw new InvalidOperationException("无法自动使用物品。");
+                    if (null != changeItems)
+                        foreach (var cis in useData.ChangeItems)
+                            changeItems.Add(cis);
+                }
+            }
+            else //不自动使用
+                foreach (var item in gameItems)
+                    World.ItemManager.AddItem(item, parent, null, changeItems);
+        }
+
+        /// <summary>
         /// 将一个物品放入容器(自动识别容器)。根据属性确定是否可以合并堆叠。
         /// </summary>
         /// <param name="gameItem"></param>
@@ -901,7 +932,7 @@ namespace OW.Game.Item
         /// 设置数量属性，并考虑自动删除对象等事项。
         /// </summary>
         /// <param name="gameItem"></param>
-        /// <param name="count"></param>
+        /// <param name="count">只能是非负数。</param>
         /// <param name="changes">变化数据，可以是空表示不记录变化数据。</param>
         public virtual bool ForcedSetCount(GameItem gameItem, decimal count, [AllowNull] ICollection<ChangeItem> changes = null)
         {
@@ -936,7 +967,7 @@ namespace OW.Game.Item
         /// 强制修改数量。
         /// </summary>
         /// <param name="gameItem"></param>
-        /// <param name="count"></param>
+        /// <param name="count">可以是合理范围内的负数。</param>
         /// <param name="changes">变化数据，可以是空表示不记录变化数据。</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1699,6 +1730,28 @@ namespace OW.Game.Item
     /// </summary>
     public static class GameItemManagerExtensions
     {
+        /// <summary>
+        /// 用字典中的属性创建一组对象。
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="bag"></param>
+        /// <param name="prefix">键的前缀，省略或为null表示没有前缀。</param>
+        /// <returns></returns>
+        public static IEnumerable<GameItem> ToGameItems(this GameItemManager manager, IReadOnlyDictionary<string, object> bag, string prefix = null)
+        {
+            var props = bag.GetValuesWithoutPrefix(prefix);
+            var dics = props.Select(c => c.ToDictionary(c2 => c2.Item1, c2 => c2.Item2));
+            var eventMng = manager.World.EventsManager;
+            List<GameItem> result = new List<GameItem>();
+            foreach (var item in dics)
+            {
+                var gi = new GameItem();
+                eventMng.GameItemCreated(gi, item);
+                result.Add(gi);
+            }
+            return result;
+        }
+
         public static byte[] ToByteArray([NotNull] this GameItemManager manager, [NotNull] IEnumerable<GameItem> gameItems)
         {
             MemoryStream ms = new MemoryStream();

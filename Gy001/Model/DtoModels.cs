@@ -3350,6 +3350,44 @@ namespace GY2021001WebApi.Models
     #region 商城相关
 
     /// <summary>
+    /// 抽奖接口参数封装类。
+    /// </summary>
+    [DataContract]
+    public class LotteryParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 10连抽的次数。这个属性是1，代表一次10连抽，要消耗10个抽奖卷。
+        /// </summary>
+        [DataMember]
+        public int LotteryTypeCount10 { get; set; }
+
+        /// <summary>
+        /// 单抽次数。
+        /// </summary>
+        [DataMember]
+        public int LotteryTypeCount1 { get; set; }
+
+        /// <summary>
+        /// 卡池号。要在哪一个卡池内抽奖。
+        /// </summary>
+        [DataMember]
+        public string CardPoolId { get; set; }
+    }
+
+    /// <summary>
+    /// 抽奖接口返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class LotteryReturnDto : ChangesReturnDtoBase
+    {
+        /// <summary>
+        /// 此次抽奖命中的模板id集合,可能有重复。
+        /// </summary>
+        [DataMember]
+        public List<string> TemplateIds { get; set; } = new List<string>();
+    }
+
+    /// <summary>
     /// GetCurrentCardPool接口参数数据封装类。
     /// </summary>
     [DataContract]

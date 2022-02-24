@@ -81,6 +81,42 @@ namespace GuangYuan.GY001.BLL
             get => _Id2Template.Value;
         }
 
+        ConcurrentDictionary<Guid, GameItemTemplate> _HeadTemplates;
+        /// <summary>
+        /// 获取所有坐骑/野兽头的模板。
+        /// </summary>
+        public ConcurrentDictionary<Guid, GameItemTemplate> HeadTemplates
+        {
+            get
+            {
+                if (_HeadTemplates is null)
+                    lock (ThisLocker)
+                        if (_HeadTemplates is null)
+                        {
+                            _HeadTemplates = new ConcurrentDictionary<Guid, GameItemTemplate>(Id2Template.Values.Where(c => c.CatalogNumber == 3).ToDictionary(c => c.Id));
+                        }
+                return _HeadTemplates;
+            }
+        }
+
+        ConcurrentDictionary<Guid, GameItemTemplate> _BodyTemplates;
+        /// <summary>
+        /// 获取所有坐骑/野兽身体的模板。
+        /// </summary>
+        public ConcurrentDictionary<Guid, GameItemTemplate> BodyTemplates
+        {
+            get
+            {
+                if (_BodyTemplates is null)
+                    lock (ThisLocker)
+                        if (_BodyTemplates is null)
+                        {
+                            _BodyTemplates = new ConcurrentDictionary<Guid, GameItemTemplate>(Id2Template.Values.Where(c => c.CatalogNumber == 4).ToDictionary(c => c.Id));
+                        }
+                return _BodyTemplates;
+            }
+        }
+
         Lazy<ConcurrentDictionary<Guid, GameCardPoolTemplate>> _Id2CardPool;
         /// <summary>
         /// 获取卡池设置数据。

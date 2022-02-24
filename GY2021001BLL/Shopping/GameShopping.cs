@@ -373,20 +373,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 获取按日期过滤过的有效模板集合。
-        /// </summary>
-        /// <param name="templates"></param>
-        /// <param name="nowUtc">在这个时间点有效的物品集合。</param>
-        /// <returns></returns>
-        public IEnumerable<GameCardPoolTemplate> GetTemplate(IEnumerable<GameCardPoolTemplate> templates, DateTime nowUtc)
-        {
-            var result = from tmp in World.ItemTemplateManager.Id2CardPool.Values
-                         where tmp.GetStart(nowUtc) >= tmp.StartDateTime && tmp.GetEnd(nowUtc) <= tmp.EndDateTime
-                         select tmp;
-            return result;
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="datas">
@@ -397,22 +383,6 @@ namespace GuangYuan.GY001.BLL
             using var dwUser = datas.LockUser();
             if (dwUser is null) //若无法锁定用户
                 return;
-            var coll = GetCurrentCardPoolsCore(DateTime.UtcNow).Where(c => c.CardPoolGroupString == datas.CardPoolId);
-            //检查资源
-            //实际抽奖
-        }
-
-        void Choujiang1(ChoujiangDatas datas)
-        {
-            var coll = GetCurrentCardPoolsCore(DateTime.UtcNow).Where(c => c.CardPoolGroupString == datas.CardPoolId);
-            for (int i = 0; i < datas.LotteryTypeCount1; i++)
-            {
-
-            }
-        }
-
-        void Choujiang10(ChoujiangDatas datas)
-        {
             //获取适用的模板
             var templates = datas.Templates;   //奖池的模板
             if (templates.Count <= 0)    //若未找到卡池
@@ -421,14 +391,64 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = "没有找到指定的卡池。";
                 return;
             }
+            //校验资源
+            var quan = datas.GameChar.GetChoujiangquan();
+            if (quan is null || datas.LotteryTypeCount1 + datas.LotteryTypeCount10 * 10 < quan.Count.Value)
+            {
+                datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
+                datas.ErrorMessage = "抽奖券不足。";
+                return;
+            }
+            //实际抽奖
+            Choujiang1(datas);
+            Choujiang10(datas);
+            //修改其他资源
+            World.ItemManager.ForcedAddCount(quan, -(datas.LotteryTypeCount1 + datas.LotteryTypeCount10 * 10), datas.ChangeItems);
+            ChangeItem.Reduce(datas.ChangeItems);
+        }
 
+        void Choujiang1(ChoujiangDatas datas)
+        {
+            if (datas.LotteryTypeCount1 <= 0)  //若不需要单抽
+                return;
+            var templates = datas.Templates;   //奖池的模板
+            var hits = new List<GameCardPoolTemplate>(); //增加的物品列表
             //计算概率
-            var probs = templates.Select(c => (c.Key, c.Value.First(d => d.Properties.ContainsKey("cpprob")).Properties.GetDecimalOrDefault("cpprob")));
+            var probs = templates.Select(c => (c.Key, c.Value.First(d => d.Properties.ContainsKey("prob")).Properties.GetDecimalOrDefault("prob")));
             var probDenominator = probs.Sum(c => c.Item2);  //计算分母
             var probDic = probs.Select(c => (c.Key, c.Item2 / probDenominator)).ToDictionary(c => c.Key, c => c.Item2);    //加权后的概率
-            List<GameItem> list = new List<GameItem>(); //增加的物品列表
+            for (int i = 0; i < datas.LotteryTypeCount1; i++)
+            {
+                var idProb = OwHelper.RandomSelect(probDic, c => c.Value, VWorld.WorldRandom.NextDouble()); //命中的奖池
+                if (!templates.TryGetValue(idProb.Key, out var tts) || tts.Length <= 0)
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "没有找到指定的奖池。";
+                    return;
+                }
+                var tt = tts[VWorld.WorldRandom.Next(tts.Length)];    //概率命中的模板
+
+                tt = ChoujiangRules(datas, tt);
+                hits.Add(tt);
+            }
+            datas.ResultTemplateIds.AddRange(hits.Select(c => c.Id));
+            UserCardPoolTemplates(datas, hits);
+        }
+
+        void Choujiang10(ChoujiangDatas datas)
+        {
+            if (datas.LotteryTypeCount10 <= 0)  //若不需要10连抽
+                return;
+            //获取适用的模板
+            var templates = datas.Templates;   //奖池的模板
+            //计算概率
+            var probs = templates.Select(c => (c.Key, c.Value.First(d => d.Properties.ContainsKey("prob")).Properties.GetDecimalOrDefault("prob")));
+            var probDenominator = probs.Sum(c => c.Item2);  //计算分母
+            var probDic = probs.Select(c => (c.Key, c.Item2 / probDenominator)).ToDictionary(c => c.Key, c => c.Item2);    //加权后的概率
+            var hits = new List<GameCardPoolTemplate>(); //增加的物品列表
             for (int i = 0; i < datas.LotteryTypeCount10; i++)
             {
+                hits.Clear();
                 for (int j = 0; j < 10; j++)
                 {
                     var idProb = OwHelper.RandomSelect(probDic, c => c.Value, VWorld.WorldRandom.NextDouble()); //命中的奖池
@@ -439,50 +459,85 @@ namespace GuangYuan.GY001.BLL
                         return;
                     }
                     var tt = tts[VWorld.WorldRandom.Next(tts.Length)];    //概率命中的模板
-                    tt = ChoujiangRules(datas, tt);
-                    list.Clear();
-                    list.AddRange(World.ItemManager.ToGameItems(tt.Properties, "cp"));
-                    if (tt.AutoUse) //若自动使用
-                    {
-                        var container = datas.GameChar.GetShoppingSlot();   //礼包槽
-                        foreach (var item in list)  //逐个增加
-                            World.ItemManager.AddItem(item, container, null, datas.ChangeItems);
-                        foreach (var item in list)  //逐个使用
-                        {
-                            using var useData = new UseItemsWorkDatas(datas.World, datas.GameChar) { Count = 1, ItemId = item.Id };
-                            World.ItemManager.UseItems(useData);
-                            datas.ChangeItems.AddRange(useData.ChangeItems);
-                        }
-                    }
-                    else
-                        foreach (var item in list)
-                            World.ItemManager.AddItem(item, datas.GameChar, null, datas.ChangeItems);
-                }
-            }
 
+                    tt = ChoujiangRules(datas, tt);
+                    hits.Add(tt);
+                }
+                RulesAdj10(hits, datas.Templates);  //校验规则
+                datas.ResultTemplateIds.AddRange(hits.Select(c => c.Id));
+                UserCardPoolTemplates(datas, hits);
+            }
         }
 
         /// <summary>
-        /// 获取该模板的物品。
+        /// 按10连抽规则校验中奖模板并修改。
+        /// </summary>
+        /// <param name="templates"></param>
+        void RulesAdj10(List<GameCardPoolTemplate> templates, Dictionary<string, GameCardPoolTemplate[]> cardTemplates)
+        {
+            var lv0 = cardTemplates.GetValueOrDefault("0"); //大奖
+            var lv1 = cardTemplates.GetValueOrDefault("1"); //二等奖
+            var lv2 = cardTemplates.GetValueOrDefault("2"); //三等奖
+            int lv0Count = 0;   //大奖数量
+            templates.RemoveAll(c =>
+            {
+                if (lv0.Contains(c)) //若是大奖
+                {
+                    lv0Count++;
+                    if (lv0Count > 2)
+                    {
+                        lv0Count = 2;
+                        return true;
+                    }
+                }
+                return false;
+            });
+            while (templates.Count < 10)    //补足10个奖品
+                templates.Add(lv2[VWorld.WorldRandom.Next(lv2.Length)]);
+            //规范二等奖
+            int lv1Count = templates.Count(c => lv1.Contains(c)); //二等奖数量
+            if (lv1Count <= 0) //若过少
+            {
+                var index = templates.Find(c => lv2.Contains(c)); //找一个末奖
+                templates.Remove(index);
+                templates.Add(lv1[VWorld.WorldRandom.Next(lv1.Length)]);
+            }
+            else if (lv1Count > 4) //若过多
+            {
+                lv1Count = 0;
+                templates.RemoveAll(c =>
+                {
+                    if (lv1.Contains(c)) //若是二等奖
+                    {
+                        lv1Count++;
+                        if (lv1Count > 4)
+                        {
+                            lv0Count = 4;
+                            return true;
+                        }
+                    }
+                    return false;
+                }); //避免过多
+                    //补足数量
+                while (templates.Count < 10)    //补足10个奖品
+                    templates.Add(lv2[VWorld.WorldRandom.Next(lv2.Length)]);
+            }
+        }
+
+        /// <summary>
+        /// 获取一组模板的物品。
         /// </summary>
         /// <param name="datas"></param>
-        /// <param name="template"></param>
-        public void AddOrUseItem(ChoujiangDatas datas, GameCardPoolTemplate template)
+        /// <param name="templates"></param>
+        void UserCardPoolTemplates(ChoujiangDatas datas, IEnumerable<GameCardPoolTemplate> templates)
         {
-            var coll = World.ItemManager.ToGameItems(template.Properties, "cp");
-            var gc = datas.GameChar;
-            var slot = gc.GetShoppingSlot();    //暂存槽
-
-            if (template.AutoUse)   //若需要自动使用
+            var list = new List<GameItem>();
+            var container = datas.GameChar.GetShoppingSlot();   //礼包槽
+            foreach (var tt in templates)
             {
-                using UseItemsWorkDatas useData = new UseItemsWorkDatas(datas.World, datas.GameChar) { Count = 1 };
-                //                useData.ItemId
-
-                World.ItemManager.UseItems(useData);
-            }
-            else
-            {
-
+                list.Clear();
+                list.AddRange(World.ItemManager.ToGameItems(tt.Properties, "cp"));
+                World.ItemManager.AddOrUseItems(list, datas.GameChar, tt.AutoUse, null, datas.ChangeItems);
             }
         }
 
@@ -549,6 +604,11 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+        /// <summary>
+        /// 本次抽奖命中的模板Id。
+        /// </summary>
+        public List<Guid> ResultTemplateIds { get; } = new List<Guid>();
+
         #region 内部使用属性
 
         public Dictionary<string, GameCardPoolTemplate[]> _Templates;
@@ -564,7 +624,7 @@ namespace GuangYuan.GY001.BLL
                 if (_Templates is null)
                 {
                     var coll = World.ItemTemplateManager.Id2CardPool.Values.Where(c => c.CardPoolGroupString == CardPoolId &&
-                        c.StartDateTime <= c.GetStart(NowUtc) && c.EndDateTime >= c.GetEnd(NowUtc));
+                        NowUtc >= c.GetStart(NowUtc) && NowUtc <= c.GetEnd(NowUtc));
                     _Templates = coll.GroupBy(c => c.SubCardPoolString).ToDictionary(c => c.Key, c => c.ToArray());
                 }
                 return _Templates;

@@ -102,7 +102,7 @@ namespace Gy001.Controllers
         #region 卡池相关
 
         /// <summary>
-        /// 获取指定时间点有效的卡池信息。
+        /// 获取指定时间点有效的卡池信息。按要求仅获取一等奖信息。
         /// </summary>
         /// <param name="model"><seealso cref="GetCurrentCardPoolParamsDto"/></param>
         /// <returns><seealso cref="GetCurrentCardPoolReturnDto"/></returns>
@@ -111,7 +111,32 @@ namespace Gy001.Controllers
         {
             var result = new GetCurrentCardPoolReturnDto();
             var coll = World.ShoppingManager.GetCurrentCardPoolsCore(model.NowUtc);
-            result.Templates.AddRange(coll.Select(c => (GameCardTemplateDto)c));
+            result.Templates.AddRange(coll.Where(c => c.SubCardPoolString == "0").Select(c => (GameCardTemplateDto)c));
+            return result;
+        }
+
+        /// <summary>
+        /// 抽奖接口。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<LotteryReturnDto> Lottery(LotteryParamsDto model)
+        {
+            using var datas = new ChoujiangDatas(World, model.Token)
+            {
+                LotteryTypeCount1 = model.LotteryTypeCount1,
+                LotteryTypeCount10 = model.LotteryTypeCount10,
+                CardPoolId = model.CardPoolId,
+            };
+            World.ShoppingManager.Choujiang(datas);
+            var result = new LotteryReturnDto();
+            if (!datas.HasError)
+            {
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                result.TemplateIds.AddRange(datas.ResultTemplateIds.Select(c => c.ToBase64String()));
+            }
+            result.FillFrom(datas);
             return result;
         }
 
