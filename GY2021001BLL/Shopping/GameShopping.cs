@@ -6,6 +6,7 @@ using OW.Game.Item;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -407,6 +408,91 @@ namespace GuangYuan.GY001.BLL
             ChangeItem.Reduce(datas.ChangeItems);
         }
 
+        /// <summary>
+        /// 矫正10抽卡池抽奖概率。
+        /// </summary>
+        /// <param name="datas"></param>
+        /// <param name="probs"></param>
+        void AdjProb10(ChoujiangDatas datas, Dictionary<string, decimal> probs)
+        {
+            //计算概率
+            var prob = probs.GetValueOrDefault("0");   //大奖概率
+            var count = datas.GameChar.GetLotteryCount(null, false, datas.CardPoolId, "0");
+            var adj = Math.Clamp(prob + (count - 70) * 0.1m, 0, 1);
+            AdjustProb(probs, "0", adj);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="probs"></param>
+        /// <param name="key"></param>
+        /// <param name="prob">在[0,1]中</param>
+        void AdjustProb(Dictionary<string, decimal> probs, string key, decimal prob)
+        {
+            Debug.Assert(prob >= 0 && prob <= 1);
+            var old = probs.GetValueOrDefault(key); //获取旧值
+            probs[key] = prob;  //设置新值
+            var diff = old - prob;  //计算矫正值
+            var coll = probs.Select(c =>
+            {
+                if (c.Key == key)
+                    return (key, c.Value);
+                var old = c.Value;
+                diff -= AdjustProb(ref old, diff);
+                return (c.Key, old);
+            });
+            var dic = coll.ToDictionary(c => c.Item1, c => c.Item2);
+            probs.Clear();
+            OwHelper.Copy(dic, probs);
+        }
+
+        /// <summary>
+        /// 获取实际修正值。
+        /// </summary>
+        /// <param name="value">要修正的值。</param>
+        /// <param name="diff">增量，可正可负。</param>
+        /// <returns>实际矫正的值。</returns>
+        decimal AdjustProb(ref decimal value, decimal diff)
+        {
+            var tmp = value + diff;
+            var old = value;
+            if (tmp > 1)
+            {
+                value = 1;
+                return 1 - old;
+            }
+            else if (tmp < 0)
+            {
+                value = 0;
+                return 0 - old;
+            }
+            else
+            {
+                value = tmp;
+                return diff;
+            }
+        }
+        /// <summary>
+        /// 在确定命中某个模板后调用，以记录各种命中/未命中数据。
+        /// </summary>
+        /// <param name="datas"></param>
+        /// <param name="template"></param>
+        void SetChoujiangCount(ChoujiangDatas datas, GameCardPoolTemplate template)
+        {
+            if (datas.Templates.TryGetValue("0", out var lv0))    //若有大奖卡池
+            {
+                if (lv0.Contains(template)) //若中大奖
+                {
+                    datas.GameChar.SetLotteryCount(null, false, datas.CardPoolId, "0", 0);
+                }
+                else //若未中大奖
+                {
+                    datas.GameChar.AddLotteryCount(null, false, datas.CardPoolId, "0", 1);
+                }
+            }
+        }
+
         void Choujiang1(ChoujiangDatas datas)
         {
             if (datas.LotteryTypeCount1 <= 0)  //若不需要单抽
@@ -429,12 +515,18 @@ namespace GuangYuan.GY001.BLL
                 var tt = tts[VWorld.WorldRandom.Next(tts.Length)];    //概率命中的模板
 
                 tt = ChoujiangRules(datas, tt);
+                SetChoujiangCount(datas, tt);
+
                 hits.Add(tt);
             }
             datas.ResultTemplateIds.AddRange(hits.Select(c => c.Id));
             UserCardPoolTemplates(datas, hits);
         }
 
+        /// <summary>
+        /// 10抽。
+        /// </summary>
+        /// <param name="datas"></param>
         void Choujiang10(ChoujiangDatas datas)
         {
             if (datas.LotteryTypeCount10 <= 0)  //若不需要10连抽
@@ -443,15 +535,18 @@ namespace GuangYuan.GY001.BLL
             var templates = datas.Templates;   //奖池的模板
             //计算概率
             var probs = templates.Select(c => (c.Key, c.Value.First(d => d.Properties.ContainsKey("prob")).Properties.GetDecimalOrDefault("prob")));
-            var probDenominator = probs.Sum(c => c.Item2);  //计算分母
-            var probDic = probs.Select(c => (c.Key, c.Item2 / probDenominator)).ToDictionary(c => c.Key, c => c.Item2);    //加权后的概率
+            var coll = GameMath.ToSum1(probs, c => c.Item2, (c, p) => (c.Key, p));  //规范化概率序列
+            
+            var probDic = coll.ToDictionary(c => c.Key, c => c.Item2);    //加权后的概率
             var hits = new List<GameCardPoolTemplate>(); //增加的物品列表
             for (int i = 0; i < datas.LotteryTypeCount10; i++)
             {
                 hits.Clear();
                 for (int j = 0; j < 10; j++)
                 {
-                    var idProb = OwHelper.RandomSelect(probDic, c => c.Value, VWorld.WorldRandom.NextDouble()); //命中的奖池
+                    var tmp = new Dictionary<string, decimal>(probDic);
+                    //AdjProb10(datas, tmp);
+                    var idProb = OwHelper.RandomSelect(tmp, c => c.Value, VWorld.WorldRandom.NextDouble()); //命中的奖池
                     if (!templates.TryGetValue(idProb.Key, out var tts) || tts.Length <= 0)
                     {
                         datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
@@ -461,6 +556,7 @@ namespace GuangYuan.GY001.BLL
                     var tt = tts[VWorld.WorldRandom.Next(tts.Length)];    //概率命中的模板
 
                     tt = ChoujiangRules(datas, tt);
+                    SetChoujiangCount(datas, tt);
                     hits.Add(tt);
                 }
                 RulesAdj10(hits, datas.Templates);  //校验规则
@@ -800,6 +896,23 @@ namespace GuangYuan.GY001.BLL
             var name = $"cp{lotteryType ?? string.Empty}{SeparatorOfLottery}{hit}{SeparatorOfLottery}{cardPoolId ?? string.Empty}{SeparatorOfLottery}{subCardPoolId ?? string.Empty}{SeparatorOfLottery}";
             gameChar.Properties[name] = (decimal)count;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="lotteryType"></param>
+        /// <param name="isHit"></param>
+        /// <param name="cardPoolId"></param>
+        /// <param name="subCardPoolId"></param>
+        /// <param name="value">增量，可正可负，函数不校验该值。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AddLotteryCount(this GameChar gameChar, string lotteryType, bool isHit, string cardPoolId, [AllowNull] string subCardPoolId, int value)
+        {
+            var i = gameChar.GetLotteryCount(lotteryType, isHit, cardPoolId, subCardPoolId) + value;
+            gameChar.SetLotteryCount(lotteryType, isHit, cardPoolId, subCardPoolId, i);
+        }
+
         #endregion 卡池相关
 
     }

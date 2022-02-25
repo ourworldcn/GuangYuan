@@ -4,6 +4,7 @@
 using Microsoft.Extensions.ObjectPool;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,6 +13,53 @@ using System.Threading;
 
 namespace System
 {
+    public class GameMath
+    {
+        /// <summary>
+        /// 对一组概率规范化，使其总和为1。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="src"></param>
+        /// <param name="getProb"></param>
+        /// <param name="getResult"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IEnumerable<TResult> ToSum1<T, TResult>(IEnumerable<T> src, Func<T, decimal> getProb, Func<T, decimal, TResult> getResult)
+        {
+            var tmp = src.Sum(c => getProb(c));
+            return src.Select(c => getResult(c, getProb(c) / tmp));
+        }
+
+        /// <summary>
+        /// 给概率增加一个偏移量，如果超出概率允许的范围，则规范在[0,1]范围内，返回实际增减的偏移量。
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="diff"></param>
+        /// <returns></returns>
+        public static decimal ProbAdd(ref decimal value, decimal diff)
+        {
+            Debug.Assert(value >= 0 && value <= 1);
+            var old = value;
+            var nv = value + diff;
+            if (nv > 1)
+            {
+                value = 1;
+                return 1 - old;
+            }
+            else if (nv < 0)
+            {
+                value = 0;
+                return -old;
+            }
+            else
+            {
+                value = nv;
+                return diff;
+            }
+        }
+    }
+
     public static class OwHelper
     {
         /// <summary>
@@ -307,4 +355,28 @@ namespace System
 
     }
 
+    public readonly struct TimeSpanEx
+    {
+        public TimeSpanEx(string str)
+        {
+            Value = int.Parse(str[..^1]);
+            Unit = str[^1];
+
+        }
+
+        public TimeSpanEx(int value, char unit)
+        {
+            Value = value;
+            Unit = unit;
+        }
+
+        public readonly int Value;
+
+        public readonly char Unit;
+
+        public static DateTime operator +(DateTime dt, TimeSpanEx ts)
+        {
+
+        }
+    }
 }
