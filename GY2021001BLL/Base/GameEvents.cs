@@ -189,61 +189,11 @@ namespace OW.Game
 
         #region 创建后初始化
 
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void GameItemCreated(GameItem gameItem, Guid templateId, [AllowNull] GameItem parent, Guid? ownerId, [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
-        {
-            GameItemCreated(gameItem, World.ItemTemplateManager.GetTemplateFromeId(templateId), parent, ownerId, parameters);
-        }
-
         /// <summary>
-        /// 初始化一个<see cref="GameItem"/>对象。
+        /// 
         /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="template"></param>
-        /// <param name="parent">父容器对象,如果为null，则使用<paramref name="ownerId"/>设置拥有者属性，否则忽略<paramref name="ownerId"/></param>
-        /// <param name="ownerId"></param>
-        /// <param name="parameters"></param>
-        public virtual void GameItemCreated(GameItem gameItem, [NotNull] GameItemTemplate template, [AllowNull] GameItem parent, Guid? ownerId, [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
-        {
-            //设置本类型特有属性
-            GameThingCreated(gameItem, template, parameters);
-            var gpm = World.PropertyManager;
-            var gt = gameItem.GetTemplate();
-            if (gt.Properties.TryGetValue("Count", out var countObj) || gt.Properties.TryGetValue("count", out countObj)) //若指定了初始数量
-                gameItem.Count = Convert.ToDecimal(countObj);
-            else
-                gameItem.Count ??= gt.Properties.ContainsKey(gpm.StackUpperLimit) ? 0 : 1;
-            //设置导航关系
-            if (parent is null)
-                gameItem.OwnerId = ownerId;
-            else
-            {
-                gameItem.ParentId = parent.Id;
-                gameItem.Parent = parent;
-            }
-            //追加子对象
-            if (gt.ChildrenTemplateIds.Count > 0)
-            {
-                gameItem.Children.AddRange(gt.ChildrenTemplateIds.Select(c =>
-                {
-                    var r = new GameItem();
-                    GameItemCreated(r, c, gameItem, null, parameters);
-                    return r;
-                }));
-            }
-            //追加一些可识别的属性
-            if (null != parameters)
-            {
-                if (parameters.TryGetValue("ptid", out var tmp))
-                    gameItem.Properties["ptid"] = tmp;
-                if (parameters.TryGetValue("count", out tmp) && OwConvert.TryToDecimal(tmp, out var deci) && gameItem.GetGameChar() != null) //若可以设置
-                    gameItem.Count = deci;
-            }
-
-        }
-
-        private static readonly string[] _GameItemCreatedKeyNames = new string[] { "tid", "tt", "count", "Count", "ownerid", "parent", "ptid" };
+        private static readonly string[] _GameItemCreatedKeyNames = new string[] { "tid", "tt", "count", "Count", "ownerid", "parent", "ptid",
+            nameof(GameThingBase.ExtraDecimal),nameof(GameThingBase.ExtraString) };
 
         /// <summary>
         /// 初始化一个物品，
@@ -256,17 +206,14 @@ namespace OW.Game
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public virtual void GameItemCreated([NotNull] GameItem gameItem, [NotNull] IReadOnlyDictionary<string, object> propertyBag)
         {
-            //设置本类型特有属性
             #region 设置模板
-            if (propertyBag.TryGetValue("tt", out var ttObj) && ttObj is GameThingTemplateBase tt)
-                GameThingCreated(gameItem, tt, propertyBag);
-            else if (propertyBag.TryGetGuid("tid", out var tid))
-                GameThingCreated(gameItem, tid, propertyBag);
+            GameThingCreated(gameItem, propertyBag);
             #endregion 设置模板
+            //设置本类型特有属性
 
             #region 设置数量
             var gpm = World.PropertyManager;
-            tt = gameItem.GetTemplate();
+            var tt = gameItem.GetTemplate();
             if (propertyBag.TryGetDecimal("Count", out var count) || propertyBag.TryGetDecimal("count", out count)) //若指定了初始数量
                 gameItem.Count = count;
             else if (null != tt)
@@ -318,7 +265,7 @@ namespace OW.Game
         /// <param name="parameters"></param>
         public virtual void GameCharCreated(GameChar gameChar, GameItemTemplate template, [AllowNull] GameUser user, [AllowNull] string displayName, [AllowNull] IReadOnlyDictionary<string, object> parameters)
         {
-            GameThingCreated(gameChar, template, parameters);
+            this.GameThingCreated(gameChar, template, parameters);
             var gt = gameChar.GetTemplate();
             //初始化本类型特殊数据
             if (null != user)
@@ -339,7 +286,7 @@ namespace OW.Game
                     {
                         GameItem gi = new GameItem();
                         gi.SetGameChar(gameChar);
-                        GameItemCreated(gi, c, null, gameChar.Id, dic);
+                        this.GameItemCreated(gi, c, null, gameChar.Id, dic);
                         return gi;
                     }).ToArray();
                 gameChar.GameItems.AddRange(coll);
@@ -371,52 +318,56 @@ namespace OW.Game
             user.DbContext.Add(user);
         }
 
-        #region 保护方法
         /// <summary>
         /// 
         /// </summary>
         /// <param name="thing"></param>
-        /// <param name="templateId"></param>
-        /// <param name="parameters"></param>
-        protected void GameThingCreated(GameThingBase thing, Guid templateId, IReadOnlyDictionary<string, object> parameters)
-        {
-            var template = World.ItemTemplateManager.GetTemplateFromeId(templateId);
-            GameThingCreated(thing, template, parameters);
-        }
-
-        /// <summary>
-        /// 在一个<see cref="GameThingBase"/>的子类被创建后调用。
-        /// </summary>
-        /// <param name="thing"></param>
-        /// <param name="template"></param>
-        /// <param name="parameters"></param>
-        protected virtual void GameThingCreated(GameThingBase thing, GameThingTemplateBase template, IReadOnlyDictionary<string, object> parameters)
+        /// <param name="propertyBag">识别 tt(模板对象，优先),tid模板Id，ExtraString 和 ExtraDecimal属性。若该字典和模板内有可识别的同名属性，则该字典中的属性更有先。
+        /// 该字典内不可识别属性一律被忽略。</param>
+        public virtual void GameThingCreated(GameThingBase thing, IReadOnlyDictionary<string, object> propertyBag)
         {
             var gpm = World.PropertyManager;
             //初始化自身属性
-            thing.TemplateId = template.Id;
-            thing.SetTemplate(template);
-            var coll = gpm is null ? template.Properties : gpm.Filter(template.Properties);
-            var dic = thing.Properties;
-            foreach (var item in coll)   //复制属性
+            GameThingTemplateBase tt = default;
+            if (propertyBag.TryGetValue("tt", out var ttObj) && ttObj is GameThingTemplateBase)
+                tt = (GameThingTemplateBase)ttObj;
+            else if (propertyBag.TryGetGuid("tid", out var tid))
+                tt = World.ItemTemplateManager.GetTemplateFromeId(tid);
+            if (null != tt)
             {
-                if (item.Value is IList seq)   //若是属性序列
+                thing.TemplateId = tt.Id;
+                thing.SetTemplate(tt);
+                var coll = gpm is null ? tt.Properties : gpm.Filter(tt.Properties);
+                var dic = thing.Properties;
+                foreach (var item in coll)   //复制属性
                 {
-                    var indexPn = template.GetIndexPropName(item.Key);
-                    var lv = Convert.ToInt32(template.Properties.GetValueOrDefault(indexPn, 0m));
-                    dic[item.Key] = seq[Math.Clamp(lv, 0, seq.Count - 1)];
+                    if (item.Value is IList seq)   //若是属性序列
+                    {
+                        var indexPn = tt.GetIndexPropName(item.Key);
+                        var lv = Convert.ToInt32(tt.Properties.GetValueOrDefault(indexPn, 0m));
+                        dic[item.Key] = seq[Math.Clamp(lv, 0, seq.Count - 1)];
+                    }
+                    else
+                        dic[item.Key] = item.Value;
                 }
-                else
-                    dic[item.Key] = item.Value;
-            }
-            if (template.SequencePropertyNames.Length > 0 && !dic.Keys.Any(c => c.StartsWith(GameThingTemplateBase.LevelPrefix))) //若需追加等级属性
-                dic[gpm.LevelPropertyName] = 0m;
+                if (tt.SequencePropertyNames.Length > 0 && !dic.Keys.Any(c => c.StartsWith(GameThingTemplateBase.LevelPrefix))) //若需追加等级属性
+                    dic[gpm.LevelPropertyName] = 0m;
 #if DEBUG
-            dic["tname"] = template.DisplayName.Replace('，', '-').Replace(',', '-').Replace('=', '-');
+                dic["tname"] = tt.DisplayName.Replace('，', '-').Replace(',', '-').Replace('=', '-');
 #endif
-
+            }
+            //处理特殊属性
+            if (propertyBag.TryGetDecimal(nameof(thing.ExtraDecimal), out var dec))
+            {
+                thing.Properties.Remove(nameof(thing.ExtraDecimal), out _);
+                thing.ExtraDecimal = dec;
+            }
+            if (propertyBag.TryGetString(nameof(thing.ExtraString), out var str))
+            {
+                thing.Properties.Remove(nameof(thing.ExtraString), out _);
+                thing.ExtraString = str;
+            }
         }
-        #endregion 保护方法
 
         #endregion 创建后初始化
 
@@ -471,7 +422,7 @@ namespace OW.Game
                 if (!exists.Remove(tid))    //若缺少槽
                 {
                     var gi = new GameItem();
-                    GameItemCreated(gi, tid, null, gameChar.Id);
+                    this.GameItemCreated(gi, tid, null, gameChar.Id);
                     gameChar.GameItems.Add(gi);
                 }
             }
@@ -620,7 +571,8 @@ namespace OW.Game
         {
             dest.TemplateId = src.TemplateId;
             dest.SetTemplate(src.GetTemplate());
-            dest.ExPropertyString = src.ExPropertyString;
+            dest.ExtraString = src.ExtraString;
+            dest.ExtraDecimal = src.ExtraDecimal;
             OwHelper.Copy(src.Properties, dest.Properties);
             if (null != dest.GetDbContext())
                 Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
@@ -666,6 +618,42 @@ namespace OW.Game
 
     public static class GameEventsManagerExtensions
     {
+        #region 创建对象相关
+
+        /// <summary>
+        /// 初始化一个<see cref="GameItem"/>对象。
+        /// </summary>
+        /// <param name="mng"></param>
+        /// <param name="gameItem"></param>
+        /// <param name="template"></param>
+        /// <param name="parent">父容器对象,如果为null，则使用<paramref name="ownerId"/>设置拥有者属性，否则忽略<paramref name="ownerId"/></param>
+        /// <param name="ownerId"></param>
+        /// <param name="parameters"></param>
+        public static void GameItemCreated(this GameEventsManager mng, GameItem gameItem, [NotNull] GameItemTemplate template, [AllowNull] GameItem parent, Guid? ownerId,
+            [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
+        {
+            var bg = DictionaryPool<string, object>.Shared.Get();
+            if (null != parameters)
+                OwHelper.Copy(parameters, bg);
+            if (ownerId.HasValue)
+                bg["ownerid"] = ownerId.Value;
+            else if (null != parent)
+                bg["parent"] = parent;
+            else if ((parent?.Id).HasValue)
+                bg["ptid"] = parent?.Id;
+            bg["tt"] = template;
+            mng.GameItemCreated(gameItem, bg);
+            DictionaryPool<string, object>.Shared.Return(bg);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void GameItemCreated(this GameEventsManager mng, GameItem gameItem, Guid templateId, [AllowNull] GameItem parent, Guid? ownerId,
+            [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
+        {
+            mng.GameItemCreated(gameItem, mng.World.ItemTemplateManager.GetTemplateFromeId(templateId), parent, ownerId, parameters);
+        }
+
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void GameItemCreated(this GameEventsManager manager, GameItem gameItem, Guid templateId) =>
                    manager.GameItemCreated(gameItem, manager.World.ItemTemplateManager.GetTemplateFromeId(templateId));
@@ -674,6 +662,30 @@ namespace OW.Game
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void GameItemCreated(this GameEventsManager manager, GameItem gameItem, GameItemTemplate template) =>
                     manager.GameItemCreated(gameItem, template, null, null);
+
+        /// <summary>
+        /// 在一个<see cref="GameThingBase"/>的子类被创建后调用。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="template"></param>
+        /// <param name="propertyBag"></param>
+        public static void GameThingCreated(this GameEventsManager mng, GameThingBase thing, GameThingTemplateBase template, IReadOnlyDictionary<string, object> propertyBag)
+        {
+            if (propertyBag.ContainsKey("tt") || template is null)
+            {
+                mng.GameThingCreated(thing, propertyBag);
+            }
+            else
+            {
+                var bg = DictionaryPool<string, object>.Shared.Get();
+                OwHelper.Copy(propertyBag, bg);
+                bg["tt"] = template;
+                mng.GameThingCreated(thing, bg);
+                DictionaryPool<string, object>.Shared.Return(bg);
+            }
+        }
+
+        #endregion 创建对象相关
 
         #region 属性变化事件相关
 

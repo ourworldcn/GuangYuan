@@ -42,7 +42,8 @@ namespace GuangYuan.GY001.UserDb
             //物品
             modelBuilder.Entity<GameItem>().HasIndex(c => c.OwnerId);
             modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.Count }).IsUnique(false);
-            modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExPropertyString, c.OrderbyDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
             //通用扩展属性
             modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.Id, c.Name });

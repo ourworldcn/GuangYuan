@@ -151,7 +151,7 @@ namespace GuangYuan.GY001.BLL.Social
             else
                 result = from gi in db.Set<GameItem>()
                          where gi.TemplateId == slotTId && gi.Id != GameChar.Id  //不能查出自己
-                         orderby gi.ExPropertyString descending
+                         orderby gi.ExtraString descending
                          let gcId = gi.OwnerId ?? Guid.Empty
                          where /*allows.Any(c => c.Id == gcId) &&*/ !frees.Any(c => c == gcId) && !TodayIds.Contains(gcId) && !notAllows.Contains(gcId)
                          select gcId;
@@ -175,7 +175,7 @@ namespace GuangYuan.GY001.BLL.Social
             var slotTId = ProjectConstant.FriendSlotTId;
             IQueryable<Guid> result;
             result = from tmp in db.Set<GameItem>().Where(c => c.TemplateId == slotTId)
-                     orderby tmp.ExPropertyString descending
+                     orderby tmp.ExtraString descending
                      join gameChar in db.Set<GameChar>()
                      on tmp.OwnerId.Value equals gameChar.Id
                      where EF.Functions.Like(gameChar.DisplayName, $"%{displayName}%")

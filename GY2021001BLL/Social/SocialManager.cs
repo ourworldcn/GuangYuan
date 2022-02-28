@@ -1658,6 +1658,7 @@ namespace GuangYuan.GY001.BLL
             var pvpObjectQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId).AsNoTracking();    //查询的基础集合
 
             IEnumerable<Guid> excludeCharIds = excludes is null ? new Guid[] { gameChar.Id } : excludes.Append(gameChar.Id);   //排除的角色Id集合
+
             var excludeIds = (from bag in context.Set<GameItem>().Where(c => c.OwnerId.HasValue && excludeCharIds.Contains(c.OwnerId.Value)).AsNoTracking()
                               join gi in context.Set<GameItem>().AsNoTracking()
                               on bag.Id equals gi.ParentId
@@ -1668,7 +1669,7 @@ namespace GuangYuan.GY001.BLL
             var allow = from gi in context.Set<GameItem>()
                         join bag in context.Set<GameItem>() on gi.ParentId equals bag.Id
                         join gc in context.Set<GameChar>() on bag.OwnerId equals gc.Id
-                        where gi.TemplateId == pvpObjectTId && string.Compare(gc.ExPropertyString, lvStr) >= 0
+                        where gi.TemplateId == pvpObjectTId && string.Compare(gc.ExtraString, lvStr) >= 0
                         select gi.Id;   //可以参与pvp的角色
 
             var lower = (from tmp in pvpObjectQuery //取下手

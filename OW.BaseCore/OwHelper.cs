@@ -60,6 +60,9 @@ namespace System
         }
     }
 
+    /// <summary>
+    /// 封装一些未详细分类的函数。
+    /// </summary>
     public static class OwHelper
     {
         /// <summary>
@@ -355,28 +358,4 @@ namespace System
 
     }
 
-    public readonly struct TimeSpanEx
-    {
-        public TimeSpanEx(string str)
-        {
-            Value = int.Parse(str[..^1]);
-            Unit = str[^1];
-
-        }
-
-        public TimeSpanEx(int value, char unit)
-        {
-            Value = value;
-            Unit = unit;
-        }
-
-        public readonly int Value;
-
-        public readonly char Unit;
-
-        public static DateTime operator +(DateTime dt, TimeSpanEx ts)
-        {
-
-        }
-    }
 }

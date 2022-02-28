@@ -199,9 +199,9 @@ namespace GuangYuan.GY001.BLL
             var slot = gameChar.GetFriendSlot();
             var lv = (int)gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
             var str = $"{lv:d4}{dateTime:s}";
-            if (str != slot.ExPropertyString)
+            if (str != slot.ExtraString)
             {
-                slot.ExPropertyString = str;
+                slot.ExtraString = str;
                 World.CharManager.NotifyChange(gameChar.GameUser);
             }
         }

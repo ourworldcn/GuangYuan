@@ -205,7 +205,7 @@ namespace OW.Game
                                 break;
                         }
                     }
-                    gc.ExPropertyString = newLv.ToString("D10");
+                    gc.ExtraString = newLv.ToString("D10");
                     //生成通知数据。
                     if (lst != null)
                     {
@@ -350,38 +350,6 @@ namespace OW.Game
             //不可加入pvp排名信息
             //World.CombatManager.UpdatePvpInfo(gameChar);
             World.ItemManager.ComputeMucaiStc(gameChar);
-        }
-
-        /// <summary>
-        /// 创建物品/道具。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="template"></param>
-        /// <param name="parent"></param>
-        /// <param name="ownerId"></param>
-        /// <param name="parameters">针对坐骑，htid,btid都存在则自动创建相应的头和身体。</param>
-        public override void GameItemCreated(GameItem gameItem, GameItemTemplate template, [AllowNull] GameItem parent, Guid? ownerId, [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
-        {
-            base.GameItemCreated(gameItem, template, parent, ownerId, parameters);
-            if (template.Id == ProjectConstant.ZuojiZuheRongqi && null != parameters)   //若是生物且可能有相应的初始化参数
-            {
-                var gitm = World.ItemTemplateManager;
-                var htid = parameters.GetGuidOrDefault("htid");
-                var headTemplate = gitm.GetTemplateFromeId(htid);
-                if (headTemplate is null)
-                    return;
-                var btid = parameters.GetGuidOrDefault("btid");
-                var bodyTemplate = gitm.GetTemplateFromeId(btid);
-                if (bodyTemplate is null)
-                    return;
-                var head = new GameItem();
-                GameItemCreated(head, headTemplate, gameItem, null, null);
-                gameItem.Children.Add(head);
-
-                var body = new GameItem();
-                GameItemCreated(body, bodyTemplate, gameItem, null, null);
-                gameItem.Children.Add(body);
-            }
         }
 
         private static readonly string[] _GameItemCreatedKeyNames = new string[] { "htid", "htt", "btid", "btt", "neatk", "nemhp", "neqlt" };
@@ -541,7 +509,7 @@ namespace OW.Game
             World.ItemManager.ComputeMucaiStc(gameChar);
             //复位角色级别缓存字符串
             var lv = (int)gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
-            gameChar.ExPropertyString = lv.ToString("D10");
+            gameChar.ExtraString = lv.ToString("D10");
         }
 
         public override void GameUserLoaded(GameUser user, DbContext context)

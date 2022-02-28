@@ -394,7 +394,7 @@ namespace GuangYuan.GY001.BLL
             }
             //校验资源
             var quan = datas.GameChar.GetChoujiangquan();
-            if (quan is null || datas.LotteryTypeCount1 + datas.LotteryTypeCount10 * 10 < quan.Count.Value)
+            if (quan is null || datas.LotteryTypeCount1 + datas.LotteryTypeCount10 * 10 > quan.Count.Value)
             {
                 datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
                 datas.ErrorMessage = "抽奖券不足。";

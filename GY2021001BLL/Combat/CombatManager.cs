@@ -681,8 +681,8 @@ namespace GuangYuan.GY001.BLL
                 otherPvpObj = datas.OtherChar.GetPvpObject();
                 diff = 1 + Math.Round((otherPvpObj.Count.Value - pvpObj.Count.Value) / 10, MidpointRounding.ToPositiveInfinity);
                 diff = Math.Clamp(diff, 0, 6);
-                pvpObj.Count += diff;
-                otherPvpObj.Count -= diff;
+                pvpObj.Count += diff; pvpObj.ExtraDecimal = pvpObj.Count;
+                otherPvpObj.Count -= diff; otherPvpObj.ExtraDecimal = otherPvpObj.Count;
                 if (diff != 0)  //若等级分发生变化
                 {
                     datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);

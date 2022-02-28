@@ -261,15 +261,15 @@ namespace GuangYuan.GY001.UserDb
         public abstract DbContext GetDbContext();
 
         /// <summary>
-        /// 记录一些额外的信息，通常这些信息用于排序，加速查找符合特定要求的对象。此字段被索引。
+        /// 记录一些额外的信息，通常这些信息用于排序，加速查找符合特定要求的对象。
         /// </summary>
         [MaxLength(64)]
-        public string ExPropertyString { get; set; }
+        public string ExtraString { get; set; }
 
         /// <summary>
-        /// 用于排序搜索使用的字段。
+        /// 记录一些额外的信息，用于排序搜索使用的字段。
         /// </summary>
-        public decimal? OrderbyDecimal { get; set; }
+        public decimal? ExtraDecimal { get; set; }
 
         #region 扩展对象相关
 

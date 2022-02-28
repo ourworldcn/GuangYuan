@@ -1,4 +1,8 @@
-﻿using System.Buffers;
+﻿/*
+ * 对象池的一些简单补充。
+ * 对象池仅仅为了存储数据的对象不频繁生成回收，不适合单独成为一个服务。
+ */
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
