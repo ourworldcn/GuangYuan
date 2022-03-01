@@ -492,7 +492,7 @@ namespace GuangYuan.GY001.BLL
         #region PVP相关
 
         public const string PvpRankName = "PVP排行";
-
+        
         /// <summary>
         /// 获取指定用户的pvp排名。
         /// </summary>
@@ -681,8 +681,10 @@ namespace GuangYuan.GY001.BLL
                 otherPvpObj = datas.OtherChar.GetPvpObject();
                 diff = 1 + Math.Round((otherPvpObj.Count.Value - pvpObj.Count.Value) / 10, MidpointRounding.ToPositiveInfinity);
                 diff = Math.Clamp(diff, 0, 6);
-                pvpObj.Count += diff; pvpObj.ExtraDecimal = pvpObj.Count;
-                otherPvpObj.Count -= diff; otherPvpObj.ExtraDecimal = otherPvpObj.Count;
+                pvpObj.Count += diff;
+                pvpObj.ExtraDecimal = pvpObj.Count; //排序使用该值
+                otherPvpObj.Count -= diff;
+                otherPvpObj.ExtraDecimal = otherPvpObj.Count;    //排序使用该值
                 if (diff != 0)  //若等级分发生变化
                 {
                     datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
