@@ -238,7 +238,7 @@ namespace OW.Game
             #endregion 设置导航关系
 
             #region 追加子对象
-            if (tt.ChildrenTemplateIds.Count > 0)   //若存在子对象
+            if (tt?.ChildrenTemplateIds.Count > 0)   //若存在子对象
             {
                 var subpb = DictionaryPool<string, object>.Shared.Get();    //漏掉返回池中不是大问题
                 OwHelper.Copy(propertyBag, subpb, c => !_GameItemCreatedKeyNames.Contains(c));

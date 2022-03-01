@@ -141,7 +141,7 @@ namespace System.Collections.Generic
             result = obj switch
             {
                 _ when obj is string => (string)obj,
-                _ => obj.ToString(),
+                _ => obj?.ToString(),
             };
             return true;
         }

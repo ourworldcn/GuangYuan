@@ -1,218 +1,1395 @@
-//System.Collections.Generic.List`1 [ [ GuangYuan.GY001.BLL.Homeland.HomelandFengge, GY001BllCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null ] ], System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e; 
-[
-  {
-    "Id": "4928de30-12a9-4652-8627-8ad03b4d06b5",
-    "Number": 1,
-    "Fangans": [
-      {
-        "Id": "75eb775c-2518-49ed-8cdb-6e1b582cb596",
-        "OrderNumber": 0,
-        "FanganItems": [
-          {
-            "ItemIds": [ "d8b5ffc3-9d93-427c-ba40-402e23573fce", "2f2b29de-3c1d-4a0a-94ce-af1214e79974", "80bd2b62-af60-4d3b-95c5-1764578d2fa1", "0b735e61-af6e-4692-86f4-d823f0aa60c4" ],
-            "ContainerId": "1d5b3d7f-c3ef-4a4b-9e78-848eb2fc87cf",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "d8b5ffc3-9d93-427c-ba40-402e23573fce",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [ "79f60641-f2e1-4e93-af83-3e3da786f9b9", "4a845302-0d58-41a9-88f5-fed3f57449d0", "46f8e117-ca66-434a-b89e-4200e69abfc4", "7c7a672e-c6f4-48bb-9dd7-cbcaff808a2c", "2d0de029-a959-40e0-9b03-5915e1b8b72d" ],
-            "ContainerId": "2f2b29de-3c1d-4a0a-94ce-af1214e79974",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "79f60641-f2e1-4e93-af83-3e3da786f9b9",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "4a845302-0d58-41a9-88f5-fed3f57449d0",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "46f8e117-ca66-434a-b89e-4200e69abfc4",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "7c7a672e-c6f4-48bb-9dd7-cbcaff808a2c",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "2d0de029-a959-40e0-9b03-5915e1b8b72d",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [ "e4c477ec-0371-4ac8-9e86-d755ecdb89d5", "5a887992-ac75-44cc-97a2-799f21091944", "b3b66d1f-d4a9-4f4f-be8e-f052c9b82fe0", "40f29ef7-4240-4981-ae56-d3fd9ea6c945", "4987c0cb-8dbd-498a-bfef-ef4d8f16c33b", "266f729e-2d68-4998-b41e-f96bc990bb82" ],
-            "ContainerId": "80bd2b62-af60-4d3b-95c5-1764578d2fa1",
-            "NewTemplateId": "234f8c55-4c3c-4406-ad38-081d29564f20",
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "e4c477ec-0371-4ac8-9e86-d755ecdb89d5",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "5a887992-ac75-44cc-97a2-799f21091944",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "b3b66d1f-d4a9-4f4f-be8e-f052c9b82fe0",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "40f29ef7-4240-4981-ae56-d3fd9ea6c945",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "4987c0cb-8dbd-498a-bfef-ef4d8f16c33b",
-            "NewTemplateId": "e31939bd-7056-4293-9a55-6c9ee0cd4681",
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "266f729e-2d68-4998-b41e-f96bc990bb82",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "0b735e61-af6e-4692-86f4-d823f0aa60c4",
-            "NewTemplateId": null,
-            "ClientString": null
-          }
-        ],
-        "IsActived": true,
-        "ClientString": null
+{
+  "WorldServiceHost": "https://localhost:20443",
+  "GameChars": [
+    {
+      "Id": "Yl42XgrHHUG2/GIpeUd7vQ==",
+      "Properties": {
+        "cap": -1,
+        "expLimit": 10,
+        "lv": 0,
+        "exp": 0
       },
-      {
-        "Id": "2d98dceb-8670-4c69-b248-e800d82f9d15",
-        "OrderNumber": 1,
-        "FanganItems": [
-          {
-            "ItemIds": [ "d8b5ffc3-9d93-427c-ba40-402e23573fce", "2f2b29de-3c1d-4a0a-94ce-af1214e79974", "80bd2b62-af60-4d3b-95c5-1764578d2fa1", "0b735e61-af6e-4692-86f4-d823f0aa60c4" ],
-            "ContainerId": "1d5b3d7f-c3ef-4a4b-9e78-848eb2fc87cf",
-            "NewTemplateId": null,
-            "ClientString": null
+      "DisplayName": "Ñòå£åû",
+      "ClientGutsString": null,
+      "TemplateId": "aZLzDAFjC0eFJwevKcXu7A==",
+      "CreateUtc": "2022-03-01T09:13:08.7921514Z",
+      "GameUserId": "syuZJMhde0W+ImtvyjxJag==",
+      "GameItems": [
+        {
+          "Id": "SxdFnwMAeEi7K/E9dJm+rg==",
+          "TemplateId": "1u6kiOsKcEqP3mf3Xl4sCg==",
+          "Count": 1,
+          "Properties": { "cap": -1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [
+            {
+              "Id": "uKLJ/1WHBkmypyh8eDn0+A==",
+              "TemplateId": "FyBUaZgMxEGmbVdYcz9Ffg==",
+              "Count": 1,
+              "Properties": {
+                "body": 4001,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "BmlMRaSh2E+8wZ4RLEgzsQ==",
+              "TemplateId": "k1fIQQ34FE+jy+sM2DRQPg==",
+              "Count": 1,
+              "Properties": {
+                "body": 4002,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "gChEzQCb6kutInld+mElhA==",
+              "TemplateId": "zoAln9dGFE26S5fvL2BTXg==",
+              "Count": 1,
+              "Properties": {
+                "body": 4003,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "WQ/1mJCeQkKwIGENqa7vew==",
+              "TemplateId": "kqIErFNN/UmBOnXiDzi1oA==",
+              "Count": 1,
+              "Properties": {
+                "body": 4004,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "gyVRPlQCAk+jtd8+IbCzPg==",
+              "TemplateId": "tXew/6XOT0aKRNefPBkrQw==",
+              "Count": 1,
+              "Properties": {
+                "body": 4005,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "Sks29+Ox/Uu/JS+wCZlvvA==",
+              "TemplateId": "wSmGLVe+/k6ngcguaZu/IQ==",
+              "Count": 1,
+              "Properties": {
+                "body": 4006,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "rqc15qGnqkKB+MNkqsKrZQ==",
+              "TemplateId": "j90G3HrMLUa05ct62igxmA==",
+              "Count": 1,
+              "Properties": {
+                "body": 4007,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "3Dtw6HJ+qkG5frCHHtUP3w==",
+              "TemplateId": "zBHUbDZcLkyMr/4FY3i5Tg==",
+              "Count": 1,
+              "Properties": {
+                "body": 4008,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "5Gmivy1vdEO6CiBCI8opoQ==",
+              "TemplateId": "2LagpgPvdES6Q/H3QnSqvA==",
+              "Count": 1,
+              "Properties": {
+                "body": 4009,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "txdyVU1NQk+1/jjCs6Hjng==",
+              "TemplateId": "PClEXGo4B0ytNHLRWGMbtg==",
+              "Count": 1,
+              "Properties": {
+                "body": 4010,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "tY263QGyJkmEw5zgjb/vqg==",
+              "TemplateId": "BdkYguM1jEqA1mTxrnTg6A==",
+              "Count": 1,
+              "Properties": {
+                "body": 4011,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "PQJcz+dwd065WUuM/z88zQ==",
+              "TemplateId": "8VE3yPI9k0yfcXEHfyAmSQ==",
+              "Count": 1,
+              "Properties": {
+                "body": 4012,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "0iMHyqved0+JTFHJ8mp5YQ==",
+              "TemplateId": "J826j1F/g0KtR2rWT08BVw==",
+              "Count": 1,
+              "Properties": {
+                "body": 4013,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "KEZqw+X1EU+k58CiKNMK5Q==",
+              "TemplateId": "T62iuBIcMUGqvYliX1C6+A==",
+              "Count": 1,
+              "Properties": {
+                "body": 4014,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "H6gZW5xHT0CZI9G8wA7zqg==",
+              "TemplateId": "rOMni3Pb0kaz/ZbBrxfBEw==",
+              "Count": 1,
+              "Properties": {
+                "body": 4015,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "8Yb5Y13+SE+hTjrbUjtI6w==",
+              "TemplateId": "8MCoMvMmZkut3bPJ5mGfZQ==",
+              "Count": 1,
+              "Properties": {
+                "body": 4016,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            },
+            {
+              "Id": "uXyUHlBq3U6Ew6hUFRjXoQ==",
+              "TemplateId": "IbzPD68G3EGDnCC32aPe6g==",
+              "Count": 1,
+              "Properties": {
+                "body": 4017,
+                "mhp": 0,
+                "atk": 0,
+                "qlt": 0,
+                "lvatk": 0,
+                "lvmhp": 0,
+                "lvqlt": 0,
+                "mlvatk": 10,
+                "mlvmhp": 10,
+                "mlvqlt": 10,
+                "sscatk": 0,
+                "sscmhp": 0,
+                "sscqlt": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "SxdFnwMAeEi7K/E9dJm+rg==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "1zith+BgzESvrkDER+yDYA==",
+          "TemplateId": "zT+qK+grlkCRav8tR+CE7w==",
+          "Count": 1,
+          "Properties": { "cap": -1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "ldXb5y43D0KELHDDdIGQCw==",
+          "TemplateId": "oaAwFkA1mkeyxRC2PnpXdA==",
+          "Count": 1,
+          "Properties": {
+            "cap": 20,
+            "lug": -100,
+            "lv": 0
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "d8b5ffc3-9d93-427c-ba40-402e23573fce",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "k3+YZbiy5EqP8irlG4zg7A==",
+          "TemplateId": "d7Kg/saML0aw7YVAmr6ceQ==",
+          "Count": 1,
+          "Properties": { "cap": -1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "yr6gKIJJ6kW8EWA/dzADJA==",
+          "TemplateId": "ie4qusMLEka2/13f74XJ5Q==",
+          "Count": 1,
+          "Properties": { "cap": -1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [
+            {
+              "Id": "wbFOWwe8x0ibk5KSPwY5Hg==",
+              "TemplateId": "VJ0XbjZYC06zDXVr0H/xlg==",
+              "Count": 1,
+              "Properties": {
+                "nemhp": 0,
+                "neatk": 0,
+                "neqlt": 0,
+                "cap": -1,
+                "skshuse": 3,
+                "psshuse": 3,
+                "jsshuse": 3,
+                "lv": 0,
+                "for10": 0
+              },
+              "OwnerId": null,
+              "Children": [
+                {
+                  "Id": "Q5lzHlnSeEKB3b7BSEdpdA==",
+                  "TemplateId": "xGi9H2Q0N0KJXSi2xPl02A==",
+                  "Count": 1,
+                  "Properties": {
+                    "nm": 1501,
+                    "ps": 5001,
+                    "js": 2001
+                  },
+                  "OwnerId": null,
+                  "Children": [
+                    {
+                      "Id": "7ezmm3Z/w0ivWUCSjUn93Q==",
+                      "TemplateId": "RtQOMUIRi0+CK/+JSO2AZg==",
+                      "Count": 1,
+                      "Properties": {
+                        "luc{af35ff42-4cf0-4ca0-a162-72bbbdbcbc15}1": 3,
+                        "lv": 0
+                      },
+                      "OwnerId": null,
+                      "Children": [],
+                      "ParentId": "Q5lzHlnSeEKB3b7BSEdpdA==",
+                      "ClientString": null
+                    },
+                    {
+                      "Id": "I4EqF32xR0e+BtAdIkxmqQ==",
+                      "TemplateId": "o/tm+6Qe60W/+5Msd67f4A==",
+                      "Count": 1,
+                      "Properties": {
+                        "luc{da0d1e54-5948-474e-9a49-889858f62806}1": 3,
+                        "lv": 0
+                      },
+                      "OwnerId": null,
+                      "Children": [],
+                      "ParentId": "Q5lzHlnSeEKB3b7BSEdpdA==",
+                      "ClientString": null
+                    }
+                  ],
+                  "ParentId": "wbFOWwe8x0ibk5KSPwY5Hg==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "rn4ac0/EoUKe+41+UbWimw==",
+                  "TemplateId": "B/7Ju70pbUiK1rmdsL0H1g==",
+                  "Count": 1,
+                  "Properties": {
+                    "alt": 4,
+                    "ms": 6,
+                    "eng": 14,
+                    "crp": 0,
+                    "crv": 2,
+                    "aha": 60,
+                    "at": 1,
+                    "bt": 0.3,
+                    "csr": 6,
+                    "ssr": 7,
+                    "rci": 1,
+                    "SK": 1001,
+                    "nm": 1501,
+                    "hi": 3001,
+                    "mhp": 1000,
+                    "atk": 100,
+                    "qlt": 100,
+                    "lug": -50,
+                    "sg": 500,
+                    "nerank": 1,
+                    "fht": 3,
+                    "bd": 9800,
+                    "rs": 8,
+                    "lv": 0
+                  },
+                  "OwnerId": null,
+                  "Children": [
+                    {
+                      "Id": "qk12QovCW0e3X4ECX+fT8Q==",
+                      "TemplateId": "44DjoCYr1kiyOCdSm5Burw==",
+                      "Count": 1,
+                      "Properties": {
+                        "luc{a8c53b74-37fd-4390-8d25-a6d25e88ba4a}1": 3,
+                        "lv": 0
+                      },
+                      "OwnerId": null,
+                      "Children": [],
+                      "ParentId": "rn4ac0/EoUKe+41+UbWimw==",
+                      "ClientString": null
+                    }
+                  ],
+                  "ParentId": "wbFOWwe8x0ibk5KSPwY5Hg==",
+                  "ClientString": null
+                }
+              ],
+              "ParentId": "yr6gKIJJ6kW8EWA/dzADJA==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "NEzY44RtOkOy3crTPg7X7A==",
+          "TemplateId": "CeLHo1Bd30mKeCH/P6ohOg==",
+          "Count": 1,
+          "Properties": { "cap": -1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "Ui8kwyGNpkqMzYV9qIs0mg==",
+          "TemplateId": "e843ZAOKZ06fiYyatxQSYw==",
+          "Count": 1,
+          "Properties": { "cap": -1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "wxIJmJBRrEW/7VoRNxVQVw==",
+          "TemplateId": "GSSpsKptyEGQdJVxdf2cOw==",
+          "Count": 1,
+          "Properties": { "cap": 1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "lPjtbtG5b0C3ZxajT2D9MA==",
+          "TemplateId": "xo6xgpCRBEiBtTP/oDUa3g==",
+          "Count": 1,
+          "Properties": { "cap": 1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "LIGyqDWZ30OdfGxkN7nB0Q==",
+          "TemplateId": "EEUMsY4MrUCHu29YKCc+KQ==",
+          "Count": 1,
+          "Properties": { "cap": 1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "HcPpEGAvxkKqKvgBy5xKig==",
+          "TemplateId": "r3JAuJG760avXLRi4zYcbA==",
+          "Count": 1,
+          "Properties": {
+            "cd": 25200,
+            "cap": 1,
+            "inccapcost": 500,
+            "lud": 500,
+            "lv": 0
           },
-          {
-            "ItemIds": [ "79f60641-f2e1-4e93-af83-3e3da786f9b9", "4a845302-0d58-41a9-88f5-fed3f57449d0", "46f8e117-ca66-434a-b89e-4200e69abfc4", "7c7a672e-c6f4-48bb-9dd7-cbcaff808a2c", "2d0de029-a959-40e0-9b03-5915e1b8b72d" ],
-            "ContainerId": "2f2b29de-3c1d-4a0a-94ce-af1214e79974",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "y2GVGHKG4kmMOd1aV9ejGQ==",
+          "TemplateId": "BlaFOu6lm0Wx7XbptYR9fQ==",
+          "Count": 1,
+          "Properties": {
+            "cap": -1,
+            "fcpiPatWithMountsCounter": 3,
+            "fcpmPatWithMountsCounter": 3,
+            "fcpdPatWithMountsCounter": 86400,
+            "fcpcPatWithMountsCounter": 3,
+            "fcptPatWithMountsCounter": "2022-03-01T00:00:00"
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "79f60641-f2e1-4e93-af83-3e3da786f9b9",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [
+            {
+              "Id": "euD9iZ4fh0qyXvODYAHU4A==",
+              "TemplateId": "02hkNtcA7EKBHYgi+w3vQg==",
+              "Count": 1,
+              "Properties": { "cap": -1 },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "y2GVGHKG4kmMOd1aV9ejGQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "Uzlky0LoCE2yQI1vwXLxoQ==",
+              "TemplateId": "pRImMd0wCk6nHVB0OXQo+w==",
+              "Count": 1,
+              "Properties": { "cap": -1 },
+              "OwnerId": null,
+              "Children": [
+                {
+                  "Id": "flY0gXws40aYcAi+i1D+Ew==",
+                  "TemplateId": "ejDnmjCd8kORzjpDlXq4ag==",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": -300,
+                    "lug": 0,
+                    "lut": 300,
+                    "mbnlv": 1,
+                    "nm": 2173,
+                    "dsid": 2140,
+                    "abid": "2161;2162;2163;2164",
+                    "labid": "2161;2162",
+                    "lv": 0
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "Uzlky0LoCE2yQI1vwXLxoQ==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "5dLeyutNVkCTaK7ufF8lXw==",
+                  "TemplateId": "J7iTZ4R5tE6mqWE4aXJhng==",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": -300,
+                    "lug": 0,
+                    "lut": 300,
+                    "mbnlv": 1,
+                    "nm": 2173,
+                    "dsid": 2140,
+                    "abid": "2161;2162;2163;2164",
+                    "labid": "2161;2162",
+                    "lv": 0
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "Uzlky0LoCE2yQI1vwXLxoQ==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "Sg+ij0KgDEajlXubtDw7lA==",
+                  "TemplateId": "S8AwyYYQmEKs9gWbGA5F1w==",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": -300,
+                    "lug": 0,
+                    "lut": 600,
+                    "mbnlv": 1,
+                    "nm": 2174,
+                    "dsid": 2141,
+                    "abid": "2161;2162;2163;2164;2165",
+                    "labid": "2161;2162;2165",
+                    "lv": 0
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "Uzlky0LoCE2yQI1vwXLxoQ==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "Dp8RfIVWD0iHAd5/K1KDmA==",
+                  "TemplateId": "YOOaSWjjD0yeqO+LPgSFgw==",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": -240,
+                    "lug": 0,
+                    "lut": 300,
+                    "mbnlv": 1,
+                    "nm": 2179,
+                    "dsid": 2146,
+                    "abid": "2162;2163;2165",
+                    "labid": "2162;2163;2165",
+                    "lv": 0
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "Uzlky0LoCE2yQI1vwXLxoQ==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "8y7Xwo9J9k2Wv7AUYYp/wQ==",
+                  "TemplateId": "D+Nnct5oCk6Y9uT4ib9jzA==",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": -240,
+                    "lug": 0,
+                    "lut": 600,
+                    "mbnlv": 1,
+                    "nm": 2180,
+                    "dsid": 2147,
+                    "abid": "2163;2165",
+                    "labid": "2163;2165",
+                    "lv": 0
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "Uzlky0LoCE2yQI1vwXLxoQ==",
+                  "ClientString": null
+                }
+              ],
+              "ParentId": "y2GVGHKG4kmMOd1aV9ejGQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "u5KwKjC9AE2icjhjuCit7w==",
+              "TemplateId": "VYxPIzxMBkStOAgdKVZPIA==",
+              "Count": 1,
+              "Properties": {
+                "cap": -1,
+                "tnm": 5,
+                "trm": 3,
+                "nm": 8000
+              },
+              "OwnerId": null,
+              "Children": [
+                {
+                  "Id": "ZE+pNxrHREuXIqkTNEAnww==",
+                  "TemplateId": "J8uc+8IF8U2uITRe6qzgjw==",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": -800,
+                    "lug": 0,
+                    "lut": 14400,
+                    "mhp": 1000,
+                    "nm": 2189,
+                    "dsid": 2156,
+                    "abid": "2161;",
+                    "labid": "2161;",
+                    "lv": 0
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "u5KwKjC9AE2icjhjuCit7w==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "uAVPpSjBRUqBxdtyrKL75g==",
+                  "TemplateId": "DHQAel4DRkimGS0IVfYLVQ==",
+                  "Count": 2400,
+                  "Properties": {
+                    "luw": -600,
+                    "lug": 0,
+                    "lut": 600,
+                    "stc": 2400,
+                    "fcpdCount": 180,
+                    "fcpiCount": 15,
+                    "fcpmCount": 2400,
+                    "mbnlv": 1,
+                    "nm": 2190,
+                    "dsid": 2157,
+                    "abid": "2127;2128;2129;2130",
+                    "labid": "2127;2129",
+                    "Count": 2400,
+                    "lv": 0,
+                    "fcpcCount": 2400,
+                    "fcptCount": "2022-03-01T09:13:08"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "u5KwKjC9AE2icjhjuCit7w==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "hQRuhn4tf0KP7XGd6gXWYQ==",
+                  "TemplateId": "bdtenL216Uujpsv3lOa/Ew==",
+                  "Count": 400,
+                  "Properties": {
+                    "luw": -100,
+                    "lug": 0,
+                    "lut": 600,
+                    "stc": 400,
+                    "fcpdCount": 180,
+                    "fcpiCount": 5,
+                    "fcpmCount": 400,
+                    "mbnlv": 1,
+                    "nm": 2191,
+                    "dsid": 2158,
+                    "abid": "2127;2128;2129;2130",
+                    "labid": "2127;2129",
+                    "Count": 400,
+                    "lv": 0,
+                    "fcpcCount": 400,
+                    "fcptCount": "2022-03-01T09:13:08"
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "u5KwKjC9AE2icjhjuCit7w==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "7ZwroDlZ1kqGcHgrE8o4zQ==",
+                  "TemplateId": "xnHy00YSEkiypjoBw+dnFA==",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": -400,
+                    "lug": 0,
+                    "lut": 7200,
+                    "mbnlv": 1,
+                    "nm": 2193,
+                    "dsid": 2160,
+                    "abid": "-1;",
+                    "labid": "-1;",
+                    "gadt": 0.5,
+                    "dac": 0,
+                    "width": 1,
+                    "tadt": 1,
+                    "lv": 0
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "u5KwKjC9AE2icjhjuCit7w==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "I4YjzZEQgE+X1qKPevUX8w==",
+                  "TemplateId": "vTkZ41Zwk0KaVWye4M1GgQ==",
+                  "Count": 1,
+                  "Properties": {
+                    "luw": -500,
+                    "lug": 0,
+                    "lut": 4320,
+                    "mbnlv": 1,
+                    "nm": 2184,
+                    "dsid": 2151,
+                    "abid": "2161;2168;2171",
+                    "labid": "2161;2168;2171",
+                    "dfm": 1,
+                    "lv": 0
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "u5KwKjC9AE2icjhjuCit7w==",
+                  "ClientString": null
+                },
+                {
+                  "Id": "cy3vn+H1vkmZflCoDERHxQ==",
+                  "TemplateId": "O6eujBDiv0ehIQbMEpc7rw==",
+                  "Count": 0,
+                  "Properties": {
+                    "stc": 100,
+                    "luw": -100,
+                    "lug": 0,
+                    "lut": 300,
+                    "mbnlv": 1,
+                    "mhp": 80,
+                    "nm": 2192,
+                    "dsid": 2159,
+                    "abid": "2161;2194",
+                    "labid": "2161;2194",
+                    "lv": 0
+                  },
+                  "OwnerId": null,
+                  "Children": [],
+                  "ParentId": "u5KwKjC9AE2icjhjuCit7w==",
+                  "ClientString": null
+                }
+              ],
+              "ParentId": "y2GVGHKG4kmMOd1aV9ejGQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "W9ajqkz/TU+AvRIVu4H71w==",
+              "TemplateId": "mNdwO2lJOkSwgbBalmAC5Q==",
+              "Count": 1,
+              "Properties": {
+                "stc": 1,
+                "Count": 1
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "y2GVGHKG4kmMOd1aV9ejGQ==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "qj/dsHloSEmtelSgMGHV8Q==",
+          "TemplateId": "MduWcwId00OvBcFPTKKl/A==",
+          "Count": 0,
+          "Properties": {
+            "stc": 10,
+            "lud": 1000,
+            "lv": 0
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "4a845302-0d58-41a9-88f5-fed3f57449d0",
-            "NewTemplateId": null,
-            "ClientString": null
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "/pDenRm+/0aSRlRJUWNTtg==",
+          "TemplateId": "balmcBT1x0KjDl51Z5AK1A==",
+          "Count": 1,
+          "Properties": { "cap": -1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [
+            {
+              "Id": "FMSxzb3/30iOO52TJSEjlg==",
+              "TemplateId": "hJWVAcniVE67t/zFipSE7A==",
+              "Count": 0,
+              "Properties": {
+                "stc": 1100,
+                "isuni": 1
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "/pDenRm+/0aSRlRJUWNTtg==",
+              "ClientString": null
+            },
+            {
+              "Id": "4zwHkmmflESec4JJJkvRUQ==",
+              "TemplateId": "QsmDK5weRUuYFq0svw5HPw==",
+              "Count": 0,
+              "Properties": { "stc": -1 },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "/pDenRm+/0aSRlRJUWNTtg==",
+              "ClientString": null
+            },
+            {
+              "Id": "yeNulgwceESMsJQjE+0PdA==",
+              "TemplateId": "7Fs2Pj34fUaljJ66Q0WGgg==",
+              "Count": 0,
+              "Properties": {
+                "stc": -1,
+                "count": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "/pDenRm+/0aSRlRJUWNTtg==",
+              "ClientString": null
+            },
+            {
+              "Id": "DHbgnD57l0anYopLb+1hww==",
+              "TemplateId": "Dc20mfrLUUifagA19Ghedw==",
+              "Count": 20,
+              "Properties": {
+                "stc": 20,
+                "Count": 20,
+                "fcpmCount": 20,
+                "fcpdCount": 300,
+                "fcpiCount": 1,
+                "fcpcCount": 20,
+                "fcpipatcount": 3,
+                "fcpdpatcount": 86400,
+                "fcpmpatcount": 3,
+                "fcptpatcount": "2022-03-01T00:00:00",
+                "fcpcpatcount": 3,
+                "fcptCount": "2022-03-01T09:13:08"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "/pDenRm+/0aSRlRJUWNTtg==",
+              "ClientString": null
+            },
+            {
+              "Id": "K2E8Nk0GaE2fVUaM4ctKmQ==",
+              "TemplateId": "yBFu1apIh0eCK85Ou/poTQ==",
+              "Count": 1,
+              "Properties": {
+                "Count": 1,
+                "stc": 1,
+                "fcptCount": "2022-03-01T00:00:00",
+                "fcpdCount": 86400,
+                "fcpmCount": 1,
+                "fcpiCount": 1,
+                "fcpcCount": 1,
+                "lud": 50,
+                "lv": 0,
+                "ltlv": "2021-1-1 0:0:0"
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "/pDenRm+/0aSRlRJUWNTtg==",
+              "ClientString": null
+            },
+            {
+              "Id": "GfbLcHqJRkKUSEdSIo+ANg==",
+              "TemplateId": "Jv27jUtrAEywuL16ebIcug==",
+              "Count": 0,
+              "Properties": { "stc": -1 },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "/pDenRm+/0aSRlRJUWNTtg==",
+              "ClientString": null
+            },
+            {
+              "Id": "UxhZ2/DwoUG6KRid0lg1uw==",
+              "TemplateId": "C3Wi0QCTV0ykB5QewQJLHA==",
+              "Count": 1000,
+              "Properties": {
+                "Count": 1000,
+                "stc": -1,
+                "refreshPriceD": 0,
+                "lv": 0
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "/pDenRm+/0aSRlRJUWNTtg==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "PHB3iemPgE+UqCy2A4kkFw==",
+          "TemplateId": "VS9qNOic3kew4FJf+3Zakw==",
+          "Count": 1,
+          "Properties": { "cap": -1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "h2RV+e2oYUq/jQLtY6oCaQ==",
+          "TemplateId": "YFgARtidMkmd4dieQWEETg==",
+          "Count": 1,
+          "Properties": { "cap": -1 },
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [
+            {
+              "Id": "8lNzKzntqkuAfSzZrK68CA==",
+              "TemplateId": "4b7/JRf2vUmw3jKz4+l1yw==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "nm": 11000,
+                "dsid": 11001
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "nDm0fQjerEGLxZ+Crguk1A==",
+              "TemplateId": "vm+jlpr3eUWTLliHckNtpQ==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 2,
+                "stc": -1,
+                "nm": 11002,
+                "dsid": 11003
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "tND2BJpumkC7J2HtZvzzPA==",
+              "TemplateId": "jlJIL3/9aUKSydvW8U/+8A==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "nm": 11004,
+                "dsid": 11005
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "JZUoYfB75ke9pzPpEAX3HA==",
+              "TemplateId": "CdNafRQmTkO406/k25PYsw==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "nm": 11006,
+                "dsid": 11007
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "CXzKfOgJI0OAkXwCrXMEyQ==",
+              "TemplateId": "AIq6i2fnakqqayLvA6P1Jw==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "nm": 11008,
+                "dsid": 11009
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "ojI/3h5s/kCNr99aPF91PA==",
+              "TemplateId": "QTXuSW46BU2FsFZsa/7N4g==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "nm": 11010,
+                "dsid": 11011
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "U/DB1BULOEKhF0hyr773JQ==",
+              "TemplateId": "zUdOgd+L/E69JmGvV7f8+A==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "nm": 11012,
+                "dsid": 11013
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "zihryejvHUqh3fgL+lcYhw==",
+              "TemplateId": "i/IpDKzTRE+MQY0nn9MZtQ==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "nm": 11014,
+                "dsid": 11015
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "8RhmmMPtlUe5bPxzQz3kKg==",
+              "TemplateId": "bCPTQnzqRESJjkaarB/aBw==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 1,
+                "stc": -1,
+                "nm": 11020,
+                "dsid": 11021
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "DR7D3nR9p0adIF/fdrqxmQ==",
+              "TemplateId": "r509XIn+pEOT+Hq9yFQY5Q==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 2,
+                "stc": -1,
+                "nm": 11022,
+                "dsid": 11023
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "BeiigDn10km4znYjhJWPlw==",
+              "TemplateId": "8qT3Wqmb4ESzaBqhvZrtbQ==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 3,
+                "stc": -1,
+                "nm": 11036,
+                "dsid": 11037
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "S62cX2cqz0ms+jzRtBs46g==",
+              "TemplateId": "SF2Pb7TkN06kj/i2utxvRA==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 2,
+                "stc": -1,
+                "nm": 11024,
+                "dsid": 11025
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "7dajK5d2WkeDAgB9uV3+wg==",
+              "TemplateId": "GcgMwnbcL0ijxM/TK4uDxw==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 2,
+                "stc": -1,
+                "nm": 11026,
+                "dsid": 11027
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "gk1mjIqx8UG0RjeLACq1Bw==",
+              "TemplateId": "1tAXaD2t0U2o9UNorFpWjQ==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 2,
+                "stc": -1,
+                "nm": 11028,
+                "dsid": 11029
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "HLVLoE13sUy3AQCId9KySQ==",
+              "TemplateId": "HvsOU138OEanKOBpQxsZeg==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 3,
+                "stc": -1,
+                "nm": 11030,
+                "dsid": 11031
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "+RnFWlU6VEGkLp/Zu8bBJw==",
+              "TemplateId": "kjHGJnqG9EORmxCmFO4oZQ==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 3,
+                "stc": -1,
+                "nm": 11032,
+                "dsid": 11033
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            },
+            {
+              "Id": "Fm3cAJBnrk6ZXLUt8y+0+w==",
+              "TemplateId": "RwjYA3PyO0GiooFUWrA6iQ==",
+              "Count": 0,
+              "Properties": {
+                "mtype": 3,
+                "stc": -1,
+                "nm": 11034,
+                "dsid": 11035
+              },
+              "OwnerId": null,
+              "Children": [],
+              "ParentId": "h2RV+e2oYUq/jQLtY6oCaQ==",
+              "ClientString": null
+            }
+          ],
+          "ParentId": null,
+          "ClientString": null
+        },
+        {
+          "Id": "kYiO+bVvX0uiZ9F9qkH2Xg==",
+          "TemplateId": "Drq5n0skw0yhUUYa0Y4mmQ==",
+          "Count": 1,
+          "Properties": {
+            "msg2": 100,
+            "cap": -1,
+            "lv": 0
           },
-          {
-            "ItemIds": [],
-            "ContainerId": "46f8e117-ca66-434a-b89e-4200e69abfc4",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "7c7a672e-c6f4-48bb-9dd7-cbcaff808a2c",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "2d0de029-a959-40e0-9b03-5915e1b8b72d",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [ "e4c477ec-0371-4ac8-9e86-d755ecdb89d5", "5a887992-ac75-44cc-97a2-799f21091944", "b3b66d1f-d4a9-4f4f-be8e-f052c9b82fe0", "40f29ef7-4240-4981-ae56-d3fd9ea6c945", "4987c0cb-8dbd-498a-bfef-ef4d8f16c33b", "266f729e-2d68-4998-b41e-f96bc990bb82" ],
-            "ContainerId": "80bd2b62-af60-4d3b-95c5-1764578d2fa1",
-            "NewTemplateId": "234f8c55-4c3c-4406-ad38-081d29564f20",
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "e4c477ec-0371-4ac8-9e86-d755ecdb89d5",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "5a887992-ac75-44cc-97a2-799f21091944",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "b3b66d1f-d4a9-4f4f-be8e-f052c9b82fe0",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "40f29ef7-4240-4981-ae56-d3fd9ea6c945",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "4987c0cb-8dbd-498a-bfef-ef4d8f16c33b",
-            "NewTemplateId": "e31939bd-7056-4293-9a55-6c9ee0cd4681",
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "266f729e-2d68-4998-b41e-f96bc990bb82",
-            "NewTemplateId": null,
-            "ClientString": null
-          },
-          {
-            "ItemIds": [],
-            "ContainerId": "0b735e61-af6e-4692-86f4-d823f0aa60c4",
-            "NewTemplateId": null,
-            "ClientString": null
-          }
-        ],
-        "IsActived": false,
-        "ClientString": null
-      }
-    ],
-    "ClientString": null
-  }
-]
+          "OwnerId": "Yl42XgrHHUG2/GIpeUd7vQ==",
+          "Children": [],
+          "ParentId": null,
+          "ClientString": null
+        }
+      ],
+      "CurrentDungeonId": null,
+      "CombatStartUtc": null,
+      "ClientExtendProperties": {}
+    }
+  ],
+  "Token": "NaSJhvGmOE23I+3KyuvJKw=="
+}

@@ -1655,49 +1655,68 @@ namespace GuangYuan.GY001.BLL
             var diff = 100; //分差
             var gcPvpObject = gameChar.GetPvpObject();  //当前用户pvp数据对象
             var pvpObjectTId = ProjectConstant.PvpObjectTId;  //PVP对象模板Id
-            var pvpObjectQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId).AsNoTracking();    //查询的基础集合
 
             IEnumerable<Guid> excludeCharIds = excludes is null ? new Guid[] { gameChar.Id } : excludes.Append(gameChar.Id);   //排除的角色Id集合
 
-            var excludeIds = (from bag in context.Set<GameItem>().Where(c => c.OwnerId.HasValue && excludeCharIds.Contains(c.OwnerId.Value)).AsNoTracking()
-                              join gi in context.Set<GameItem>().AsNoTracking()
-                              on bag.Id equals gi.ParentId
-                              where gi.TemplateId == pvpObjectTId
-                              select gi.Id).ToArray();  //pvp对象Id集合
-            int lv = 4;
-            var lvStr = lv.ToString("D10");
-            var allow = from gi in context.Set<GameItem>()
-                        join bag in context.Set<GameItem>() on gi.ParentId equals bag.Id
-                        join gc in context.Set<GameChar>() on bag.OwnerId equals gc.Id
-                        where gi.TemplateId == pvpObjectTId && string.Compare(gc.ExtraString, lvStr) >= 0
-                        select gi.Id;   //可以参与pvp的角色
+            //var pvpObjectQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId).AsNoTracking();    //查询的基础集合
+            var pvpObjectQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId && !excludeCharIds.Contains(c.Parent.OwnerId.Value)).AsNoTracking();    //查询的基础集合
 
-            var lower = (from tmp in pvpObjectQuery //取下手
-                         where tmp.Count < gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
-                         orderby tmp.Count descending
+            var hColl = (from tmp in pvpObjectQuery
+                         where tmp.ExtraDecimal > gcPvpObject.ExtraDecimal + diff
+                         orderby tmp.ExtraDecimal
                          select tmp).Take(maxCount);
 
-            var equals = (from tmp in pvpObjectQuery //取平手
-                          where tmp.Count == gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
-                          orderby tmp.Count descending
-                          select tmp).Take(maxCount);
+            var mColl = (from tmp in pvpObjectQuery
+                         where tmp.ExtraDecimal >= gcPvpObject.ExtraDecimal - diff && tmp.ExtraDecimal <= gcPvpObject.ExtraDecimal + diff
+                         orderby Math.Abs(tmp.ExtraDecimal.Value - gcPvpObject.ExtraDecimal.Value)
+                         select tmp).Take(maxCount);
 
-            var higher = (from tmp in pvpObjectQuery //取上手
-                          where tmp.Count > gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
-                          orderby tmp.Count
-                          select tmp).Take(maxCount);
-            var list = lower.Concat(equals).Concat(higher).ToList();
+            var lColl = (from tmp in pvpObjectQuery
+                         where tmp.ExtraDecimal < gcPvpObject.ExtraDecimal - diff
+                         orderby tmp.ExtraDecimal descending
+                         select tmp).Take(maxCount);
+
+            var list = hColl.Concat(mColl).Concat(lColl).Include(c => c.Parent).ToList();
+
+            //var excludeIds = (from bag in context.Set<GameItem>().Where(c => c.OwnerId.HasValue && excludeCharIds.Contains(c.OwnerId.Value)).AsNoTracking()
+            //                  join gi in context.Set<GameItem>().AsNoTracking()
+            //                  on bag.Id equals gi.ParentId
+            //                  where gi.TemplateId == pvpObjectTId
+            //                  select gi.Id).ToArray();  //pvp对象Id集合
+            //int lv = 4;
+            //var lvStr = lv.ToString("D10");
+            //var allow = from gi in context.Set<GameItem>()
+            //            join bag in context.Set<GameItem>() on gi.ParentId equals bag.Id
+            //            join gc in context.Set<GameChar>() on bag.OwnerId equals gc.Id
+            //            where gi.TemplateId == pvpObjectTId && string.Compare(gc.ExtraString, lvStr) >= 0
+            //            select gi.Id;   //可以参与pvp的角色
+
+            //var lower = (from tmp in pvpObjectQuery //取下手
+            //             where tmp.Count < gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
+            //             orderby tmp.Count descending
+            //             select tmp).Take(maxCount);
+
+            //var equals = (from tmp in pvpObjectQuery //取平手
+            //              where tmp.Count == gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
+            //              orderby tmp.Count descending
+            //              select tmp).Take(maxCount);
+
+            //var higher = (from tmp in pvpObjectQuery //取上手
+            //              where tmp.Count > gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
+            //              orderby tmp.Count
+            //              select tmp).Take(maxCount);
+            //var list = lower.Concat(equals).Concat(higher).ToList();
 
             var listGameItems = new List<GameItem>();
             //获取下手
-            var addItem = list.FirstOrDefault(c => c.Count < gcPvpObject.Count);    //下手
+            var addItem = list.FirstOrDefault(c => c.ExtraDecimal < gcPvpObject.ExtraDecimal - diff);    //下手
             if (null != addItem)
                 listGameItems.Add(addItem);
             //获取平手
-            var addItems = list.Where(c => c.Count == gcPvpObject.Count).Take(maxCount - listGameItems.Count - 1);
+            var addItems = list.Where(c => c.ExtraDecimal <= gcPvpObject.ExtraDecimal + diff && c.ExtraDecimal >= gcPvpObject.ExtraDecimal - diff).Take(maxCount - listGameItems.Count - 1);
             listGameItems.AddRange(addItems);
             //获取上手
-            addItems = list.Where(c => c.Count > gcPvpObject.Count).Take(maxCount - listGameItems.Count);
+            addItems = list.Where(c => c.ExtraDecimal > gcPvpObject.ExtraDecimal + diff).Take(maxCount - listGameItems.Count);
             listGameItems.AddRange(addItems);
             //补偿
             if (listGameItems.Count < maxCount)    //若没有取到足够的对手
@@ -1707,9 +1726,8 @@ namespace GuangYuan.GY001.BLL
             }
             //获取对手角色Id
             var objParentIds = listGameItems.Select(c => c.ParentId.Value).ToArray();
-            var charIds = from tmp in context.Set<GameItem>().AsNoTracking()
-                          where objParentIds.Contains(tmp.Id)
-                          select tmp.OwnerId.Value;
+            var charIds = from tmp in listGameItems
+                          select tmp.Parent.OwnerId.Value;
             Debug.WriteLineIf(charIds.Count() < maxCount, "RefreshPvpList获得角色过少。");
             return charIds;
         }
