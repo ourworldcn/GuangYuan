@@ -142,7 +142,7 @@ namespace GuangYuan.GY001.BLL
             var gim = World.ItemManager;
             var gi = new GameItem() { Count = datas.Count };
             World.EventsManager.GameItemCreated(gi, template.ItemTemplateId);
-            var container = gim.GetDefaultContainer(datas.GameChar, gi);
+            var container = World.EventsManager.GetDefaultContainer(gi, datas.GameChar);
             if (template.AutoUse)    //若自动使用
             {
                 gim.ForcedAdd(gi, datas.GameChar.GetShoppingSlot()); //暂存到商城槽
@@ -169,7 +169,7 @@ namespace GuangYuan.GY001.BLL
                 if (list.Count > 0)    //若需要发送邮件
                 {
                     var mail = new GameMail();
-                    World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, list.Select(c => (c, gim.GetDefaultContainer(datas.GameChar, c).TemplateId)));
+                    World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, list.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
                 }
             }
             //改写购买记录数据
@@ -536,7 +536,7 @@ namespace GuangYuan.GY001.BLL
             //计算概率
             var probs = templates.Select(c => (c.Key, c.Value.First(d => d.Properties.ContainsKey("prob")).Properties.GetDecimalOrDefault("prob")));
             var coll = GameMath.ToSum1(probs, c => c.Item2, (c, p) => (c.Key, p));  //规范化概率序列
-            
+
             var probDic = coll.ToDictionary(c => c.Key, c => c.Item2);    //加权后的概率
             var hits = new List<GameCardPoolTemplate>(); //增加的物品列表
             for (int i = 0; i < datas.LotteryTypeCount10; i++)

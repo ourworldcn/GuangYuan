@@ -492,7 +492,7 @@ namespace GuangYuan.GY001.BLL
         #region PVP相关
 
         public const string PvpRankName = "PVP排行";
-        
+
         /// <summary>
         /// 获取指定用户的pvp排名。
         /// </summary>
@@ -502,10 +502,18 @@ namespace GuangYuan.GY001.BLL
         {
             var context = gameChar.GameUser.DbContext;
             var pvp = gameChar.GetPvpObject();
-            var coll = from tmp in context.Set<GameExtendProperty>()
-                       where tmp.Name == PvpRankName && (tmp.DecimalValue > pvp.Count || tmp.DecimalValue == pvp.Count && string.Compare(tmp.StringValue, gameChar.DisplayName) < 0)
-                       select tmp;
-            return coll.Count();
+            //var coll = from tmp in context.Set<GameExtendProperty>()
+            //           where tmp.Name == PvpRankName && (tmp.DecimalValue > pvp.Count || tmp.DecimalValue == pvp.Count && string.Compare(tmp.StringValue, gameChar.DisplayName) < 0)
+            //           select tmp;
+            var coll1 = from gi in context.Set<GameItem>()
+                        join gc in context.Set<GameChar>()
+                        on gi.Parent.OwnerId equals gc.Id
+                        where gi.TemplateId == ProjectConstant.PvpObjectTId && (gi.ExtraDecimal > pvp.ExtraDecimal ||
+                            gi.ExtraDecimal == pvp.ExtraDecimal && string.Compare(gameChar.DisplayName, gc.DisplayName) > 0)
+                        orderby gi.ExtraDecimal, gc.DisplayName
+                        select gi;
+            var result = coll1.Count();
+            return result;
         }
 
         /// <summary>

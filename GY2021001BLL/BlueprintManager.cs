@@ -541,7 +541,7 @@ namespace GuangYuan.GY001.BLL
                 propBag["tid"] = ProjectConstant.ZuojiZuheRongqi;
                 var gi = new GameItem() { Count = 1 };
                 World.EventsManager.GameItemCreated(gi, propBag);
-                if (World.ItemManager.IsExistsMounts(datas.GameChar, gi))    //若已经存在此类坐骑
+                if (World.ItemManager.IsExistsMounts(gi, datas.GameChar))    //若已经存在此类坐骑
                 {
                     World.ItemManager.AddItem(gi, datas.GameChar.GetShoulanBag(), null, datas.ChangeItems);
                 }
@@ -1462,6 +1462,7 @@ namespace GuangYuan.GY001.BLL
         [BlueprintMethod("8b4ac76c-d8cc-4300-95ca-668350149821")]
         public void Fuhua(ApplyBlueprintDatas datas)
         {
+            var propMng = World.PropertyManager;
             if (!datas.Verify(datas.GameItems.Count == 2, "必须指定双亲"))
                 return;
             var jinyinTId = new Guid("{ac7d593c-ce82-4642-97a3-14025da633e4}");
@@ -1470,7 +1471,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             var gim = World.ItemManager;
             var fuhuaSlot = datas.GameChar.GetFuhuaSlot();
-            var renCout = gim.GetFreeCapacity(fuhuaSlot);
+            var renCout = propMng.GetRemainderCap(fuhuaSlot);
             if (!datas.Verify(renCout > 0, "孵化槽已经满", fuhuaSlot.TemplateId))
                 return;
             var parent1 = datas.GameItems[0];
@@ -1933,7 +1934,7 @@ namespace GuangYuan.GY001.BLL
                 var btid = tt.Properties.GetGuidOrDefault("usebtid");
                 var tid = tt.Properties.GetGuidOrDefault("usetid");
                 var mounts = World.ItemManager.CreateMounts(htid, btid, tid);
-                if (World.ItemManager.IsExistsMounts(datas.GameChar, mounts)) //若存在此纯种坐骑
+                if (World.ItemManager.IsExistsMounts(mounts, datas.GameChar)) //若存在此纯种坐骑
                 {
                     mounts.Properties["neatk"] = 80 + VWorld.WorldRandom.Next(21);
                     mounts.Properties["nemhp"] = 80 + VWorld.WorldRandom.Next(21);

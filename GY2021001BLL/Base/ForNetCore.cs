@@ -422,7 +422,7 @@ namespace GuangYuan.GY001.BLL
             services.AddSingleton(c => new GameMissionManager(c, new GameMissionManagerOptions()));
 
             //加入属性管理器
-            services.AddSingleton<IGamePropertyManager>(c => new PropertyManager(c, new PropertyManagerOptions()));
+            services.AddSingleton<IGamePropertyManager>(c => new GamePropertyManager(c, new PropertyManagerOptions()));
 
             //services.AddSingleton<IGameObjectInitializer>(c => new Gy001Initializer(c, new Gy001InitializerOptions()));
 

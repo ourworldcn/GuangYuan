@@ -118,7 +118,7 @@ namespace GuangYuan.GY001.TemplateDb
         /// <summary>
         /// 堆叠属性的名称。默认stc。
         /// </summary>
-        string StackUpperLimit { get; }
+        string StackUpperLimitPropertyName { get; }
 
         /// <summary>
         /// 过滤掉不必复制的属性名。

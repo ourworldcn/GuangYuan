@@ -379,12 +379,12 @@ namespace OW.Game.Mission
                     remainder.Clear();
                     var tuple = view.Metrics.First(c => c.Item1 == zhibiao);
                     var gi = gim.Clone(tuple.Item2);  //复制新物品
-                    var container = gim.GetDefaultContainer(datas.GameChar, gi);
+                    var container = World.EventsManager.GetDefaultContainer(gi, datas.GameChar);
                     gim.AddItem(gi, container, remainder, datas.ChangeItems);//自动加入对应容器
                     if (remainder.Count > 0)
                     {
                         var mail = new GameMail() { };
-                        World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, remainder.Select(c => (c, gim.GetDefaultContainer(datas.GameChar, c).TemplateId)));
+                        World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, remainder.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
                         datas.MailIds.Add(mail.Id);
                     }
                 }

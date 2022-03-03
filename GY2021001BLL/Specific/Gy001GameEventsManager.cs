@@ -88,18 +88,84 @@ namespace OW.Game
     /// </summary>
     public class Gy001GameEventsManager : GameEventsManager
     {
+        #region 构造函数及相关
 
         public Gy001GameEventsManager()
         {
+            Initialize();
         }
 
         public Gy001GameEventsManager(IServiceProvider service) : base(service)
         {
+            Initialize();
         }
 
         public Gy001GameEventsManager(IServiceProvider service, GameEventsManagerOptions options) : base(service, options)
         {
+            Initialize();
         }
+
+        void Initialize()
+        {
+        }
+        #endregion 构造函数及相关
+
+        #region 物品相关
+
+        /// <summary>
+        /// 获取指定物品归属到指定角色时的首选默认容器。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="gChar"></param>
+        /// <returns></returns>
+        public override GameThingBase GetDefaultContainer(GameItem gameItem, GameChar gChar)
+        {
+            var result = base.GetDefaultContainer(gameItem, gChar);
+            if (null != result && result.TemplateId != ProjectConstant.ZuojiBagSlotId)  //若有指定容器且不是坐骑槽
+                return result;
+            else if (null != result)    //若有默认容器且是坐骑槽
+            {
+                result = World.ItemManager.IsExistsMounts(gameItem, gChar) ? gChar.GetShoulanBag() : gChar.GetZuojiBag();
+                return result;
+            }
+
+            var template = World.ItemTemplateManager.GetTemplateFromeId(gameItem.TemplateId);
+            switch (template.CatalogNumber)
+            {
+                case 0:
+                    if (gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi) //若是坐骑/野兽
+                    {
+                        result = World.ItemManager.IsExistsMounts(gameItem, gChar) ? gChar.GetShoulanBag() : gChar.GetZuojiBag();
+                    }
+                    else
+                        result = null;
+                    break;
+                case 10:
+                    result = gChar.GetShenwenBag();
+                    break;
+                case 15:    //神纹强化道具
+                case 16:    //神纹强化道具
+                case 17:    //神纹强化道具
+                case 18:    //道具
+                    result = gChar.GetItemBag();
+                    break;
+                case 26:    //时装
+                    result = gChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShizhuangBagSlotId);
+                    break;
+                case 99:    //货币
+                    result = gChar.GetCurrencyBag();
+                    break;
+                case 30:
+                    result = gChar.GetTujianBag();
+                    break;
+                default:    //不认识的放入道具背包
+                    result = gChar.GetItemBag();
+                    break;
+            }
+            return result;
+        }
+
+        #endregion 物品相关
 
         public override void Clone(GameChar src, GameChar dest)
         {
@@ -112,6 +178,7 @@ namespace OW.Game
             }
 
         }
+
         public override void OnDynamicPropertyChanged(DynamicPropertyChangedCollection args)
         {
             base.OnDynamicPropertyChanged(args);
@@ -270,12 +337,12 @@ namespace OW.Game
 
         #endregion 阵容相关
 
+        #region 创建后初始化
+
         public override void OnGameItemAdd(IEnumerable<GameItem> gameItems, Dictionary<string, object> parameters)
         {
             base.OnGameItemAdd(gameItems, parameters);
         }
-
-        #region 创建后初始化
 
         public override void GameUserCreated(GameUser user, string loginName, string pwd, [AllowNull] DbContext context, [AllowNull] IReadOnlyDictionary<string, object> parameters)
         {
@@ -471,6 +538,8 @@ namespace OW.Game
         /// </summary>
         public const string ChangesItemExPropertyName = "{BAD410C8-6393-44B4-9EB1-97F91ED11C12}";
 
+        #region 加载对象相关
+
         public override void GameCharLoaded(GameChar gameChar)
         {
             base.GameCharLoaded(gameChar);
@@ -518,6 +587,8 @@ namespace OW.Game
             user.CurrentChar = user.GameChars[0];   //项目特定:一个用户有且仅有一个角色
             GameCharLoaded(user.CurrentChar);
         }
+
+        #endregion 加载对象相关
 
         #region Json反序列化
         public override void JsonDeserialized(GameUser gameUser)

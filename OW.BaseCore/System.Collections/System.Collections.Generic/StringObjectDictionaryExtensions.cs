@@ -230,7 +230,5 @@ namespace System.Collections.Generic
         #endregion 获取指定类型的值或默认值
 
     }
-
-
 }
 

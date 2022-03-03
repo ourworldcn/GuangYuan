@@ -334,12 +334,12 @@ namespace OW.Game
         /// </summary>
         public GameMissionManager MissionManager { get => _GameMissionManager ??= Service.GetRequiredService<GameMissionManager>(); }
 
-        private IGamePropertyManager _PropertyManager;
+        private GamePropertyManager _PropertyManager;
 
         /// <summary>
         /// 属性管理器。
         /// </summary>
-        public IGamePropertyManager PropertyManager { get => _PropertyManager ??= Service.GetRequiredService<IGamePropertyManager>(); }
+        public GamePropertyManager PropertyManager { get => _PropertyManager ??= Service.GetRequiredService<IGamePropertyManager>() as GamePropertyManager; }
 
         private GameEventsManager _EventsManager;
         /// <summary>

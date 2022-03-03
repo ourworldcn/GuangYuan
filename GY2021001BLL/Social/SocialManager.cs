@@ -449,7 +449,7 @@ namespace GuangYuan.GY001.BLL
                     var ptid = item.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty);
                     var gameItem = new GameItem();  //物品
                     World.EventsManager.GameItemCreated(gameItem, item.Properties);
-                    GameObjectBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
+                    GameThingBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
                     if (parent is null)
                     {
                         if (ptid == ProjectConstant.CharTemplateId)

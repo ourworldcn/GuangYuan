@@ -469,10 +469,10 @@ namespace GuangYuan.GY001.BLL
         /// 获取指定角色是否拥有了指定坐骑。
         /// </summary>
         /// <param name="manager"></param>
-        /// <param name="gChar"></param>
         /// <param name="gameItem"></param>
+        /// <param name="gChar"></param>
         /// <returns></returns>
-        public static bool IsExistsMounts(this GameItemManager manager, GameChar gChar, GameItem gameItem)
+        public static bool IsExistsMounts(this GameItemManager manager, GameItem gameItem, GameChar gChar)
         {
             var bag = gChar.GetZuojiBag();
             var htid = manager.GetHeadTemplate(gameItem)?.Id;

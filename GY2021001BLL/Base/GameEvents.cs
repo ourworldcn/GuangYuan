@@ -112,6 +112,7 @@ namespace OW.Game
     /// </summary>
     public class GameEventsManager : GameManagerBase<GameEventsManagerOptions>
     {
+
         #region 构造函数
 
         /// <summary>
@@ -134,8 +135,24 @@ namespace OW.Game
 
         private void Initialize()
         {
+            _ItemTemplateManager = World.ItemTemplateManager;
         }
         #endregion 构造函数
+
+        GameItemTemplateManager _ItemTemplateManager;
+
+        public GameItemTemplateManager ItemTemplateManager
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return _ItemTemplateManager;
+            }
+        }
+
+        #region 基础规则相关
+
+        #endregion 基础规则相关
 
         #region 动态属性变化
 
@@ -221,7 +238,7 @@ namespace OW.Game
                 if (tt.Properties.TryGetDecimal("Count", out count) || tt.Properties.TryGetDecimal("count", out count)) //若制定了模板且其中指定了初始数量
                     gameItem.Count = count;
                 else
-                    gameItem.Count ??= tt.Properties.ContainsKey(gpm.StackUpperLimit) ? 0 : 1;
+                    gameItem.Count ??= tt.Properties.ContainsKey(gpm.StackUpperLimitPropertyName) ? 0 : 1;
             }
             #endregion 设置数量
 
@@ -357,12 +374,12 @@ namespace OW.Game
 #endif
             }
             //处理特殊属性
-            if (propertyBag.TryGetDecimal(nameof(thing.ExtraDecimal), out var dec))
+            if (DictionaryUtil.TryGetDecimal(nameof(thing.ExtraDecimal), out var dec, propertyBag, tt.Properties))
             {
                 thing.Properties.Remove(nameof(thing.ExtraDecimal), out _);
                 thing.ExtraDecimal = dec;
             }
-            if (propertyBag.TryGetString(nameof(thing.ExtraString), out var str))
+            if (DictionaryUtil.TryGetString(nameof(thing.ExtraString), out var str, propertyBag, tt.Properties))
             {
                 thing.Properties.Remove(nameof(thing.ExtraString), out _);
                 thing.ExtraString = str;
@@ -614,6 +631,22 @@ namespace OW.Game
             OwHelper.Copy(src.Properties, dest.Properties);
         }
         #endregion 复制信息相关
+
+        #region 物品相关
+
+        /// <summary>
+        /// 获取物品的默认容器。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="gameChar"></param>
+        /// <returns>默认容器对象，如果没有则返回null。</returns>
+        public virtual GameThingBase GetDefaultContainer(GameItem gameItem, GameChar gameChar)
+        {
+            if (World.PropertyManager.TryGetPropertyWithTemplate(gameItem, "ptid", out var obj) && OwConvert.TryToGuid(obj, out var ptid))
+                return gameChar.TemplateId == ptid ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
+            return null;
+        }
+        #endregion 物品相关
     }
 
     public static class GameEventsManagerExtensions
