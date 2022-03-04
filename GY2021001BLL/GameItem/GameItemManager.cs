@@ -317,18 +317,6 @@ namespace OW.Game.Item
         }
 
         /// <summary>
-        /// 获取指定角色所有物品的字典，键是物品Id,值是物品对象。
-        /// </summary>
-        /// <param name="gc"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IReadOnlyDictionary<Guid, GameItem> GetAllChildrenDictionary(GameChar gc)
-        {
-            //TO DO未来是否需要缓存机制？
-            return GetAllChildren(gc).ToDictionary(c => c.Id);
-        }
-
-        /// <summary>
         /// 移动一个物品的一部分到另一个容器。
         /// </summary>
         /// <param name="item"></param>
@@ -340,7 +328,7 @@ namespace OW.Game.Item
         public bool MoveItem(GameItem item, decimal count, GameItemBase destContainer, ICollection<ChangeItem> changesItems = null)
         {
             var propMng = World.PropertyManager;
-            var container = GetChildrenCollection(destContainer);
+            var container = propMng.GetChildrenCollection(destContainer);
             //TO DO 不会堆叠
             if (count <= 0)
                 throw new ArgumentOutOfRangeException(nameof(count), "应大于0");
@@ -385,7 +373,7 @@ namespace OW.Game.Item
         /// <returns>1是不可堆叠或最大堆叠数量本就是1。</returns>
         public decimal GetMaxStc(GameItem gameItem)
         {
-            if (ProjectConstant.MucaiId == gameItem.TemplateId && GetChar(gameItem.Parent) is GameChar gameChar)    //若是木材且正确的挂接到了对象树
+            if (ProjectConstant.MucaiId == gameItem.TemplateId && gameItem.Parent?.GetGameChar() is GameChar gameChar)    //若是木材且正确的挂接到了对象树
             {
                 var stcMucai = gameItem.Properties.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, 1);
                 stcMucai = stcMucai == -1 ? decimal.MaxValue : stcMucai;
@@ -499,7 +487,6 @@ namespace OW.Game.Item
             }
         }
 
-
         /// <summary>
         /// 将一组物品加入一个容器下。
         /// 如果合并后数量为0，则会试图删除对象。
@@ -508,7 +495,6 @@ namespace OW.Game.Item
         /// <param name="parent">容器。</param>
         /// <param name="remainder">追加不能放入的物品到此集合，可以是null或省略，此时忽略。</param>
         /// <param name="changeItems">变化的数据。可以是null或省略，此时忽略。</param>
-        /// 
         public void AddItems(IEnumerable<GameItem> gameItems, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
         {
             foreach (var item in gameItems) //TO DO 性能优化未做
@@ -530,7 +516,7 @@ namespace OW.Game.Item
         public void AddItem(GameItem gameItem, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
         {
             var propMng = World.PropertyManager;
-            IList<GameItem> children = GetChildrenCollection(parent);
+            var children = propMng.GetChildrenCollection(parent);
             var stcItem = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId) ?? gameItem;
             Debug.Assert(null != children);
             if (!stcItem.IsStc(out var stc)) //若不可堆叠
@@ -575,8 +561,8 @@ namespace OW.Game.Item
                 if (null != dest)  //若存在同类物品
                 {
                     var redCount = Math.Min(dest.GetNumberOfStackRemainder(), gameItem.Count ?? 0);   //移动的数量
-                    ForcedAddCount(gameItem, -redCount, changeItems);
-                    ForcedAddCount(dest, redCount, changeItems);
+                    this.ForcedAddCount(gameItem, -redCount, changeItems);
+                    this.ForcedAddCount(dest, redCount, changeItems);
                     result.Add(dest);
                 }
                 if (gameItem.Count <= 0)   //若已经全部堆叠进入
@@ -666,10 +652,10 @@ namespace OW.Game.Item
         /// <param name="gameItem"></param>
         /// <param name="parent"></param>
         /// <returns></returns>
-        public bool IsAllowAdd(GameItem gameItem, GameObjectBase parent)
+        public bool IsAllowAdd(GameItem gameItem, GameThingBase parent)
         {
             var propMng = World.PropertyManager;
-            IList<GameItem> children = GetChildrenCollection(parent);
+            var children = propMng.GetChildrenCollection(parent);
             var stcItem = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId) ?? gameItem;
             if (!stcItem.IsStc(out var stc)) //若不可堆叠
             {
@@ -698,30 +684,6 @@ namespace OW.Game.Item
                 var re = dest?.GetNumberOfStackRemainder() ?? decimal.MaxValue;
                 return re >= gameItem.Count;
             }
-        }
-
-        /// <summary>
-        /// 加入非堆叠物品，
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="parent"></param>
-        /// <param name="changeItems"></param>
-        private bool AddItemNoneStack(GameItem gameItem, GameThingBase parent, ICollection<ChangeItem> changeItems = null)
-        {
-            Debug.Assert(!gameItem.IsStc(out var stc), "只能针对非堆叠物品。");
-            gameItem.Count ??= 1;
-            var upper = World.PropertyManager.GetRemainderCap(parent);    //TO DO 暂时未限制是否是容器
-
-            IList<GameItem> children = GetChildrenCollection(parent);
-            if (children.Count >= upper)  //若超过容量
-            {
-                return false;
-            }
-            var succ = ForcedAdd(gameItem, parent);
-            changeItems?.AddToAdds(parent.Id, gameItem);
-            if (this.IsMounts(gameItem)) //若是坐骑
-                World.CombatManager.UpdatePveInfo(gameItem.GetGameChar());
-            return true;
         }
 
         /// <summary>
@@ -776,83 +738,6 @@ namespace OW.Game.Item
         }
 
         /// <summary>
-        /// 无视容量限制堆叠规则。将物品加入指定容器。
-        /// </summary>
-        /// <param name="gameItem">无视容量限制堆叠规则，不考虑原有容器。</param>
-        /// <param name="container">无视容量限制堆叠规则。</param>
-        /// <param name="changes">记录变化的集合，省略或为null则忽略。</param>
-        /// <returns>true成功加入.false <paramref name="container"/>不是可以容纳物品的类型。</returns>
-        public bool ForcedAdd([NotNull] GameItem gameItem, [NotNull] GameThingBase container, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
-        {
-            if (container is GameChar gChar)  //若容器是角色
-            {
-                gameItem.GenerateIdIfEmpty();
-                gChar.GameItems.Add(gameItem);
-                gameItem.OwnerId = gChar.Id;
-            }
-            else if (container is GameItem gItem)   //若容器是物品
-            {
-                gameItem.GenerateIdIfEmpty();
-                gItem.Children.Add(gameItem);
-                gameItem.ParentId = gItem.Id;
-                gameItem.Parent = gItem;
-            }
-            else
-                return false;
-            if (null != changes)
-            {
-                changes.AddToCollection(container, gameItem);
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// 设置数量属性，并考虑自动删除对象等事项。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="count">只能是非负数。</param>
-        /// <param name="changes">变化数据，可以是空表示不记录变化数据。</param>
-        public virtual bool ForcedSetCount(GameItem gameItem, decimal count, [AllowNull] ICollection<ChangeItem> changes = null)
-        {
-            gameItem.Count = count;
-            if (gameItem.Parent is null)    //若设置的是游离对象
-            {
-
-            }
-            else if (decimal.Zero == gameItem.Count)   //若已经变为0
-            {
-                if (!gameItem.IsStc(out _) || gameItem.Parent?.TemplateId != ProjectConstant.CurrencyBagTId)   //若应删除对象
-                {
-                    var pid = gameItem.ParentId ?? gameItem.OwnerId.Value;
-                    if (!ForceDelete(gameItem)) //若无法删除
-                        return false;
-                    changes?.AddToRemoves(pid, gameItem.Id);
-                }
-                else //不用删除对象
-                {
-                    changes?.AddToChanges(gameItem);
-                }
-            }
-            else //非0
-            {
-                changes?.AddToChanges(gameItem);
-            }
-            return true;
-
-        }
-
-        /// <summary>
-        /// 强制修改数量。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="diff">可以是合理范围内的负数。</param>
-        /// <param name="changes">变化数据，可以是空表示不记录变化数据。</param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ForcedAddCount(GameItem gameItem, decimal diff, [AllowNull] ICollection<ChangeItem> changes = null) =>
-            ForcedSetCount(gameItem, gameItem.Count.GetValueOrDefault() + diff, changes);
-
-        /// <summary>
         /// 强制移动物品。无视容量限制堆叠规则。
         /// </summary>
         /// <param name="gameItem"></param>
@@ -865,49 +750,6 @@ namespace OW.Game.Item
             return ForceRemove(gameItem, changes) && ForcedAdd(gameItem, container, changes);
         }
 
-        /// <summary>
-        /// 强制将一个物品从它现有容器中移除。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="changes"></param>
-        /// <returns>true成功移除，false物品当前没有容器。</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="gameItem"/>是null。</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ForceRemove(GameItem gameItem, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
-        {
-            bool result;
-            var container = GetContainer(gameItem);
-            if (null != container)
-                result = GetChildrenCollection(container)?.Remove(gameItem) ?? false;
-            else
-                result = false;
-            gameItem.Parent = null; gameItem.ParentId = gameItem.OwnerId = null;
-            if (null != changes)
-            {
-                changes.RemoveFromCollection(container, gameItem);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// 强制彻底删除一个物品。会正确设置导航属性。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="db">使用的数据库上下文，如果省略或为null则会在关系中寻找。</param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ForceDelete(GameItem gameItem, DbContext db = null)
-        {
-            var gc = gameItem.GetGameChar();   //保存所属角色
-            db ??= gc?.GameUser?.DbContext;
-            bool result = ForceRemove(gameItem);
-            if (result)   //若成功移除关系
-            {
-                if (!(db is null) && db.Entry(gameItem).State != EntityState.Detached)  //若非新加入的物品
-                    db.Remove(gameItem);
-            }
-            return result;
-        }
         #endregion 物品增减相关
 
         /// <summary>
@@ -944,21 +786,14 @@ namespace OW.Game.Item
         /// <param name="parent">仅在这个对象的直接或间接子代中搜索，如果指定一个角色对象可以搜寻角色下所有物品。</param>
         /// <returns>true所有指定Id均被获取，false,至少有一个物品没有找到，</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool GetItems(IEnumerable<Guid> ids, ICollection<GameItem> items, GameObjectBase parent)
+        public bool GetItems(IEnumerable<Guid> ids, ICollection<GameItem> items, GameThingBase parent)
         {
-            return GetItems(ids, items, GetAllChildren(parent).Join(ids, c => c.Id, c => c, (l, r) => l));
-        }
-
-        /// <summary>
-        /// 返回指定Id的对象。
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="gameChar">指定所属的角色对象。</param>
-        /// <returns>没有找到则返回null。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameItem GetItemFromId(Guid id, GameChar gameChar)
-        {
-            return OwHelper.GetAllSubItemsOfTree(gameChar.GameItems, c => c.Children).FirstOrDefault(c => c.Id == id);
+            IEnumerable<GameItem> enu = null;
+            if (parent is GameChar gc)
+                enu = gc.AllChildren;
+            else if (parent is GameItem gi)
+                enu = gi.GetAllChildren();
+            return GetItems(ids, items, enu.Join(ids, c => c.Id, c => c, (l, r) => l));
         }
 
         /// <summary>
@@ -986,19 +821,6 @@ namespace OW.Game.Item
         }
 
         /// <summary>
-        /// 获取指定物品所属的角色对象。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <returns>物品所属的角色，如果没有找到则返回null。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public GameChar GetChar(GameItem gameItem)
-        {
-            GameItem tmp;
-            for (tmp = gameItem; tmp.Parent != null; tmp = tmp.Parent) ;
-            return tmp.OwnerId is null ? null : World.CharManager.GetCharFromId(tmp.OwnerId.Value);
-        }
-
-        /// <summary>
         /// 获取指定物品的直接父容器。
         /// </summary>
         /// <param name="gameItem"></param>
@@ -1009,36 +831,13 @@ namespace OW.Game.Item
         public GameThingBase GetContainer(GameItem gameItem, GameChar gameChar = null)
         {
             var result = gameItem.Parent as GameThingBase ?? (gameItem.OwnerId is null ? null : World.CharManager.GetCharFromId(gameItem.OwnerId.Value));
+            //result ??= World.EventsManager.GetDefaultContainer(gameItem, gameChar);
             if (result is null && gameChar != null)
             {
                 var ptid = gameChar.Properties.GetGuidOrDefault("ptid");
                 result = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
             }
             return result;
-        }
-
-        /// <summary>
-        /// 获取容器的子对象的集合接口。
-        /// </summary>
-        /// <param name="gameThing">容器对象。</param>
-        /// <returns>子代容器的接口，null表示没有找到。特别地，当参数是null时也会返回null而不引发异常。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IList<GameItem> GetChildrenCollection(GameObjectBase gameThing)
-        {
-            var children = (gameThing as GameItem)?.Children;
-            return children ?? (gameThing as GameChar)?.GameItems;
-        }
-
-        /// <summary>
-        /// 获取指定容器所有子代的可枚举对象。这是延迟执行的对象。枚举过程中更改对象可能导致异常。
-        /// </summary>
-        /// <param name="gameThing"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<GameItem> GetAllChildren(GameObjectBase gameThing)
-        {
-            var _ = GetChildrenCollection(gameThing);
-            return OwHelper.GetAllSubItemsOfTree(_, c => c.Children);
         }
 
         ///// <summary>
@@ -1469,19 +1268,187 @@ namespace OW.Game.Item
 
         #region 物品操作
 
-        public void AddNoStackItem(GameItem gItem, GameThingBase container, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        /// <summary>
+        /// 加入非堆叠物品，
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="parent"></param>
+        /// <param name="changes"></param>
+        private bool AddNoStackItem(GameItem gameItem, GameThingBase parent, ICollection<GamePropertyChangedItem<object>> changes = null)
         {
-            var propMng = World.PropertyManager;
-            if (propMng.IsStc(gItem))   //若是可堆叠物品
+            Debug.Assert(!World.PropertyManager.IsStc(gameItem), "只能针对非堆叠物品。");
+            var propertyManager = World.PropertyManager;
+            gameItem.Count ??= 1;
+            var upper = propertyManager.GetRemainderCap(parent);    //TO DO 暂时未限制是否是容器
+
+            var children = propertyManager.GetChildrenCollection(parent);
+            if (children.Count >= upper)  //若超过容量
             {
-                var children = propMng.GetChildrenCollection(container);
-                var already = children.FirstOrDefault(c => c.TemplateId == gItem.TemplateId);   //已有物品
+                return false;
             }
-            else //若是不可堆叠物品
-            {
-            }
+            var succ = ForcedAdd(gameItem, parent);
+            //changes?.AddToAdds(parent.Id, gameItem);
+            if (this.IsMounts(gameItem)) //若是坐骑
+                World.CombatManager.UpdatePveInfo(gameItem.GetGameChar());
+            return true;
         }
 
+        /// <summary>
+        /// 无视容量限制堆叠规则。将物品加入指定容器。
+        /// </summary>
+        /// <param name="gameItem">无视容量限制堆叠规则，不考虑原有容器。</param>
+        /// <param name="container">无视容量限制堆叠规则。</param>
+        /// <param name="changes">记录变化的集合，省略或为null则忽略。</param>
+        /// <returns>true成功加入.false <paramref name="container"/>不是可以容纳物品的类型,这里仅指对象的类型无法识别，而不会校验容量。</returns>
+        public virtual bool ForcedAdd([NotNull] GameItem gameItem, [NotNull] GameThingBase container, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        {
+            if (container is GameChar gChar)  //若容器是角色
+            {
+                gameItem.GenerateIdIfEmpty();
+                gChar.GameItems.Add(gameItem);
+                gameItem.OwnerId = gChar.Id;
+            }
+            else if (container is GameItem gItem)   //若容器是物品
+            {
+                gameItem.GenerateIdIfEmpty();
+                gItem.Children.Add(gameItem);
+                gameItem.ParentId = gItem.Id;
+                gameItem.Parent = gItem;
+            }
+            else
+                return false;
+            if (null != changes)
+            {
+                changes.AddToCollection(container, gameItem);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 强制将一个物品从它现有容器中移除。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="changes"></param>
+        /// <returns>true成功移除，false物品当前没有容器。</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="gameItem"/>是null。</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual bool ForceRemove(GameItem gameItem, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        {
+            bool result;
+            var container = this.GetCurrentContainer(gameItem);
+            if (null != container)  //若有容器
+                result = World.PropertyManager.GetChildrenCollection(container)?.Remove(gameItem) ?? false;
+            else
+                result = false;
+            gameItem.Parent = null; gameItem.ParentId = gameItem.OwnerId = null;
+            if (result && null != changes)
+            {
+                changes.RemoveFromCollection(container, gameItem);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 强制彻底删除一个物品。会正确设置导航属性。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="db">使用的数据库上下文，如果省略或为null则会在关系中寻找。若找不到则不会在数据库中彻底删除对象，仅移除关系，这将导致孤立对象。</param>
+        /// <param name="changes"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual bool ForceDelete(GameItem gameItem, DbContext db = null, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        {
+            db ??= gameItem.GetDbContext();
+            bool result = ForceRemove(gameItem, changes);
+            if (result)   //若成功移除关系
+            {
+                if (null != db && db.Entry(gameItem).State != EntityState.Detached)  //若非新加入的物品
+                    db.Remove(gameItem);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 设置数量属性，并考虑自动删除对象等事项。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="count">只能是非负数。</param>
+        /// <param name="changes">变化数据，可以是空表示不记录变化数据。</param>
+        public virtual bool ForcedSetCount(GameItem gameItem, decimal count, [AllowNull] ICollection<ChangeItem> changes = null)
+        {
+            gameItem.Count = count;
+            if (gameItem.Parent is null)    //若设置的是游离对象
+            {
+
+            }
+            else if (decimal.Zero == gameItem.Count)   //若已经变为0
+            {
+                if (!gameItem.IsStc(out _) || gameItem.Parent?.TemplateId != ProjectConstant.CurrencyBagTId)   //若应删除对象
+                {
+                    var pid = gameItem.ParentId ?? gameItem.OwnerId.Value;
+                    if (!ForceDelete(gameItem)) //若无法删除
+                        return false;
+                    changes?.AddToRemoves(pid, gameItem.Id);
+                }
+                else //不用删除对象
+                {
+                    changes?.AddToChanges(gameItem);
+                }
+            }
+            else //非0
+            {
+                changes?.AddToChanges(gameItem);
+            }
+            return true;
+
+        }
+
+        /// <summary>
+        /// 设置物品对象的数量，若设置为0则根据设置决定是否删除对象。
+        /// </summary>
+        /// <param name="gItem"></param>
+        /// <param name="count"></param>
+        /// <param name="changes"></param>
+        /// <returns></returns>
+        public virtual bool ForcedSetCount([NotNull] GameItem gItem, decimal count, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        {
+            gItem.Count = count;
+            if (gItem.Parent is null && gItem.OwnerId is null)    //若设置的是游离对象
+            {
+                gItem.SetPropertyAndReturnChangedItem(World.PropertyManager.CountPropertyName, count, null, changes);
+            }
+            else if (decimal.Zero == gItem.Count)   //若已经变为0
+            {
+                if (!World.EventsManager.IsAllowZero(gItem))   //若应删除对象
+                {
+                    return ForceDelete(gItem, null, changes); //若无法删除
+                }
+                else //不用删除对象
+                {
+                    gItem.SetPropertyAndReturnChangedItem(World.PropertyManager.CountPropertyName, count, null, changes);
+                }
+            }
+            else //若设置非0值
+            {
+                gItem.SetPropertyAndReturnChangedItem(World.PropertyManager.CountPropertyName, count, null, changes);
+            }
+            return true;
+
+        }
+
+        public virtual void AddItemEx(GameItem gItem, GameThingBase container, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        {
+            if (World.PropertyManager.IsStc(gItem)) //若可堆叠
+            {
+            }
+            else //若不可堆叠
+            {
+                var oldContainer = this.GetCurrentContainer(gItem); //当前容器
+                if (null != oldContainer)
+                    ;
+                ForcedAdd(gItem, container, changes);
+            }
+        }
         #endregion 物品操作
     }
 
@@ -1490,6 +1457,27 @@ namespace OW.Game.Item
     /// </summary>
     public static class GamePropertyChangedItemExtensions
     {
+        /// <summary>
+        /// 设置一个新值。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="key"></param>
+        /// <param name="value">新值，即使是null也认为是有效新值。</param>
+        public static void SetValueAndAdd(this ICollection<GamePropertyChangedItem<object>> obj, GameThingBase thing, string key, object value)
+        {
+            var data = GamePropertyChangedItemPool<object>.Shared.Get();
+            if (thing.Properties.TryGetValue(key, out var oldValue))  //若存在旧值
+            {
+                data.HasOldValue = true;
+                data.OldValue = oldValue;
+            }
+            data.HasNewValue = true;
+            data.NewValue = value;
+            data.Object = thing;
+            data.PropertyName = key;
+            obj.Add(data);
+        }
+
         /// <summary>
         /// 增加属性变化项，以反映指定的一组物品刚刚增加到了容器中。函数不会校验对象的结构，仅按参数构建变化数据。
         /// </summary>
@@ -1904,6 +1892,29 @@ namespace OW.Game.Item
                 gameItems.Add(gi);
             }
         }
+
+        /// <summary>
+        /// 强制修改数量。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="diff">可以是合理范围内的负数。</param>
+        /// <param name="changes">变化数据，可以是空表示不记录变化数据。</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool ForcedAddCount(this GameItemManager mng, GameItem gameItem, decimal diff, [AllowNull] ICollection<ChangeItem> changes = null) =>
+            mng.ForcedSetCount(gameItem, gameItem.Count.GetValueOrDefault() + diff, changes);
+
+        /// <summary>
+        /// 获取物品对象当前的容器。
+        /// </summary>
+        /// <param name="gItem"></param>
+        /// <returns>可能是角色对象或父容器。如果没有则返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameThingBase GetCurrentContainer(this GameItemManager mng, GameItem gItem)
+        {
+            return gItem.Parent as GameThingBase ?? (gItem.OwnerId.HasValue ? mng.World.CharManager.GetCharFromId(gItem.OwnerId.Value) : null);
+        }
+
 
     }
 

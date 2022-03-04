@@ -421,7 +421,7 @@ namespace OW.Game.Store
         /// <param name="tag"></param>
         /// <param name="changes">变化数据的集合，如果值变化了，将向此集合追加变化数据对象。若省略或为null则不追加。</param>
         /// <returns>true设置了变化数据，false,新值与旧值没有变化。</returns>
-        public static bool SetPropertyAndReturnChangedItem(this SimpleDynamicPropertyBase obj, string name, object newValue, [AllowNull] object tag = null,
+        public static bool SetPropertyAndAddChangedItem(this SimpleDynamicPropertyBase obj, string name, object newValue, [AllowNull] object tag = null,
             [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
         {
             bool result;

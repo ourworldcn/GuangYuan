@@ -646,6 +646,18 @@ namespace OW.Game
                 return gameChar.TemplateId == ptid ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
             return null;
         }
+
+        /// <summary>
+        /// 是否允许数量为0的物品继续存在。
+        /// </summary>
+        /// <param name="gItem"></param>
+        /// <returns>立即返回false。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public virtual bool IsAllowZero(GameItem gItem)
+        {
+            return false;
+        }
+
         #endregion 物品相关
     }
 

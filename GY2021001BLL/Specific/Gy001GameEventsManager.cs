@@ -165,6 +165,18 @@ namespace OW.Game
             return result;
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="gItem"></param>
+        /// <returns></returns>
+        public override bool IsAllowZero(GameItem gItem)
+        {
+            if (World.PropertyManager.IsStc(gItem) && gItem.Parent != null && gItem.Parent.TemplateId == ProjectConstant.CurrencyBagTId)  //若是货币
+                return true;
+            return base.IsAllowZero(gItem);
+        }
+
         #endregion 物品相关
 
         public override void Clone(GameChar src, GameChar dest)

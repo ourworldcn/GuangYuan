@@ -286,7 +286,7 @@ namespace GY2021001WebApi.Controllers
                 var lst = new List<GameItem>();
                 var coll = from tmp in model.Items
                            select (Id: OwConvert.ToGuid(tmp.ItemId), tmp.Count, PId: OwConvert.ToGuid(tmp.DestContainerId));
-                var allGi = gim.GetAllChildrenDictionary(gc);
+                var allGi = gc.AllChildren.ToDictionary(c => c.Id);
                 var (Id, Count, PId) = coll.FirstOrDefault(c => !allGi.ContainsKey(c.Id) || !allGi.ContainsKey(c.PId));
                 if (Id != Guid.Empty)
                 {

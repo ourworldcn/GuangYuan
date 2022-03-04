@@ -166,6 +166,10 @@ namespace GuangYuan.GY001.UserDb
 
         }
 
+        /// <summary>
+        /// 获取相关的数据库上下文，若没有导航属性则返回null。
+        /// </summary>
+        /// <returns></returns>
         public override DbContext GetDbContext()
         {
             return this.GetGameChar()?.GetDbContext();
@@ -354,7 +358,7 @@ namespace GuangYuan.GY001.UserDb
                 }
             }
             else
-                return SimpleDynamicPropertyBaseExtensions.SetPropertyAndReturnChangedItem(obj, name, newValue, tag, changes);
+                return SimpleDynamicPropertyBaseExtensions.SetPropertyAndAddChangedItem(obj, name, newValue, tag, changes);
         }
 
         public static void ToE(IEnumerable<GamePropertyChangedItem<object>> src, ICollection<ChangeItem> dest)
