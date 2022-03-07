@@ -361,26 +361,6 @@ namespace GuangYuan.GY001.UserDb
                 return SimpleDynamicPropertyBaseExtensions.SetPropertyAndAddChangedItem(obj, name, newValue, tag, changes);
         }
 
-        public static void ToE(IEnumerable<GamePropertyChangedItem<object>> src, ICollection<ChangeItem> dest)
-        {
-            var coll = from tmp in src
-                       group tmp by tmp.Object;
-            coll.Select(c => c.Key);
-        }
-
-        /// <summary>
-        /// 获取堆叠空余数量。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns>堆叠空余数量，不可堆叠将返回0，不限制将返回<see cref="decimal.MaxValue"/></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static decimal GetNumberOfStackRemainder(this GameItem obj)
-        {
-            if (!obj.IsStc(out decimal stc))
-                return 0;
-            return -1 == stc ? decimal.MaxValue : Math.Max(0, stc - obj.Count.Value);
-        }
-
         /// <summary>
         /// 获取或设置所属的角色对象。没有设置关系可能返回null。
         /// </summary>

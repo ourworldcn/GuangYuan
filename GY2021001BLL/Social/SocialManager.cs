@@ -859,7 +859,7 @@ namespace GuangYuan.GY001.BLL
             else //接受
             {
                 var slot = gameChar.AllChildren.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
-                if (slot.GetNumberOfStackRemainder() <= 0)
+                if (World.PropertyManager.GetRemainderStc(slot) <= 0)
                 {
                     VWorld.SetLastErrorMessage("好友位已满。");
                     return ConfirmFriendResult.CharFriendFull;

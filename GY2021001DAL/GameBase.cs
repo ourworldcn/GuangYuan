@@ -217,16 +217,6 @@ namespace GuangYuan.GY001.UserDb
         }
 
         /// <summary>
-        /// 是否可堆叠。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="result">如果是可堆叠对象则返回堆叠最大数量。-1是不受限制。</param>
-        /// <returns>true可堆叠，false不可堆叠。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsStc(this GameItemBase obj, out decimal result) =>
-            obj.TryGetPropertyWithFcp("stc", out result);
-
-        /// <summary>
         /// 获取指定名称的属性值，如果快变属性存在则返回快变属性的当前值，如果在两处都没有没有找到该名称的属性或无法转化为数值，则返回指定的默认值。
         /// </summary>
         /// <param name="name"></param>

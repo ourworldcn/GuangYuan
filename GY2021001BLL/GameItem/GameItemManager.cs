@@ -338,7 +338,7 @@ namespace OW.Game.Item
                 return false;
             if (item.Count < count)
                 return false;
-            if (!item.IsStc(out var stc) || count == item.Count)  //若不可堆叠或全部移动
+            if (!World.PropertyManager.IsStc(item, out _) || count == item.Count)  //若不可堆叠或全部移动
             {
                 var parent = GetContainer(item);   //获取父容器
                 MoveItems(parent, c => c.Id == item.Id, destContainer, changesItems);
@@ -346,7 +346,6 @@ namespace OW.Game.Item
             }
             else //若可能堆叠且不是全部移动
             {
-                stc = stc == -1 ? decimal.MaxValue : stc;
                 var moveItem = new GameItem();
                 World.EventsManager.GameItemCreated(moveItem, item.TemplateId, null, null, null);
                 moveItem.Count = count;
@@ -519,7 +518,7 @@ namespace OW.Game.Item
             var children = propMng.GetChildrenCollection(parent);
             var stcItem = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId) ?? gameItem;
             Debug.Assert(null != children);
-            if (!stcItem.IsStc(out var stc)) //若不可堆叠
+            if (!World.PropertyManager.IsStc(stcItem, out _)) //若不可堆叠
             {
                 if (parent is GameItemBase gib) //若是容器
                 {
@@ -557,10 +556,10 @@ namespace OW.Game.Item
                 }
                 //处理存在物品的堆叠问题
                 var result = new List<GameItem>();
-                var dest = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && c.GetNumberOfStackRemainder() > 0);    //找到已有的物品且尚可加入堆叠的
+                var dest = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && World.PropertyManager.GetRemainderStc(c) > 0);    //找到已有的物品且尚可加入堆叠的
                 if (null != dest)  //若存在同类物品
                 {
-                    var redCount = Math.Min(dest.GetNumberOfStackRemainder(), gameItem.Count ?? 0);   //移动的数量
+                    var redCount = Math.Min(World.PropertyManager.GetRemainderStc(dest), gameItem.Count ?? 0);   //移动的数量
                     this.ForcedAddCount(gameItem, -redCount, changeItems);
                     this.ForcedAddCount(dest, redCount, changeItems);
                     result.Add(dest);
@@ -657,7 +656,7 @@ namespace OW.Game.Item
             var propMng = World.PropertyManager;
             var children = propMng.GetChildrenCollection(parent);
             var stcItem = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId) ?? gameItem;
-            if (!stcItem.IsStc(out var stc)) //若不可堆叠
+            if (!World.PropertyManager.IsStc(stcItem, out _)) //若不可堆叠
             {
                 if (parent is GameItemBase gib) //若是容器
                 {
@@ -680,8 +679,8 @@ namespace OW.Game.Item
             }
             else //若可以堆叠
             {
-                var dest = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && c.GetNumberOfStackRemainder() > 0);    //找到已有的物品且尚可加入堆叠的
-                var re = dest?.GetNumberOfStackRemainder() ?? decimal.MaxValue;
+                var dest = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && World.PropertyManager.GetRemainderStc(c) > 0);    //找到已有的物品且尚可加入堆叠的
+                var re = dest is null ? decimal.MaxValue : World.PropertyManager.GetRemainderStc(dest);
                 return re >= gameItem.Count;
             }
         }
@@ -702,7 +701,7 @@ namespace OW.Game.Item
                 var gameCher = parent as GameChar ?? (parent as GameItem)?.GetGameChar();
                 stcItem = gameCher.GetMucai();
             }
-            if (!stcItem.IsStc(out var stc)) //若不可堆叠
+            if (!World.PropertyManager.IsStc(stcItem, out var stc)) //若不可堆叠
             {
                 gameItem.Count ??= 1;
                 var count = gameItem.Count.Value - 1;   //记录原始数量少1的值
@@ -716,7 +715,7 @@ namespace OW.Game.Item
                     results.Add(item);
                 }
             }
-            else if (-1 == stc)  //若无堆叠上限限制
+            else if (decimal.MaxValue == stc)  //若无堆叠上限限制
             {
                 results.Add(gameItem);
             }
@@ -1276,7 +1275,7 @@ namespace OW.Game.Item
         /// <param name="changes"></param>
         private bool AddNoStackItem(GameItem gameItem, GameThingBase parent, ICollection<GamePropertyChangedItem<object>> changes = null)
         {
-            Debug.Assert(!World.PropertyManager.IsStc(gameItem), "只能针对非堆叠物品。");
+            Debug.Assert(!World.PropertyManager.IsStc(gameItem, out _), "只能针对非堆叠物品。");
             var propertyManager = World.PropertyManager;
             gameItem.Count ??= 1;
             var upper = propertyManager.GetRemainderCap(parent);    //TO DO 暂时未限制是否是容器
@@ -1294,12 +1293,53 @@ namespace OW.Game.Item
         }
 
         /// <summary>
+        /// 移动指定物品的指定数量到指定容器，考虑堆叠物品合并。
+        /// 不考虑容量和堆叠限制。
+        /// </summary>
+        /// <param name="src">可以是有利对象。</param>
+        /// <param name="count">要移动的数量，不能大于<paramref name="src"/>已有的数量。</param>
+        /// <param name="destContainer">目标容器。</param>
+        /// <param name="changes">变化数据。</param>
+        /// <returns></returns>
+        public virtual bool ForceMove(GameItem src, decimal count, GameThingBase destContainer, ICollection<GamePropertyChangedItem<object>> changes = null)
+        {
+            GamePropertyManager propertyManager = World.PropertyManager;
+            var children = propertyManager.GetChildrenCollection(destContainer);
+            var giSame = children.FirstOrDefault(c => c.TemplateId == src.TemplateId);
+            if (propertyManager.IsStc(src, out _) && null != giSame) //若可堆叠物存在同类项
+            {
+                ForcedSetCount(src, src.Count.Value - count, changes);
+                ForcedSetCount(giSame, count + giSame.Count.Value, changes);
+            }
+            else if (count == src.Count) //若全部移动
+            {
+                var oldContainer = this.GetCurrentContainer(src);
+                if (null != oldContainer)  //要当前有容器
+                    ForceRemove(src, changes);
+                ForcedAdd(src, destContainer, changes);
+            }
+            else if (count < src.Count)    //若部分移动
+            {
+                var gi = new GameItem() { };
+                World.EventsManager.GameItemCreated(gi, src.TemplateId);
+                gi.Count = count;
+                ForcedSetCount(src, src.Count.Value - count, changes);
+                ForcedAdd(gi, destContainer, changes);
+            }
+            else
+                throw new ArgumentOutOfRangeException(nameof(count), "必须小于或等于物品的现存数量。");
+            return true;
+        }
+
+        /// <summary>
         /// 无视容量限制堆叠规则。将物品加入指定容器。
         /// </summary>
         /// <param name="gameItem">无视容量限制堆叠规则，不考虑原有容器。</param>
         /// <param name="container">无视容量限制堆叠规则。</param>
         /// <param name="changes">记录变化的集合，省略或为null则忽略。</param>
-        /// <returns>true成功加入.false <paramref name="container"/>不是可以容纳物品的类型,这里仅指对象的类型无法识别，而不会校验容量。</returns>
+        /// <returns>true成功加入.
+        /// false <paramref name="container"/>不是可以容纳物品的类型,这里仅指对象的类型无法识别（既非<see cref="GameItem"/>也非<see cref="GameChar"/>），而不会校验容量。
+        /// </returns>
         public virtual bool ForcedAdd([NotNull] GameItem gameItem, [NotNull] GameThingBase container, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
         {
             if (container is GameChar gChar)  //若容器是角色
@@ -1341,7 +1381,7 @@ namespace OW.Game.Item
             else
                 result = false;
             gameItem.Parent = null; gameItem.ParentId = gameItem.OwnerId = null;
-            if (result && null != changes)
+            if (result && null != changes)  //若需要记录集合的变化数据
             {
                 changes.RemoveFromCollection(container, gameItem);
             }
@@ -1358,10 +1398,10 @@ namespace OW.Game.Item
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual bool ForceDelete(GameItem gameItem, DbContext db = null, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
         {
-            db ??= gameItem.GetDbContext();
             bool result = ForceRemove(gameItem, changes);
             if (result)   //若成功移除关系
             {
+                db ??= gameItem.GetDbContext();
                 if (null != db && db.Entry(gameItem).State != EntityState.Detached)  //若非新加入的物品
                     db.Remove(gameItem);
             }
@@ -1383,7 +1423,7 @@ namespace OW.Game.Item
             }
             else if (decimal.Zero == gameItem.Count)   //若已经变为0
             {
-                if (!gameItem.IsStc(out _) || gameItem.Parent?.TemplateId != ProjectConstant.CurrencyBagTId)   //若应删除对象
+                if (!World.PropertyManager.IsStc(gameItem, out _) || gameItem.Parent?.TemplateId != ProjectConstant.CurrencyBagTId)   //若应删除对象
                 {
                     var pid = gameItem.ParentId ?? gameItem.OwnerId.Value;
                     if (!ForceDelete(gameItem)) //若无法删除
@@ -1412,12 +1452,11 @@ namespace OW.Game.Item
         /// <returns></returns>
         public virtual bool ForcedSetCount([NotNull] GameItem gItem, decimal count, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
         {
-            gItem.Count = count;
             if (gItem.Parent is null && gItem.OwnerId is null)    //若设置的是游离对象
             {
                 gItem.SetPropertyAndReturnChangedItem(World.PropertyManager.CountPropertyName, count, null, changes);
             }
-            else if (decimal.Zero == gItem.Count)   //若已经变为0
+            else if (decimal.Zero == count)   //若已经变为0
             {
                 if (!World.EventsManager.IsAllowZero(gItem))   //若应删除对象
                 {
@@ -1438,8 +1477,13 @@ namespace OW.Game.Item
 
         public virtual void AddItemEx(GameItem gItem, GameThingBase container, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
         {
-            if (World.PropertyManager.IsStc(gItem)) //若可堆叠
+            if (World.PropertyManager.IsStc(gItem, out _)) //若可堆叠
             {
+                var rem = World.PropertyManager.GetRemainderStc(gItem);
+                if (rem - gItem.Count.Value > 0)
+                    ;
+                else
+                    ;
             }
             else //若不可堆叠
             {
@@ -1458,7 +1502,7 @@ namespace OW.Game.Item
     public static class GamePropertyChangedItemExtensions
     {
         /// <summary>
-        /// 设置一个新值。
+        /// 设置一个新值。并追加变化数据。
         /// </summary>
         /// <param name="thing"></param>
         /// <param name="key"></param>

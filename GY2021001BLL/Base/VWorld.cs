@@ -303,11 +303,11 @@ namespace OW.Game
         /// </summary>
         public GameCharManager CharManager { get => _GameCharManager ??= Service.GetRequiredService<GameCharManager>(); }
 
-        private CombatManager _CombatManager;
+        private GameCombatManager _CombatManager;
         /// <summary>
         /// 战斗管理器。
         /// </summary>
-        public CombatManager CombatManager { get => _CombatManager ??= Service.GetRequiredService<CombatManager>(); }
+        public GameCombatManager CombatManager { get => _CombatManager ??= Service.GetRequiredService<GameCombatManager>(); }
 
         private GameItemManager _GameItemManager;
         /// <summary>

@@ -172,7 +172,7 @@ namespace OW.Game
         /// <returns></returns>
         public override bool IsAllowZero(GameItem gItem)
         {
-            if (World.PropertyManager.IsStc(gItem) && gItem.Parent != null && gItem.Parent.TemplateId == ProjectConstant.CurrencyBagTId)  //若是货币
+            if (World.PropertyManager.IsStc(gItem,out _) && gItem.Parent != null && gItem.Parent.TemplateId == ProjectConstant.CurrencyBagTId)  //若是货币
                 return true;
             return base.IsAllowZero(gItem);
         }

@@ -10,6 +10,33 @@ namespace OW.Extensions.Game.Store
     public static class GameThingBaseExtensions
     {
         /// <summary>
+        /// 获取创建时间。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DateTime? GetCreateUtc(this GameThingBase thing) =>
+            thing.Properties.TryGetDateTime("CreateUtc", out var result) ? new DateTime?(result) : null;
+
+        /// <summary>
+        /// 设置创建时间。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="value">空值表示删除属性。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetCreateUtc(this GameThingBase thing, DateTime? value)
+        {
+            if (value.HasValue) //若有指定值
+            {
+                thing.Properties["CreateUtc"] = value.Value.ToString();
+            }
+            else
+            {
+                thing.Properties.Remove("CreateUtc");
+            }
+        }
+
+        /// <summary>
         /// 客户端要记录的一些属性，这个属性客户端可以随意更改，服务器不使用。
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -39,35 +66,10 @@ namespace OW.Extensions.Game.Store
     public static class GameItemExtensions
     {
         /// <summary>
-        /// 获取创建时间。
-        /// </summary>
-        /// <param name="thing"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DateTime? GetCreateUtc(this GameItem thing) =>
-            thing.Properties.TryGetDateTime("CreateUtc", out var result) ? new DateTime?(result) : null;
-
-        /// <summary>
-        /// 设置创建时间。
-        /// </summary>
-        /// <param name="thing"></param>
-        /// <param name="value">空值表示删除属性。</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetCreateUtc(this GameItem thing, DateTime? value)
-        {
-            if (value.HasValue) //若有指定值
-            {
-                thing.Properties["CreateUtc"] = value.Value.ToString();
-            }
-            else
-            {
-                thing.Properties.Remove("CreateUtc");
-            }
-        }
-
-        /// <summary>
         /// 如果物品处于某个容器中，则这个成员指示其所处位置号，从0开始，但未必连续,序号相同则顺序随机。
         /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>没有则返回0.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetOrderNumber(this GameItem gameItem)
         {
@@ -77,10 +79,15 @@ namespace OW.Extensions.Game.Store
         /// <summary>
         /// 如果物品处于某个容器中，则这个成员指示其所处位置号，从0开始，但未必连续,序号相同则顺序随机。
         /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="value">null表示删除该属性。</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetOrderNumber(this GameItem gameItem, int value)
+        public static void SetOrderNumber(this GameItem gameItem, int? value)
         {
-            gameItem.Properties["OrderNumber"] = (decimal)value;
+            if (value.HasValue)
+                gameItem.Properties["OrderNumber"] = (decimal)value.Value;
+            else
+                gameItem.Properties.Remove("OrderNumber");
         }
 
         #region 待重构代码
@@ -167,7 +174,7 @@ namespace OW.Extensions.Game.Store
         /// 如果找到的不是快速渐变属性返回<see cref="DateTime.MinValue"/></param>
         /// <returns>true成功找到属性。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static bool TryGetPropertyValueWithFcp(this GameItem gameItem,string name, DateTime? refreshDate, bool writeDictionary, out object result, out DateTime refreshDatetime)
+        public static bool TryGetPropertyValueWithFcp(this GameItem gameItem, string name, DateTime? refreshDate, bool writeDictionary, out object result, out DateTime refreshDatetime)
         {
             bool succ;
             if (gameItem.Name2FastChangingProperty.TryGetValue(name, out var fcp)) //若找到快速变化属性

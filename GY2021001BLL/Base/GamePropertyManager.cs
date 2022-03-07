@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -168,11 +169,18 @@ namespace OW.Game
         /// 获取是否可堆叠。
         /// </summary>
         /// <param name="thing"></param>
+        /// <param name="result"><see cref="decimal.MaxValue"/>表示无限堆叠。非堆叠物品这个值被设置为1。</param>
         /// <returns>true可堆叠，false不可堆叠。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
-        public virtual bool IsStc(GameThingBase thing)
+        public virtual bool IsStc(GameThingBase thing, out decimal result)
         {
-            return TryGetDecimalWithFcp(thing, StackUpperLimitPropertyName, out _);
+            if (!TryGetDecimalWithFcp(thing, StackUpperLimitPropertyName, out var stc))
+            {
+                result = 1;
+                return false;
+            }
+            result = stc == -1 ? decimal.MaxValue : stc;
+            return true;
         }
 
         /// <summary>
@@ -183,7 +191,7 @@ namespace OW.Game
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual decimal GetCount(GameThingBase thing)
         {
-            return TryGetDecimalWithFcp(thing, CountPropertyName, out var count) ? count : (IsStc(thing) ? decimal.Zero : decimal.One);
+            return TryGetDecimalWithFcp(thing, CountPropertyName, out var count) ? count : (IsStc(thing, out _) ? decimal.Zero : decimal.One);
         }
 
         /// <summary>
@@ -208,7 +216,7 @@ namespace OW.Game
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual decimal GetRemainderStc(GameThingBase thing)
         {
-            if (!TryGetDecimalWithFcp(thing, StackUpperLimitPropertyName, out var result))  //若没有指定堆叠属性
+            if (!IsStc(thing,  out var result))  //若没有指定堆叠属性
                 return decimal.Zero;
             else
                 return result == -1 ? decimal.MaxValue : Math.Max(result - GetCount(thing), 0);

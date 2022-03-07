@@ -19,9 +19,9 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 战斗管理器的配置类。
     /// </summary>
-    public class CombatManagerOptions
+    public class GameCombatManagerOptions
     {
-        public CombatManagerOptions()
+        public GameCombatManagerOptions()
         {
         }
 
@@ -153,7 +153,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 战斗管理器。
     /// </summary>
-    public class CombatManager : GameManagerBase<CombatManagerOptions>
+    public class GameCombatManager : GameManagerBase<GameCombatManagerOptions>
     {
 
         #region 构造函数
@@ -161,7 +161,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public CombatManager() : base()
+        public GameCombatManager() : base()
         {
             Initialize();
         }
@@ -170,7 +170,7 @@ namespace GuangYuan.GY001.BLL
         /// 构造函数。
         /// </summary>
         /// <param name="serviceProvider"></param>
-        public CombatManager(IServiceProvider serviceProvider) : base(serviceProvider)
+        public GameCombatManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
             Initialize();
         }
@@ -180,7 +180,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="options"></param>
-        public CombatManager(IServiceProvider serviceProvider, CombatManagerOptions options) : base(serviceProvider, options)
+        public GameCombatManager(IServiceProvider serviceProvider, GameCombatManagerOptions options) : base(serviceProvider, options)
         {
             Initialize();
         }
@@ -1362,18 +1362,18 @@ namespace GuangYuan.GY001.BLL
         public WarNewspaper CombatObject { get; set; }
     }
 
-    public static class CombatManagerExtensions
+    public static class GameCombatManagerExtensions
     {
         public static GameExtendProperty GetOrAddPvpExtendProperty(this GameChar gameChar)
         {
-            var pvpEp = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == CombatManager.PvpRankName);
+            var pvpEp = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == GameCombatManager.PvpRankName);
             if (pvpEp is null)
             {
                 var pvp = gameChar.GetPvpObject();
                 pvpEp = new GameExtendProperty()
                 {
                     Id = gameChar.Id,
-                    Name = CombatManager.PvpRankName,
+                    Name = GameCombatManager.PvpRankName,
                     DecimalValue = pvp.Count,
                     StringValue = gameChar.DisplayName,
                 };

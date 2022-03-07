@@ -407,7 +407,7 @@ namespace GuangYuan.GY001.BLL
             services.AddSingleton(c => new GameCharManager(c, new GameCharManagerOptions()
             {
             }));
-            services.AddSingleton(c => new CombatManager(c, new CombatManagerOptions()
+            services.AddSingleton(c => new GameCombatManager(c, new GameCombatManagerOptions()
             {
                 CombatStart = SpecificProject.CombatStart,
                 CombatEnd = SpecificProject.CombatEnd,

@@ -1052,7 +1052,7 @@ namespace GuangYuan.GY001.BLL
                 datas.HasError = true;
                 return;
             }
-            decimal stc = destItem.GetNumberOfStackRemainder();  //剩余可堆叠数
+            decimal stc = World.PropertyManager.GetRemainderStc(destItem);  //剩余可堆叠数
             count = Math.Min(count, stc);   //实际移走数量
             if (src.Name2FastChangingProperty.TryGetValue("Count", out FastChangingProperty fcp))    //若有快速变化属性
             {
