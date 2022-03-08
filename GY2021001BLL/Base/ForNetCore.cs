@@ -231,7 +231,8 @@ namespace GuangYuan.GY001.BLL
         /// 基准速度:	3.10 GHz
         /// 插槽:	1
         /// 内核:	6
-        /// 逻辑处理器:	12
+        /// 逻辑处理器:	12		DateTime.UtcNow.ToString("s")	"2022-03-08T02:59:32"	string
+
         /// 虚拟化:	已启用
         /// L1 缓存:	384 KB
         /// L2 缓存:	1.5 MB

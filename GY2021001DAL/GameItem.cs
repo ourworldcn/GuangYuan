@@ -12,45 +12,6 @@ using System.Text.Json.Serialization;
 
 namespace GuangYuan.GY001.UserDb
 {
-    public static class GameThingExtensions
-    {
-        /// <summary>
-        /// 获取模板对象。
-        /// </summary>
-        /// <param name="thing"></param>
-        /// <returns>如果未设置可能返回null。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameThingTemplateBase GetTemplate(this GameThingBase thing) =>
-            thing.RuntimeProperties.GetValueOrDefault("Template") as GameThingTemplateBase;
-
-        /// <summary>
-        /// 设置模板对象。
-        /// </summary>
-        /// <param name="thing"></param>
-        /// <param name="template"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetTemplate(this GameThingBase thing, GameThingTemplateBase template) =>
-            thing.RuntimeProperties["Template"] = template;
-
-        /// <summary>
-        /// 获取模板对象。
-        /// </summary>
-        /// <param name="gi"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameItemTemplate GetTemplate(this GameItem gi) =>
-            gi.RuntimeProperties.GetValueOrDefault("Template") as GameItemTemplate;
-
-        /// <summary>
-        /// 设置模板对象。
-        /// </summary>
-        /// <param name="thing"></param>
-        /// <param name="template"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetTemplate(this GameItem thing, GameItemTemplate template) =>
-            thing.RuntimeProperties["Template"] = template;
-    }
-
     /// <summary>
     /// 游戏内部事物的基类。
     /// </summary>
@@ -286,8 +247,29 @@ namespace GuangYuan.GY001.UserDb
 
     }
 
+    /// <summary>
+    /// 封装一些与<see cref="GameItem"/>相关的扩展方法。
+    /// </summary>
     public static class GameItemExtensions
     {
+        /// <summary>
+        /// 获取模板对象。
+        /// </summary>
+        /// <param name="gItem"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItemTemplate GetTemplate(this GameItem gItem) =>
+            ((GameThingBase)gItem).GetTemplate() as GameItemTemplate;
+
+        /// <summary>
+        /// 设置模板对象。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="template"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetTemplate(this GameItem gItem, GameItemTemplate template) =>
+            ((GameThingBase)gItem).SetTemplate(template);
+
         public static IEnumerable<GameItem> GetAllChildren(this GameItem gameItem)
         {
             foreach (var item in gameItem.Children)
@@ -568,7 +550,6 @@ namespace GuangYuan.GY001.UserDb
     /// </summary>
     public static class ChangesItemExtensions
     {
-
         public static void ToE(IEnumerable<GamePropertyChangedItem<object>> src, ICollection<ChangeItem> dest)
         {
             var coll = from tmp in src

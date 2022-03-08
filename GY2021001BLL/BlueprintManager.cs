@@ -1390,7 +1390,7 @@ namespace GuangYuan.GY001.BLL
                     mail.Properties["MailTypeId"] = ProjectConstant.孵化补给动物.ToString();
                     social.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId,
                         new ValueTuple<GameItem, Guid>[] { (gameItem, ProjectConstant.ShoulanSlotId) });
-                    gim.ForceDelete(gameItem);
+                    gim.ForcedDelete(gameItem);
                     datas.ChangeItems.AddToRemoves(oldpid.Value, gameItem.Id);
                 }
 
@@ -1667,7 +1667,7 @@ namespace GuangYuan.GY001.BLL
             {
                 GameItem lockItem = lockAtk.Children.First();
                 datas.ChangeItems.AddToRemoves(lockItem.GetContainerId().Value, lockItem.Id);
-                gim.ForceDelete(lockItem);
+                gim.ForcedDelete(lockItem);
             }
             //血量资质
             if (lockMhp.Children.Count <= 0)
@@ -1687,7 +1687,7 @@ namespace GuangYuan.GY001.BLL
             {
                 GameItem lockItem = lockMhp.Children.First();
                 datas.ChangeItems.AddToRemoves(lockItem.GetContainerId().Value, lockItem.Id);
-                gim.ForceDelete(lockItem);
+                gim.ForcedDelete(lockItem);
             }
             //质量资质
             if (lockQlt.Children.Count <= 0)
@@ -1707,10 +1707,10 @@ namespace GuangYuan.GY001.BLL
             {
                 GameItem lockItem = lockQlt.Children.First();
                 datas.ChangeItems.AddToRemoves(lockItem.GetContainerId().Value, lockItem.Id);
-                gim.ForceDelete(lockItem);
+                gim.ForcedDelete(lockItem);
             }
             datas.ChangeItems.AddToRemoves(gameItem2.GetContainerId().Value, gameItem2.Id);
-            gim.ForceDelete(gameItem2);
+            gim.ForcedDelete(gameItem2);
             datas.ChangeItems.AddToChanges(gameItem.GetContainerId().Value, gameItem);
         }
         #endregion 合成相关
@@ -1800,7 +1800,7 @@ namespace GuangYuan.GY001.BLL
                 if (haocai.Count <= 0) //若耗材已经用完
                 {
                     datas.ChangeItems.AddToRemoves(haocai.ParentId.Value, haocai.Id);
-                    World.ItemManager.ForceDelete(haocai);
+                    World.ItemManager.ForcedDelete(haocai);
                 }
                 else
                 {

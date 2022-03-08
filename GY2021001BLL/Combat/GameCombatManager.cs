@@ -451,7 +451,7 @@ namespace GuangYuan.GY001.BLL
                     foreach (var item in shouyiSlot.Children)
                     {
                         data.ChangesItems.AddToRemoves(shouyiSlot.Id, item.Id);
-                        gim.ForceMove(item, qiwu);
+                        gim.ForcedMove(item,item.Count.Value, qiwu);
                         data.ChangesItems.AddToAdds(item);
                     }
                     //设置成就数据

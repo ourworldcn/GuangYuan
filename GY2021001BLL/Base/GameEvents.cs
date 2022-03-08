@@ -635,7 +635,7 @@ namespace OW.Game
         #region 物品相关
 
         /// <summary>
-        /// 获取物品的默认容器。
+        /// 获取物品的默认容器,这与实际所属容器可能不同。
         /// </summary>
         /// <param name="gameItem"></param>
         /// <param name="gameChar"></param>
@@ -645,6 +645,19 @@ namespace OW.Game
             if (World.PropertyManager.TryGetPropertyWithTemplate(gameItem, "ptid", out var obj) && OwConvert.TryToGuid(obj, out var ptid))
                 return gameChar.TemplateId == ptid ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
             return null;
+        }
+
+        /// <summary>
+        /// 获取指定物品当前所属的直接父容器，当前版本可能是<see cref="GameItem"/>或<see cref="GameChar"/>,未来版本可能包含地图。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>返回父容器可能是另一个物品或角色对象，没有找到则返回null。</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="gameItem"/>是null。</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public virtual GameThingBase GetCurrentContainer(GameItem gameItem)
+        {
+            var result = gameItem.Parent as GameThingBase ?? (gameItem.OwnerId is null ? null : World.CharManager.GetCharFromId(gameItem.OwnerId.Value));
+            return result;
         }
 
         /// <summary>

@@ -19,7 +19,7 @@ using System.Text.Json.Serialization;
 namespace GuangYuan.GY001.UserDb
 {
     /// <summary>
-    /// 
+    /// 快速渐变属性。
     /// </summary>
     public static class FastChangingPropertyExtensions
     {
@@ -139,6 +139,29 @@ namespace GuangYuan.GY001.UserDb
     public static class GameThingBaseExtensions
     {
         #region 获取属性相关
+
+        /// <summary>
+        /// 获取模板对象。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <returns>如果未设置可能返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameThingTemplateBase GetTemplate(this GameThingBase thing) =>
+            thing.RuntimeProperties.GetValueOrDefault("Template") as GameThingTemplateBase;
+
+        /// <summary>
+        /// 设置模板对象。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="template">设置为null则删除字典中的键。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetTemplate(this GameThingBase thing, GameThingTemplateBase template)
+        {
+            if (template is null)
+                thing.RuntimeProperties.Remove("Template", out _);
+            else
+                thing.RuntimeProperties["Template"] = template;
+        }
 
         /// <summary>
         /// 获取属性，如果没有则寻找模板内同名属性。

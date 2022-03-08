@@ -123,7 +123,7 @@ namespace OW.Game
             var result = base.GetDefaultContainer(gameItem, gChar);
             if (null != result && result.TemplateId != ProjectConstant.ZuojiBagSlotId)  //若有指定容器且不是坐骑槽
                 return result;
-            else if (null != result)    //若有默认容器且是坐骑槽
+            else if (null != result || gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi)    //若有默认容器且是坐骑槽
             {
                 result = World.ItemManager.IsExistsMounts(gameItem, gChar) ? gChar.GetShoulanBag() : gChar.GetZuojiBag();
                 return result;
@@ -172,7 +172,7 @@ namespace OW.Game
         /// <returns></returns>
         public override bool IsAllowZero(GameItem gItem)
         {
-            if (World.PropertyManager.IsStc(gItem,out _) && gItem.Parent != null && gItem.Parent.TemplateId == ProjectConstant.CurrencyBagTId)  //若是货币
+            if (World.PropertyManager.IsStc(gItem, out _) && gItem.Parent != null && gItem.Parent.TemplateId == ProjectConstant.CurrencyBagTId)  //若是货币
                 return true;
             return base.IsAllowZero(gItem);
         }

@@ -111,7 +111,7 @@ namespace GuangYuan.GY001.BLL
                                 continue;
                             if (!moveableGIds.Contains(gameItem.GetCatalogNumber()))  //若不可移动
                                 continue;
-                            manager.ForceMove(gameItem, destParent);
+                            manager.ForcedMove(gameItem, gameItem.Count.Value, destParent);
                             //manager.MoveItems(manager.GetContainer(gameItem), c => c.Id == gameItem.Id, destParent, datas.ItemChanges);
                         }
                 }
