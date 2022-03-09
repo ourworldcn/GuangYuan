@@ -121,6 +121,38 @@ namespace System
         }
 
         /// <summary>
+        /// 复制集合对象。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Copy<T>(IEnumerable<T> src, ICollection<T> dest)
+        {
+            if (dest is List<T> list)
+                list.AddRange(src);
+            else
+                foreach (var item in src)
+                {
+                    dest.Add(item);
+                }
+        }
+
+        /// <summary>
+        /// 复制集合。任何参数为null，则立即返回。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SafeCopy<T>(IEnumerable<T> src, ICollection<T> dest)
+        {
+            if (dest is null || src is null)
+                return;
+            Copy(src, dest);
+        }
+
+        /// <summary>
         /// 四舍五入取整。
         /// </summary>
         /// <param name="result"></param>

@@ -12,7 +12,7 @@ namespace OW.Game
     /// 属性变化的数据封装类。
     /// </summary>
     /// <typeparam name="T">变化的属性值类型，使用强类型可以避免对值类型拆装箱操作。</typeparam>
-    public class GamePropertyChangedItem<T>
+    public class GamePropertyChangedItem<T> : ICloneable
     {
         public GamePropertyChangedItem()
         {
@@ -99,6 +99,24 @@ namespace OW.Game
         {
             result = HasNewValue ? NewValue : default;
             return HasNewValue;
+        }
+
+        /// <summary>
+        /// 获取一个浅表副本。返回对象从池中获取。
+        /// </summary>
+        /// <returns></returns>
+        public object Clone()
+        {
+            var result = GamePropertyChangedItemPool<T>.Shared.Get();
+            result.Object = Object;
+            result.PropertyName = PropertyName;
+            result.OldValue = OldValue;
+            result.HasOldValue = HasOldValue;
+            result.NewValue = NewValue;
+            result.HasNewValue = HasNewValue;
+            result.Tag = Tag;
+            result.DateTimeUtc = DateTimeUtc;
+            return result;
         }
 
         #endregion 新值相关

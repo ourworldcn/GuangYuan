@@ -212,6 +212,15 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public List<Guid> MailIds => _MailIds ??= new List<Guid>();
 
+        /// <summary>
+        /// 无法放入指定背包的蓝图制造物集合。
+        /// </summary>
+        public List<GameItem> Remainder { get; } = new List<GameItem>();
+
+        /// <summary>
+        /// 详细的变化信息。
+        /// </summary>
+        public List<GamePropertyChangedItem<object>> Changes { get; } = new List<GamePropertyChangedItem<object>>();
     }
 
     /// <summary>
@@ -533,29 +542,30 @@ namespace GuangYuan.GY001.BLL
             for (int i = 0; i < datas.Count; i++)
             {
                 var head = gitm.HeadTemplates.Values.Skip(VWorld.WorldRandom.Next(gitm.HeadTemplates.Count)).First();
-                var body = gitm.BodyTemplates.Values.Skip(VWorld.WorldRandom.Next(gitm.BodyTemplates.Count)).First();
+                var coll = gitm.BodyTemplates.Values.Where(c => c.Sequence != head.Sequence);
+                var body = coll.Skip(VWorld.WorldRandom.Next(coll.Count())).First();
                 var propBag = DictionaryPool<string, object>.Shared.Get();
                 OwHelper.Copy(datas.GameItems[0].Properties, propBag);
                 propBag["htid"] = head.Id;
                 propBag["btid"] = body.Id;
-                propBag["tid"] = ProjectConstant.ZuojiZuheRongqi;
+                propBag["tid"] = ProjectConstant.ZuojiZuheRongqi.ToString();
                 var gi = new GameItem() { Count = 1 };
                 World.EventsManager.GameItemCreated(gi, propBag);
                 if (World.ItemManager.IsExistsMounts(gi, datas.GameChar))    //若已经存在此类坐骑
                 {
-                    World.ItemManager.AddItem(gi, datas.GameChar.GetShoulanBag(), null, datas.ChangeItems);
+                    World.ItemManager.MoveItem(gi, gi.Count.Value, datas.GameChar.GetShoulanBag(), datas.Remainder, datas.Changes);
                 }
                 else //若没有此种坐骑
                 {
                     gi.Properties["neatk"] = 0m;
                     gi.Properties["nemhp"] = 0m;
                     gi.Properties["neqlt"] = 0m;
-                    World.ItemManager.AddItem(gi, datas.GameChar.GetZuojiBag(), null, datas.ChangeItems);
+                    World.ItemManager.MoveItem(gi, gi.Count.Value, datas.GameChar.GetZuojiBag(), datas.Remainder, datas.Changes);
                 }
                 DictionaryPool<string, object>.Shared.Return(propBag);
                 datas.SuccCount++;
             }
-            World.ItemManager.ForcedAddCount(gameItem, -datas.SuccCount, datas.ChangeItems);
+            World.ItemManager.ForcedSetCount(gameItem, gameItem.Count.Value - datas.SuccCount, datas.Changes);
         }
         #region 通用功能
 
@@ -1588,15 +1598,15 @@ namespace GuangYuan.GY001.BLL
 
             var ne1 = parent1.Properties.GetDecimalOrDefault("neatk");
             var ne2 = parent2.Properties.GetDecimalOrDefault("neatk");
-            var atk = Math.Max(0, (ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-5, 6));
+            var atk = Math.Clamp((ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-50, 51), 0, 100);
 
             ne1 = parent1.Properties.GetDecimalOrDefault("nemhp");
             ne2 = parent2.Properties.GetDecimalOrDefault("nemhp");
-            var mhp = Math.Max(0, (ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-5, 6));
+            var mhp = Math.Clamp((ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-50, 51), 0, 100);
 
             ne1 = parent1.Properties.GetDecimalOrDefault("neqlt");
             ne2 = parent2.Properties.GetDecimalOrDefault("neqlt");
-            var qlt = Math.Max(0, (ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-5, 6));
+            var qlt = Math.Clamp((ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-50, 51), 0, 100);
             child.Properties["atk"] = atk;
             child.Properties["mhp"] = mhp;
             child.Properties["qlt"] = qlt;

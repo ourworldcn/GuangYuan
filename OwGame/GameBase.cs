@@ -471,4 +471,7 @@ namespace OW.Game
         #endregion 事件及相关
     }
 
+    public static class GameHelper
+    {
+    }
 }

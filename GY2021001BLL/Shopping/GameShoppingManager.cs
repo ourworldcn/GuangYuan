@@ -520,7 +520,7 @@ namespace GuangYuan.GY001.BLL
                 hits.Add(tt);
             }
             datas.ResultTemplateIds.AddRange(hits.Select(c => c.Id));
-            UserCardPoolTemplates(datas, hits);
+            UseCardPoolTemplates(datas, hits);
         }
 
         /// <summary>
@@ -561,7 +561,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 RulesAdj10(hits, datas.Templates);  //校验规则
                 datas.ResultTemplateIds.AddRange(hits.Select(c => c.Id));
-                UserCardPoolTemplates(datas, hits);
+                UseCardPoolTemplates(datas, hits);
             }
         }
 
@@ -625,7 +625,7 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="datas"></param>
         /// <param name="templates"></param>
-        void UserCardPoolTemplates(ChoujiangDatas datas, IEnumerable<GameCardPoolTemplate> templates)
+        void UseCardPoolTemplates(ChoujiangDatas datas, IEnumerable<GameCardPoolTemplate> templates)
         {
             var list = new List<GameItem>();
             var container = datas.GameChar.GetShoppingSlot();   //礼包槽
