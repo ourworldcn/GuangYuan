@@ -135,6 +135,7 @@ namespace Gy001.Controllers
             {
                 result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
                 result.TemplateIds.AddRange(datas.ResultTemplateIds.Select(c => c.ToBase64String()));
+                result.ResultItems.AddRange(datas.ResultItems.Select(c => (GameItemDto)c));
             }
             result.FillFrom(datas);
             return result;

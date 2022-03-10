@@ -2826,6 +2826,11 @@
             此次抽奖命中的模板id集合,可能有重复。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.LotteryReturnDto.ResultItems">
+            <summary>
+            此次抽奖获得的所有物品，包括已放入的和邮件的。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetCurrentCardPoolParamsDto">
             <summary>
             GetCurrentCardPool接口参数数据封装类。

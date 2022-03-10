@@ -1489,7 +1489,6 @@ namespace OW.Game.Item
         /// <param name="changes"></param>
         public virtual void UseItem(GameItem gItem, decimal count, [AllowNull] ICollection<GameItem> remainder = null, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
         {
-            var gim = World.ItemManager;
             var gc = gItem.GetGameChar();
             if (!gItem.TryGetProperty("usebpid", out var bpidObj) || !OwConvert.TryToGuid(bpidObj, out var bpid))
                 bpid = Guid.Empty;
@@ -1638,7 +1637,7 @@ namespace OW.Game.Item
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsCollectionChanged(this GamePropertyChangedItem<object> obj)
         {
-            return obj.Object is GameChar gChar && obj.PropertyName == nameof(GameChar.GameItems) || obj.Object is GameItem && obj.PropertyName == nameof(GameItem.Children);
+            return obj.Object is GameChar && obj.PropertyName == nameof(GameChar.GameItems) || obj.Object is GameItem && obj.PropertyName == nameof(GameItem.Children);
         }
 
         /// <summary>

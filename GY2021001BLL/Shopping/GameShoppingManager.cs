@@ -537,7 +537,7 @@ namespace GuangYuan.GY001.BLL
             var probs = templates.Select(c => (c.Key, c.Value.First(d => d.Properties.ContainsKey("prob")).Properties.GetDecimalOrDefault("prob")));
             var coll = GameMath.ToSum1(probs, c => c.Item2, (c, p) => (c.Key, p));  //规范化概率序列
 
-            var probDic = coll.ToDictionary(c => c.Key, c => c.Item2);    //加权后的概率
+            var probDic = coll.ToDictionary(c => c.Key, c => c.p);    //加权后的概率
             var hits = new List<GameCardPoolTemplate>(); //增加的物品列表
             for (int i = 0; i < datas.LotteryTypeCount10; i++)
             {
@@ -628,13 +628,37 @@ namespace GuangYuan.GY001.BLL
         void UseCardPoolTemplates(ChoujiangDatas datas, IEnumerable<GameCardPoolTemplate> templates)
         {
             var list = new List<GameItem>();
-            var container = datas.GameChar.GetShoppingSlot();   //礼包槽
+            var remainder = new List<GameItem>(); //无法放入的剩余物品
+            var changes = new List<GamePropertyChangedItem<object>>();
+            var bag = datas.GameChar.GetShoppingSlot();
             foreach (var tt in templates)
             {
                 list.Clear();
                 list.AddRange(World.ItemManager.ToGameItems(tt.Properties, "cp"));
+                foreach (var item in list)
+                {
+                    if (tt.AutoUse)  //若需要自动使用
+                    {
+                        World.ItemManager.MoveItem(item, item.Count.Value, bag, remainder); //TO DO
+                        World.ItemManager.UseItem(item, item.Count.Value, remainder, changes);
+                    }
+                    else //若无需自动使用
+                    {
+                        World.ItemManager.MoveItem(item, item.Count.Value, World.EventsManager.GetDefaultContainer(item, datas.GameChar), remainder, changes);
+                    }
+                }
                 World.ItemManager.AddOrUseItems(list, datas.GameChar, tt.AutoUse, null, datas.ChangeItems);
             }
+            datas.ResultItems.AddRange(remainder);
+            datas.ResultItems.AddRange(changes.Where(c => c.IsCollectionAdded() && c.Object != bag && c.NewValue is GameItem).Select(c => c.NewValue as GameItem));
+            datas.ResultItems.AddRange(changes.Where(c => !c.IsCollectionChanged() && c.Object != bag && c.PropertyName == World.PropertyManager.CountPropertyName).Select(c => c.Object as GameItem));
+            changes.Copy(datas.ChangeItems);
+            //发送邮件
+            var mail = new GameMail()
+            {
+            };
+            World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id },
+                SocialConstant.FromSystemId, remainder.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
         }
 
         /// <summary>
@@ -726,6 +750,10 @@ namespace GuangYuan.GY001.BLL
                 return _Templates;
             }
         }
+
+        List<GameItem> _ResultItems;
+        public List<GameItem> ResultItems { get => _ResultItems ??= new List<GameItem>(); }
+
         #endregion 内部使用属性
 
         protected override void Dispose(bool disposing)
@@ -740,6 +768,7 @@ namespace GuangYuan.GY001.BLL
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
                 _Templates = null;
+                _ResultItems = null;
                 base.Dispose(disposing);
             }
         }

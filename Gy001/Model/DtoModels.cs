@@ -3385,6 +3385,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<string> TemplateIds { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 此次抽奖获得的所有物品，包括已放入的和邮件的。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> ResultItems { get; set; } = new List<GameItemDto>();
     }
 
     /// <summary>
