@@ -2932,6 +2932,11 @@
             WebApi通讯封装的游戏服务器接口的控制器基类。
             </summary>
         </member>
+        <member name="T:Gy001.Controllers.GameDataAnalysisController">
+            <summary>
+            数据分析控制器。封装与数据分析(卖点)相关的操作。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.GameMissionController">
             <summary>
             任务/成就相关操作。

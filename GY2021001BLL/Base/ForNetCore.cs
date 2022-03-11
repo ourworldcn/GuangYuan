@@ -16,6 +16,7 @@ using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Item;
 using OW.Game.Mission;
+using OW.Game.PropertyChange;
 using OW.Script;
 using System;
 using System.Buffers;
@@ -246,7 +247,7 @@ namespace GuangYuan.GY001.BLL
             Expression<Func<GameItem, bool>> s = (GameItem c) => c.Id == ProjectConstant.PvpObjectTId;
 
             var pvpObjectQuery = db.Set<GameItem>().Where(s).AsNoTracking();    //查询的基础集合
-            var tst = GamePropertyChangedItemPool<object>.Shared.Get();
+            var tst = GamePropertyChangeItemPool<object>.Shared.Get();
             var sds = Uri.EscapeDataString("count=1,ds='1'\"");
             var sss = Uri.UnescapeDataString(sds);
         }

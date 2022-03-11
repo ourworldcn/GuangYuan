@@ -1,6 +1,7 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
+using OW.Game.PropertyChange;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -216,7 +217,7 @@ namespace OW.Game
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual decimal GetRemainderStc(GameThingBase thing)
         {
-            if (!IsStc(thing,  out var result))  //若没有指定堆叠属性
+            if (!IsStc(thing, out var result))  //若没有指定堆叠属性
                 return decimal.Zero;
             else
                 return result == -1 ? decimal.MaxValue : Math.Max(result - GetCount(thing), 0);
@@ -269,4 +270,38 @@ namespace OW.Game
         #endregion 基础属性相关
     }
 
+    public static class GamePropertyManagerExtensions
+    {
+        /// <summary>
+        /// 设置一个新值。并追加变化数据（如果需要）。
+        /// </summary>
+        /// <param name="manager">属性管理器。</param>
+        /// <param name="thing"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="value">新值，即使是null也认为是有效新值。</param>
+        /// <param name="changes"></param>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static void SetPropertyAndMarkChanged([NotNull] this GamePropertyManager manager,[NotNull]  GameThingBase thing, [NotNull] string propertyName, object value,
+            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            if (changes is null)    //若无需标记变化数据
+                thing.Properties[propertyName] = value;
+            else //若需要标记变化数据
+            {
+                var data = GamePropertyChangeItemPool<object>.Shared.Get();
+                if (thing.Properties.TryGetValue(propertyName, out var oldValue))  //若存在旧值
+                {
+                    data.HasOldValue = true;
+                    data.OldValue = oldValue;
+                }
+                data.HasNewValue = true;
+                data.NewValue = value;
+                data.Object = thing;
+                data.PropertyName = propertyName;
+                changes.Add(data);
+            }
+        }
+
+
+    }
 }

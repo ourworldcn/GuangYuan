@@ -34,7 +34,7 @@
   <Class Name="GuangYuan.GY001.BLL.GameHostedService" Collapsed="true" BaseTypeListCollapsed="true">
     <Position X="13.5" Y="2.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAABEACAAAAAAAAAgAAQAAAAAAAAAQQQAACAAAAAA=</HashCode>
+      <HashCode>AAAAABEACAAAAAAAAAgAAQAAAAAAAAAQQQgACAAAAAA=</HashCode>
       <FileName>Base\ForNetCore.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" Collapsed="true" />
@@ -144,14 +144,14 @@
   <Class Name="OW.Game.GameEventsManager">
     <Position X="7.25" Y="2" Width="3" />
     <TypeIdentifier>
-      <HashCode>A0AACFAAAAAIAQAQIAIAAAAAAgAACAAAAARAQAAgABA=</HashCode>
+      <HashCode>A0AACFAAAAAIAQAQIALAgAAAAgAACAAAAARIQAAgARA=</HashCode>
       <FileName>Base\GameEvents.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.GameEventsManagerExtensions" Collapsed="true">
     <Position X="17" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAABAIABAAAAAAAAAAAAAAAAAAAAAAAAAAAUAAAAA=</HashCode>
+      <HashCode>AQAAABAIAAAAAAAQAAAAAAIAAAEAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Base\GameEvents.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -162,18 +162,18 @@
       <FileName>Specific\Gy001GameEventsManager.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.SimplePropertyChangedItemPool&lt;T&gt;" Collapsed="true">
-    <Position X="13.5" Y="3.75" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAQAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Base\GameEvents.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="OW.Game.GameManagerBase&lt;TOptions&gt;" Collapsed="true">
     <Position X="9.25" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAACAAABAAAAAAAAQBAAAAAAAAQAAQAAAAAABAAAA=</HashCode>
       <FileName>Base\GameManagerBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.PropertyChange.GamePropertyChangeItemExtensions">
+    <Position X="0.75" Y="4" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAAAAAAgAAAUAAAAAAAIgAAgA=</HashCode>
+      <FileName>Base\GamePropertyChangeItemExtensions.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Interface Name="System.Collections.Generic.ICollection&lt;T&gt;" Collapsed="true">

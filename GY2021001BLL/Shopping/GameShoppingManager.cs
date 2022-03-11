@@ -3,6 +3,7 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using OW.Game;
 using OW.Game.Item;
+using OW.Game.PropertyChange;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -629,7 +630,7 @@ namespace GuangYuan.GY001.BLL
         {
             var list = new List<GameItem>();
             var remainder = new List<GameItem>(); //无法放入的剩余物品
-            var changes = new List<GamePropertyChangedItem<object>>();
+            var changes = new List<GamePropertyChangeItem<object>>();
             var bag = datas.GameChar.GetShoppingSlot();
             foreach (var tt in templates)
             {
@@ -647,18 +648,20 @@ namespace GuangYuan.GY001.BLL
                         World.ItemManager.MoveItem(item, item.Count.Value, World.EventsManager.GetDefaultContainer(item, datas.GameChar), remainder, changes);
                     }
                 }
-                World.ItemManager.AddOrUseItems(list, datas.GameChar, tt.AutoUse, null, datas.ChangeItems);
             }
             datas.ResultItems.AddRange(remainder);
             datas.ResultItems.AddRange(changes.Where(c => c.IsCollectionAdded() && c.Object != bag && c.NewValue is GameItem).Select(c => c.NewValue as GameItem));
             datas.ResultItems.AddRange(changes.Where(c => !c.IsCollectionChanged() && c.Object != bag && c.PropertyName == World.PropertyManager.CountPropertyName).Select(c => c.Object as GameItem));
             changes.Copy(datas.ChangeItems);
-            //发送邮件
-            var mail = new GameMail()
+            if (remainder.Count > 0)   //若有需要发送邮件得物品
             {
-            };
-            World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id },
-                SocialConstant.FromSystemId, remainder.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+                //发送邮件
+                var mail = new GameMail()
+                {
+                };
+                World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id },
+                    SocialConstant.FromSystemId, remainder.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+            }
         }
 
         /// <summary>

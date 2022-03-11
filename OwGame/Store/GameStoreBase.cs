@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.ObjectPool;
+using OW.Game.PropertyChange;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -158,19 +159,6 @@ namespace OW.Game.Store
         private volatile bool _IsDisposed;
 
         #region 事件及其相关
-
-        /// <summary>
-        /// 设置动态属性并根据是否实质发生了变化而决定是否引发<see cref="PropertyChanged"/>事件。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="val"></param>
-        public void SetDynamicPropertyValue([NotNull] string name, object val)
-        {
-            Properties.TryGetValue(name, out var old);
-            Properties[name] = val;
-            if (!Equals(old, val))  //若发生了变化
-                OnDynamicPropertyChanged(new DynamicPropertyChangedEventArgs(name, old));
-        }
 
         protected virtual void OnDynamicPropertyChanged(DynamicPropertyChangedEventArgs e) => DynamicPropertyChanged?.Invoke(this, e);
         public event EventHandler<DynamicPropertyChangedEventArgs> DynamicPropertyChanged;
@@ -422,7 +410,7 @@ namespace OW.Game.Store
         /// <param name="changes">变化数据的集合，如果值变化了，将向此集合追加变化数据对象。若省略或为null则不追加。</param>
         /// <returns>true设置了变化数据，false,新值与旧值没有变化。</returns>
         public static bool SetPropertyAndAddChangedItem(this SimpleDynamicPropertyBase obj, string name, object newValue, [AllowNull] object tag = null,
-            [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             bool result;
             var isExists = obj.Properties.TryGetValue(name, out var oldValue);  //存在旧值
@@ -430,7 +418,7 @@ namespace OW.Game.Store
             {
                 if (null != changes)    //若需要设置变化数据
                 {
-                    var item = GamePropertyChangedItemPool<object>.Shared.Get();
+                    var item = GamePropertyChangeItemPool<object>.Shared.Get();
                     item.Object = obj; item.PropertyName = name; item.Tag = tag;
                     if (isExists)
                         item.OldValue = oldValue;

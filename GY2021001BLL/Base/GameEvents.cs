@@ -4,6 +4,7 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
+using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Buffers;
@@ -25,7 +26,7 @@ namespace OW.Game
 
     }
 
-    public class SimplePropertyChangedCollection : Collection<GamePropertyChangedItem<object>>
+    public class SimplePropertyChangedCollection : Collection<GamePropertyChangeItem<object>>
     {
         public SimplePropertyChangedCollection()
         {
@@ -72,7 +73,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.TryGetValue(keyName, out var oldVal);
-            var result = new GamePropertyChangedItem<object>(null, name: keyName, oldValue: oldVal, newValue: default) { HasOldValue = hasOld };
+            var result = new GamePropertyChangeItem<object>(null, name: keyName, oldValue: oldVal, newValue: default) { HasOldValue = hasOld };
             item.Add(result);
         }
 
@@ -86,7 +87,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.TryGetValue(keyName, out var oldVal);
-            var result = new GamePropertyChangedItem<object>(null, name: keyName, oldValue: oldVal, newValue: newValue) { HasOldValue = hasOld, HasNewValue = true, };
+            var result = new GamePropertyChangeItem<object>(null, name: keyName, oldValue: oldVal, newValue: newValue) { HasOldValue = hasOld, HasNewValue = true, };
             item.Add(result);
             thing.Properties[keyName] = newValue;
         }
@@ -101,7 +102,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.Remove(keyName, out _);
-            var result = new GamePropertyChangedItem<object>(null, keyName) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
+            var result = new GamePropertyChangeItem<object>(null, keyName) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
             item.Add(result);
             return hasOld;
         }
@@ -160,7 +161,7 @@ namespace OW.Game
         /// 动态属性发生变化。
         /// </summary>
         /// <param name="arg"></param>
-        public virtual void OnPropertyChanged(GamePropertyChangedItem<object> arg)
+        public virtual void OnPropertyChanged(GamePropertyChangeItem<object> arg)
         {
 
         }
@@ -753,8 +754,8 @@ namespace OW.Game
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ConcurrentQueue<GamePropertyChangedItem<object>> GetOrCreateEventArgsList(this GameChar gameChar) =>
-            gameChar.RuntimeProperties.GetOrAdd("EventArgsList", c => new ConcurrentQueue<GamePropertyChangedItem<object>>()) as ConcurrentQueue<GamePropertyChangedItem<object>>;
+        public static ConcurrentQueue<GamePropertyChangeItem<object>> GetOrCreateEventArgsList(this GameChar gameChar) =>
+            gameChar.RuntimeProperties.GetOrAdd("EventArgsList", c => new ConcurrentQueue<GamePropertyChangeItem<object>>()) as ConcurrentQueue<GamePropertyChangeItem<object>>;
 
         /// <summary>
         /// 设置属性并发送变化事件数据。
@@ -766,7 +767,7 @@ namespace OW.Game
         /// <param name="tag">附属信息。</param>
         public static void PostDynamicPropertyChanged(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object newValue, object tag)
         {
-            var arg = GamePropertyChangedItemPool<object>.Shared.Get();
+            var arg = GamePropertyChangeItemPool<object>.Shared.Get();
             arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
             if (obj.Properties.TryGetValue(name, out var oldValue))
             {
@@ -788,7 +789,7 @@ namespace OW.Game
         /// <param name="tag"></param>
         public static void PostDynamicPropertyRemoved(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object tag)
         {
-            var arg = GamePropertyChangedItemPool<object>.Shared.Get();
+            var arg = GamePropertyChangeItemPool<object>.Shared.Get();
             if (obj.Properties.Remove(name, out var oldValue))
             {
                 arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
@@ -808,7 +809,7 @@ namespace OW.Game
             List<Exception> excps = new List<Exception>();
             bool succ = false;
             var list = gameChar.GetOrCreateEventArgsList();
-            GamePropertyChangedItem<object> item;
+            GamePropertyChangeItem<object> item;
             while (!list.IsEmpty)    //若存在数据
             {
                 for (var b = list.TryDequeue(out item); !b; b = list.TryDequeue(out item)) ;
@@ -821,7 +822,7 @@ namespace OW.Game
                 {
                     excps.Add(excp);
                 }
-                GamePropertyChangedItemPool<object>.Shared.Return(item);  //放入池中备用
+                GamePropertyChangeItemPool<object>.Shared.Return(item);  //放入池中备用
             }
             if (excps.Count > 0)    //若需要引发工程中堆积的异常
                 throw new AggregateException(excps);

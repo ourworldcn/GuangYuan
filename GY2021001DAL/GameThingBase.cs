@@ -225,6 +225,7 @@ namespace GuangYuan.GY001.UserDb
         public static decimal GetDecimalWithFcpOrDefault(this GameThingBase obj, string propertyName, decimal defaultVal = decimal.Zero) =>
             obj.TryGetPropertyWithFcp(propertyName, out var result) ? result : defaultVal;
 
+
         #endregion 获取属性相关
 
         /// <summary>
@@ -251,6 +252,30 @@ namespace GuangYuan.GY001.UserDb
             return thing.TryGetPropertyWithFcp(name, out var result) ? result : defaultValue;
         }
 
+        #region 设置属性
+        /// <summary>
+        /// 设置属性。如果有同名的gcp属性则首先读取(计算当前值)并设置其最后的值（但不更改最后计算时间）。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        //public static bool SetPropertyWithFcp(this GameThingBase thing,string propertyName,decimal value)
+        //{
+        //    if(thing.Name2FastChangingProperty.TryGetValue(propertyName,out var fcp))   //若有fcp属性
+        //    {
+        //       var oldValue= fcp.GetCurrentValueWithUtc();
+        //        if(oldValue!=value)
+        //        {
+        //        }
+        //    }
+        //    else
+        //    {
+
+        //    }
+        //}
+
+        #endregion 设置属性
     }
 
     /// <summary>

@@ -8,6 +8,7 @@ using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Item;
 using OW.Game.Mission;
+using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Buffers;
@@ -220,7 +221,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 详细的变化信息。
         /// </summary>
-        public List<GamePropertyChangedItem<object>> Changes { get; } = new List<GamePropertyChangedItem<object>>();
+        public List<GamePropertyChangeItem<object>> Changes { get; } = new List<GamePropertyChangeItem<object>>();
     }
 
     /// <summary>

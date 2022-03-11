@@ -5,7 +5,7 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Extensions.Game.Store;
-using OW.Game;
+using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
@@ -239,7 +239,7 @@ namespace OW.Game.Item
                 gameItem.SetPropertyValue(propName, val);
             DynamicPropertyChangedCollection args = new DynamicPropertyChangedCollection();
             var item = new SimplePropertyChangedCollection() { Thing = gameItem };
-            item.Add(new GamePropertyChangedItem<object>(null, name: propName, oldValue: oldValue, newValue: gameItem.Properties[propName]));
+            item.Add(new GamePropertyChangeItem<object>(null, name: propName, oldValue: oldValue, newValue: gameItem.Properties[propName]));
             args.Add(item);
             World.EventsManager.OnDynamicPropertyChanged(args);
             return true;
@@ -1233,10 +1233,10 @@ namespace OW.Game.Item
         #endregion 属性相关
 
         /// <summary>
-        /// 设置数量属性，并考虑自动删除对象等事项。
+        /// 设置数量属性，若考虑自动删除对象等事项。
         /// </summary>
         /// <param name="gameItem"></param>
-        /// <param name="count">只能是非负数。</param>
+        /// <param name="count">只能是非负数。若设置为0则根据<see cref="GameEventsManager.IsAllowZero(GameItem)"/>决定是否删除对象。</param>
         /// <param name="changes">变化数据，可以是空表示不记录变化数据。</param>
         public virtual bool ForcedSetCount(GameItem gameItem, decimal count, [AllowNull] ICollection<ChangeItem> changes = null)
         {
@@ -1282,7 +1282,7 @@ namespace OW.Game.Item
         /// <param name="changes">变化数据。</param>
         /// <returns></returns>
         public virtual void ForcedMove([NotNull] GameItem gItem, decimal count, [NotNull] GameThingBase container,
-            [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var propertyManager = World.PropertyManager;
             if (!propertyManager.IsStc(gItem, out _) && 1 != count)
@@ -1313,7 +1313,8 @@ namespace OW.Game.Item
         /// <returns>true成功加入.
         /// false <paramref name="container"/>不是可以容纳物品的类型,这里仅指对象的类型无法识别（既非<see cref="GameItem"/>也非<see cref="GameChar"/>），而不会校验容量。
         /// </returns>
-        public virtual bool ForcedAdd([NotNull] GameItem gameItem, [NotNull] GameThingBase container, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public virtual bool ForcedAdd([NotNull] GameItem gameItem, [NotNull] GameThingBase container, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             if (container is GameChar gChar)  //若容器是角色
             {
@@ -1330,10 +1331,7 @@ namespace OW.Game.Item
             }
             else //不认识容器的种类
                 return false;
-            if (null != changes)
-            {
-                changes.AddToCollection(container, gameItem);
-            }
+            changes?.MarkAddChildren(container, gameItem);
             return true;
         }
 
@@ -1345,7 +1343,7 @@ namespace OW.Game.Item
         /// <returns>true成功移除，false物品当前没有容器,此时没有变化数据。</returns>
         /// <exception cref="ArgumentNullException"><paramref name="gameItem"/>是null。</exception>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public virtual bool ForcedRemove(GameItem gameItem, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        public virtual bool ForcedRemove(GameItem gameItem, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             bool result;
             var container = World.EventsManager.GetCurrentContainer(gameItem);
@@ -1353,10 +1351,10 @@ namespace OW.Game.Item
                 return false;
             else //若有现有容器
                 result = World.PropertyManager.GetChildrenCollection(container)?.Remove(gameItem) ?? false;
-            gameItem.Parent = null; gameItem.ParentId = gameItem.OwnerId = null;
-            if (result && null != changes)  //若需要记录集合的变化数据
+            if (result)  //若修改数据成功
             {
-                changes.RemoveFromCollection(container, gameItem);
+                gameItem.Parent = null; gameItem.ParentId = gameItem.OwnerId = null;
+                changes?.MarkRemoveChildren(container, gameItem);
             }
             return result;
         }
@@ -1369,7 +1367,7 @@ namespace OW.Game.Item
         /// <param name="changes"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual bool ForcedDelete(GameItem gameItem, DbContext db = null, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        public virtual bool ForcedDelete(GameItem gameItem, DbContext db = null, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             bool result = ForcedRemove(gameItem, changes);
             if (result)   //若成功移除关系
@@ -1388,7 +1386,7 @@ namespace OW.Game.Item
         /// <param name="count"></param>
         /// <param name="changes"></param>
         /// <returns></returns>
-        public virtual bool ForcedSetCount([NotNull] GameItem gItem, decimal count, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        public virtual bool ForcedSetCount([NotNull] GameItem gItem, decimal count, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             if (gItem.Parent is null && gItem.OwnerId is null)    //若设置的是游离对象
             {
@@ -1424,7 +1422,7 @@ namespace OW.Game.Item
         /// <param name="remainder"></param>
         /// <param name="changes"></param>
         public virtual void MoveItem(GameItem gItem, decimal count, GameThingBase container, [AllowNull] ICollection<GameItem> remainder = null,
-            [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var propMng = World.PropertyManager;
             if (World.PropertyManager.IsStc(gItem, out var stc)) //若可堆叠
@@ -1435,7 +1433,7 @@ namespace OW.Game.Item
                 var gi = children.FirstOrDefault(c => c.TemplateId == gItem.TemplateId);    //已存在的同类物品
                 if (gi is null)  //若不存在同类物品
                 {
-                    var rCap = propMng.GetRemainderCap(gItem);
+                    var rCap = propMng.GetRemainderCap(container);
                     if (rCap < 1) //若不可容纳
                     {
                         VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
@@ -1487,7 +1485,7 @@ namespace OW.Game.Item
         /// <param name="count"></param>
         /// <param name="remainder"></param>
         /// <param name="changes"></param>
-        public virtual void UseItem(GameItem gItem, decimal count, [AllowNull] ICollection<GameItem> remainder = null, [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+        public virtual void UseItem(GameItem gItem, decimal count, [AllowNull] ICollection<GameItem> remainder = null, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var gc = gItem.GetGameChar();
             if (!gItem.TryGetProperty("usebpid", out var bpidObj) || !OwConvert.TryToGuid(bpidObj, out var bpid))
@@ -1529,155 +1527,11 @@ namespace OW.Game.Item
         /// <param name="remainder"></param>
         /// <param name="changes"></param>
         public virtual void AddOrUseItems(IEnumerable<GameItem> gItems, [AllowNull] ICollection<GameItem> remainder = null,
-            [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
 
         }
         #endregion 物品操作
-    }
-
-    /// <summary>
-    /// 封装属性变化数据的一些补充方法。
-    /// </summary>
-    public static class GamePropertyChangedItemExtensions
-    {
-        /// <summary>
-        /// 设置一个新值。并追加变化数据。
-        /// </summary>
-        /// <param name="thing"></param>
-        /// <param name="key"></param>
-        /// <param name="value">新值，即使是null也认为是有效新值。</param>
-        public static void SetValueAndAdd(this ICollection<GamePropertyChangedItem<object>> obj, GameThingBase thing, string key, object value)
-        {
-            var data = GamePropertyChangedItemPool<object>.Shared.Get();
-            if (thing.Properties.TryGetValue(key, out var oldValue))  //若存在旧值
-            {
-                data.HasOldValue = true;
-                data.OldValue = oldValue;
-            }
-            data.HasNewValue = true;
-            data.NewValue = value;
-            data.Object = thing;
-            data.PropertyName = key;
-            obj.Add(data);
-        }
-
-        /// <summary>
-        /// 增加属性变化项，以反映指定的一组物品刚刚增加到了容器中。函数不会校验对象的结构，仅按参数构建变化数据。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="container"></param>
-        /// <param name="gItems"></param>
-        public static void AddToCollection(this ICollection<GamePropertyChangedItem<object>> obj, GameThingBase container, IEnumerable<GameItem> gItems)
-        {
-            foreach (var c in gItems)
-            {
-                var result = GamePropertyChangedItemPool<object>.Shared.Get();
-                result.Object = container;
-                result.PropertyName = container is GameChar ? nameof(GameChar.GameItems) : nameof(GameItem.Children);
-                result.HasNewValue = true;
-                result.NewValue = c;
-                obj.Add(result);
-            }
-        }
-
-        /// <summary>
-        /// 增加属性变化项，以反映指定的一组物品刚刚增加到了容器中。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="container"></param>
-        /// <param name="gItems"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AddToCollection(this ICollection<GamePropertyChangedItem<object>> obj, GameThingBase container, params GameItem[] gItems)
-        {
-            obj.AddToCollection(container, gItems.AsEnumerable());
-        }
-
-        /// <summary>
-        /// 构造一组变化数据，描述指定的一组物品被移出容器。函数不会校验对象的结构，仅按参数构建变化数据。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="gItems">将被移出父容器的一组物品。调用时尚未移除。</param>
-        public static void RemoveFromCollection([NotNull] this ICollection<GamePropertyChangedItem<object>> obj, GameThingBase container, IEnumerable<GameItem> gItems)
-        {
-            foreach (var item in gItems)
-            {
-                var change = GamePropertyChangedItemPool<object>.Shared.Get();
-                change.HasOldValue = true;
-                change.OldValue = item;
-                change.Object = container;
-                change.PropertyName = container switch
-                {
-                    _ when container is GameChar => nameof(GameChar.GameItems),
-                    _ when container is GameItem => nameof(GameItem.Children),
-                    _ => string.Empty,
-                };
-                //container is GameChar ? nameof(GameChar.GameItems) : nameof(GameItem.Children);
-                obj.Add(change);
-            }
-        }
-
-        /// <summary>
-        /// 构造一组变化数据，描述指定的一组物品被移出容器。函数不会校验对象的结构，仅按参数构建变化数据。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="container"></param>
-        /// <param name="gItems"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void RemoveFromCollection([NotNull] this ICollection<GamePropertyChangedItem<object>> obj, GameThingBase container, params GameItem[] gItems)
-        {
-            obj.RemoveFromCollection(container, gItems.AsEnumerable());
-        }
-
-        /// <summary>
-        /// 测试变化数据是否是一个集合变化。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsCollectionChanged(this GamePropertyChangedItem<object> obj)
-        {
-            return obj.Object is GameChar && obj.PropertyName == nameof(GameChar.GameItems) || obj.Object is GameItem && obj.PropertyName == nameof(GameItem.Children);
-        }
-
-        /// <summary>
-        /// 测试变化数据是否代表集合添加了数据。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsCollectionAdded(this GamePropertyChangedItem<object> obj) =>
-            IsCollectionChanged(obj) && obj.HasNewValue;
-
-        /// <summary>
-        /// 测试变化数据是否代表集合移除了元素的数据。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsCollectionRemoved(this GamePropertyChangedItem<object> obj) =>
-            IsCollectionChanged(obj) && obj.HasOldValue;
-
-        /// <summary>
-        /// 将<see cref="GamePropertyChangedItem{object}"/>表示的变化数据转变为<see cref="ChangeItem"/>表示形式。
-        /// </summary>
-        /// <param name="src"></param>
-        /// <param name="dest"></param>
-        public static void Copy(this IEnumerable<GamePropertyChangedItem<object>> src, ICollection<ChangeItem> dest)
-        {
-            foreach (var item in src.Where(c => !c.IsCollectionChanged() && c.Object is GameItem).GroupBy(c => (GameItem)c.Object))
-            {
-                dest.AddToChanges(item.Key);
-            }
-            foreach (var item in src.Where(c => c.IsCollectionAdded() && c.Object is GameThingBase))   //复制增加的集合元素数据
-            {
-                dest.AddToAdds(((GameThingBase)item.Object).Id, (GameItem)item.NewValue);
-            }
-            foreach (var item in src.Where(c => c.IsCollectionRemoved() && c.Object is GameThingBase))    //复制删除集合元素的数据
-            {
-                dest.AddToRemoves(((GameThingBase)item.Object).Id, ((GameItem)item.OldValue).Id);
-            }
-        }
     }
 
     public class AddItemsOrMailDatas : ChangeItemsAndMailWorkDatsBase

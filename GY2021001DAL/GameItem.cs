@@ -1,6 +1,6 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
-using OW.Game;
+using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
@@ -292,7 +292,7 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="changes">变化数据的集合，如果值变化了，将向此集合追加变化数据对象。若省略或为null则不追加。</param>
         /// <returns>true设置了变化数据，false,新值与旧值没有变化。</returns>
         public static bool SetPropertyAndReturnChangedItem(this GameItem obj, string name, object newValue, [AllowNull] object tag = null,
-            [AllowNull] ICollection<GamePropertyChangedItem<object>> changes = null)
+            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             if (0 == string.Compare(name, "count")) //若是Count属性
             {
@@ -302,7 +302,7 @@ namespace GuangYuan.GY001.UserDb
                         return false;
                     else if (null != changes)  //若需要变化数据
                     {
-                        var item = GamePropertyChangedItemPool<object>.Shared.Get();
+                        var item = GamePropertyChangeItemPool<object>.Shared.Get();
                         item.Object = obj; item.PropertyName = name; item.Tag = tag;
                         item.HasOldValue = true;
                         item.OldValue = obj.Count.Value;
@@ -319,7 +319,7 @@ namespace GuangYuan.GY001.UserDb
                     {
                         if (null != changes)  //若需要变化数据
                         {
-                            var item = GamePropertyChangedItemPool<object>.Shared.Get();
+                            var item = GamePropertyChangeItemPool<object>.Shared.Get();
                             item.Object = obj; item.PropertyName = name; item.Tag = tag;
                             if (!(obj.Count is null))
                             {
@@ -365,12 +365,12 @@ namespace GuangYuan.GY001.UserDb
         }
 
         /// <summary>
-        /// <inheritdoc/>
+        /// 获取指定名称的属性值。
         /// </summary>
-        /// <param name="propertyName"><inheritdoc/></param>
-        /// <param name="result"><inheritdoc/></param>
+        /// <param name="propertyName">属性名。</param>
+        /// <param name="result">返回属性值。</param>
         /// <returns><inheritdoc/></returns>
-        public static bool TryGetProperty(this GameItem gameItem, string propertyName, out object result)
+        public static bool TryGetProperty([NotNull] this GameItem gameItem, [NotNull] string propertyName, [MaybeNullWhen(false)] out object result)
         {
             bool succ;
             switch (propertyName)
@@ -550,7 +550,7 @@ namespace GuangYuan.GY001.UserDb
     /// </summary>
     public static class ChangesItemExtensions
     {
-        public static void ToE(IEnumerable<GamePropertyChangedItem<object>> src, ICollection<ChangeItem> dest)
+        public static void ToE(IEnumerable<GamePropertyChangeItem<object>> src, ICollection<ChangeItem> dest)
         {
             var coll = from tmp in src
                        group tmp by tmp.Object;

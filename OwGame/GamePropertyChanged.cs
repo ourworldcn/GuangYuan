@@ -6,20 +6,20 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace OW.Game
+namespace OW.Game.PropertyChange
 {
     /// <summary>
     /// 属性变化的数据封装类。
     /// </summary>
     /// <typeparam name="T">变化的属性值类型，使用强类型可以避免对值类型拆装箱操作。</typeparam>
-    public class GamePropertyChangedItem<T> : ICloneable
+    public class GamePropertyChangeItem<T> : ICloneable
     {
-        public GamePropertyChangedItem()
+        public GamePropertyChangeItem()
         {
 
         }
 
-        public GamePropertyChangedItem(T obj, string name)
+        public GamePropertyChangeItem(T obj, string name)
         {
             PropertyName = name;
             Object = obj;
@@ -33,7 +33,7 @@ namespace OW.Game
         /// <param name="name"></param>
         /// <param name="oldValue"></param>
         /// <param name="newValue"></param>
-        public GamePropertyChangedItem(T obj, string name, T oldValue, T newValue)
+        public GamePropertyChangeItem(T obj, string name, T oldValue, T newValue)
         {
             Object = obj;
             PropertyName = name;
@@ -107,7 +107,7 @@ namespace OW.Game
         /// <returns></returns>
         public object Clone()
         {
-            var result = GamePropertyChangedItemPool<T>.Shared.Get();
+            var result = GamePropertyChangeItemPool<T>.Shared.Get();
             result.Object = Object;
             result.PropertyName = PropertyName;
             result.OldValue = OldValue;
@@ -133,34 +133,34 @@ namespace OW.Game
     }
 
     /// <summary>
-    /// 提供可重复使用 <see cref="GamePropertyChangedItem{T}"/> 类型实例的资源池。
+    /// 提供可重复使用 <see cref="GamePropertyChangeItem{T}"/> 类型实例的资源池。
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class GamePropertyChangedItemPool<T> : DefaultObjectPool<GamePropertyChangedItem<T>>
+    public class GamePropertyChangeItemPool<T> : DefaultObjectPool<GamePropertyChangeItem<T>>
     {
-        public static readonly ObjectPool<GamePropertyChangedItem<T>> Shared;
+        public static readonly ObjectPool<GamePropertyChangeItem<T>> Shared;
 
         /// <summary>
         /// 静态构造函数。
         /// </summary>
-        static GamePropertyChangedItemPool()
+        static GamePropertyChangeItemPool()
         {
             if (Shared is null)
-                Interlocked.CompareExchange(ref Shared, new GamePropertyChangedItemPool<T>(new SimplePropertyChangedItemPooledObjectPolicy()), null);
+                Interlocked.CompareExchange(ref Shared, new GamePropertyChangeItemPool<T>(new SimplePropertyChangedItemPooledObjectPolicy()), null);
         }
 
-        public GamePropertyChangedItemPool(IPooledObjectPolicy<GamePropertyChangedItem<T>> policy) : base(policy)
+        public GamePropertyChangeItemPool(IPooledObjectPolicy<GamePropertyChangeItem<T>> policy) : base(policy)
         {
 
         }
 
-        public GamePropertyChangedItemPool(IPooledObjectPolicy<GamePropertyChangedItem<T>> policy, int maximumRetained) : base(policy, maximumRetained)
+        public GamePropertyChangeItemPool(IPooledObjectPolicy<GamePropertyChangeItem<T>> policy, int maximumRetained) : base(policy, maximumRetained)
         {
         }
 
-        private class SimplePropertyChangedItemPooledObjectPolicy : DefaultPooledObjectPolicy<GamePropertyChangedItem<T>>
+        private class SimplePropertyChangedItemPooledObjectPolicy : DefaultPooledObjectPolicy<GamePropertyChangeItem<T>>
         {
-            public override bool Return(GamePropertyChangedItem<T> obj)
+            public override bool Return(GamePropertyChangeItem<T> obj)
             {
                 obj.Object = default;
                 obj.PropertyName = default;
@@ -178,7 +178,7 @@ namespace OW.Game
         /// <inheritdoc/>
         /// </summary>
         /// <returns></returns>
-        public override GamePropertyChangedItem<T> Get()
+        public override GamePropertyChangeItem<T> Get()
         {
             var result = base.Get();
             result.DateTimeUtc = DateTime.UtcNow;
@@ -191,9 +191,9 @@ namespace OW.Game
     /// </summary>
     public static class GamePropertyChangedItemExtensions
     {
-        public static void PostDynamicPropertyChanged<T>(this ICollection<GamePropertyChangedItem<T>> collection, SimpleDynamicPropertyBase obj, string name, object newValue, object tag)
+        public static void PostDynamicPropertyChanged<T>(this ICollection<GamePropertyChangeItem<T>> collection, SimpleDynamicPropertyBase obj, string name, object newValue, object tag)
         {
-            var arg = GamePropertyChangedItemPool<object>.Shared.Get();
+            var arg = GamePropertyChangeItemPool<object>.Shared.Get();
             arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
             if (obj.Properties.TryGetValue(name, out var oldValue))
             {
