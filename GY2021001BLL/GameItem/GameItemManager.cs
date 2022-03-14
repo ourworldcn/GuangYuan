@@ -1458,7 +1458,7 @@ namespace OW.Game.Item
                     else //若部分移动
                     {
                         ForcedSetCount(gItem, gItem.Count.Value - factCount, changes);
-                        ForcedSetCount(gi, factCount + factCount, changes);
+                        ForcedSetCount(gi, gi.Count.Value + factCount, changes);
                         remainder?.Add(gItem);
                     }
                 }
@@ -1479,7 +1479,7 @@ namespace OW.Game.Item
         }
 
         /// <summary>
-        /// 使用物品。
+        /// 使用物品。非锁定函数，调用者自己负责同步。
         /// </summary>
         /// <param name="gItem"></param>
         /// <param name="count"></param>
@@ -1850,6 +1850,9 @@ namespace OW.Game.Item
 
     }
 
+    /// <summary>
+    /// 封装读取器和写入器的扩展方法。
+    /// </summary>
     public static class BinaryExtensions
     {
         #region 读取器扩展

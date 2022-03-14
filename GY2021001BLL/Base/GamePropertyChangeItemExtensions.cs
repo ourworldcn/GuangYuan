@@ -147,11 +147,12 @@ namespace OW.Game.PropertyChange
         /// <summary>
         /// 将<see cref="GamePropertyChangedItem{object}"/>表示的变化数据转变为<see cref="ChangeItem"/>表示形式。
         /// </summary>
+        /// <remarks>这会丢失一些精确的信息。</remarks>
         /// <param name="src"></param>
         /// <param name="dest"></param>
         public static void Copy(this IEnumerable<GamePropertyChangeItem<object>> src, ICollection<ChangeItem> dest)
         {
-            foreach (var item in src.Where(c => !c.IsCollectionChanged() && c.Object is GameItem).GroupBy(c => (GameItem)c.Object))
+            foreach (var item in src.Where(c => !c.IsCollectionChanged() && c.Object is GameItem).GroupBy(c => (GameItem)c.Object)) //复制非集合属性变化的数据
             {
                 dest.AddToChanges(item.Key);
             }

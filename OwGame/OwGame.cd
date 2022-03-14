@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="OW.Game.FastChangingProperty" Collapsed="true">
-    <Position X="2.5" Y="2.25" Width="1.5" />
+  <Class Name="OW.Game.FastChangingProperty">
+    <Position X="3.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BABAAQAUAEAgAAAAIBAAAAAAABAIAAEAAAAgAAAAAAA=</HashCode>
       <FileName>GameBase.cs</FileName>
@@ -19,7 +19,7 @@
     <Position X="5.75" Y="3" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAACAAAAAA=</HashCode>
-      <FileName>GameHelper.cs</FileName>
+      <FileName>Script\ScriptHelper.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />

@@ -166,6 +166,47 @@ namespace OW.Game
             return TryGetDecimalWithTemplate(thing, propertyName, out result);
         }
 
+        #region 设置属性
+
+        /// <summary>
+        /// 设置数字属性的增量值。如果是fcp属性则直接将增量加入<see cref="FastChangingProperty.LastValue"/>而不会再次计算。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="propertyName">指定键值不存在或不是数字属性，则视同为0而不会抛出异常。</param>
+        /// <param name="diff">可以是负数，但调用者需要保证计算后的正确性，该函数不校验。</param>
+        /// <returns></returns>
+        public virtual bool AddPropertyWithFcp(GameThingBase thing, string propertyName, decimal diff)
+        {
+            if (thing.Name2FastChangingProperty.TryGetValue(propertyName, out var fcp))   //若存在快速渐变属性
+            {
+                fcp.LastValue += diff;
+            }
+            else
+            {
+                var oldValue = thing.Properties.GetDecimalOrDefault(propertyName, decimal.Zero);
+                thing.Properties[propertyName] = oldValue + diff;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 设置动态属性。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="value"></param>
+        /// <param name="oldValue"></param>
+        /// <returns>true有旧属性，此时<paramref name="oldValue"/>中包含旧值。false没有原有属性。</returns>
+        public virtual bool SetProperty(GameThingBase thing, string propertyName, object value, out object oldValue)
+        {
+            if (thing.Properties.TryGetValue(propertyName, out oldValue))
+                return true;
+            thing.Properties[propertyName] = value;
+            return false;
+        }
+
+        #endregion 设置属性
+
         /// <summary>
         /// 获取是否可堆叠。
         /// </summary>
@@ -281,7 +322,7 @@ namespace OW.Game
         /// <param name="value">新值，即使是null也认为是有效新值。</param>
         /// <param name="changes"></param>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static void SetPropertyAndMarkChanged([NotNull] this GamePropertyManager manager,[NotNull]  GameThingBase thing, [NotNull] string propertyName, object value,
+        public static void SetPropertyAndMarkChanged([NotNull] this GamePropertyManager manager, [NotNull] GameThingBase thing, [NotNull] string propertyName, object value,
             [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             if (changes is null)    //若无需标记变化数据

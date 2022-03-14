@@ -393,6 +393,47 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto">
+            <summary>
+            用于精确描述变化数据的类。
+            </summary>
+            <remarks>这个类的新值和旧值都用Object表示，对于数据量极大的一些情况会使用具体的类表示如GamePropertyChangeFloatItemDto表示大量的即时战斗数据包导致的人物属性变化。</remarks>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto.ObjectId">
+            <summary>
+            对象Id。指出是什么对象变化了属性。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto.PropertyName">
+            <summary>
+            属性的名字。事件发送者和处理者约定好即可，也可能是对象的其他属性名，如Children可以表示集合变化。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto.HasOldValue">
+            <summary>
+            指示<see cref="P:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto.OldValue"/>中的值是否有意义。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto.OldValue">
+            <summary>
+            获取或设置旧值。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto.HasNewValue">
+            <summary>
+            指示<see cref="P:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto.NewValue"/>中的值是否有意义。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto.NewValue">
+            <summary>
+            新值。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto.DateTimeUtc">
+            <summary>
+            属性发生变化的时间点。Utc计时。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.ReturnDtoBase">
             <summary>
             返回数据对象的基类。

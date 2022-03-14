@@ -347,8 +347,8 @@ namespace OW.Game
             var gpm = World.PropertyManager;
             //初始化自身属性
             GameThingTemplateBase tt = default;
-            if (propertyBag.TryGetValue("tt", out var ttObj) && ttObj is GameThingTemplateBase)
-                tt = (GameThingTemplateBase)ttObj;
+            if (propertyBag.TryGetValue("tt", out var ttObj) && ttObj is GameThingTemplateBase @base)
+                tt = @base;
             else if (propertyBag.TryGetGuid("tid", out var tid))
                 tt = World.ItemTemplateManager.GetTemplateFromeId(tid);
             if (null != tt)
@@ -638,6 +638,7 @@ namespace OW.Game
         /// <summary>
         /// 获取物品的默认容器,这与实际所属容器可能不同。
         /// </summary>
+        /// <remarks><see cref="SimpleDynamicPropertyBase.Properties"/>中包含ptid（父容器模板Id）键值则优先使用。</remarks>
         /// <param name="gameItem"></param>
         /// <param name="gameChar"></param>
         /// <returns>默认容器对象，如果没有则返回null。</returns>

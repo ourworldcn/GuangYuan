@@ -5,6 +5,7 @@ using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using OW.Extensions.Game.Store;
 using OW.Game;
+using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,24 @@ using System.Text.Json;
 namespace GY2021001WebApi.Models
 {
     #region 基础数据
+
+    public partial class GamePropertyChangeObjectItemDto
+    {
+        public static implicit operator GamePropertyChangeObjectItemDto(GamePropertyChangeItem<object> obj)
+        {
+            var result = new GamePropertyChangeObjectItemDto()
+            {
+                DateTimeUtc = obj.DateTimeUtc,
+                HasNewValue = obj.HasNewValue,
+                HasOldValue = obj.HasOldValue,
+                NewValue = obj.NewValue,
+                ObjectId = (obj.Object as GameThingBase)?.Base64IdString,
+                OldValue = obj.OldValue,
+                PropertyName = obj.PropertyName,
+            };
+            return result;
+        }
+    }
 
     public partial class ReturnDtoBase
     {
@@ -349,7 +368,7 @@ namespace GY2021001WebApi.Models
                 StartDateTime = obj.StartDateTime,
                 Version = obj.Version,
             };
-            
+
             return result;
         }
     }
@@ -605,15 +624,15 @@ namespace GY2021001WebApi.Models
         {
             var result = new GameCardTemplateDto()
             {
-                AutoUse=obj.AutoUse,
-                CardPoolGroupString=obj.CardPoolGroupString,
-                EndDateTime=obj.EndDateTime,
-                Id=obj.Id.ToBase64String(),
-                Remark=obj.Remark,
-                SellPeriod=obj.SellPeriod,
-                StartDateTime=obj.StartDateTime,
-                SubCardPoolString=obj.SubCardPoolString,
-                ValidPeriod=obj.ValidPeriod,
+                AutoUse = obj.AutoUse,
+                CardPoolGroupString = obj.CardPoolGroupString,
+                EndDateTime = obj.EndDateTime,
+                Id = obj.Id.ToBase64String(),
+                Remark = obj.Remark,
+                SellPeriod = obj.SellPeriod,
+                StartDateTime = obj.StartDateTime,
+                SubCardPoolString = obj.SubCardPoolString,
+                ValidPeriod = obj.ValidPeriod,
             };
             OwHelper.Copy(obj.Properties, result.Properties);
             return result;

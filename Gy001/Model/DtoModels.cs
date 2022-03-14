@@ -15,6 +15,70 @@ namespace GY2021001WebApi.Models
 
     #region 基础数据
 
+    /// <summary>
+    /// 用于精确描述变化数据的类。
+    /// </summary>
+    /// <remarks>这个类的新值和旧值都用Object表示，对于数据量极大的一些情况会使用具体的类表示如GamePropertyChangeFloatItemDto表示大量的即时战斗数据包导致的人物属性变化。</remarks>
+    [DataContract]
+    public partial class GamePropertyChangeObjectItemDto
+    {
+        public GamePropertyChangeObjectItemDto()
+        {
+
+        }
+
+
+        /// <summary>
+        /// 对象Id。指出是什么对象变化了属性。
+        /// </summary>
+        [DataMember]
+        public string ObjectId { get; set; }
+
+        /// <summary>
+        /// 属性的名字。事件发送者和处理者约定好即可，也可能是对象的其他属性名，如Children可以表示集合变化。
+        /// </summary>
+        [DataMember]
+        public string PropertyName { get; set; }
+
+        #region 旧值相关
+
+        /// <summary>
+        /// 指示<see cref="OldValue"/>中的值是否有意义。
+        /// </summary>
+        [DataMember]
+        public bool HasOldValue { get; set; }
+
+        /// <summary>
+        /// 获取或设置旧值。
+        /// </summary>
+        [DataMember]
+        public object OldValue { get; set; }
+
+        #endregion 旧值相关
+
+        #region 新值相关
+
+        /// <summary>
+        /// 指示<see cref="NewValue"/>中的值是否有意义。
+        /// </summary>
+        [DataMember]
+        public bool HasNewValue { get; set; }
+
+        /// <summary>
+        /// 新值。
+        /// </summary>
+        [DataMember]
+        public object NewValue { get; set; }
+
+        #endregion 新值相关
+
+        /// <summary>
+        /// 属性发生变化的时间点。Utc计时。
+        /// </summary>
+        [DataMember]
+        public DateTime DateTimeUtc { get; set; } = DateTime.UtcNow;
+    }
+
     [DataContract]
     public class StringDecimalTuple
     {
