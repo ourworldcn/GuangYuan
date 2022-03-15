@@ -150,9 +150,9 @@ namespace OW.Game.PropertyChange
         /// <remarks>这会丢失一些精确的信息。</remarks>
         /// <param name="src"></param>
         /// <param name="dest"></param>
-        public static void Copy(this IEnumerable<GamePropertyChangeItem<object>> src, ICollection<ChangeItem> dest)
+        public static void CopyTo(this IEnumerable<GamePropertyChangeItem<object>> src, ICollection<ChangeItem> dest)
         {
-            foreach (var item in src.Where(c => !c.IsCollectionChanged() && c.Object is GameItem).GroupBy(c => (GameItem)c.Object)) //复制非集合属性变化的数据
+            foreach (var item in src.Where(c => !c.IsCollectionChanged() && ((c.Object as GameItem)?.GetContainerId().HasValue ?? false) && c.Object is GameItem).GroupBy(c => (GameItem)c.Object)) //复制非集合属性变化的数据
             {
                 dest.AddToChanges(item.Key);
             }

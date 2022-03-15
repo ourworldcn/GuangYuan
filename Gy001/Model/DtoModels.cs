@@ -1789,6 +1789,27 @@ namespace GY2021001WebApi.Models
     #region 家园建设方案
 
     /// <summary>
+    /// 解锁家园风格接口参数封装类。
+    /// </summary>
+    [DataContract]
+    public class AddHomelandStyleParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要激活的风格号。
+        /// </summary>
+        [DataMember]
+        public int StyleId { get; set; }
+    }
+
+    /// <summary>
+    /// 解锁家园风格接口返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class AddHomelandStyleReturnDto : ChangesReturnDtoBase
+    {
+    }
+
+    /// <summary>
     /// SetHomelandStyle 接口使用的参数类。
     /// </summary>
     [DataContract]

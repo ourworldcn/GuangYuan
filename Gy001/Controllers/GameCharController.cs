@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.BLL;
+﻿using Game.Social;
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.UserDb;
 using Gy001.Controllers;
@@ -213,7 +214,15 @@ namespace GY2021001WebApi.Controllers
                     result.HasError = datas.HasError;
                     result.DebugMessage = datas.ErrorMessage;
                     if (!result.HasError)
+                    {
                         result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                        if (datas.Remainder.Count > 0) //若有剩余物品
+                        {
+                            var mail = new GameMail();
+                            world.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId,
+                                datas.Remainder.Select(c => (c, world.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+                        }
+                    }
                     result.SuccCount = datas.SuccCount;
                 }
             }
@@ -694,6 +703,18 @@ namespace GY2021001WebApi.Controllers
             }
             else
                 data.Clear();
+            return result;
+        }
+
+        /// <summary>
+        /// 解锁家园风格。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<AddHomelandStyleReturnDto> AddHomelandStyle(AddHomelandStyleParamsDto model)
+        {
+            var result = new AddHomelandStyleReturnDto();
             return result;
         }
     }

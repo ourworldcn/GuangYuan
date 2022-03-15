@@ -339,6 +339,13 @@
             <returns></returns>
             <response code="401">令牌错误。</response>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.AddHomelandStyle(GY2021001WebApi.Models.AddHomelandStyleParamsDto)">
+            <summary>
+            解锁家园风格。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.VWorldController">
             <summary>
             世界服务器的相关操作。
@@ -2007,6 +2014,21 @@
             变化的对象数据，可能是空集合。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.AddHomelandStyleParamsDto">
+            <summary>
+            解锁家园风格接口参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.AddHomelandStyleParamsDto.StyleId">
+            <summary>
+            要激活的风格号。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.AddHomelandStyleReturnDto">
+            <summary>
+            解锁家园风格接口返回值封装类。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.SetHomelandFenggeParamsDto">
             <summary>
             SetHomelandStyle 接口使用的参数类。
@@ -2952,12 +2974,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

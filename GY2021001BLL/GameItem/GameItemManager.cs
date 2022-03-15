@@ -1048,70 +1048,20 @@ namespace OW.Game.Item
                 datas.HasError = true;
                 return;
             }
-            var gim = World.ItemManager;
-            var qiwuBag = datas.GameChar.GetQiwuBag();
-            var bpMng = datas.World.BlueprintManager;
             GameItem gi = datas.Item.Item1;
-            var item = datas.Item.Item1;
-            var bpid = gi.Properties.GetGuidOrDefault("usebpid", Guid.Empty);
-            if (bpid != Guid.Empty)    //若指定了蓝图
+            List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
+            if (!UseItem(gi, datas.Item.Item2, datas.Remainder, changes))
             {
-                var template = bpMng.GetTemplateFromId(bpid) as BlueprintTemplate;
-                using ApplyBlueprintDatas bpDatas = new ApplyBlueprintDatas(Service, datas.GameChar)
-                {
-                    Count = datas.Count,
-                    Blueprint = template,
-                };
-                bpDatas.GameItems.Add(gi);
-                World.BlueprintManager.ApplyBluprint(bpDatas);
-                datas.ErrorCode = bpDatas.ErrorCode;
-                datas.ErrorMessage = bpDatas.ErrorMessage;
-                if (!datas.HasError)
-                {
-                    datas.ChangeItems.AddRange(bpDatas.ChangeItems);
-                }
+                datas.ErrorCode = VWorld.GetLastError();
+                datas.ErrorMessage = VWorld.GetLastErrorMessage();
+                datas.HasError = true;
             }
-            else //若未指定蓝图
-                for (int i = 0; i < datas.Count; i++)   //多次单个使用物品
-                {
-                    //准备数据
-                    var tid = gi.Properties.GetGuidOrDefault("usetid", Guid.Empty);
-                    var ptid = gi.Properties.GetGuidOrDefault("useptid", Guid.Empty);
-                    if (tid == Guid.Empty || ptid == Guid.Empty || !gi.Properties.ContainsKey("usecount"))  //若数据不齐
-                    {
-                        //TO DO
-                        continue;
-                    }
-                    var count = gi.Properties.GetDecimalOrDefault("usecount", 0);
-                    //校验结构
-                    var parent = tid == ProjectConstant.CharTemplateId ? datas.GameChar as GameThingBase : datas.GameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
-                    if (parent is null)  //若找不到容器
-                    {
-                        //TO DO
-                        continue;
-                    }
-                    //生成新物品
-                    var giAdd = new GameItem();
-                    World.EventsManager.GameItemCreated(giAdd, tid);
-                    giAdd.Count = count;
-                    //修改数据
-                    if (IsAllowAdd(giAdd, parent))
-                    {
-                        gim.AddItem(giAdd, parent, null, datas.ChangeItems);    //加入新物品
-                        datas.SuccCount++;
-                        gi.Count -= 1;
-                        if (gi.Count > 0)
-                            datas.ChangeItems.AddToChanges(gi);
-                        else
-                        {
-                            datas.ChangeItems.AddToRemoves(gi.ParentId.Value, gi.Id);
-                            World.ItemManager.ForcedDelete(gi);
-                        }
-                    }
-                    else
-                        break;
-                }
-            ChangeItem.Reduce(datas.ChangeItems);
+            else
+            {
+                datas.SuccCount = (int)datas.Item.Item2;
+                changes.CopyTo(datas.ChangeItems);
+                ChangeItem.Reduce(datas.ChangeItems);
+            }
             if (datas.ChangeItems.Count > 0)
                 World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
@@ -1429,7 +1379,7 @@ namespace OW.Game.Item
             {
                 if (count > gItem.Count.Value)
                     throw new ArgumentOutOfRangeException(nameof(count), "必须小于或等于物品的实际数量。");
-                var children = propMng.GetChildrenCollection(gItem);    //子容器
+                var children = propMng.GetChildrenCollection(container);    //子容器
                 var gi = children.FirstOrDefault(c => c.TemplateId == gItem.TemplateId);    //已存在的同类物品
                 if (gi is null)  //若不存在同类物品
                 {
@@ -1485,8 +1435,9 @@ namespace OW.Game.Item
         /// <param name="count"></param>
         /// <param name="remainder"></param>
         /// <param name="changes"></param>
-        public virtual void UseItem(GameItem gItem, decimal count, [AllowNull] ICollection<GameItem> remainder = null, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
+        public virtual bool UseItem(GameItem gItem, decimal count, [AllowNull] ICollection<GameItem> remainder = null, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
+            bool result;
             var gc = gItem.GetGameChar();
             if (!gItem.TryGetProperty("usebpid", out var bpidObj) || !OwConvert.TryToGuid(bpidObj, out var bpid))
                 bpid = Guid.Empty;
@@ -1502,11 +1453,20 @@ namespace OW.Game.Item
                 bpDatas.GameItems.Add(gItem);
                 World.BlueprintManager.ApplyBluprint(bpDatas);
                 if (bpDatas.HasError)
-                    throw new InvalidOperationException("无法正确使用蓝图。");
-                OwHelper.SafeCopy(bpDatas.Remainder, remainder);
-                OwHelper.SafeCopy(bpDatas.Changes, changes);
+                {
+                    VWorld.SetLastError(bpDatas.ErrorCode);
+                    VWorld.SetLastErrorMessage(bpDatas.ErrorMessage);
+                    result = false;
+                }
+                else
+                {
+                    OwHelper.SafeCopy(bpDatas.Remainder, remainder);
+                    OwHelper.SafeCopy(bpDatas.Changes, changes);
+                    result = true;
+                }
             }
             else //若未指定蓝图
+            {
                 for (int i = 0; i < count; i++)   //多次单个使用物品
                 {
                     //获取要生成的物品
@@ -1517,7 +1477,11 @@ namespace OW.Game.Item
                         var container = World.EventsManager.GetDefaultContainer(item, gc);
                         MoveItem(item, item.Count.Value, container, remainder, changes);
                     }
+                    ForcedSetCount(gItem, gItem.Count.Value - 1, changes);
                 }
+                result = true;
+            }
+            return result;
         }
 
         /// <summary>
@@ -1656,6 +1620,14 @@ namespace OW.Game.Item
         /// 实际成功使用的次数。
         /// </summary>
         public int SuccCount { get; set; }
+
+        List<GameItem> _Remainder;
+
+        /// <summary>
+        /// 剩余的物品，由于约束无法放入的物品放在这个集合中。
+        /// </summary>
+        public List<GameItem> Remainder => _Remainder ??= new List<GameItem>();
+
     }
 
     /// <summary>
