@@ -244,12 +244,9 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            Expression<Func<GameItem, bool>> s = (GameItem c) => c.Id == ProjectConstant.PvpObjectTId;
 
-            var pvpObjectQuery = db.Set<GameItem>().Where(s).AsNoTracking();    //查询的基础集合
-            var tst = GamePropertyChangeItemPool<object>.Shared.Get();
-            var sds = Uri.EscapeDataString("count=1,ds='1'\"");
-            var sss = Uri.UnescapeDataString(sds);
+            var str = "sssfgdsssssssssssssssssssssssssssss";
+            var span = str.AsSpan(1);
         }
 
         /// <summary>

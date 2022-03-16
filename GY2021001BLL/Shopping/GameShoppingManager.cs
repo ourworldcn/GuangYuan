@@ -652,7 +652,7 @@ namespace GuangYuan.GY001.BLL
             datas.ResultItems.AddRange(remainder);
             datas.ResultItems.AddRange(changes.Where(c => c.IsCollectionAdded() && c.Object != bag && c.NewValue is GameItem).Select(c => c.NewValue as GameItem));
             datas.ResultItems.AddRange(changes.Where(c => !c.IsCollectionChanged() && c.Object != bag && c.PropertyName == World.PropertyManager.CountPropertyName).Select(c => c.Object as GameItem));
-            changes.CopyTo(datas.ChangeItems);
+            changes.CopyTo(datas.ChangeItems); 
             if (remainder.Count > 0)   //若有需要发送邮件得物品
             {
                 //发送邮件
@@ -678,7 +678,7 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
-    /// 
+    /// 抽奖参数和返回值封装类。
     /// </summary>
     public class ChoujiangDatas : ChangeItemsWorkDatasBase
     {

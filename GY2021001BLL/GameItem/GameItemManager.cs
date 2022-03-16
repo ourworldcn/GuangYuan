@@ -324,7 +324,7 @@ namespace OW.Game.Item
         /// <param name="destContainer"></param>
         /// <param name="changesItems">物品变化信息，null或省略则不生成具体的变化信息。</param>
         /// <returns>true成功移动了物品，false是以下情况的一种或多种：物品现存数量小于要求移动的数量，没有可以移动的物品,目标背包已经满,。</returns>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/>应该大于0</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/>应该大于0。</exception>
         public bool MoveItem(GameItem item, decimal count, GameItemBase destContainer, ICollection<ChangeItem> changesItems = null)
         {
             var propMng = World.PropertyManager;
@@ -372,6 +372,7 @@ namespace OW.Game.Item
         /// <returns>1是不可堆叠或最大堆叠数量本就是1。</returns>
         public decimal GetMaxStc(GameItem gameItem)
         {
+            
             if (ProjectConstant.MucaiId == gameItem.TemplateId && gameItem.Parent?.GetGameChar() is GameChar gameChar)    //若是木材且正确的挂接到了对象树
             {
                 var stcMucai = gameItem.Properties.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, 1);
@@ -1286,6 +1287,32 @@ namespace OW.Game.Item
         }
 
         /// <summary>
+        /// 获取连个物品是否可以合并。可以合并不考虑堆叠限制因素，仅说明是同类型的可堆叠物品。
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        /// <returns>true可以合并，false不可以合并。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        public virtual bool IsAllowMerge(GameItem src, GameItem dest) =>
+            src.TemplateId != dest.TemplateId || !World.PropertyManager.IsStc(src, out _) || !World.PropertyManager.IsStc(dest, out _) ? false : true;
+
+        /// <summary>
+        /// 计算可移动的数量。不考虑是否是同类型物品。
+        /// </summary>
+        /// <param name="src">减少数量的物品。</param>
+        /// <param name="dest">增加数量的物品。</param>
+        /// <param name="maxCount">从源中最多移走多少，null或省略则不限定最多数量(等同于源物品的数量)。</param>
+        /// <returns>src中减少并加入dest中的数量。对于不可合并物品(不同物品或不可堆叠物品)立即返回0，</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        public virtual decimal GetCountOfMergeable(GameItem src, GameItem dest, decimal? maxCount = null)
+        {
+            var stc = World.PropertyManager.GetRemainderStc(dest);  //堆叠还剩余多少数量
+            stc = Math.Min(stc, src.Count.Value);
+            return maxCount.HasValue ? Math.Min(stc, maxCount.Value) : stc;
+        }
+
+
+        /// <summary>
         /// 强制将一个物品从它现有容器中移除。仅断开其关系，而不删除对象。
         /// </summary>
         /// <param name="gameItem"></param>
@@ -1327,6 +1354,27 @@ namespace OW.Game.Item
                     db.Remove(gameItem);
             }
             return result;
+        }
+
+        /// <summary>
+        /// 强制增减物品数量。从源中减少数量并在目标中增加同样数量。
+        /// </summary>
+        /// <param name="src">并入的物品，若全部并入则根据<see cref="GameEventsManager.IsAllowZero(GameItem)"/>决定是否删除物品。</param>
+        /// <param name="dest"></param>
+        /// <param name="count">要增减的数量。0则立即返回false。省略或为null则视同是<paramref name="src"/>的全部数量。</param>
+        /// <param name="changes">详细的变化数据。</param>
+        /// <returns>true合并成功，false物品不同模板属性或不是可堆叠物品。</returns>
+        public virtual bool ForcedSetCount(GameItem src, GameItem dest, decimal? count = null, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            if (count == decimal.Zero) //若无需合并
+                return false;
+            count ??= src.Count;
+            if (count > src.Count)   //非法参数
+                throw new ArgumentOutOfRangeException(nameof(count), "必须小于或等于物品的实际数量。");
+
+            ForcedSetCount(src, src.Count.Value - count.Value, changes);
+            ForcedSetCount(dest, dest.Count.Value + count.Value, changes);
+            return true;
         }
 
         /// <summary>
@@ -1375,7 +1423,7 @@ namespace OW.Game.Item
             [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var propMng = World.PropertyManager;
-            if (World.PropertyManager.IsStc(gItem, out var stc)) //若可堆叠
+            if (propMng.IsStc(gItem, out _)) //若可堆叠
             {
                 if (count > gItem.Count.Value)
                     throw new ArgumentOutOfRangeException(nameof(count), "必须小于或等于物品的实际数量。");
@@ -1398,19 +1446,10 @@ namespace OW.Game.Item
                 }
                 else //若存在同类物品
                 {
-                    var rStc = propMng.GetRemainderStc(gi); //可添加数量
-                    var factCount = Math.Min(rStc, count);  //实际可以移动的数量
-                    if (factCount >= gItem.Count)  //若全部移动
-                    {
-                        ForcedSetCount(gItem, 0, changes);
-                        ForcedSetCount(gi, factCount + gi.Count.Value, changes);
-                    }
-                    else //若部分移动
-                    {
-                        ForcedSetCount(gItem, gItem.Count.Value - factCount, changes);
-                        ForcedSetCount(gi, gi.Count.Value + factCount, changes);
+                    var countMove = GetCountOfMergeable(gItem, gi, count);  //实际移动数量
+                    if (countMove < gItem.Count)    //若部分移动
                         remainder?.Add(gItem);
-                    }
+                    ForcedSetCount(gItem, gi, countMove, changes);
                 }
             }
             else //若不可堆叠
@@ -1425,6 +1464,22 @@ namespace OW.Game.Item
                 {
                     ForcedMove(gItem, gItem.Count.Value, container, changes);
                 }
+            }
+        }
+
+        /// <summary>
+        /// 移动一组物品到指定容器中。
+        /// </summary>
+        /// <param name="gItems"></param>
+        /// <param name="container"></param>
+        /// <param name="remainder"></param>
+        /// <param name="changes"></param>
+        public virtual void MoveItems(IEnumerable<GameItem> gItems, GameThingBase container, [AllowNull] ICollection<GameItem> remainder = null,
+            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            foreach (var gItem in gItems)
+            {
+                MoveItem(gItem, gItem.Count.Value, container, remainder, changes);
             }
         }
 
@@ -1461,7 +1516,7 @@ namespace OW.Game.Item
                 else
                 {
                     OwHelper.SafeCopy(bpDatas.Remainder, remainder);
-                    OwHelper.SafeCopy(bpDatas.Changes, changes);
+                    OwHelper.SafeCopy(bpDatas.Changes.Select(c=>c.Clone() as GamePropertyChangeItem<object>), changes);
                     result = true;
                 }
             }

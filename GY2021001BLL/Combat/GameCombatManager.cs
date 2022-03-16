@@ -395,7 +395,7 @@ namespace GuangYuan.GY001.BLL
                 //记录收益——改写收益槽数据
                 List<GameItem> lst = new List<GameItem>();
 
-                World.ItemManager.AddItems(data.GameItems.Select(c =>
+                World.ItemManager.MoveItems(data.GameItems.Select(c =>
                 {
                     if (gim.IsMounts(c))
                     {

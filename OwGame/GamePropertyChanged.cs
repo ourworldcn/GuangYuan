@@ -2,6 +2,7 @@
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -12,6 +13,7 @@ namespace OW.Game.PropertyChange
     /// 属性变化的数据封装类。
     /// </summary>
     /// <typeparam name="T">变化的属性值类型，使用强类型可以避免对值类型拆装箱操作。</typeparam>
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class GamePropertyChangeItem<T> : ICloneable
     {
         public GamePropertyChangeItem()
@@ -130,6 +132,11 @@ namespace OW.Game.PropertyChange
         /// 事件发起方可以在这里记录一些额外信息。
         /// </summary>
         public object Tag { get; set; }
+
+        private string GetDebuggerDisplay()
+        {
+            return $"{Object}.{PropertyName} : {{{OldValue}}} -> {{{NewValue}}}";
+        }
     }
 
     /// <summary>
@@ -184,6 +191,7 @@ namespace OW.Game.PropertyChange
             result.DateTimeUtc = DateTime.UtcNow;
             return result;
         }
+
     }
 
     /// <summary>
