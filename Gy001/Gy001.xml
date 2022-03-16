@@ -219,14 +219,6 @@
             <returns>true成功设置,false,指定了删除属性标志，但没有找到指定名子的属性。</returns>
             <response code="401">令牌错误。</response>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.GameCharController.SetCombatMounts(GY2021001WebApi.Models.SetCombatMountsParamsDto)">
-            <summary>
-            设置出战坐骑列表。过期。
-            </summary>
-            <param name="model">GameItemDto 中元素仅需Id有效填写。</param>
-            <returns>true成功设置，false可能是设置数量超过限制。</returns>
-            <response code="401">令牌错误。</response>
-        </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.Sell(GY2021001WebApi.Models.SellParamsDto)">
             <summary>
             出售物品。

@@ -94,48 +94,6 @@ namespace OW.Game.Item
 
         #region 动态属性相关
         /// <summary>
-        /// 获取指定事物的指定名称属性的值。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="propName"></param>
-        /// <returns></returns>
-        public object GetPropertyValue(GameItem gameItem, string propName)
-        {
-            if (propName.Equals("id", StringComparison.InvariantCultureIgnoreCase))
-                return gameItem.Id;
-            else if (propName.Equals("tid", StringComparison.InvariantCultureIgnoreCase))
-                return gameItem.TemplateId;
-            else if (propName.Equals("pid", StringComparison.InvariantCultureIgnoreCase))
-                return gameItem.ParentId ?? gameItem.OwnerId ?? null;
-            else if (propName.Equals("ptid", StringComparison.InvariantCultureIgnoreCase))
-            {
-                var container = gameItem.Parent;
-                if (null != container)  //若找到容器
-                    return container.TemplateId;
-                if (!gameItem.OwnerId.HasValue)  //若也没有附属Id
-                    return null;
-                return World.CharManager.GetCharFromId(gameItem.OwnerId.Value)?.TemplateId;
-            }
-            else if (propName.Equals("Count", StringComparison.InvariantCultureIgnoreCase))
-                return gameItem.Count ?? 1;
-            else if (propName.Equals("tgenuscode", StringComparison.InvariantCultureIgnoreCase) || propName.Equals("tgcode", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return ItemTemplateManager.GetTemplateFromeId(gameItem.TemplateId)?.GenusCode;
-            }
-            else if (propName.Equals("freecap", StringComparison.InvariantCultureIgnoreCase)) //容器剩余空间
-            {
-                var cap = World.PropertyManager.GetRemainderCap(gameItem);  // GetCapacity(gItem);
-                return cap;
-            }
-            else if ((propName.Equals("gid", StringComparison.InvariantCultureIgnoreCase)))
-            {
-                return GetTemplate(gameItem).GId ?? 0;
-            }
-            else
-                return gameItem.Properties.GetValueOrDefault(propName, 0m);
-        }
-
-        /// <summary>
         /// 设置动态属性。
         /// </summary>
         /// <param name="gameItem"></param>
@@ -363,38 +321,6 @@ namespace OW.Game.Item
             return result;
         }
 
-        #region 堆叠和容纳
-
-        /// <summary>
-        /// 获取最大堆叠数量。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <returns>1是不可堆叠或最大堆叠数量本就是1。</returns>
-        public decimal GetMaxStc(GameItem gameItem)
-        {
-            
-            if (ProjectConstant.MucaiId == gameItem.TemplateId && gameItem.Parent?.GetGameChar() is GameChar gameChar)    //若是木材且正确的挂接到了对象树
-            {
-                var stcMucai = gameItem.Properties.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, 1);
-                stcMucai = stcMucai == -1 ? decimal.MaxValue : stcMucai;
-                var hl = gameChar.GetHomeland();
-
-                var coll = hl.GetAllChildren().Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId).Select(c => GetMaxStc(c)).Append(stcMucai);
-                if (coll.Any(c => decimal.MaxValue == c))
-                    return decimal.MaxValue;
-                else
-                    return coll.Sum();
-            }
-            var stc = (int)gameItem.Properties.GetDecimalOrDefault(ProjectConstant.StackUpperLimit, 1); //无属性表示不可堆叠
-            return stc switch
-            {
-                -1 => decimal.MaxValue, //-1表示不限制
-                _ => stc,
-            };
-        }
-
-        #endregion 堆叠和容纳
-
         #endregion 动态属性相关
 
         #region 物品增减相关
@@ -603,90 +529,6 @@ namespace OW.Game.Item
         }
 
         /// <summary>
-        /// 增加或使用物品。调用者需要自己锁定角色对象。
-        /// </summary>
-        /// <param name="gameItems"></param>
-        /// <param name="parent"></param>
-        /// <param name="autoUse"></param>
-        /// <param name="remainder"></param>
-        /// <param name="changeItems"></param>
-        public void AddOrUseItems(IEnumerable<GameItem> gameItems, GameChar parent, bool autoUse, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
-        {
-            if (autoUse) //若要自动使用
-            {
-                var container = parent.GetShoppingSlot();   //礼包槽
-                foreach (var item in gameItems)  //逐个增加
-                    World.ItemManager.AddItem(item, container, null, changeItems);
-                foreach (var item in gameItems)  //逐个使用
-                {
-                    using var useData = new UseItemsWorkDatas(World, parent) { Count = (int)item.Count.GetValueOrDefault(1), ItemId = item.Id };
-                    World.ItemManager.UseItems(useData);
-                    if (useData.HasError)
-                        throw new InvalidOperationException("无法自动使用物品。");
-                    if (null != changeItems)
-                        foreach (var cis in useData.ChangeItems)
-                            changeItems.Add(cis);
-                }
-            }
-            else //不自动使用
-                foreach (var item in gameItems)
-                    World.ItemManager.AddItem(item, parent, null, changeItems);
-        }
-
-        /// <summary>
-        /// 将一个物品放入容器(自动识别容器)。根据属性确定是否可以合并堆叠。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="gameChar"></param>
-        /// <param name="remainder"></param>
-        /// <param name="changeItems"></param>
-        public void AddItem(GameItem gameItem, GameChar gameChar, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
-        {
-            var container = World.EventsManager.GetDefaultContainer(gameItem, gameChar);
-            AddItem(gameItem, container, remainder, changeItems);
-        }
-
-        /// <summary>
-        /// 测试指定物品是否可以完整的放入指定容器中。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="parent"></param>
-        /// <returns></returns>
-        public bool IsAllowAdd(GameItem gameItem, GameThingBase parent)
-        {
-            var propMng = World.PropertyManager;
-            var children = propMng.GetChildrenCollection(parent);
-            var stcItem = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId) ?? gameItem;
-            if (!World.PropertyManager.IsStc(stcItem, out _)) //若不可堆叠
-            {
-                if (parent is GameItemBase gib) //若是容器
-                {
-                    var freeCap = propMng.GetRemainderCap(gib);
-                    if (freeCap == 0)   //若不可再放入物品
-                    {
-                        return false;
-                    }
-                }
-                if (parent is GameItem gi && gi.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(gameItem) && this.IsExistsMounts(gameItem, gi.GetGameChar()))  //若要放入坐骑且有同款坐骑
-                {
-                    var bag = gi.GetGameChar().GetShoulanBag();  //兽栏
-                    if (propMng.GetRemainderCap(bag) == 0) //若兽栏满
-                    {
-                        return false;
-                    }
-                    parent = bag;
-                }
-                return true;
-            }
-            else //若可以堆叠
-            {
-                var dest = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && World.PropertyManager.GetRemainderStc(c) > 0);    //找到已有的物品且尚可加入堆叠的
-                var re = dest is null ? decimal.MaxValue : World.PropertyManager.GetRemainderStc(dest);
-                return re >= gameItem.Count;
-            }
-        }
-
-        /// <summary>
         /// 按堆叠要求将物品拆分未多个。
         /// </summary>
         /// <param name="gameItem">要拆分的物品。返回时该物品<see cref="GameItem.Count"/>可能被改变。
@@ -762,48 +604,6 @@ namespace OW.Game.Item
                     World.EventsManager.GameItemCreated(newItem, addItem, tmp, null);
                     tmp.Children.Add(newItem);
                 }
-            }
-        }
-
-        /// <summary>
-        /// 按Id获取物品/容器对象集合。
-        /// </summary>
-        /// <param name="ids"></param>
-        /// <param name="items">找到的物品或容器。</param>
-        /// <param name="parent">仅在这个对象的直接或间接子代中搜索，如果指定一个角色对象可以搜寻角色下所有物品。</param>
-        /// <returns>true所有指定Id均被获取，false,至少有一个物品没有找到，</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool GetItems(IEnumerable<Guid> ids, ICollection<GameItem> items, GameThingBase parent)
-        {
-            IEnumerable<GameItem> enu = null;
-            if (parent is GameChar gc)
-                enu = gc.AllChildren;
-            else if (parent is GameItem gi)
-                enu = gi.GetAllChildren();
-            return GetItems(ids, items, enu.Join(ids, c => c.Id, c => c, (l, r) => l));
-        }
-
-        /// <summary>
-        /// 按Id获取物品/容器对象集合。
-        /// </summary>
-        /// <param name="ids">id的集合。</param>
-        /// <param name="items">得到的结果集追加到此集合内，即便没有获取到所有对象，也会追加找到的对象。</param>
-        /// <param name="gameItems">仅在该集合中搜索。</param>
-        /// <returns></returns>
-        public bool GetItems(IEnumerable<Guid> ids, ICollection<GameItem> items, IEnumerable<GameItem> gameItems)
-        {
-            var coll = gameItems.Join(ids, c => c.Id, c => c, (l, r) => l);
-            var lst = World.ObjectPoolListGameItem.Get();
-            try
-            {
-                lst.AddRange(coll);
-                var count = ids.Count();
-                lst.ForEach(c => items.Add(c));
-                return lst.Count == count;
-            }
-            finally
-            {
-                World.ObjectPoolListGameItem.Return(lst);
             }
         }
 
@@ -1067,6 +867,10 @@ namespace OW.Game.Item
                 World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="datas"></param>
         public void GetRankOfTuiguan(GetRankOfTuiguanDatas datas)
         {
             using var dwUser = datas.LockUser();
@@ -1140,48 +944,6 @@ namespace OW.Game.Item
             }
             ChangeItem.Reduce(datas.ChangeItems);
         }
-
-        /// <summary>
-        /// 增加物品，如果满则邮件，非锁定函数，调用者要自行锁定数据结构。
-        /// </summary>
-        /// <param name="items"></param>
-        /// <param name="gameChar"></param>
-        //public void AddItemsOrMailCore(List<GameItem> items, GameChar gameChar)
-        //{
-        //    using var dwUser = datas.LockUser();
-        //    if (dwUser is null)
-        //        return;
-        //    var container = datas.GameChar.AllChildren.ToLookup(c => c.TemplateId);
-
-        //    List<GameItem> re = new List<GameItem>();
-        //    var coll = (from tmp in datas.Items
-        //                group tmp.Item1 by tmp.Item2 into g
-        //                let container = container[g.Key].FirstOrDefault()
-        //                where container != null
-        //                select (g, container)).ToList();
-
-        //    foreach (var (g, container) in coll)
-        //    {
-        //        foreach (var item in g)
-        //        {
-        //            if (container.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(item) && this.IsExistsMounts(datas.GameChar, item))   //若向坐骑背包放入重复坐骑
-        //                AddItem(item, datas.GameChar.GetShoulanBag(), re, datas.ChangeItems);
-        //            else
-        //                AddItem(item, container, re, datas.ChangeItems);
-        //        }
-        //        //AddItems(g, container, re, datas.ChangeItems);
-        //    }
-        //    if (re.Count > 0)  //若需要发送邮件
-        //    {
-        //        var mail = new GameMail();
-        //        World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, re.Select(c => (c, GetDefaultContainer(datas.GameChar, c).TemplateId)));
-        //    }
-        //    ChangeItem.Reduce(datas.ChangeItems);
-        //}
-
-        #region 属性相关
-
-        #endregion 属性相关
 
         /// <summary>
         /// 设置数量属性，若考虑自动删除对象等事项。
@@ -1539,17 +1301,6 @@ namespace OW.Game.Item
             return result;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="gItems"></param>
-        /// <param name="remainder"></param>
-        /// <param name="changes"></param>
-        public virtual void AddOrUseItems(IEnumerable<GameItem> gItems, [AllowNull] ICollection<GameItem> remainder = null,
-            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
-        {
-
-        }
         #endregion 物品操作
     }
 

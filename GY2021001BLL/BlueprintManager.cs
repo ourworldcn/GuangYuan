@@ -1289,7 +1289,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             GameUser gu = datas.GameChar.GameUser;
-            List<GameItem> tmpList = World.ObjectPoolListGameItem.Get();
+            List<GameItem> tmpList;
             if (!World.CharManager.Lock(gu))
             {
                 datas.HasError = true;
@@ -1300,7 +1300,8 @@ namespace GuangYuan.GY001.BLL
             {
                 _InitializeTask.Wait(); //等待初始化结束
                 //获取有效的参与制造物品对象
-                if (!World.ItemManager.GetItems(datas.GameItems.Select(c => c.Id), tmpList, datas.GameChar))
+                tmpList = datas.GameItems.Join(datas.GameChar.AllChildren, c => c.Id, c => c.Id, (l, r) => r).ToList();
+                if (tmpList.Count < datas.GameItems.Count)
                 {
                     return;
                 }
@@ -1325,11 +1326,6 @@ namespace GuangYuan.GY001.BLL
             }
             finally
             {
-                if (null != tmpList)
-                {
-                    World.ObjectPoolListGameItem.Return(tmpList);
-                }
-
                 World.CharManager.Unlock(gu, true);
             }
         }
