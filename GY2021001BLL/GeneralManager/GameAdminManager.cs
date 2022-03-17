@@ -54,7 +54,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = "权限不够";
                 return;
             }
-            var db = datas.UserContext;
+            var db = datas.UserDbContext;
             var loginNames = new List<string>();  //登录名数组
             for (int i = datas.StartIndex; i <= datas.EndIndex; i++)
             {
@@ -109,7 +109,7 @@ namespace GuangYuan.GY001.BLL
             {
                 loginNames.Add($"{datas.Prefix}{i}");
             }
-            var db = datas.UserContext;
+            var db = datas.UserDbContext;
             var userIds = db.Set<GameChar>().Where(c => loginNames.Contains(c.GameUser.LoginName)).Select(c => c.Id).ToArray();
             using var dwUsers = World.CharManager.LockOrLoadWithCharIds(userIds, userIds.Length * World.CharManager.Options.DefaultLockTimeout);    //顺序连锁
             foreach (var item in loginNames)
@@ -196,7 +196,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             string prefix = datas.LoginNamePrefix ?? "vip";
-            var context = datas.UserContext;
+            var context = datas.UserDbContext;
             var loginNames = context.Set<GameUser>().Where(c => c.LoginName.StartsWith(prefix)).Select(c => (c.LoginName));    //获取已有登录名
             var listNames = loginNames.ToList();
             var lastIndex = listNames.Count == 0 ? -1 : loginNames.ToList().Select(c =>
@@ -299,7 +299,7 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
             }
-            var db = datas.UserContext;
+            var db = datas.UserDbContext;
             var lns = db.Set<GameUser>().Where(c => EF.Functions.Like(c.LoginName, $"{datas.LoginNamePrefix}%")).Select(c => c.LoginName).
                  AsEnumerable().Where(c =>
                  {
@@ -440,7 +440,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 设置战斗积分接口的数据封装类。
     /// </summary>
-    public class SetCombatScoreDatas : ComplexWorkDatasBase
+    public class SetCombatScoreDatas : ComplexWorkGameContext
     {
         public SetCombatScoreDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -483,7 +483,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 追加权限接口的数据封装类。
     /// </summary>
-    public class AddPowersDatas : ComplexWorkDatasBase
+    public class AddPowersDatas : ComplexWorkGameContext
     {
         public AddPowersDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -521,7 +521,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 
     /// </summary>
-    public class SendThingDatas : ComplexWorkDatasBase
+    public class SendThingDatas : ComplexWorkGameContext
     {
         public SendThingDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -559,7 +559,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 强制下线。
     /// </summary>
-    public class LetOutDatas : ComplexWorkDatasBase
+    public class LetOutDatas : ComplexWorkGameContext
     {
         public LetOutDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -579,7 +579,7 @@ namespace GuangYuan.GY001.BLL
         public string LoginName { get; set; }
     }
 
-    public class BlockDatas : ComplexWorkDatasBase
+    public class BlockDatas : ComplexWorkGameContext
     {
         public BlockDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -604,7 +604,7 @@ namespace GuangYuan.GY001.BLL
         public DateTime BlockUtc { get; set; }
     }
 
-    public class RebootDatas : ComplexWorkDatasBase
+    public class RebootDatas : ComplexWorkGameContext
     {
         public RebootDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -620,7 +620,7 @@ namespace GuangYuan.GY001.BLL
     }
 
 
-    public class GetInfosDatas : ComplexWorkDatasBase
+    public class GetInfosDatas : ComplexWorkGameContext
     {
         public GetInfosDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -650,7 +650,7 @@ namespace GuangYuan.GY001.BLL
         public decimal LoadRate { get; set; }
     }
 
-    public class ImportUsersDatas : ComplexWorkDatasBase
+    public class ImportUsersDatas : ComplexWorkGameContext
     {
         public ImportUsersDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -667,7 +667,7 @@ namespace GuangYuan.GY001.BLL
         public Stream Store { get; set; }
     }
 
-    public class ExportUsersDatas : ComplexWorkDatasBase
+    public class ExportUsersDatas : ComplexWorkGameContext
     {
         public ExportUsersDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -705,7 +705,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 复制账号接口使用的参数封装类。
     /// </summary>
-    public class CloneUserDatas : ComplexWorkDatasBase
+    public class CloneUserDatas : ComplexWorkGameContext
     {
         public CloneUserDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {

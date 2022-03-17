@@ -1,6 +1,5 @@
 ﻿using GuangYuan.GY001.UserDb;
 using OW.Game;
-using OW.Game.PropertyChange;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace GuangYuan.GY001.BLL
+namespace OW.Game.PropertyChange
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     sealed class PropertyChangeMethodAttribute : Attribute
@@ -28,6 +27,9 @@ namespace GuangYuan.GY001.BLL
 
         }
 
+        /// <summary>
+        /// 属性名。
+        /// </summary>
         public string PropertyName
         {
             get { return _PropertyName; }
@@ -59,7 +61,7 @@ namespace GuangYuan.GY001.BLL
         void Initializer()
         {
             List<Type> types = new List<Type>() { typeof(GamePropertyChangeManager) };
-            for (var type = GetType(); type != typeof(GamePropertyChangeManager); type = type.BaseType)
+            for (var type = GetType(); type != typeof(GamePropertyChangeManager); type = type.BaseType) //遍历子类
                 types.Add(type);
             var coll = from tmp in types.SelectMany(c => c.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
                        let attr = tmp.GetCustomAttribute<PropertyChangeMethodAttribute>()
@@ -81,11 +83,11 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public bool Dispatcher(GameChar gameChar)
+        public bool Dispatch(GameChar gameChar)
         {
             List<Exception> excps = new List<Exception>();
             bool succ = false;
-            var list = gameChar.GetOrCreateEventArgsList();
+            var list = gameChar.GetOrCreatePropertyChangedList();
             GamePropertyChangeItem<object> item;
             while (!list.IsEmpty)    //若存在数据
             {
@@ -136,7 +138,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ConcurrentQueue<GamePropertyChangeItem<object>> GetOrCreateEventArgsList(this GameChar gameChar) =>
+        public static ConcurrentQueue<GamePropertyChangeItem<object>> GetOrCreatePropertyChangedList(this GameChar gameChar) =>
             gameChar.RuntimeProperties.GetOrAdd("EventArgsList", c => new ConcurrentQueue<GamePropertyChangeItem<object>>()) as ConcurrentQueue<GamePropertyChangeItem<object>>;
 
     }

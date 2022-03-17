@@ -1,38 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="GuangYuan.GY001.BLL.Compiler" Collapsed="true">
-    <Position X="17" Y="0.75" Width="1.5" />
+    <Position X="19.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.BLL.ComplexWorkDatasBase">
-    <Position X="0.5" Y="9.5" Width="2.25" />
+  <Class Name="GuangYuan.GY001.BLL.ComplexWorkGameContext">
+    <Position X="0.5" Y="6.5" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="GuangYuan.GY001.BLL.WorkDataBase">
-    <Position X="3.25" Y="0.75" Width="2.25" />
-    <TypeIdentifier>
-      <HashCode>AAAAAICAADAAABAAAAAAABAAAACEQAAQAAAAIAAAAAA=</HashCode>
-      <FileName>Base\Base.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" />
-  </Class>
-  <Class Name="GuangYuan.GY001.BLL.GameCharWorkDataBase">
-    <Position X="3.25" Y="5" Width="2.25" />
-    <TypeIdentifier>
-      <HashCode>AYBAAAABACAAAAAAAAAAAAAAAAgAABAIAAAAAAABAGA=</HashCode>
-      <FileName>Base\Base.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" />
-  </Class>
   <Class Name="GuangYuan.GY001.BLL.GameHostedService" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="13.5" Y="2.75" Width="1.5" />
+    <Position X="16" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAABEACAAAAAAAAAgAAQAAAAAAAAAQQQgACAAAAAA=</HashCode>
       <FileName>Base\ForNetCore.cs</FileName>
@@ -40,28 +24,28 @@
     <Lollipop Position="0.2" Collapsed="true" />
   </Class>
   <Class Name="OW.Game.VWorldOptions" Collapsed="true">
-    <Position X="17" Y="3.75" Width="1.5" />
+    <Position X="17.75" Y="3.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAgAAAAEAAAAAAAgAAAAAAAA=</HashCode>
       <FileName>Base\VWorld.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.VWorldInfomation" Collapsed="true">
-    <Position X="15.25" Y="3.75" Width="1.5" />
+    <Position X="16" Y="3.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>IAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
       <FileName>Base\VWorld.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharManagerOptions" Collapsed="true">
-    <Position X="15.25" Y="1.75" Width="1.5" />
+    <Position X="17.75" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAEAAABAAAAAAAAAAAAAAAAAAAAAAAAAIAAAEAA=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharManager">
-    <Position X="11" Y="2" Width="2" />
+    <Position X="13" Y="2" Width="2" />
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
@@ -79,105 +63,114 @@
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.CharLoadedEventArgs" Collapsed="true">
-    <Position X="15.25" Y="0.75" Width="1.5" />
+    <Position X="17.75" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameCharManagerExtensions" Collapsed="true">
-    <Position X="13.5" Y="1.75" Width="1.5" />
+    <Position X="16" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAQAAAAAAAECAAAAAEIAAAAAAAAAAAAAABAAAAAABA=</HashCode>
       <FileName>Base\GameUserManagers.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.BLL.BinaryRelationshipWorkDataBase">
-    <Position X="3.5" Y="9.5" Width="2" />
+  <Class Name="GuangYuan.GY001.BLL.BinaryRelationshipGameContext">
+    <Position X="3.5" Y="6.5" Width="2" />
     <TypeIdentifier>
       <HashCode>AAQQAIAAASAAAgAAICCCAACAAgAACAQAAAAAAABCAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GameItemSummery" Collapsed="true">
-    <Position X="15.25" Y="2.75" Width="1.5" />
+    <Position X="17.75" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAABAAAAAAAAAAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GuangYuan.GY001.BLL.RelationshipWorkDataBase">
-    <Position X="6.25" Y="9.5" Width="2" />
+  <Class Name="GuangYuan.GY001.BLL.RelationshipGameContext">
+    <Position X="6.25" Y="6.5" Width="2" />
     <TypeIdentifier>
       <HashCode>AAQQAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Base\Base.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.GameEventsManagerOptions" Collapsed="true">
-    <Position X="18.75" Y="1.75" Width="1.5" />
+    <Position X="21.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Base\GameEvents.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.SimplePropertyChangedItem&lt;T&gt;" Collapsed="true">
-    <Position X="18.75" Y="2.75" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>EAQAAAAAAABgAAAggAAAEAQAIAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Base\GameEvents.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="OW.Game.SimplePropertyChangedCollection" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="17" Y="2.75" Width="1.5" />
+    <Position X="21.25" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAgAAAAAAAAAACAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Base\GameEvents.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.DynamicPropertyChangedCollection" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="18.75" Y="0.75" Width="1.5" />
+    <Position X="21.25" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAEAAAAAIAAAAAAAAAAAAAAAAAAAAAAACAgAAAAAA=</HashCode>
       <FileName>Base\GameEvents.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.GameEventsManager">
-    <Position X="7.25" Y="2" Width="3" />
+    <Position X="9.25" Y="2" Width="3" />
     <TypeIdentifier>
       <HashCode>A0AACFAAAAAIAQAQIALAgAAAAgAACAAAAARIQAAgARA=</HashCode>
       <FileName>Base\GameEvents.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.GameEventsManagerExtensions" Collapsed="true">
-    <Position X="17" Y="1.75" Width="1.5" />
+    <Position X="19.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AQAAABAIAAAAAAAQAAAAAAIAAAEAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AQAAABAAAAAAAAAQAAAAAAIAAAEAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Base\GameEvents.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.ChangeData" Collapsed="true">
-    <Position X="13.5" Y="0.75" Width="1.5" />
+    <Position X="16" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>QAQACAAAAAAgAAAAAAAAEAAAAAAAAABAAAAAAABCAAA=</HashCode>
       <FileName>Specific\Gy001GameEventsManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.GameManagerBase&lt;TOptions&gt;" Collapsed="true">
-    <Position X="9.25" Y="0.75" Width="1.5" />
+    <Position X="11.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAACAAABAAAAAAAAQBAAAAAAAAQAAQAAAAAABAAAA=</HashCode>
       <FileName>Base\GameManagerBase.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.PropertyChange.GamePropertyChangeItemExtensions">
-    <Position X="0.75" Y="4" Width="2" />
+  <Class Name="OW.Game.PropertyChange.GamePropertyChangeItemExtensions" Collapsed="true">
+    <Position X="19.5" Y="2.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAIAAAAAAAAAAAgAAAUAAAAAAAIgAAgA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAAIAAAAAAAAAAAIAAAIgAIgA=</HashCode>
       <FileName>Base\GamePropertyChangeItemExtensions.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="OW.Game.GameContextBase">
+    <Position X="3.25" Y="0.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAICAADAAABAAAAAAABAAAACEQAAQAAAAAAAAAAA=</HashCode>
+      <FileName>Base\GameContext.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="OW.Game.GameCharGameContext" Collapsed="true">
+    <Position X="3.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AYBAAAABACAAAAAAAAAAAAAAgggAABAIAAAAAAABAGA=</HashCode>
+      <FileName>Base\GameContext.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
   <Interface Name="System.Collections.Generic.ICollection&lt;T&gt;" Collapsed="true">
-    <Position X="13.5" Y="5" Width="1.5" />
+    <Position X="16" Y="5" Width="1.5" />
     <TypeIdentifier />
   </Interface>
   <Font Name="Microsoft YaHei UI" Size="9" />

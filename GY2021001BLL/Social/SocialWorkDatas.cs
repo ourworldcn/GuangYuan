@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace GuangYuan.GY001.BLL
 {
-    public class RequestAssistanceDatas : BinaryRelationshipWorkDataBase
+    public class RequestAssistanceDatas : BinaryRelationshipGameContext
     {
         public RequestAssistanceDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
         {
@@ -39,7 +39,7 @@ namespace GuangYuan.GY001.BLL
             {
                 if (_RootCombat is null)
                 {
-                    _RootCombat = UserContext.Set<WarNewspaper>().FirstOrDefault(c => c.Id == RootCombatId);
+                    _RootCombat = UserDbContext.Set<WarNewspaper>().FirstOrDefault(c => c.Id == RootCombatId);
                 }
                 return _RootCombat;
             }
@@ -56,7 +56,7 @@ namespace GuangYuan.GY001.BLL
             {
                 if (_SocialRelationship is null)
                 {
-                    _SocialRelationship = UserContext.Set<GameSocialRelationship>().FirstOrDefault(c => c.Id == GameChar.Id && c.Id2 == OtherCharId
+                    _SocialRelationship = UserDbContext.Set<GameSocialRelationship>().FirstOrDefault(c => c.Id == GameChar.Id && c.Id2 == OtherCharId
                       && c.KeyType == (int)SocialKeyTypes.AllowPvpForHelp);
                     if (_SocialRelationship is null) //若没有条目
                     {
@@ -67,7 +67,7 @@ namespace GuangYuan.GY001.BLL
                             KeyType = (int)SocialKeyTypes.AllowPvpForHelp,
                             Flag = 0,
                         };
-                        UserContext.Add(_SocialRelationship);
+                        UserDbContext.Add(_SocialRelationship);
                     }
                 }
                 return _SocialRelationship;

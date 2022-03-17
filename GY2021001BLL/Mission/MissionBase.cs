@@ -11,7 +11,7 @@ namespace OW.Game.Mission
     /// <summary>
     /// 成就数据视图。
     /// </summary>
-    public class CharAchieveView : GameCharWorkDataBase
+    public class CharAchieveView : GameCharGameContext
     {
         public CharAchieveView([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {

@@ -750,15 +750,6 @@ namespace OW.Game
         #region 属性变化事件相关
 
         /// <summary>
-        /// 获取或初始化事件数据对象的列表。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ConcurrentQueue<GamePropertyChangeItem<object>> GetOrCreateEventArgsList(this GameChar gameChar) =>
-            gameChar.RuntimeProperties.GetOrAdd("EventArgsList", c => new ConcurrentQueue<GamePropertyChangeItem<object>>()) as ConcurrentQueue<GamePropertyChangeItem<object>>;
-
-        /// <summary>
         /// 设置属性并发送变化事件数据。
         /// </summary>
         /// <param name="gameChar"></param>
@@ -778,7 +769,7 @@ namespace OW.Game
             obj.Properties[name] = newValue;
             arg.NewValue = newValue;
             arg.HasNewValue = true;
-            gameChar.GetOrCreateEventArgsList().Enqueue(arg);
+            gameChar.GetOrCreatePropertyChangedList().Enqueue(arg);
         }
 
         /// <summary>
@@ -796,7 +787,7 @@ namespace OW.Game
                 arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
                 arg.OldValue = oldValue;
                 arg.HasOldValue = true;
-                gameChar.GetOrCreateEventArgsList().Enqueue(arg);
+                gameChar.GetOrCreatePropertyChangedList().Enqueue(arg);
             }
         }
 
@@ -809,7 +800,7 @@ namespace OW.Game
         {
             List<Exception> excps = new List<Exception>();
             bool succ = false;
-            var list = gameChar.GetOrCreateEventArgsList();
+            var list = gameChar.GetOrCreatePropertyChangedList();
             GamePropertyChangeItem<object> item;
             while (!list.IsEmpty)    //若存在数据
             {

@@ -37,4 +37,9 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Script\" />
+    <Folder Include="Template\" />
+  </ItemGroup>
+
 </Project>

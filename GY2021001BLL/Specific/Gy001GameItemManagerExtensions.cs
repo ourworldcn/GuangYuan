@@ -84,7 +84,7 @@ namespace GuangYuan.GY001.BLL
             {
                 var gitm = manager.Service.GetRequiredService<GameItemTemplateManager>();
                 var hl = datas.GameChar.GetHomeland();
-                var builderBag = hl.Children.First(c => c.TemplateId == ProjectConstant.HomelandBuilderBagTId);
+                var builderBag = hl.Children.First(c => c.TemplateId == ProjectConstant.HomelandBuildingBagTId);
                 var dic = datas.Fangan.FanganItems.SelectMany(c => c.ItemIds).Distinct().Join(hl.GetAllChildren(), c => c, c => c.Id, (l, r) => r).ToDictionary(c => c.Id);
                 dic[hl.Id] = hl;    //包括家园
                 foreach (var item in datas.Fangan.FanganItems)

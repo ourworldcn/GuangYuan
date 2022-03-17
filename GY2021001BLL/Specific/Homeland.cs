@@ -421,7 +421,7 @@ namespace GuangYuan.GY001.BLL.Homeland
                     gc.MergeFangans(oldFengges, world.ItemTemplateManager);
                 var hl = gameChar.GetHomeland();
                 var dic = hl.GetAllChildren().ToDictionary(c => c.Id);   //家园下所有对象，键是对象Id
-                var bag = hl.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandBuilderBagTId);   //家园建筑背包
+                var bag = hl.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandBuildingBagTId);   //家园建筑背包
                 foreach (var fengge in plans)   //遍历风格
                 {
                     var oldFengge = oldFengges.FirstOrDefault(c => c.Number == fengge.Number);   //已有风格对象

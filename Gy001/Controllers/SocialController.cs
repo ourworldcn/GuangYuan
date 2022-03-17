@@ -58,7 +58,7 @@ namespace Gy001.Controllers
             var social = _World.SocialManager;
             using var datas = new GetMailsDatas(_World, model.Token)
             {
-                UserContext = _UserContext,
+                UserDbContext = _UserContext,
             };
             social.GetMails(datas);
             if (!datas.HasError)
@@ -165,7 +165,7 @@ namespace Gy001.Controllers
             using var data = new GetCharIdsForRequestFriendDatas(_World, model.Token)
             {
                 DisplayName = model.DisplayName,
-                UserContext = _UserContext,
+                UserDbContext = _UserContext,
             };
             data.BodyTIds.AddRange(model.BodyTIds.Select(c => OwConvert.ToGuid(c)));
             using var disposer = data.LockUser();
@@ -184,7 +184,7 @@ namespace Gy001.Controllers
                     result.DebugMessage = data.ErrorMessage;
                     return result;
                 }
-                var coll = _World.SocialManager.GetCharSummary(data.CharIds, data.UserContext);
+                var coll = _World.SocialManager.GetCharSummary(data.CharIds, data.UserDbContext);
                 result.CharSummaries.AddRange(coll.Select(c => (CharSummaryDto)c));
             }
             catch (Exception err)
@@ -485,7 +485,7 @@ namespace Gy001.Controllers
             PatForTiliReturnDto result = new PatForTiliReturnDto();
             using var datas = new PatForTiliWorkData(_World, gc, OwConvert.ToGuid(model.ObjectId), DateTime.UtcNow)
             {
-                UserContext = _UserContext
+                UserDbContext = _UserContext
             };
             var r = _World.SocialManager.PatForTili(datas);
             if (PatForTiliResult.Success != r)
@@ -517,7 +517,7 @@ namespace Gy001.Controllers
             {
                 using var datas = new PatWithMountsDatas(_World, model.Token, OwConvert.ToGuid(model.MountsId), DateTime.UtcNow)
                 {
-                    UserContext = _UserContext,
+                    UserDbContext = _UserContext,
                     IsRemove= model.IsRemove,
                 };
                 using var dwChar = datas.LockUser();
@@ -554,7 +554,7 @@ namespace Gy001.Controllers
                                                                                     //构造调用参数
             using var datas = new GetHomelandDataDatas(_World, model.Token, OwConvert.ToGuid(model.OtherCharId))
             {
-                UserContext = _UserContext,
+                UserDbContext = _UserContext,
             };
             
             using var disposer = datas.LockAll();
@@ -656,7 +656,7 @@ namespace Gy001.Controllers
             };
             using var datas = new RequestAssistanceDatas(_World, model.Token, OwConvert.ToGuid(model.OtherId))
             {
-                UserContext = _UserContext,
+                UserDbContext = _UserContext,
                 RootCombatId = OwConvert.ToGuid(model.CombatId),
             };
             _World.SocialManager.RequestAssistance(datas);

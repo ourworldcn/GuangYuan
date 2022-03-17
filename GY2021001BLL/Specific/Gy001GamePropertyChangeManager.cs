@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OW.Game.PropertyChange;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -17,5 +18,7 @@ namespace GuangYuan.GY001.BLL.Specific
         public Gy001GamePropertyChangeManager(IServiceProvider service, GamePropertyChangeManagerOptions options) : base(service, options)
         {
         }
+
+
     }
 }

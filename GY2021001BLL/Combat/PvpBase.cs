@@ -13,7 +13,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// pvp结束战斗调用接口的数据封装类。
     /// </summary>
-    public class EndCombatPvpWorkData : BinaryRelationshipWorkDataBase
+    public class EndCombatPvpWorkData : BinaryRelationshipGameContext
     {
         public EndCombatPvpWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
         {
@@ -43,7 +43,7 @@ namespace GuangYuan.GY001.BLL
             {
                 if (_Combat is null)
                 {
-                    _Combat = UserContext.Set<WarNewspaper>().Find(CombatId);
+                    _Combat = UserDbContext.Set<WarNewspaper>().Find(CombatId);
                     if (_Combat is null)
                     {
                         HasError = true;

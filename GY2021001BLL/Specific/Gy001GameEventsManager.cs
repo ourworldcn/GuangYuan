@@ -152,14 +152,21 @@ namespace OW.Game
                 case 26:    //时装
                     result = gChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShizhuangBagSlotId);
                     break;
+                case 40:    //炮塔
+                case 41:    //陷阱
+                    result = gChar.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandBuildingBagTId);
+                    break;
                 case 99:    //货币
                     result = gChar.GetCurrencyBag();
                     break;
                 case 30:
                     result = gChar.GetTujianBag();
                     break;
-                default:    //不认识的放入道具背包
-                    result = gChar.GetItemBag();
+                default:    //不认识物品
+                    if (gameItem.IsDikuai())
+                        result = gChar.GetHomeland();
+                    else
+                        result = gChar.GetItemBag();
                     break;
             }
             return result;

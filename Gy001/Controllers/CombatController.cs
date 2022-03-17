@@ -134,7 +134,7 @@ namespace GY2021001WebApi.Controllers
                 var view = new WarNewspaperView(datas.CombatObject, World.Service);
                 result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => (GameItemDto)c));
                 result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => (GameItemDto)c));
-                result.Booty.AddRange(datas.UserContext.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Id).AsEnumerable().Select(c => (GameBootyDto)c));
+                result.Booty.AddRange(datas.UserDbContext.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Id).AsEnumerable().Select(c => (GameBootyDto)c));
                 result.CombatObject = datas.CombatObject;
             }
             return result;
@@ -153,7 +153,7 @@ namespace GY2021001WebApi.Controllers
             var db = HttpContext.RequestServices.GetService<GY001UserContext>();
             using var datas = new AbortPvpDatas(World, model.Token)
             {
-                UserContext = db,
+                UserDbContext = db,
                 CombatId = oldCombatId,
             };
             World.CombatManager.AbortPvp(datas);

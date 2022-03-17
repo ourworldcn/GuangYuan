@@ -28,7 +28,7 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
-    public class GetGeneralCharSummaryDatas : RelationshipWorkDataBase
+    public class GetGeneralCharSummaryDatas : RelationshipGameContext
     {
         public GetGeneralCharSummaryDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -171,12 +171,12 @@ namespace GuangYuan.GY001.BLL
             using var dwUser = datas.LockUser();
             if (dwUser is null)
                 return;
-            var coll = GetMails(datas.GameChar, datas.UserContext);
+            var coll = GetMails(datas.GameChar, datas.UserDbContext);
             datas.Mails.AddRange(coll.ToList());
             FillAttachmentes(datas.GameChar.Id, datas.Mails.SelectMany(c => c.Attachmentes));
         }
 
-        public class GetMailsDatas : ComplexWorkDatasBase
+        public class GetMailsDatas : ComplexWorkGameContext
         {
             public GetMailsDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
             {
@@ -531,7 +531,7 @@ namespace GuangYuan.GY001.BLL
             //关系数据
             datas.SocialRelationship.Flag++;
             //保存数据
-            datas.UserContext.SaveChanges();
+            datas.UserDbContext.SaveChanges();
         }
 
         #endregion  邮件及相关
@@ -687,7 +687,7 @@ namespace GuangYuan.GY001.BLL
                 VWorld.SetLastErrorMessage($"无法锁定指定角色。");
                 return RequestFriendResult.NotFoundThisChar;
             }
-            GameUserContext db = data.UserContext;
+            GameUserContext db = data.UserDbContext;
             var objChar = data.OtherChar;  //要请求的角色对象。
             //TO DO限制当日添加好友次数。
             var sr = GetSrOrAdd(db, data.GameChar.Id, objChar.Id);  //关系对象
@@ -1018,7 +1018,7 @@ namespace GuangYuan.GY001.BLL
             return PatForTiliResult.Success;
         }
 
-        public class PatForTiliWorkData : BinaryRelationshipWorkDataBase
+        public class PatForTiliWorkData : BinaryRelationshipGameContext
         {
             //private const string key = "patcountVisitors";
 
@@ -1059,7 +1059,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     if (_Visitors is null)
                     {
-                        _Visitors = new ObservableCollection<GameSocialRelationship>(UserContext.Set<GameSocialRelationship>().
+                        _Visitors = new ObservableCollection<GameSocialRelationship>(UserDbContext.Set<GameSocialRelationship>().
                             Where(c => c.Id == GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatTili));
                         _Visitors.CollectionChanged += VisitorsCollectionChanged;
                     }
@@ -1072,14 +1072,14 @@ namespace GuangYuan.GY001.BLL
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        UserContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
+                        UserDbContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
                         break;
                     case NotifyCollectionChangedAction.Remove:
-                        UserContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
+                        UserDbContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
                         break;
                     case NotifyCollectionChangedAction.Reset:
-                        UserContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
-                        UserContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
+                        UserDbContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
+                        UserDbContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
                         break;
                     case NotifyCollectionChangedAction.Replace:
                         throw new NotSupportedException();
@@ -1135,7 +1135,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = VWorld.GetLastErrorMessage();
                 return;
             }
-            var db = datas.UserContext;
+            var db = datas.UserDbContext;
             var tmpNow = now;
             var sr = datas.GetOrAddSr();  //与该坐骑互动的数据条目
             if (datas.IsRemove)  //若是解约
@@ -1144,7 +1144,7 @@ namespace GuangYuan.GY001.BLL
                 sr.Flag = 0;
                 datas.SetDateTime(sr, datas.Today);
                 datas.SetOtherCharId(sr, datas.OtherCharId);
-                datas.UserContext.Remove(sr);
+                datas.UserDbContext.Remove(sr);
             }
             else //签约或增加互动
             {
@@ -1192,7 +1192,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// PatWithMounts 使用的数据封装对象。
         /// </summary>
-        public class PatWithMountsDatas : BinaryRelationshipWorkDataBase
+        public class PatWithMountsDatas : BinaryRelationshipGameContext
         {
             public PatWithMountsDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid mountsId, DateTime today) : base(service, gameChar, Guid.Empty)
             {
@@ -1214,9 +1214,9 @@ namespace GuangYuan.GY001.BLL
 
             private void Initialize()
             {
-                _LazyMounts = new Lazy<GameItem>(() => UserContext.Set<GameItem>().AsNoTracking().FirstOrDefault(c => c.Id == MountsId), true);
+                _LazyMounts = new Lazy<GameItem>(() => UserDbContext.Set<GameItem>().AsNoTracking().FirstOrDefault(c => c.Id == MountsId), true);
                 var pid = _LazyMounts.Value.ParentId.Value;
-                OtherCharId = UserContext.Set<GameItem>().AsNoTracking().FirstOrDefault(c => c.Id == pid).OwnerId.Value;
+                OtherCharId = UserDbContext.Set<GameItem>().AsNoTracking().FirstOrDefault(c => c.Id == pid).OwnerId.Value;
             }
 
             /// <summary>
@@ -1310,7 +1310,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     if (_Visitors is null)
                     {
-                        _Visitors = new ObservableCollection<GameSocialRelationship>(UserContext.Set<GameSocialRelationship>().Where(c => c.Id == GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatWithMounts));
+                        _Visitors = new ObservableCollection<GameSocialRelationship>(UserDbContext.Set<GameSocialRelationship>().Where(c => c.Id == GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatWithMounts));
                         _Visitors.CollectionChanged += VisitorsCollectionChanged;
                     }
                     return _Visitors;
@@ -1350,16 +1350,16 @@ namespace GuangYuan.GY001.BLL
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        UserContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
+                        UserDbContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
                         break;
                     case NotifyCollectionChangedAction.Remove:
-                        UserContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
+                        UserDbContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
                         break;
                     case NotifyCollectionChangedAction.Replace:
                         throw new NotSupportedException("不支持替换操作。");
                     case NotifyCollectionChangedAction.Reset:
-                        UserContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
-                        UserContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
+                        UserDbContext.RemoveRange(e.OldItems.OfType<GameSocialRelationship>());
+                        UserDbContext.AddRange(e.NewItems.OfType<GameSocialRelationship>());
                         break;
                     case NotifyCollectionChangedAction.Move:
                         break;
@@ -1506,12 +1506,12 @@ namespace GuangYuan.GY001.BLL
                 }
                 collMounts = collMounts.Distinct();
                 //增加签约坐骑数据
-                var sr = datas.UserContext.Set<GameSocialRelationship>().Where(c => c.Id == datas.GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatWithMounts).AsEnumerable().
+                var sr = datas.UserDbContext.Set<GameSocialRelationship>().Where(c => c.Id == datas.GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatWithMounts).AsEnumerable().
                      FirstOrDefault(c => c.Properties.GetGuidOrDefault("charid") == datas.OtherCharId); //获取签约关系
                 IEnumerable<GameItem> resultColl;
                 if (null != sr && !collMounts.Any(c => c.Id == sr.Id2))    //若有签约坐骑且需要加入集合
                 {
-                    var mounts = datas.UserContext.Set<GameItem>().Find(sr.Id2);
+                    var mounts = datas.UserDbContext.Set<GameItem>().Find(sr.Id2);
                     resultColl = collMounts.Prepend(mounts);
                 }
                 else
@@ -1623,7 +1623,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 //修改数据
                 //获取列表
-                var ids = RefreshPvpList(datas.GameChar, datas.UserContext, todayData.TodayValues);
+                var ids = RefreshPvpList(datas.GameChar, datas.UserDbContext, todayData.TodayValues);
                 todayData.TodayValues.AddRange(ids);
                 todayData.LastValues.Clear();
                 todayData.LastValues.AddRange(ids);
@@ -1737,7 +1737,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// <see cref="GameSocialManager.GetHomelandData(GetHomelandDataDatas)"/>使用的工作数据封装类。
     /// </summary>
-    public class GetHomelandDataDatas : BinaryRelationshipWorkDataBase
+    public class GetHomelandDataDatas : BinaryRelationshipGameContext
     {
         public GetHomelandDataDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
         {
@@ -1790,7 +1790,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 工作函数数据封装类。
     /// </summary>
-    public class GetCharIdsForRequestFriendDatas : ComplexWorkDatasBase
+    public class GetCharIdsForRequestFriendDatas : ComplexWorkGameContext
     {
         public GetCharIdsForRequestFriendDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -1885,7 +1885,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// <see cref="GameSocialManager.RequestFriend(RequestFriendData)"/>接口的工作数据块。
     /// </summary>
-    public class RequestFriendData : BinaryRelationshipWorkDataBase
+    public class RequestFriendData : BinaryRelationshipGameContext
     {
         public RequestFriendData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
         {

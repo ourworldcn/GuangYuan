@@ -149,7 +149,7 @@ namespace GuangYuan.GY001.BLL
                 gim.ForcedAdd(gi, datas.GameChar.GetShoppingSlot()); //暂存到商城槽
                 using var useItemsDatas = new UseItemsWorkDatas(World, datas.GameChar)
                 {
-                    UserContext = datas.UserContext,
+                    UserDbContext = datas.UserDbContext,
                 };
                 useItemsDatas.ItemId = gi.Id;
                 useItemsDatas.Count = (int)gi.Count.Value;
@@ -835,7 +835,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 获取商城数据的工作接口数据。
     /// </summary>
-    public class GetListDatas : ComplexWorkDatasBase
+    public class GetListDatas : ComplexWorkGameContext
     {
         public GetListDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {

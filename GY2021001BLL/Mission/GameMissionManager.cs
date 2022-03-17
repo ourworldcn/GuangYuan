@@ -593,7 +593,7 @@ namespace OW.Game.Mission
         #endregion 任务相关
     }
 
-    public class GetMissionStateDatas : ComplexWorkDatasBase
+    public class GetMissionStateDatas : ComplexWorkGameContext
     {
         public GetMissionStateDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -665,7 +665,7 @@ namespace OW.Game.Mission
         Faulted = CompletionFlag | 4,
     }
 
-    public class MissionView : GameCharWorkDataBase
+    public class MissionView : GameCharGameContext
     {
         public MissionView([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {

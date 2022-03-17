@@ -285,7 +285,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 家园建筑背包模板Id。
         /// </summary>
-        public static readonly Guid HomelandBuilderBagTId = new Guid("{312612a5-30dd-4e0a-a71d-5074397428fb}");
+        public static readonly Guid HomelandBuildingBagTId = new Guid("{312612a5-30dd-4e0a-a71d-5074397428fb}");
 
         /// <summary>
         /// 家园方案对象的模板Id。

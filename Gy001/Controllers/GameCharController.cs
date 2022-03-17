@@ -164,7 +164,7 @@ namespace GY2021001WebApi.Controllers
         {
             var result = new UseItemsReturnDto();
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            using var datas = new UseItemsWorkDatas(world, model.Token) { UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>() };
+            using var datas = new UseItemsWorkDatas(world, model.Token) { UserDbContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>() };
             datas.ItemId = OwConvert.ToGuid(model.Item.Id);
             datas.Count = (int)model.Item.Count;
             try
@@ -470,7 +470,7 @@ namespace GY2021001WebApi.Controllers
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
                 return base.Unauthorized("令牌无效");
-            Guid[] filterTIds = new Guid[] { ProjectConstant.WorkerOfHomelandTId, ProjectConstant.HomelandPlanBagTId, ProjectConstant.HomelandBuilderBagTId };
+            Guid[] filterTIds = new Guid[] { ProjectConstant.WorkerOfHomelandTId, ProjectConstant.HomelandPlanBagTId, ProjectConstant.HomelandBuildingBagTId };
             string[] ary = null;
             try
             {

@@ -81,7 +81,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 可刷新商品的数据结构。
     /// </summary>
-    public class ShoppingSlotView : GameCharWorkDataBase
+    public class ShoppingSlotView : GameCharGameContext
     {
         public ShoppingSlotView([NotNull] VWorld world, [NotNull] GameChar gameChar, DateTime now) : base(world, gameChar)
         {

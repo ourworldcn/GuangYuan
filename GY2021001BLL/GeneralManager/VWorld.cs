@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game.Item;
 using OW.Game.Mission;
+using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Collections.Concurrent;

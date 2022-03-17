@@ -25,7 +25,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 升级数据工作的数据块。
     /// </summary>
-    public class LevelUpDatas : GameCharWorkDataBase
+    public class LevelUpDatas : GameCharGameContext
     {
 
         public LevelUpDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
@@ -510,7 +510,7 @@ namespace GuangYuan.GY001.BLL
                 ActionId = datas.ActionId,
                 Count = (int)innerCount,
                 Blueprint = datas.Blueprint,
-                UserContext = datas.UserContext,
+                UserDbContext = datas.UserDbContext,
             };
             var body = World.ItemManager.GetBody(gi);
             datasInner.GameItems.Add(body);
@@ -765,10 +765,19 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
                 LastChangesItems.Clear();
-                int lv = (int)gameItem.GetDecimalWithFcpOrDefault(ProjectConstant.LevelPropertyName, 0m);  //原等级
+                int lv = (int)gameItem.GetDecimalWithFcpOrDefault(ProjectConstant.LevelPropertyName, 0m);  //新等级
                 //gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
                 if (gameItem.TemplateId == ProjectConstant.MainControlRoomSlotId) //如果是主控室升级
                 {
+                    if (World.ItemTemplateManager.Id2RequireLevel.Contains(gameItem.TemplateId)) //若存在需要增加的物品
+                    {
+                        var tts = World.ItemTemplateManager.Id2RequireLevel[gameItem.TemplateId];
+                        var templates = tts.Where(c => c.Properties.TryGetDecimal($"rqlv{{{gameItem.TemplateId}}}", out var rqlvDec) && rqlvDec == lv); //需要加入物品的模板
+                        foreach (var tt in templates)
+                        {
+                            //实际添加物品，次更改不兼容，暂时未加 TO DO
+                        }
+                    }
                     IEnumerable<MainbaseUpgradePrv> coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv);
                     List<GameItem> addItems = new List<GameItem>();
                     foreach (MainbaseUpgradePrv item in coll)
@@ -1912,7 +1921,7 @@ namespace GuangYuan.GY001.BLL
             fcp.LastValue += 20;    //无视限制增加体力
             tili.Count = fcp.LastValue; //
             zuanshi.Count -= 20 * 10;    //扣除钻石
-            datas.ChangeItems.AddToChanges(datas.GameChar.Id, zuanshi);
+            datas.ChangeItems.AddToChanges(zuanshi);
             datas.ChangeItems.AddToChanges(tili);
         }
 
@@ -1985,7 +1994,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 免战信息视图。
         /// </summary>
-        public class PvpWarFreeCardsView : GameCharWorkDataBase
+        public class PvpWarFreeCardsView : GameCharGameContext
         {
             public PvpWarFreeCardsView([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
             {

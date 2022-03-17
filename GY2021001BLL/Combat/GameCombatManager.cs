@@ -99,7 +99,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 请求开始战斗的数据封装类
     /// </summary>
-    public class StartCombatData : GameCharWorkDataBase
+    public class StartCombatData : GameCharGameContext
     {
         public StartCombatData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -671,7 +671,7 @@ namespace GuangYuan.GY001.BLL
             //    return;
             //}
             //更改数据
-            var db = datas.UserContext;
+            var db = datas.UserDbContext;
             //datas.SocialRelationships.Remove(sr);
             //移除攻击权
             todayData.LastValues.Remove(datas.OtherCharId);
@@ -793,7 +793,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorCode = VWorld.GetLastError();
                 return;
             }
-            var oldWar = datas.UserContext.Set<WarNewspaper>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
+            var oldWar = datas.UserDbContext.Set<WarNewspaper>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
             if (oldWar is null)
             {
                 datas.HasError = true;
@@ -817,7 +817,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = "已经反击过了。";
                 return;
             }
-            var db = datas.UserContext;
+            var db = datas.UserDbContext;
             var world = datas.World;
             //更改数据
             //增加战斗记录
@@ -891,7 +891,7 @@ namespace GuangYuan.GY001.BLL
                 (datas as IResultWorkData).FillErrorFromWorld();
                 return;
             }
-            var oldWar = datas.UserContext.Set<WarNewspaper>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
+            var oldWar = datas.UserDbContext.Set<WarNewspaper>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
             if (oldWar is null)
             {
                 datas.HasError = true;
@@ -900,7 +900,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var oldView = new WarNewspaperView(oldWar, World.Service);
-            var db = datas.UserContext;
+            var db = datas.UserDbContext;
             var assId = oldView.AssistanceId;
             if (assId != datas.GameChar.Id || !oldView.Assistancing || oldView.IsCompleted) //没有请求当前角色协助或已经结束
             {
@@ -920,7 +920,7 @@ namespace GuangYuan.GY001.BLL
             if (datas.IsWin)    //若赢得战斗
             {
                 var oriBooty = db.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == oldWar.Id && oldWar.AttackerIds.Contains(c.CharId)).ToList();     //原始战斗攻击方战利品
-                var boo = oldWar.BootyOfAttacker(datas.UserContext);  //原始进攻方的战利品
+                var boo = oldWar.BootyOfAttacker(datas.UserDbContext);  //原始进攻方的战利品
 
                 var newBooty = boo.Select(c =>
                 {
@@ -997,7 +997,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void AbortPvp(AbortPvpDatas datas)
         {
-            var db = datas.UserContext;
+            var db = datas.UserDbContext;
             var oldWar = db.Set<WarNewspaper>().Find(datas.CombatId);   //原始战斗
             if (oldWar.DefenserIds.Contains(datas.GameChar.Id))  //自己被打直接放弃
             {
@@ -1023,7 +1023,7 @@ namespace GuangYuan.GY001.BLL
             {
                 using EndCombatPvpWorkData endPvpDatas = new EndCombatPvpWorkData(World, datas.GameChar, oldWar.AttackerIds.First())
                 {
-                    UserContext = db,
+                    UserDbContext = db,
                     CombatId = datas.CombatId,
                     DungeonId = new Guid("{2453A507-DA62-4B7E-8C07-FAE278B54B12}"),
                 };
@@ -1329,7 +1329,7 @@ namespace GuangYuan.GY001.BLL
             if (dwUser is null)
                 return;
             var idstring = datas.GameChar.IdString;
-            datas.CombatObject = datas.UserContext.Set<WarNewspaper>().AsNoTracking().FirstOrDefault(c => c.Id == datas.CombatId /*&& (c.AttackerIdString.Contains(idstring) || c.DefenserIdString.Contains(idstring))*/);
+            datas.CombatObject = datas.UserDbContext.Set<WarNewspaper>().AsNoTracking().FirstOrDefault(c => c.Id == datas.CombatId /*&& (c.AttackerIdString.Contains(idstring) || c.DefenserIdString.Contains(idstring))*/);
             if (datas.CombatObject is null)
             {
                 datas.HasError = true;
@@ -1343,7 +1343,7 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// 获取战斗对象的工作数据对象。
     /// </summary>
-    public class GetCombatDatas : ComplexWorkDatasBase
+    public class GetCombatDatas : ComplexWorkGameContext
     {
         public GetCombatDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -1498,7 +1498,7 @@ namespace GuangYuan.GY001.BLL
 
     }
 
-    public class AbortPvpDatas : ComplexWorkDatasBase
+    public class AbortPvpDatas : ComplexWorkGameContext
     {
         public AbortPvpDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {

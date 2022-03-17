@@ -876,7 +876,7 @@ namespace OW.Game.Item
             using var dwUser = datas.LockUser();
             if (dwUser is null)
                 return;
-            var dbSet = datas.UserContext.Set<GameExtendProperty>().AsNoTracking();
+            var dbSet = datas.UserDbContext.Set<GameExtendProperty>().AsNoTracking();
             var gc = datas.GameChar;
             var gp = gc.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.ZhangLiName);
             if (gp is null)
@@ -1349,7 +1349,7 @@ namespace OW.Game.Item
         }
     }
 
-    public class GetRankOfTuiguanDatas : ComplexWorkDatasBase
+    public class GetRankOfTuiguanDatas : ComplexWorkGameContext
     {
         public GetRankOfTuiguanDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
@@ -1699,7 +1699,7 @@ namespace OW.Game.Item
     /// <summary>
     /// 带变化物品返回值的类的接口。
     /// </summary>
-    public abstract class ChangeItemsWorkDatasBase : ComplexWorkDatasBase
+    public abstract class ChangeItemsWorkDatasBase : ComplexWorkGameContext
     {
         protected ChangeItemsWorkDatasBase([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {

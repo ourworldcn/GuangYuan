@@ -32,7 +32,7 @@ namespace Gy001.Controllers
             var datas = new GetListDatas(World, model.Token)
             {
                 Genus = model.Genus,
-                UserContext = HttpContext.RequestServices.GetService<GY001UserContext>(),
+                UserDbContext = HttpContext.RequestServices.GetService<GY001UserContext>(),
             };
             World.ShoppingManager.GetList(datas);
             result.HasError = datas.HasError;
@@ -58,7 +58,7 @@ namespace Gy001.Controllers
             BuyResultDto result = new BuyResultDto();
             using var datas = new BuyDatas(World, model.Token)
             {
-                UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>(),
+                UserDbContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>(),
                 ShoppingId = OwConvert.ToGuid(model.ShoppingId),
                 Count = model.Count,
             };
@@ -86,7 +86,7 @@ namespace Gy001.Controllers
             var db = HttpContext.RequestServices.GetRequiredService<GY001UserContext>();
             using var datas = new RefreshDatas(World, model.Token)
             {
-                UserContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>()
+                UserDbContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>()
             };
             World.ShoppingManager.Refresh(datas);
             result.HasError = datas.HasError;
