@@ -773,10 +773,15 @@ namespace GuangYuan.GY001.BLL
                     {
                         var tts = World.ItemTemplateManager.Id2RequireLevel[gameItem.TemplateId];
                         var templates = tts.Where(c => c.Properties.TryGetDecimal($"rqlv{{{gameItem.TemplateId}}}", out var rqlvDec) && rqlvDec == lv); //需要加入物品的模板
+                        var pbag = DictionaryPool<string, object>.Shared.Get();
                         foreach (var tt in templates)
                         {
                             //实际添加物品，次更改不兼容，暂时未加 TO DO
+                            pbag["tt"] = templates;
+                            var gi = new GameItem();
+                            World.EventsManager.GameItemCreated(gi, pbag);
                         }
+                        DictionaryPool<string, object>.Shared.Return(pbag);
                     }
                     IEnumerable<MainbaseUpgradePrv> coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv);
                     List<GameItem> addItems = new List<GameItem>();
@@ -1955,11 +1960,13 @@ namespace GuangYuan.GY001.BLL
                     mounts.Properties["neatk"] = 80 + VWorld.WorldRandom.Next(21);
                     mounts.Properties["nemhp"] = 80 + VWorld.WorldRandom.Next(21);
                     mounts.Properties["neqlt"] = 80 + VWorld.WorldRandom.Next(21);
-                    World.ItemManager.AddItem(mounts, datas.GameChar.GetShoulanBag(), null, datas.ChangeItems);
+                    World.ItemManager.MoveItem(mounts, 1, datas.GameChar.GetShoulanBag(), null, datas.Changes);
+                    //World.ItemManager.AddItem(mounts, datas.GameChar.GetShoulanBag(), null, datas.ChangeItems);
                 }
                 else //若不存在该纯种坐骑
                 {
-                    World.ItemManager.AddItem(mounts, datas.GameChar.GetZuojiBag(), null, datas.ChangeItems);
+                    World.ItemManager.MoveItem(mounts, 1, datas.GameChar.GetZuojiBag(), null, datas.Changes);
+                    //World.ItemManager.AddItem(mounts, datas.GameChar.GetZuojiBag(), null, datas.ChangeItems);
                 }
             }
         }

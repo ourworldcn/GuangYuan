@@ -138,6 +138,8 @@ namespace System
                 }
         }
 
+        //public static void Copy<TSource,TDest>(IEnumerable<T>src,Func<>)
+
         /// <summary>
         /// 复制集合。任何参数为null，则立即返回。
         /// </summary>

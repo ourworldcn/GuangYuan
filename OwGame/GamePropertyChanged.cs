@@ -16,15 +16,18 @@ namespace OW.Game.PropertyChange
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class GamePropertyChangeItem<T> : ICloneable
     {
+        #region 构造函数及相关
+
         public GamePropertyChangeItem()
         {
-
+            Initialize();
         }
 
         public GamePropertyChangeItem(T obj, string name)
         {
             PropertyName = name;
             Object = obj;
+            Initialize();
         }
 
         /// <summary>
@@ -42,7 +45,15 @@ namespace OW.Game.PropertyChange
             OldValue = oldValue;
             NewValue = newValue;
             HasOldValue = HasNewValue = true;
+            Initialize();
         }
+
+        void Initialize()
+        {
+
+        }
+
+        #endregion 构造函数及相关
 
         /// <summary>
         /// 指出是什么对象变化了属性。
@@ -110,15 +121,25 @@ namespace OW.Game.PropertyChange
         public object Clone()
         {
             var result = GamePropertyChangeItemPool<T>.Shared.Get();
-            result.Object = Object;
-            result.PropertyName = PropertyName;
-            result.OldValue = OldValue;
-            result.HasOldValue = HasOldValue;
-            result.NewValue = NewValue;
-            result.HasNewValue = HasNewValue;
-            result.Tag = Tag;
-            result.DateTimeUtc = DateTimeUtc;
+            Copy(this, result);
             return result;
+        }
+
+        /// <summary>
+        /// 复制成员。
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        public static void Copy(GamePropertyChangeItem<T> src, GamePropertyChangeItem<T> dest)
+        {
+            dest.Object = src.Object;
+            dest.PropertyName = src.PropertyName;
+            dest.HasOldValue = src.HasOldValue;
+            dest.OldValue = src.OldValue;
+            dest.HasNewValue = src.HasNewValue;
+            dest.NewValue = src.NewValue;
+            dest.Tag = src.Tag;
+            dest.DateTimeUtc = src.DateTimeUtc;
         }
 
         #endregion 新值相关
@@ -133,10 +154,17 @@ namespace OW.Game.PropertyChange
         /// </summary>
         public object Tag { get; set; }
 
+        #region 调试相关
+
+        /// <summary>
+        /// 生成在调试器变量窗口中的显示的字符串。
+        /// </summary>
+        /// <returns></returns>
         private string GetDebuggerDisplay()
         {
             return $"{Object}.{PropertyName} : {{{OldValue}}} -> {{{NewValue}}}";
         }
+        #endregion 调试相关
     }
 
     /// <summary>

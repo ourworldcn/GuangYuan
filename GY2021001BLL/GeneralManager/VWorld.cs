@@ -471,6 +471,11 @@ namespace OW.Game
         /// </summary>
         public static Random WorldRandom => _WorldRandom ??= new Random();
 
+        /// <summary>
+        /// 该节点号。
+        /// </summary>
+        public int? NodeNumber { get; internal set; } = 1;
+
 
         /// <summary>
         /// 获取两个数之间的一个随机数。支持并发调用。
@@ -611,16 +616,6 @@ namespace OW.Game
 
         private static readonly ConcurrentDictionary<string, WeakReference<string>> _StringPool = new ConcurrentDictionary<string, WeakReference<string>>();
 
-        private static string GetOrAddString(string str)
-        {
-            var wr = _StringPool.GetOrAdd(str, c => new WeakReference<string>(c));
-            if (!wr.TryGetTarget(out var result))
-                lock (wr)
-                    if (!wr.TryGetTarget(out result))
-                        wr.SetTarget(str);
-            return result;
-        }
-
         /// <summary>
         /// 从字符串拘留池中取出实力并试图锁定。
         /// 按每个字符串平均占用64字节计算，10万个字符串实质占用6.4MB内存,可以接受。
@@ -667,6 +662,40 @@ namespace OW.Game
             Monitor.Exit(str);
         }
 
+        /// <summary>
+        /// 锁定字符串使用的结构。键是(比较方法,区域),值字符串值。
+        /// </summary>
+        ConcurrentDictionary<(StringComparer, string), HashSet<string>> _StringLocker = new ConcurrentDictionary<(StringComparer, string), HashSet<string>>();
+
+        /// <summary>
+        /// 锁定指定的字符串，并返回实际锁定的实例。
+        /// </summary>
+        /// <param name="str">锁定的字符串，返回时是一个值等价的字符串，但锁加在该唯一实例(在指定的区域范围内)上。</param>
+        /// <param name="region">区域范围，每个区域范围内值相等的字符串是唯一的。区分大小写。</param>
+        /// <param name="timeout">不可以是空null,但可以是空字符串<see cref="string.Empty"/></param>
+        /// <returns></returns>
+        public virtual bool LockString(ref string str, string region, StringComparer comparer, TimeSpan timeout)
+        {
+            var hs = _StringLocker.GetOrAdd((comparer, region), c => new HashSet<string>(comparer));
+            lock (hs)
+                if (hs.TryGetValue(str, out str))
+                    return true;
+                else
+                {
+                    return hs.Add(str);
+                }
+        }
+        ConcurrentDictionary<(StringComparer, string, string), string> _StringDic = new ConcurrentDictionary<(StringComparer, string, string), string>();
+
+        public string GetUniString(string str, string region, StringComparer comparer)
+        {
+            return _StringDic.GetOrAdd((comparer, region, str), c => c.Item3);
+        }
+
+        public bool UnregUniString(string str, string region, StringComparer comparer)
+        {
+            return _StringDic.TryRemove((comparer, region, str), out _);
+        }
         #endregion 锁定字符串
 
         #region 功能

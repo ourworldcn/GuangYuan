@@ -383,9 +383,8 @@ namespace OW.Game
             if (string.IsNullOrWhiteSpace(gameChar.DisplayName))    //若没有指定昵称
             {
                 string tmp;
-                for (tmp = CnNames.GetName(VWorld.IsHit(0.5)); db.Set<GameChar>().Any(c => c.DisplayName == tmp); tmp = CnNames.GetName(VWorld.IsHit(0.5)))
-                    ;
-                gameChar.DisplayName = tmp;
+                //for (tmp = CnNames.GetName(VWorld.IsHit(0.5)); db.Set<GameChar>().Any(c => c.DisplayName == tmp); tmp = CnNames.GetName(VWorld.IsHit(0.5)))
+                gameChar.DisplayName = World.CharManager.GetNewDisplayName(gameChar.GameUser);
             }
             //修正木材存贮最大量
             //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);

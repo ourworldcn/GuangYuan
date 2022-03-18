@@ -145,6 +145,19 @@ namespace OW.Game.PropertyChange
             obj.IsCollectionChanged() && obj.HasOldValue && !obj.HasNewValue;
 
         /// <summary>
+        /// 测试该变化数据是否是描述数量增加的变化。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsAdd(this GamePropertyChangeItem<object> obj)
+        {
+            if (obj.HasOldValue && OwConvert.TryToDecimal(obj.OldValue, out var oVal) && obj.HasNewValue && OwConvert.TryToDecimal(obj.NewValue, out var nVal))
+                return oVal<nVal;
+            return false;
+        }
+
+        /// <summary>
         /// 将<see cref="GamePropertyChangedItem{object}"/>表示的变化数据转变为<see cref="ChangeItem"/>表示形式。
         /// </summary>
         /// <remarks>这会丢失一些精确的信息。</remarks>

@@ -218,8 +218,10 @@ namespace OW.Game
         /// 首次读取该属性时，如果<see cref="GameChar"/>存在则通过<see cref="GamePropertyChangeManagerExtensions.GetOrCreatePropertyChangedList(GameChar)"/>创建。
         /// 否则会初始化新实例。
         /// </summary>
-        public ConcurrentQueue<GamePropertyChangeItem<object>> PropertyChanges =>
-            _GamePropertyChanges ??= GameChar is null ? new ConcurrentQueue<GamePropertyChangeItem<object>>() : GameChar.GetOrCreatePropertyChangedList();
+        public ConcurrentQueue<GamePropertyChangeItem<object>> PropertyChanges
+        {
+            get => _GamePropertyChanges ??= GameChar is null ? new ConcurrentQueue<GamePropertyChangeItem<object>>() : GameChar.GetOrCreatePropertyChangedList();
+        }
 
 
         #region IResultWorkData接口相关

@@ -22,5 +22,27 @@
       <FileName>Script\ScriptHelper.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="OW.Game.PropertyChange.GamePropertyChangeItem&lt;T&gt;" BaseTypeListCollapsed="true">
+    <Position X="8" Y="4" Width="4" />
+    <TypeIdentifier>
+      <HashCode>EAQAAAAAAABgAAAgiAAAEAAAIAAAAAAAAAAAAABAABA=</HashCode>
+      <FileName>GamePropertyChanged.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="OW.Game.PropertyChange.GamePropertyChangeItemPool&lt;T&gt;" Collapsed="true">
+    <Position X="7.25" Y="2.5" Width="4" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GamePropertyChanged.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.PropertyChange.GamePropertyChangedItemExtensions" Collapsed="true">
+    <Position X="7.25" Y="1.5" Width="4" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GamePropertyChanged.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />
 </ClassDiagram>

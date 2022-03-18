@@ -187,6 +187,16 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 获取一个新的不重复的昵称。
+        /// </summary>
+        /// <param name="gameUser"></param>
+        /// <returns></returns>
+        public string GetNewDisplayName(GameUser gameUser)
+        {
+            return gameUser.LoginName;
+        }
+
+        /// <summary>
         /// 设置好友搜索优先度。
         /// </summary>
         /// <param name="gameChar">角色对象。</param>
@@ -266,7 +276,7 @@ namespace GuangYuan.GY001.BLL
         private void Initialize()
         {
             VWorld world = World;
-            world.AddToUserContext("UPDATE [dbo].[GameUsers] SET [NodeNum] = null WHERE [NodeNum]=0");  //复位服务器节点号
+            world.AddToUserContext("UPDATE [dbo].[GameUsers] SET [NodeNum] = null WHERE [NodeNum] in (0,1)");  //复位服务器节点号
             _LogoutTimer = new Timer(LogoutFunc, null, Options.ScanFrequencyOfLogout, Options.ScanFrequencyOfLogout);
             _SaveThread = new Thread(SaveFunc) { IsBackground = false, Priority = ThreadPriority.BelowNormal };
             _SaveThread.Start();
@@ -865,7 +875,7 @@ namespace GuangYuan.GY001.BLL
                 var gc = gu.CurrentChar;
                 _Store._Id2OnlineChars.AddOrUpdate(gc.Id, gc, (c1, c2) => gc);  //标记在线
                 gu.Timeout = Options.LogoutTimeout; //置超时时间
-                gu.NodeNum = 0;
+                gu.NodeNum = World.NodeNumber;
                 Nope(gu.CurrentToken);
             }
             else //未登录
@@ -889,7 +899,7 @@ namespace GuangYuan.GY001.BLL
                     ParentId = gc.Id,
                 });
                 gu.Timeout = Options.LogoutTimeout; //置超时时间
-                gu.NodeNum = 0;
+                gu.NodeNum = World.NodeNumber;
                 NotifyChange(gu);
             }
             if (null != actionRecords && actionRecords.Count > 0)

@@ -543,7 +543,7 @@ namespace OW.Game
             dest.CharType = src.CharType;
             dest.CombatStartUtc = src.CombatStartUtc;
             dest.CurrentDungeonId = src.CurrentDungeonId;
-            dest.DisplayName = CnNames.GetName(World.IsHit(0.5));
+            dest.DisplayName = World.CharManager.GetNewDisplayName(dest.GameUser);
             List<GameItem> list = new List<GameItem>();
             foreach (var item in src.GameItems)
             {
