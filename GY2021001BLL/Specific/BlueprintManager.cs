@@ -773,36 +773,37 @@ namespace GuangYuan.GY001.BLL
                     {
                         var tts = World.ItemTemplateManager.Id2RequireLevel[gameItem.TemplateId];
                         var templates = tts.Where(c => c.Properties.TryGetDecimal($"rqlv{{{gameItem.TemplateId}}}", out var rqlvDec) && rqlvDec == lv); //需要加入物品的模板
-                        var pbag = DictionaryPool<string, object>.Shared.Get();
+                        List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
                         foreach (var tt in templates)
                         {
                             //实际添加物品，次更改不兼容，暂时未加 TO DO
-                            pbag["tt"] = templates;
                             var gi = new GameItem();
-                            World.EventsManager.GameItemCreated(gi, pbag);
-                        }
-                        DictionaryPool<string, object>.Shared.Return(pbag);
-                    }
-                    IEnumerable<MainbaseUpgradePrv> coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv);
-                    List<GameItem> addItems = new List<GameItem>();
-                    foreach (MainbaseUpgradePrv item in coll)
-                    {
-                        GameItem parent = gc.AllChildren.FirstOrDefault(c => c.TemplateId == item.ParentTId);
-                        if (item.PrvTId.HasValue)    //若送物品
-                        {
-                            GameItem tmp = new GameItem();
-                            World.EventsManager.GameItemCreated(tmp, item.PrvTId.Value);
-                            gim.AddItem(tmp, parent, null, LastChangesItems);
-                        }
-                        if (item.Genus.HasValue)   //若送地块
-                        {
-                            int styleNumber = gc.GetCurrentFenggeNumber();   //激活的风格号
-                            var subItem = World.ItemTemplateManager.GetTemplateByNumberAndIndex(styleNumber, item.Genus.Value % 100);
-                            GameItem tmp = new GameItem();
-                            World.EventsManager.GameItemCreated(tmp, subItem.Id);
-                            gim.AddItem(tmp, gc.GetHomeland(), null, LastChangesItems);
+                            World.EventsManager.GameItemCreated(gi, tt);
+                            var parent = World.EventsManager.GetDefaultContainer(gi, gc);
+                            World.ItemManager.MoveItem(gi, gi.Count.Value, parent, null, changes);
+                            LastChangesItems.AddToChanges(gi.GetContainerId().Value, gi);
                         }
                     }
+                    //IEnumerable<MainbaseUpgradePrv> coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv);
+                    //List<GameItem> addItems = new List<GameItem>();
+                    //foreach (MainbaseUpgradePrv item in coll)
+                    //{
+                    //    GameItem parent = gc.AllChildren.FirstOrDefault(c => c.TemplateId == item.ParentTId);
+                    //    if (item.PrvTId.HasValue)    //若送物品
+                    //    {
+                    //        GameItem tmp = new GameItem();
+                    //        World.EventsManager.GameItemCreated(tmp, item.PrvTId.Value);
+                    //        gim.AddItem(tmp, parent, null, LastChangesItems);
+                    //    }
+                    //    if (item.Genus.HasValue)   //若送地块
+                    //    {
+                    //        int styleNumber = gc.GetCurrentFenggeNumber();   //激活的风格号
+                    //        var subItem = World.ItemTemplateManager.GetTemplateByNumberAndIndex(styleNumber, item.Genus.Value % 100);
+                    //        GameItem tmp = new GameItem();
+                    //        World.EventsManager.GameItemCreated(tmp, subItem.Id);
+                    //        gim.AddItem(tmp, gc.GetHomeland(), null, LastChangesItems);
+                    //    }
+                    //}
                 }
                 if (gameItem.TemplateId == ProjectConstant.MucaiStoreTId)
                 {

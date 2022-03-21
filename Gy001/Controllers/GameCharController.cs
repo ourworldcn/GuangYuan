@@ -30,6 +30,23 @@ namespace GY2021001WebApi.Controllers
         }
 
         /// <summary>
+        /// 修改对象属性接口。可以用此接口修改家园相关物品的属性。
+        /// 如果包含无效对象id -或和- 不可更改属性，则忽略，不会报错。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<ModifyPropertiesReturnDto> ModifyProperties(ModifyPropertiesParamsDto model)
+        {
+            var result = new ModifyPropertiesReturnDto();
+            using var datas = new ModifyPropertiesDatas(World, model.Token);
+            datas.Modifies.AddRange(model.Items.Select(c => (OwConvert.ToGuid(c.ObjectId), c.PropertyName, c.Value as object)));
+            World.CharManager.ModifyProperties(datas);
+            result.FillFrom(datas);
+            return result;
+        }
+
+        /// <summary>
         /// 更改角色的名字。当前只能更改一次。
         /// </summary>
         /// <param name="model">参数。</param>
@@ -514,6 +531,7 @@ namespace GY2021001WebApi.Controllers
         /// <returns>如果有错大概率是不认识的Id。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPost]
+        [Obsolete("家园数据结构已经更改，请使用ModifyProperties方法代替此方法。")]
         public ActionResult<SetHomelandFenggeReturnDto> SetHomelandStyle(SetHomelandFenggeParamsDto model)
         {
             var result = new SetHomelandFenggeReturnDto() { };
@@ -680,6 +698,7 @@ namespace GY2021001WebApi.Controllers
             var result = new AddHomelandStyleReturnDto();
             return result;
         }
+
     }
 
 }

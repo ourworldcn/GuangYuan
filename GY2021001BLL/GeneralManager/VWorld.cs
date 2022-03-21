@@ -685,6 +685,7 @@ namespace OW.Game
                     return hs.Add(str);
                 }
         }
+
         ConcurrentDictionary<(StringComparer, string, string), string> _StringDic = new ConcurrentDictionary<(StringComparer, string, string), string>();
 
         public string GetUniString(string str, string region, StringComparer comparer)

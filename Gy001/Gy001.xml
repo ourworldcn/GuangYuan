@@ -194,6 +194,14 @@
             角色相关操作。
             </summary>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.ModifyProperties(GY2021001WebApi.Models.ModifyPropertiesParamsDto)">
+            <summary>
+            修改对象属性接口。可以用此接口修改家园相关物品的属性。
+            如果包含无效对象id -或和- 不可更改属性，则忽略，不会报错。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.Rename(GY2021001WebApi.Models.RenameParamsDto)">
             <summary>
             更改角色的名字。当前只能更改一次。
@@ -1297,6 +1305,36 @@
         <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.ValidPeriod">
             <summary>
             周期开始后持续有效时间,d天,w周,m月,y年。仅在有效期内才出售，不填则是永久有效（在起止期间和周期的约束下）
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyPropertyItemDto.ObjectId">
+            <summary>
+            对象的Id.如xxxxxxxxxxxxxxxxxx==形式。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyPropertyItemDto.PropertyName">
+            <summary>
+            属性名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyPropertyItemDto.Value">
+            <summary>
+            属性值。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ModifyPropertiesReturnDto">
+            <summary>
+            修改属性返回值接口返回值封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ModifyPropertiesParamsDto">
+            <summary>
+            修改属性接口参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyPropertiesParamsDto.Items">
+            <summary>
+            设置要修改的项。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">

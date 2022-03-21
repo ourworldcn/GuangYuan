@@ -15,6 +15,49 @@ namespace GY2021001WebApi.Models
 
     #region 基础数据
 
+    [DataContract]
+    public class ModifyPropertyItemDto
+    {
+        /// <summary>
+        /// 对象的Id.如xxxxxxxxxxxxxxxxxx==形式。
+        /// </summary>
+        [DataMember]
+        public string ObjectId { get; set; }
+
+        /// <summary>
+        /// 属性名。
+        /// </summary>
+        [DataMember]
+        public string PropertyName { get; set; }
+
+        /// <summary>
+        /// 属性值。
+        /// </summary>
+        [DataMember]
+        public string Value { get; set; }
+    }
+
+    /// <summary>
+    /// 修改属性返回值接口返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class ModifyPropertiesReturnDto : ReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 修改属性接口参数封装类。
+    /// </summary>
+    [DataContract]
+    public class ModifyPropertiesParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 设置要修改的项。
+        /// </summary>
+        [DataMember]
+        public List<ModifyPropertyItemDto> Items { get; set; } = new List<ModifyPropertyItemDto>();
+    }
+
     /// <summary>
     /// 用于精确描述变化数据的类。
     /// </summary>

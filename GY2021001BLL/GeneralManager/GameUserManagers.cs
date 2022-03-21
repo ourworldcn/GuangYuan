@@ -456,7 +456,6 @@ namespace GuangYuan.GY001.BLL
                 }
         }
 
-
         #endregion 私有方法
 
         #region 公共属性
@@ -1271,11 +1270,48 @@ namespace GuangYuan.GY001.BLL
             return (List<ChangeData>)epd.Data;
         }
 
+        /// <summary>
+        /// 修改一系列对象的属性。只能修改客户端与服务器约定的数据，对其他未约定的数据修改将导致失败。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void ModifyProperties(ModifyPropertiesDatas datas)
+        {
+            using var dw = datas.LockUser();
+            if (dw is null)
+                return;
+            var coll = datas.Modifies.Join(datas.GameChar.AllChildren, c => c.Item1, c => c.Id, (l, r) => (r, l.Item2, l.Item3)).ToLookup(c => c.r, c => (c.Item2, c.Item3));
+            foreach (var tp in coll)
+            {
+                foreach (var item in tp)
+                    tp.Key.Properties[item.Item1] = item.Item2;
+            }
+        }
+
         #endregion 公共方法
 
         #region 事件及相关
 
         #endregion 事件及相关
+    }
+
+    public class ModifyPropertiesDatas : ComplexWorkGameContext
+    {
+        public ModifyPropertiesDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public ModifyPropertiesDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public ModifyPropertiesDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 修改的项数据。只能修改客户端与服务器约定的数据，对其他未约定的数据修改将导致失败。
+        /// </summary>
+        public List<(Guid, string, object)> Modifies { get; } = new List<(Guid, string, object)>();
     }
 
     public class CharLoadedEventArgs : EventArgs
