@@ -245,8 +245,6 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
-            var str = "sssfgdsssssssssssssssssssssssssssss";
-            var span = str.AsSpan(1);
         }
 
         /// <summary>

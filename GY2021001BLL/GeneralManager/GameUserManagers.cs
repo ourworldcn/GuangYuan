@@ -196,6 +196,11 @@ namespace GuangYuan.GY001.BLL
             return gameUser.LoginName;
         }
 
+        public bool LockLoginName(string uid, DbContext context)
+        {
+            return context.Set<GameUser>().Any(c => c.LoginName == uid);
+        }
+
         /// <summary>
         /// 设置好友搜索优先度。
         /// </summary>

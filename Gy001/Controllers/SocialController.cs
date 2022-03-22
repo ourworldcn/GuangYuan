@@ -346,7 +346,7 @@ namespace Gy001.Controllers
         [HttpPost]
         public ActionResult<ConfirmRequestFriendReturnDto> ConfirmRequestFriend(ConfirmRequestFriendParamsDto model)
         {
-            using var dwUser =_World.CharManager.LockAndReturnDisposer(model.Token, out var gu);
+            using var dwUser = _World.CharManager.LockAndReturnDisposer(model.Token, out var gu);
             if (dwUser is null)
             {
                 return Unauthorized("令牌无效");
@@ -518,7 +518,7 @@ namespace Gy001.Controllers
                 using var datas = new PatWithMountsDatas(_World, model.Token, OwConvert.ToGuid(model.MountsId), DateTime.UtcNow)
                 {
                     UserDbContext = _UserContext,
-                    IsRemove= model.IsRemove,
+                    IsRemove = model.IsRemove,
                 };
                 using var dwChar = datas.LockUser();
                 if (dwChar is null)
@@ -556,7 +556,7 @@ namespace Gy001.Controllers
             {
                 UserDbContext = _UserContext,
             };
-            
+
             using var disposer = datas.LockAll();
             if (disposer is null)   //若锁定失败
                 return StatusCode(datas.ErrorCode, datas.ErrorMessage);
@@ -670,6 +670,27 @@ namespace Gy001.Controllers
                 _ => result,
             };
         }
+
+        /// <summary>
+        /// 获取指定角色家园数据的接口。OtherCharId 设置为自己的id即可获取自己的数据。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<GetCharInfoReturnDto> GetCharInfo(GetCharInfoParamsDto model)
+        {
+            var result = new GetCharInfoReturnDto();
+            using var datas = new GetCharInfoDatas(_World, model.Token, OwConvert.ToGuid(model.OtherCharId));
+            _World.SocialManager.GetCharInfo(datas);
+            result.FillFrom(datas);
+            if (!result.HasError)
+            {
+                result.HomeLand.AddRange(datas.Homeland.Select(c => (GameItemDto)c));
+                result.Mounts.AddRange(datas.Mounts.Select(c => (GameItemDto)c));
+            }
+            return result;
+        }
+
     }
 
 }

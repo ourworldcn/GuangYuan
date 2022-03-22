@@ -1,0 +1,2 @@
+增加 Social/GetCharInfo 接口
+废弃 Social/GetCharSummary 接口

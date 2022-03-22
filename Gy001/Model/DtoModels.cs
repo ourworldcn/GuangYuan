@@ -2408,6 +2408,34 @@ namespace GY2021001WebApi.Models
     #region 社交相关
 
     /// <summary>
+    /// 获取指定角色社交信息的接口返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class GetCharInfoReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 返回指定角色的家园数据，当前版本集合中仅有一个对象（角色的家园对象），但其Children属性中包含了完整的树对象。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> HomeLand { get; set; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 包含指定角色所有坐骑对象。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> Mounts { get; set; } = new List<GameItemDto>();
+
+    }
+
+    /// <summary>
+    /// 获取指定角色社交信息的接口参数封装类
+    /// </summary>
+    [DataContract]
+    public class GetCharInfoParamsDto : SocialDtoBase
+    {
+    }
+
+    /// <summary>
     /// 角色信息概览。非敏感且非需要付费查看的信息，都将放入此类。
     /// </summary>
     [DataContract]

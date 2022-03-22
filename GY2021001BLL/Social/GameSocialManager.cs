@@ -977,6 +977,19 @@ namespace GuangYuan.GY001.BLL
         #region 项目特定功能
 
         /// <summary>
+        /// 获取指定角色家园及社交信息。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void GetCharInfo(GetCharInfoDatas datas)
+        {
+            using var dw = datas.LockAll();
+            if (dw is null)
+                return;
+            datas.Homeland.Add(datas.OtherChar.GetHomeland());
+            datas.Mounts.AddRange(datas.OtherChar.GetZuojiBag().Children);
+        }
+
+        /// <summary>
         /// 去好友家互动以获得体力。
         /// </summary>
         /// <param name="datas">工作数据。</param>
@@ -1731,7 +1744,45 @@ namespace GuangYuan.GY001.BLL
             Debug.WriteLineIf(charIds.Count() < maxCount, "RefreshPvpList获得角色过少。");
             return charIds;
         }
+
         #endregion  项目特定功能
+    }
+
+    public class GetCharInfoDatas : BinaryRelationshipGameContext
+    {
+        public GetCharInfoDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
+        {
+        }
+
+        public GetCharInfoDatas([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar, otherGCharId)
+        {
+        }
+
+        public GetCharInfoDatas([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token, otherGCharId)
+        {
+        }
+
+        List<GameItem> _Homeland;
+        /// <summary>
+        /// 返回家园信息。
+        /// </summary>
+        public List<GameItem> Homeland { get => _Homeland ??= new List<GameItem>(); }
+
+        List<GameItem> _Mounts;
+        /// <summary>
+        /// 返回指定角色的所有坐骑信息。
+        /// </summary>
+        public List<GameItem> Mounts { get => _Mounts ??= new List<GameItem>(); }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                _Homeland = null;
+                _Mounts = null;
+            }
+            base.Dispose(disposing);
+        }
     }
 
     /// <summary>

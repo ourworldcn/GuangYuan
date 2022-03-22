@@ -2316,6 +2316,26 @@
             战斗对象的Id。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetCharInfoReturnDto">
+            <summary>
+            获取指定角色社交信息的接口返回值封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetCharInfoReturnDto.HomeLand">
+            <summary>
+            返回指定角色的家园数据，当前版本集合中仅有一个对象（角色的家园对象），但其Children属性中包含了完整的树对象。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetCharInfoReturnDto.Mounts">
+            <summary>
+            包含指定角色所有坐骑对象。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetCharInfoParamsDto">
+            <summary>
+            获取指定角色社交信息的接口参数封装类
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.RequestAssistanceParamsDto">
             <summary>
             
@@ -3271,6 +3291,13 @@
         <member name="M:Gy001.Controllers.SocialController.RequestAssistance(GY2021001WebApi.Models.RequestAssistanceParamsDto)">
             <summary>
             请求好友协助进行pvp复仇。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.SocialController.GetCharInfo(GY2021001WebApi.Models.GetCharInfoParamsDto)">
+            <summary>
+            获取指定角色家园数据的接口。OtherCharId 设置为自己的id即可获取自己的数据。
             </summary>
             <param name="model"></param>
             <returns></returns>
