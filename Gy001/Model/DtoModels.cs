@@ -1270,10 +1270,17 @@ namespace GY2021001WebApi.Models
         public string WorldServiceHost { get; set; }
 
         /// <summary>
+        /// 聊天服务器的主机地址。使用此地址拼接后续的通讯地址。
+        /// </summary>
+        [DataMember]
+        public string ChartServiceHost { get; internal set; }
+
+        /// <summary>
         /// 该账号下所有角色信息的数组。目前有且仅有一个角色。
         /// </summary>
         [DataMember]
         public List<GameCharDto> GameChars { get; set; } = new List<GameCharDto>();
+
     }
 
     /// <summary>

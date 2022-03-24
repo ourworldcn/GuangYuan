@@ -70,9 +70,11 @@ namespace GY2021001WebApi.Controllers
             var gu = gm.Login(loginParamsDto.LoginName, loginParamsDto.Pwd, loginParamsDto.Region);
 
             var worldServiceHost = $"{Request.Scheme}://{Request.Host}";
+            var chartServiceHost = $"{Request.Scheme}://{Request.Host}";
             var result = new LoginReturnDto()
             {
                 WorldServiceHost = worldServiceHost,
+                ChartServiceHost= chartServiceHost,
             };
             if (null != gu)
             {

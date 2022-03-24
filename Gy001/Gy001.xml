@@ -1707,6 +1707,11 @@
             世界服务器的主机地址。使用此地址拼接后续的通讯地址。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.LoginReturnDto.ChartServiceHost">
+            <summary>
+            聊天服务器的主机地址。使用此地址拼接后续的通讯地址。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.LoginReturnDto.GameChars">
             <summary>
             该账号下所有角色信息的数组。目前有且仅有一个角色。

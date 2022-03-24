@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Script;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
@@ -291,6 +292,12 @@ namespace OW.Game
         #endregion 复用用户数据库上下文
 
         #region 子管理器
+
+        ChatManager _ChatManager;
+        /// <summary>
+        /// 获取聊天服务器。
+        /// </summary>
+        public ChatManager ChatManager { get => _ChatManager ??= Service.GetService<ChatManager>(); }
 
         private GameItemTemplateManager _ItemTemplateManager;
         /// <summary>

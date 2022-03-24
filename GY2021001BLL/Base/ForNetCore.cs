@@ -1,4 +1,5 @@
 ﻿using Game.Social;
+using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Script;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
@@ -376,7 +377,7 @@ namespace GuangYuan.GY001.BLL
 
             services.TryAddSingleton(c => ArrayPool<byte>.Create());    //字节数组池服务
 
-            services.TryAddSingleton<ObjectPool<StringBuilder>>(c => StringBuilderPool.Shared);  //StringBuilder池服务
+            services.TryAddSingleton(c => StringBuilderPool.Shared);  //StringBuilder池服务
             #endregion 基础服务
 
             #region 游戏专用服务
@@ -392,6 +393,9 @@ namespace GuangYuan.GY001.BLL
                 //                UserDbOptions = new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).EnableSensitiveDataLogging().Options,
                 //                TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
                 //#endif //DEBUG
+            }));
+            services.AddSingleton(c => new ChatManager(c, new  ChatManagerOptions()
+            {
             }));
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
             {
