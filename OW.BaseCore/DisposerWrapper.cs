@@ -111,4 +111,29 @@ namespace System
         }
 
     }
+
+    public readonly ref struct DisposeHelper
+    {
+        public DisposeHelper(Action<object> action, object state)
+        {
+            _Action = action;
+            _State = state;
+        }
+
+        private readonly Action<object> _Action;
+        private readonly object _State;
+
+        public readonly void Dispose()
+        {
+            try
+            {
+                _Action(_State);
+            }
+            catch (Exception err)
+            {
+                Debug.WriteLine(err.Message);
+            }
+        }
+
+    }
 }

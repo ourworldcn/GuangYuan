@@ -65,6 +65,31 @@ namespace GuangYuan.GY001.BLL.GeneralManager
 
         #region 功能相关
 
+        public bool Lock(ChatChannel channel, TimeSpan timeout)
+        {
+            if (!Monitor.TryEnter(channel, timeout))
+                return false;
+            try
+            {
+                if (channel.Disposed)
+                {
+                    Monitor.Exit(channel);
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                Monitor.Exit(channel);
+                throw;
+            }
+            return true;
+        }
+
+        public void Unlock(ChatChannel channel)
+        {
+            Monitor.Exit(channel);
+        }
+
         /// <summary>
         /// 获取或创建一个频道。
         /// </summary>
@@ -86,7 +111,6 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <returns></returns>
         public bool JoinChannel(string charId, string channelId, TimeSpan timeout, Func<ChatChannel> creator)
         {
-            var channel = GetOrCreateChannel(channelId, creator);
             lock (channel)
             {
                 if (channel.Disposed)
@@ -122,6 +146,18 @@ namespace GuangYuan.GY001.BLL.GeneralManager
 
         }
         #endregion 功能相关
+    }
+
+    public static class ChatManagerExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Lock(this ChatManager manager, string channelId, TimeSpan timeout, out ChatChannel channel)
+        {
+            if (!manager.Id2Channel.TryGetValue(channelId, out channel))
+                return false;
+            return manager.Lock(channel, timeout);
+        }
+
     }
 
     #region 基础数据结构

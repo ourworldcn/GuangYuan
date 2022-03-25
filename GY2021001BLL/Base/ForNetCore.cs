@@ -245,7 +245,11 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
+            using var dh = t2();
+        }
 
+            var str = "sssfgdsssssssssssssssssssssssssssss";
+            var span = str.AsSpan(1);
         }
 
         /// <summary>
@@ -393,9 +397,6 @@ namespace GuangYuan.GY001.BLL
                 //                UserDbOptions = new DbContextOptionsBuilder<GY001UserContext>().UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).EnableSensitiveDataLogging().Options,
                 //                TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
                 //#endif //DEBUG
-            }));
-            services.AddSingleton(c => new ChatManager(c, new  ChatManagerOptions()
-            {
             }));
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
             {
