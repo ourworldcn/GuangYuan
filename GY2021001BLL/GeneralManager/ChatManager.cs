@@ -111,7 +111,13 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <returns></returns>
         public bool JoinChannel(string charId, string channelId, TimeSpan timeout, Func<ChatChannel> creator)
         {
-            var channel = GetOrCreateChannel(channelId, creator);
+            ChatChannel channel;
+            do
+            {
+                channel = GetOrCreateChannel(channelId, creator);
+
+            } while (!Lock(channel, TimeSpan.FromSeconds(1)));
+
             lock (channel)
             {
                 if (channel.Disposed)

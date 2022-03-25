@@ -248,6 +248,13 @@ namespace GuangYuan.GY001.BLL
             using var dh = t2();
         }
 
+        DisposeHelper t2()
+        {
+            var result = new DisposeHelper(c =>
+            {
+                c.ToString();
+            }, this);
+            return result;
         }
 
         /// <summary>
@@ -396,7 +403,7 @@ namespace GuangYuan.GY001.BLL
                 //                TemplateDbOptions = new DbContextOptionsBuilder<GY001TemplateContext>().UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).Options,
                 //#endif //DEBUG
             }));
-            services.AddSingleton(c => new ChatManager(c, new  ChatManagerOptions()
+            services.AddSingleton(c => new ChatManager(c, new ChatManagerOptions()
             {
             }));
             services.AddSingleton(c => new GameItemTemplateManager(c, new GameItemTemplateManagerOptions()
