@@ -245,17 +245,8 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            using var dh = t2();
         }
 
-        DisposeHelper t2()
-        {
-            var result = new DisposeHelper(c =>
-            {
-                c.ToString();
-            }, this);
-            return result;
-        }
 
         /// <summary>
         /// 创建所有<see cref="VWorld"/>链接的游戏管理器以初始化。

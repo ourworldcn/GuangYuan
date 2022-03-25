@@ -112,16 +112,16 @@ namespace System
 
     }
 
-    public readonly ref struct DisposeHelper
+    public readonly ref struct DisposeHelper<T>
     {
-        public DisposeHelper(Action<object> action, object state)
+        public DisposeHelper(Action<T> action, T state)
         {
             _Action = action;
             _State = state;
         }
 
-        private readonly Action<object> _Action;
-        private readonly object _State;
+        private readonly Action<T> _Action;
+        private readonly T _State;
 
         public readonly void Dispose()
         {

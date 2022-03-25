@@ -3,23 +3,24 @@
   <Class Name="GuangYuan.GY001.BLL.GeneralManager.ChatManagerOptions">
     <Position X="9.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAA=</HashCode>
       <FileName>GeneralManager\ChatManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GeneralManager.ChatManager" Collapsed="true">
     <Position X="7.5" Y="4" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAEAAQAAACABAAAACAAAUAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>gAAQAAAAAAkAAUAAECABAAAACEAAUAAAAAAAAAAAAAA=</HashCode>
       <FileName>GeneralManager\ChatManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GeneralManager.GetMessageContext">
     <Position X="9.5" Y="3" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AQAAAAAAACAAAAAAAAAAAAAAAAgAAAAIAAAAAwAAAAA=</HashCode>
       <FileName>GeneralManager\ChatManager.cs</FileName>
     </TypeIdentifier>
+    <Lollipop Position="0.2" />
   </Class>
   <Class Name="GuangYuan.GY001.BLL.GeneralManager.ChatMessagePooledObjectPolicy">
     <Position X="7.25" Y="1.75" Width="2" />
@@ -38,7 +39,7 @@
   <Class Name="GuangYuan.GY001.BLL.GeneralManager.ChatMessage" BaseTypeListCollapsed="true">
     <Position X="2.25" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>gAAAAAAAQCAAAABAAAAAAAAAAAAAAAAAAAAAIAAIBAA=</HashCode>
+      <HashCode>AAAAAAAAQCAAAABAAAAAAAAAAAAAAAAAAAAAIAAIBAA=</HashCode>
       <FileName>GeneralManager\ChatManager.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -46,7 +47,7 @@
   <Class Name="GuangYuan.GY001.BLL.GeneralManager.ChatChannel" BaseTypeListCollapsed="true">
     <Position X="5" Y="1.25" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAACAAAABAAAAAAAAAABAAAAIAAQAAAQACAAA=</HashCode>
+      <HashCode>AAACAAAAACAAAABAAAAAAACAABAAAAIEAQAAAQACAAA=</HashCode>
       <FileName>GeneralManager\ChatManager.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
@@ -57,9 +58,10 @@
   <Class Name="GuangYuan.GY001.BLL.GeneralManager.SendMessageContext" Collapsed="true">
     <Position X="11.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AQAAAAAAACAAAAAAAAAAAAAAAogAAAAIAAAAAgAAAAA=</HashCode>
       <FileName>GeneralManager\ChatManager.cs</FileName>
     </TypeIdentifier>
+    <Lollipop Position="0.2" />
   </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />
 </ClassDiagram>
