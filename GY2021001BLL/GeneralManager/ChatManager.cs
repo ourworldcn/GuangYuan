@@ -2,9 +2,11 @@
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +34,10 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         public TimeSpan LockTimeout { get; set; } = TimeSpan.FromSeconds(1);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <remarks>同一个线程中持有任何<see cref="ChatUser"/>对象的锁后可以试图锁定任意<see cref="ChatChannel"/>对象，但反之不行。</remarks>
     public class ChatManager : GameManagerBase<ChatManagerOptions>
     {
         #region 构造函数及相关
@@ -76,13 +82,29 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <summary>
         /// 键是频道的id,值该频道信息。
         /// </summary>
-        public ConcurrentDictionary<string, ChatChannel> Id2Channel { get => _Id2Channel ??= new ConcurrentDictionary<string, ChatChannel>(); }
+        public ConcurrentDictionary<string, ChatChannel> Id2Channel
+        {
+            get
+            {
+                if (_Id2Channel is null)
+                    Interlocked.CompareExchange(ref _Id2Channel, new ConcurrentDictionary<string, ChatChannel>(), null);
+                return _Id2Channel;
+            }
+        }
 
-        private readonly ConcurrentDictionary<string, List<ChatChannel>> _Char2Chat = new ConcurrentDictionary<string, List<ChatChannel>>();
+        ConcurrentDictionary<string, ChatUser> _UserInfos;
         /// <summary>
-        /// 键是用户Id，值是角色所属的频道。
+        /// 用户的信息字典，键是用户的Id，值用户信息类。
         /// </summary>
-        public ConcurrentDictionary<string, List<ChatChannel>> Char2Chat { get => _Char2Chat; }
+        public ConcurrentDictionary<string, ChatUser> UserInfos
+        {
+            get
+            {
+                if (_UserInfos is null)
+                    Interlocked.CompareExchange(ref _UserInfos, new ConcurrentDictionary<string, ChatUser> { }, null);
+                return _UserInfos;
+            }
+        }
 
         #endregion 属性及相关
 
@@ -123,6 +145,33 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         public void Unlock(ChatChannel channel)
         {
             Monitor.Exit(channel);
+        }
+
+        /// <summary>
+        /// 锁定指定聊天用户对象。与<see cref="Unlock(ChatUser)"/>配对使用。
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        public bool Lock(ChatUser user, TimeSpan timeout)
+        {
+            if (!Monitor.TryEnter(user, timeout))
+                return false;
+            if (user.Disposed)
+            {
+                Monitor.Exit(user);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 解锁指定聊天用户对象，与<see cref="Lock(ChatUser, TimeSpan)"/>配对使用。
+        /// </summary>
+        /// <param name="user"></param>
+        public void Unlock(ChatUser user)
+        {
+            Monitor.Exit(user);
         }
 
         /// <summary>
@@ -167,12 +216,21 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             return true;
         }
 
-        public bool GetOrCreateAndLockList(string charId, TimeSpan timeout, out List<ChatChannel> list)
+        /// <summary>
+        /// 创建或锁定用户信息对象。
+        /// </summary>
+        /// <param name="charId"></param>
+        /// <param name="timeout"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public bool GetOrCreateAndLockUser(string charId, TimeSpan timeout, out ChatUser user)
         {
-            list = Char2Chat.GetOrAdd(charId, c => new List<ChatChannel>());
-            if (!Monitor.TryEnter(list, timeout))
-                return false;
-            return true;
+            user = UserInfos.GetOrAdd(charId, c => new ChatUser()
+            {
+                LastWrite = DateTime.MinValue,
+                Timestamp = DateTime.MinValue,
+            });
+            return Lock(user, timeout);
         }
 
         /// <summary>
@@ -184,17 +242,19 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <param name="timeout">频道闲置超时。</param>
         /// <param name="creator">返回该频道对象。</param>
         /// <returns>true成功加入频道，否则返回false。</returns>
-        public bool JoinChannel(string charId, string channelId, TimeSpan timeout, Func<ChatChannel> creator)
+        public bool JoinOrCreateChannel(string charId, string channelId, TimeSpan timeout, Func<ChatChannel> creator)
         {
-            if (!GetOrCreateAndLockChannel(channelId, timeout, creator, out var channel))
+            if (!GetOrCreateAndLockUser(charId, timeout, out var info))    //若无法创建用户
+                return false;
+            using var dh1 = new DisposeHelper<ChatUser>(c => Monitor.Exit(c), info);
+
+            if (!GetOrCreateAndLockChannel(channelId, timeout, null, out var channel))   //若无法创建频道
                 return false;
             using var dh = new DisposeHelper<ChatChannel>(c => Unlock(c), channel);
-            var list = Char2Chat.GetOrAdd(charId, c => new List<ChatChannel>());
-            lock (list)
-                if (list.Contains(channel))
-                    return false;
-                else
-                    list.Add(channel);
+            if (info.Channels.Contains(channel))
+                return false;
+            else
+                info.Channels.Add(channel);
             return true;
         }
 
@@ -207,42 +267,55 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <returns>true成功离开，false指定用户原本就不在频道中，或指定频道不存在。</returns>
         public bool LeaveChannel(string charId, string channelId, TimeSpan timeout)
         {
+            if (UserInfos.TryGetValue(charId, out var info))    //若指定用户不存在
+                return false;
+            if (!GetOrCreateAndLockUser(charId, timeout, out info))    //若无法锁定用户
+                return false;
+            using var dh1 = new DisposeHelper<ChatUser>(c => Monitor.Exit(c), info);
             if (!Id2Channel.TryGetValue(channelId, out var channel))    //若无此频道
                 return false;
             if (!Lock(channel, Options.LockTimeout))    //若锁定超时
                 return false;
             using var dh = new DisposeHelper<ChatChannel>(c => Unlock(c), channel);
-            if (Char2Chat.TryGetValue(charId, out var list))    //若存在该用户的频道列表
-            {
-                if (!Monitor.TryEnter(charId, timeout))
-                    return false;
-                using var dh1 = new DisposeHelper<List<ChatChannel>>(c => Monitor.Exit(c), list);
-                return list.Remove(channel);
-            }
-            return true;
+            return info.Channels.Remove(channel);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="datas"></param>
         public void SendMessages(SendMessageContext datas)
         {
+            if (!GetOrCreateAndLockUser(datas.CharId, Options.LockTimeout, out var user))   //若无法锁定用户的列表
+                return;
+            using var dh1 = new DisposeHelper<ChatUser>(c => Monitor.Exit(c), user);
             if (!GetOrCreateAndLockChannel(datas.ChannelName, Options.LockTimeout, null, out var channel))  //若无法锁定频道。
                 return;
             using var dh = new DisposeHelper<ChatChannel>(c => Unlock(c), channel);
-            if (!GetOrCreateAndLockList(datas.CharId, Options.LockTimeout, out var list))   //若无法锁定用户的列表
-                return;
-            using var dh1 = new DisposeHelper<List<ChatChannel>>(c => Monitor.Exit(c), list);
-            if (list.Contains(channel)) //若不在指定频道中
+            if (user.Channels.Contains(channel)) //若不在指定频道中
                 return;
             var message = ChatMessagePool.Shard.Get();
             message.Message = datas.Guts;
-            message.PindaoName = datas.ChannelName;
+            message.ChannelName = datas.ChannelName;
             message.Sender = datas.CharId;
             channel.Messages.Enqueue(message);
-            channel.Char2Timestamp[datas.CharId] = DateTime.UtcNow;
+            channel.UserIds.Add(datas.CharId);
         }
 
         public void GetMessages(GetMessageContext datas)
         {
-
+            var charId = datas.CharId;
+            if (!GetOrCreateAndLockUser(datas.CharId, Options.LockTimeout, out var info))   //若无法锁定用户
+                return;
+            using var dhUser = new DisposeHelper<ChatUser>(c => Unlock(c), info);
+            foreach (var channel in info.Channels)
+            {
+                if (!Lock(channel, Options.LockTimeout))
+                    continue;
+                using var dh = new DisposeHelper<ChatChannel>(c => Unlock(c), channel);
+                datas.Messages.AddRange(channel.Messages.Where(c => c.SendDateTimeUtc > info.Timestamp)); //在上次获取信息之后的信息
+            }
+            info.Timestamp = datas.NowUtc;
         }
         #endregion 功能相关
     }
@@ -286,7 +359,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         public override void Return(ChatMessage obj)
         {
             obj.Message = default;
-            obj.PindaoName = default;
+            obj.ChannelName = default;
             obj.Sender = default;
             base.Return(obj);
         }
@@ -315,7 +388,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <summary>
         /// 频道Id。
         /// </summary>
-        public string PindaoName { get; set; }
+        public string ChannelName { get; set; }
 
         /// <summary>
         /// 发送者的Id。
@@ -373,7 +446,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         {
             var result = ChatMessagePool.Shard.Get();
             result.Message = Message;
-            result.PindaoName = PindaoName;
+            result.ChannelName = ChannelName;
             result.SendDateTimeUtc = SendDateTimeUtc;
             result.Sender = Sender;
             return result;
@@ -392,35 +465,20 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// </summary>
         public string Id { get; set; }
 
-        private ConcurrentQueue<ChatMessage> _Messages;
         /// <summary>
         /// 消息队列。
         /// </summary>
-        public ConcurrentQueue<ChatMessage> Messages { get => _Messages = new ConcurrentQueue<ChatMessage>(); }
+        public ConcurrentQueue<ChatMessage> Messages { get; private set; } = new ConcurrentQueue<ChatMessage>();
+
+        /// <summary>
+        /// 该频道包含的用户id。
+        /// </summary>
+        public HashSet<string> UserIds { get; private set; } = new HashSet<string>();
 
         /// <summary>
         /// 该频道最长不用的超时时间。超过此时间后将被清理。
         /// </summary>
         public TimeSpan Timeout { get; set; }
-
-        /// <summary>
-        /// 该频道最后修改的时间。
-        /// </summary>
-        public DateTime LastModifyDatetimeUtc { get; set; } = DateTime.UtcNow;
-
-        private ConcurrentDictionary<string, DateTime> _Char2Timestamp;
-        /// <summary>
-        /// 
-        /// </summary>
-        public ConcurrentDictionary<string, DateTime> Char2Timestamp
-        {
-            get
-            {
-                if (_Char2Timestamp is null)
-                    Interlocked.CompareExchange(ref _Char2Timestamp, new ConcurrentDictionary<string, DateTime>(), null);
-                return _Char2Timestamp;
-            }
-        }
 
         #region IDispose接口相关
 
@@ -439,8 +497,8 @@ namespace GuangYuan.GY001.BLL.GeneralManager
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                _Messages = null;
-                _Char2Timestamp = null;
+                Messages = null;
+                UserIds = null;
                 _Disposed = true;
             }
         }
@@ -464,10 +522,75 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         #endregion IDispose接口相关
     }
 
+    /// <summary>
+    /// 角色用户的信息。
+    /// </summary>
+    public class ChatUser : IDisposable
+    {
+
+        public List<ChatChannel> Channels { get; private set; } = new List<ChatChannel>();
+
+        /// <summary>
+        /// 最后读取信息的时间。
+        /// </summary>
+        public DateTime Timestamp { get; set; }
+
+        /// <summary>
+        /// 最后写入信息的时间。
+        /// </summary>
+        public DateTime LastWrite { get; set; }
+
+        private volatile bool _Disposed;
+        /// <summary>
+        /// 获取该对象是否已经被处置。
+        /// </summary>
+        public bool Disposed { get => _Disposed; }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_Disposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                Channels = null;
+                _Disposed = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~ChatCharInfo()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+    }
+
     #endregion 基础数据结构
 
     public class GetMessageContext : IResultWorkData, IDisposable
     {
+        /// <summary>
+        /// 获取或设置用户id。
+        /// </summary>
+        public string CharId { get; set; }
+
+        /// <summary>
+        /// 获取该时间之前发送的信息。默认使用当前时间(UTC)。
+        /// </summary>
+        public DateTime NowUtc { get; set; } = DateTime.UtcNow;
+
         public List<ChatMessage> Messages { get; private set; } = new List<ChatMessage>();
 
         public bool HasError { get; set; }
