@@ -112,22 +112,46 @@ namespace System
 
     }
 
-    public readonly ref struct DisposeHelper<T>
+    public readonly ref struct DisposeHelper
     {
-        public DisposeHelper(Action<T> action, T state)
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DisposeHelper Create<TState>(Action<TState> action, TState state)
+        {
+            var result = new DisposeHelper(c => action((TState)c), state);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DisposeHelper Create<T>(Func<T, TimeSpan, bool> lockFunc, Action<T> unlockFunc, T obj, TimeSpan timout)
+        {
+            if (!lockFunc(obj, timout))
+                return new DisposeHelper(null, null);
+            return new DisposeHelper(c => unlockFunc((T)c), obj);
+        }
+
+        public DisposeHelper(Action<object> action, object state)
         {
             _Action = action;
             _State = state;
         }
 
-        private readonly Action<T> _Action;
-        private readonly T _State;
+        private readonly Action<object> _Action;
+        private readonly object _State;
 
+        /// <summary>
+        /// 判断此结构是不是一个空结构。
+        /// </summary>
+        public bool IsEmpty { get => _Action is null; }
+
+        /// <summary>
+        /// 处置函数。
+        /// </summary>
         public readonly void Dispose()
         {
             try
             {
-                _Action(_State);
+                if (null != _Action)
+                    _Action(_State);
             }
             catch (Exception err)
             {
@@ -135,5 +159,25 @@ namespace System
             }
         }
 
+    }
+
+    public static class DisposeUtil
+    {
+        public static bool Create(out DisposeHelper helper)
+        {
+            helper = new DisposeHelper(null, null);
+            return true;
+        }
+
+        public static ref DisposeHelper tt(ref DisposeHelper dh)
+        {
+            return ref dh;
+        }
+
+        public static void testc()
+        {
+            var ss = new DisposeHelper(null, null);
+            ref var s = ref tt(ref ss);
+        }
     }
 }

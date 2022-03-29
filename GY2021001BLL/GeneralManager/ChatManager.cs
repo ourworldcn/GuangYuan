@@ -1,13 +1,9 @@
-﻿using GuangYuan.GY001.UserDb;
-using Microsoft.Extensions.ObjectPool;
+﻿using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using System;
-using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,6 +24,11 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         public TimeSpan ChannelTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
         /// <summary>
+        /// 用户超时。用户在指定时间内没有动作则被认为已经离开，并自动清理资源。
+        /// </summary>
+        public TimeSpan UserTimeOut { get; set; } = TimeSpan.FromMinutes(15);
+
+        /// <summary>
         /// 锁定频道对象的默认超时时间。
         /// 默认值1秒。
         /// </summary>
@@ -38,7 +39,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
     /// 
     /// </summary>
     /// <remarks>同一个线程中持有任何<see cref="ChatUser"/>对象的锁后可以试图锁定任意<see cref="ChatChannel"/>对象，但反之不行。</remarks>
-    public class ChatManager : GameManagerBase<ChatManagerOptions>
+    public class ChatManager : GameManagerBase<ChatManagerOptions>, IDisposable
     {
         #region 构造函数及相关
 
@@ -59,24 +60,34 @@ namespace GuangYuan.GY001.BLL.GeneralManager
 
         private void Initialize()
         {
-            var task = Task.Factory.StartNew(() =>  //后台清理函数
-            {
-                while (true)
-                {
-                    foreach (var item in Id2Channel.Values)
-                    {
-
-                    }
-                    Thread.Sleep(1);
-                    if (Environment.HasShutdownStarted)
-                        break;
-                }
-            }, TaskCreationOptions.LongRunning);
+            //var task = Task.Factory.StartNew(() =>  //后台清理函数
+            //{
+            //    while (true)
+            //    {
+            //        foreach (var channel in Id2Channel.Values)
+            //        {
+            //            if (!Lock(channel, TimeSpan.Zero))
+            //                continue;
+            //            using var dwChannel = DisposerWrapper.Create(c => Unlock(c), channel);
+            //            if (0 == channel.UserIds.Count && !channel.SuppressDispose)    //若已空且可以卸载
+            //            {
+            //                Id2Channel.TryRemove(channel.Id, out var tmp);
+            //                channel.Dispose();
+            //            }
+            //            var stamp = Id2Users.Join(channel.UserIds, c => c.Key, c => c, (l, r) => l.Value.Timestamp).Max();
+            //        }
+            //        Thread.Sleep(1);
+            //        if (Environment.HasShutdownStarted)
+            //            break;
+            //    }
+            //}, TaskCreationOptions.LongRunning);
         }
 
         #endregion 构造函数及相关
 
         #region 属性及相关
+
+        private readonly ReaderWriterLockSlim _ReaderWriterLockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
         private ConcurrentDictionary<string, ChatChannel> _Id2Channel;
         /// <summary>
@@ -92,11 +103,13 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             }
         }
 
-        ConcurrentDictionary<string, ChatUser> _UserInfos;
+        private ConcurrentDictionary<string, ChatUser> _UserInfos;
+        private bool disposedValue;
+
         /// <summary>
         /// 用户的信息字典，键是用户的Id，值用户信息类。
         /// </summary>
-        public ConcurrentDictionary<string, ChatUser> UserInfos
+        public ConcurrentDictionary<string, ChatUser> Id2Users
         {
             get
             {
@@ -109,6 +122,48 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         #endregion 属性及相关
 
         #region 功能相关
+
+        /// <summary>
+        /// 锁定用户。
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        protected bool LockUser(string userId)
+        {
+            if (!Id2Users.TryGetValue(userId, out var user))
+                return false;
+            return Lock(user, Options.LockTimeout);
+        }
+
+        /// <summary>
+        /// 锁定指定聊天用户对象。与<see cref="Unlock(ChatUser)"/>配对使用。
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        protected bool Lock(ChatUser user, TimeSpan timeout)
+        {
+            if (!Monitor.TryEnter(user, timeout))
+                return false;
+            if (user.Disposed)
+            {
+                Monitor.Exit(user);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 锁定指定频道。
+        /// </summary>
+        /// <param name="channelId"></param>
+        /// <returns></returns>
+        protected bool LockChannel(string channelId)
+        {
+            if (!Id2Channel.TryGetValue(channelId, out var channel))
+                return false;
+            return Lock(channel, Options.LockTimeout);
+        }
 
         /// <summary>
         /// 锁定指定频道对象。与<see cref="Unlock(ChatChannel)"/>配对使用。
@@ -145,24 +200,6 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         public void Unlock(ChatChannel channel)
         {
             Monitor.Exit(channel);
-        }
-
-        /// <summary>
-        /// 锁定指定聊天用户对象。与<see cref="Unlock(ChatUser)"/>配对使用。
-        /// </summary>
-        /// <param name="user"></param>
-        /// <param name="timeout"></param>
-        /// <returns></returns>
-        public bool Lock(ChatUser user, TimeSpan timeout)
-        {
-            if (!Monitor.TryEnter(user, timeout))
-                return false;
-            if (user.Disposed)
-            {
-                Monitor.Exit(user);
-                return false;
-            }
-            return true;
         }
 
         /// <summary>
@@ -225,7 +262,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <returns></returns>
         public bool GetOrCreateAndLockUser(string charId, TimeSpan timeout, out ChatUser user)
         {
-            user = UserInfos.GetOrAdd(charId, c => new ChatUser()
+            user = Id2Users.GetOrAdd(charId, c => new ChatUser()
             {
                 LastWrite = DateTime.MinValue,
                 Timestamp = DateTime.MinValue,
@@ -246,11 +283,11 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         {
             if (!GetOrCreateAndLockUser(charId, timeout, out var info))    //若无法创建用户
                 return false;
-            using var dh1 = new DisposeHelper<ChatUser>(c => Monitor.Exit(c), info);
+            using var dh1 = new DisposeHelper(c => Monitor.Exit(c), info);
 
             if (!GetOrCreateAndLockChannel(channelId, timeout, null, out var channel))   //若无法创建频道
                 return false;
-            using var dh = new DisposeHelper<ChatChannel>(c => Unlock(c), channel);
+            using var dh = DisposeHelper.Create(c => Unlock(c), channel);
             if (info.Channels.Contains(channel))
                 return false;
             else
@@ -267,57 +304,188 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <returns>true成功离开，false指定用户原本就不在频道中，或指定频道不存在。</returns>
         public bool LeaveChannel(string charId, string channelId, TimeSpan timeout)
         {
-            if (UserInfos.TryGetValue(charId, out var info))    //若指定用户不存在
+            if (Id2Users.TryGetValue(charId, out var info))    //若指定用户不存在
                 return false;
             if (!GetOrCreateAndLockUser(charId, timeout, out info))    //若无法锁定用户
                 return false;
-            using var dh1 = new DisposeHelper<ChatUser>(c => Monitor.Exit(c), info);
+            using var dh1 = new DisposeHelper(c => Monitor.Exit(c), info);
             if (!Id2Channel.TryGetValue(channelId, out var channel))    //若无此频道
                 return false;
             if (!Lock(channel, Options.LockTimeout))    //若锁定超时
                 return false;
-            using var dh = new DisposeHelper<ChatChannel>(c => Unlock(c), channel);
+            using var dh = DisposeHelper.Create(c => Unlock(c), channel);
             return info.Channels.Remove(channel);
         }
 
+        #endregion 功能相关
+
+        #region 用户操作
+
         /// <summary>
-        /// 
+        /// 发送消息。
         /// </summary>
         /// <param name="datas"></param>
         public void SendMessages(SendMessageContext datas)
         {
             if (!GetOrCreateAndLockUser(datas.CharId, Options.LockTimeout, out var user))   //若无法锁定用户的列表
                 return;
-            using var dh1 = new DisposeHelper<ChatUser>(c => Monitor.Exit(c), user);
+            using var dh1 = new DisposeHelper(Monitor.Exit, user);
             if (!GetOrCreateAndLockChannel(datas.ChannelName, Options.LockTimeout, null, out var channel))  //若无法锁定频道。
                 return;
-            using var dh = new DisposeHelper<ChatChannel>(c => Unlock(c), channel);
+            using var dh = DisposeHelper.Create(Unlock, channel);
             if (user.Channels.Contains(channel)) //若不在指定频道中
                 return;
             var message = ChatMessagePool.Shard.Get();
-            message.Message = datas.Guts;
+            message.Message = datas.Message;
             message.ChannelName = datas.ChannelName;
             message.Sender = datas.CharId;
             channel.Messages.Enqueue(message);
             channel.UserIds.Add(datas.CharId);
         }
 
+        /// <summary>
+        /// 收消息。
+        /// </summary>
+        /// <param name="datas"></param>
         public void GetMessages(GetMessageContext datas)
         {
             var charId = datas.CharId;
-            if (!GetOrCreateAndLockUser(datas.CharId, Options.LockTimeout, out var info))   //若无法锁定用户
+            if (!GetOrCreateAndLockUser(datas.CharId, Options.LockTimeout, out var user))   //若无法锁定用户
                 return;
-            using var dhUser = new DisposeHelper<ChatUser>(c => Unlock(c), info);
-            foreach (var channel in info.Channels)
+            using var dhUser = DisposeHelper.Create(Unlock, user);
+            foreach (var channel in user.Channels)
             {
                 if (!Lock(channel, Options.LockTimeout))
                     continue;
-                using var dh = new DisposeHelper<ChatChannel>(c => Unlock(c), channel);
-                datas.Messages.AddRange(channel.Messages.Where(c => c.SendDateTimeUtc > info.Timestamp)); //在上次获取信息之后的信息
+                using var dh = DisposeHelper.Create(Unlock, channel);
+                datas.Messages.AddRange(channel.Messages.Where(c => c.SendDateTimeUtc > user.Timestamp)); //在上次获取信息之后的信息
             }
-            info.Timestamp = datas.NowUtc;
+            user.Timestamp = datas.NowUtc;
         }
-        #endregion 功能相关
+
+        /// <summary>
+        /// 创建用户。
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public bool CreateUser(string userId)
+        {
+            if (Id2Channel.ContainsKey(userId))
+                return false;
+            var user = new ChatUser()
+            {
+                Id = userId,
+            };
+            var result = Id2Users.TryAdd(userId, user);
+            if (!result) //若成功添加
+                user.Dispose();
+            return result;
+        }
+
+        /// <summary>
+        /// 移除一个用户。
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns>true成功移除用户，false指定用户不存在。</returns>
+        /// <exception cref="Timeout">锁定用户超时。</exception>
+        public bool RemoveUser(string userId)
+        {
+            if (!Id2Users.TryGetValue(userId, out var user))
+                return false;
+            if (!Lock(user, Options.LockTimeout))
+                throw new TimeoutException();
+            using var dhUser = DisposeHelper.Create(c => Unlock(c), user);
+            foreach (var channel in user.Channels)
+            {
+                Lock(channel, Timeout.InfiniteTimeSpan);
+                using var dwChannel = DisposerWrapper.Create(c => Unlock(c), channel);
+                channel.UserIds.Remove(userId);
+                if (0 == channel.UserIds.Count && !channel.SuppressUnload)  //若已无用户且允许卸载
+                    if (Id2Channel.Remove(channel.Id, out _))
+                        channel.Dispose();
+            }
+            user.Dispose();
+            return true;
+        }
+
+        /// <summary>
+        /// 创建频道。
+        /// </summary>
+        /// <param name="channelId"></param>
+        /// <param name="suppressUnload">true永不自动卸载，false(省略)会在超时无动作或没有参与者时自动卸载。</param>
+        /// <returns>true成功创建频道，false指定id的频道已经存在。</returns>
+        public bool CreateChannel(string channelId, bool suppressUnload = false)
+        {
+            if (Id2Channel.ContainsKey(channelId))
+                return false;
+            var channel = new ChatChannel()
+            {
+                Id = channelId,
+                SuppressUnload = suppressUnload,
+            };
+            var result = Id2Channel.TryAdd(channelId, channel);
+            if (!result)    //若没有成功添加
+                channel.Dispose();
+            return result;
+        }
+
+        /// <summary>
+        /// 移除指定频道。
+        /// </summary>
+        /// <param name="channelId"></param>
+        /// <returns></returns>
+        public bool RemoveChannel(string channelId)
+        {
+            if (!Id2Channel.TryGetValue(channelId, out var channel))
+                return false;
+            if (!Lock(channel, Options.LockTimeout))
+                return false;
+            using var dh = DisposeHelper.Create(c => Unlock(c), channel);
+            foreach (var userId in channel.UserIds)
+            {
+
+            }
+
+            return true;
+        }
+
+        #endregion 用户操作
+
+        #region IDisposable接口相关
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    _ReaderWriterLockSlim?.Dispose();
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _Id2Channel = null;
+                _UserInfos = null;
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~ChatManager()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion IDisposable接口相关
     }
 
     public static class ChatManagerExtensions
@@ -480,6 +648,11 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// </summary>
         public TimeSpan Timeout { get; set; }
 
+        /// <summary>
+        /// 是否阻止该频道被卸载。true阻止该频道卸载，false该频道可以正常卸载。
+        /// </summary>
+        public bool SuppressUnload { get; set; }
+
         #region IDispose接口相关
 
         private volatile bool _Disposed;
@@ -527,6 +700,20 @@ namespace GuangYuan.GY001.BLL.GeneralManager
     /// </summary>
     public class ChatUser : IDisposable
     {
+        public ChatUser()
+        {
+            Id = Guid.NewGuid().ToString();
+        }
+
+        public ChatUser(string id)
+        {
+            Id = id;
+        }
+
+        /// <summary>
+        /// 该用户的唯一Id。使用<see cref="ChatUser"/>默认构造函数构造新对象时，这个Id初始化为新Guid的字符串形式。
+        /// </summary>
+        public string Id { get; set; }
 
         public List<ChatChannel> Channels { get; private set; } = new List<ChatChannel>();
 
@@ -636,20 +823,19 @@ namespace GuangYuan.GY001.BLL.GeneralManager
     public class SendMessageContext : IResultWorkData, IDisposable
     {
         /// <summary>
-        /// 要发送的频道名。
-        /// </summary>
-        public string ChannelName { get; set; }
-
-        /// <summary>
         /// 发言者的id。
         /// </summary>
         public string CharId { get; set; }
 
         /// <summary>
+        /// 要发送的频道名。
+        /// </summary>
+        public string ChannelName { get; set; }
+
+        /// <summary>
         /// 发送的内容信息。
         /// </summary>
-        public string Guts { get; set; }
-
+        public string Message { get; set; }
 
         public bool HasError { get; set; }
         public int ErrorCode { get; set; }
