@@ -321,6 +321,7 @@ namespace System
         /// 也可以是Base64表示的内存数组模式，即<see cref="Guid.ToByteArray"/>的Base64编码模式。
         /// 对于空和空字符串会返回<see cref="Guid.Empty"/></param>
         /// <returns></returns>
+        /// <exception cref="FormatException">字符串格式不对。</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Guid ToGuid(string str)
         {

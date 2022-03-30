@@ -60,27 +60,33 @@ namespace GuangYuan.GY001.BLL.GeneralManager
 
         private void Initialize()
         {
-            //var task = Task.Factory.StartNew(() =>  //后台清理函数
-            //{
-            //    while (true)
-            //    {
-            //        foreach (var channel in Id2Channel.Values)
-            //        {
-            //            if (!Lock(channel, TimeSpan.Zero))
-            //                continue;
-            //            using var dwChannel = DisposerWrapper.Create(c => Unlock(c), channel);
-            //            if (0 == channel.UserIds.Count && !channel.SuppressDispose)    //若已空且可以卸载
-            //            {
-            //                Id2Channel.TryRemove(channel.Id, out var tmp);
-            //                channel.Dispose();
-            //            }
-            //            var stamp = Id2Users.Join(channel.UserIds, c => c.Key, c => c, (l, r) => l.Value.Timestamp).Max();
-            //        }
-            //        Thread.Sleep(1);
-            //        if (Environment.HasShutdownStarted)
-            //            break;
-            //    }
-            //}, TaskCreationOptions.LongRunning);
+            var task = Task.Factory.StartNew(() =>  //后台清理函数
+            {
+                while (true)
+                {
+                    foreach (var channel in Id2Channel.Values)
+                    {
+                        if (!Lock(channel, TimeSpan.Zero))
+                            continue;
+                        using var dwChannel = DisposerWrapper.Create(Unlock, channel);
+                        //if (0 == channel.UserIds.Count && !channel.SuppressDispose)    //若已空且可以卸载
+                        //{
+                        //    Id2Channel.TryRemove(channel.Id, out var tmp);
+                        //    channel.Dispose();
+                        //}
+                        var now = DateTime.UtcNow;
+                        while (channel.Messages.TryPeek(out var msg))
+                        {
+                            if (now - msg.SendDateTimeUtc > Options.MessageTimeout)
+                                channel.Messages.TryDequeue(out _);
+                        }
+                        //var stamp = Id2Users.Join(channel.UserIds, c => c.Key, c => c, (l, r) => l.Value.Timestamp).Max();
+                    }
+                    Thread.Sleep(1);
+                    if (Environment.HasShutdownStarted)
+                        break;
+                }
+            }, TaskCreationOptions.LongRunning);
         }
 
         #endregion 构造函数及相关
@@ -266,6 +272,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             {
                 LastWrite = DateTime.MinValue,
                 Timestamp = DateTime.MinValue,
+                Id = charId,
             });
             return Lock(user, timeout);
         }
@@ -291,7 +298,10 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             if (info.Channels.Contains(channel))
                 return false;
             else
+            {
+                channel.UserIds.Add(charId);
                 info.Channels.Add(channel);
+            }
             return true;
         }
 
@@ -330,15 +340,18 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             if (!GetOrCreateAndLockUser(datas.CharId, Options.LockTimeout, out var user))   //若无法锁定用户的列表
                 return;
             using var dh1 = new DisposeHelper(Monitor.Exit, user);
-            if (!GetOrCreateAndLockChannel(datas.ChannelName, Options.LockTimeout, null, out var channel))  //若无法锁定频道。
+            if (!GetOrCreateAndLockChannel(datas.ChannelId, Options.LockTimeout, null, out var channel))  //若无法锁定频道。
                 return;
             using var dh = DisposeHelper.Create(Unlock, channel);
-            if (user.Channels.Contains(channel)) //若不在指定频道中
-                return;
+            if (!user.Channels.Contains(channel)) //若不在指定频道中
+            {
+                JoinOrCreateChannel(datas.CharId, datas.ChannelId, Options.LockTimeout, null);
+            }
             var message = ChatMessagePool.Shard.Get();
             message.Message = datas.Message;
-            message.ChannelName = datas.ChannelName;
+            message.ChannelName = datas.ChannelId;
             message.Sender = datas.CharId;
+            message.ExString = datas.ExString;
             channel.Messages.Enqueue(message);
             channel.UserIds.Add(datas.CharId);
         }
@@ -358,7 +371,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
                 if (!Lock(channel, Options.LockTimeout))
                     continue;
                 using var dh = DisposeHelper.Create(Unlock, channel);
-                datas.Messages.AddRange(channel.Messages.Where(c => c.SendDateTimeUtc > user.Timestamp)); //在上次获取信息之后的信息
+                datas.Messages.AddRange(channel.Messages.Where(c => c.SendDateTimeUtc > user.Timestamp && c.Sender != charId)); //在上次获取信息之后的信息
             }
             user.Timestamp = datas.NowUtc;
         }
@@ -529,6 +542,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             obj.Message = default;
             obj.ChannelName = default;
             obj.Sender = default;
+            obj.ExString = default;
             base.Return(obj);
         }
 
@@ -572,6 +586,11 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// 发送该消息的时间点,使用utc时间。这也是一个不严格非唯一的时间戳，<see cref="DateTime.Ticks"/>可以被认为是一个时间戳。
         /// </summary>
         public DateTime SendDateTimeUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 扩展追加的属性。
+        /// </summary>
+        public string ExString { get; set; }
 
         #region IDispose接口相关
 
@@ -617,6 +636,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             result.ChannelName = ChannelName;
             result.SendDateTimeUtc = SendDateTimeUtc;
             result.Sender = Sender;
+            result.ExString = ExString;
             return result;
         }
 
@@ -830,12 +850,17 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <summary>
         /// 要发送的频道名。
         /// </summary>
-        public string ChannelName { get; set; }
+        public string ChannelId { get; set; }
 
         /// <summary>
         /// 发送的内容信息。
         /// </summary>
         public string Message { get; set; }
+
+        /// <summary>
+        /// 扩展追加的属性。
+        /// </summary>
+        public string ExString { get; set; }
 
         public bool HasError { get; set; }
         public int ErrorCode { get; set; }

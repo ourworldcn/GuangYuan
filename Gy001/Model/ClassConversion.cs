@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
@@ -15,6 +16,28 @@ using System.Text.Json;
 namespace GY2021001WebApi.Models
 {
     #region 基础数据
+
+    public partial class ChatMessageDto
+    {
+        public static implicit operator ChatMessageDto(ChatMessage obj)
+        {
+            var result = new ChatMessageDto()
+            {
+                ChannelId = obj.ChannelName,
+                Message = obj.Message as string,
+                SendDateTimeUtc = obj.SendDateTimeUtc,
+                Sender = obj.Sender,
+            };
+            var ary = obj.ExString.Split(OwHelper.CommaArrayWithCN);
+            if(ary.Length==2)
+            {
+                result.DisplayName = ary[1];
+                if (int.TryParse(ary[0], out var ci))
+                    result.IconIndex = ci;
+            }
+            return result;
+        }
+    }
 
     public partial class GamePropertyChangeObjectItemDto
     {

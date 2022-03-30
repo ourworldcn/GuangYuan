@@ -3838,5 +3838,117 @@ namespace GY2021001WebApi.Models
         }
     }
     #endregion 商城相关
+
+    #region 聊天及相关
+    [DataContract]
+    public partial class ChatMessageDto
+    {
+        public ChatMessageDto()
+        {
+        }
+
+        /// <summary>
+        /// 频道Id。
+        /// </summary>
+        [DataMember]
+        public string ChannelId { get; set; }
+
+        /// <summary>
+        /// 发送者的Id。
+        /// </summary>
+        [DataMember]
+        public string Sender { get; set; }
+
+        /// <summary>
+        /// 发送的内容。当前版本仅支持字符串。
+        /// </summary>
+        [DataMember]
+        public string Message { get; set; }
+
+        /// <summary>
+        /// 发送该消息的时间点,使用utc时间。这也是一个不严格非唯一的时间戳，<see cref="DateTime.Ticks"/>可以被认为是一个时间戳。
+        /// </summary>
+        [DataMember]
+        public DateTime SendDateTimeUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 用户昵称。
+        /// </summary>
+        [DataMember]
+        public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 用户头像号。
+        /// </summary>
+        [DataMember]
+        public int IconIndex { get; set; }
+    }
+
+    /// <summary>
+    /// 发送消息的数据封装类。
+    /// </summary>
+    [DataContract]
+    public class SendMessageDto
+    {
+        /// <summary>
+        /// 频道Id。
+        /// 频道Id分为几种："70EEA684-4E1F-4C1E-B987-765BE2845538"是世界频道。
+        /// "5E36F81C-00BD-446D-B781-E48F2B088591"是当前所处工会频道。
+        /// "角色Id,对方角色Id"是私聊频道，如"0D1F3AA5-0A11-4C69-9DCF-B15992B0D01C,91B7295C-0B3B-4563-A14A-4BF739001F94"，
+        /// 表示0D1F3AA5-0A11-4C69-9DCF-B15992B0D01C,91B7295C-0B3B-4563-A14A-4BF739001F94聊个角色的私聊频道，注意，这两个id会自动排序，永远都是升序排序。
+        /// </summary>
+        [DataMember]
+        public string ChannelId { get; set; }
+
+        /// <summary>
+        /// 发送的内容。当前版本仅支持字符串。
+        /// </summary>
+        [DataMember]
+        public string Message { get; set; }
+
+    }
+
+    /// <summary>
+    /// 获取消息接口的参数封装类。
+    /// </summary>
+    [DataContract]
+    public class GetMessagesParamsDto : TokenDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 获取消息接口的返回数据封装类
+    /// </summary>
+    [DataContract]
+    public class GetMessagesReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 获取的消息。如果没有，这个结合可能为空。
+        /// </summary>
+        [DataMember]
+        public List<ChatMessageDto> Messages { get; set; } = new List<ChatMessageDto>();
+    }
+
+    /// <summary>
+    /// 发送消息接口的参数封装类。
+    /// </summary>
+    [DataContract]
+    public class SendMessagesParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 发送的消息。
+        /// </summary>
+        [DataMember]
+        public List<SendMessageDto> Messages { get; set; } = new List<SendMessageDto>();
+    }
+
+    /// <summary>
+    /// 发送消息接口的返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class SendMessagesReturnDto : ReturnDtoBase
+    {
+    }
+    #endregion 聊天及相关
 }
 #pragma warning restore IDE0074 // 使用复合分配

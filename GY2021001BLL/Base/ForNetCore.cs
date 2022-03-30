@@ -246,6 +246,7 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
             var tt = DisposeHelper.Create(c => { }, this);
+            using var ss = DisposerWrapper.Create(() => { var str = ToString(); });
         }
 
 

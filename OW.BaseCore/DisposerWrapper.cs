@@ -6,12 +6,10 @@ using System.Runtime.CompilerServices;
 namespace System
 {
     /// <summary>
-    /// 调用<see cref="IDisposable.Dispose"/>。
-    /// 应配合 C#8.0 using语法使用。
+    /// 帮助调用清理代码帮助器。应配合 C#8.0 using语法使用。
     /// 对象本身就支持对象池，不要将此对象放在其他池中。
-    /// 若无特别说明，本类非私有成员支持多线程并发调用。
     /// </summary>
-    [DebuggerNonUserCode()]
+    //[DebuggerNonUserCode()]
     public sealed class DisposerWrapper : IDisposable
     {
         /// <summary>
@@ -114,13 +112,29 @@ namespace System
 
     public readonly ref struct DisposeHelper
     {
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TState"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DisposeHelper Create<TState>(Action<TState> action, TState state)
         {
             var result = new DisposeHelper(c => action((TState)c), state);
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="lockFunc"></param>
+        /// <param name="unlockFunc"></param>
+        /// <param name="obj"></param>
+        /// <param name="timout"></param>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DisposeHelper Create<T>(Func<T, TimeSpan, bool> lockFunc, Action<T> unlockFunc, T obj, TimeSpan timout)
         {

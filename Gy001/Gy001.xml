@@ -400,6 +400,36 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="P:GY2021001WebApi.Models.ChatMessageDto.ChannelId">
+            <summary>
+            频道Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChatMessageDto.Sender">
+            <summary>
+            发送者的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChatMessageDto.Message">
+            <summary>
+            发送的内容。当前版本仅支持字符串。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChatMessageDto.SendDateTimeUtc">
+            <summary>
+            发送该消息的时间点,使用utc时间。这也是一个不严格非唯一的时间戳，<see cref="P:System.DateTime.Ticks"/>可以被认为是一个时间戳。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChatMessageDto.DisplayName">
+            <summary>
+            用户昵称。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChatMessageDto.IconIndex">
+            <summary>
+            用户头像号。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GamePropertyChangeObjectItemDto">
             <summary>
             用于精确描述变化数据的类。
@@ -3025,6 +3055,55 @@
             购买商品的返回值封装类。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.SendMessageDto">
+            <summary>
+            发送消息的数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SendMessageDto.ChannelId">
+            <summary>
+            频道Id。
+            频道Id分为几种："70EEA684-4E1F-4C1E-B987-765BE2845538"是世界频道。
+            "5E36F81C-00BD-446D-B781-E48F2B088591"是当前所处工会频道。
+            "角色Id,对方角色Id"是私聊频道，如"0D1F3AA5-0A11-4C69-9DCF-B15992B0D01C,91B7295C-0B3B-4563-A14A-4BF739001F94"，
+            表示0D1F3AA5-0A11-4C69-9DCF-B15992B0D01C,91B7295C-0B3B-4563-A14A-4BF739001F94聊个角色的私聊频道，注意，这两个id会自动排序，永远都是升序排序。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SendMessageDto.Message">
+            <summary>
+            发送的内容。当前版本仅支持字符串。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetMessagesParamsDto">
+            <summary>
+            获取消息接口的参数封装类。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetMessagesReturnDto">
+            <summary>
+            获取消息接口的返回数据封装类
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetMessagesReturnDto.Messages">
+            <summary>
+            获取的消息。如果没有，这个结合可能为空。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SendMessagesParamsDto">
+            <summary>
+            发送消息接口的参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SendMessagesParamsDto.Messages">
+            <summary>
+            发送的消息。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.SendMessagesReturnDto">
+            <summary>
+            发送消息接口的返回值封装类。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -3044,6 +3123,32 @@
             <returns>物品变化数据。</returns>
             <response code="401">令牌错误。</response>
             <response code="400">参数错误。</response>
+        </member>
+        <member name="T:Gy001.Controllers.ChatController">
+            <summary>
+            聊天功能控制器。
+            </summary>
+        </member>
+        <member name="M:Gy001.Controllers.ChatController.GetMessages(GY2021001WebApi.Models.GetMessagesParamsDto)">
+            <summary>
+            获取当前用户的暂存消息。此接口建议1秒到数秒之间调用一次。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.ChatController.SendMessages(GY2021001WebApi.Models.SendMessagesParamsDto)">
+            <summary>
+            发送消息的接口。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.ChatController.NormChannelId(System.String)">
+            <summary>
+            规范化频道id。
+            </summary>
+            <param name="channelId"></param>
+            <returns></returns>
         </member>
         <member name="T:Gy001.Controllers.GameBaseController">
             <summary>

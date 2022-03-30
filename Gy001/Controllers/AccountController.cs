@@ -74,7 +74,7 @@ namespace GY2021001WebApi.Controllers
             var result = new LoginReturnDto()
             {
                 WorldServiceHost = worldServiceHost,
-                ChartServiceHost= chartServiceHost,
+                ChartServiceHost = chartServiceHost,
             };
             if (null != gu)
             {
@@ -142,6 +142,7 @@ namespace GY2021001WebApi.Controllers
                 return base.BadRequest(err.Message);
             }
         }
+
     }
 
 }
