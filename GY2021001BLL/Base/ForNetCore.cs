@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -245,8 +246,6 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            var tt = DisposeHelper.Create(c => { }, this);
-            using var ss = DisposerWrapper.Create(() => { var str = ToString(); });
         }
 
 

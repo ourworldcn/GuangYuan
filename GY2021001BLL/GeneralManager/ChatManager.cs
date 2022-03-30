@@ -241,22 +241,24 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         public bool GetOrCreateAndLockChannel(string channelId, TimeSpan timeout, Func<ChatChannel> creator, out ChatChannel channel)
         {
             channel = GetOrCreateChannel(channelId, creator);
-            DateTime now = DateTime.UtcNow;
-            if (!Monitor.TryEnter(channel, timeout))  //若超时
-                return false;
-            if (channel.Disposed)    //若并发争用导致锁定了无效对象
-            {
-                do
-                {
-                    Monitor.Exit(channel);  //释放旧对象
-                    channel = GetOrCreateChannel(channelId, creator);   //再次获取新对象
-                    if (Lock(channel, OwHelper.ComputeTimeout(now, timeout))) //若锁定成功
-                        break;
-                    if (OwHelper.ComputeTimeout(now, timeout) == TimeSpan.Zero)
-                        return false;
-                } while (true);
-            }
-            return true;
+            return Lock(channel, timeout);
+            //DateTime now = DateTime.UtcNow;
+            //if (!Monitor.TryEnter(channel, timeout))  //若超时
+            //    return false;
+
+            //if (channel.Disposed)    //若并发争用导致锁定了无效对象
+            //{
+            //    do
+            //    {
+            //        Monitor.Exit(channel);  //释放旧对象
+            //        channel = GetOrCreateChannel(channelId, creator);   //再次获取新对象
+            //        if (Lock(channel, OwHelper.ComputeTimeout(now, timeout))) //若锁定成功
+            //            break;
+            //        if (OwHelper.ComputeTimeout(now, timeout) == TimeSpan.Zero)
+            //            return false;
+            //    } while (true);
+            //}
+            //return !channel.Disposed;
         }
 
         /// <summary>

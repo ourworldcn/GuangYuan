@@ -904,6 +904,7 @@ namespace GuangYuan.GY001.BLL
                 });
                 gu.Timeout = Options.LogoutTimeout; //置超时时间
                 gu.NodeNum = World.NodeNumber;
+                World.ChatManager.JoinOrCreateChannel(gu.CurrentChar.Id.ToString(),"70EEA684-4E1F-4C1E-B987-765BE2845538", World.ChatManager.Options.LockTimeout, null);
                 NotifyChange(gu);
             }
             if (null != actionRecords && actionRecords.Count > 0)
