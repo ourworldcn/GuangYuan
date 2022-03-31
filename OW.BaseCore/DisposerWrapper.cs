@@ -155,7 +155,7 @@ namespace System
         /// <summary>
         /// 判断此结构是不是一个空结构。
         /// </summary>
-        public bool IsEmpty { get => _Action is null; }
+        public readonly bool IsEmpty { get => _Action is null; }
 
         /// <summary>
         /// 处置函数。

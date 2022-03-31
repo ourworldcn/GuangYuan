@@ -218,29 +218,15 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         }
 
         /// <summary>
-        /// 获取或创建一个频道。
-        /// </summary>
-        /// <param name="channelId"></param>
-        /// <param name="creator">创建频道的委托，若省略或为空，则按默认值创建频道。</param>
-        public ChatChannel GetOrCreateChannel(string channelId, Func<ChatChannel> creator = null)
-        {
-            if (creator is null)
-                return Id2Channel.GetOrAdd(channelId, c => new ChatChannel() { Timeout = Options.ChannelTimeout });
-            else
-                return Id2Channel.GetOrAdd(channelId, c => creator());
-        }
-
-        /// <summary>
         /// 锁定指定id的频道对象，如果没有则首先创建。
         /// </summary>
         /// <param name="channelId"></param>
         /// <param name="timeout"></param>
-        /// <param name="creator">创建频道的委托，若为空，则按默认值创建频道。</param>
         /// <param name="channel"></param>
         /// <returns>false无法锁定，true成功锁定对象，此后需要使用<see cref="Unlock(ChatChannel)"/>解锁。</returns>
-        public bool GetOrCreateAndLockChannel(string channelId, TimeSpan timeout, Func<ChatChannel> creator, out ChatChannel channel)
+        public bool GetOrCreateAndLockChannel(string channelId, TimeSpan timeout, out ChatChannel channel)
         {
-            channel = GetOrCreateChannel(channelId, creator);
+            channel = Id2Channel.GetOrAdd(channelId, c => new ChatChannel() { Timeout = Options.ChannelTimeout });
             return Lock(channel, timeout);
             //DateTime now = DateTime.UtcNow;
             //if (!Monitor.TryEnter(channel, timeout))  //若超时
@@ -290,19 +276,19 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <returns>true成功加入频道，否则返回false。</returns>
         public bool JoinOrCreateChannel(string charId, string channelId, TimeSpan timeout, Func<ChatChannel> creator)
         {
-            if (!GetOrCreateAndLockUser(charId, timeout, out var info))    //若无法创建用户
+            if (!GetOrCreateAndLockUser(charId, timeout, out var user))    //若无法创建用户
                 return false;
-            using var dh1 = new DisposeHelper(c => Monitor.Exit(c), info);
+            using var dhUser = new DisposeHelper(Monitor.Exit, user);
 
-            if (!GetOrCreateAndLockChannel(channelId, timeout, null, out var channel))   //若无法创建频道
+            if (!GetOrCreateAndLockChannel(channelId, timeout, out var channel))   //若无法创建频道
                 return false;
-            using var dh = DisposeHelper.Create(c => Unlock(c), channel);
-            if (info.Channels.Contains(channel))
+            using var dhChannel = DisposeHelper.Create(Unlock, channel);
+            if (user.Channels.Contains(channel))
                 return false;
             else
             {
                 channel.UserIds.Add(charId);
-                info.Channels.Add(channel);
+                user.Channels.Add(channel);
             }
             return true;
         }
@@ -341,8 +327,8 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         {
             if (!GetOrCreateAndLockUser(datas.CharId, Options.LockTimeout, out var user))   //若无法锁定用户的列表
                 return;
-            using var dh1 = new DisposeHelper(Monitor.Exit, user);
-            if (!GetOrCreateAndLockChannel(datas.ChannelId, Options.LockTimeout, null, out var channel))  //若无法锁定频道。
+            using var dhUser = new DisposeHelper(Monitor.Exit, user);
+            if (!GetOrCreateAndLockChannel(datas.ChannelId, Options.LockTimeout, out var channel))  //若无法锁定频道。
                 return;
             using var dh = DisposeHelper.Create(Unlock, channel);
             if (!user.Channels.Contains(channel)) //若不在指定频道中
