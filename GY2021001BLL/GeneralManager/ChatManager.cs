@@ -75,10 +75,9 @@ namespace GuangYuan.GY001.BLL.GeneralManager
                         //    channel.Dispose();
                         //}
                         var now = DateTime.UtcNow;
-                        while (channel.Messages.TryPeek(out var msg))
+                        while (channel.Messages.TryPeek(out var msg) && now - msg.SendDateTimeUtc > Options.MessageTimeout)
                         {
-                            if (now - msg.SendDateTimeUtc > Options.MessageTimeout)
-                                channel.Messages.TryDequeue(out _);
+                            channel.Messages.TryDequeue(out _);
                         }
                         //var stamp = Id2Users.Join(channel.UserIds, c => c.Key, c => c, (l, r) => l.Value.Timestamp).Max();
                     }
@@ -226,7 +225,11 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <returns>false无法锁定，true成功锁定对象，此后需要使用<see cref="Unlock(ChatChannel)"/>解锁。</returns>
         public bool GetOrCreateAndLockChannel(string channelId, TimeSpan timeout, out ChatChannel channel)
         {
-            channel = Id2Channel.GetOrAdd(channelId, c => new ChatChannel() { Timeout = Options.ChannelTimeout });
+            channel = Id2Channel.GetOrAdd(channelId, c => new ChatChannel()
+            {
+                Id = channelId,
+                Timeout = Options.ChannelTimeout
+            });
             return Lock(channel, timeout);
             //DateTime now = DateTime.UtcNow;
             //if (!Monitor.TryEnter(channel, timeout))  //若超时
@@ -327,15 +330,16 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         {
             if (!GetOrCreateAndLockUser(datas.CharId, Options.LockTimeout, out var user))   //若无法锁定用户的列表
                 return;
-            using var dhUser = new DisposeHelper(Monitor.Exit, user);
+            using var dhUser = DisposeHelper.Create(Unlock, user);
             if (!GetOrCreateAndLockChannel(datas.ChannelId, Options.LockTimeout, out var channel))  //若无法锁定频道。
                 return;
-            using var dh = DisposeHelper.Create(Unlock, channel);
+            using var dhChannel = DisposeHelper.Create(Unlock, channel);
             if (!user.Channels.Contains(channel)) //若不在指定频道中
             {
                 JoinOrCreateChannel(datas.CharId, datas.ChannelId, Options.LockTimeout, null);
             }
             var message = ChatMessagePool.Shard.Get();
+            message.ChannelName = datas.ChannelId;
             message.Message = datas.Message;
             message.ChannelName = datas.ChannelId;
             message.Sender = datas.CharId;
@@ -653,6 +657,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
 
         /// <summary>
         /// 该频道最长不用的超时时间。超过此时间后将被清理。
+        /// 设置为<see cref="Timeout.InfiniteTimeSpan"/>导致不会清理。
         /// </summary>
         public TimeSpan Timeout { get; set; }
 

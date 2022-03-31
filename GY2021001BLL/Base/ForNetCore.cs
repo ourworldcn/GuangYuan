@@ -244,8 +244,40 @@ namespace GuangYuan.GY001.BLL
         [Conditional("DEBUG")]
         private void Test()
         {
-            var world = _Services.GetRequiredService<VWorld>();
-            using var db = world.CreateNewUserDbContext();
+            //var world = _Services.GetRequiredService<VWorld>();
+            //using var db = world.CreateNewUserDbContext();
+            //DateTime now = DateTime.UtcNow;
+            //var sw = Stopwatch.StartNew();
+            //for (int i = 0; i < 10000; i++)
+            //{
+            //    using var ss = t2();
+
+            //}
+            //sw.Stop();
+            //sw.Restart();
+            //for (int i = 0; i < 10000; i++)
+            //{
+            //    t1();
+
+            //}
+            //sw.Stop();
+        }
+
+        private DisposeHelper t2()
+        {
+            var d = DisposeHelper.Create(c =>
+           {
+               var str = c.ToString();
+           }, this);
+            return d;
+        }
+
+        private void t1()
+        {
+            using var d = DisposerWrapper.Create(() =>
+            {
+                var str = ToString();
+            });
         }
 
 

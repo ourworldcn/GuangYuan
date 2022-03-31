@@ -50,6 +50,7 @@ namespace System
 
         private static ObjectPool<DisposerWrapper> Pool { get; } = new DefaultObjectPool<DisposerWrapper>(new DisposerWrapperPolicy(), Math.Max(Environment.ProcessorCount * 4, 16));
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DisposerWrapper Create(Action action)
         {
             var result = Pool.Get();
@@ -172,7 +173,7 @@ namespace System
                 Debug.WriteLine(err.Message);
             }
         }
-
+        
     }
 
     public static class DisposeUtil
