@@ -281,7 +281,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         {
             if (!GetOrCreateAndLockUser(charId, timeout, out var user))    //若无法创建用户
                 return false;
-            using var dhUser = new DisposeHelper(Monitor.Exit, user);
+            using var dhUser = DisposeHelper.Create(Monitor.Exit, user);
 
             if (!GetOrCreateAndLockChannel(channelId, timeout, out var channel))   //若无法创建频道
                 return false;
@@ -305,17 +305,17 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <returns>true成功离开，false指定用户原本就不在频道中，或指定频道不存在。</returns>
         public bool LeaveChannel(string charId, string channelId, TimeSpan timeout)
         {
-            if (Id2Users.TryGetValue(charId, out var info))    //若指定用户不存在
+            if (Id2Users.TryGetValue(charId, out var user))    //若指定用户不存在
                 return false;
-            if (!GetOrCreateAndLockUser(charId, timeout, out info))    //若无法锁定用户
+            if (!GetOrCreateAndLockUser(charId, timeout, out user))    //若无法锁定用户
                 return false;
-            using var dh1 = new DisposeHelper(c => Monitor.Exit(c), info);
+            using var dh1 = DisposeHelper.Create(Monitor.Exit, user);
             if (!Id2Channel.TryGetValue(channelId, out var channel))    //若无此频道
                 return false;
             if (!Lock(channel, Options.LockTimeout))    //若锁定超时
                 return false;
             using var dh = DisposeHelper.Create(c => Unlock(c), channel);
-            return info.Channels.Remove(channel);
+            return user.Channels.Remove(channel);
         }
 
         #endregion 功能相关
@@ -358,11 +358,23 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             if (!GetOrCreateAndLockUser(datas.CharId, Options.LockTimeout, out var user))   //若无法锁定用户
                 return;
             using var dhUser = DisposeHelper.Create(Unlock, user);
-            foreach (var channel in user.Channels)
+            var coll = Id2Channel.Values.Where(c =>
+            {
+                if (string.IsNullOrWhiteSpace(c.Id))
+                    return false;
+                var ary = c.Id.Split(OwHelper.CommaArrayWithCN);
+                if (ary.Length != 2)
+                    return false;
+                var ids = ary.Select(c => OwConvert.ToGuid(c)).ToArray();
+                var id = OwConvert.ToGuid(charId);
+                return ids.Contains(id);
+            });   //私聊频道
+            foreach (var channel in user.Channels.Concat(coll).Distinct())  //频道信息
             {
                 if (!Lock(channel, Options.LockTimeout))
                     continue;
                 using var dh = DisposeHelper.Create(Unlock, channel);
+
                 datas.Messages.AddRange(channel.Messages.Where(c => c.SendDateTimeUtc > user.Timestamp && c.Sender != charId)); //在上次获取信息之后的信息
             }
             user.Timestamp = datas.NowUtc;

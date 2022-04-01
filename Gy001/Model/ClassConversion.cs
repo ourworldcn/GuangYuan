@@ -28,12 +28,15 @@ namespace GY2021001WebApi.Models
                 SendDateTimeUtc = obj.SendDateTimeUtc,
                 Sender = obj.Sender,
             };
-            var ary = obj.ExString.Split(OwHelper.CommaArrayWithCN);
-            if(ary.Length==2)
+            if (!string.IsNullOrEmpty(obj.ExString))
             {
-                result.DisplayName = ary[1];
-                if (int.TryParse(ary[0], out var ci))
-                    result.IconIndex = ci;
+                var ary = obj.ExString.Split(OwHelper.CommaArrayWithCN);
+                if (ary.Length == 2)
+                {
+                    result.DisplayName = ary[1];
+                    if (int.TryParse(ary[0], out var ci))
+                        result.IconIndex = ci;
+                }
             }
             return result;
         }

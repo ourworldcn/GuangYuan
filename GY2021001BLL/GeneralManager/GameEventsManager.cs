@@ -245,7 +245,11 @@ namespace OW.Game
 
             #region 设置导航关系
             if (propertyBag.TryGetGuid("ownerid", out var ownerid)) //若指定了拥有者id
+            {
+                var gc = World.CharManager.GetCharFromId(ownerid);
+                gc?.GameItems.Add(gameItem);
                 gameItem.OwnerId = ownerid;
+            }
             else if (propertyBag.TryGetValue("parent", out var parentObj) && parentObj is GameItem parent) //若指定了父容器
             {
                 gameItem.ParentId = parent.Id;

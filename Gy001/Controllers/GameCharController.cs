@@ -32,6 +32,7 @@ namespace GY2021001WebApi.Controllers
         /// <summary>
         /// 修改对象属性接口。可以用此接口修改家园相关物品的属性。
         /// 如果包含无效对象id -或和- 不可更改属性，则忽略，不会报错。
+        /// 特别地，对于家园地块旗帜可以更改其模板Id（tid)。
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>

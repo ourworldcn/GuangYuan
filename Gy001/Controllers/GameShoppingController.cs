@@ -22,7 +22,7 @@ namespace Gy001.Controllers
         }
 
         /// <summary>
-        /// 获取销售商品的列表。
+        /// 获取销售商品的列表。无效物品不会返回。
         /// </summary>
         /// <returns></returns>
         [HttpPut]

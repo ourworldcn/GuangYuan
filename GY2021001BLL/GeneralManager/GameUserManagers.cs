@@ -196,11 +196,6 @@ namespace GuangYuan.GY001.BLL
             return gameUser.LoginName;
         }
 
-        public bool LockLoginName(string uid, DbContext context)
-        {
-            return context.Set<GameUser>().Any(c => c.LoginName == uid);
-        }
-
         /// <summary>
         /// 设置好友搜索优先度。
         /// </summary>
@@ -904,11 +899,13 @@ namespace GuangYuan.GY001.BLL
                 });
                 gu.Timeout = Options.LogoutTimeout; //置超时时间
                 gu.NodeNum = World.NodeNumber;
-                World.ChatManager.JoinOrCreateChannel(gu.CurrentChar.Id.ToString(),"70EEA684-4E1F-4C1E-B987-765BE2845538", World.ChatManager.Options.LockTimeout, null);
+                World.ChatManager.JoinOrCreateChannel(gu.CurrentChar.Id.ToString(), "70EEA684-4E1F-4C1E-B987-765BE2845538", World.ChatManager.Options.LockTimeout, null);
                 NotifyChange(gu);
             }
             if (null != actionRecords && actionRecords.Count > 0)
                 World.AddToUserContext(actionRecords);
+            //补偿操作
+            gu.CurrentChar.Properties["DayCountOfLogin"] = (decimal)(DateTime.UtcNow - gu.CurrentChar.CreateUtc).TotalDays; //最后一次登录距离创建账号的天数
             return gu;
         }
 
@@ -1289,7 +1286,10 @@ namespace GuangYuan.GY001.BLL
             foreach (var tp in coll)
             {
                 foreach (var item in tp)
-                    tp.Key.Properties[item.Item1] = item.Item2;
+                    if (string.Compare(item.Item1, "tid", true) == 0 && tp.Key.GetTemplate().CatalogNumber == 42 && OwConvert.TryToGuid(item.Item2, out var id))   //若是水晶更改模板
+                        tp.Key.ChangeTemplate(World.ItemTemplateManager.GetTemplateFromeId(id));
+                    else
+                        tp.Key.Properties[item.Item1] = item.Item2;
             }
         }
 

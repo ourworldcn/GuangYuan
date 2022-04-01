@@ -32,9 +32,12 @@ namespace Gy001.Controllers
         {
             var result = new GetMessagesReturnDto();
             var token = OwConvert.ToGuid(model.Token);
+            var gu = World.CharManager.GetUserFromToken(token);
+            if (gu is null)
+                return Unauthorized("令牌无效");
             using var gContext = new GetMessageContext()
             {
-                CharId = World.CharManager.GetUserFromToken(token).CurrentChar.Id.ToString(),
+                CharId = gu.CurrentChar.Id.ToString(),
             };
             World.ChatManager.GetMessages(gContext);
             result.FillFrom(gContext);
@@ -112,9 +115,9 @@ namespace Gy001.Controllers
                            orderby id
                            select id;
                 if (coll.Count() == 2)
-                    return string.Join(',', coll.Select(c => c.ToString()));
+                    return string.Join(',', coll.Select(c => c.ToString().ToUpper()));
             }
-            return channelId;
+            return channelId.ToUpper();
         }
 
     }

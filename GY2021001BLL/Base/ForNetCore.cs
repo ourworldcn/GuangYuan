@@ -248,28 +248,8 @@ namespace GuangYuan.GY001.BLL
             //using var db = world.CreateNewUserDbContext();
             //DateTime now = DateTime.UtcNow;
             //var sw = Stopwatch.StartNew();
-            //for (int i = 0; i < 10000; i++)
-            //{
-            //    using var ss = t2();
-
-            //}
+            var str = Guid.NewGuid().ToString();
             //sw.Stop();
-            //sw.Restart();
-            //for (int i = 0; i < 10000; i++)
-            //{
-            //    t1();
-
-            //}
-            //sw.Stop();
-        }
-
-        private DisposeHelper t2()
-        {
-            var d = DisposeHelper.Create(c =>
-           {
-               var str = c.ToString();
-           }, this);
-            return d;
         }
 
         private void t1()

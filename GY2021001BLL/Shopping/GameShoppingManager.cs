@@ -64,11 +64,12 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 获取当前用户可见的商城表，不在有效时间范围内的不会返回。
+        /// 获取当前用户可见的商城表，无效物品不会返回。
         /// </summary>
         /// <param name="datas"></param>
         public void GetList(GetListDatas datas)
         {
+            //"DayCountOfLogin"
             using var dwUser = datas.LockUser();
             if (dwUser is null)
                 return;
