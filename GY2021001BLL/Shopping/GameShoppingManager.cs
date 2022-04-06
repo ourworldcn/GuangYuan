@@ -86,8 +86,9 @@ namespace GuangYuan.GY001.BLL
                 var tmp = World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.GroupNumber.HasValue && c.Genus == item.Key && c.GroupNumber == item.Value.GroupNumber && IsValid(c, datas.Now));
                 rg.AddRange(tmp);
             }
-            datas.ShoppingTemplates.AddRange(coll);
-            datas.ShoppingTemplates.AddRange(rg);
+            decimal tmpDec = 0;
+            datas.ShoppingTemplates.AddRange(coll.Where(c => AllowBuyWithConditional(datas.GameChar, c, datas.Now, ref tmpDec)));
+            datas.ShoppingTemplates.AddRange(rg.Where(c => AllowBuyWithConditional(datas.GameChar, c, datas.Now, ref tmpDec)));
             var rInfos = from tmp in view.RefreshInfos
                          let tm = Math.Clamp(tmp.Value.RefreshCount, 0, tmp.Value.CostOfGold.Length - 1)  //有效次数
                          select (tmp.Value.Genus, tmp.Value.CostOfGold[tm]);
@@ -95,6 +96,63 @@ namespace GuangYuan.GY001.BLL
             view.Save();
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
+
+        #region 计算允许购买的规则相关
+
+        /// <summary>
+        /// 获取在指定时间点是否可以购买。仅验证时效性。
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="now"></param>
+        /// <returns>true当前时间可以购买。false不可购买<see cref="VWorld.GetLastError"/>返回<see cref="ErrorCodes.ERROR_IMPLEMENTATION_LIMIT"/>。</returns>
+        protected bool AllowBuy(GameShoppingTemplate template, DateTime now)
+        {
+            var start = template.GetStart(now);
+            var end = template.GetEnd(now);
+            var result = now >= start && now <= end;
+            if (!result)
+                VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+            return result;
+        }
+
+        /// <summary>
+        /// 获取是否可以购买，仅计算属性中指出的条件。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="template"></param>
+        /// <param name="now"></param>
+        /// <param name="count"></param>
+        /// <returns>true允许购买，false不允许购买<see cref="VWorld.GetLastError"/>返回<see cref="ErrorCodes.ERROR_IMPLEMENTATION_LIMIT"/>。</returns>
+        protected bool AllowBuyWithConditional(GameChar gameChar, GameShoppingTemplate template, DateTime now, ref decimal count)
+        {
+            foreach (var kv in template.Properties.Where(c => c.Key.StartsWith("rqgtq")))
+            {
+                if (!(kv.Value is string str))
+                    continue;
+                var ary = str.Split(OwHelper.SemicolonArrayWithCN);
+                if (ary.Length != 2 || decimal.TryParse(ary[1], out var dec))
+                    continue;
+                if (!(gameChar.Properties.GetDecimalOrDefault(ary[0]) >= dec))
+                {
+                    VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        protected bool AllowBuy(GameChar gameChar, GameShoppingTemplate template, DateTime now, ref decimal count)
+        {
+            if (!AllowBuy(template, now))
+            {
+                count = default;
+                return false;
+            }
+            if (!AllowBuyWithConditional(gameChar, template, now, ref count))
+                return false;
+            return true;
+        }
+        #endregion 计算允许购买的规则相关
 
         /// <summary>
         /// 购买指定商品。
@@ -120,8 +178,9 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var view = new ShoppingSlotView(World, datas.GameChar, datas.Now);
+            var dec = 0m;
             //校验可购买性
-            if (!view.AllowBuy(template, datas.Count))    //若不可购买
+            if (!view.AllowBuy(template, datas.Count) || !AllowBuyWithConditional(datas.GameChar, template, datas.Now, ref dec))    //若不可购买
             {
                 datas.ErrorCode = VWorld.GetLastError();
                 return;
@@ -141,33 +200,41 @@ namespace GuangYuan.GY001.BLL
             }
             //修改数据
             //生成物品
+            var items = World.ItemManager.ToGameItems(template.Properties, "").ToList();
             var gim = World.ItemManager;
-            var gi = new GameItem() { Count = datas.Count };
-            World.EventsManager.GameItemCreated(gi, template.ItemTemplateId);
-            var container = World.EventsManager.GetDefaultContainer(gi, datas.GameChar);
+            if (template.ItemTemplateId.HasValue)
+            {
+                var gi = new GameItem() { Count = datas.Count };
+                World.EventsManager.GameItemCreated(gi, template.ItemTemplateId ?? Guid.Empty);
+                items.Add(gi);
+            }
+            //移动物品
             if (template.AutoUse)    //若自动使用
             {
-                gim.ForcedAdd(gi, datas.GameChar.GetShoppingSlot()); //暂存到商城槽
-                using var useItemsDatas = new UseItemsWorkDatas(World, datas.GameChar)
+                foreach (var gi in items)
                 {
-                    UserDbContext = datas.UserDbContext,
-                };
-                useItemsDatas.ItemId = gi.Id;
-                useItemsDatas.Count = (int)gi.Count.Value;
-                World.ItemManager.UseItems(useItemsDatas);
-                if (useItemsDatas.HasError)
-                {
-                    datas.HasError = useItemsDatas.HasError;
-                    datas.ErrorCode = useItemsDatas.ErrorCode;
-                    datas.ErrorMessage = useItemsDatas.ErrorMessage;
-                    return;
+                    gim.ForcedAdd(gi, datas.GameChar.GetShoppingSlot()); //暂存到商城槽
+                    using var useItemsDatas = new UseItemsWorkDatas(World, datas.GameChar)
+                    {
+                        UserDbContext = datas.UserDbContext,
+                    };
+                    useItemsDatas.ItemId = gi.Id;
+                    useItemsDatas.Count = (int)gi.Count.Value;
+                    World.ItemManager.UseItems(useItemsDatas);
+                    if (useItemsDatas.HasError)
+                    {
+                        datas.HasError = useItemsDatas.HasError;
+                        datas.ErrorCode = useItemsDatas.ErrorCode;
+                        datas.ErrorMessage = useItemsDatas.ErrorMessage;
+                        return;
+                    }
+                    datas.ChangeItems.AddRange(useItemsDatas.ChangeItems);
                 }
-                datas.ChangeItems.AddRange(useItemsDatas.ChangeItems);
             }
             else //若非自动使用物品
             {
                 List<GameItem> list = new List<GameItem>();
-                World.ItemManager.AddItem(gi, container, list, datas.ChangeItems);
+                World.ItemManager.AddItems(datas.GameChar, items, list, null);
                 if (list.Count > 0)    //若需要发送邮件
                 {
                     var mail = new GameMail();
@@ -197,7 +264,7 @@ namespace GuangYuan.GY001.BLL
             }
             else
             {
-                var tt = gitm.GetTemplateFromeId(template.ItemTemplateId);
+                var tt = gitm.GetTemplateFromeId(template.ItemTemplateId ?? Guid.Empty);
                 if (tt != null && tt.Properties.ContainsKey("bd"))    //若有基础模板钻石售价
                 {
                     result.Add((gameChar.GetZuanshi(), -Math.Abs(tt.Properties.GetDecimalOrDefault("bd")) * count));
@@ -209,7 +276,7 @@ namespace GuangYuan.GY001.BLL
             }
             else
             {
-                var tt = gitm.GetTemplateFromeId(template.ItemTemplateId);
+                var tt = gitm.GetTemplateFromeId(template.ItemTemplateId ?? Guid.Empty);
                 if (tt != null && tt.Properties.ContainsKey("bg"))    //若有基础模板金币售价
                 {
                     result.Add((gameChar.GetJinbi(), -Math.Abs(tt.Properties.GetDecimalOrDefault("bg")) * count));

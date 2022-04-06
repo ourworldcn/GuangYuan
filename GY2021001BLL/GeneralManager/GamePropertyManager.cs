@@ -240,7 +240,8 @@ namespace OW.Game
         /// 获取最大堆叠数，不可堆叠的返回1，没有限制则返回<see cref="decimal.MaxValue"/>。
         /// </summary>
         /// <param name="thing"></param>
-        /// <returns>不可堆叠的返回1，若没有限制（-1）则返回<see cref="decimal.MaxValue"/>。</returns>
+        /// <returns>不可堆叠的返回1，若没有限制（-1）则返回<see cref="decimal.MaxValue"/>。
+        /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual decimal GetStcOrOne(GameThingBase thing)
         {

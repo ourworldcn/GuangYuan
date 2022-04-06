@@ -100,7 +100,7 @@ namespace GY2021001WebApi.Models
                 Genus = template.Genus,
                 GroupNumber = template.GroupNumber,
                 Id = template.Id.ToBase64String(),
-                ItemTemplateId = template.ItemTemplateId.ToBase64String(),
+                ItemTemplateId = template.ItemTemplateId.HasValue ? template.ItemTemplateId.Value.ToBase64String() : null,
                 MaxCount = template.MaxCount,
                 StartDateTime = template.StartDateTime,
                 SellPeriod = template.SellPeriod,

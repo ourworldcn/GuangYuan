@@ -36,13 +36,13 @@ namespace GuangYuan.GY001.TemplateDb
         public DateTime EndDateTime { get; set; }
 
         /// <summary>
-        /// 周期。d天,w周,m月,y年。不填写则表示无周期(唯一周期)。
+        /// 周期。s秒,d天,w周,m月,y年。不填写则表示无周期(唯一周期)。
         /// </summary>
         [MaxLength(64)]
         public string SellPeriod { get; set; }
 
         /// <summary>
-        /// 周期开始后持续有效时间,d天,w周,m月,y年。仅在有效期内才出售，不填则是永久有效（在起止期间和周期的约束下）
+        /// 周期开始后持续有效时间,s秒,d天,w周,m月,y年。仅在有效期内才出售，不填则是永久有效（在起止期间和周期的约束下）
         /// </summary>
         [MaxLength(64)]
         public string ValidPeriod { get; set; }
@@ -189,7 +189,7 @@ namespace GuangYuan.GY001.TemplateDb
         /// <summary>
         /// 物品模板Id。
         /// </summary>
-        public Guid ItemTemplateId { get; set; }
+        public Guid? ItemTemplateId { get; set; }
 
         /// <summary>
         /// 是否自动使用。仅对可使用物品有效。

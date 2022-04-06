@@ -128,7 +128,8 @@ namespace OW.Game
                 result = World.ItemManager.IsExistsMounts(gameItem, gChar) ? gChar.GetShoulanBag() : gChar.GetZuojiBag();
                 return result;
             }
-
+            else if (null != result)    //若已经有指定的默认容器
+                return result;
             var template = World.ItemTemplateManager.GetTemplateFromeId(gameItem.TemplateId);
             switch (template.CatalogNumber)
             {
@@ -154,7 +155,10 @@ namespace OW.Game
                     break;
                 case 40:    //炮塔
                 case 41:    //陷阱
-                    result = gChar.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandBuildingBagTId);
+                case 42:    //水晶
+                case 43:    //木材仓库
+                case 31:   //抓捕网，主控室，玉米田，木材田
+                    result = gChar.GetHomelandBuildingBag();    //建筑背包
                     break;
                 case 99:    //货币
                     result = gChar.GetCurrencyBag();

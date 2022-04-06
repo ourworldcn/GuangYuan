@@ -6,7 +6,7 @@ using System.Linq;
 namespace System
 {
     /// <summary>
-    /// 支持一种文字化显示时间间隔及不确定间隔的类。
+    /// 支持一种文字化显示时间间隔及不确定间隔的类。支持：s秒，d天，w周，m月，y年
     /// 如1m，1y分别表示一月和一年，这些都是不确定时长度的间间隔，但在实际应用中却常有需求。
     /// </summary>
     public readonly struct TimeSpanEx
@@ -23,12 +23,21 @@ namespace System
             return true;
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="str"></param>
         public TimeSpanEx(string str)
         {
             Value = int.Parse(str[..^1]);
             Unit = str[^1];
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="unit"></param>
         public TimeSpanEx(int value, char unit)
         {
             Value = value;
@@ -41,7 +50,7 @@ namespace System
         public readonly int Value;
 
         /// <summary>
-        /// 表示时间长度单位，支持，s秒，d天，w周，m月，y年
+        /// 表示时间长度单位，支持：s秒，d天，w周，m月，y年
         /// </summary>
         public readonly char Unit;
 

@@ -228,7 +228,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 在指定时间是否可以购买指定数量的商品。不购买资源是否足够问题。
+        /// 在指定时间是否可以购买指定数量的商品。不计算购买资源是否足够问题。
         /// </summary>
         /// <param name="template"></param>
         /// <param name="count">购买数量，可以是0，表示不考虑数量因素。</param>
@@ -256,6 +256,7 @@ namespace GuangYuan.GY001.BLL
                 result = -1 == template.MaxCount || template.MaxCount >= count + info.BuyCount;
             if (!result)
                 VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+            
             return result;
         }
 

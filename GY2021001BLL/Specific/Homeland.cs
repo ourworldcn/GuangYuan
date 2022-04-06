@@ -142,7 +142,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <returns>没有找到则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetMainbase(this GameChar gameChar) =>
-            gameChar.GetHomeland()?.Children.FirstOrDefault(c => c.GetDikuaiIndex() == 0);
+            gameChar.GetHomeland()?.GetAllChildren()?.FirstOrDefault(c => c.GetDikuaiIndex() == 0);
 
         /// <summary>
         /// 获取指定用户的家园中主控室对象。
@@ -169,6 +169,14 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <returns>如果没有找到，可能返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetFenggeBag(this GameChar gameChar) => gameChar.GetHomeland()?.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId);
+
+        /// <summary>
+        /// 获取建筑背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetHomelandBuildingBag(this GameChar gameChar) => gameChar.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandBuildingBagTId);
 
         /// <summary>
         /// 获取所有主基地模板。
@@ -250,7 +258,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="template"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetDikuaiIndex(this GameItemTemplate template) => template.CatalogNumber / 100 == 1 ? template.Catalog3Number : -1;
+        public static int GetDikuaiIndex(this GameItemTemplate template) => template.CatalogNumber == 101 ? template.Sequence : -1;
 
         /// <summary>
         /// 返回用户当前有多少地块，包含主基地。

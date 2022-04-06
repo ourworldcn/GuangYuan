@@ -905,7 +905,7 @@ namespace GuangYuan.GY001.BLL
             if (null != actionRecords && actionRecords.Count > 0)
                 World.AddToUserContext(actionRecords);
             //补偿操作
-            gu.CurrentChar.Properties["DayCountOfLogin"] = (decimal)(DateTime.UtcNow - gu.CurrentChar.CreateUtc).TotalDays; //最后一次登录距离创建账号的天数
+            gu.CurrentChar.Properties["DayCountOfLogin"] = (decimal)Math.Round((DateTime.UtcNow - gu.CurrentChar.CreateUtc).TotalDays); //最后一次登录距离创建账号的天数
             return gu;
         }
 

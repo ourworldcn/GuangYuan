@@ -1174,6 +1174,23 @@ namespace OW.Game.Item
         #endregion 基本操作
 
         /// <summary>
+        /// 将物品全部加入到指定角色中。容器使用<see cref="GameEventsManager.GetDefaultContainer(GameItem, GameChar)"/>获取。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="gItems"></param>
+        /// <param name="remainder"></param>
+        /// <param name="changes"></param>
+        public virtual void AddItems(GameChar gameChar, IEnumerable<GameItem> gItems, [AllowNull] ICollection<GameItem> remainder = null,
+            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            foreach (var item in gItems)
+            {
+                var container = World.EventsManager.GetDefaultContainer(item, gameChar);
+                MoveItem(item, item.Count.Value, container, remainder, changes);
+            }
+        }
+
+        /// <summary>
         /// 尽可能将指定物品放入容器，如果有剩余则放入<paramref name="remainder"/>中。
         /// </summary>
         /// <param name="gItem"></param>
@@ -1278,7 +1295,7 @@ namespace OW.Game.Item
                 else
                 {
                     OwHelper.SafeCopy(bpDatas.Remainder, remainder);
-                    OwHelper.SafeCopy(bpDatas.Changes.Select(c=>c.Clone() as GamePropertyChangeItem<object>), changes);
+                    OwHelper.SafeCopy(bpDatas.Changes.Select(c => c.Clone() as GamePropertyChangeItem<object>), changes);
                     result = true;
                 }
             }
@@ -1514,6 +1531,10 @@ namespace OW.Game.Item
             List<GameItem> result = new List<GameItem>();
             foreach (var item in dics)
             {
+                if (!item.ContainsKey("tid") && !item.ContainsKey("tt"))    //若没有模板数据
+                    continue;
+                if (!item.ContainsKey("tt") && item.GetGuidOrDefault("tid") == Guid.Empty)
+                    continue;
                 var gi = new GameItem();
                 eventMng.GameItemCreated(gi, item);
                 result.Add(gi);
