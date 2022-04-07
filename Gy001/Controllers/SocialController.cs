@@ -571,8 +571,7 @@ namespace Gy001.Controllers
             };
             if (!result.HasError)
             {
-                result.CurrentFengge = (HomelandFenggeDto)datas.CurrentFengge;
-                result.Lands.AddRange(datas.Lands.Select(c => (GameItemDto)c));
+                result.Homeland= datas.Homeland;
                 result.Mounts.AddRange(datas.Mounts.Select(c => (GameItemDto)c));
                 //result.Mounts.Where(c => c.Properties.ContainsKey("for10")).ToList().ForEach(c => c.Properties["for10"] = 4);   //强行加入阵容信息。
             }

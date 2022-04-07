@@ -216,6 +216,15 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+        #region 唯一名称相关
+
+        //public void GetUniqueName(out string loginName, out string displayName)
+        //{
+
+        //}
+
+        #endregion 唯一名称相关
+
         #region 字段
 
         /// <summary>

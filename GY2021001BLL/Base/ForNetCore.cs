@@ -248,7 +248,9 @@ namespace GuangYuan.GY001.BLL
             //using var db = world.CreateNewUserDbContext();
             //DateTime now = DateTime.UtcNow;
             //var sw = Stopwatch.StartNew();
-            var str = Guid.NewGuid().ToString();
+            //var obj = new EnDisplayNameGenerator(@"D:\Users\光元\source\repos\GY2021001\GY2021001BLL\bin\Debug\netcoreapp3.1\数据表\英文名.txt",
+            //    @"D:\Users\光元\source\repos\GY2021001\GY2021001BLL\bin\Debug\netcoreapp3.1\数据表\英文姓.txt");
+            //var str = obj.GetUniqueString();
             //sw.Stop();
         }
 

@@ -1497,39 +1497,30 @@ namespace GuangYuan.GY001.BLL
             {
                 var objChar = datas.OtherChar;
                 var mountsBag = objChar.GetZuojiBag();
-                //获取风格
-                var gitm = World.ItemTemplateManager;
-                var fengges = objChar.GetFengges();
-                if (fengges.Count == 0) //若未初始化
-                    objChar.MergeFangans(fengges, gitm);
-                var fengge = fengges.FirstOrDefault(c => c.Fangans.Any(c1 => c1.IsActived));
-                if (fengge is null) //若没有指定激活风格
-                    fengge = fengges.First();
-                datas.CurrentFengge = fengge;
-                //获取家园地块数据
-                var hl = objChar.GetHomeland();
-                var dikuais = hl.GetAllChildren().Where(c => gitm.GetTemplateFromeId(c.TemplateId).CatalogNumber / 100 == 1);  //获取地块
-                datas.Lands.AddRange(dikuais);
+                datas.Homeland = datas.OtherChar.GetHomeland();
                 //获取阵容数据
-                var lineupNumbers = datas.CurrentFengge.Fangans.Select(c => 10000 + datas.CurrentFengge.Number * 10 + c.OrderNumber); //阵容号集合
-                var collMounts = gim.GetLineup(objChar, 10);
-                foreach (var item in lineupNumbers)
+                var lineupNumbers = datas.OtherChar.GetZuojiBag().Children.Where(c =>
                 {
-                    collMounts = collMounts.Concat(gim.GetLineup(objChar, item));
-                }
-                collMounts = collMounts.Distinct();
+                    foreach (var item in c.Properties)
+                    {
+                        if (item.Key.StartsWith("for") && int.TryParse(item.Key[3..], out var number) && number >= 100000 && number < 200000)
+                            return true;
+                    }
+                    return false;
+                }); //可能上阵的坐骑集合
+                datas.Mounts.AddRange(lineupNumbers);
                 //增加签约坐骑数据
                 var sr = datas.UserDbContext.Set<GameSocialRelationship>().Where(c => c.Id == datas.GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatWithMounts).AsEnumerable().
                      FirstOrDefault(c => c.Properties.GetGuidOrDefault("charid") == datas.OtherCharId); //获取签约关系
-                IEnumerable<GameItem> resultColl;
-                if (null != sr && !collMounts.Any(c => c.Id == sr.Id2))    //若有签约坐骑且需要加入集合
-                {
-                    var mounts = datas.UserDbContext.Set<GameItem>().Find(sr.Id2);
-                    resultColl = collMounts.Prepend(mounts);
-                }
-                else
-                    resultColl = collMounts;
-                datas.Mounts.AddRange(resultColl);
+                //IEnumerable<GameItem> resultColl;
+                //if (null != sr && !collMounts.Any(c => c.Id == sr.Id2))    //若有签约坐骑且需要加入集合
+                //{
+                //    var mounts = datas.UserDbContext.Set<GameItem>().Find(sr.Id2);
+                //    resultColl = collMounts.Prepend(mounts);
+                //}
+                //else
+                //    resultColl = collMounts;
+                //datas.Mounts.AddRange(resultColl);
             }
             catch (Exception)
             {
@@ -1802,13 +1793,6 @@ namespace GuangYuan.GY001.BLL
         {
         }
 
-        private HomelandFengge _CurrentFengge;
-
-        /// <summary>
-        /// 当前风格数据，下面仅含激活的方案数据。
-        /// </summary>
-        public HomelandFengge CurrentFengge { get => _CurrentFengge; set => _CurrentFengge = value; }
-
         private List<GameItem> _Mounts;
 
         /// <summary>
@@ -1816,12 +1800,10 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public List<GameItem> Mounts => _Mounts ??= new List<GameItem>();
 
-        private List<GameItem> _Lands;
-
         /// <summary>
         /// 地块信息。
         /// </summary>
-        public List<GameItem> Lands => _Lands ??= new List<GameItem>();
+        public GameItem Homeland { get; set; }
 
         public DbContext Context { get; set; }
 
@@ -1833,8 +1815,11 @@ namespace GuangYuan.GY001.BLL
                 {
                     //Context?.DisposeAsync();
                 }
+
                 base.Dispose(disposing);
             }
+            Homeland = null;
+            _Mounts = null;
         }
     }
 

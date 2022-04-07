@@ -1496,19 +1496,27 @@ namespace OW.Game.Item
         public List<(Guid, int, decimal)> Settings { get; } = new List<(Guid, int, decimal)>();
     }
 
-    public class ActiveStyleDatas
+    public class ActiveStyleDatas : GameCharGameContext
     {
-        public ActiveStyleDatas()
+        public ActiveStyleDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
         }
 
-        public HomelandFangan Fangan { get; set; }
+        public ActiveStyleDatas([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
 
-        public string Message { get; set; }
-        public bool HasError { get; set; }
+        public ActiveStyleDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 获取或设置激活的风格方案号。
+        /// </summary>
+        public int ActiveNumber { get; set; }
 
         public List<ChangeItem> ItemChanges { get; set; }
-        public GameChar GameChar { get; set; }
+
     }
 
     /// <summary>

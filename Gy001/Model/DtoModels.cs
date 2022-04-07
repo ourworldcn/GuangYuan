@@ -3028,22 +3028,16 @@ namespace GY2021001WebApi.Models
         }
 
         /// <summary>
-        /// 当前风格数据，下面仅含激活的方案数据。
-        /// </summary>
-        [DataMember]
-        public HomelandFenggeDto CurrentFengge { get; set; }
-
-        /// <summary>
         /// 相关坐骑的数据。
         /// </summary>
         [DataMember]
         public List<GameItemDto> Mounts { get; set; } = new List<GameItemDto>();
 
         /// <summary>
-        /// 地块信息。
+        /// 家园信息。顶层是家园对象，下面挂着所有家园的子对象。
         /// </summary>
         [DataMember]
-        public List<GameItemDto> Lands { get; set; } = new List<GameItemDto>();
+        public GameItemDto Homeland { get; set; }
 
     }
 

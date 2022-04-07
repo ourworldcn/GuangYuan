@@ -6,6 +6,8 @@ using Gy001.Controllers;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OW.Extensions.Game.Store;
@@ -482,47 +484,49 @@ namespace GY2021001WebApi.Controllers
         /// <returns>建立账号后第一次返回的所有方案中，除了Id是有效的其他属性是空或空集合。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPut]
+        [Obsolete("接口已废弃。")]
         public ActionResult<GetHomelandFenggeReturnDto> GetHomelandStyle(GetHomelandFenggeParamsDto model)
         {
-            var result = new GetHomelandFenggeReturnDto() { };
-            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
-                return base.Unauthorized("令牌无效");
-            Guid[] filterTIds = new Guid[] { ProjectConstant.WorkerOfHomelandTId, ProjectConstant.HomelandPlanBagTId, ProjectConstant.HomelandBuildingBagTId };
-            string[] ary = null;
-            try
-            {
-                var gitm = world.ItemTemplateManager;
-                var gc = gu.CurrentChar;
-                var fengges = gc.GetFengges();
-                //if (fengges.Count == 0) //若未初始化
-                gc.MergeFangans(fengges, gitm);
-                result.Plans.AddRange(fengges.Select(c => (HomelandFenggeDto)c));
-                ary = gc.GetHomeland().GetAllChildren().Where(c => filterTIds.Contains(c.TemplateId)).Select(c => c.Id.ToBase64String()).ToArray(); //排除的容器Id集合
-            }
-            catch (Exception err)
-            {
-                result.DebugMessage = err.Message + err.StackTrace;
-                result.HasError = true;
-            }
-            finally
-            {
-                world.CharManager.Unlock(gu, true);
-            }
-            if (null != ary)
-                foreach (var fengge in result.Plans)
-                {
-                    for (int i = fengge.Fangans.Count - 1; i >= 0; i--)
-                    {
-                        var fangan = fengge.Fangans[i];
-                        for (int j = fangan.FanganItems.Count - 1; j >= 0; j--)
-                        {
-                            if (ary.Contains(fangan.FanganItems[j].ContainerId)) //若需要删除
-                                fangan.FanganItems.RemoveAt(j);
-                        }
-                    }
-                }
-            return result;
+            return NotFound();
+            //var result = new GetHomelandFenggeReturnDto() { };
+            //var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            //if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
+            //    return base.Unauthorized("令牌无效");
+            //Guid[] filterTIds = new Guid[] { ProjectConstant.WorkerOfHomelandTId, ProjectConstant.HomelandPlanBagTId, ProjectConstant.HomelandBuildingBagTId };
+            //string[] ary = null;
+            //try
+            //{
+            //    var gitm = world.ItemTemplateManager;
+            //    var gc = gu.CurrentChar;
+            //    var fengges = gc.GetFengges();
+            //    //if (fengges.Count == 0) //若未初始化
+            //    gc.MergeFangans(fengges, gitm);
+            //    result.Plans.AddRange(fengges.Select(c => (HomelandFenggeDto)c));
+            //    ary = gc.GetHomeland().GetAllChildren().Where(c => filterTIds.Contains(c.TemplateId)).Select(c => c.Id.ToBase64String()).ToArray(); //排除的容器Id集合
+            //}
+            //catch (Exception err)
+            //{
+            //    result.DebugMessage = err.Message + err.StackTrace;
+            //    result.HasError = true;
+            //}
+            //finally
+            //{
+            //    world.CharManager.Unlock(gu, true);
+            //}
+            //if (null != ary)
+            //    foreach (var fengge in result.Plans)
+            //    {
+            //        for (int i = fengge.Fangans.Count - 1; i >= 0; i--)
+            //        {
+            //            var fangan = fengge.Fangans[i];
+            //            for (int j = fangan.FanganItems.Count - 1; j >= 0; j--)
+            //            {
+            //                if (ary.Contains(fangan.FanganItems[j].ContainerId)) //若需要删除
+            //                    fangan.FanganItems.RemoveAt(j);
+            //            }
+            //        }
+            //    }
+            //return result;
         }
 
         /// <summary>
@@ -535,25 +539,7 @@ namespace GY2021001WebApi.Controllers
         [Obsolete("家园数据结构已经更改，请使用ModifyProperties方法代替此方法。")]
         public ActionResult<SetHomelandFenggeReturnDto> SetHomelandStyle(SetHomelandFenggeParamsDto model)
         {
-            var result = new SetHomelandFenggeReturnDto() { };
-            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            using var dwUser = world.CharManager.LockAndReturnDisposer(model.Token, out var gu);
-            if (dwUser is null)
-                return Unauthorized(VWorld.GetLastErrorMessage());
-            try
-            {
-                var gc = gu.CurrentChar;
-                var gitm = world.ItemTemplateManager;
-                var fengges = model.Fengges.Select(c => (HomelandFengge)c).ToArray();
-                world.CharManager.SetHomelandPlans(fengges, gc);
-            }
-            catch (Exception err)
-            {
-                result.HasError = true;
-                result.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                result.DebugMessage = err.Message;
-            }
-            return result;
+            return NotFound("请改用api/GameChar/ModifyProperties接口");
         }
 
         /// <summary>
@@ -562,43 +548,10 @@ namespace GY2021001WebApi.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
+        [Obsolete("家园数据结构已经更改，请使用ModifyProperties方法代替此方法。修改家园对象的 ActiveNumber 属性。")]
         public ActionResult<ApplyHomelandStyleReturnDto> ApplyHomelandStyle(ApplyHomelandStyleParamsDto model)
         {
-            var result = new ApplyHomelandStyleReturnDto();
-            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
-                return base.Unauthorized("令牌无效");
-            try
-            {
-                var gc = gu.CurrentChar;
-                var gitm = world.ItemTemplateManager;
-                var lstFengge = gc.GetFengges();
-                var id = OwConvert.ToGuid(model.FanganId);
-                var fangan = lstFengge.SelectMany(c => c.Fangans).FirstOrDefault(c => c.Id == id);
-                var gim = world.ItemManager;
-                var datas = new ActiveStyleDatas()
-                {
-                    Fangan = fangan,
-                    GameChar = gc,
-                };
-                fangan.IsActived = true;
-                gim.ActiveStyle(datas);
-                foreach (var item in lstFengge.SelectMany(c => c.Fangans))
-                    item.IsActived = false;
-                fangan.IsActived = true;
-                result.DebugMessage = datas.Message;
-                result.HasError = datas.HasError;
-            }
-            catch (Exception err)
-            {
-                result.DebugMessage = err.Message;
-                result.HasError = true;
-            }
-            finally
-            {
-                world.CharManager.Unlock(gu, true);
-            }
-            return result;
+            return NotFound("请改用api/GameChar/ModifyProperties接口");
         }
 
         /// <summary>

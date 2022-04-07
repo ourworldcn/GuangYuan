@@ -1,36 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
-  <Class Name="GuangYuan.GY001.BLL.Homeland.HomelandFangan">
-    <Position X="5.25" Y="2.25" Width="1.75" />
-    <TypeIdentifier>
-      <HashCode>AAACAAIIQAAAAAAAEABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Specific\Homeland.cs</FileName>
-    </TypeIdentifier>
-    <ShowAsCollectionAssociation>
-      <Property Name="FanganItems" />
-    </ShowAsCollectionAssociation>
-  </Class>
-  <Class Name="GuangYuan.GY001.BLL.Homeland.HomelandFanganItem">
-    <Position X="8.25" Y="1.75" Width="2" />
-    <TypeIdentifier>
-      <HashCode>AABAAAAAAAAAAAACAABAACAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Specific\Homeland.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="GuangYuan.GY001.BLL.Homeland.HomelandFengge">
-    <Position X="2" Y="2" Width="2.25" />
-    <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAEBBAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Specific\Homeland.cs</FileName>
-    </TypeIdentifier>
-    <ShowAsCollectionAssociation>
-      <Property Name="Fangans" />
-    </ShowAsCollectionAssociation>
-  </Class>
   <Class Name="GuangYuan.GY001.BLL.Homeland.HomelandExtensions" Collapsed="true">
     <Position X="11.25" Y="1.75" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAEIADgAAAAAAAAQEAgAAAAQAQAEAAAIAAIRBIAIACU=</HashCode>
+      <HashCode>QAEIADgAAAAAAAAQAAgCAAAAgQAEAAAIAAIRBIAIACE=</HashCode>
       <FileName>Specific\Homeland.cs</FileName>
     </TypeIdentifier>
   </Class>
