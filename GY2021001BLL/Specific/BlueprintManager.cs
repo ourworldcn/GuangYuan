@@ -248,7 +248,6 @@ namespace GuangYuan.GY001.BLL
         public BlueprintMethodAttribute(string blueprintId)
         {
 
-            // TODO: Implement code here
 
             _BlueprintId = Guid.Parse(blueprintId);
         }

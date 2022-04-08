@@ -23,7 +23,6 @@ namespace OW.Game.PropertyChange
             ObjectType = objectType;
             _PropertyName = propertyName;
 
-            // TODO: Implement code here
 
         }
 

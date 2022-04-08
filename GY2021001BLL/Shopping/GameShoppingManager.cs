@@ -69,10 +69,12 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void GetList(GetListDatas datas)
         {
+            //TODO: 增加多个页签号过滤功能
             //"DayCountOfLogin"
             using var dwUser = datas.LockUser();
             if (dwUser is null)
                 return;
+            
             IEnumerable<GameShoppingTemplate> coll; //不可刷新商品
             if (string.IsNullOrWhiteSpace(datas.Genus))
                 coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => IsValid(c, datas.Now) && c.GroupNumber is null);
@@ -834,11 +836,11 @@ namespace GuangYuan.GY001.BLL
             {
                 if (disposing)
                 {
-                    // TODO: 释放托管状态(托管对象)
+                    // 释放托管状态(托管对象)
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
                 _Templates = null;
                 _ResultItems = null;
                 base.Dispose(disposing);

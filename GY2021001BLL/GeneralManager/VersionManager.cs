@@ -22,7 +22,6 @@ namespace OW.Runtime
         {
             _VersionString = versionString;
 
-            // TODO: Implement code here
 
         }
 

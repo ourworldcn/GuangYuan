@@ -220,13 +220,13 @@ namespace GuangYuan.GY001.UserDb
             {
                 if (disposing)
                 {
-                    // TODO: 释放托管状态(托管对象)
+                    // 释放托管状态(托管对象)
                     CurrentChar?.Dispose();
                     DbContext?.Dispose();
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
                 CurrentChar = null;
                 _GameChars = null;
                 DbContext = null;
@@ -236,7 +236,7 @@ namespace GuangYuan.GY001.UserDb
 
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~GameUser()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中

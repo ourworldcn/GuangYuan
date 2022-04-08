@@ -253,11 +253,11 @@ namespace GuangYuan.GY001.UserDb
             {
                 if (disposing)
                 {
-                    // TODO: 释放托管状态(托管对象)
+                    // 释放托管状态(托管对象)
                     _GameItems?.ForEach(c => (c as IDisposable)?.Dispose());  //对独占拥有的子对象调用处置
                 }
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
                 _GameItems = null;
                 _ChangesItems = null;
                 GameUser = null;
@@ -274,7 +274,7 @@ namespace GuangYuan.GY001.UserDb
             return GameUser?.DbContext;
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~GameChar()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
@@ -365,16 +365,16 @@ namespace GuangYuan.GY001.UserDb
             {
                 if (disposing)
                 {
-                    // TODO: 释放托管状态(托管对象)
+                    // 释放托管状态(托管对象)
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
                 base.Dispose(disposing);
             }
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~GameCharBase()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中

@@ -476,19 +476,19 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             {
                 if (disposing)
                 {
-                    // TODO: 释放托管状态(托管对象)
+                    // 释放托管状态(托管对象)
                     _ReaderWriterLockSlim?.Dispose();
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
                 _Id2Channel = null;
                 _UserInfos = null;
                 disposedValue = true;
             }
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~ChatManager()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
@@ -606,16 +606,16 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             {
                 if (disposing)
                 {
-                    // TODO: 释放托管状态(托管对象)
+                    // 释放托管状态(托管对象)
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
                 _Disposed = true;
             }
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~ChatMessage()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
@@ -690,18 +690,18 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             {
                 if (disposing)
                 {
-                    // TODO: 释放托管状态(托管对象)
+                    // 释放托管状态(托管对象)
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
                 Messages = null;
                 UserIds = null;
                 _Disposed = true;
             }
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~ChatChannel()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
@@ -764,17 +764,17 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             {
                 if (disposing)
                 {
-                    // TODO: 释放托管状态(托管对象)
+                    // 释放托管状态(托管对象)
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
                 Channels = null;
                 _Disposed = true;
             }
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~ChatCharInfo()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
@@ -817,17 +817,17 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             {
                 if (disposing)
                 {
-                    // TODO: 释放托管状态(托管对象)
+                    // 释放托管状态(托管对象)
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
                 Messages = null;
                 disposedValue = true;
             }
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~GetMessageContext()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
@@ -879,16 +879,16 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             {
                 if (disposing)
                 {
-                    // TODO: 释放托管状态(托管对象)
+                    // 释放托管状态(托管对象)
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
                 disposedValue = true;
             }
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~SendMessageContext()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中

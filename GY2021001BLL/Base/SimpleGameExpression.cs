@@ -65,22 +65,28 @@ namespace OW.Game
             Expression<Func<SimpleDynamicPropertyBase, string, decimal>> dsd = (gc, key) => SS(gc, key);
         }
 
-        protected bool Invoke()
+        protected bool Invoke(GameChar gameChar)
         {
             object result = false;
             switch (Operator)
             {
                 case "gtq":
+                    result = gameChar.GetDecimalWithFcpOrDefault(Operand[0] as string) >= (decimal)Operand[1];
                     break;
                 case "gt":
+                    result = gameChar.GetDecimalWithFcpOrDefault(Operand[0] as string) > (decimal)Operand[1];
                     break;
                 case "ltq":
+                    result = gameChar.GetDecimalWithFcpOrDefault(Operand[0] as string) <= (decimal)Operand[1];
                     break;
                 case "lt":
+                    result = gameChar.GetDecimalWithFcpOrDefault(Operand[0] as string) < (decimal)Operand[1];
                     break;
                 case "eq":
+                    result = gameChar.GetDecimalWithFcpOrDefault(Operand[0] as string) == (decimal)Operand[1];
                     break;
                 case "neq":
+                    result = gameChar.GetDecimalWithFcpOrDefault(Operand[0] as string) != (decimal)Operand[1];
                     break;
                 default:
                     break;
