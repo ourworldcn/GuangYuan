@@ -244,14 +244,18 @@ namespace GuangYuan.GY001.BLL
         [Conditional("DEBUG")]
         private void Test()
         {
-            //var world = _Services.GetRequiredService<VWorld>();
-            //using var db = world.CreateNewUserDbContext();
-            //DateTime now = DateTime.UtcNow;
-            //var sw = Stopwatch.StartNew();
-            //var obj = new EnDisplayNameGenerator(@"D:\Users\光元\source\repos\GY2021001\GY2021001BLL\bin\Debug\netcoreapp3.1\数据表\英文名.txt",
-            //    @"D:\Users\光元\source\repos\GY2021001\GY2021001BLL\bin\Debug\netcoreapp3.1\数据表\英文姓.txt");
-            //var str = obj.GetUniqueString();
-            //sw.Stop();
+            var world = _Services.GetRequiredService<VWorld>();
+            using var db = world.CreateNewUserDbContext();
+            //var expr = new GameCharExpression();
+            //using var gc = db.Set<GameChar>().First();
+            var sw = Stopwatch.StartNew();
+            //for (int i = 0; i < 1000 * 1000; i++)
+            //{
+            //    var lv = GameCharExpression.SS(gc, "lv");
+            //    lv++;
+
+            //}
+            sw.Stop();
         }
 
         private void t1()

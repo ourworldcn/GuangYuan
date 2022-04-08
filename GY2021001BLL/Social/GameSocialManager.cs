@@ -1486,46 +1486,38 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public void GetHomelandData(GetHomelandDataDatas datas)
         {
-            using var disposer = datas.LockUser();
-            if (disposer is null)
+            using var dwUsers = datas.LockAll();
+            if (dwUsers is null)
                 return;
             var gc = datas.GameChar;
             var gim = World.ItemManager;
             var db = datas.Context;
-            using var dwUsers = datas.LockAll();
-            try
+            var objChar = datas.OtherChar;
+            var mountsBag = objChar.GetZuojiBag();
+            datas.Homeland = datas.OtherChar.GetHomeland();
+            //获取阵容数据
+            var lineupNumbers = datas.OtherChar.GetZuojiBag().Children.Where(c =>
             {
-                var objChar = datas.OtherChar;
-                var mountsBag = objChar.GetZuojiBag();
-                datas.Homeland = datas.OtherChar.GetHomeland();
-                //获取阵容数据
-                var lineupNumbers = datas.OtherChar.GetZuojiBag().Children.Where(c =>
+                foreach (var item in c.Properties)
                 {
-                    foreach (var item in c.Properties)
-                    {
-                        if (item.Key.StartsWith("for") && int.TryParse(item.Key[3..], out var number) && number >= 100000 && number < 200000)
-                            return true;
-                    }
-                    return false;
-                }); //可能上阵的坐骑集合
-                datas.Mounts.AddRange(lineupNumbers);
-                //增加签约坐骑数据
-                var sr = datas.UserDbContext.Set<GameSocialRelationship>().Where(c => c.Id == datas.GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatWithMounts).AsEnumerable().
-                     FirstOrDefault(c => c.Properties.GetGuidOrDefault("charid") == datas.OtherCharId); //获取签约关系
-                //IEnumerable<GameItem> resultColl;
-                //if (null != sr && !collMounts.Any(c => c.Id == sr.Id2))    //若有签约坐骑且需要加入集合
-                //{
-                //    var mounts = datas.UserDbContext.Set<GameItem>().Find(sr.Id2);
-                //    resultColl = collMounts.Prepend(mounts);
-                //}
-                //else
-                //    resultColl = collMounts;
-                //datas.Mounts.AddRange(resultColl);
-            }
-            catch (Exception)
-            {
-
-            }
+                    if (item.Key.StartsWith("for") && int.TryParse(item.Key[3..], out var number) && number >= 100000 && number < 200000)
+                        return true;
+                }
+                return false;
+            }); //可能上阵的坐骑集合
+            datas.Mounts.AddRange(lineupNumbers);
+            //增加签约坐骑数据
+            var sr = datas.UserDbContext.Set<GameSocialRelationship>().Where(c => c.Id == datas.GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatWithMounts).AsEnumerable().
+                 FirstOrDefault(c => c.Properties.GetGuidOrDefault("charid") == datas.OtherCharId); //获取签约关系
+            //IEnumerable<GameItem> resultColl;
+            //if (null != sr && !collMounts.Any(c => c.Id == sr.Id2))    //若有签约坐骑且需要加入集合
+            //{
+            //    var mounts = datas.UserDbContext.Set<GameItem>().Find(sr.Id2);
+            //    resultColl = collMounts.Prepend(mounts);
+            //}
+            //else
+            //    resultColl = collMounts;
+            //datas.Mounts.AddRange(resultColl);
         }
 
         public class GetPvpCharsWorkDatas : ChangeItemsWorkDatasBase
