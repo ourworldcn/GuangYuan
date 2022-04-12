@@ -13,7 +13,7 @@ using System.Linq;
 namespace GY2021001WebApi.Controllers
 {
     /// <summary>
-    /// 战斗相关的操作。这里的功能以后可能依据需求改为Udp。
+    /// 战斗相关的操作。
     /// </summary>
     [Route("api/[controller]/[action]")]
     [ApiController]

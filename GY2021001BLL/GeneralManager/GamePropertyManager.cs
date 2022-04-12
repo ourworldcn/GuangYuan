@@ -1,5 +1,6 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
 using OW.Game.PropertyChange;
 using System;
@@ -280,7 +281,7 @@ namespace OW.Game
         }
 
         /// <summary>
-        /// 获取孩子集合的接口。当前仅认识<see cref="GameItem"/>和<see cref="GameChar"/>两种派生类。
+        /// 获取孩子集合的接口。当前仅认识<see cref="GameItem"/>,<see cref="GameChar"/>,<see cref="GameGuild"/>派生类。
         /// </summary>
         /// <param name="thing"></param>
         /// <returns>不认识的类将导致返回null，而非抛出异常。</returns>
@@ -291,6 +292,8 @@ namespace OW.Game
                 return gItem.Children;
             else if (thing is GameChar gChar)
                 return gChar.GameItems;
+            else if (thing is GameGuild guild)
+                return guild.Items;
             else
                 return null;
         }

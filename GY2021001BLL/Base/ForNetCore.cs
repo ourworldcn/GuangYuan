@@ -3,12 +3,14 @@ using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Script;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Social;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -246,26 +248,11 @@ namespace GuangYuan.GY001.BLL
         {
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
-            //var expr = new GameCharExpression();
-            //using var gc = db.Set<GameChar>().First();
-            var sw = Stopwatch.StartNew();
-            //for (int i = 0; i < 1000 * 1000; i++)
-            //{
-            //    var lv = GameCharExpression.SS(gc, "lv");
-            //    lv++;
 
-            //}
+            var sw = Stopwatch.StartNew();
+            var exp = new Win32Exception(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
             sw.Stop();
         }
-
-        private void t1()
-        {
-            using var d = DisposerWrapper.Create(() =>
-            {
-                var str = ToString();
-            });
-        }
-
 
         /// <summary>
         /// 创建所有<see cref="VWorld"/>链接的游戏管理器以初始化。
@@ -397,6 +384,12 @@ namespace GuangYuan.GY001.BLL
             services.TryAddSingleton(c => ArrayPool<byte>.Create());    //字节数组池服务
 
             services.TryAddSingleton(c => StringBuilderPool.Shared);  //StringBuilder池服务
+
+            services.AddMemoryCache(c =>
+            {
+                c.SizeLimit = null;
+                c.ExpirationScanFrequency = TimeSpan.FromSeconds(10);
+            });
             #endregion 基础服务
 
             #region 游戏专用服务
@@ -463,6 +456,9 @@ namespace GuangYuan.GY001.BLL
 
             //加入属性变化管理器
             services.TryAddSingleton(c => new GamePropertyChangeManager(c, new GamePropertyChangeManagerOptions() { }));
+
+            //加入联盟/工会管理器
+            services.TryAddSingleton(c => new GameAllianceManager(c, new GameAllianceManagerOptions() { }));
             #endregion  游戏专用服务
 
             return services;

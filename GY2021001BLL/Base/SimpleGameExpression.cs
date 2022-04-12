@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.UserDb;
+using Microsoft.Extensions.Caching.Memory;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
@@ -51,7 +52,9 @@ namespace OW.Game
 
     public class BinaryGameExpression : GameExpression
     {
-
+        public BinaryGameExpression()
+        {
+        }
     }
 
     public class GameCharExpression : GameExpression

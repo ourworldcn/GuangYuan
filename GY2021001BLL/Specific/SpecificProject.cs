@@ -226,6 +226,11 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public static readonly Guid CharTemplateId = new Guid("{0CF39269-6301-470B-8527-07AF29C5EEEC}");
 
+        /// <summary>
+        /// 工会模板id。
+        /// </summary>
+        public static readonly Guid GuildTemplateId = new Guid("{122780B0-D3BB-435F-87FC-81655EA6AFE2}");
+
         public static readonly Guid LockAtkSlotId = new Guid("{82b18ec6-9190-4804-81b5-33ffa0351ade}");
         public static readonly Guid LockMhpSlotId = new Guid("{b0a92419-6daa-41c8-9074-957175fd9c3b}");
         public static readonly Guid LockQltSlotId = new Guid("{b10c4510-0c8e-40ad-87bb-6f5828273e29}");
@@ -300,6 +305,11 @@ namespace GuangYuan.GY001.BLL
         #endregion 家园及相关
 
         public const string ZhangLiName = "推关战力";
+
+        /// <summary>
+        /// 工会槽模板Id。
+        /// </summary>
+        public static readonly Guid GuildSlotId = new Guid("{FF32FC5E-F656-49B0-B28B-E46BA11D07D0}");
 
         #endregion 固定模板Id
 

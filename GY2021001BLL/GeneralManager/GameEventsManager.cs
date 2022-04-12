@@ -1,6 +1,7 @@
 ﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
@@ -275,6 +276,72 @@ namespace OW.Game
                 DictionaryPool<string, object>.Shared.Return(subpb);
             }
             #endregion 追加子对象
+        }
+
+        /// <summary>
+        /// 寻找指定模板Id的直接孩子对象，若没找到则创建一个。调用者要自行锁定对象以保证临界资源不会受损。
+        /// 特别地，对角色和行会对象而言，添加的对象会自动加入数据库，但没有调用保存。
+        /// </summary>
+        /// <param name="parent">父对象。</param>
+        /// <param name="childTId">直属孩子的模板Id。</param>
+        /// <returns>孩子对象。</returns>
+        public GameItem GetOrCreateChild(GameThingBase parent, Guid childTId)
+        {
+            var children = World.PropertyManager.GetChildrenCollection(parent);
+            var child = children.FirstOrDefault(c => c.TemplateId == childTId);
+            if (child != null)
+                return child;
+            //若没有指定TId的孩子
+            child = new GameItem();
+            var pg = DictionaryPool<string, object>.Shared.Get();
+            if (parent is GameItem)
+                pg["parent"] = parent;
+            else
+                pg["ownerid"] = parent.Id;
+            pg["tid"] = childTId;
+            children.Add(child);
+            GameItemCreated(child, pg);
+            if (!(parent is GameItem))
+                parent.GetDbContext().Add(child);
+            DictionaryPool<string, object>.Shared.Return(pg);
+            return child;
+        }
+
+        /// <summary>
+        /// 工会对象创建后调用。
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="propertyBag">DbContext可以指定使用的数据库上下文，如果没有指定则自动创建一个。
+        /// CreatorId=创建角色的Id。</param>
+        public virtual void GameGuildCreated(GameGuild guild, [NotNull] IReadOnlyDictionary<string, object> propertyBag)
+        {
+            GameThingCreated(guild, propertyBag);
+            //数据库上下文
+            var db = propertyBag.GetValueOrDefault("DbContext") as DbContext ?? World.CreateNewUserDbContext();
+            guild.RuntimeProperties["DbContext"] = db;
+            //创建者
+            if (propertyBag.TryGetGuid("CreatorId", out var creatorId))
+            {
+                using var dw = World.CharManager.LockOrLoad(creatorId, out var gu);
+                if (dw != null)
+                {
+                    var gc = gu.GameChars.FirstOrDefault(c => c.Id == creatorId);
+                    if (gc != null)
+                    {
+                        var guildSlot = GetOrCreateChild(gc, ProjectConstant.GuildSlotId);
+                        guildSlot.ExtraString = guild.IdString;
+                        guildSlot.ExtraDecimal = (int)GuildDivision.会长;
+                    }
+                }
+            }
+            //子对象
+            foreach (var tid in guild.GetTemplate().ChildrenTemplateIds)   //创建子对象
+            {
+                var gi = new GameItem();
+                guild.Items.Add(gi);
+                World.EventsManager.GameItemCreated(gi, World.ItemTemplateManager.GetTemplateFromeId(tid), null, guild.Id);
+                db.Add(gi);
+            }
         }
 
         /// <summary>

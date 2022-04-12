@@ -4,6 +4,7 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
+using GuangYuan.GY001.UserDb.Social;
 using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.PropertyChange;
@@ -113,6 +114,27 @@ namespace GY2021001WebApi.Models
             {
                 result.Properties[item.Key] = item.Value;
             }
+            return result;
+        }
+
+        public static implicit operator ShoppingItemDto(GameShoppingTemplate template)
+        {
+            var result = new ShoppingItemDto()
+            {
+                AutoUse = template.AutoUse,
+                Genus = template.Genus,
+                GroupNumber = template.GroupNumber,
+                Id = template.Id.ToBase64String(),
+                ItemTemplateId = template.ItemTemplateId.HasValue ? template.ItemTemplateId.Value.ToBase64String() : null,
+                MaxCount = template.MaxCount,
+                StartDateTime = template.StartDateTime,
+                SellPeriod = template.SellPeriod,
+                ValidPeriod = template.ValidPeriod,
+                Start = template.StartDateTime,
+                //End = template.,
+                //CountOfBuyed = view.GetCountOfBuyed(template),
+            };
+            OwHelper.Copy(template.Properties, result.Properties);
             return result;
         }
     }
@@ -580,4 +602,46 @@ namespace GY2021001WebApi.Models
         }
     }
     #endregion 商城相关
+
+    #region 行会相关
+
+    public partial class GameGuildDto
+    {
+        public static implicit operator GameGuildDto(GameGuild obj)
+        {
+            var result = new GameGuildDto()
+            {
+            };
+            result.Items.AddRange(obj.Items.Select(c => (GameItemDto)c));
+            return result;
+        }
+
+        /// <summary>
+        /// 填充成员信息。
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="dto"></param>
+        /// <param name="world">根服务。</param>
+        public static void FillMembers(GameGuild guild, GameGuildDto dto, VWorld world)
+        {
+            var db = guild.GetDbContext();
+            var coll = from slot in world.AllianceManager.GetAllMemberSlotQuery(guild.Id, db)
+                       join gc in db.Set<GameChar>()
+                       on slot.OwnerId equals gc.Id
+                       select new { gc, slot };
+            dto.MemberIds.AddRange(coll.AsEnumerable().Select(c =>
+            {
+                var r = new GuildMemberDto()
+                {
+                    DisplayName = c.gc.DisplayName,
+                    Id = c.gc.Base64IdString,
+                    Title = (int)c.slot.ExtraDecimal,
+                    Level = (int)c.gc.Properties.GetDecimalOrDefault("lv"),
+                };
+                return r;
+            }));
+        }
+    }
+
+    #endregion 行会相关
 }

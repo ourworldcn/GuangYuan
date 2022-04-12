@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.UserDb.Combat;
+using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Store;
@@ -69,6 +70,8 @@ namespace GuangYuan.GY001.UserDb
             //战利品
             modelBuilder.Entity<GameBooty>().HasIndex(c => new { c.ParentId, c.CharId }).IsUnique(false);
 
+            //行会
+            modelBuilder.Entity<GameGuild>().HasIndex(c => c.DisplayName).IsUnique(true);
 
             //调用基类方法。
             base.OnModelCreating(modelBuilder);
@@ -128,6 +131,11 @@ namespace GuangYuan.GY001.UserDb
         /// 战利品记录。
         /// </summary>
         public DbSet<GameBooty> GameBooty { get; set; }
+
+        /// <summary>
+        /// 行会表。
+        /// </summary>
+        public DbSet<GameGuild> Guild { get; set; }
 
         public override void Dispose()
         {

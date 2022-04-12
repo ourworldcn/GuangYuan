@@ -17,6 +17,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace OW.Game.Item
 {
@@ -1187,6 +1188,61 @@ namespace OW.Game.Item
             {
                 var container = World.EventsManager.GetDefaultContainer(item, gameChar);
                 MoveItem(item, item.Count.Value, container, remainder, changes);
+            }
+        }
+
+        /// <summary>
+        /// 按属性包内指定的条件寻找指定的物品。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="propertyBag"></param>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
+        public virtual List<(GameItem, decimal)> Lookup(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null)
+        {
+            var coll = propertyBag.GetValuesWithoutPrefix(prefix);
+            var tid2gi = gameChar.AllChildren.ToLookup(c => c.TemplateId);
+            var result = new List<(GameItem, decimal)>();
+
+            foreach (var item in coll)
+            {
+                var tidVt = item.FirstOrDefault(c => c.Item1 == "tid");
+                if (!OwConvert.TryToGuid(tidVt.Item2, out var tid)) //若没有模板id
+                    continue;
+                var countVt = item.FirstOrDefault(c => c.Item1 == "count");
+                if (countVt.Item1 != "count" || OwConvert.TryToDecimal(countVt.Item2, out var count))   //若没有指定数量
+                    continue;
+                var ptidVt = item.FirstOrDefault(c => c.Item1 == "ptid");
+                GameItem gi;
+                if (OwConvert.TryToGuid(ptidVt.Item2, out var ptid))  //若限定容器
+                {
+                    gi = tid2gi[ptid].SelectMany(c => c.Children).FirstOrDefault(c => c.TemplateId == tid);
+                }
+                else //若未限定容器
+                {
+                    gi = tid2gi[tid].FirstOrDefault();
+                }
+                if (null != gi)
+                    result.Add((gi, count));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 按字典指定的物品消耗资源。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="propertyBag"></param>
+        /// <param name="prefix"></param>
+        /// <param name="changes"></param>
+        public virtual void DecrementCount(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null, ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            var list = Lookup(gameChar, propertyBag, prefix);
+            var count = propertyBag.GetValuesWithoutPrefix(prefix).Count();
+            if (list.Count < count)    //若资源不足
+            {
+                VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                return;
             }
         }
 

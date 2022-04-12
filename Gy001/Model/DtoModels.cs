@@ -3506,6 +3506,19 @@ namespace GY2021001WebApi.Models
 
     #region 商城相关
 
+    public class GetAllShoppingTemplatesParamsDto : TokenDtoBase
+    {
+    }
+
+    public class GetAllShoppingTemplatesResultDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 所有商品模板的信息集合。
+        /// </summary>
+        [DataMember]
+        public List<ShoppingItemDto> Templates { get; set; } = new List<ShoppingItemDto>();
+    }
+
     /// <summary>
     /// 抽奖接口参数封装类。
     /// </summary>
@@ -3780,7 +3793,7 @@ namespace GY2021001WebApi.Models
         /// 页签的名字，前端与数据协商好即可。如果设置了则仅返回指定页签(属)的商品。null会返回所有商品。
         /// </summary>
         [DataMember]
-        public string Genus { get; set; }
+        public List<string> Genus { get; set; } = new List<string>();
     }
 
     /// <summary>
@@ -3944,5 +3957,77 @@ namespace GY2021001WebApi.Models
     {
     }
     #endregion 聊天及相关
+
+    #region 行会相关
+
+    [DataContract]
+    public partial class GameGuildDto
+    {
+        /// <summary>
+        /// 下属对象（当前主要是建筑物）集合。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> Items { get; set; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 成员信息集合。
+        /// </summary>
+        [DataMember]
+        public List<GuildMemberDto> MemberIds { get; set; } = new List<GuildMemberDto>();
+    }
+
+    /// <summary>
+    /// 行会成员信息类。
+    /// </summary>
+    [DataContract]
+    public class GuildMemberDto
+    {
+        /// <summary>
+        /// 成员的角色Id。
+        /// </summary>
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 成员的分工。0=正在申请，10=普通会员，14=管理，20=会长。
+        /// </summary>
+        [DataMember]
+        public int Title { get; set; }
+
+        /// <summary>
+        /// 等级。
+        /// </summary>
+        [DataMember]
+        public int Level { get; set; }
+
+        /// <summary>
+        /// 昵称。
+        /// </summary>
+        [DataMember]
+        public string DisplayName { get; set; }
+    }
+
+    [DataContract]
+    public class CreateGuildReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 返回行会信息。
+        /// </summary>
+        [DataMember]
+        public GameGuildDto Guild { get; set; }
+    }
+
+    [DataContract]
+    public class CreateGuildParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 行会名。
+        /// </summary>
+        [DataMember]
+        public string DisplayName { get; set; }
+
+    }
+
+    #endregion 行会相关
 }
 #pragma warning restore IDE0074 // 使用复合分配

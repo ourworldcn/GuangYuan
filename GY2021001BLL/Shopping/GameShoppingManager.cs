@@ -64,28 +64,35 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 获取所有商品模板数据。
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<GameShoppingTemplate> GetAllShoppingTemplates()
+        {
+            return World.ItemTemplateManager.Id2Shopping.Values;
+        }
+
+        /// <summary>
         /// 获取当前用户可见的商城表，无效物品不会返回。
         /// </summary>
         /// <param name="datas"></param>
         public void GetList(GetListDatas datas)
         {
-            //TODO: 增加多个页签号过滤功能
-            //"DayCountOfLogin"
             using var dwUser = datas.LockUser();
             if (dwUser is null)
                 return;
-            
+
             IEnumerable<GameShoppingTemplate> coll; //不可刷新商品
-            if (string.IsNullOrWhiteSpace(datas.Genus))
+            if (datas.Genus.Count == 0)
                 coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => IsValid(c, datas.Now) && c.GroupNumber is null);
             else
-                coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.Genus == datas.Genus && IsValid(c, datas.Now) && c.GroupNumber is null);
+                coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => datas.Genus.Contains(c.Genus) && IsValid(c, datas.Now) && c.GroupNumber is null);
             var view = new ShoppingSlotView(World, datas.GameChar, datas.Now);
             //可刷新商品
             List<GameShoppingTemplate> rg = new List<GameShoppingTemplate>();
             foreach (var item in view.RefreshInfos)  //遍历可刷新商品
             {
-                var tmp = World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.GroupNumber.HasValue && c.Genus == item.Key && c.GroupNumber == item.Value.GroupNumber && IsValid(c, datas.Now));
+                var tmp = World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.GroupNumber.HasValue && c.Genus == item.Key && (datas.Genus.Count == 0 || datas.Genus.Contains(c.Genus)) && c.GroupNumber == item.Value.GroupNumber && IsValid(c, datas.Now));
                 rg.AddRange(tmp);
             }
             decimal tmpDec = 0;
@@ -132,7 +139,7 @@ namespace GuangYuan.GY001.BLL
                 if (!(kv.Value is string str))
                     continue;
                 var ary = str.Split(OwHelper.SemicolonArrayWithCN);
-                if (ary.Length != 2 || decimal.TryParse(ary[1], out var dec))
+                if (ary.Length != 2 || !decimal.TryParse(ary[1], out var dec))
                     continue;
                 if (!(gameChar.Properties.GetDecimalOrDefault(ary[0]) >= dec))
                 {
@@ -928,7 +935,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 页签的名字，前端与数据协商好即可。如果设置了则仅返回指定页签(属)的商品。null会返回所有商品。
         /// </summary>
-        public string Genus { get; set; }
+        public List<string> Genus { get; set; } = new List<string>();
 
         public List<GameShoppingTemplate> ShoppingTemplates { get; } = new List<GameShoppingTemplate>();
 

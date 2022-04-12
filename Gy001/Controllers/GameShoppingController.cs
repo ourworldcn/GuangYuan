@@ -22,6 +22,20 @@ namespace Gy001.Controllers
         }
 
         /// <summary>
+        /// 获取所有商品模板数据。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public ActionResult<GetAllShoppingTemplatesResultDto> GetAllShoppingTemplates(GetAllShoppingTemplatesParamsDto model)
+        {
+             var result = new GetAllShoppingTemplatesResultDto();
+            var coll = World.ShoppingManager.GetAllShoppingTemplates();
+            result.Templates.AddRange(coll.Select(c=>(ShoppingItemDto)c));
+            return result;
+        }
+
+        /// <summary>
         /// 获取销售商品的列表。无效物品不会返回。
         /// </summary>
         /// <returns></returns>
@@ -31,9 +45,9 @@ namespace Gy001.Controllers
             GetListResultDto result = new GetListResultDto();
             var datas = new GetListDatas(World, model.Token)
             {
-                Genus = model.Genus,
                 UserDbContext = HttpContext.RequestServices.GetService<GY001UserContext>(),
             };
+            datas.Genus.AddRange(model.Genus);
             World.ShoppingManager.GetList(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;

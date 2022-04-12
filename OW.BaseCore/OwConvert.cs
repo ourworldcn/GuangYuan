@@ -25,7 +25,7 @@ namespace System
         /// <param name="result"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static bool TryToDecimal([AllowNull]object obj, out decimal result)
+        public static bool TryToDecimal([AllowNull] object obj, out decimal result)
         {
             if (obj is null)
             {
@@ -135,7 +135,7 @@ namespace System
         /// <param name="result"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryToGuid([AllowNull]string str, out Guid result)
+        public static bool TryToGuid([AllowNull] string str, out Guid result)
         {
             if (string.IsNullOrWhiteSpace(str))
             {
@@ -160,13 +160,18 @@ namespace System
         /// <summary>
         /// 尽可能转换为Guid类型。
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param name="obj">是null会立即返回flase。</param>
         /// <param name="result"></param>
         /// <returns>true成功转换，false未成功。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static bool TryToGuid(object obj, out Guid result)
+        public static bool TryToGuid([AllowNull] object obj, out Guid result)
         {
-            if (obj is Guid id)
+            if (obj is null)
+            {
+                result = default;
+                return false;
+            }
+            else if (obj is Guid id)
             {
                 result = id;
                 return true;

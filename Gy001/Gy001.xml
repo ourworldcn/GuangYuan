@@ -144,7 +144,7 @@
         </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
-            战斗相关的操作。这里的功能以后可能依据需求改为Udp。
+            战斗相关的操作。
             </summary>
         </member>
         <member name="M:GY2021001WebApi.Controllers.CombatController.#ctor(OW.Game.VWorld)">
@@ -1255,6 +1255,24 @@
         <member name="P:GY2021001WebApi.Models.GameCardTemplateDto.ValidPeriod">
             <summary>
             周期开始后持续有效时间,d天,w周,m月,y年。仅在有效期内才出售，不填则是永久有效（在起止期间和周期的约束下）
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GameGuildDto.FillMembers(GuangYuan.GY001.UserDb.Social.GameGuild,GY2021001WebApi.Models.GameGuildDto,OW.Game.VWorld)">
+            <summary>
+            填充成员信息。
+            </summary>
+            <param name="guild"></param>
+            <param name="dto"></param>
+            <param name="world">根服务。</param>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameGuildDto.Items">
+            <summary>
+            下属对象（当前主要是建筑物）集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameGuildDto.MemberIds">
+            <summary>
+            成员信息集合。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.ModifyPropertyItemDto.ObjectId">
@@ -2940,6 +2958,11 @@
             设置角色经验接口使用的返回值传输类。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetAllShoppingTemplatesResultDto.Templates">
+            <summary>
+            所有商品模板的信息集合。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.LotteryParamsDto">
             <summary>
             抽奖接口参数封装类。
@@ -3100,6 +3123,41 @@
             发送消息接口的返回值封装类。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GuildMemberDto">
+            <summary>
+            行会成员信息类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GuildMemberDto.Id">
+            <summary>
+            成员的角色Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GuildMemberDto.Title">
+            <summary>
+            成员的分工。0=正在申请，10=普通会员，14=管理，20=会长。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GuildMemberDto.Level">
+            <summary>
+            等级。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GuildMemberDto.DisplayName">
+            <summary>
+            昵称。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CreateGuildReturnDto.Guild">
+            <summary>
+            返回行会信息。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CreateGuildParamsDto.DisplayName">
+            <summary>
+            行会名。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -3144,6 +3202,65 @@
             规范化频道id。
             </summary>
             <param name="channelId"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Gy001.Controllers.GameAllianceController">
+            <summary>
+            联盟/行会相关操作。
+            </summary>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.CreateGuild(GY2021001WebApi.Models.CreateGuildParamsDto)">
+            <summary>
+            创建行会。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.SendGuild">
+            <summary>
+            转移行会。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.Delete">
+            <summary>
+            解散行会。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.GetGuild">
+            <summary>
+            获取行会信息。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.ModifyPermissions">
+            <summary>
+            修改权限。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.AccepteGuildMember">
+            <summary>
+            批准入会申请。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.RemoveGuildMember">
+            <summary>
+            移除指定的行会成员。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.SupportGuild">
+            <summary>
+            行会捐献。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.UpgradeGuild">
+            <summary>
+            行会或建筑升级。
+            </summary>
             <returns></returns>
         </member>
         <member name="T:Gy001.Controllers.GameBaseController">
@@ -3193,6 +3310,13 @@
             <summary>
             商城相关操作。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.GameShoppingController.GetAllShoppingTemplates(GY2021001WebApi.Models.GetAllShoppingTemplatesParamsDto)">
+            <summary>
+            获取所有商品模板数据。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.GameShoppingController.GetList(GY2021001WebApi.Models.GetListParamsDto)">
             <summary>

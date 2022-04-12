@@ -3,6 +3,7 @@ using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Script;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -386,6 +387,13 @@ namespace OW.Game
         /// </summary>
         public GamePropertyChangeManager PropertyChangeManager => _PropertyChangeManager ??= Service.GetService<GamePropertyChangeManager>();
 
+        GameAllianceManager _AllianceManager;
+        /// <summary>
+        /// 联盟/工会管理器。
+        /// </summary>
+        public GameAllianceManager AllianceManager { get => _AllianceManager ??= Service.GetService<GameAllianceManager>(); }
+
+
         #endregion 子管理器
 
         #region 对象池
@@ -482,7 +490,6 @@ namespace OW.Game
         /// 该节点号。
         /// </summary>
         public int? NodeNumber { get; internal set; } = 1;
-
 
         /// <summary>
         /// 获取两个数之间的一个随机数。支持并发调用。
