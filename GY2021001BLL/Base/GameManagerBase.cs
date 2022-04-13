@@ -24,7 +24,6 @@ namespace OW.Game
         public VWorld World
         {
             get => _VWorld ??= _Services.GetRequiredService<VWorld>();   //一定是单例，所以无所谓并发
-            
         }
 
         /// <summary>

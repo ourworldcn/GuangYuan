@@ -96,7 +96,7 @@ namespace GuangYuan.GY001.BLL
                 rg.AddRange(tmp);
             }
             decimal tmpDec = 0;
-            datas.ShoppingTemplates.AddRange(coll.Where(c => AllowBuyWithConditional(datas.GameChar, c, datas.Now, ref tmpDec)));
+            datas.ShoppingTemplates.AddRange(coll.Where(c => view.AllowBuy(c, 1) && AllowBuyWithConditional(datas.GameChar, c, datas.Now, ref tmpDec)));
             datas.ShoppingTemplates.AddRange(rg.Where(c => AllowBuyWithConditional(datas.GameChar, c, datas.Now, ref tmpDec)));
             var rInfos = from tmp in view.RefreshInfos
                          let tm = Math.Clamp(tmp.Value.RefreshCount, 0, tmp.Value.CostOfGold.Length - 1)  //有效次数
