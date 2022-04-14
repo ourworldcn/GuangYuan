@@ -39,6 +39,8 @@ namespace GuangYuan.GY001.BLL.Base
                 }
                 if (null != gi)
                     result.Add(new GameCost(gi, count));
+                else
+                    return false;
             }
             return true;
         }

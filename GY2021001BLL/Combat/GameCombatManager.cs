@@ -1237,21 +1237,22 @@ namespace GuangYuan.GY001.BLL
                 return false;
             //获取对应神纹
             var slotShenwen = gc.GetShenwenBag();
-            if (slotShenwen is null)
-                return false;
-            var shenwen = slotShenwen.Children.FirstOrDefault(c =>
+            if (slotShenwen != null)
             {
-                if (!c.TryGetProperty("body", out var bodyObj) || !OwConvert.TryToDecimal(bodyObj, out var bodyDec))
-                    return false;
-                return bodyDec == bodyGid;
-            });
-            //计算神纹加成
-            atk += (double)shenwen.GetDecimalWithFcpOrDefault("atk", decimal.Zero);
-            mhp += (double)shenwen.GetDecimalWithFcpOrDefault("mhp", decimal.Zero);
-            qlt += (double)shenwen.GetDecimalWithFcpOrDefault("qlt", decimal.Zero);
-            dic["atk"] = atk;
-            dic["mhp"] = mhp;
-            dic["qlt"] = qlt;
+                var shenwen = slotShenwen.Children.FirstOrDefault(c =>
+                {
+                    if (!c.TryGetProperty("body", out var bodyObj) || !OwConvert.TryToDecimal(bodyObj, out var bodyDec))
+                        return false;
+                    return bodyDec == bodyGid;
+                });
+                //计算神纹加成
+                atk += (double)shenwen.GetDecimalWithFcpOrDefault("atk", decimal.Zero);
+                mhp += (double)shenwen.GetDecimalWithFcpOrDefault("mhp", decimal.Zero);
+                qlt += (double)shenwen.GetDecimalWithFcpOrDefault("qlt", decimal.Zero);
+                dic["atk"] = atk;
+                dic["mhp"] = mhp;
+                dic["qlt"] = qlt;
+            }
             //计算主动技能等级
             //var ssc = shenwen.GetDecimalWithFcpOrDefault("sscatk", decimal.Zero) + shenwen.GetDecimalWithFcpOrDefault("sscmhp", decimal.Zero) + shenwen.GetDecimalWithFcpOrDefault("sscqlt", decimal.Zero);
             var lv = (int)body.GetDecimalWithFcpOrDefault("lv", decimal.Zero);
