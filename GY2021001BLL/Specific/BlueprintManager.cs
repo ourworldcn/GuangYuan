@@ -768,6 +768,7 @@ namespace GuangYuan.GY001.BLL
                 //gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
                 if (gameItem.TemplateId == ProjectConstant.MainControlRoomSlotId) //如果是主控室升级
                 {
+                    //TODO 复查送物品/地块
                     if (World.ItemTemplateManager.Id2RequireLevel.Contains(gameItem.TemplateId)) //若存在需要增加的物品
                     {
                         var tts = World.ItemTemplateManager.Id2RequireLevel[gameItem.TemplateId];
