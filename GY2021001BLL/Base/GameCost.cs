@@ -66,4 +66,9 @@ namespace GuangYuan.GY001.BLL.Base
         /// </summary>
         public decimal Count { get; set; }
     }
+
+    public struct GameQuery
+    {
+        //query1=gtq;{sdjksj};{dsjl};sds;1 gt;count;2,set1=count;1
+    }
 }
