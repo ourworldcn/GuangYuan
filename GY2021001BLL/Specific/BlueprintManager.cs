@@ -469,14 +469,16 @@ namespace GuangYuan.GY001.BLL
 
             var gim = World.ItemManager;
             var parent = gc.AllChildren.FirstOrDefault(c => c.TemplateId == dest.Properties.GetGuidOrDefault("ptid"));
-            gim.AddItem(dest, parent, null, datas.ChangeItems);
+            //gim.AddItem(dest, parent, null, datas.ChangeItems);
+            gim.MoveItem(dest, dest.Count.Value, parent, datas.Remainder, datas.Changes);
             //送固定物品
             dic = coll.First(c => c.Key == string.Empty).ToDictionary(c => c.Item1, c => c.Item2);
             var dest2 = new GameItem();
             eveMng.GameItemCreated(dest2, dic);    //创建物品
             var parent2 = gc.AllChildren.FirstOrDefault(c => c.TemplateId == dest2.Properties.GetGuidOrDefault("ptid"));
-            gim.AddItem(dest2, parent2, null, datas.ChangeItems);
 
+            //gim.AddItem(dest2, parent2, null, datas.ChangeItems);
+            gim.MoveItem(dest2, dest2.Count.Value, parent2, datas.Remainder, datas.Changes);
             gc.Properties[Day30CountKeyName] = totalDay + 1; //设置已经获取的天计数
         }
 
