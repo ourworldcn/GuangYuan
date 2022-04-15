@@ -70,10 +70,99 @@ namespace GuangYuan.GY001.BLL.Base
     public struct GameQuery
     {
         //query1=gtq;{sdjksj};{dsjl};sds;1 gt;count;2,set1=count;1
-        //public GameQuery()
-        //{
-        ////string str = "";
-        //    //str.AsSpan().Split()
-        //}
+
+        public static bool TryParse(string str, out GameQuery result)
+        {
+            result = new GameQuery();
+            return true;
+        }
+
+        public GamePropertyRef GameRef { get; set; }
+
+        public string Operator { get; set; }
+
+        public object Value { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class GamePropertyRef
+    {
+        public static bool TryParse(string str, out GamePropertyRef result)
+        {
+            var ary = str.Split(OwHelper.SemicolonArrayWithCN);
+            if (3 == ary.Length)
+            {
+                if (!Guid.TryParse(ary[0], out var ptid) || !Guid.TryParse(ary[1], out var tid) || !(ary[1] is string pn))
+                {
+                    result = default;
+                    return false;
+                }
+                result = new GamePropertyRef()
+                {
+                    PropertyName = pn,
+                    TemplateId = tid,
+                    ParentTemplateId = ptid,
+                };
+            }
+            else if (2 == ary.Length)
+            {
+                if (!Guid.TryParse(ary[0], out var ptid) || !(ary[1] is string pn))
+                {
+                    result = default;
+                    return false;
+                }
+                result = new GamePropertyRef()
+                {
+                    PropertyName = pn,
+                    TemplateId = ptid,
+                };
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+            return true;
+        }
+
+        public Guid? ParentTemplateId { get; set; }
+
+        public Guid TemplateId { get; set; }
+
+        public string PropertyName { get; set; }
+
+        public object GetValue(GameChar gameChar)
+        {
+            GameItem gi;
+            var tid = TemplateId;
+            if (ParentTemplateId.HasValue)  //如指定了父容器
+            {
+                var ptid = ParentTemplateId.Value;
+                gi = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid).Children.FirstOrDefault(c => c.TemplateId == TemplateId);
+            }
+            else
+            {
+                gi = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
+            }
+            return gi.Properties.GetValueOrDefault(PropertyName);
+        }
+
+        public void SetValut(GameChar gameChar, object value)
+        {
+            GameItem gi;
+            var tid = TemplateId;
+            if (ParentTemplateId.HasValue)  //如指定了父容器
+            {
+                var ptid = ParentTemplateId.Value;
+                gi = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid).Children.FirstOrDefault(c => c.TemplateId == tid);
+            }
+            else
+            {
+                gi = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == tid);
+            }
+            gi.Properties[PropertyName] = value;
+        }
     }
 }

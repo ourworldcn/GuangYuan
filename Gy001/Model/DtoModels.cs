@@ -2117,7 +2117,7 @@ namespace GY2021001WebApi.Models
     /// 开始战斗的返回数据传输类
     /// </summary>
     [DataContract]
-    public partial class CombatStartReturnDto
+    public partial class CombatStartReturnDto : ReturnDtoBase
     {
         /// <summary>
         /// 构造函数。
@@ -2133,17 +2133,6 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string TemplateId { get; set; }
 
-        /// <summary>
-        /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
-        /// </summary>
-        [DataMember]
-        public bool HasError { get; set; }
-
-        /// <summary>
-        /// 调试信息。调试状态下返回时填写。
-        /// </summary>
-        [DataMember]
-        public string DebugMessage { get; set; }
     }
 
     /// <summary>

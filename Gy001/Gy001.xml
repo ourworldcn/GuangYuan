@@ -1068,16 +1068,6 @@
             要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.HasError">
-            <summary>
-            返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。返回时填写。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.DebugMessage">
-            <summary>
-            调试信息。调试状态下返回时填写。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
             <summary>
             结束战斗的返回数据传输类。
