@@ -155,6 +155,21 @@ namespace System
         }
 
         /// <summary>
+        /// 使用池<see cref="DictionaryPool{TKey, TValue}"/>创建对象复制指定内容病返回。
+        /// </summary>
+        /// <typeparam name="TKey">键，如果有重复键值不会报错，后面的覆盖前面。</typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="src"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Dictionary<TKey, TValue> DictionaryFrom<TKey, TValue>(IEnumerable<(TKey, TValue)> src)
+        {
+            var result = DictionaryPool<TKey, TValue>.Shared.Get();
+            foreach (var item in src)
+                result[item.Item1] = item.Item2;
+            return result;
+        }
+
+        /// <summary>
         /// 四舍五入取整。
         /// </summary>
         /// <param name="result"></param>

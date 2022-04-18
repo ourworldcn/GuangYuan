@@ -707,6 +707,37 @@ namespace OW.Game
         #region 物品相关
 
         /// <summary>
+        /// 根据属性寻找指定的物品对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="pb"></param>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
+        public virtual IEnumerable<(GameThingBase, IReadOnlyDictionary<string, object>)> LookupItems(GameChar gameChar, IReadOnlyDictionary<string, object> pb, string prefix = "")
+        {
+            var result = new List<(GameThingBase, IReadOnlyDictionary<string, object>)>();
+            var coll = pb.GetValuesWithoutPrefix(prefix);
+            var alls = gameChar.AllChildren.ToLookup(c => c.TemplateId); //所有物品
+            foreach (var item in coll)
+            {
+                if (!OwConvert.TryToGuid(item.FirstOrDefault(c => c.Item1 == "tid").Item2, out var tid))  //若找不到tid
+                    continue;
+                GameItem gi;
+                if (!OwConvert.TryToGuid(item.FirstOrDefault(c => c.Item1 == "ptid").Item2, out var ptid))  //若指定了容器
+                {
+                    gi = alls[ptid].SelectMany(c => c.Children).FirstOrDefault(c => c.TemplateId == tid);
+                }
+                else //若没有指定容器
+                {
+                    gi = alls[tid].FirstOrDefault();
+                }
+                if (gi != null)
+                    result.Add((gi, OwHelper.DictionaryFrom(item)));
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 获取物品的默认容器,这与实际所属容器可能不同。
         /// </summary>
         /// <remarks><see cref="SimpleDynamicPropertyBase.Properties"/>中包含ptid（父容器模板Id）键值则优先使用。</remarks>
