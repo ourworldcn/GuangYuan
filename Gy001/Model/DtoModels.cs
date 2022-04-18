@@ -63,9 +63,9 @@ namespace GY2021001WebApi.Models
     /// </summary>
     /// <remarks>这个类的新值和旧值都用Object表示，对于数据量极大的一些情况会使用具体的类表示如GamePropertyChangeFloatItemDto表示大量的即时战斗数据包导致的人物属性变化。</remarks>
     [DataContract]
-    public partial class GamePropertyChangeObjectItemDto
+    public partial class GamePropertyChangeItemDto
     {
-        public GamePropertyChangeObjectItemDto()
+        public GamePropertyChangeItemDto()
         {
 
         }
@@ -962,6 +962,23 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<ChangesItemDto> ChangesItems { get => _ChangesItems ?? (_ChangesItems = new List<ChangesItemDto>()); set => _ChangesItems = value; }
+    }
+
+    /// <summary>
+    /// 新版变化数据的返回基类。
+    /// </summary>
+    [DataContract]
+    public partial class ChangesReturnDtoBaseV2 : ReturnDtoBase
+    {
+        public ChangesReturnDtoBaseV2()
+        {
+
+        }
+
+        [IgnoreDataMember]
+        private List<GamePropertyChangeItemDto> _Changes;
+        public List<GamePropertyChangeItemDto> Changes { get => _Changes ??= new List<GamePropertyChangeItemDto>(); set => _Changes = value; }
+
     }
 
     /// <summary>
@@ -3997,7 +4014,7 @@ namespace GY2021001WebApi.Models
     }
 
     [DataContract]
-    public class CreateGuildReturnDto : ReturnDtoBase
+    public class CreateGuildReturnDto : ChangesReturnDtoBaseV2
     {
         /// <summary>
         /// 返回行会信息。

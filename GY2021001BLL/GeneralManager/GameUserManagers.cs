@@ -1207,9 +1207,9 @@ namespace GuangYuan.GY001.BLL
         /// <param name="timeout"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IDisposable LockOrLoadWithCharIds(IEnumerable<Guid> userIds, TimeSpan timeout)
+        public IDisposable LockOrLoadWithCharIds(IEnumerable<Guid> charIds, TimeSpan timeout)
         {
-            var result = OwHelper.LockWithOrder(userIds.Distinct().OrderBy(c => c), (charId, ts) => LockOrLoad(charId, out _, timeout), timeout);
+            var result = OwHelper.LockWithOrder(charIds.Distinct().OrderBy(c => c), (charId, ts) => LockOrLoad(charId, out _, timeout), timeout);
             return result;
         }
 

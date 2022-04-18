@@ -407,4 +407,13 @@ namespace System
 
     }
 
+    public static class ConcurrentHelper
+    {
+        public static bool Lock<T>(T obj, TimeSpan timeout) where T : IDisposable
+        {
+            if (obj is IDisposable disposable)
+                disposable.Dispose();
+            return true;
+        }
+    }
 }

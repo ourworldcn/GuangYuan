@@ -35,7 +35,10 @@ namespace Gy001.Controllers
         [HttpPost]
         public ActionResult<CreateGuildReturnDto> CreateGuild(CreateGuildParamsDto model)
         {
-            using var datas = new CreateGuildContext(World, model.Token) { DisplayName = model.DisplayName };
+            using var datas = new CreateGuildContext(World, model.Token)
+            {
+                DisplayName = model.DisplayName
+            };
             World.AllianceManager.CreateGuild(datas);
 
             var result = new CreateGuildReturnDto();
@@ -45,6 +48,8 @@ namespace Gy001.Controllers
                 var guild = World.AllianceManager.GetGuild(datas.Id);
                 result.Guild = guild;
                 GameGuildDto.FillMembers(guild, result.Guild, World);
+
+                result.Changes.AddRange(datas.Changes.Select(c => (GamePropertyChangeItemDto)c));
             }
             return result;
         }

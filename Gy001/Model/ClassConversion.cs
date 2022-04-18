@@ -43,11 +43,11 @@ namespace GY2021001WebApi.Models
         }
     }
 
-    public partial class GamePropertyChangeObjectItemDto
+    public partial class GamePropertyChangeItemDto
     {
-        public static implicit operator GamePropertyChangeObjectItemDto(GamePropertyChangeItem<object> obj)
+        public static implicit operator GamePropertyChangeItemDto(GamePropertyChangeItem<object> obj)
         {
-            var result = new GamePropertyChangeObjectItemDto()
+            var result = new GamePropertyChangeItemDto()
             {
                 DateTimeUtc = obj.DateTimeUtc,
                 HasNewValue = obj.HasNewValue,
@@ -143,6 +143,7 @@ namespace GY2021001WebApi.Models
     {
         public static implicit operator ChangeDataDto(ChangeData obj)
         {
+            //TODO pvp输了时，此处obj可能为空
             var result = new ChangeDataDto()
             {
                 ActionId = obj.ActionId,

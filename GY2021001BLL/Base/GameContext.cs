@@ -6,6 +6,7 @@ using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
@@ -222,7 +223,6 @@ namespace OW.Game
         {
             get => _GamePropertyChanges ??= GameChar is null ? new ConcurrentQueue<GamePropertyChangeItem<object>>() : GameChar.GetOrCreatePropertyChangedList();
         }
-
 
         #region IResultWorkData接口相关
 
