@@ -6,6 +6,7 @@ using Gy001.Controllers;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,23 @@ namespace GY2021001WebApi.Controllers
     {
         public GameCharController(VWorld world) : base(world)
         {
+        }
+
+        /// <summary>
+        /// 按指定的登录名获取其对应的角色Id。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>角色id的顺序与指定登录名顺序相同。</returns>
+        [HttpPost]
+        public ActionResult<GetCharIdsFromLoginNamesReturnDto> GetCharIdsFromLoginNames(GetCharIdsFromLoginNamesParamsDto model)
+        {
+            var result = new GetCharIdsFromLoginNamesReturnDto();
+            using var db = World.CreateNewUserDbContext();
+            var coll = from gc in db.GameChars.AsNoTracking()
+                       where model.LoginNames.Contains(gc.GameUser.LoginName)
+                       select gc.Id;
+            result.CharIds.AddRange(coll.AsEnumerable().Select(c => c.ToBase64String()));
+            return result;
         }
 
         /// <summary>

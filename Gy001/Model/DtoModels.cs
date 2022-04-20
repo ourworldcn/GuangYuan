@@ -1106,6 +1106,32 @@ namespace GY2021001WebApi.Models
 
     #region 账号管理相关
 
+    /// <summary>
+    /// GetCharIdsFromLoginNames 接口参数封装类。
+    /// </summary>
+    [DataContract]
+    public class GetCharIdsFromLoginNamesParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 登录名集合。
+        /// </summary>
+        [DataMember]
+        public List<string> LoginNames { get; set; } = new List<string>();
+    }
+
+    /// <summary>
+    /// GetCharIdsFromLoginNames 接口返回值封装类。
+    /// </summary>
+    [DataContract]
+    public class GetCharIdsFromLoginNamesReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 角色id集合。
+        /// </summary>
+        [DataMember]
+        public List<string> CharIds { get; set; } = new List<string>();
+    }
+
     [DataContract]
     public class DeleteUsersParamsDto : TokenDtoBase
     {

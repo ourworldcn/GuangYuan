@@ -194,6 +194,13 @@
             角色相关操作。
             </summary>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetCharIdsFromLoginNames(GY2021001WebApi.Models.GetCharIdsFromLoginNamesParamsDto)">
+            <summary>
+            按指定的登录名获取其对应的角色Id。
+            </summary>
+            <param name="model"></param>
+            <returns>角色id的顺序与指定登录名顺序相同。</returns>
+        </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.ModifyProperties(GY2021001WebApi.Models.ModifyPropertiesParamsDto)">
             <summary>
             修改对象属性接口。可以用此接口修改家园相关物品的属性。
@@ -1555,6 +1562,26 @@
             <summary>
             操作导致发送了邮件的Id集合。
             如果是空集合则表示没有发送邮件。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetCharIdsFromLoginNamesParamsDto">
+            <summary>
+            GetCharIdsFromLoginNames 接口参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetCharIdsFromLoginNamesParamsDto.LoginNames">
+            <summary>
+            登录名集合。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetCharIdsFromLoginNamesReturnDto">
+            <summary>
+            GetCharIdsFromLoginNames 接口返回值封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetCharIdsFromLoginNamesReturnDto.CharIds">
+            <summary>
+            角色id集合。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.DeleteUsersParamsDto.LoginNames">

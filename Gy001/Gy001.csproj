@@ -8,6 +8,7 @@
     <Version>1.0.1</Version>
     <Authors>zc</Authors>
     <Company>GuangYuan</Company>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -62,6 +63,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties _1filenesting_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
