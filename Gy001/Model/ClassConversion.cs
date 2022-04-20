@@ -627,6 +627,7 @@ namespace GY2021001WebApi.Models
         {
             var db = guild.GetDbContext();
             var coll = from slot in world.AllianceManager.GetAllMemberSlotQuery(guild.Id, db)
+                       where slot.ExtraDecimal>0    //不包含待批准成员
                        join gc in db.Set<GameChar>()
                        on slot.OwnerId equals gc.Id
                        select new { gc, slot };

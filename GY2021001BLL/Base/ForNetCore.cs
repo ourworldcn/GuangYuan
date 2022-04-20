@@ -252,6 +252,8 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             var exp = new Win32Exception(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
             sw.Stop();
+            var excp = new Win32Exception(2340 << 16 + 2);
+            var str = excp.Message;
         }
 
         /// <summary>

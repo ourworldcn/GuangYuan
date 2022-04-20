@@ -983,6 +983,26 @@ namespace OW.Game.Item
 
         #region 物品操作
 
+        /// <summary>
+        /// 创建或获取指定模板id的孩子对象。
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="tid"></param>
+        /// <param name="creator"></param>
+        /// <returns></returns>
+        public virtual GameItem GetOrCreateItem(GameThingBase parent, Guid tid,[AllowNull] Action<GameItem> creator = null)
+        {
+            var child = World.PropertyManager.GetChildrenCollection(parent);
+            var result = child.FirstOrDefault(c => c.TemplateId == tid);
+            if (result is null)
+            {
+                result = new GameItem();
+                child.Add(result);
+                World.EventsManager.GameItemCreated(result, tid);
+                creator?.Invoke(result);
+            }
+            return result;
+        }
         #region 基本操作
 
         /// <summary>
@@ -1105,7 +1125,7 @@ namespace OW.Game.Item
         /// <param name="gameItem"></param>
         /// <param name="db">使用的数据库上下文，如果省略或为null则会在关系中寻找。若找不到则不会在数据库中彻底删除对象，仅移除关系，这将导致孤立对象。</param>
         /// <param name="changes"></param>
-        /// <returns></returns>
+        /// <returns>true成功删除，false,指定对象本不在数据库中。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual bool ForcedDelete(GameItem gameItem, DbContext db = null, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {

@@ -76,6 +76,19 @@ namespace GuangYuan.GY001.UserDb.Social
         {
             Monitor.Exit(guild);
         }
+
+        /// <summary>
+        /// 获取行会信息。会刷新工会成员信息。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>返回行会对象，没有找到则返回null。</returns>
+        public GameGuild GetGuild(Guid id)
+        {
+            if (_Id2Guild.TryGetValue(id, out var result))
+                return null;
+            return result;
+        }
+
         #endregion 基础操作
 
         /// <summary>
@@ -83,12 +96,14 @@ namespace GuangYuan.GY001.UserDb.Social
         /// </summary>
         /// <param name="guidId"></param>
         /// <param name="db"></param>
-        /// <returns>成员角色的工会槽，跟踪器不会跟踪相关对象。</returns>
+        /// <returns>成员角色的工会槽，跟踪器不会跟踪相关对象。包括申请者的槽。</returns>
         public IQueryable<GameItem> GetAllMemberSlotQuery(Guid guidId, DbContext db)
         {
             var str = guidId.ToString();
-            return db.Set<GameItem>().AsNoTracking().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == str && c.ExtraDecimal > 0);
+            return db.Set<GameItem>().AsNoTracking().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == str);
         }
+
+        #region 工会操作
 
         /// <summary>
         /// 创建行会。
@@ -235,7 +250,7 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             using var dwGuild = DisposeHelper.Create(Unlock, guild);
             var db = guild.GetDbContext();
-            var charIds = db.Set<GameItem>().AsNoTracking().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.OwnerId.HasValue).Select(c => c.OwnerId.Value); //会员角色id集合
+            var charIds = GetAllMemberSlotQuery(guildId, db).Select(c => c.OwnerId.Value); //会员角色id集合
             using var dwChars = World.CharManager.LockOrLoadWithCharIds(charIds, charIds.Count() * TimeSpan.FromSeconds(1));
             if (dwChars is null)
             {
@@ -260,17 +275,9 @@ namespace GuangYuan.GY001.UserDb.Social
             //获取所有工会成员
         }
 
-        /// <summary>
-        /// 获取行会信息。会刷新工会成员信息。
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns>返回行会对象，没有找到则返回null。</returns>
-        public GameGuild GetGuild(Guid id)
-        {
-            if (_Id2Guild.TryGetValue(id, out var result))
-                return null;
-            return result;
-        }
+        #endregion 工会操作
+
+        #region 人事管理
 
         /// <summary>
         /// 调整权限。
@@ -278,8 +285,343 @@ namespace GuangYuan.GY001.UserDb.Social
         /// <param name="datas"></param>
         public void ModifyPermissions(ModifyPermissions datas)
         {
-
+            if (datas.Division >= 20 || datas.Division <= 0)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "不能用此函数改变会长或除名。";
+                return;
+            }
+            Guid guildId;
+            using (var dwUser = datas.LockUser())
+            {
+                if (dwUser is null)
+                    return;
+                var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out guildId))
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "用户不在工会内。";
+                    return;
+                }
+            }
+            if (!Lock(guildId, Options.DefaultTimeout, out var guild))
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "找不到指定工会。";
+                return;
+            }
+            using var dw = DisposeHelper.Create(Unlock, guild);
+            //校验
+            if (datas.Division == 14) //若设置管理
+            {
+                var countOfExists = GetAllMemberSlotQuery(guildId, guild.GetDbContext()).Where(c => c.ExtraDecimal == 14).Count();  //已有管理数量
+                var maxCount = guild.GetDecimalWithFcpOrDefault("maxManagerCount");    //最大管理数量
+                if (countOfExists + datas.CharIds.Count > maxCount)  //若超过
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                    datas.ErrorMessage = "超过最大管理员的数量。";
+                    return;
+                }
+            }
+            using var dwUsers = World.CharManager.LockOrLoadWithCharIds(datas.CharIds, Options.DefaultTimeout * datas.CharIds.Count);
+            if (dwUsers is null)
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            foreach (var charId in datas.CharIds)
+            {
+                var gc = World.CharManager.GetCharFromId(charId);
+                var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                if (slot is null || guild.IdString != slot.ExtraString)
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "至少一个成员不属于工会。";
+                    return;
+                }
+            }
+            foreach (var charId in datas.CharIds)
+            {
+                var gc = World.CharManager.GetCharFromId(charId);
+                var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                slot.ExtraDecimal = datas.Division;
+            }
         }
+
+        /// <summary>
+        /// 申请加入行会。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void RequestJoin(RequestJoinContext datas)
+        {
+            if (!Lock(datas.GuildId, Options.DefaultTimeout, out var guild))
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            using var dw = DisposeHelper.Create(Unlock, guild);
+            using var dwUser = datas.LockUser();
+            if (dwUser is null)
+                return;
+            //校验条件
+            var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            if (!string.IsNullOrWhiteSpace(slot.ExtraString) && slot.ExtraDecimal > 0 && slot.ExtraString != guild.IdString)    //若已有行会
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;    //已有行会
+                datas.ErrorMessage = "需要退出现有行会才能申请加入另一个";    //已有行会
+                return;
+            }
+            var count = GetAllMemberSlotQuery(guild.Id, guild.GetDbContext()).Count();  //当前成员数
+            if (guild.GetDecimalWithFcpOrDefault("maxMemberCount") <= count)   //若满员
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;    //
+                datas.ErrorMessage = "行会已满员。";    //
+                return;
+            }
+            //开始申请
+            if (slot is null)
+            {
+                slot = new GameItem();
+                World.EventsManager.GameItemCreated(slot, ProjectConstant.GuildSlotId);
+                datas.GameChar.GetDbContext().Add(slot);
+                datas.GameChar.GameItems.Add(slot);
+            }
+            slot.ExtraString = guild.IdString;
+            slot.ExtraDecimal = 0;
+            World.CharManager.NotifyChange(datas.GameChar.GameUser);
+        }
+
+        /// <summary>
+        /// 批准加入行会的申请。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void AcceptJoin(AcceptJoinContext datas)
+        {
+            Guid guidId;
+            GameGuild guild;
+            using (var dw = datas.LockUser())
+            {
+                if (dw is null)
+                    return;
+                var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                if (slot is null || slot.ExtraDecimal < (int)GuildDivision.执事)
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "工会高层才能批准加入申请。";
+                    return;
+                }
+                guidId = OwConvert.ToGuid(slot.ExtraString);
+            }
+            if (!Lock(guidId, Options.DefaultTimeout, out guild))
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            using var dwGuild = DisposeHelper.Create(Unlock, guild);
+            var db = guild.GetDbContext();
+            var qs = GetAllMemberSlotQuery(guidId, db).Where(c => c.ExtraDecimal == 0).Select(c => c.OwnerId.Value).AsEnumerable();  //所有申请者
+            if (!datas.CharIds.All(c => qs.Contains(c)))
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "至少有一个角色没有申请该工会";
+                return;
+            }
+            using var dwChars = World.CharManager.LockOrLoadWithCharIds(datas.CharIds, Options.DefaultTimeout * datas.CharIds.Count);   //锁定这组用户
+            foreach (var charId in datas.CharIds)
+            {
+                var gc = World.CharManager.GetCharFromId(charId);
+                var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                if (slot is null || guild.IdString != slot.ExtraString || slot.ExtraDecimal != 0)
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "至少有一个角色没有申请该工会";
+                    return;
+                }
+            }
+            foreach (var charId in datas.CharIds)
+            {
+                var gc = World.CharManager.GetCharFromId(charId);
+                var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                slot.ExtraDecimal = (int)GuildDivision.见习会员;
+            }
+        }
+
+        /// <summary>
+        /// 获取工会所有的申请人列表。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void GetRequestCharIds(GetRequestCharIdsContext datas)
+        {
+            Guid guildId;
+            using (var dwUser = datas.LockUser())
+            {
+                if (dwUser is null)
+                    return;
+                var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out guildId))
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "找不到工会。";
+                    return;
+                }
+            }
+            List<Guid> result = new List<Guid>();
+            if (!Lock(guildId, Options.DefaultTimeout, out var guild))
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            using var dw = DisposeHelper.Create(Unlock, guild);
+            var db = guild.GetDbContext();
+            datas.CharIds.AddRange(GetAllMemberSlotQuery(guildId, db).Where(c => c.ExtraDecimal == 0).Select(c => c.OwnerId.Value));
+        }
+
+        public void RemoveMembers(RemoveMembersContext datas)
+        {
+            Guid charId;
+            Guid guildId;
+            IEnumerable<Guid> allCharIds;
+            using (var dwUser = datas.LockUser())
+            {
+                if (dwUser is null)
+                    return;
+                var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out guildId))
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "找不到工会。";
+                    return;
+                }
+                charId = datas.GameChar.Id;
+            }
+            //锁定工会
+            if (!Lock(guildId, Options.DefaultTimeout, out var guild))
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            using var dwGuild = DisposeHelper.Create(Unlock, guild);
+            //锁定角色
+            allCharIds = datas.CharIds.Append(charId);  //获取所有角色id
+            using var dw = World.CharManager.LockOrLoadWithCharIds(allCharIds, allCharIds.Count() * Options.DefaultTimeout);
+            if (dw is null)
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            var gc = World.CharManager.GetCharFromId(charId);
+            var slotGc = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            if (slotGc is null || !OwConvert.TryToGuid(slotGc.ExtraString, out var tmpId) || tmpId != guildId)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "至少有一个角色不是该行会成员";
+                return;
+            }
+            foreach (var id in datas.CharIds)   //逐一校验角色
+            {
+                var tmp = World.CharManager.GetCharFromId(id);
+                var slot = tmp.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                if (slot is null || guild.IdString != slot.ExtraString)
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "至少有一个角色不是该行会成员";
+                    return;
+                }
+                if (slot.ExtraDecimal >= slotGc.ExtraDecimal)
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "没有足够权限删除成员。";
+                    return;
+                }
+            }
+            foreach (var id in datas.CharIds)   //逐一删除
+            {
+                var tmp = World.CharManager.GetCharFromId(id);
+                var slot = tmp.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                World.ItemManager.ForcedDelete(slot);
+                World.CharManager.NotifyChange(tmp.GameUser);
+            }
+        }
+        #endregion 人事管理
+
+    }
+
+    public class RemoveMembersContext : GameCharGameContext
+    {
+        public RemoveMembersContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public RemoveMembersContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public RemoveMembersContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 要除名成员。
+        /// </summary>
+        public List<Guid> CharIds { get; } = new List<Guid>();
+
+    }
+
+    public class GetRequestCharIdsContext : GameCharGameContext
+    {
+        public GetRequestCharIdsContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public GetRequestCharIdsContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public GetRequestCharIdsContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        public List<Guid> CharIds { get; } = new List<Guid>();
+    }
+
+    public class AcceptJoinContext : GameCharGameContext
+    {
+        public AcceptJoinContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public AcceptJoinContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public AcceptJoinContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 要批准加入的角色id集合。
+        /// </summary>
+        public List<Guid> CharIds { get; set; } = new List<Guid>();
+    }
+
+    public class RequestJoinContext : GameCharGameContext
+    {
+        public RequestJoinContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public RequestJoinContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public RequestJoinContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 申请加入的行会。
+        /// </summary>
+        public Guid GuildId { get; set; }
     }
 
     public static class GameGuildExtensions
@@ -328,19 +670,29 @@ namespace GuangYuan.GY001.UserDb.Social
     /// <summary>
     /// 调整权限。
     /// </summary>
-    public class ModifyPermissions : BinaryRelationshipGameContext
+    public class ModifyPermissions : GameCharGameContext
     {
-        public ModifyPermissions([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
+        public ModifyPermissions([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
         }
 
-        public ModifyPermissions([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar, otherGCharId)
+        public ModifyPermissions([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
         {
         }
 
-        public ModifyPermissions([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token, otherGCharId)
+        public ModifyPermissions([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
         }
+
+        /// <summary>
+        /// 要修改成的权限。10=普通会员，14=管理。
+        /// </summary>
+        public int Division { get; set; }
+
+        /// <summary>
+        /// 要修改的角色id集合。
+        /// </summary>
+        public List<Guid> CharIds { get; } = new List<Guid>();
     }
 
     /// <summary>
