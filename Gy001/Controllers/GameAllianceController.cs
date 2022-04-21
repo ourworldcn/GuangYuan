@@ -17,10 +17,6 @@ namespace Gy001.Controllers
     [ApiController]
     public class GameAllianceController : GameBaseController
     {
-        public GameAllianceController()
-        {
-        }
-
         public GameAllianceController(VWorld world) : base(world)
         {
         }
@@ -59,9 +55,13 @@ namespace Gy001.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult SendGuild()
+        public ActionResult<SendGuildReturnDto> SendGuild(SendGuildParamsDto model)
         {
-            return NotFound();
+            using var datas = new SendGuildContext(World, model.Token, OwConvert.ToGuid(model.OtherCharId));
+            World.AllianceManager.SendGuild(datas);
+            var result = new SendGuildReturnDto();
+            result.FillFrom(datas);
+            return result;
         }
 
         /// <summary>
@@ -69,9 +69,13 @@ namespace Gy001.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpDelete]
-        public ActionResult Delete()
+        public ActionResult<DeleteGuildReturnDto> DeleteGuild(DeleteGuildParamsDto model)
         {
-            return NotFound();
+            using var datas = new DeleteGuildContext(World, model.Token);
+            World.AllianceManager.DeleteGuild(datas);
+            var result = new DeleteGuildReturnDto();
+            result.FillFrom(datas);
+            return result;
         }
         #endregion 行会级管理
 
@@ -82,22 +86,31 @@ namespace Gy001.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut]
-        public ActionResult GetGuild()
+        public ActionResult<GetGuildReturnDto> GetGuild(GetGuildParamsDto model)
         {
-            return NotFound();
+            using var datas = new GetGuildContext(World, model.Token);
+            World.AllianceManager.GetGuild(datas);
+            var result = new GetGuildReturnDto();
+            GameGuildDto.FillMembers(datas.Guild, result.Guild, World);
+            return result;
         }
         #endregion 行会信息
 
         #region 行会人事管理功能
 
         /// <summary>
-        /// 修改权限。
+        /// 申请加入工会。
         /// </summary>
+        /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult ModifyPermissions()
+        public ActionResult<RequestJoinGuildReturnDto> RequestJoinGuild(RequestJoinGuildParamsDto model)
         {
-            return NotFound();
+            using var datas = new RequestJoinContext(World, model.Token);
+            World.AllianceManager.RequestJoin(datas);
+            var result = new RequestJoinGuildReturnDto();
+            result.FillFrom(datas);
+            return result;
         }
 
         /// <summary>
@@ -105,9 +118,14 @@ namespace Gy001.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult AccepteGuildMember()
+        public ActionResult<AccepteGuildMemberReturnDto> AccepteGuildMember(AccepteGuildMemberParamsDto model)
         {
-            return NotFound();
+            using var datas = new AcceptJoinContext(World, model.Token);
+            datas.CharIds.AddRange(model.CharIds.Select(c => OwConvert.ToGuid(c)));
+            World.AllianceManager.AcceptJoin(datas);
+            var result = new AccepteGuildMemberReturnDto();
+            result.FillFrom(datas);
+            return result;
         }
 
         /// <summary>
@@ -115,9 +133,32 @@ namespace Gy001.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpDelete]
-        public ActionResult RemoveGuildMember()
+        public ActionResult<RemoveGuildMemberReturnDto> RemoveGuildMember(RemoveGuildMemberParamsDto model)
         {
-            return NotFound();
+            using var datas = new RemoveMembersContext(World, model.Token);
+            datas.CharIds.AddRange(model.CharIds.Select(c => OwConvert.ToGuid(c)));
+            World.AllianceManager.RemoveMembers(datas);
+            var result = new RemoveGuildMemberReturnDto();
+            result.FillFrom(datas);
+            return result;
+        }
+
+        /// <summary>
+        /// 修改权限。
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<ModifyPermissionsReturnDto> ModifyPermissions(ModifyPermissionsParamsDto modle)
+        {
+            using var datas = new ModifyPermissionsContext(World, modle.Token)
+            {
+                Division = modle.Division
+            };
+            OwHelper.Copy(modle.CharIds.Select(c => OwConvert.ToGuid(c)), datas.CharIds);
+            World.AllianceManager.ModifyPermissions(datas);
+            var result = new ModifyPermissionsReturnDto();
+            result.FillFrom(datas);
+            return result;
         }
 
         #endregion 行会人事管理功能
@@ -150,6 +191,19 @@ namespace Gy001.Controllers
         #endregion 行会功能
 
         #endregion 行会相关功能
+    }
+
+    public class ModifyPermissionsParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要修改成的权限。10=普通会员，14=管理。
+        /// </summary>
+        public int Division { get; set; }
+
+        /// <summary>
+        /// 要修改的角色id集合。
+        /// </summary>
+        public List<string> CharIds { get; set; } = new List<string>();
     }
 
 }

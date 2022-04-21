@@ -3145,6 +3145,21 @@
             发送消息接口的返回值封装类。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.RemoveGuildMemberParamsDto.CharIds">
+            <summary>
+            要除名成员。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.AccepteGuildMemberParamsDto.CharIds">
+            <summary>
+            要批准加入的角色id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.RequestJoinGuildParamsDto.GuildId">
+            <summary>
+            申请加入的工会Id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GuildMemberDto">
             <summary>
             行会成员信息类。
@@ -3237,39 +3252,46 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Gy001.Controllers.GameAllianceController.SendGuild">
+        <member name="M:Gy001.Controllers.GameAllianceController.SendGuild(GY2021001WebApi.Models.SendGuildParamsDto)">
             <summary>
             转移行会。
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Gy001.Controllers.GameAllianceController.Delete">
+        <member name="M:Gy001.Controllers.GameAllianceController.DeleteGuild(GY2021001WebApi.Models.DeleteGuildParamsDto)">
             <summary>
             解散行会。
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Gy001.Controllers.GameAllianceController.GetGuild">
+        <member name="M:Gy001.Controllers.GameAllianceController.GetGuild(GY2021001WebApi.Models.GetGuildParamsDto)">
             <summary>
             获取行会信息。
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Gy001.Controllers.GameAllianceController.ModifyPermissions">
+        <member name="M:Gy001.Controllers.GameAllianceController.RequestJoinGuild(GY2021001WebApi.Models.RequestJoinGuildParamsDto)">
             <summary>
-            修改权限。
+            申请加入工会。
             </summary>
+            <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:Gy001.Controllers.GameAllianceController.AccepteGuildMember">
+        <member name="M:Gy001.Controllers.GameAllianceController.AccepteGuildMember(GY2021001WebApi.Models.AccepteGuildMemberParamsDto)">
             <summary>
             批准入会申请。
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Gy001.Controllers.GameAllianceController.RemoveGuildMember">
+        <member name="M:Gy001.Controllers.GameAllianceController.RemoveGuildMember(GY2021001WebApi.Models.RemoveGuildMemberParamsDto)">
             <summary>
             移除指定的行会成员。
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.ModifyPermissions(Gy001.Controllers.ModifyPermissionsParamsDto)">
+            <summary>
+            修改权限。
             </summary>
             <returns></returns>
         </member>
@@ -3284,6 +3306,16 @@
             行会或建筑升级。
             </summary>
             <returns></returns>
+        </member>
+        <member name="P:Gy001.Controllers.ModifyPermissionsParamsDto.Division">
+            <summary>
+            要修改成的权限。10=普通会员，14=管理。
+            </summary>
+        </member>
+        <member name="P:Gy001.Controllers.ModifyPermissionsParamsDto.CharIds">
+            <summary>
+            要修改的角色id集合。
+            </summary>
         </member>
         <member name="T:Gy001.Controllers.GameBaseController">
             <summary>

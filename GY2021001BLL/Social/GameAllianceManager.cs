@@ -89,6 +89,20 @@ namespace GuangYuan.GY001.UserDb.Social
             return result;
         }
 
+        /// <summary>
+        /// 获取指定角色当前所处行会。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns>指定角色当前所处行会。若没有加入行会则返回null。</returns>
+        public GameGuild GetGuild(GameChar gameChar)
+        {
+            var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            if (slot is null)
+                return null;
+            if (!OwConvert.TryToGuid(slot.ExtraString, out var guildId))
+                return null;
+            return GetGuild(guildId);
+        }
         #endregion 基础操作
 
         /// <summary>
@@ -101,6 +115,17 @@ namespace GuangYuan.GY001.UserDb.Social
         {
             var str = guidId.ToString();
             return db.Set<GameItem>().AsNoTracking().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == str);
+        }
+
+        /// <summary>
+        /// 获取工会信息。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void GetGuild(GetGuildContext datas)
+        {
+            using var dw = datas.LockUser();
+            datas.Guild = GetGuild(datas.GameChar);
+            return;
         }
 
         #region 工会操作
@@ -123,9 +148,11 @@ namespace GuangYuan.GY001.UserDb.Social
                 var count = item.Item2.GetDecimalOrDefault("count");
                 if (gi is null || gi.Count < count)
                 {
+#if DEBUG   //调试状态下不处理代价不足问题
                     datas.HasError = true;
                     datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
                     return;
+#endif
                 }
             }
             //创建工会对象
@@ -164,7 +191,9 @@ namespace GuangYuan.GY001.UserDb.Social
             {
                 GameItem gi = item.Item1 as GameItem;
                 var count = item.Item2.GetDecimalOrDefault("count");
+#if DEBUG
                 World.ItemManager.ForcedSetCount(gi, gi.Count.Value - count, datas.Changes);
+#endif
             }
             datas.Id = guild.Id;
             DictionaryPool<string, object>.Shared.Return(pg);
@@ -283,7 +312,7 @@ namespace GuangYuan.GY001.UserDb.Social
         /// 调整权限。
         /// </summary>
         /// <param name="datas"></param>
-        public void ModifyPermissions(ModifyPermissions datas)
+        public void ModifyPermissions(ModifyPermissionsContext datas)
         {
             if (datas.Division >= 20 || datas.Division <= 0)
             {
@@ -601,7 +630,7 @@ namespace GuangYuan.GY001.UserDb.Social
         /// <summary>
         /// 要批准加入的角色id集合。
         /// </summary>
-        public List<Guid> CharIds { get; set; } = new List<Guid>();
+        public List<Guid> CharIds { get; } = new List<Guid>();
     }
 
     public class RequestJoinContext : GameCharGameContext
@@ -670,17 +699,17 @@ namespace GuangYuan.GY001.UserDb.Social
     /// <summary>
     /// 调整权限。
     /// </summary>
-    public class ModifyPermissions : GameCharGameContext
+    public class ModifyPermissionsContext : GameCharGameContext
     {
-        public ModifyPermissions([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        public ModifyPermissionsContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
         }
 
-        public ModifyPermissions([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        public ModifyPermissionsContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
         {
         }
 
-        public ModifyPermissions([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        public ModifyPermissionsContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
         }
 
@@ -712,9 +741,7 @@ namespace GuangYuan.GY001.UserDb.Social
         {
         }
 
-        public List<Guid> GuildIds { get; set; } = new List<Guid>();
-
-        public List<GameGuild> Guild { get; set; } = new List<GameGuild>();
+        public GameGuild Guild { get; set; }
     }
 
     /// <summary>

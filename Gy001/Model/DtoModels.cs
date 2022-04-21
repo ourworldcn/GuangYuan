@@ -3993,6 +3993,88 @@ namespace GY2021001WebApi.Models
     #region 行会相关
 
     [DataContract]
+    public class ModifyPermissionsReturnDto : ReturnDtoBase
+    {
+    }
+
+    [DataContract]
+    public class RemoveGuildMemberParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要除名成员。
+        /// </summary>
+        [DataMember]
+        public List<string> CharIds { get; set; } = new List<string>();
+    }
+
+    [DataContract]
+    public class RemoveGuildMemberReturnDto : ReturnDtoBase
+    {
+    }
+
+    [DataContract]
+    public class AccepteGuildMemberParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要批准加入的角色id集合。
+        /// </summary>
+        [DataMember]
+        public List<string> CharIds { get; set; } = new List<string>();
+    }
+
+    [DataContract]
+    public class AccepteGuildMemberReturnDto : ReturnDtoBase
+    {
+    }
+
+    [DataContract]
+    public class RequestJoinGuildParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 申请加入的工会Id。
+        /// </summary>
+        [DataMember]
+        public string GuildId { get; set; }
+    }
+
+    [DataContract]
+    public class RequestJoinGuildReturnDto : ReturnDtoBase
+    {
+    }
+
+    [DataContract]
+    public class GetGuildParamsDto : TokenDtoBase
+    {
+    }
+
+    [DataContract]
+    public class GetGuildReturnDto : ReturnDtoBase
+    {
+        [DataMember]
+        public GameGuildDto Guild { get; set; }
+    }
+
+    [DataContract]
+    public class DeleteGuildParamsDto : TokenDtoBase
+    {
+    }
+
+    [DataContract]
+    public class DeleteGuildReturnDto : ReturnDtoBase
+    {
+    }
+
+    [DataContract]
+    public class SendGuildParamsDto : SocialDtoBase
+    {
+    }
+
+    [DataContract]
+    public class SendGuildReturnDto : ReturnDtoBase
+    {
+    }
+
+    [DataContract]
     public partial class GameGuildDto
     {
         /// <summary>

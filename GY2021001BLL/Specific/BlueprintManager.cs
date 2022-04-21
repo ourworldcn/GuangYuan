@@ -443,7 +443,11 @@ namespace GuangYuan.GY001.BLL
             return succ;
         }
 
+        /// <summary>
+        /// 总计登录的天数。
+        /// </summary>
         const string Day30CountKeyName = "Day30Count";
+
         /// <summary>
         /// 三十日签到礼包。
         /// </summary>
