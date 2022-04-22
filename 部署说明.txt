@@ -5,11 +5,12 @@ MIME映射
 .unity3d application/octet-stream
 
 WebApi网站
-去掉模块
-WebDAVModule
-%windir%\System32\inetsrv\webdav.dll
+去掉模块 WebDAVModule %windir%\System32\inetsrv\webdav.dll
 此功能影响put谓词的功能
+设置应用程序池的运行账号为可完全访问数据库的账号。
 
 超管账号 : 1D22F0CF-1704-412C-AD8D-32CE5FA5A7D5//37A87267-77DC-4AA3-8220-02F9538779AB
 
 账号密码：Gy210115
+
+主网站部署参见 https://docs.microsoft.com/zh-cn/aspnet/core/tutorials/publish-to-iis?view=aspnetcore-3.1&tabs=visual-studio

@@ -106,7 +106,10 @@ namespace Gy001.Controllers
         [HttpPost]
         public ActionResult<RequestJoinGuildReturnDto> RequestJoinGuild(RequestJoinGuildParamsDto model)
         {
-            using var datas = new RequestJoinContext(World, model.Token);
+            using var datas = new RequestJoinContext(World, model.Token)
+            {
+                GuildId = OwConvert.ToGuid(model.GuildId)
+            };
             World.AllianceManager.RequestJoin(datas);
             var result = new RequestJoinGuildReturnDto();
             result.FillFrom(datas);

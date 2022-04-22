@@ -627,11 +627,11 @@ namespace GY2021001WebApi.Models
         {
             var db = guild.GetDbContext();
             var coll = from slot in world.AllianceManager.GetAllMemberSlotQuery(guild.Id, db)
-                       where slot.ExtraDecimal>0    //不包含待批准成员
+                       where slot.ExtraDecimal >= 0    //包含待批准成员
                        join gc in db.Set<GameChar>()
                        on slot.OwnerId equals gc.Id
                        select new { gc, slot };
-            dto.MemberIds.AddRange(coll.AsEnumerable().Select(c =>
+            dto.Members.AddRange(coll.AsEnumerable().Select(c =>
             {
                 var r = new GuildMemberDto()
                 {
@@ -642,6 +642,9 @@ namespace GY2021001WebApi.Models
                 };
                 return r;
             }));
+            dto.Id = guild.Base64IdString;
+            dto.DisplayName = guild.DisplayName;
+            OwHelper.Copy(guild.Properties, dto.Properties);
         }
     }
 

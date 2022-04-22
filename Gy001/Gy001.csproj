@@ -9,6 +9,7 @@
     <Authors>zc</Authors>
     <Company>GuangYuan</Company>
     <IsPackable>true</IsPackable>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

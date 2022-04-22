@@ -1262,12 +1262,22 @@
             <param name="dto"></param>
             <param name="world">根服务。</param>
         </member>
+        <member name="P:GY2021001WebApi.Models.GameGuildDto.Properties">
+            <summary>
+            角色自身属性。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameGuildDto.DisplayName">
+            <summary>
+            角色显示用的名字。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.GameGuildDto.Items">
             <summary>
             下属对象（当前主要是建筑物）集合。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.GameGuildDto.MemberIds">
+        <member name="P:GY2021001WebApi.Models.GameGuildDto.Members">
             <summary>
             成员信息集合。
             </summary>
@@ -3163,6 +3173,7 @@
         <member name="T:GY2021001WebApi.Models.GuildMemberDto">
             <summary>
             行会成员信息类。
+            根据需求变化极有可能会添加成员。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.GuildMemberDto.Id">
@@ -3177,12 +3188,12 @@
         </member>
         <member name="P:GY2021001WebApi.Models.GuildMemberDto.Level">
             <summary>
-            等级。
+            角色等级。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.GuildMemberDto.DisplayName">
             <summary>
-            昵称。
+            角色昵称。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.CreateGuildReturnDto.Guild">

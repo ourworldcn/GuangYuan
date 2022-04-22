@@ -319,6 +319,7 @@ namespace OW.Game
             //数据库上下文
             var db = propertyBag.GetValueOrDefault("DbContext") as DbContext ?? World.CreateNewUserDbContext();
             guild.RuntimeProperties["DbContext"] = db;
+            guild.DisplayName = propertyBag.GetValueOrDefault(nameof(GameGuild.DisplayName)) as string;
             //创建者
             if (propertyBag.TryGetGuid("CreatorId", out var creatorId))
             {
@@ -342,6 +343,11 @@ namespace OW.Game
                 World.EventsManager.GameItemCreated(gi, World.ItemTemplateManager.GetTemplateFromeId(tid), null, guild.Id);
                 db.Add(gi);
             }
+        }
+
+        public virtual void GameGuildLoaded(GameGuild guild)
+        {
+            guild.RuntimeProperties["DbContext"] = World.CreateNewUserDbContext();
         }
 
         /// <summary>
@@ -505,6 +511,7 @@ namespace OW.Game
             var ids = tt.ChildrenTemplateIds.ToList();
             var list = gameChar.GameItems.ToList();
             var exists = list.Select(c => c.TemplateId).ToList();
+            DbContext db = null;
             for (int i = ids.Count - 1; i >= 0; i--)
             {
                 var tid = ids[i];
@@ -513,6 +520,8 @@ namespace OW.Game
                     var gi = new GameItem();
                     this.GameItemCreated(gi, tid, null, gameChar.Id);
                     gameChar.GameItems.Add(gi);
+                    db ??= gameChar.GetDbContext();
+                    db.Add(gi);
                 }
             }
             //通知直接所属物品加载完毕
@@ -712,10 +721,12 @@ namespace OW.Game
         /// <param name="gameChar"></param>
         /// <param name="pb"></param>
         /// <param name="prefix"></param>
-        /// <returns></returns>
-        public virtual IEnumerable<(GameThingBase, IReadOnlyDictionary<string, object>)> LookupItems(GameChar gameChar, IReadOnlyDictionary<string, object> pb, string prefix = "")
+        /// <param name="data">将找到的对象和对应的属性字典追加到此集合。如果没有找到对应的物品，则使用null填充Item1,Item2仍然是字典。</param>
+        /// <returns>true找到全部的指定物品，false至少有一个物品没有找到。</returns>
+        public virtual bool LookupItems(GameChar gameChar, IReadOnlyDictionary<string, object> pb, string prefix,
+            ICollection<(GameThingBase, IReadOnlyDictionary<string, object>)> data)
         {
-            var result = new List<(GameThingBase, IReadOnlyDictionary<string, object>)>();
+            bool result = true;
             var coll = pb.GetValuesWithoutPrefix(prefix);
             var alls = gameChar.AllChildren.ToLookup(c => c.TemplateId); //所有物品
             foreach (var item in coll)
@@ -723,7 +734,7 @@ namespace OW.Game
                 if (!OwConvert.TryToGuid(item.FirstOrDefault(c => c.Item1 == "tid").Item2, out var tid))  //若找不到tid
                     continue;
                 GameItem gi;
-                if (!OwConvert.TryToGuid(item.FirstOrDefault(c => c.Item1 == "ptid").Item2, out var ptid))  //若指定了容器
+                if (OwConvert.TryToGuid(item.FirstOrDefault(c => c.Item1 == "ptid").Item2, out var ptid))  //若指定了容器
                 {
                     gi = alls[ptid].SelectMany(c => c.Children).FirstOrDefault(c => c.TemplateId == tid);
                 }
@@ -731,10 +742,32 @@ namespace OW.Game
                 {
                     gi = alls[tid].FirstOrDefault();
                 }
-                if (gi != null)
-                    result.Add((gi, OwHelper.DictionaryFrom(item)));
+                data.Add((gi, OwHelper.DictionaryFrom(item)));
+                if (gi is null)
+                    result = false;
             }
             return result;
+        }
+
+        /// <summary>
+        /// 校验指定的对象是否符合属性集合中的要求。
+        /// 当前仅校验数量要求是否足够。
+        /// </summary>
+        /// <param name="data">其中任何元素的Item1如果为null,都将导致立即返回false。</param>
+        /// <returns></returns>
+        public virtual bool Verify(IEnumerable<(GameThingBase, IReadOnlyDictionary<string, object>)> data)
+        {
+            //TODO:是否合并其他要求项，如特定对象特定属性的不等式。
+            foreach (var item in data)  //校验代价
+            {
+                GameItem gi = item.Item1 as GameItem;
+                var count = item.Item2.GetDecimalOrDefault("count");
+                if (gi is null || gi.Count.GetValueOrDefault() < count)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>

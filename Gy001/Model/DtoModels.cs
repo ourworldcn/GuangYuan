@@ -4051,7 +4051,7 @@ namespace GY2021001WebApi.Models
     public class GetGuildReturnDto : ReturnDtoBase
     {
         [DataMember]
-        public GameGuildDto Guild { get; set; }
+        public GameGuildDto Guild { get; set; } = new GameGuildDto();
     }
 
     [DataContract]
@@ -4077,6 +4077,21 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public partial class GameGuildDto
     {
+        [DataMember]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// 角色自身属性。
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// 角色显示用的名字。
+        /// </summary>
+        [DataMember]
+        public string DisplayName { get; set; }
+
         /// <summary>
         /// 下属对象（当前主要是建筑物）集合。
         /// </summary>
@@ -4087,11 +4102,12 @@ namespace GY2021001WebApi.Models
         /// 成员信息集合。
         /// </summary>
         [DataMember]
-        public List<GuildMemberDto> MemberIds { get; set; } = new List<GuildMemberDto>();
+        public List<GuildMemberDto> Members { get; set; } = new List<GuildMemberDto>();
     }
 
     /// <summary>
     /// 行会成员信息类。
+    /// 根据需求变化极有可能会添加成员。
     /// </summary>
     [DataContract]
     public class GuildMemberDto
@@ -4109,13 +4125,13 @@ namespace GY2021001WebApi.Models
         public int Title { get; set; }
 
         /// <summary>
-        /// 等级。
+        /// 角色等级。
         /// </summary>
         [DataMember]
         public int Level { get; set; }
 
         /// <summary>
-        /// 昵称。
+        /// 角色昵称。
         /// </summary>
         [DataMember]
         public string DisplayName { get; set; }

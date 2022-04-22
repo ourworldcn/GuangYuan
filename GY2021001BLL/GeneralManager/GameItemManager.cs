@@ -990,16 +990,21 @@ namespace OW.Game.Item
         /// <param name="tid"></param>
         /// <param name="creator"></param>
         /// <returns></returns>
-        public virtual GameItem GetOrCreateItem(GameThingBase parent, Guid tid,[AllowNull] Action<GameItem> creator = null)
+        public virtual GameItem GetOrCreateItem(GameThingBase parent, Guid tid, [AllowNull] Action<GameItem> creator = null)
         {
             var child = World.PropertyManager.GetChildrenCollection(parent);
             var result = child.FirstOrDefault(c => c.TemplateId == tid);
-            if (result is null)
+            if (result is null) //若需要创建
             {
                 result = new GameItem();
                 child.Add(result);
                 World.EventsManager.GameItemCreated(result, tid);
                 creator?.Invoke(result);
+                if (parent is GameChar gc)  //若添加到角色的直接对象
+                {
+                    gc.GetDbContext().Add(result);
+                    result.OwnerId = gc.Id;
+                }
             }
             return result;
         }

@@ -525,11 +525,13 @@ namespace Gy001.Controllers
                     return Unauthorized("令牌无效");
 
                 _World.SocialManager.PatWithMounts(datas);
-                result.HasError = datas.HasError;
-                result.DebugMessage = datas.ErrorMessage;
-                result.Changes.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
-                result.MailItems.AddRange(datas.MailItems.Select(c => (ChangesItemDto)c));
-                result.Relationship = datas.GetOrAddSr();
+                result.FillFrom(datas);
+                if (!result.HasError)
+                {
+                    result.Changes.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                    result.MailItems.AddRange(datas.MailItems.Select(c => (ChangesItemDto)c));
+                    result.Relationship = datas.GetOrAddSr();
+                }
             }
             catch (Exception err)
             {
@@ -571,7 +573,7 @@ namespace Gy001.Controllers
             };
             if (!result.HasError)
             {
-                result.Homeland= datas.Homeland;
+                result.Homeland = datas.Homeland;
                 result.Mounts.AddRange(datas.Mounts.Select(c => (GameItemDto)c));
                 //result.Mounts.Where(c => c.Properties.ContainsKey("for10")).ToList().ForEach(c => c.Properties["for10"] = 4);   //强行加入阵容信息。
             }
