@@ -885,6 +885,7 @@ namespace GuangYuan.GY001.BLL
                         TemplateId = ProjectConstant.FriendSlotTId,
                     };
                     list.Add(np);
+                    World.CharManager.NotifyChange(otherGc.GameUser);
                 }
             }
             db.SaveChanges();
