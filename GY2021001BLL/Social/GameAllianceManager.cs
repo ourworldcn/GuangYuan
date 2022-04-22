@@ -141,6 +141,11 @@ namespace GuangYuan.GY001.UserDb.Social
         {
             using var dw = datas.LockUser();
             datas.Guild = GetGuild(datas.GameChar);
+            if (datas.Guild is null)
+            {
+                datas.ErrorCode=ErrorCodes.ERROR_INVALID_DATA;
+                datas.ErrorMessage = "找不到指定的工会。";
+            }
             return;
         }
 
@@ -292,7 +297,7 @@ namespace GuangYuan.GY001.UserDb.Social
                     if (guild is null)
                     {
                         datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                        datas.ErrorMessage = "只有会长才能解散工会";
+                        datas.ErrorMessage = "找不到指定行会。";
                         return;
                     }
                 }
@@ -399,6 +404,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 var gc = World.CharManager.GetCharFromId(charId);
                 var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
                 slot.ExtraDecimal = datas.Division;
+                World.CharManager.NotifyChange(gc.GameUser);
             }
         }
 

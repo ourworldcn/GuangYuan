@@ -869,6 +869,23 @@ namespace GuangYuan.GY001.BLL
                 nsr.SetFriend();
                 nsr.SetConfirmed();
                 slot.Count++;
+                var otherGc = World.CharManager.GetCharFromId(sr.Id2);  //对方角色
+                if (otherGc != null && World.CharManager.Lock(otherGc?.GameUser, 500))  //TODO:乱序锁
+                {
+                    using var dw = DisposeHelper.Create(c => World.CharManager.Unlock(c), otherGc.GameUser);
+                    var list = World.CharManager.GetChangeData(otherGc);
+                    var otherSlot = otherGc.AllChildren.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
+                    var np = new ChangeData()
+                    {
+                        ActionId = 2,
+                        NewValue = otherSlot.Count,
+                        ObjectId = otherSlot.Id,
+                        OldValue = otherSlot.Count - 1,
+                        PropertyName = "Count",
+                        TemplateId = ProjectConstant.FriendSlotTId,
+                    };
+                    list.Add(np);
+                }
             }
             db.SaveChanges();
             return ConfirmFriendResult.Success;

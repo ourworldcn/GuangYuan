@@ -91,7 +91,9 @@ namespace Gy001.Controllers
             using var datas = new GetGuildContext(World, model.Token);
             World.AllianceManager.GetGuild(datas);
             var result = new GetGuildReturnDto();
-            GameGuildDto.FillMembers(datas.Guild, result.Guild, World);
+            result.FillFrom(datas);
+            if (!result.HasError)
+                GameGuildDto.FillMembers(datas.Guild, result.Guild, World);
             return result;
         }
         #endregion 行会信息

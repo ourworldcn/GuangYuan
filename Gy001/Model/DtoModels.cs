@@ -976,8 +976,10 @@ namespace GY2021001WebApi.Models
         }
 
         [IgnoreDataMember]
-        private List<GamePropertyChangeItemDto> _Changes;
-        public List<GamePropertyChangeItemDto> Changes { get => _Changes ??= new List<GamePropertyChangeItemDto>(); set => _Changes = value; }
+        private List<GamePropertyChangeItemDto> _Changes = new List<GamePropertyChangeItemDto>();
+
+        [DataMember]
+        public List<GamePropertyChangeItemDto> Changes { get => _Changes; set => _Changes = value; }
 
     }
 
