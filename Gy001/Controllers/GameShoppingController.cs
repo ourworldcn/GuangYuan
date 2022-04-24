@@ -47,11 +47,9 @@ namespace Gy001.Controllers
             {
                 UserDbContext = HttpContext.RequestServices.GetService<GY001UserContext>(),
             };
-            datas.Genus.AddRange(model.Genus);
+            OwHelper.SafeCopy(model.Genus, datas.Genus);
             World.ShoppingManager.GetList(datas);
-            result.HasError = datas.HasError;
-            result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.ErrorMessage;
+            result.FillFrom(datas);
             if (!result.HasError)
             {
                 result.ShoppingItems.AddRange(datas.ShoppingTemplates.Select(c => ShoppingItemDto.FromGameShoppingTemplate(c, datas.GameChar, datas.Now, World)));

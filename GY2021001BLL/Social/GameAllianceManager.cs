@@ -760,7 +760,10 @@ namespace GuangYuan.GY001.UserDb.Social
                     return false;
                 }
                 var channelId = mng.GetGuildChatChannelId(gameChar);
+                if (channelId is null)
+                    return false;
                 return cm.JoinOrCreateChannel(gameChar.Id.ToString(), channelId, cm.Options.LockTimeout, null);
+
             }
             else
             {

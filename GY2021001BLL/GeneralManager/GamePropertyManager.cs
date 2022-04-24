@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace OW.Game
 {
@@ -44,51 +45,60 @@ namespace OW.Game
 
         private void Initializer()
         {
-            _Alls = new Lazy<Dictionary<string, GamePropertyTemplate>>(() =>
+            _Id2Datas = new Lazy<Dictionary<string, GamePropertyTemplate>>(() =>
             {
                 using var db = World.CreateNewTemplateDbContext();
                 return db.Set<GamePropertyTemplate>().AsNoTracking().ToDictionary(c => c.PName);
-            }, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
+            _NoCopyNames = new Lazy<HashSet<string>>(() =>
+            {
+                return new HashSet<string>(Id2Datas.Values.Where(c => c.IsFix && !c.IsPrefix).Select(c => string.IsNullOrEmpty(c.FName) ? c.PName : c.FName));
+            }, LazyThreadSafetyMode.ExecutionAndPublication);
+            _NoCopyPrefixNames = new Lazy<HashSet<string>>(() =>
+             {
+                 return new HashSet<string>(Id2Datas.Values.Where(c => c.IsFix && c.IsPrefix).Select(c => string.IsNullOrEmpty(c.FName) ? c.PName : c.FName));
+             }, LazyThreadSafetyMode.ExecutionAndPublication);
+
         }
 
         #endregion 构造函数相关
 
-        private Lazy<Dictionary<string, GamePropertyTemplate>> _Alls;
+        private Lazy<Dictionary<string, GamePropertyTemplate>> _Id2Datas;
 
-        public IReadOnlyDictionary<string, GamePropertyTemplate> Id2Datas => _Alls.Value;
+        public IReadOnlyDictionary<string, GamePropertyTemplate> Id2Datas => _Id2Datas.Value;
 
         #region 基础属性名相关
 
-        private HashSet<string> _NoCopyNames;
+        private Lazy<HashSet<string>> _NoCopyNames;
         /// <summary>
         /// 不必复制的属性全名集合。
         /// </summary>
-        public ISet<string> NoCopyNames => _NoCopyNames ??= new HashSet<string>(Id2Datas.Values.Where(c => c.IsFix && !c.IsPrefix).Select(c => string.IsNullOrEmpty(c.FName) ? c.PName : c.FName));
+        public ISet<string> NoCopyNames => _NoCopyNames.Value;
 
-        private HashSet<string> _NoCopyPrefixNames;
+        private Lazy<HashSet<string>> _NoCopyPrefixNames;
         /// <summary>
         /// 不必复制的属性属性名前缀集合。
         /// </summary>
-        public ISet<string> NoCopyPrefixNames => _NoCopyPrefixNames ??= new HashSet<string>(Id2Datas.Values.Where(c => c.IsFix && c.IsPrefix).Select(c => string.IsNullOrEmpty(c.FName) ? c.PName : c.FName));
+        public ISet<string> NoCopyPrefixNames => _NoCopyPrefixNames.Value;
 
 
         string _LevelPropertyName;
         /// <summary>
         /// 级别属性名前缀。
         /// </summary>
-        public string LevelPropertyName => _LevelPropertyName ??= _Alls.Value["lv"].FName;
+        public string LevelPropertyName => _LevelPropertyName ??= _Id2Datas.Value["lv"].FName;
 
         string _StackUpperLimitPropertyName;
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public string StackUpperLimitPropertyName => _StackUpperLimitPropertyName ??= (_Alls.Value.GetValueOrDefault("stc")?.FName ?? "stc");
+        public string StackUpperLimitPropertyName => _StackUpperLimitPropertyName ??= (_Id2Datas.Value.GetValueOrDefault("stc")?.FName ?? "stc");
 
         string _CapacityPropertyName;
         /// <summary>
         /// 获取容量属性。默认值cap。
         /// </summary>
-        public string CapacityPropertyName => _CapacityPropertyName ??= (_Alls.Value.GetValueOrDefault("cap")?.FName ?? "cap");
+        public string CapacityPropertyName => _CapacityPropertyName ??= (_Id2Datas.Value.GetValueOrDefault("cap")?.FName ?? "cap");
 
         private string _CountPropertyName;
         /// <summary>
@@ -97,7 +107,7 @@ namespace OW.Game
         public string CountPropertyName
         {
             [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
-            get => _CountPropertyName ??= (_Alls.Value.GetValueOrDefault("count")?.FName ?? "Count");
+            get => _CountPropertyName ??= (_Id2Datas.Value.GetValueOrDefault("count")?.FName ?? "Count");
         }
 
         #endregion 基础属性名相关
@@ -119,7 +129,7 @@ namespace OW.Game
         /// </summary>
         /// <param name="dic"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
         public IEnumerable<KeyValuePair<string, object>> Filter(IReadOnlyDictionary<string, object> dic)
         {
             return dic.Where(c => !NoCopyNames.Contains(c.Key) && !NoCopyPrefixNames.Any(c1 => c.Key.StartsWith(c1)));

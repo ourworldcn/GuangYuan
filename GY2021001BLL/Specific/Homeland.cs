@@ -39,7 +39,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <returns>没有找到则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetMainControlRoom(this GameChar gameChar) =>
-            gameChar.GetMainbase()?.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.MainControlRoomSlotId);
+            gameChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.TemplateId == ProjectConstant.MainControlRoomSlotId);
 
 
         /// <summary>

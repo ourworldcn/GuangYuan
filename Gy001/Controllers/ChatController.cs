@@ -138,7 +138,7 @@ namespace Gy001.Controllers
         /// </summary>
         /// <param name="channelId"></param>
         /// <returns></returns>
-        public string ConvertChannelId(string channelId)
+        string ConvertChannelId(string channelId)
         {
             if (!channelId.StartsWith("Guild") || !Guid.TryParse(channelId[5..], out _))
                 return channelId;

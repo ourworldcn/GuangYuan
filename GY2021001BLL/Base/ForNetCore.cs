@@ -154,7 +154,7 @@ namespace GuangYuan.GY001.BLL
         [Conditional("DEBUG")]
         private void CreateNewUserAndChar()
         {
-            Task.Run(() => SendMail());
+            //Task.Run(() => SendMail());
 #if DEBUG
             var maxCount = 150;
 #else

@@ -183,7 +183,7 @@ namespace OW.Game.Store
             {
                 if (_Properties is null)
                 {
-                    _Properties = DictionaryPool<string, object>.Shared.Get();
+                    _Properties = new Dictionary<string, object>();
                     OwConvert.Copy(PropertiesString, _Properties);
                 }
                 return _Properties;

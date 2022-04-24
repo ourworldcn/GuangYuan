@@ -444,7 +444,7 @@ namespace OW.Game
             {
                 thing.TemplateId = tt.Id;
                 thing.SetTemplate(tt);
-                var coll = gpm is null ? tt.Properties : gpm.Filter(tt.Properties);
+                var coll = gpm is null ? tt.Properties as IDictionary<string,object> : new ConcurrentDictionary<string, object>(gpm.Filter(tt.Properties));
                 var dic = thing.Properties;
                 foreach (var item in coll)   //复制属性
                 {
