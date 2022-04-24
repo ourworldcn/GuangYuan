@@ -1,5 +1,6 @@
 ﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.GeneralManager;
+using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -46,6 +47,7 @@ namespace Gy001.Controllers
                 result.Messages.AddRange(gContext.Messages.Select(c =>
                 {
                     var tmp = (ChatMessageDto)c;
+                    tmp.ChannelId = ConvertChannelId(tmp.ChannelId);
                     //if (OwConvert.TryToGuid(c.Sender, out var gcId))
                     //{
                     //    var gc = World.CharManager.GetCharFromId(gcId);
@@ -87,12 +89,18 @@ namespace Gy001.Controllers
             {
                 CharId = World.CharManager.GetUserFromToken(token).CurrentChar.Id.ToString(),
             };
-            foreach (var msg in model.Messages)
+            var gc = World.CharManager.GetGameCharFromToken(model.Token);
+            foreach (var msg in model.Messages) //逐一发送消息
             {
                 result.HasError = false; result.ErrorCode = ErrorCodes.NO_ERROR; result.DebugMessage = string.Empty;
                 gContext.Message = msg.Message;
-                gContext.ChannelId = NormChannelId(msg.ChannelId);
+                gContext.ChannelId = NormChannelId(msg.ChannelId, gc);
                 gContext.ExString = $"{gu.CurrentChar.ClientProperties.GetValueOrDefault("charIcon", "0")},{gu.CurrentChar.DisplayName}";
+                if (gContext.ChannelId is null)
+                {
+                    result.FillFromWorld();
+                    return result;
+                }
                 World.ChatManager.SendMessages(gContext);
             }
             result.FillFrom(gContext);
@@ -103,8 +111,9 @@ namespace Gy001.Controllers
         /// 规范化频道id。
         /// </summary>
         /// <param name="channelId"></param>
-        /// <returns></returns>
-        string NormChannelId(string channelId)
+        /// <param name="gameChar"></param>
+        /// <returns>转换后的频道id，如果不能转换则返回null。</returns>
+        string NormChannelId(string channelId, GameChar gameChar)
         {
             var ary = channelId.Split(OwHelper.CommaArrayWithCN);
             if (ary.Length == 2)
@@ -117,7 +126,23 @@ namespace Gy001.Controllers
                 if (coll.Count() == 2)
                     return string.Join(',', coll.Select(c => c.ToString().ToUpper()));
             }
+            else if (string.Compare(ProjectConstant.GuildChannelId, channelId, true) == 0)  //若是工会聊天
+            {
+                return World.AllianceManager.GetGuildChatChannelId(gameChar);
+            }
             return channelId.ToUpper();
+        }
+
+        /// <summary>
+        /// 如果是工会聊天频道，则转换为特定的工会聊天频道id。
+        /// </summary>
+        /// <param name="channelId"></param>
+        /// <returns></returns>
+        public string ConvertChannelId(string channelId)
+        {
+            if (!channelId.StartsWith("Guild") || !Guid.TryParse(channelId[5..], out _))
+                return channelId;
+            return ProjectConstant.GuildChannelId;
         }
 
     }

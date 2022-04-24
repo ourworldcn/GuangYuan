@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OW.Game.PropertyChange;
 using System.Threading;
+using GuangYuan.GY001.BLL.GeneralManager;
 
 namespace GuangYuan.GY001.UserDb.Social
 {
@@ -143,10 +144,37 @@ namespace GuangYuan.GY001.UserDb.Social
             datas.Guild = GetGuild(datas.GameChar);
             if (datas.Guild is null)
             {
-                datas.ErrorCode=ErrorCodes.ERROR_INVALID_DATA;
+                datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;
                 datas.ErrorMessage = "找不到指定的工会。";
             }
             return;
+        }
+
+        /// <summary>
+        /// 获取指定工会的聊天频道号。
+        /// </summary>
+        /// <param name="guildId">工会的id,当前不校验有效性。</param>
+        /// <returns>工会聊天频道号。</returns>
+        public string GetGuildChatChannelId(Guid guildId)
+        {
+            return $"Guild{guildId}";
+        }
+
+        /// <summary>
+        /// 获取指定工会的聊天频道号。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns>没有加入工会则返回null。</returns>
+        public string GetGuildChatChannelId(GameChar gameChar)
+        {
+            var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out var guildId) || !_Id2Guild.ContainsKey(guildId))
+            {
+                VWorld.SetLastError(ErrorCodes.ERROR_INVALID_DATA);
+                VWorld.SetLastErrorMessage("找不到指定行会。");
+                return null;
+            }
+            return GetGuildChatChannelId(guildId);
         }
 
         #region 工会操作
@@ -227,6 +255,8 @@ namespace GuangYuan.GY001.UserDb.Social
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
             datas.Id = guild.Id;
             DictionaryPool<string, object>.Shared.Return(pg);
+            //加入行会聊天
+            this.JoinGuildChatChannel(datas.GameChar);
         }
 
         /// <summary>
@@ -332,6 +362,7 @@ namespace GuangYuan.GY001.UserDb.Social
             guild.Dispose();
             _Id2Guild.Remove(guildId, out _);
             //获取所有工会成员
+            World.ChatManager.RemoveChannel(GetGuildChatChannelId(guildId));
         }
 
         #endregion 工会操作
@@ -505,7 +536,9 @@ namespace GuangYuan.GY001.UserDb.Social
                 slot.ExtraDecimal = (int)GuildDivision.见习会员;
                 slot.ExtraString = guild.IdString;
                 World.CharManager.NotifyChange(gc.GameUser);
+                this.JoinGuildChatChannel(gc);  //加入工会聊天
             }
+
         }
 
         /// <summary>
@@ -538,6 +571,10 @@ namespace GuangYuan.GY001.UserDb.Social
             datas.CharIds.AddRange(GetAllMemberSlotQuery(guildId, db).Where(c => c.ExtraDecimal == 0).Select(c => c.OwnerId.Value));
         }
 
+        /// <summary>
+        /// 移除工会成员。
+        /// </summary>
+        /// <param name="datas"></param>
         public void RemoveMembers(RemoveMembersContext datas)
         {
             Guid charId;
@@ -589,19 +626,28 @@ namespace GuangYuan.GY001.UserDb.Social
                     datas.ErrorMessage = "至少有一个角色不是该行会成员";
                     return;
                 }
-                if (slot.ExtraDecimal >= slotGc.ExtraDecimal)
+                if (slot.ExtraDecimal >= slotGc.ExtraDecimal && slot.Id != slotGc.Id)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                     datas.ErrorMessage = "没有足够权限删除成员。";
                     return;
                 }
+                if (slotGc.ExtraDecimal >= (int)GuildDivision.会长)
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "会长不能退出工会，应先移交会长权限。";
+                    return;
+                }
             }
+            var channelId = GetGuildChatChannelId(guildId); //工会聊天频道id
+
             foreach (var id in datas.CharIds)   //逐一删除
             {
                 var tmp = World.CharManager.GetCharFromId(id);
                 var slot = tmp.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
                 World.ItemManager.ForcedDelete(slot);
                 World.CharManager.NotifyChange(tmp.GameUser);
+                World.ChatManager.LeaveChannel(tmp.Id.ToString(), channelId, Options.DefaultTimeout);
             }
         }
         #endregion 人事管理
@@ -697,6 +743,33 @@ namespace GuangYuan.GY001.UserDb.Social
         {
             return guild.RuntimeProperties.GetOrAdd("MemberIds", c => new List<Guid>()) as List<Guid>;
         }
+
+        /// <summary>
+        /// 加入工会聊天频道。仅当指定角色已经由用户登录的时候才有效。
+        /// </summary>
+        /// <param name="mng"></param>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static bool JoinGuildChatChannel(this GameAllianceManager mng, GameChar gameChar)
+        {
+            var cm = mng.World.ChatManager;
+            if (cm != null)  //若有聊天服务
+            {
+                if (!mng.World.CharManager.IsOnline(gameChar.Id))    //若用户未登录
+                {
+                    return false;
+                }
+                var channelId = mng.GetGuildChatChannelId(gameChar);
+                return cm.JoinOrCreateChannel(gameChar.Id.ToString(), channelId, cm.Options.LockTimeout, null);
+            }
+            else
+            {
+                VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+                VWorld.SetLastErrorMessage("没有聊天服务");
+                return false;
+            }
+        }
+
     }
 
     public class DeleteGuildContext : ComplexWorkGameContext

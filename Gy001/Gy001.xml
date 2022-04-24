@@ -3158,6 +3158,9 @@
         <member name="P:GY2021001WebApi.Models.RemoveGuildMemberParamsDto.CharIds">
             <summary>
             要除名成员。
+            只能移除比自己权限低的会员。
+            不能移除会长。
+            可以移除自己。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.AccepteGuildMemberParamsDto.CharIds">
@@ -3245,9 +3248,17 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:Gy001.Controllers.ChatController.NormChannelId(System.String)">
+        <member name="M:Gy001.Controllers.ChatController.NormChannelId(System.String,GuangYuan.GY001.UserDb.GameChar)">
             <summary>
             规范化频道id。
+            </summary>
+            <param name="channelId"></param>
+            <param name="gameChar"></param>
+            <returns>转换后的频道id，如果不能转换则返回null。</returns>
+        </member>
+        <member name="M:Gy001.Controllers.ChatController.ConvertChannelId(System.String)">
+            <summary>
+            如果是工会聊天频道，则转换为特定的工会聊天频道id。
             </summary>
             <param name="channelId"></param>
             <returns></returns>

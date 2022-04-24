@@ -339,9 +339,9 @@ namespace GuangYuan.GY001.BLL.GeneralManager
                 JoinOrCreateChannel(datas.CharId, datas.ChannelId, Options.LockTimeout, null);
             }
             var message = ChatMessagePool.Shard.Get();
-            message.ChannelName = datas.ChannelId;
+            message.ChannelId = datas.ChannelId;
             message.Message = datas.Message;
-            message.ChannelName = datas.ChannelId;
+            message.ChannelId = datas.ChannelId;
             message.Sender = datas.CharId;
             message.ExString = datas.ExString;
             channel.Messages.Enqueue(message);
@@ -462,7 +462,8 @@ namespace GuangYuan.GY001.BLL.GeneralManager
             {
 
             }
-
+            channel.Dispose();
+            Id2Channel.Remove(channelId, out _);
             return true;
         }
 
@@ -544,7 +545,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         public override void Return(ChatMessage obj)
         {
             obj.Message = default;
-            obj.ChannelName = default;
+            obj.ChannelId = default;
             obj.Sender = default;
             obj.ExString = default;
             base.Return(obj);
@@ -574,7 +575,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         /// <summary>
         /// 频道Id。
         /// </summary>
-        public string ChannelName { get; set; }
+        public string ChannelId { get; set; }
 
         /// <summary>
         /// 发送者的Id。
@@ -637,7 +638,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
         {
             var result = ChatMessagePool.Shard.Get();
             result.Message = Message;
-            result.ChannelName = ChannelName;
+            result.ChannelId = ChannelId;
             result.SendDateTimeUtc = SendDateTimeUtc;
             result.Sender = Sender;
             result.ExString = ExString;

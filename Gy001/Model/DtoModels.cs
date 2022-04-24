@@ -4004,6 +4004,9 @@ namespace GY2021001WebApi.Models
     {
         /// <summary>
         /// 要除名成员。
+        /// 只能移除比自己权限低的会员。
+        /// 不能移除会长。
+        /// 可以移除自己。
         /// </summary>
         [DataMember]
         public List<string> CharIds { get; set; } = new List<string>();

@@ -313,6 +313,8 @@ namespace GuangYuan.GY001.BLL
 
         #endregion 固定模板Id
 
+        public const string GuildChannelId= "5E36F81C-00BD-446D-B781-E48F2B088591";
+
         /// <summary>
         /// 快速变化属性的属性名前缀。
         /// </summary>

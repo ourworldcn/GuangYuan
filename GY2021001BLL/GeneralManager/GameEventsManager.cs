@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
@@ -153,6 +154,17 @@ namespace OW.Game
         }
 
         #region 基础规则相关
+
+        /// <summary>
+        /// 当用户登录后调用。
+        /// 系统登录不会调用此函数。此函数在<see cref="GameCharLoaded(GameChar)"/>之后被调用。
+        /// 多终端来回踢时，将导致多次调用此函数。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        public virtual void GameCharLogined(GameChar gameChar)
+        {
+            World.AllianceManager.JoinGuildChatChannel(gameChar);
+        }
 
         #endregion 基础规则相关
 

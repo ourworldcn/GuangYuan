@@ -534,7 +534,7 @@ namespace GuangYuan.GY001.BLL
         /// 获取指定Id的角色是否在线。
         /// </summary>
         /// <param name="charId"></param>
-        /// <returns></returns>
+        /// <returns>是否在线。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsOnline(Guid charId) =>
             _Store._Id2OnlineChars.ContainsKey(charId);
@@ -870,6 +870,7 @@ namespace GuangYuan.GY001.BLL
             using var dwLoginName = World.LockStringAndReturnDisposer(ref loginName, Timeout.InfiniteTimeSpan);   //锁定用户名
             Trace.Assert(null != dwLoginName);  //锁定该登录名不可失败
             List<GameActionRecord> actionRecords = new List<GameActionRecord>();
+            bool logined;   //是否已经登录
             if (_Store._LoginName2Users.TryGetValue(loginName, out var gu))    //若已经登录
             {
                 if (!Lock(gu))  //若锁定失败
@@ -877,6 +878,7 @@ namespace GuangYuan.GY001.BLL
                 using var dw = DisposerWrapper.Create(c => Unlock(c, true), gu);    //锁定对象
                 if (!IsPwd(gu, pwd))   //若密码错误
                     return null;
+                logined = IsOnline(gu.CurrentChar.Id);
                 var oldToken = gu.CurrentToken;
                 gu.CurrentToken = Guid.NewGuid(); //换新令牌
                 _Store.ChangeToken(gu, oldToken);
@@ -895,6 +897,7 @@ namespace GuangYuan.GY001.BLL
                     return null;
                 if (gu.BlockUtc != null && gu.BlockUtc > DateTime.UtcNow)  //若被封停
                     return null;
+                logined = true;
                 //初始化属性
                 gu.LastModifyDateTimeUtc = DateTime.UtcNow;
                 var gc = gu.CurrentChar;
@@ -915,6 +918,8 @@ namespace GuangYuan.GY001.BLL
                 World.AddToUserContext(actionRecords);
             //补偿操作
             gu.CurrentChar.Properties["DayCountOfLogin"] = (decimal)Math.Round((DateTime.UtcNow.Date - gu.CurrentChar.CreateUtc.Date).TotalDays); //最后一次登录距离创建账号的天数
+            if (logined)    //若需要通知用户登录
+                World.EventsManager.GameCharLogined(gu.CurrentChar);
             return gu;
         }
 

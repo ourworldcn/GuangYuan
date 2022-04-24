@@ -24,7 +24,7 @@ namespace GY2021001WebApi.Models
         {
             var result = new ChatMessageDto()
             {
-                ChannelId = obj.ChannelName,
+                ChannelId = obj.ChannelId,
                 Message = obj.Message as string,
                 SendDateTimeUtc = obj.SendDateTimeUtc,
                 Sender = obj.Sender,
@@ -68,6 +68,12 @@ namespace GY2021001WebApi.Models
             HasError = result.HasError;
             ErrorCode = result.ErrorCode;
             DebugMessage = result.ErrorMessage;
+        }
+
+        public void FillFromWorld()
+        {
+            ErrorCode = VWorld.GetLastError();
+            DebugMessage = VWorld.GetLastErrorMessage();
         }
     }
 
