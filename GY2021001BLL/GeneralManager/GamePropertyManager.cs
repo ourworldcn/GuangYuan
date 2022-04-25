@@ -58,7 +58,6 @@ namespace OW.Game
              {
                  return new HashSet<string>(Id2Datas.Values.Where(c => c.IsFix && c.IsPrefix).Select(c => string.IsNullOrEmpty(c.FName) ? c.PName : c.FName));
              }, LazyThreadSafetyMode.ExecutionAndPublication);
-
         }
 
         #endregion 构造函数相关
@@ -119,10 +118,9 @@ namespace OW.Game
         /// </summary>
         /// <param name="pNmaes"></param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
         public IEnumerable<string> Filter(IEnumerable<string> pNmaes) =>
-            pNmaes.Where(c => !NoCopyNames.Contains(c) && !NoCopyPrefixNames.Any(c1 => c.StartsWith(c1))   //寻找匹配的设置项
-            );
+            pNmaes.Where(c => !NoCopyNames.Contains(c) && !NoCopyPrefixNames.Any(c1 => c.StartsWith(c1)));  //寻找匹配的设置项
 
         /// <summary>
         /// 对给定字典过滤掉不必要的属性名，返回有效的键值对。

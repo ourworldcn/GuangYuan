@@ -246,12 +246,12 @@ namespace GY2021001WebApi.Models
                 OwnerId = string.IsNullOrEmpty(obj.OwnerId) ? Guid.Empty : OwConvert.ToGuid(obj.OwnerId),
                 ParentId = string.IsNullOrEmpty(obj.ParentId) ? Guid.Empty : OwConvert.ToGuid(obj.ParentId),
             };
+            result.GenerateIdIfEmpty();
             foreach (var item in obj.Properties)
             {
                 result.Properties[item.Key] = item.Value is JsonElement je ? (je.ValueKind switch { JsonValueKind.Number => je.GetDecimal(), _ => throw new InvalidOperationException(), }) : item.Value;
             }
             result.Children.AddRange(obj.Children.Select(c => (GameItem)c));
-            result.GenerateIdIfEmpty();
             return result;
         }
 
@@ -275,7 +275,10 @@ namespace GY2021001WebApi.Models
                 item.Value.GetCurrentValueWithUtc();
                 FastChangingPropertyExtensions.ToDictionary(item.Value, obj.Properties, item.Key);
             }
-            result._Properties = new System.Collections.Generic.Dictionary<string, object>(obj.Properties);
+            result._Properties = new Dictionary<string, object>(obj.Properties);
+            result.Properties[nameof(GameItem.ExtraString)] = obj.ExtraString;
+            result.Properties[nameof(GameItem.ExtraDecimal)] = obj.ExtraDecimal;
+
             //特殊处理处理木材堆叠数
             if (ProjectConstant.MucaiId == obj.TemplateId)
                 result.Properties[ProjectConstant.StackUpperLimit] = obj.GetDecimalWithFcpOrDefault(ProjectConstant.StackUpperLimit);
@@ -294,9 +297,12 @@ namespace GY2021001WebApi.Models
                 ParentId = obj.ParentId?.ToBase64String(),
                 ClientString = obj.GetClientString(),
             };
+            result.Properties[nameof(GameItem.ExtraString)] = obj.ExtraString;
+            result.Properties[nameof(GameItem.ExtraDecimal)] = obj.ExtraDecimal;
+
             if (obj.Name2FastChangingProperty.TryGetValue("Count", out var fcp))
                 result.Count = fcp.LastValue;
-            result._Properties = new System.Collections.Generic.Dictionary<string, object>(obj.Properties);
+            result._Properties = new Dictionary<string, object>(obj.Properties);
             if (includeChildren && obj.Children.Count > 0)  //若有孩子需要转换
                 result.Children.AddRange(obj.Children.Select(c => FromGameItem(c, includeChildren)));
             return result;

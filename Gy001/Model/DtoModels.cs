@@ -3995,6 +3995,21 @@ namespace GY2021001WebApi.Models
     #region 行会相关
 
     [DataContract]
+    public class GetAllGuildParamsDto : TokenDtoBase
+    {
+    }
+
+    [DataContract]
+    public class GetAllGuildReturnDto
+    {
+        /// <summary>
+        /// 所有工会信息集合。
+        /// </summary>
+        [DataMember]
+        public List<GameGuildDto> Guilds { get; set; } = new List<GameGuildDto>();
+    }
+
+    [DataContract]
     public class ModifyPermissionsReturnDto : ReturnDtoBase
     {
     }

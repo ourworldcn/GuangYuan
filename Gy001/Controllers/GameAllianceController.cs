@@ -96,6 +96,25 @@ namespace Gy001.Controllers
                 GameGuildDto.FillMembers(datas.Guild, result.Guild, World);
             return result;
         }
+
+        /// <summary>
+        /// 获取所有工会信息。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public ActionResult<GetAllGuildReturnDto> GetAllGuild(GetAllGuildParamsDto model)
+        {
+            var result = new GetAllGuildReturnDto();
+            result.Guilds.AddRange(World.AllianceManager.Id2Guild.Values.Select(c =>
+            {
+                var dto = new GameGuildDto();
+                GameGuildDto.FillMembers(c, dto, World);
+                return dto;
+            }));
+            return result;
+        }
+
         #endregion 行会信息
 
         #region 行会人事管理功能

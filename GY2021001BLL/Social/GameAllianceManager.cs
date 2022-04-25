@@ -131,7 +131,8 @@ namespace GuangYuan.GY001.UserDb.Social
         public IQueryable<GameItem> GetAllMemberSlotQuery(Guid guidId, DbContext db)
         {
             var str = guidId.ToString();
-            return db.Set<GameItem>().AsNoTracking().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == str);
+            var result = db.Set<GameItem>().AsNoTracking().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == str);
+            return result;
         }
 
         /// <summary>

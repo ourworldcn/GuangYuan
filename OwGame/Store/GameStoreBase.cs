@@ -11,6 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace OW.Game.Store
 {
@@ -182,10 +183,13 @@ namespace OW.Game.Store
             get
             {
                 if (_Properties is null)
-                {
-                    _Properties = new Dictionary<string, object>();
-                    OwConvert.Copy(PropertiesString, _Properties);
-                }
+                    lock (this)
+                        if (_Properties is null)
+                        {
+                            var tmp = new Dictionary<string, object>();
+                            OwConvert.Copy(PropertiesString, tmp);
+                            _Properties = tmp;
+                        }
                 return _Properties;
             }
         }

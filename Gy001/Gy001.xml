@@ -3155,6 +3155,11 @@
             发送消息接口的返回值封装类。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetAllGuildReturnDto.Guilds">
+            <summary>
+            所有工会信息集合。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.RemoveGuildMemberParamsDto.CharIds">
             <summary>
             要除名成员。
@@ -3213,12 +3218,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
@@ -3290,6 +3289,13 @@
             <summary>
             获取行会信息。
             </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.GetAllGuild(GY2021001WebApi.Models.GetAllGuildParamsDto)">
+            <summary>
+            获取所有工会信息。
+            </summary>
+            <param name="model"></param>
             <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.GameAllianceController.RequestJoinGuild(GY2021001WebApi.Models.RequestJoinGuildParamsDto)">

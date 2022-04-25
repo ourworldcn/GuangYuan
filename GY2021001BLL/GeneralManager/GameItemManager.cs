@@ -1228,7 +1228,6 @@ namespace OW.Game.Item
             var coll = propertyBag.GetValuesWithoutPrefix(prefix);
             var tid2gi = gameChar.AllChildren.ToLookup(c => c.TemplateId);
             var result = new List<(GameItem, decimal)>();
-
             foreach (var item in coll)
             {
                 var tidVt = item.FirstOrDefault(c => c.Item1 == "tid");
@@ -1254,13 +1253,26 @@ namespace OW.Game.Item
         }
 
         /// <summary>
+        /// 消耗资源。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="changes">元素是指定的对象和要消耗的数量。</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual void DecrementCount(IEnumerable<(GameItem, decimal)> obj, ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            foreach (var item in obj)
+                this.ForcedAddCount(item.Item1, -item.Item2, changes);
+        }
+
+        /// <summary>
         /// 按字典指定的物品消耗资源。
         /// </summary>
         /// <param name="gameChar"></param>
         /// <param name="propertyBag"></param>
         /// <param name="prefix"></param>
         /// <param name="changes"></param>
-        public virtual void DecrementCount(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null, ICollection<GamePropertyChangeItem<object>> changes = null)
+        public virtual void DecrementCount(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null,
+            ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var list = Lookup(gameChar, propertyBag, prefix);
             var count = propertyBag.GetValuesWithoutPrefix(prefix).Count();
@@ -1269,6 +1281,18 @@ namespace OW.Game.Item
                 VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
                 return;
             }
+            DecrementCount(list, changes);
+        }
+
+        /// <summary>
+        /// 校验数量书否足够。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public virtual bool Verify(IEnumerable<(GameItem, decimal)> obj)
+        {
+            var first = obj.FirstOrDefault(c => c.Item1 is null || c.Item1.Count.GetValueOrDefault() < c.Item2);
+            return true;
         }
 
         /// <summary>
@@ -1734,6 +1758,18 @@ namespace OW.Game.Item
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool ForcedAddCount(this GameItemManager mng, GameItem gameItem, decimal diff, [AllowNull] ICollection<ChangeItem> changes = null) =>
+            mng.ForcedSetCount(gameItem, gameItem.Count.GetValueOrDefault() + diff, changes);
+
+        /// <summary>
+        /// 强制修改数量。
+        /// </summary>
+        /// <param name="mng"></param>
+        /// <param name="gameItem"></param>
+        /// <param name="diff"></param>
+        /// <param name="changes"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool ForcedAddCount(this GameItemManager mng, GameItem gameItem, decimal diff, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null) =>
             mng.ForcedSetCount(gameItem, gameItem.Count.GetValueOrDefault() + diff, changes);
 
     }
