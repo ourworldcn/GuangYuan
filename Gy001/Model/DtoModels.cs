@@ -6,6 +6,7 @@ using Game.Social;
 using GuangYuan.GY001.UserDb;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
 #pragma warning disable IDE0074 // 使用复合分配

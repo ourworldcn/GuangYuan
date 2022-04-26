@@ -386,7 +386,7 @@ namespace OW.Game
             var db = gameChar.GameUser.DbContext;
             if (string.IsNullOrWhiteSpace(gameChar.DisplayName))    //若没有指定昵称
             {
-                string tmp;
+                //string tmp;
                 //for (tmp = CnNames.GetName(VWorld.IsHit(0.5)); db.Set<GameChar>().Any(c => c.DisplayName == tmp); tmp = CnNames.GetName(VWorld.IsHit(0.5)))
                 gameChar.DisplayName = World.CharManager.GetNewDisplayName(gameChar.GameUser);
             }

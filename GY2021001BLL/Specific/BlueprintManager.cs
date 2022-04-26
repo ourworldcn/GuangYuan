@@ -774,22 +774,23 @@ namespace GuangYuan.GY001.BLL
                 //gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
                 if (gameItem.TemplateId == ProjectConstant.MainControlRoomSlotId) //如果是主控室升级
                 {
-                    //TODO 复查送物品/地块
-                    if (World.ItemTemplateManager.Id2RequireLevel.Contains(gameItem.TemplateId)) //若存在需要增加的物品
-                    {
-                        var tts = World.ItemTemplateManager.Id2RequireLevel[gameItem.TemplateId];
-                        var templates = tts.Where(c => c.Properties.TryGetDecimal($"rqlv{{{gameItem.TemplateId}}}", out var rqlvDec) && rqlvDec == lv); //需要加入物品的模板
-                        List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
-                        foreach (var tt in templates)
-                        {
-                            //实际添加物品，次更改不兼容，暂时未加 TO DO
-                            var gi = new GameItem();
-                            World.EventsManager.GameItemCreated(gi, tt);
-                            var parent = World.EventsManager.GetDefaultContainer(gi, gc);
-                            World.ItemManager.MoveItem(gi, gi.Count.Value, parent, null, changes);
-                            LastChangesItems.AddToChanges(gi.GetContainerId().Value, gi);
-                        }
-                    }
+                    // TODO： 复查送物品/地块
+
+                    //if (World.ItemTemplateManager.Id2RequireLevel.Contains(gameItem.TemplateId)) //若存在需要增加的物品
+                    //{
+                    //    var tts = World.ItemTemplateManager.Id2RequireLevel[gameItem.TemplateId];
+                    //    var templates = tts.Where(c => c.Properties.TryGetDecimal($"rqlv{{{gameItem.TemplateId}}}", out var rqlvDec) && rqlvDec == lv); //需要加入物品的模板
+                    //    List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
+                    //    foreach (var tt in templates)
+                    //    {
+                    //        //实际添加物品，次更改不兼容，暂时未加 TO DO
+                    //        var gi = new GameItem();
+                    //        World.EventsManager.GameItemCreated(gi, tt);
+                    //        var parent = World.EventsManager.GetDefaultContainer(gi, gc);
+                    //        World.ItemManager.MoveItem(gi, gi.Count.Value, parent, null, changes);
+                    //        LastChangesItems.AddToChanges(gi.GetContainerId().Value, gi);
+                    //    }
+                    //}
                     //IEnumerable<MainbaseUpgradePrv> coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv);
                     //List<GameItem> addItems = new List<GameItem>();
                     //foreach (MainbaseUpgradePrv item in coll)
@@ -2142,73 +2143,4 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
-    /// <summary>
-    /// 主基地升级送物配置类。
-    /// </summary>
-    public class MainbaseUpgradePrv
-    {
-        /// <summary>
-        /// 送的等级，如1，就是升级到1级时送品
-        /// </summary>
-        public int Level { get; set; }
-
-        /// <summary>
-        /// 如果有值，则是送品地块的位置号。
-        /// </summary>
-        public int? Genus { get; set; }
-
-        /// <summary>
-        /// 送品的模板Id。
-        /// </summary>
-        public Guid? PrvTId { get; set; }
-
-        /// <summary>
-        /// 送品的父容器模板Id。
-        /// </summary>
-        public Guid ParentTId { get; set; }
-
-        /// <summary>
-        /// 注释，服务器不使用。
-        /// </summary>
-        public string Remark { get; set; }
-
-        private static List<MainbaseUpgradePrv> _Alls;
-        public static List<MainbaseUpgradePrv> Alls
-        {
-            get
-            {
-                if (_Alls is null)
-                {
-                    lock (typeof(MainbaseUpgradePrv))
-                    {
-                        if (_Alls is null)
-                        {
-                            using var sr = File.OpenText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "主控室升级附送物品设置.txt"));
-                            _Alls = new List<MainbaseUpgradePrv>();
-                            for (string line = sr.ReadLine(); null != line; line = sr.ReadLine())
-                            {
-                                if (string.IsNullOrWhiteSpace(line))
-                                {
-                                    continue;
-                                }
-
-                                string[] ary = line.Split('\t', StringSplitOptions.None);
-                                MainbaseUpgradePrv item = new MainbaseUpgradePrv()
-                                {
-                                    Level = int.Parse(ary[0]),
-                                    Genus = int.TryParse(ary[2], out int gns) ? gns : null as int?,
-                                    ParentTId = Guid.Parse(ary[3]),
-                                    PrvTId = string.IsNullOrWhiteSpace(ary[1]) ? null as Guid? : Guid.Parse(ary[1]),
-                                    Remark = ary[4],
-                                };
-                                _Alls.Add(item);
-                            }
-                        }
-                    }
-                }
-
-                return _Alls;
-            }
-        }
-    }
 }

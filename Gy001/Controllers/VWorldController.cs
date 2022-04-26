@@ -97,13 +97,6 @@ namespace GY2021001WebApi.Controllers
             return CnNames.GetName(1 == sex);
         }
 
-        [ResponseCache(Location = ResponseCacheLocation.Any, Duration = 120)]
-        [HttpGet]
-        public ActionResult<List<MainbaseUpgradePrv>> GetMainbaseUpgradePrv()
-        {
-            return MainbaseUpgradePrv.Alls;
-        }
-
         /// <summary>
         /// 获取全服推关战力Top 50。
         /// </summary>

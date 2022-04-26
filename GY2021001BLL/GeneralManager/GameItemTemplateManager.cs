@@ -135,13 +135,6 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public ConcurrentDictionary<Guid, GameMissionTemplate> Id2Mission => _Id2Mission.Value;
 
-        Lazy<ILookup<Guid, GameItemTemplate>> _Id2RequireLevel;
-        /// <summary>
-        /// 最低级别设置模板。
-        /// </summary>
-        public ILookup<Guid, GameItemTemplate> Id2RequireLevel { get => _Id2RequireLevel.Value; }
-
-
         #endregion 属性及相关
 
         private void Initialize()
@@ -166,16 +159,16 @@ namespace GuangYuan.GY001.BLL
                 using var db = World.CreateNewTemplateDbContext();
                 return new ConcurrentDictionary<Guid, GameCardPoolTemplate>(db.CardPoolTemplates.AsNoTracking().ToDictionary(c => c.Id));
             }, LazyThreadSafetyMode.ExecutionAndPublication);
-            _Id2RequireLevel = new Lazy<ILookup<Guid, GameItemTemplate>>(() =>
-            {
-                const string rqlv = "rqlv";
-                var coll = from tmp in Id2Template.Values
-                           let keyName = tmp.Properties.Keys.FirstOrDefault(c => c.StartsWith(rqlv))
-                           where !string.IsNullOrEmpty(keyName) && Guid.TryParse(keyName[rqlv.Length..], out _)
-                           select (tid: Guid.Parse(keyName[rqlv.Length..]), tmp);
-                var result = coll.ToLookup(c => c.tid, c => c.tmp);
-                return result;
-            }, LazyThreadSafetyMode.ExecutionAndPublication);
+            //_Id2RequireLevel = new Lazy<ILookup<Guid, GameItemTemplate>>(() =>
+            //{
+            //    const string rqlv = "rqlv";
+            //    var coll = from tmp in Id2Template.Values
+            //               let keyName = tmp.Properties.Keys.FirstOrDefault(c => c.StartsWith(rqlv))
+            //               where !string.IsNullOrEmpty(keyName) && Guid.TryParse(keyName[rqlv.Length..], out _)
+            //               select (tid: Guid.Parse(keyName[rqlv.Length..]), tmp);
+            //    var result = coll.ToLookup(c => c.tid, c => c.tmp);
+            //    return result;
+            //}, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         /// <summary>
