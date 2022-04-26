@@ -761,6 +761,7 @@ namespace GuangYuan.GY001.BLL
                         if (tmp.Count > 0)
                             result.AddRange(tmp.Select(c => (tt, c)));
                     }
+                    return null;
                     //return result.ToLookup(c => c.Item1.Id, c => c.Item2);
                 });
             }
