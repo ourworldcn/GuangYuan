@@ -18,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
@@ -741,6 +742,29 @@ namespace GuangYuan.GY001.BLL
         #endregion 神纹相关
 
         #region 升级相关
+
+        ILookup<Guid, GameValidation> _MainBaseLuItems;
+
+        ILookup<Guid, GameValidation> MainBaseLuItems
+        {
+            get
+            {
+                object obj = this;
+
+                return LazyInitializer.EnsureInitialized(ref _MainBaseLuItems, ref obj, () =>
+                {
+                    var result = new List<(GameItemTemplate, GameValidation)>();
+                    foreach (var tt in World.ItemTemplateManager.Id2Template.Values)
+                    {
+                        var tmp = new List<GameValidation>();
+                        GameValidation.Fill(tt.Properties, "eq", tmp);
+                        if (tmp.Count > 0)
+                            result.AddRange(tmp.Select(c => (tt, c)));
+                    }
+                    //return result.ToLookup(c => c.Item1.Id, c => c.Item2);
+                });
+            }
+        }
 
         /// <summary>
         /// 某个家园内物品升级结束。

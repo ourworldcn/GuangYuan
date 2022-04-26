@@ -8,6 +8,9 @@ using System.Text;
 
 namespace OW.Game
 {
+    /// <summary>
+    /// 条件对象。
+    /// </summary>
     public class GameValidation
     {
         /// <summary>
@@ -78,6 +81,37 @@ namespace OW.Game
             }
             return true;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="prefix"></param>
+        /// <param name="collection"></param>
+        /// <returns></returns>
+        public static void Fill(IReadOnlyDictionary<string, object> dic, [AllowNull] string prefix, ICollection<GameValidation> collection)
+        {
+            var coll = dic.GetValuesWithoutPrefix(prefix);
+            foreach (var item in coll)
+            {
+                var tps = from tmp in item
+                          join key in Operators
+                          on tmp.Item1 equals key
+                          let str = tmp.Item2 as string
+                          where !string.IsNullOrWhiteSpace(str)
+                          select (tmp.Item1, tmp.Item2);
+                foreach (var tp in tps) //获取条件对象
+                {
+                    if (TryParse(tp, out var result))
+                        collection.Add(result);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 可识别的运算符数组。
+        /// </summary>
+        public static readonly string[] Operators = new string[] { "gtq", "gt", "eq", "neq", "ltq", "lt" };
 
         /// <summary>
         /// 
