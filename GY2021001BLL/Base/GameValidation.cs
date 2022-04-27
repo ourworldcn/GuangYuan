@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace OW.Game
@@ -13,6 +14,8 @@ namespace OW.Game
     /// </summary>
     public class GameValidation
     {
+        #region 静态成员
+
         /// <summary>
         /// 
         /// </summary>
@@ -22,63 +25,21 @@ namespace OW.Game
         public static bool TryParse((string, object) keyValue, out GameValidation result)
         {
             result = new GameValidation();
-            switch (keyValue.Item1)
-            {
-                case "gtq": //大于或等于
-                case "gt":  //大于
-                case "eq":  //等于
-                case "neq": //不等于
-                case "ltq": //小于或等于
-                case "lt":  //小于
-                    result.Operator = keyValue.Item1;
-                    break;
-                default:
-                    return false;
-                    //throw new ArgumentException($"不认识的比较运算符,{keyValue}", nameof(prefix));
-            }
+            if (!Operators.Contains(keyValue.Item1))
+                return false;
+            result.Operator = keyValue.Item1;
             var str = keyValue.Item2 as string;
             if (string.IsNullOrWhiteSpace(str))
                 return false;
             var ary = str.Split(OwHelper.SemicolonArrayWithCN);
-            switch (ary.Length)
-            {
-                case 4:
-                    if (!Guid.TryParse(ary[0], out var ptid))
-                        return false;
-                    if (!Guid.TryParse(ary[1], out var tid))
-                        return false;
-                    if (string.IsNullOrWhiteSpace(ary[2]))
-                        return false;
-                    if (!OwConvert.TryToDecimal(ary[3], out var val))
-                        return false;
-                    result.ParentTemplateId = ptid;
-                    result.TemplateId = tid;
-                    result.PropertyName = ary[2];
-                    result.Value = val;
-                    break;
-                case 3:
-                    if (!Guid.TryParse(ary[0], out tid))
-                        return false;
-                    if (string.IsNullOrWhiteSpace(ary[1]))
-                        return false;
-                    if (!OwConvert.TryToDecimal(ary[2], out val))
-                        return false;
-                    result.TemplateId = tid;
-                    result.PropertyName = ary[1];
-                    result.Value = val;
-                    break;
-                case 2: //默认为角色的对象
-                    if (string.IsNullOrWhiteSpace(ary[0]))
-                        return false;
-                    if (!OwConvert.TryToDecimal(ary[1], out val))
-                        return false;
-                    result.TemplateId = ProjectConstant.CharTemplateId;
-                    result.PropertyName = ary[0];
-                    result.Value = val;
-                    break;
-                default:
-                    return false;
-            }
+            if (ary.Length < 2 || ary.Length > 4)   //若参数过多或过少
+                return false;
+            if (!GameReference.TryParse(ary.AsSpan(0, ary.Length - 1), out var gr))
+                return false;
+            if (!OwConvert.TryToDecimal(ary[^1], out var val))
+                return false;
+            result.Value = val;
+            result.GameReference = gr;
             return true;
         }
 
@@ -113,6 +74,35 @@ namespace OW.Game
         /// </summary>
         public static readonly string[] Operators = new string[] { "gtq", "gt", "eq", "neq", "ltq", "lt" };
 
+        #endregion 静态成员
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public GameValidation()
+        {
+            //ptid tid pn val
+        }
+
+        #region 属性
+
+        /// <summary>
+        /// 左算子。
+        /// </summary>
+        public GameReference GameReference { get; set; }
+
+        /// <summary>
+        /// 设置或获取比较运算符。
+        /// </summary>
+        public string Operator { get; set; }
+
+        /// <summary>
+        /// 设置或获取要比较的值。
+        /// </summary>
+        public decimal Value { get; set; }
+
+        #endregion 属性
+
         /// <summary>
         /// 
         /// </summary>
@@ -120,19 +110,8 @@ namespace OW.Game
         /// <returns></returns>
         public bool IsValid(GameChar gameChar)
         {
-            GameThingBase gt;
-            if (ParentTemplateId is null)   //若不限定容器
-            {
-                gt = TemplateId == ProjectConstant.CharTemplateId ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
-            }
-            else //若限定容器
-            {
-                gt = ParentTemplateId == ProjectConstant.CharTemplateId ? gameChar.GameItems.FirstOrDefault(c => c.TemplateId == TemplateId) :
-                    gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ParentTemplateId.Value)?.Children.FirstOrDefault(c => c.TemplateId == TemplateId);
-            }
-            if (gt is null)
-                return false;
-            var val = gt.GetDecimalWithFcpOrDefault(PropertyName);
+            if (!OwConvert.TryToDecimal(GameReference.GetValue(gameChar), out var val))
+                val = default;
             bool result;
             switch (Operator)
             {
@@ -161,6 +140,70 @@ namespace OW.Game
             }
             return result;
         }
+    }
+
+    public class GameReference
+    {
+        #region 静态成员
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="str">分号分割的对象属性引用字符串,结构可能是：容器模板id;模板id;属性名。</param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public static bool TryParse(string str, out GameReference result)
+        {
+            var ary = str.Split(OwHelper.SemicolonArrayWithCN);
+            return TryParse(ary.AsSpan(), out result);
+        }
+
+        public static bool TryParse(ReadOnlySpan<string> strs, out GameReference result)
+        {
+            result = new GameReference();
+            switch (strs.Length)
+            {
+                case 3:
+                    if (!Guid.TryParse(strs[0], out var ptid))
+                        return false;
+                    if (!Guid.TryParse(strs[1], out var tid))
+                        return false;
+                    if (string.IsNullOrWhiteSpace(strs[2]))
+                        return false;
+                    result.ParentTemplateId = ptid;
+                    result.TemplateId = tid;
+                    result.PropertyName = strs[2];
+                    break;
+                case 2:
+                    if (!Guid.TryParse(strs[0], out tid))
+                        return false;
+                    if (string.IsNullOrWhiteSpace(strs[1]))
+                        return false;
+                    result.TemplateId = tid;
+                    result.PropertyName = strs[1];
+                    break;
+                case 1:
+                    if (string.IsNullOrWhiteSpace(strs[0]))
+                        return false;
+                    result.TemplateId = ProjectConstant.CharTemplateId;
+                    result.PropertyName = strs[0];
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        }
+
+        #endregion 静态成员
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public GameReference()
+        {
+        }
+
+        #region 属性
 
         /// <summary>
         /// 设置或获取父容器模板id。如果为空则不限定父容器模板id。
@@ -177,14 +220,26 @@ namespace OW.Game
         /// </summary>
         public string PropertyName { get; set; }
 
-        /// <summary>
-        /// 设置或获取比较运算符。
-        /// </summary>
-        public string Operator { get; set; }
+        #endregion 属性
 
         /// <summary>
-        /// 设置或获取要比较的值。
+        /// 获取值。
         /// </summary>
-        public decimal Value { get; set; }
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public object GetValue(GameChar gameChar)
+        {
+            GameThingBase gt;
+            if (ParentTemplateId is null)   //若不限定容器
+            {
+                gt = TemplateId == ProjectConstant.CharTemplateId ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
+            }
+            else //若限定容器
+            {
+                gt = ParentTemplateId == ProjectConstant.CharTemplateId ? gameChar.GameItems.FirstOrDefault(c => c.TemplateId == TemplateId) :
+                    gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ParentTemplateId.Value)?.Children.FirstOrDefault(c => c.TemplateId == TemplateId);
+            }
+            return gt?.GetDecimalWithFcpOrDefault(PropertyName);
+        }
     }
 }

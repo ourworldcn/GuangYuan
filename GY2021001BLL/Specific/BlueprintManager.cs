@@ -574,6 +574,7 @@ namespace GuangYuan.GY001.BLL
             }
             World.ItemManager.ForcedSetCount(gameItem, gameItem.Count.Value - datas.SuccCount, datas.Changes);
         }
+
         #region 通用功能
 
         #endregion 通用功能
@@ -743,9 +744,12 @@ namespace GuangYuan.GY001.BLL
 
         #region 升级相关
 
-        ILookup<Guid, GameValidation> _MainBaseLuItems;
+        ILookup<Guid, (GameItemTemplate, GameValidation)> _MainBaseLuItems;
 
-        ILookup<Guid, GameValidation> MainBaseLuItems
+        /// <summary>
+        /// 键是条件要求的模板id,值模板和对应的条件对象。
+        /// </summary>
+        ILookup<Guid, (GameItemTemplate, GameValidation)> MainBaseLuItems
         {
             get
             {
@@ -757,12 +761,11 @@ namespace GuangYuan.GY001.BLL
                     foreach (var tt in World.ItemTemplateManager.Id2Template.Values)
                     {
                         var tmp = new List<GameValidation>();
-                        GameValidation.Fill(tt.Properties, "eq", tmp);
+                        GameValidation.Fill(tt.Properties, "rq", tmp);
                         if (tmp.Count > 0)
                             result.AddRange(tmp.Select(c => (tt, c)));
                     }
-                    return null;
-                    //return result.ToLookup(c => c.Item1.Id, c => c.Item2);
+                    return result.ToLookup(c => c.Item2.GameReference.TemplateId);
                 });
             }
         }
@@ -800,7 +803,20 @@ namespace GuangYuan.GY001.BLL
                 if (gameItem.TemplateId == ProjectConstant.MainControlRoomSlotId) //如果是主控室升级
                 {
                     // TODO： 复查送物品/地块
-
+                    var coll = MainBaseLuItems[ProjectConstant.MainControlRoomSlotId].ToLookup(c => c.Item1, c => c.Item2);
+                    foreach (var tt2bv in coll)
+                    {
+                        if (!tt2bv.Any())
+                            continue;
+                        if (tt2bv.All(c => c.IsValid(gc)))   //若所有条件都符合
+                        {
+                            GameItem gi = new GameItem();
+                            World.EventsManager.GameItemCreated(gi, tt2bv.Key);
+                            World.ItemManager.MoveItem(gi, gi.Count.GetValueOrDefault(), World.EventsManager.GetDefaultContainer(gi, gc));
+                            LastChangesItems.AddToAdds(gi);
+                        }
+                    }
+                    //TODO：待删除。
                     //if (World.ItemTemplateManager.Id2RequireLevel.Contains(gameItem.TemplateId)) //若存在需要增加的物品
                     //{
                     //    var tts = World.ItemTemplateManager.Id2RequireLevel[gameItem.TemplateId];
