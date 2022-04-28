@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.BLL;
+﻿using Game.Social;
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
@@ -45,6 +46,24 @@ namespace GY2021001WebApi.Controllers
                     LoginName = gu.LoginName,
                     Pwd = pwd,
                 };
+                if (null != gu)    //若成功注册
+                {
+                    //TODO:发送欢迎邮件 
+                    var mail = new GameMail()
+                    {
+                        Subject = "Welcome",
+                        Body = "Good day, all bumpers! Thanks for downloading our game! This is the first time to open a closed beta test, so we prepared some gifts for all bumpers every day. Have fun! " +
+                            Environment.NewLine + "What's more, we don't have any customer service in our game.If you have any questions," +
+                            Environment.NewLine + "please do not hesitate to contact our Facebook page @Harvest Bumpers. Thank you for your continuous support for Harvest Bumpers!" +
+                            Environment.NewLine + "Harvest Bumpers Team",
+                    };
+
+                    GameItem gi = new GameItem();
+                    gcm.World.EventsManager.GameItemCreated(gi, ProjectConstant.ZuanshiId);
+                    gi.Count = 500;
+                    gcm.World.SocialManager.SendMail(mail, new Guid[] { gu.CurrentChar.Id }, SocialConstant.FromSystemId,
+                        new (GameItem, Guid)[] { (gi, ProjectConstant.CurrencyBagTId) });
+                }
                 return result;
             }
             catch (Exception err)
