@@ -550,8 +550,11 @@ namespace Gy001.Controllers
         /// <returns><seealso cref="GetHomelandDataReturnDto"/> </returns>
         /// <response code="401">令牌错误。</response>
         [HttpGet]
+        [Obsolete("改用GameChar/GetItems接口获取相应信息。")]
         public ActionResult<GetHomelandDataReturnDto> GetHomelandData([FromQuery] GetHomelandDataParamsDto model)
         {
+            //TODO:删除接口
+            return NotFound("改用GameChar / GetItems接口获取相应信息。");
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
                                                                                     //构造调用参数
             using var datas = new GetHomelandDataDatas(_World, model.Token, OwConvert.ToGuid(model.OtherCharId))

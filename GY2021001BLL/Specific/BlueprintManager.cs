@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.ObjectPool;
 using OW.Extensions.Game.Store;
 using OW.Game;
+using OW.Game.Expression;
 using OW.Game.Item;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
@@ -799,10 +800,9 @@ namespace GuangYuan.GY001.BLL
                 }
                 LastChangesItems.Clear();
                 int lv = (int)gameItem.GetDecimalWithFcpOrDefault(ProjectConstant.LevelPropertyName, 0m);  //新等级
-                //gim.SetPropertyValue(gameItem, ProjectConstant.LevelPropertyName, lv + 1);    //设置新等级
+                List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
                 if (gameItem.TemplateId == ProjectConstant.MainControlRoomSlotId) //如果是主控室升级
                 {
-                    // TODO： 复查送物品/地块
                     var coll = MainBaseLuItems[ProjectConstant.MainControlRoomSlotId].ToLookup(c => c.Item1, c => c.Item2);
                     foreach (var tt2bv in coll)
                     {
@@ -812,51 +812,16 @@ namespace GuangYuan.GY001.BLL
                         {
                             GameItem gi = new GameItem();
                             World.EventsManager.GameItemCreated(gi, tt2bv.Key);
-                            World.ItemManager.MoveItem(gi, gi.Count.GetValueOrDefault(), World.EventsManager.GetDefaultContainer(gi, gc));
+                            World.ItemManager.MoveItem(gi, gi.Count.GetValueOrDefault(), World.EventsManager.GetDefaultContainer(gi, gc), null, changes);   //TODO:目前规则不会有送不进去的情况
                             LastChangesItems.AddToAdds(gi);
                         }
                     }
-                    //TODO：待删除。
-                    //if (World.ItemTemplateManager.Id2RequireLevel.Contains(gameItem.TemplateId)) //若存在需要增加的物品
-                    //{
-                    //    var tts = World.ItemTemplateManager.Id2RequireLevel[gameItem.TemplateId];
-                    //    var templates = tts.Where(c => c.Properties.TryGetDecimal($"rqlv{{{gameItem.TemplateId}}}", out var rqlvDec) && rqlvDec == lv); //需要加入物品的模板
-                    //    List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
-                    //    foreach (var tt in templates)
-                    //    {
-                    //        //实际添加物品，次更改不兼容，暂时未加 TO DO
-                    //        var gi = new GameItem();
-                    //        World.EventsManager.GameItemCreated(gi, tt);
-                    //        var parent = World.EventsManager.GetDefaultContainer(gi, gc);
-                    //        World.ItemManager.MoveItem(gi, gi.Count.Value, parent, null, changes);
-                    //        LastChangesItems.AddToChanges(gi.GetContainerId().Value, gi);
-                    //    }
-                    //}
-                    //IEnumerable<MainbaseUpgradePrv> coll = MainbaseUpgradePrv.Alls.Where(c => c.Level == lv);
-                    //List<GameItem> addItems = new List<GameItem>();
-                    //foreach (MainbaseUpgradePrv item in coll)
-                    //{
-                    //    GameItem parent = gc.AllChildren.FirstOrDefault(c => c.TemplateId == item.ParentTId);
-                    //    if (item.PrvTId.HasValue)    //若送物品
-                    //    {
-                    //        GameItem tmp = new GameItem();
-                    //        World.EventsManager.GameItemCreated(tmp, item.PrvTId.Value);
-                    //        gim.AddItem(tmp, parent, null, LastChangesItems);
-                    //    }
-                    //    if (item.Genus.HasValue)   //若送地块
-                    //    {
-                    //        int styleNumber = gc.GetCurrentFenggeNumber();   //激活的风格号
-                    //        var subItem = World.ItemTemplateManager.GetTemplateByNumberAndIndex(styleNumber, item.Genus.Value % 100);
-                    //        GameItem tmp = new GameItem();
-                    //        World.EventsManager.GameItemCreated(tmp, subItem.Id);
-                    //        gim.AddItem(tmp, gc.GetHomeland(), null, LastChangesItems);
-                    //    }
-                    //}
                 }
                 if (gameItem.TemplateId == ProjectConstant.MucaiStoreTId)
                 {
                     gim.ComputeMucaiStc(gc);
                 }
+                changes.CopyTo(LastChangesItems);
                 LastChangesItems.AddToChanges(gameItem.GetContainerId().Value, gameItem);
                 var worker = gc.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.WorkerOfHomelandTId);
                 worker.Count++;
