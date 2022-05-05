@@ -254,7 +254,10 @@ namespace GuangYuan.GY001.BLL
             sw.Stop();
             var excp = new Win32Exception(2340 << 16 + 2);
             var str = excp.Message;
-
+            for (int i = 0; i < 10; i++)
+            {
+                using var dw = DisposeHelper.Create(c => { }, this);
+            }
         }
 
         /// <summary>

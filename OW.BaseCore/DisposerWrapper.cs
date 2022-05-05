@@ -128,7 +128,14 @@ namespace System
             State = state;
         }
 
+        /// <summary>
+        /// 获取取清理的委托。
+        /// </summary>
         public readonly Action<T> Action;
+
+        /// <summary>
+        /// 获取清理委托使用的参数。
+        /// </summary>
         public readonly T State;
 
         /// <summary>
@@ -137,7 +144,7 @@ namespace System
         public readonly bool IsEmpty { get => Action is null; }
 
         /// <summary>
-        /// 处置函数。
+        /// 处置函数。配合c#的using语法使用。
         /// </summary>
         public readonly void Dispose()
         {

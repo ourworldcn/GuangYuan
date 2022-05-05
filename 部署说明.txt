@@ -17,3 +17,6 @@ WebApi网站
 账号密码：Gy210115
 
 主网站部署参见 https://docs.microsoft.com/zh-cn/aspnet/core/tutorials/publish-to-iis?view=aspnetcore-3.1&tabs=visual-studio
+yun1.pandaglb.com:44489
+菲力宾服务器：8.212.134.48 
+国内外网服务器：101.201.209.138
