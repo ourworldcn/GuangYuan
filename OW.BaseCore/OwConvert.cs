@@ -273,8 +273,10 @@ namespace System
                 if (2 != guts.Length)
                 {
                     if (item.IndexOf('=') <= 0 || item.Count(c => c == '=') != 1)  //若是xxx= 格式，解释为xxx=null
-                        throw new InvalidCastException($"数据格式错误:'{guts}'");   //TO DO
+                        throw new InvalidCastException($"数据格式错误:'{str}'");   //TO DO
                 }
+                else if (2 < guts.Length)
+                    throw new InvalidCastException($"数据格式错误:'{str}'");   //TO DO
                 var keyName = string.Intern(guts[0].Trim());
                 var val = guts.Length < 2 ? null : guts?[1]?.Trim();
                 if (val is null)

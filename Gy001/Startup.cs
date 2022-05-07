@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,9 +37,6 @@ namespace Gy001
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var userDbConnectionString = Configuration.GetConnectionString("DefaultConnection");
-            var templateDbConnectionString = Configuration.GetConnectionString("TemplateDbConnection");
-
             #region 配置通用服务
 
             services.AddResponseCompression(c => c.EnableForHttps = true);
@@ -57,9 +55,12 @@ namespace Gy001
                 builder.AddDebug();
 #endif //DEBUG
             });
+
+            var userDbConnectionString = Configuration.GetConnectionString("DefaultConnection");
+            var templateDbConnectionString = Configuration.GetConnectionString("TemplateDbConnection");
 #if DEBUG
 
-            LoggerFactory LoggerFactory = new LoggerFactory(new[] { new DebugLoggerProvider() });
+            //LoggerFactory LoggerFactory = new LoggerFactory(new[] { new DebugLoggerProvider() });
             services.AddDbContext<GY001UserContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.EnableSensitiveDataLogging(), ServiceLifetime.Scoped);
             services.AddDbContext<GY001TemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.EnableSensitiveDataLogging(), ServiceLifetime.Singleton);
 #else

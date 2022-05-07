@@ -1,13 +1,17 @@
+{17ce1527-dd65-4d9f-a2b0-102f787c227b}	gid=10	片头视频	
 {5a8efd51-d520-4d16-a139-5dc3252523c2}	gid=110	关卡0.1 到达指定区域	
-{bbb63113-e900-42a0-9c6e-8389c43b3f5b}	gid=111	完成教学关卡1	
+{bb2570ee-5586-4f26-b21a-4f38156a3155}	gid=111	关卡0.1 到达指定区域	
+{bbb63113-e900-42a0-9c6e-8389c43b3f5b}	gid=112	完成教学关卡1	
 {df9e78f5-650e-4ea3-8256-3a7fb40df92c}	gid=120	关卡0.2 出现第一波敌人	
 {ccf93c39-b7b9-4756-a3bd-8dffb9e42d2b}	gid=121	关卡0.2 出现第一波敌人	
 {ecbab7b4-4166-4eae-bb3b-31d492e47815}	gid=122	关卡0.2 出现第二波敌人	
 {c23e0a1a-e7d6-45bd-886c-cdcef344a09e}	gid=123	关卡0.2 出现第二波敌人	
-{f827c96a-862c-403d-a493-e1cc9affc493}	gid=124	完成教学关卡2	
+{4fd82bb1-7de2-41ab-98e3-f9fce1a56180}	gid=124	关卡0.2 出现第二波敌人	
+{f827c96a-862c-403d-a493-e1cc9affc493}	gid=125	完成教学关卡2	
 {51b69ad2-0a3e-40d6-93e5-bbd86c69b788}	gid=130	关卡0.3 出现第一波敌人	
 {df65fd6b-82db-47d3-a0f7-cc0b72d8ba30}	gid=131	关卡0.3 出现第一波敌人	
-{779e5583-366f-4eea-bd97-75c066ab58a6}	gid=132	完成教学关卡3	
+{a06f15c7-e0c3-4d6f-b4a3-a6d19a0e5c34}	gid=132	关卡0.3 清空第一波敌人	
+{779e5583-366f-4eea-bd97-75c066ab58a6}	gid=133	完成教学关卡3	
 {82f8a166-e0f7-4ae5-89d0-00caaa5ab6a2}	gid=140	关卡0.4 主动技能	
 {75c68899-499a-4926-af10-e03231ace715}	gid=141	关卡0.4 主动技能	
 {b2b4b679-879c-4684-a2d3-95487eac9d66}	gid=142	完成教学关卡4	
@@ -15,13 +19,69 @@
 {fbc9c851-6286-477e-b964-3710e9e99562}	gid=151	关卡0.5 弹跳技能	
 {99424ae9-2576-483b-b285-ed332602d81e}	gid=152	关卡0.5 弹跳技能	
 {92d2259a-5419-477b-9ba8-d89c67d898cf}	gid=153	完成教学关卡5	
-{7f253e54-afb3-4884-b089-38aa70aca621}	gid=200	预留位置	
-{1e912553-04a8-40a8-a186-3f969fb64777}	gid=210	完成全部教学关卡	
-{5197117d-25c3-4d63-bae8-7208ead850f2}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=00A57F16-A618-4E0C-849F-389A0523A631,rewardhtid0=7899623C-EA66-4A7B-91ED-F5A8987D4858,rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=992	测试用完成关卡1-给与坐骑牛	
-{ff00fdad-3d29-4cc2-a87a-d87793f141f4}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=BBC9FE07-29BD-486D-8AD6-B99DB0BD07D6,rewardhtid0=1FBD68C4-3464-4237-895D-28B6C4F974D8,rewardptid0=1630A0A1-3540-479A-B2C5-10B63E7A5774,rewardnemhp0=15,rewardneatk0=15,rewardneqlt0=15,gid=993	测试用关卡2小关5给与资质怪羊	
-{5bd1be6d-7b7b-4a3c-8200-e41d4fbaec9b}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=1FBD68C4-3464-4237-895D-28B6C4F974D8,rewardhtid0={aaa709fa-a5bf-4969-ace5-c8e9c89a5009},rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=994	测试用完成关卡2-给与坐骑鸡	
-{3df775f6-e4be-4ea0-bec6-49d0eb15c15e}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0={6e9d4d70-b4d4-434e-8379-d960f51b92c6},rewardhtid0=1FBD68C4-3464-4237-895D-28B6C4F974D8,rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=995	测试用完成关卡2-孵化鸡身子羊头	
-{4fd9e798-ac0f-4299-9cfc-0fe5a52a2f38}	rewardtid0={a53d50f6-d68d-47c7-a1e1-6de2928ec341},rewardcount0=1,rewardptid0={6437ce7b-8a03-4e67-9f89-8c9ab7141263},gid=996	测试用完成关卡3-山羊图鉴	
-{05f0b2b5-524d-4e90-b0b7-a90cbc655b54}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=2CA75715-8683-455F-A6D4-C728DBFC6573,rewardhtid0=0C5754C8-0E34-436A-81A9-5CEAFD126AB5,rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=997	测试用完成关卡5-坐骑狼	
-{ea1b7c0f-4ea2-4a02-a802-500000de6560}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0={4e2c08de-a8a5-43d7-9dc7-7dc8d9b116ca},rewardhtid0={a141fd52-a639-4465-90f4-46b0e7662955},rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=998	测试用完成关卡6-坐骑猫	
-{bc460289-a5a2-4931-963a-ad5d50a26caf}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0={c17370e5-fab5-4b3d-9dba-90c28ad03f97},rewardhtid0={ae4d0879-cf1c-4d82-8744-2de9141c5193},rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=999	测试用完成关卡7-坐骑马	
+{7f253e54-afb3-4884-b089-38aa70aca621}	gid=200	完成全部教学关卡	
+{1e912553-04a8-40a8-a186-3f969fb64777}	gid=210	第一次进入方舟	
+{59995405-6d5e-4b79-9be9-3f62467ceb55}	gid=220	强制出战教学	
+{c44a73d6-d579-4831-9b54-9bd5b5a158e5}	gid=221	出战教学	
+{8f042056-9a92-4f9f-b37a-5aa83100abc7}	gid=230	解锁玉米田	
+{3290390b-d7a2-4b2e-b8a7-9d5eb9ef59b9}	gid=231	气泡，解锁玉米	
+{19aff45c-43e1-43f1-8a38-cef56127586c}	gid=232	气泡，收取玉米	
+{2555a3a6-b0c5-4baa-ab95-255810fbc2ef}	gid=240	坐骑升级	
+{435a738f-a65b-481d-bbff-91f9cee8dfdb}	gid=241	气泡，去动物仓建筑	
+{b9fd4b0b-2a2e-4710-a7f6-afb440f0ce57}	gid=242	对话，升级前	
+{3ca1fdb7-b217-4e49-86c9-4ce292597e04}	gid=243	对话，升级后	
+{82fb0796-41db-4a2e-ac83-33e7f5f7b205}	gid=250	资质合成	
+{5aee3e40-39b0-40f1-aa0f-a44a70712722}	gid=251	气泡，去动物仓	
+{b6c53a7a-a659-43c0-97a2-0934dc4e12b7}	gid=252	对话，合成说明	
+{74581950-9f47-4ad0-b134-053effdc450e}	gid=260	孵化	
+{2f6e8869-3b27-4cc2-8edd-95eea7c2601e}	gid=261	气泡，去孵化小屋	
+{9e3e1e5f-82e2-4ed1-9e6d-3f1c9d53bcd8}	gid=271	对话	
+{27af3a85-313c-48b3-9f66-16be5026d40c}	gid=280	解锁木材田	
+{5c6193a5-9861-4660-a8c4-b282b55db5ab}	gid=281	木材田对话	
+{c39535c8-9ec6-431b-b49b-28c25e7f2f4c}	gid=290	解锁木材仓库	
+{8c67819b-dee8-4b0d-a92b-abbe90be18ed}	gid=291	对话	
+{6f0f202a-7f7f-41b3-b39d-6927a06d68c6}	gid=300	解锁主控室	
+{83b8dead-6173-497c-8c4e-b7560c412d16}	gid=310	解锁建造模式	
+{feee5f9e-1072-4ee2-8e73-fbfc9f426714}	gid=311	对话	
+{9cb4e182-89b2-4365-8907-69df0d9f79b6}	gid=320	解锁塔防模式	
+{75523274-8e0a-48c5-af9f-bd3843e96b88}	gid=321	对话	
+{6b84613f-3b02-4a27-82a1-749c3f7ee3ef}	gid=500	完成全部主界面强制教学	
+{926ad3ac-780e-4634-8511-6576ea874d5c}	gid=510	关卡中Roguelike教学	
+{53cb6a88-06dc-436d-ba97-678158fba2ab}	gid=511	关卡中Roguelike教学	
+{a16ee959-3b4e-4ebe-93c6-3e0b1929af69}	gid=520	玉米关的前一关	
+{997fa4fb-96df-4876-b3f3-b12a0291b098}	gid=521	玉米关，牛剧情	
+{c77f872f-5bae-475e-b588-239717d98976}	gid=522	玉米关，收玉米过程	
+{45693b4d-a857-422d-a9ee-dbbb75f9576b}	gid=530	抓捕杆	
+{d38f5313-59bf-4f90-8ece-91197ccd6b41}	gid=531	抓捕杆	
+{08bc2266-2c29-4fcd-9fbb-1ea1e11a61d7}	gid=540	动物鸡剧情	
+{d9fcbbac-ef6a-4590-8cb1-4b5ebe116207}	gid=550	木材奖励关卡前一关触发	
+{70abeb0c-3506-4523-892d-692e6f4bb4ea}	gid=551	电饭锅剧情	
+{4ab8afe8-01ab-4f95-a14a-1e3d13eae81c}	gid=552	木材树剧情	
+{15e4e319-9b79-4c97-a1a4-1c325e5ff6b5}	gid=553	木材树剧情	
+{7d41463b-1b5b-4621-a233-ba90b32aaae4}	gid=560	第一次遇到炮塔	
+{36aaf40f-8ade-485b-b637-54539b9130ba}	gid=570	炮塔剧情1	
+{d47ea1b5-b335-4455-89cd-56f602b24295}	gid=571	炮塔剧情2	
+{4f0b2697-79b5-4177-8d93-1a7c03d6b4a2}	gid=572	炮塔剧情3	
+{1e7ddb2c-650d-4093-b881-d35811357fb3}	gid=573	炮塔剧情4	
+{e7bcdc98-4cc2-4af2-8829-8dc2b9a3a431}	gid=580	第一次进入塔防模式	
+{fd4984c5-2d4a-4d50-8736-a4cb23a56b4f}	gid=590	剧情坐骑狼	
+{839748f9-a08b-49a9-ac00-6069affd536c}	gid=592	剧情坐骑狼	
+{5fbb80e8-d151-4cc0-98da-08d793c2ad35}	gid=620	第一次精英怪，出现	
+{143c070d-9c9e-4882-9490-f6cd29538320}	gid=621	第一次精英怪，击杀	
+{c8fede72-7b50-44b1-9143-801f6eb1b045}	gid=622	第一次精英怪，复活	
+{6aa701ac-d68b-4f91-8f5c-429ff09df804}	gid=630	第一次普通怪，出现	
+{d3396a55-0a90-46e3-bde5-41c4e723164a}	gid=640	第一次血瓶，进入地块	
+{4f7c12b1-23ae-4548-b910-a6c680955593}	gid=650	第一次进入蘑菇关卡	
+{b3085e7a-4aa8-4018-abd8-6db73cc103d3}	gid=651	第一次触发蘑菇	
+{e7feaa7f-518d-42b8-aa17-1ab8c88b29ca}	gid=660	第一次进入石榴炮关卡	
+{ba221e7c-ad5e-4431-8b66-0ce58590c40b}	gid=661	第一次触发石榴炮	
+{55ce0c66-732f-46b9-bd8b-9d49a04bfe10}	gid=662	第一次结束石榴炮	
+{05637594-549b-4563-97ed-d88164bc1cb5}	gid=670	第一次pvp	
+{5197117d-25c3-4d63-bae8-7208ead850f2}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=00A57F16-A618-4E0C-849F-389A0523A631,rewardhtid0=7899623C-EA66-4A7B-91ED-F5A8987D4858,rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=523	完成关卡1-给与坐骑牛	
+{ff00fdad-3d29-4cc2-a87a-d87793f141f4}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=BBC9FE07-29BD-486D-8AD6-B99DB0BD07D6,rewardhtid0=1FBD68C4-3464-4237-895D-28B6C4F974D8,rewardptid0=1630A0A1-3540-479A-B2C5-10B63E7A5774,rewardnemhp0=15,rewardneatk0=15,rewardneqlt0=15,gid=532	关卡2小关5给与资质怪羊	
+{5bd1be6d-7b7b-4a3c-8200-e41d4fbaec9b}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0={6e9d4d70-b4d4-434e-8379-d960f51b92c6},rewardhtid0={aaa709fa-a5bf-4969-ace5-c8e9c89a5009},rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=541	完成关卡2-给与坐骑鸡	
+{3df775f6-e4be-4ea0-bec6-49d0eb15c15e}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0={6e9d4d70-b4d4-434e-8379-d960f51b92c6},rewardhtid0=1FBD68C4-3464-4237-895D-28B6C4F974D8,rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=262	完成关卡2-孵化鸡身子羊头	
+{4fd9e798-ac0f-4299-9cfc-0fe5a52a2f38}	rewardtid0={a53d50f6-d68d-47c7-a1e1-6de2928ec341},rewardcount0=1,rewardptid0={6437ce7b-8a03-4e67-9f89-8c9ab7141263},gid=270	完成关卡3-山羊图鉴	
+{05f0b2b5-524d-4e90-b0b7-a90cbc655b54}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0=2CA75715-8683-455F-A6D4-C728DBFC6573,rewardhtid0=0C5754C8-0E34-436A-81A9-5CEAFD126AB5,rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=591	完成关卡5-坐骑狼	
+{ea1b7c0f-4ea2-4a02-a802-500000de6560}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0={4e2c08de-a8a5-43d7-9dc7-7dc8d9b116ca},rewardhtid0={a141fd52-a639-4465-90f4-46b0e7662955},rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=600	完成关卡6-坐骑猫	
+{bc460289-a5a2-4931-963a-ad5d50a26caf}	rewardtid0=6E179D54-5836-4E0B-B30D-756BD07FF196,rewardbtid0={c17370e5-fab5-4b3d-9dba-90c28ad03f97},rewardhtid0={ae4d0879-cf1c-4d82-8744-2de9141c5193},rewardptid0=BA2AEE89-0BC3-4612-B6FF-5DDFEF85C9E5,gid=610	完成关卡7-坐骑马	

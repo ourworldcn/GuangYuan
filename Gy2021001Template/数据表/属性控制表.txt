@@ -9,3 +9,4 @@ cap	cap	FALSE	FALSE	FALSE			容器对象下属对象的最大数量的属性名�
 ExtraDecimal	ExtraDecimal	FALSE	FALSE	FALSE			扩展的数字属性，通常用于排序
 ExtraString	ExtraString	FALSE	FALSE	FALSE			扩展的字符串属性，通常用于排序
 fcp	fcp	TRUE	FALSE	FALSE			快速变化属性前缀
+csp	csp	TRUE	FALSE	FALSE			客户端可直接修改的属性的前缀

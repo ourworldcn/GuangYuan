@@ -1804,7 +1804,7 @@ namespace GY2021001WebApi.Models
     /// 获取对象信息接口返回的数据封装类。
     /// </summary>
     [DataContract]
-    public class GetItemsReturnDto
+    public class GetItemsReturnDto : ReturnDtoBase
     {
         public GetItemsReturnDto()
         {
@@ -4066,6 +4066,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class GetGuildParamsDto : TokenDtoBase
     {
+        /// <summary>
+        /// 搜索工会的名字。省略或为null则不限定工会的名称。
+        /// </summary>
+        [DataMember]
+        public string DisplayName { get; set; }
     }
 
     [DataContract]
@@ -4074,6 +4079,35 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public GameGuildDto Guild { get; set; } = new GameGuildDto();
     }
+
+    [DataContract]
+    public class SetGuildParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 行会名。
+        /// </summary>
+        [DataMember]
+        public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 工会图标。
+        /// </summary>
+        [DataMember]
+        public int IconIndex { get; set; }
+
+        /// <summary>
+        /// 是否自动接受加入申请。
+        /// </summary>
+        [DataMember]
+        public bool AutoAccept { get; set; }
+
+    }
+
+    [DataContract]
+    public class SetGuildReturnDto : ReturnDtoBase
+    {
+    }
+
 
     [DataContract]
     public class DeleteGuildParamsDto : TokenDtoBase
@@ -4102,7 +4136,8 @@ namespace GY2021001WebApi.Models
         public string Id { get; set; }
 
         /// <summary>
-        /// 角色自身属性。
+        /// 行会自身属性。
+        /// GuildIconIndex=图标索引。AutoAccept=是否自动接受申请加入的成员(true接受,false不接受)
         /// </summary>
         [DataMember]
         public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
@@ -4171,11 +4206,28 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class CreateGuildParamsDto : TokenDtoBase
     {
+        public CreateGuildParamsDto()
+        {
+
+        }
+
         /// <summary>
         /// 行会名。
         /// </summary>
         [DataMember]
-        public string DisplayName { get; set; }
+        public string DisplayName { get; set; } 
+
+        /// <summary>
+        /// 工会图标。
+        /// </summary>
+        [DataMember]
+        public int IconIndex { get; set; }
+
+        /// <summary>
+        /// 是否自动接受加入申请。
+        /// </summary>
+        [DataMember]
+        public bool AutoAccept { get; set; }
 
     }
 

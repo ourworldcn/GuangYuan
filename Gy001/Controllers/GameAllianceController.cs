@@ -33,7 +33,9 @@ namespace Gy001.Controllers
         {
             using var datas = new CreateGuildContext(World, model.Token)
             {
-                DisplayName = model.DisplayName
+                DisplayName = model.DisplayName,
+                AutoAccept = model.AutoAccept,
+                IconIndex = model.IconIndex,
             };
             World.AllianceManager.CreateGuild(datas);
 
@@ -94,6 +96,21 @@ namespace Gy001.Controllers
             result.FillFrom(datas);
             if (!result.HasError)
                 GameGuildDto.FillMembers(datas.Guild, result.Guild, World);
+            return result;
+        }
+
+        /// <summary>
+        /// 设置工会信息，仅会长可用。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<SetGuildReturnDto> SetGuild(SetGuildParamsDto model)
+        {
+            using var datas = new SetGuildContext(World, model.Token);
+            World.AllianceManager.SetGuild(datas);
+            var result = new SetGuildReturnDto();
+            result.FillFrom(datas);
             return result;
         }
 

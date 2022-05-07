@@ -120,6 +120,30 @@ namespace GuangYuan.GY001.UserDb.Social
                 return null;
             return GetGuild(guildId);
         }
+
+        /// <summary>
+        /// 设置行会信息。
+        /// </summary>
+        public void SetGuild(SetGuildContext datas)
+        {
+            using var dw = datas.LockUser();
+            var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            if (slot is null || OwConvert.TryToGuid(slot.ExtraString, out var guildId) || slot.ExtraDecimal < 20)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                datas.ErrorMessage = "只能由工会会长设置。";
+                return;
+            }
+            if (!Lock(guildId, Options.DefaultTimeout, out var guild))
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            using var dwGuild = DisposeHelper.Create(Unlock, guild);
+            guild.DisplayName = datas.DisplayName;
+            guild.Properties["AutoAccept"] = datas.AutoAccept;
+            guild.Properties["IconIndex"] = datas.IconIndex;
+        }
         #endregion 基础操作
 
         /// <summary>
@@ -142,7 +166,10 @@ namespace GuangYuan.GY001.UserDb.Social
         public void GetGuild(GetGuildContext datas)
         {
             using var dw = datas.LockUser();
-            datas.Guild = GetGuild(datas.GameChar);
+            if (string.IsNullOrEmpty(datas.DisplayName))
+                datas.Guild = GetGuild(datas.GameChar);
+            else
+                datas.Guild = _Id2Guild.Values.FirstOrDefault(c => c.DisplayName == datas.DisplayName);
             if (datas.Guild is null)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;
@@ -225,6 +252,8 @@ namespace GuangYuan.GY001.UserDb.Social
                 pg["CreatorId"] = datas.GameChar.Id;
                 pg[nameof(GameGuild.DisplayName)] = datas.DisplayName;
                 World.EventsManager.GameGuildCreated(guild, pg);
+                guild.Properties["AutoAccept"] = datas.AutoAccept;
+                guild.Properties["IconIndex"] = datas.IconIndex;
             }
             lock (guild)
             {
@@ -479,7 +508,11 @@ namespace GuangYuan.GY001.UserDb.Social
                 datas.GameChar.GameItems.Add(slot);
             }
             slot.ExtraString = guild.IdString;
-            slot.ExtraDecimal = 0;
+            var autoAccept = guild.Properties.GetBooleanOrDefaut("AutoAccept");
+            if (autoAccept)
+                slot.ExtraDecimal = 10;
+            else
+                slot.ExtraDecimal = 0;
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
 
@@ -652,6 +685,38 @@ namespace GuangYuan.GY001.UserDb.Social
             }
         }
         #endregion 人事管理
+
+    }
+
+    public class SetGuildContext : GameCharGameContext
+    {
+        public SetGuildContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public SetGuildContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public SetGuildContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 行会名。
+        /// </summary>
+        public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 工会图标。
+        /// </summary>
+        public int IconIndex { get; set; }
+
+        /// <summary>
+        /// 是否自动接受加入申请。
+        /// </summary>
+        public bool AutoAccept { get; set; }
+
 
     }
 
@@ -851,6 +916,14 @@ namespace GuangYuan.GY001.UserDb.Social
         {
         }
 
+        /// <summary>
+        /// 搜索工会的名字。省略或为null则不限定工会的名称。
+        /// </summary>
+        public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 返回的工会信息。未找到指定名称行会或人员为未加入行会(未指定DisplayName)将返回null。
+        /// </summary>
         public GameGuild Guild { get; set; }
     }
 
@@ -875,6 +948,17 @@ namespace GuangYuan.GY001.UserDb.Social
         /// 行会名。
         /// </summary>
         public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 工会图标。
+        /// </summary>
+        public int IconIndex { get; set; }
+
+        /// <summary>
+        /// 是否自动接受加入申请。
+        /// </summary>
+        public bool AutoAccept { get; set; }
+
 
         /// <summary>
         /// 返回行会Id。使用此Id查询行会的详细信息。
