@@ -539,6 +539,49 @@ namespace GuangYuan.GY001.BLL
         public bool IsOnline(Guid charId) =>
             _Store._Id2OnlineChars.ContainsKey(charId);
 
+        /// <summary>
+        /// 获取指定的对象信息。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void GetItems(GetItemsContext datas)
+        {
+            IDisposable disposable;
+            GameChar gc = null;
+            if (datas.CharId is null)    //若取自身对象
+            {
+                disposable = datas.LockUser();
+                if (null != disposable)
+                    gc = datas.GameChar;
+            }
+            else //若取指定角色对象
+            {
+                disposable = LockOrLoad(datas.CharId.Value, out var gu);
+                if (null != disposable && null != gu)
+                    gc = gu.CurrentChar;
+            }
+            if (disposable is null)
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            using var dw = disposable;
+            if (datas.CharId is null)    //若取自身对象
+            {
+                var coll = gc.AllChildren.Join(datas.Ids, c => c.Id, c => c, (l, r) => l);  //自身对象
+                datas.GameItems.AddRange(coll);
+                if (datas.Ids.Contains(gc.Id))   //若取角色对象
+                    datas.ResultGameChar = gc;
+            }
+            else //若取指定角色对象
+            {
+                var tid2gis = gc.AllChildren.ToLookup(c => c.TemplateId, c => c);
+                var coll = tid2gis.Join(datas.Ids, c => c.Key, c => c, (l, r) => l).SelectMany(c => c);
+                datas.GameItems.AddRange(coll);
+                if (datas.Ids.Contains(ProjectConstant.CharTemplateId))   //若取角色对象
+                    datas.ResultGameChar = gc;
+            }
+        }
+
         #endregion 通过索引获取对象
 
         #region 锁定对象
@@ -1288,6 +1331,55 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 返回风格和方案号。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="style"></param>
+        /// <param name="sol"></param>
+        /// <returns>若<paramref name="str"/>是空则立即返回false;</returns>
+        bool GetStyleNumber(string str, [MaybeNullWhen(false)] out int style, [MaybeNullWhen(false)] out int sol)
+        {
+            if (string.IsNullOrWhiteSpace(str))
+            {
+                style = 0;
+                sol = 0;
+                return false;
+            }
+            var ary = str.Split(OwHelper.SemicolonArrayWithCN);
+            switch (ary.Length)
+            {
+                case 1: //<风格号><2位方案号>
+                    if (!int.TryParse(str[^2..], out sol)) //若无法获得方案号
+                    {
+                        style = 0;
+                        return false;
+                    }
+                    if (!int.TryParse(str[0..^2], out style)) //若无法获得风格号
+                    {
+                        sol = 0;
+                        return false;
+                    }
+                    break;
+                case 2: //<风格号>;<方案号>
+                    if (!int.TryParse(ary[1], out sol)) //若无法获得方案号
+                    {
+                        style = 0;
+                        return false;
+                    }
+                    if (!int.TryParse(ary[0], out style)) //若无法获得风格号
+                    {
+                        sol = 0;
+                        return false;
+                    }
+                    break;
+                default:
+                    style = sol = 0;
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// 修改一系列对象的属性。只能修改客户端与服务器约定的数据，对其他未约定的数据修改将导致失败。
         /// </summary>
         /// <param name="datas"></param>
@@ -1300,10 +1392,44 @@ namespace GuangYuan.GY001.BLL
             foreach (var tp in coll)
             {
                 foreach (var item in tp)
+                {
+                    var tt = tp.Key.GetTemplate();
                     if (string.Compare(item.Item1, "tid", true) == 0 && tp.Key.GetTemplate().CatalogNumber == 42 && OwConvert.TryToGuid(item.Item2, out var id))   //若是水晶更改模板
                         tp.Key.ChangeTemplate(World.ItemTemplateManager.GetTemplateFromeId(id));
+                    else if (tp.Key.TemplateId == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "aciveStyle", true) == 0)   //若是家园对象的当前激活风格属性
+                    {
+                        var str = item.Item2 as string; Debug.Assert(str != null);
+                        tp.Key.Properties["aciveStyle"] = str;
+                        var b = GetStyleNumber(str, out var sn, out var fn); Debug.Assert(b);
+                        foreach (var gi in tp.Key.GetAllChildren()) //遍历变化水晶的模板id
+                        {
+                            if (gi.GetTemplate().CatalogNumber != 42)   //若不是水晶
+                                continue;
+                            var tidfor = gi.Properties.GetGuidOrDefault($"tidfor{sn}{fn:00}");
+                            if (tidfor == Guid.Empty)  //若没有指定模板id
+                                continue;
+                            var ntt = World.ItemTemplateManager.GetTemplateFromeId(tidfor);
+                            gi.ChangeTemplate(ntt);
+                        }
+                    }
+                    else if (tt.CatalogNumber == 42 && item.Item1.StartsWith("tidfor"))   //若设置家园水晶阵容数据
+                    {
+                        if (!GetStyleNumber(item.Item1[6..], out var styleNumber, out var fanganNumber))  //若无法获得方案号或风格号
+                            continue;
+                        if (!OwConvert.TryToGuid(item.Item2, out var tidfor)) //若无法获取模板号
+                            continue;
+                        var hl = datas.GameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);
+                        tp.Key.Properties[item.Item1] = item.Item2;
+                        var aciveStyle = hl.Properties.GetStringOrDefault("aciveStyle","1;1");    //激活号
+                        if (GetStyleNumber(aciveStyle, out var sn, out var fn) && sn == styleNumber && fn == fanganNumber) //若设置了当前风格的模板号
+                        {
+                            var ntt = World.ItemTemplateManager.GetTemplateFromeId(tidfor);
+                            tp.Key.ChangeTemplate(ntt);
+                        }
+                    }
                     else
                         tp.Key.Properties[item.Item1] = item.Item2;
+                }
             }
         }
 
@@ -1312,6 +1438,51 @@ namespace GuangYuan.GY001.BLL
         #region 事件及相关
 
         #endregion 事件及相关
+    }
+
+    /// <summary>
+    /// 获取指定的一组对象信息，调用者需要自行锁定角色，否则返回时可能出现争用改变。
+    /// </summary>
+    public class GetItemsContext : ComplexWorkGameContext
+    {
+        public GetItemsContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public GetItemsContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public GetItemsContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 若取自己的对象则是对象Id集合。若取其他角色对象这里应为模板集合。特别地，取他人对象应取槽及下属对象，否则很容易返回大量重复信息。
+        /// </summary>
+        public List<Guid> Ids { get; } = new List<Guid>();
+
+        /// <summary>
+        /// 是否返回每个对象完整的孩子集合。
+        /// true 则返回所有孩子；false则Children属性返回空集合。
+        /// </summary>
+        public bool IncludeChildren { get; set; }
+
+        /// <summary>
+        /// 如果需要取其他人的对象信息，这里应置为他人的角色id。省略或为null则取自己的对象。
+        /// </summary>
+        public Guid? CharId { get; set; }
+
+        /// <summary>
+        /// 返回的物品信息。
+        /// </summary>
+        public List<GameItem> GameItems { get; } = new List<GameItem>();
+
+        /// <summary>
+        /// 如果获取了指定角色id，则这里返回角色信息。若没有指定可能返回null。
+        /// </summary>
+        public GameChar ResultGameChar { get; set; }
+
     }
 
     public class ModifyPropertiesDatas : ComplexWorkGameContext

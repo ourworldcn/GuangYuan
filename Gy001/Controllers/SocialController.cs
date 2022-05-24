@@ -544,46 +544,6 @@ namespace Gy001.Controllers
 
 
         /// <summary>
-        /// 获取指定用户家园数据的接口。
-        /// </summary>
-        /// <param name="model"><seealso cref="GetHomelandDataParamsDto"/></param>
-        /// <returns><seealso cref="GetHomelandDataReturnDto"/> </returns>
-        /// <response code="401">令牌错误。</response>
-        [HttpGet]
-        [Obsolete("改用GameChar/GetItems接口获取相应信息。")]
-        public ActionResult<GetHomelandDataReturnDto> GetHomelandData([FromQuery] GetHomelandDataParamsDto model)
-        {
-            //TODO:删除接口
-            return NotFound("改用GameChar / GetItems接口获取相应信息。");
-            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();   //获取虚拟世界的根服务
-                                                                                    //构造调用参数
-            using var datas = new GetHomelandDataDatas(_World, model.Token, OwConvert.ToGuid(model.OtherCharId))
-            {
-                UserDbContext = _UserContext,
-            };
-
-            using var disposer = datas.LockAll();
-            if (disposer is null)   //若锁定失败
-                return StatusCode(datas.ErrorCode, datas.ErrorMessage);
-            //填写其他参数
-            datas.OtherCharId = OwConvert.ToGuid(model.OtherCharId);
-            world.SocialManager.GetHomelandData(datas);  //调用服务
-                                                         //构造返回参数
-            var result = new GetHomelandDataReturnDto()
-            {
-                HasError = datas.HasError,
-                DebugMessage = datas.ErrorMessage,
-            };
-            if (!result.HasError)
-            {
-                result.Homeland = datas.Homeland;
-                result.Mounts.AddRange(datas.Mounts.Select(c => (GameItemDto)c));
-                //result.Mounts.Where(c => c.Properties.ContainsKey("for10")).ToList().ForEach(c => c.Properties["for10"] = 4);   //强行加入阵容信息。
-            }
-            return result;
-        }
-
-        /// <summary>
         /// 获取可以或已经pvp的角色的列表。
         /// </summary>
         /// <param name="model"><seealso cref="GetPvpListParamsDto"/></param>
@@ -680,7 +640,7 @@ namespace Gy001.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost][Obsolete("应使用GetItems接口替代。")]
         public ActionResult<GetCharInfoReturnDto> GetCharInfo(GetCharInfoParamsDto model)
         {
             var result = new GetCharInfoReturnDto();

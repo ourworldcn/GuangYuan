@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
@@ -335,7 +336,7 @@ namespace System
             if (string.IsNullOrWhiteSpace(str))
                 return Guid.Empty;
             if (!TryToGuid(str, out var result))
-                throw new FormatException($"不是有效的数据格式——{str}");
+                throw new FormatException($"不是有效的Guid数据格式——{str}");
             return result;
         }
 
@@ -347,7 +348,7 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ToBase64String(this Guid guid)
         {
-            Span<byte> span = stackalloc byte[16];
+            Span<byte> span = stackalloc byte[/*Marshal.SizeOf<Guid>()*/16];
             guid.TryWriteBytes(span);
             return Convert.ToBase64String(span);
         }

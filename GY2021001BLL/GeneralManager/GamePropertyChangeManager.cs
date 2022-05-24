@@ -27,9 +27,7 @@ namespace OW.Game.PropertyChange
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public sealed class PropertyChangedCallbackAttribute : Attribute
     {
-        // See the attribute guidelines at 
-        //  http://go.microsoft.com/fwlink/?LinkId=85236
-
+        // See the attribute guidelines at http://go.microsoft.com/fwlink/?LinkId=85236
         // This is a positional argument
         public PropertyChangedCallbackAttribute(Type objectType, string propertyName)
         {

@@ -107,7 +107,13 @@ namespace Gy001.Controllers
         [HttpPost]
         public ActionResult<SetGuildReturnDto> SetGuild(SetGuildParamsDto model)
         {
-            using var datas = new SetGuildContext(World, model.Token);
+            using var datas = new SetGuildContext(World, model.Token)
+            {
+                AutoAccept=model.AutoAccept,
+                DisplayName=model.DisplayName,
+                IconIndex=model.IconIndex,
+                Bulletin=model.Bulletin,
+            };
             World.AllianceManager.SetGuild(datas);
             var result = new SetGuildReturnDto();
             result.FillFrom(datas);
@@ -232,19 +238,6 @@ namespace Gy001.Controllers
         #endregion 行会功能
 
         #endregion 行会相关功能
-    }
-
-    public class ModifyPermissionsParamsDto : TokenDtoBase
-    {
-        /// <summary>
-        /// 要修改成的权限。10=普通会员，14=管理。
-        /// </summary>
-        public int Division { get; set; }
-
-        /// <summary>
-        /// 要修改的角色id集合。
-        /// </summary>
-        public List<string> CharIds { get; set; } = new List<string>();
     }
 
 }

@@ -1786,7 +1786,7 @@ namespace GY2021001WebApi.Models
     public class GetItemsParamsDto : TokenDtoBase
     {
         /// <summary>
-        /// 要获取信息的Id集合。
+        /// 若取自己的对象则是对象Id集合。若取其他角色对象这里应为模板集合。特别地，取他人对象应取槽及下属对象，否则很容易返回大量重复信息。
         /// </summary>
         [DataMember]
         public List<string> Ids { get; set; } = new List<string>();
@@ -1798,6 +1798,11 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public bool IncludeChildren { get; set; }
 
+        /// <summary>
+        /// 如果需要取其他人的对象信息，这里应置为他人的角色id。省略或为null则取自己的对象。
+        /// </summary>
+        [DataMember]
+        public string CharId { get; set; }
     }
 
     /// <summary>
@@ -4016,6 +4021,23 @@ namespace GY2021001WebApi.Models
     }
 
     [DataContract]
+    public class ModifyPermissionsParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要修改成的权限。10=普通会员，14=管理。
+        /// </summary>
+        [DataMember]
+        public int Division { get; set; }
+
+        /// <summary>
+        /// 要修改的角色id集合。
+        /// </summary>
+        [DataMember]
+        public List<string> CharIds { get; set; } = new List<string>();
+    }
+
+
+    [DataContract]
     public class RemoveGuildMemberParamsDto : TokenDtoBase
     {
         /// <summary>
@@ -4101,6 +4123,11 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public bool AutoAccept { get; set; }
 
+        /// <summary>
+        /// 设置行会公告。
+        /// </summary>
+        [DataMember]
+        public string Bulletin { get; set; }
     }
 
     [DataContract]
@@ -4140,7 +4167,7 @@ namespace GY2021001WebApi.Models
         /// GuildIconIndex=图标索引。AutoAccept=是否自动接受申请加入的成员(true接受,false不接受)
         /// </summary>
         [DataMember]
-        public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// 角色显示用的名字。

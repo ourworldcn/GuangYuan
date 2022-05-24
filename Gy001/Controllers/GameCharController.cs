@@ -398,24 +398,38 @@ namespace GY2021001WebApi.Controllers
         [HttpPut]
         public ActionResult<GetItemsReturnDto> GetItems(GetItemsParamsDto model)
         {
-            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
-                return base.Unauthorized("令牌无效");
-            try
+            //TODO 扩展功能。
+            using var datas = new GetItemsContext(World, model.Token)
             {
-                var gc = gu.CurrentChar;
-                var result = new GetItemsReturnDto();
-                HashSet<Guid> guids = new HashSet<Guid>(model.Ids.Select(c => OwConvert.ToGuid(c)));
-                var list = gc.AllChildren.Where(c => guids.Contains(c.Id)).ToList();
-                list.ForEach(c => c.FcpToProperties());
-                if (model.IncludeChildren)
-                    foreach (var item in OwHelper.GetAllSubItemsOfTree(list, c => c.Children).ToArray())
-                        item.FcpToProperties();
+                CharId = model.CharId is null ? null as Guid? : OwConvert.ToGuid(model.CharId),
+                IncludeChildren = model.IncludeChildren,
+            };
+            OwHelper.Copy(model.Ids.Select(c => OwConvert.ToGuid(c)), datas.Ids);
+            IDisposable disposable;
+            if (datas.CharId is null)    //若取自身对象
+            {
+                disposable = datas.LockUser();
+            }
+            else //若取指定角色对象
+            {
+                disposable = World.CharManager.LockOrLoad(datas.CharId.Value, out _);
+            }
+            var result = new GetItemsReturnDto();
+            if (disposable is null)
+            {
+                result.FillFromWorld();
+                return result;
+            }
+            using var dw = disposable;
 
-                var coll = list.Select(c => GameItemDto.FromGameItem(c, model.IncludeChildren));
-                result.GameItems.AddRange(coll);
-                if (model.Ids.Contains(gc.Id.ToBase64String())) //若需要获取角色信息
+            World.CharManager.GetItems(datas);
+
+            result.FillFrom(datas);
+            if (!result.HasError)
+            {
+                if (null != datas.ResultGameChar)
                 {
+                    var gc = datas.ResultGameChar;
                     var gcDto = new GameCharDto()
                     {
                         Id = gc.Id.ToBase64String(),
@@ -430,14 +444,16 @@ namespace GY2021001WebApi.Controllers
                     OwHelper.Copy(gc.Properties, gcDto.Properties);
                     result.GameChar = gcDto;
                 }
+                datas.GameItems.ForEach(c => c.FcpToProperties());
+                if (model.IncludeChildren)
+                    foreach (var item in OwHelper.GetAllSubItemsOfTree(datas.GameItems, c => c.Children).ToArray())
+                        item.FcpToProperties();
 
+                var coll = datas.GameItems.Select(c => GameItemDto.FromGameItem(c, model.IncludeChildren));
+                result.GameItems.AddRange(coll);
 
-                return result;
             }
-            finally
-            {
-                world.CharManager.Unlock(gu, true);
-            }
+            return result;
         }
 
         /// <summary>

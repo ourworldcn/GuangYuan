@@ -14,9 +14,7 @@ WebApi网站
 
 超管账号 : 1D22F0CF-1704-412C-AD8D-32CE5FA5A7D5//37A87267-77DC-4AA3-8220-02F9538779AB
 
-账号密码：Gy210115
-
 主网站部署参见 https://docs.microsoft.com/zh-cn/aspnet/core/tutorials/publish-to-iis?view=aspnetcore-3.1&tabs=visual-studio
 yun1.pandaglb.com:44489
-菲力宾服务器：8.212.134.48 
-国内外网服务器：101.201.209.138
+菲力宾服务器：8.212.134.48 账号密码guangyuan.123
+国内外网服务器：101.201.209.138 账号密码：Gy210115 资源服务器密码：guangyuan.123

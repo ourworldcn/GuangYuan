@@ -143,6 +143,7 @@ namespace GuangYuan.GY001.UserDb.Social
             guild.DisplayName = datas.DisplayName;
             guild.Properties["AutoAccept"] = datas.AutoAccept;
             guild.Properties["IconIndex"] = datas.IconIndex;
+            guild.Properties["Bulletin"] = datas.Bulletin;
         }
         #endregion 基础操作
 
@@ -486,6 +487,12 @@ namespace GuangYuan.GY001.UserDb.Social
                 return;
             //校验条件
             var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            if(slot is null)    //若未创建行会槽
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;   
+                datas.ErrorMessage = "数据格式错误，工会槽不存在。";   
+                return;
+            }
             if (!string.IsNullOrWhiteSpace(slot.ExtraString) && slot.ExtraDecimal > 0 && slot.ExtraString != guild.IdString)    //若已有行会
             {
                 datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;    //已有行会
@@ -717,6 +724,10 @@ namespace GuangYuan.GY001.UserDb.Social
         /// </summary>
         public bool AutoAccept { get; set; }
 
+        /// <summary>
+        /// 设置群公告。
+        /// </summary>
+        public string Bulletin { get; set; }
 
     }
 
