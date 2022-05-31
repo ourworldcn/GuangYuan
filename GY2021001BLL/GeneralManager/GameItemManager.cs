@@ -986,7 +986,7 @@ namespace OW.Game.Item
         /// <summary>
         /// 创建或获取指定模板id的孩子对象。
         /// </summary>
-        /// <param name="parent"></param>
+        /// <param name="parent">直接双亲容器。</param>
         /// <param name="tid"></param>
         /// <param name="creator"></param>
         /// <returns></returns>

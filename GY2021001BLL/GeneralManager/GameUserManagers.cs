@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.UserDb;
+﻿using GuangYuan.GY001.TemplateDb;
+using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1380,6 +1381,21 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 获取水晶的默认模板。
+        /// </summary>
+        /// <param name="gi"></param>
+        /// <returns></returns>
+        GameItemTemplate GetDefaultTemplate(GameItem gi)
+        {
+            var tt = gi.GetTemplate();
+            var index = tt.GId % 10;    //尾号
+            var cata = tt.GId / 1000;    //类型号
+            var gid = cata * 1000 + index; //默认水晶类型号
+            var result = World.ItemTemplateManager.Id2Template.Values.FirstOrDefault(c => c.GId == gid);
+            return result;
+        }
+
+        /// <summary>
         /// 修改一系列对象的属性。只能修改客户端与服务器约定的数据，对其他未约定的数据修改将导致失败。
         /// </summary>
         /// <param name="datas"></param>
@@ -1396,10 +1412,10 @@ namespace GuangYuan.GY001.BLL
                     var tt = tp.Key.GetTemplate();
                     if (string.Compare(item.Item1, "tid", true) == 0 && tp.Key.GetTemplate().CatalogNumber == 42 && OwConvert.TryToGuid(item.Item2, out var id))   //若是水晶更改模板
                         tp.Key.ChangeTemplate(World.ItemTemplateManager.GetTemplateFromeId(id));
-                    else if (tp.Key.TemplateId == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "aciveStyle", true) == 0)   //若是家园对象的当前激活风格属性
+                    else if (tp.Key.TemplateId == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "activeStyle", true) == 0)   //若是家园对象的当前激活风格属性
                     {
                         var str = item.Item2 as string; Debug.Assert(str != null);
-                        tp.Key.Properties["aciveStyle"] = str;
+                        tp.Key.Properties["activeStyle"] = str;
                         var b = GetStyleNumber(str, out var sn, out var fn); Debug.Assert(b);
                         foreach (var gi in tp.Key.GetAllChildren()) //遍历变化水晶的模板id
                         {
@@ -1407,9 +1423,19 @@ namespace GuangYuan.GY001.BLL
                                 continue;
                             var tidfor = gi.Properties.GetGuidOrDefault($"tidfor{sn}{fn:00}");
                             if (tidfor == Guid.Empty)  //若没有指定模板id
-                                continue;
-                            var ntt = World.ItemTemplateManager.GetTemplateFromeId(tidfor);
-                            gi.ChangeTemplate(ntt);
+                                tidfor = gi.Properties.GetGuidOrDefault($"tidfor{sn};{fn}");
+                            if (tidfor == Guid.Empty)  //若没有指定模板id
+                            {
+                                //设置默认模板号
+                                var ntt = GetDefaultTemplate(gi);
+                                if (ntt != gi.GetTemplate())
+                                    gi.ChangeTemplate(ntt);
+                            }
+                            else
+                            {
+                                var ntt = World.ItemTemplateManager.GetTemplateFromeId(tidfor);
+                                gi.ChangeTemplate(ntt);
+                            }
                         }
                     }
                     else if (tt.CatalogNumber == 42 && item.Item1.StartsWith("tidfor"))   //若设置家园水晶阵容数据
@@ -1420,7 +1446,7 @@ namespace GuangYuan.GY001.BLL
                             continue;
                         var hl = datas.GameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);
                         tp.Key.Properties[item.Item1] = item.Item2;
-                        var aciveStyle = hl.Properties.GetStringOrDefault("aciveStyle","1;1");    //激活号
+                        var aciveStyle = hl.Properties.GetStringOrDefault("activeStyle", "1;1");    //激活号
                         if (GetStyleNumber(aciveStyle, out var sn, out var fn) && sn == styleNumber && fn == fanganNumber) //若设置了当前风格的模板号
                         {
                             var ntt = World.ItemTemplateManager.GetTemplateFromeId(tidfor);
@@ -1431,6 +1457,7 @@ namespace GuangYuan.GY001.BLL
                         tp.Key.Properties[item.Item1] = item.Item2;
                 }
             }
+            World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
 
         #endregion 公共方法

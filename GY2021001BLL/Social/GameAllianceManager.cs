@@ -486,7 +486,8 @@ namespace GuangYuan.GY001.UserDb.Social
             if (dwUser is null)
                 return;
             //校验条件
-            var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            var slot = World.ItemManager.GetOrCreateItem(datas.GameChar, ProjectConstant.GuildSlotId);
+
             if(slot is null)    //若未创建行会槽
             {
                 datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;   
