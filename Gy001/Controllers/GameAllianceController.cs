@@ -94,7 +94,7 @@ namespace Gy001.Controllers
             World.AllianceManager.GetGuild(datas);
             var result = new GetGuildReturnDto();
             result.FillFrom(datas);
-            if (!result.HasError)
+            if (!result.HasError && datas.Guild!=null)
                 GameGuildDto.FillMembers(datas.Guild, result.Guild, World);
             return result;
         }
@@ -109,10 +109,10 @@ namespace Gy001.Controllers
         {
             using var datas = new SetGuildContext(World, model.Token)
             {
-                AutoAccept=model.AutoAccept,
-                DisplayName=model.DisplayName,
-                IconIndex=model.IconIndex,
-                Bulletin=model.Bulletin,
+                AutoAccept = model.AutoAccept,
+                DisplayName = model.DisplayName,
+                IconIndex = model.IconIndex,
+                Bulletin = model.Bulletin,
             };
             World.AllianceManager.SetGuild(datas);
             var result = new SetGuildReturnDto();
@@ -129,7 +129,7 @@ namespace Gy001.Controllers
         public ActionResult<GetAllGuildReturnDto> GetAllGuild(GetAllGuildParamsDto model)
         {
             var result = new GetAllGuildReturnDto();
-            result.Guilds.AddRange(World.AllianceManager.Id2Guild.Values.Select(c =>
+            result.Guilds.AddRange(World.AllianceManager.Id2Guild.Values.Where(c => string.IsNullOrWhiteSpace(model.DisplayName) || c.DisplayName.Contains(model.DisplayName)).Select(c =>
             {
                 var dto = new GameGuildDto();
                 GameGuildDto.FillMembers(c, dto, World);
@@ -167,7 +167,7 @@ namespace Gy001.Controllers
         [HttpPost]
         public ActionResult<AccepteGuildMemberReturnDto> AccepteGuildMember(AccepteGuildMemberParamsDto model)
         {
-            using var datas = new AcceptJoinContext(World, model.Token);
+            using var datas = new AcceptJoinContext(World, model.Token) { IsAccept = model.IsAccept, };
             datas.CharIds.AddRange(model.CharIds.Select(c => OwConvert.ToGuid(c)));
             World.AllianceManager.AcceptJoin(datas);
             var result = new AccepteGuildMemberReturnDto();

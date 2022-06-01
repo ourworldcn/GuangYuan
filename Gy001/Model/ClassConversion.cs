@@ -651,6 +651,8 @@ namespace GY2021001WebApi.Models
                     Id = c.gc.Base64IdString,
                     Title = (int)c.slot.ExtraDecimal,
                     Level = (int)c.gc.Properties.GetDecimalOrDefault("lv"),
+                    IconIndex = (int)c.gc.Properties.GetDecimalOrDefault("charIcon", 0),
+                    Power = 4000 + new Random().Next(100) * 10,  //TO DO
                 };
                 return r;
             }));

@@ -270,7 +270,7 @@ namespace OW.Game.Item
 
                 var val = Convert.ToDecimal(gameItem.Properties.GetValueOrDefault(seqPName, oov));  //物品的属性值
                 var old = newLevel < seq.Length ? seq[newLevel] : oov;  //可能缺失最后一级数据
-                gameItem.Properties[seqPName] = old + val - oov;
+                gameItem.Properties[seqPName] = old + val - oov; //TO DO缺少对快速变化属性的同步
             }
             return;
         }

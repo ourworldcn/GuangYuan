@@ -1264,7 +1264,8 @@
         </member>
         <member name="P:GY2021001WebApi.Models.GameGuildDto.Properties">
             <summary>
-            角色自身属性。
+            行会自身属性。
+            GuildIconIndex=图标索引。AutoAccept=是否自动接受申请加入的成员(true接受,false不接受)
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.GameGuildDto.DisplayName">
@@ -2000,13 +2001,18 @@
         </member>
         <member name="P:GY2021001WebApi.Models.GetItemsParamsDto.Ids">
             <summary>
-            要获取信息的Id集合。
+            若取自己的对象则是对象Id集合。若取其他角色对象这里应为模板集合。特别地，取他人对象应取槽及下属对象，否则很容易返回大量重复信息。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.GetItemsParamsDto.IncludeChildren">
             <summary>
             是否返回每个对象完整的孩子集合。
             true 则返回所有孩子；false则Children属性返回空集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetItemsParamsDto.CharId">
+            <summary>
+            如果需要取其他人的对象信息，这里应置为他人的角色id。省略或为null则取自己的对象。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetItemsReturnDto">
@@ -3155,9 +3161,24 @@
             发送消息接口的返回值封装类。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetAllGuildParamsDto.DisplayName">
+            <summary>
+            搜索工会的名字。省略或为null则不限定工会的名称。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.GetAllGuildReturnDto.Guilds">
             <summary>
             所有工会信息集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyPermissionsParamsDto.Division">
+            <summary>
+            要修改成的权限。10=普通会员，14=管理。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ModifyPermissionsParamsDto.CharIds">
+            <summary>
+            要修改的角色id集合。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.RemoveGuildMemberParamsDto.CharIds">
@@ -3173,9 +3194,34 @@
             要批准加入的角色id集合。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.AccepteGuildMemberParamsDto.IsAccept">
+            <summary>
+            是否接受。true表示接受，false表示拒绝。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.RequestJoinGuildParamsDto.GuildId">
             <summary>
             申请加入的工会Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetGuildParamsDto.DisplayName">
+            <summary>
+            行会名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetGuildParamsDto.IconIndex">
+            <summary>
+            工会图标。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetGuildParamsDto.AutoAccept">
+            <summary>
+            是否自动接受加入申请。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetGuildParamsDto.Bulletin">
+            <summary>
+            设置行会公告。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GuildMemberDto">
@@ -3204,6 +3250,16 @@
             角色昵称。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GuildMemberDto.IconIndex">
+            <summary>
+            人物图标。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GuildMemberDto.Power">
+            <summary>
+            战力。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.CreateGuildReturnDto.Guild">
             <summary>
             返回行会信息。
@@ -3214,16 +3270,20 @@
             行会名。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CreateGuildParamsDto.IconIndex">
+            <summary>
+            工会图标。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CreateGuildParamsDto.AutoAccept">
+            <summary>
+            是否自动接受加入申请。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
@@ -3297,6 +3357,13 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:Gy001.Controllers.GameAllianceController.SetGuild(GY2021001WebApi.Models.SetGuildParamsDto)">
+            <summary>
+            设置工会信息，仅会长可用。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:Gy001.Controllers.GameAllianceController.GetAllGuild(GY2021001WebApi.Models.GetAllGuildParamsDto)">
             <summary>
             获取所有工会信息。
@@ -3323,7 +3390,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Gy001.Controllers.GameAllianceController.ModifyPermissions(Gy001.Controllers.ModifyPermissionsParamsDto)">
+        <member name="M:Gy001.Controllers.GameAllianceController.ModifyPermissions(GY2021001WebApi.Models.ModifyPermissionsParamsDto)">
             <summary>
             修改权限。
             </summary>
@@ -3340,16 +3407,6 @@
             行会或建筑升级。
             </summary>
             <returns></returns>
-        </member>
-        <member name="P:Gy001.Controllers.ModifyPermissionsParamsDto.Division">
-            <summary>
-            要修改成的权限。10=普通会员，14=管理。
-            </summary>
-        </member>
-        <member name="P:Gy001.Controllers.ModifyPermissionsParamsDto.CharIds">
-            <summary>
-            要修改的角色id集合。
-            </summary>
         </member>
         <member name="T:Gy001.Controllers.GameBaseController">
             <summary>
@@ -3586,14 +3643,6 @@
             <returns><seealso cref="T:GY2021001WebApi.Models.PatWithMountsReturnDto"/></returns>
             <response code="401">令牌错误。</response>
             <response code="400">其他异常错误。</response>
-        </member>
-        <member name="M:Gy001.Controllers.SocialController.GetHomelandData(GY2021001WebApi.Models.GetHomelandDataParamsDto)">
-            <summary>
-            获取指定用户家园数据的接口。
-            </summary>
-            <param name="model"><seealso cref="T:GY2021001WebApi.Models.GetHomelandDataParamsDto"/></param>
-            <returns><seealso cref="T:GY2021001WebApi.Models.GetHomelandDataReturnDto"/> </returns>
-            <response code="401">令牌错误。</response>
         </member>
         <member name="M:Gy001.Controllers.SocialController.GetPvpList(GY2021001WebApi.Models.GetPvpListParamsDto)">
             <summary>

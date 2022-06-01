@@ -1067,13 +1067,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
 
-            GameItem mainBase = datas.Lookup(hl.Children, ProjectConstant.MainBaseSlotId); //主基地
-            if (mainBase is null)
-            {
-                return;
-            }
-
-            GameItem src = datas.Lookup(mainBase.Children, gameItem.TemplateId); //收获物
+            GameItem src = datas.Lookup(hl.GetAllChildren(), gameItem.TemplateId); //收获物
             if (src is null)
             {
                 return;

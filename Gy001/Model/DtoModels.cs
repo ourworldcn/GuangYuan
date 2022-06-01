@@ -4003,6 +4003,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class GetAllGuildParamsDto : TokenDtoBase
     {
+        /// <summary>
+        /// 搜索工会的名字。省略或为null则不限定工会的名称。
+        /// </summary>
+        [DataMember]
+        public string DisplayName { get; set; }
     }
 
     [DataContract]
@@ -4063,6 +4068,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<string> CharIds { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 是否接受。true表示接受，false表示拒绝。
+        /// </summary>
+        [DataMember]
+        public bool IsAccept { get; set; }
     }
 
     [DataContract]
@@ -4088,11 +4099,6 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class GetGuildParamsDto : TokenDtoBase
     {
-        /// <summary>
-        /// 搜索工会的名字。省略或为null则不限定工会的名称。
-        /// </summary>
-        [DataMember]
-        public string DisplayName { get; set; }
     }
 
     [DataContract]
@@ -4218,6 +4224,18 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 人物图标。
+        /// </summary>
+        [DataMember]
+        public int IconIndex { get; set; }
+
+        /// <summary>
+        /// 战力。
+        /// </summary>
+        [DataMember]
+        public decimal Power { get; set; }
     }
 
     [DataContract]

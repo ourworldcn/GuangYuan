@@ -128,7 +128,7 @@ namespace GuangYuan.GY001.UserDb.Social
         {
             using var dw = datas.LockUser();
             var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
-            if (slot is null || OwConvert.TryToGuid(slot.ExtraString, out var guildId) || slot.ExtraDecimal < 20)
+            if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out var guildId) || slot.ExtraDecimal < 20)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
                 datas.ErrorMessage = "只能由工会会长设置。";
@@ -161,21 +161,18 @@ namespace GuangYuan.GY001.UserDb.Social
         }
 
         /// <summary>
-        /// 获取工会信息。
+        /// 获取当前角色所处的工会信息。
         /// </summary>
         /// <param name="datas"></param>
         public void GetGuild(GetGuildContext datas)
         {
             using var dw = datas.LockUser();
-            if (string.IsNullOrEmpty(datas.DisplayName))
-                datas.Guild = GetGuild(datas.GameChar);
-            else
-                datas.Guild = _Id2Guild.Values.FirstOrDefault(c => c.DisplayName == datas.DisplayName);
-            if (datas.Guild is null)
-            {
-                datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;
-                datas.ErrorMessage = "找不到指定的工会。";
-            }
+            var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out var gid) || slot.ExtraDecimal < 10)
+                return;
+            if (!_Id2Guild.TryGetValue(gid, out var guild))
+                return;
+            datas.Guild = guild;
             return;
         }
 
@@ -488,10 +485,10 @@ namespace GuangYuan.GY001.UserDb.Social
             //校验条件
             var slot = World.ItemManager.GetOrCreateItem(datas.GameChar, ProjectConstant.GuildSlotId);
 
-            if(slot is null)    //若未创建行会槽
+            if (slot is null)    //若未创建行会槽
             {
-                datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;   
-                datas.ErrorMessage = "数据格式错误，工会槽不存在。";   
+                datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;
+                datas.ErrorMessage = "数据格式错误，工会槽不存在。";
                 return;
             }
             if (!string.IsNullOrWhiteSpace(slot.ExtraString) && slot.ExtraDecimal > 0 && slot.ExtraString != guild.IdString)    //若已有行会
@@ -571,16 +568,23 @@ namespace GuangYuan.GY001.UserDb.Social
                     return;
                 }
             }
-            foreach (var charId in datas.CharIds)
-            {
-                var gc = World.CharManager.GetCharFromId(charId);
-                var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
-                slot.ExtraDecimal = (int)GuildDivision.见习会员;
-                slot.ExtraString = guild.IdString;
-                World.CharManager.NotifyChange(gc.GameUser);
-                this.JoinGuildChatChannel(gc);  //加入工会聊天
-            }
-
+            if (datas.IsAccept) //若接受
+                foreach (var charId in datas.CharIds)
+                {
+                    var gc = World.CharManager.GetCharFromId(charId);
+                    var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                    slot.ExtraDecimal = (int)GuildDivision.见习会员;
+                    slot.ExtraString = guild.IdString;
+                    World.CharManager.NotifyChange(gc.GameUser);
+                    this.JoinGuildChatChannel(gc);  //加入工会聊天
+                }
+            else //若拒绝
+                foreach (var charId in datas.CharIds)
+                {
+                    var gc = World.CharManager.GetCharFromId(charId);
+                    var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                    World.ItemManager.ForcedRemove(slot);
+                }
         }
 
         /// <summary>
@@ -788,6 +792,11 @@ namespace GuangYuan.GY001.UserDb.Social
         /// 要批准加入的角色id集合。
         /// </summary>
         public List<Guid> CharIds { get; } = new List<Guid>();
+
+        /// <summary>
+        /// 是否接受。true表示接受，false表示拒绝。
+        /// </summary>
+        public bool IsAccept { get; set; }
     }
 
     public class RequestJoinContext : GameCharGameContext
@@ -929,12 +938,7 @@ namespace GuangYuan.GY001.UserDb.Social
         }
 
         /// <summary>
-        /// 搜索工会的名字。省略或为null则不限定工会的名称。
-        /// </summary>
-        public string DisplayName { get; set; }
-
-        /// <summary>
-        /// 返回的工会信息。未找到指定名称行会或人员为未加入行会(未指定DisplayName)将返回null。
+        /// 返回的工会信息。若角色没有加入工会则返回null。
         /// </summary>
         public GameGuild Guild { get; set; }
     }

@@ -1457,6 +1457,12 @@ namespace GuangYuan.GY001.BLL
                         tp.Key.Properties[item.Item1] = item.Item2;
                 }
             }
+            //修改角色自身信息
+            var coll1 = datas.Modifies.Where(c => c.Item1 == datas.GameChar.Id);
+            foreach (var item in coll1)
+            {
+                datas.GameChar.Properties[item.Item2] = item.Item3 ;
+            }
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
 
