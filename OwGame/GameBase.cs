@@ -3,6 +3,7 @@
  * 一些游戏中常用的基础数据结构。
  */
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -473,5 +474,32 @@ namespace OW.Game
 
     public static class GameHelper
     {
+        /// <summary>
+        /// 随机获取指定数量的元素。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="src"></param>
+        /// <param name="random"></param>
+        /// <param name="count">不可大于<paramref name="src"/>中元素数。</param>
+        /// <returns></returns>
+        public static IEnumerable<T> GetRandom<T>(IList<T> src, Random random, int count)
+        {
+            if (count > src.Count)
+                throw new InvalidOperationException();
+            else if (count == src.Count)
+                return src;
+            var tmp = count;
+            var ary = ArrayPool<int>.Shared.Rent(count);
+            for (int i = 0; i < count; i++)
+            {
+                ary[i] = random.Next(src.Count);
+            }
+            var result = new T[count];
+            for (int i = 0; i < count; i++)
+            {
+                result[i] = src[ary[i]];
+            }
+            return result;
+        }
     }
 }

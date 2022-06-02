@@ -4,14 +4,16 @@ using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GuangYuan.GY001.TemplateDb.Migrations
 {
     [DbContext(typeof(GY001TemplateContext))]
-    partial class GameTemplateContextModelSnapshot : ModelSnapshot
+    [Migration("20220602063956_22060201")]
+    partial class _22060201
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

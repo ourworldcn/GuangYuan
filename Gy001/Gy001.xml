@@ -520,6 +520,11 @@
             前置任务Id集合。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GameMissionTemplateDto.GroupNumber">
+            <summary>
+            分组号，这个字符串用于区分不同类型的任务，与数据策划约定好即可。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.ShoppingItemDto">
             <summary>
             商城物品传输对象。
@@ -3280,6 +3285,21 @@
             是否自动接受加入申请。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GuildMissionDto.GuildTemplateId">
+            <summary>
+            工会任务模板Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GuildMissionDto.Completed">
+            <summary>
+            是否已经完成了。true已经完成，false未完成。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetGuildMissionReturnDto.GuildMissions">
+            <summary>
+            工会任务信息集合。
+            </summary>
+        </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
@@ -3450,6 +3470,13 @@
             获取任务模板数据。由于不会变化，会自动缓存(2分钟)。
             </summary>
             <returns><seealso cref="T:GY2021001WebApi.Models.GetMissionTemplatesReturnDto"/>。</returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameMissionController.GetGuildMission(GY2021001WebApi.Models.GetGuildMissionParamsDto)">
+            <summary>
+            获取行会任务。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="T:Gy001.Controllers.GameShoppingController">
             <summary>

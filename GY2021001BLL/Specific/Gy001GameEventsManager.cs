@@ -425,6 +425,10 @@ namespace OW.Game
                     KeyType = SocialConstant.HomelandShowKeyType,
                 };
                 db.Add(gsr);
+                //增加阵容数据 for0, for1, for2, for10 = 0
+                showMount.Properties["for0"] = 0m;
+                showMount.Properties["for1"] = 0m;
+                showMount.Properties["for2"] = 0m;
             }
             //加入日志
             var ar = new GameActionRecord

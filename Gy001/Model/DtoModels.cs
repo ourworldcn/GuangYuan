@@ -3210,6 +3210,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<string> PreMissionIds { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 分组号，这个字符串用于区分不同类型的任务，与数据策划约定好即可。
+        /// </summary>
+        [DataMember]
+        public string GroupNumber { get; set; }
     }
 
     [DataContract]
@@ -4260,7 +4266,7 @@ namespace GY2021001WebApi.Models
         /// 行会名。
         /// </summary>
         [DataMember]
-        public string DisplayName { get; set; } 
+        public string DisplayName { get; set; }
 
         /// <summary>
         /// 工会图标。
@@ -4276,6 +4282,34 @@ namespace GY2021001WebApi.Models
 
     }
 
+    [DataContract]
+    public class GuildMissionDto
+    {
+        /// <summary>
+        /// 工会任务模板Id。
+        /// </summary>
+        public string GuildTemplateId { get; set; }
+
+        /// <summary>
+        /// 是否已经完成了。true已经完成，false未完成。
+        /// </summary>
+        public bool Completed { get; set; }
+    }
+
+    [DataContract]
+    public class GetGuildMissionReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 工会任务信息集合。
+        /// </summary>
+        [DataMember]
+        public List<GuildMissionDto> GuildMissions { get; set; } = new List<GuildMissionDto>();
+    }
+
+    [DataContract]
+    public class GetGuildMissionParamsDto : TokenDtoBase
+    {
+    }
     #endregion 行会相关
 }
 #pragma warning restore IDE0074 // 使用复合分配

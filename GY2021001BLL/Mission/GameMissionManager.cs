@@ -590,6 +590,36 @@ namespace OW.Game.Mission
             return World.ItemTemplateManager.Id2Mission.Values;
         }
 
+        #region 工会任务相关
+
+        /// <summary>
+        /// 获取今天已经完成的工会任务。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public IEnumerable<Guid> GetGuildMission(GameChar gameChar)
+        {
+            if (!World.CharManager.Lock(gameChar.GameUser))
+                return Array.Empty<Guid>();
+            using var dw = DisposeHelper.Create(c => World.CharManager.Unlock(c.GameUser), gameChar);
+            var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            if (slot is null)
+            {
+                VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                VWorld.SetLastErrorMessage("角色没有加入行会。");
+                return Array.Empty<Guid>();
+            }
+            using var wrapper = TodayDataWrapper<Guid>.Create(gameChar.Properties, "guildMission", DateTime.UtcNow);
+            wrapper.GetOrAddLastValues(() =>
+            {
+                return Array.Empty<Guid>();
+            });
+            wrapper.Save();
+            return wrapper.TodayValues;
+        }
+
+        #endregion 工会任务相关
+
         #endregion 任务相关
     }
 

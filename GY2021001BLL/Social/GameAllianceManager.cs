@@ -145,6 +145,27 @@ namespace GuangYuan.GY001.UserDb.Social
             guild.Properties["IconIndex"] = datas.IconIndex;
             guild.Properties["Bulletin"] = datas.Bulletin;
         }
+
+        /// <summary>
+        /// 获取该工会的当日工会任务。
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <returns></returns>
+        public IEnumerable<Guid> GetMission(GameGuild guild)
+        {
+            if (!Lock(guild.Id, Options.DefaultTimeout, out guild))
+                return Array.Empty<Guid>();
+            using var dw = DisposeHelper.Create(c => Unlock(c), guild);
+            using var wrapper = TodayDataWrapper<Guid>.Create(guild.Properties, "mission", DateTime.UtcNow);
+            wrapper.GetOrAddLastValues(() =>
+            {
+                var coll = World.ItemTemplateManager.Id2Mission.Values.Where(c => c.GroupNumber == "1001").ToList();
+                return GameHelper.GetRandom(coll, VWorld.WorldRandom, 5).Select(c => c.Id);
+            });
+            wrapper.Save();
+            return wrapper.TodayValues;
+        }
+
         #endregion 基础操作
 
         /// <summary>

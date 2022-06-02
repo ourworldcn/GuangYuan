@@ -107,6 +107,50 @@ namespace Gy001.Controllers
             result.Templates.AddRange(templates.Select(c => (GameMissionTemplateDto)c));
             return result;
         }
+
+        /// <summary>
+        /// 获取行会任务。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public ActionResult<GetGuildMissionReturnDto> GetGuildMission(GetGuildMissionParamsDto model)
+        {
+            var result = new GetGuildMissionReturnDto();
+            var gu = World.CharManager.GetUserFromToken(OwConvert.ToGuid(model.Token));
+            if (gu is null)
+            {
+                result.FillFromWorld();
+                return result;
+            }
+            var gc = gu.CurrentChar;
+            var guild = World.AllianceManager.GetGuild(gc);
+            if (guild is null)
+            {
+                result.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                result.DebugMessage = "角色不在行会中。";
+                return result;
+            }
+            if (!World.AllianceManager.Lock(guild.Id, World.AllianceManager.Options.DefaultTimeout, out guild))
+            {
+                result.FillFromWorld();
+                return result;
+            }
+            using var dwGuild = DisposeHelper.Create(c => World.AllianceManager.Unlock(c), guild);
+            if (!World.CharManager.Lock(gu))
+            {
+                result.FillFromWorld();
+                return result;
+            }
+            using var dw = DisposeHelper.Create(c => World.CharManager.Unlock(c), gu);
+            var collDone = World.MissionManager.GetGuildMission(gc);    //已完成任务
+            var coll = World.AllianceManager.GetMission(guild); //工会任务
+            var done = collDone.Intersect(coll);    //在当前工会完成的任务
+            result.GuildMissions.AddRange(done.Select(c => new GuildMissionDto() { Completed = true, GuildTemplateId = c.ToBase64String() })); //已完成任务
+            result.GuildMissions.AddRange(collDone.Except(done).Select(c => new GuildMissionDto() { Completed = true, GuildTemplateId = c.ToBase64String() })); //在其他公会完成的任务
+            result.GuildMissions.AddRange(coll.Except(done).Select(c => new GuildMissionDto() { Completed = false, GuildTemplateId = c.ToBase64String() })); //在当前公会完成的任务
+            return result;
+        }
     }
 
 }

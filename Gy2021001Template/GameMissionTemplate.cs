@@ -34,5 +34,10 @@ namespace GuangYuan.GY001.TemplateDb
                 return _PreMissionIds;
             }
         }
+
+        /// <summary>
+        /// 获取或设置分组标识。
+        /// </summary>
+        public string GroupNumber { get; set; }
     }
 }

@@ -85,6 +85,7 @@ namespace GY2021001WebApi.Models
             {
                 DisplayName = obj.Remark,
                 Id = obj.Id.ToBase64String(),
+                GroupNumber=obj.GroupNumber,
             };
             result.PreMissionIds.AddRange(obj.PreMissionIds.Select(c => c.ToBase64String()));
             foreach (var item in obj.Properties)
