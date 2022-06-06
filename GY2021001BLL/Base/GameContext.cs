@@ -213,15 +213,15 @@ namespace OW.Game
             }
         }
 
-        ConcurrentQueue<GamePropertyChangeItem<object>> _GamePropertyChanges;
+        List<GamePropertyChangeItem<object>> _GamePropertyChanges;
         /// <summary>
         /// 获取记录属性变化的集合。
         /// 首次读取该属性时，如果<see cref="GameChar"/>存在则通过<see cref="GamePropertyChangeManagerExtensions.GetOrCreatePropertyChangedList(GameChar)"/>创建。
         /// 否则会初始化新实例。
         /// </summary>
-        public ConcurrentQueue<GamePropertyChangeItem<object>> PropertyChanges
+        public List<GamePropertyChangeItem<object>> PropertyChanges
         {
-            get => _GamePropertyChanges ??= GameChar is null ? new ConcurrentQueue<GamePropertyChangeItem<object>>() : GameChar.GetOrCreatePropertyChangedList();
+            get => _GamePropertyChanges ??= new List<GamePropertyChangeItem<object>>();
         }
 
         #region IResultWorkData接口相关

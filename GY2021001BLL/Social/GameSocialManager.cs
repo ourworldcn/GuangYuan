@@ -1604,14 +1604,14 @@ namespace GuangYuan.GY001.BLL
 
             if (!todayData.HasData)  //若当日无数据
             {
-                if (!World.ItemManager.SetPropertyValue(datas.PvpObject, ProjectConstant.LevelPropertyName, 0))   //若无法设置级别
+                if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, 0))   //若无法设置级别
                 {
                     datas.HasError = true;
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                     return;
                 }
             }
-            var lv = (int)datas.PvpObject.GetDecimalWithFcpOrDefault(ProjectConstant.LevelPropertyName);    //级别数据
+            var lv = (int)datas.PvpObject.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);    //级别数据
             if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel(pricePName) - 1 && datas.IsRefresh)  //若当日已经不可再刷
             {
                 datas.HasError = true;
@@ -1629,7 +1629,7 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
 
-                if (!World.ItemManager.SetPropertyValue(datas.PvpObject, ProjectConstant.LevelPropertyName, lv + 1))   //若无法设置级别
+                if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, lv + 1))   //若无法设置级别
                 {
                     datas.HasError = true;
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;

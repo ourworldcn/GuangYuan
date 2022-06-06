@@ -3305,6 +3305,12 @@
             外围系统。
             </summary>
         </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
             使用蓝图制造或升级物品。
@@ -3424,7 +3430,7 @@
         </member>
         <member name="M:Gy001.Controllers.GameAllianceController.UpgradeGuild">
             <summary>
-            行会或建筑升级。
+            行会或建筑升级。保留未用。
             </summary>
             <returns></returns>
         </member>

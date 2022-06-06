@@ -85,7 +85,7 @@ namespace GY2021001WebApi.Models
             {
                 DisplayName = obj.Remark,
                 Id = obj.Id.ToBase64String(),
-                GroupNumber=obj.GroupNumber,
+                GroupNumber = obj.GroupNumber,
             };
             result.PreMissionIds.AddRange(obj.PreMissionIds.Select(c => c.ToBase64String()));
             foreach (var item in obj.Properties)
@@ -457,11 +457,12 @@ namespace GY2021001WebApi.Models
     {
         public static implicit operator GeneralCharSummaryDto(GameChar obj)
         {
+            var pmng = (GamePropertyManager)obj.GameUser.Services.GetService(typeof(GamePropertyManager));
             var result = new GeneralCharSummaryDto()
             {
                 Id = obj.Base64IdString,
                 DisplayName = obj.DisplayName,
-                Level = (int)obj.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName),
+                Level = (int)obj.Properties.GetDecimalOrDefault(pmng.LevelPropertyName),
             };
             return result;
         }

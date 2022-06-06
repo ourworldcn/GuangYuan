@@ -223,7 +223,7 @@ namespace Gy001.Controllers
         }
 
         /// <summary>
-        /// 行会或建筑升级。
+        /// 行会或建筑升级。保留未用。
         /// </summary>
         /// <returns></returns>
         [HttpPost]

@@ -89,6 +89,25 @@ namespace GuangYuan.GY001.UserDb.Social
             return true;
         }
 
+        /// <summary>
+        /// 锁定角色所处的工会对象。无论角色是否已经加入工会（申请的工会也锁定）
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="guild">若锁定成功则返回工会对象。</param>
+        /// <returns></returns>
+        public bool Lock(GameChar gameChar, out GameGuild guild)
+        {
+            var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out var guildId))
+            {
+                VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                VWorld.SetLastErrorMessage("用户不在工会中。");
+                guild = default;
+                return false;
+            }
+            return Lock(guildId, Options.DefaultTimeout, out guild);
+        }
+
         public void Unlock(GameGuild guild)
         {
             Monitor.Exit(guild);
@@ -116,7 +135,7 @@ namespace GuangYuan.GY001.UserDb.Social
             var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
             if (slot is null)
                 return null;
-            if (!OwConvert.TryToGuid(slot.ExtraString, out var guildId))
+            if (slot.ExtraDecimal < 10 || !OwConvert.TryToGuid(slot.ExtraString, out var guildId))
                 return null;
             return GetGuild(guildId);
         }
@@ -166,6 +185,24 @@ namespace GuangYuan.GY001.UserDb.Social
             return wrapper.TodayValues;
         }
 
+        /// <summary>
+        /// 增加工会经验并计算升级。
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="expInc"></param>
+        public void Upgrade(GameGuild guild, decimal expInc, ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            var exp = guild.GetDecimalWithFcpOrDefault("exp");  //经验
+            var tt = guild.GetTemplate();
+            var ary = tt.GetPropertyValue("expLimit") as decimal[];
+            if (ary is null || ary.Length < 1) //若没有升级要求
+                return;
+            var lv = (int)guild.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);
+            exp += expInc;
+            var index = Array.FindIndex(ary, c => c <= exp);
+            if (index > -1 && index != lv + 1)    //若找到了匹配项
+                World.ItemManager.SetLevel(guild, index + 1, changes);
+        }
         #endregion 基础操作
 
         /// <summary>

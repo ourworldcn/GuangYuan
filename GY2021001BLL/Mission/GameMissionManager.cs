@@ -199,18 +199,18 @@ namespace OW.Game.Mission
                         }
                         break;
                     case "25ffbee1-f617-49bd-b0de-32b3e3e975cb": //	玩家等级成就	51001
-                        metrics = gc.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+                        metrics = gc.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
                         break;
                     case "2f48528e-fd7f-4269-92c9-dbd6f14ffef0": //	坐骑最高等级成就	51003
                         {
                             var zuoqiBag = gc.GetZuojiBag();
-                            metrics = zuoqiBag.Children.Max(c => gim.GetBody(c).Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                            metrics = zuoqiBag.Children.Max(c => gim.GetBody(c).Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     case "7d5ad309-2614-434e-b8d3-afe4db93d8b3": //	lv20坐骑数量	51004
                         {
                             var zuoqiBag = gc.GetZuojiBag();
-                            metrics = zuoqiBag.Children.Count(c => gim.GetBody(c)?.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName) >= 19);
+                            metrics = zuoqiBag.Children.Count(c => gim.GetBody(c)?.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName) >= 19);
                         }
                         break;
                     case "49ee3541-3a6e-4d05-85b0-566c6bfecde2": //	纯种坐骑数量成就	51006
@@ -268,25 +268,25 @@ namespace OW.Game.Mission
                     case "530efb1e-fc5d-4638-a728-e069431b197a": //	方舟成就	51016
                         {
                             var mainControlRoom = gc.GetMainControlRoom();
-                            metrics = mainControlRoom.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+                            metrics = mainControlRoom.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
                         }
                         break;
                     case "26c63192-867a-43f4-919b-10a614ee2865": //	炮塔成就	51017
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 40).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 40).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     case "03d80847-f273-413b-a2a2-81545ab03a89": //	陷阱成就	51018
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 41).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 41).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     case "5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d": //	旗帜成就	51019
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 42).Max(c => c.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName));
+                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 42).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     default:
@@ -498,47 +498,83 @@ namespace OW.Game.Mission
                 datas.ErrorMessage = "找不到指定模板";
                 return;
             }
-            using MissionView view = new MissionView(datas.World, datas.GameChar);
-            if (template.PreMissionIds.All(c => view.MissionStates.TryGetValue(c, out var state) && state == MissionState.Completion))   //若可以完成
+            if (template.GroupNumber != "1001") //若非工会任务
             {
-                if (view.MissionStates.TryGetValue(datas.MissionTId, out var state) && state == MissionState.Completion)  //若已经完成
+                using MissionView view = new MissionView(datas.World, datas.GameChar);
+                if (template.PreMissionIds.All(c => view.MissionStates.TryGetValue(c, out var state) && state == MissionState.Completion))   //若可以完成
+                {
+                    if (view.MissionStates.TryGetValue(datas.MissionTId, out var state) && state == MissionState.Completion)  //若已经完成
+                    {
+                        datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                        datas.ErrorMessage = "指定任务已经完成。";
+                        return;
+                    }
+                    var gim = World.ItemManager;
+                    //送物品
+                    var gis = gim.ToGameItems(template.Properties, "reward");
+                    if (gis.Any())
+                    {
+                        //加入物品
+                        AddItemsOrMailDatas data = new AddItemsOrMailDatas(datas.World, datas.GameChar);
+                        data.Items.AddRange(gis.Select(c =>
+                        {
+                            if (!c.Properties.Remove("ptid", out var tmp) || !OwConvert.TryToGuid(tmp, out var id))
+                                id = Guid.Empty;
+                            return (c, id);
+                        }));
+                        gim.AddItemsOrMail(data);
+                        datas.ErrorCode = data.ErrorCode;
+                        datas.ErrorMessage = data.ErrorMessage;
+                        if (!datas.HasError)
+                        {
+                            datas.ChangeItems.AddRange(data.ChangeItems);
+                            datas.MailIds.AddRange(data.MailIds);
+                            ScanAsync(datas.GameChar);
+                        }
+                    }
+                    //保存数据
+                    view.MissionStates[datas.MissionTId] = MissionState.Completion;
+                    view.Save();
+                    World.CharManager.NotifyChange(datas.GameChar.GameUser);
+                }
+                else //有错误
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                    datas.ErrorMessage = "指定任务已经完成。";
+                    datas.ErrorMessage = "至少一个前置任务没有完成";
+                }
+            }
+            else //工会任务
+            {
+                if (!World.AllianceManager.Lock(datas.GameChar, out var guild))   //若锁定工会失败
+                {
+                    datas.FillErrorFromWorld();
                     return;
                 }
-                var gim = World.ItemManager;
-                //送物品
-                var gis = gim.ToGameItems(template.Properties, "reward");
-                if (gis.Any())
+                using var dwGuild = DisposeHelper.Create(c => World.AllianceManager.Unlock(c), guild);  //解锁工会
+                var coll = GetGuildMission(datas.GameChar); //工会任务的当日已完成模板id集合
+                if (coll.Count() >= 5)
                 {
-                    //加入物品
-                    AddItemsOrMailDatas data = new AddItemsOrMailDatas(datas.World, datas.GameChar);
-                    data.Items.AddRange(gis.Select(c =>
-                    {
-                        if (!c.Properties.Remove("ptid", out var tmp) || !OwConvert.TryToGuid(tmp, out var id))
-                            id = Guid.Empty;
-                        return (c, id);
-                    }));
-                    gim.AddItemsOrMail(data);
-                    datas.ErrorCode = data.ErrorCode;
-                    datas.ErrorMessage = data.ErrorMessage;
-                    if (!datas.HasError)
-                    {
-                        datas.ChangeItems.AddRange(data.ChangeItems);
-                        datas.MailIds.AddRange(data.MailIds);
-                        ScanAsync(datas.GameChar);
-                    }
+                    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                    datas.ErrorMessage = "当日已经完成最大工会任务数量";
+                    return;
                 }
-                //保存数据
-                view.MissionStates[datas.MissionTId] = MissionState.Completion;
-                view.Save();
-                World.CharManager.NotifyChange(datas.GameChar.GameUser);
-            }
-            else //有错误
-            {
-                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                datas.ErrorMessage = "至少一个前置任务没有完成";
+                //物品增减
+                if (!World.ItemManager.DecrementCount(datas.GameChar, template.Properties, "repay", null))    //若资源不足
+                {
+                    datas.FillErrorFromWorld();
+                    return;
+                }
+                var gis = World.ItemManager.ToGameItems(template.Properties, "reward");
+                List<GameItem> remainder = new List<GameItem>();
+                //逐一加入物品
+                foreach (var item in gis)
+                {
+                    var container = World.EventsManager.GetDefaultContainer(item, datas.GameChar);
+                    World.ItemManager.MoveItem(item, item.Count.Value, container, remainder, datas.PropertyChanges);
+                }
+                //计算工会经验
+                World.AllianceManager.Upgrade(guild, 1, datas.PropertyChanges);
+                //标记已经完成
             }
         }
 
@@ -596,7 +632,7 @@ namespace OW.Game.Mission
         /// 获取今天已经完成的工会任务。
         /// </summary>
         /// <param name="gameChar"></param>
-        /// <returns></returns>
+        /// <returns>工会任务模板Id集合。</returns>
         public IEnumerable<Guid> GetGuildMission(GameChar gameChar)
         {
             if (!World.CharManager.Lock(gameChar.GameUser))

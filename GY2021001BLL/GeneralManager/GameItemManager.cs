@@ -3,6 +3,7 @@ using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
 using OW.Extensions.Game.Store;
 using OW.Game.PropertyChange;
@@ -163,15 +164,15 @@ namespace OW.Game.Item
                 }
 
             }
-            else if (propName.StartsWith(ProjectConstant.LevelPropertyName))  //若是一个级别属性
+            else if (propName.StartsWith(World.PropertyManager.LevelPropertyName))  //若是一个级别属性
             {
                 var olv = gameItem.GetDecimalWithFcpOrDefault(propName, 0m);    //当前等级
                 var nlv = Convert.ToDecimal(val);   //新等级
                 if (olv != nlv)    //若需要改变等级
                 {
                     string seqPName;
-                    seqPName = propName.Length > 2 ? propName[2..] : ProjectConstant.LevelPropertyName;
-                    if (seqPName == ProjectConstant.LevelPropertyName)
+                    seqPName = propName.Length > 2 ? propName[2..] : World.PropertyManager.LevelPropertyName;
+                    if (seqPName == World.PropertyManager.LevelPropertyName)
                         SetLevel(gameItem, (int)nlv);
                     else
                         SetLevel(gameItem, seqPName, (int)nlv);
@@ -234,7 +235,7 @@ namespace OW.Game.Item
         public void SetLevel(GameItem gameItem, int newLevel)
         {
             var template = GetTemplate(gameItem);
-            var coll = template.Properties.Where(c => c.Value is decimal[] && World.ItemTemplateManager.GetIndexPropName(template, c.Key) == ProjectConstant.LevelPropertyName);    //取得序列属性且其索引属性是通用序列的
+            var coll = template.Properties.Where(c => c.Value is decimal[] && World.ItemTemplateManager.GetIndexPropName(template, c.Key) == World.PropertyManager.LevelPropertyName);    //取得序列属性且其索引属性是通用序列的
             foreach (var item in coll.ToArray())
             {
                 SetLevel(gameItem, item.Key, newLevel);
@@ -274,6 +275,62 @@ namespace OW.Game.Item
             }
             return;
         }
+
+        /// <summary>
+        /// 设置新等级并对动态属性增减。
+        /// </summary>
+        /// <param name="thing">目标对象属性字典。</param>
+        /// <param name="newLevel">新等级。</param>
+        /// <param name="changes">变化数据。省略则不生成。</param>
+        /// 
+        public void SetLevel(GameThingBase thing, int newLevel, ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            var olv = (int)thing.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName); //当前等级
+            if (olv == newLevel)    //若等级没有变化
+                return;
+            var tt = thing.GetTemplate();
+            foreach (var kvp in thing.Properties.ToArray())
+            {
+                var ary = tt.Properties.GetValueOrDefault(kvp.Key) as decimal[];
+                if (ary is null || ary.Length < 1)  //若没有随级别变化的可能
+                    continue;
+                if (!OwConvert.TryToDecimal(kvp.Value, out var ov)) //若不是数值
+                    continue;
+
+                var result = ov - GetOrDefault(ary, olv) + GetOrDefault(ary, newLevel);   //升级后的值
+                thing.Properties[kvp.Key] = result;
+                changes?.Add(new GamePropertyChangeItem<object>()
+                {
+                    HasNewValue = true,
+                    NewValue = result,
+                    HasOldValue = true,
+                    OldValue = ov,
+                    Object = thing,
+                    PropertyName = kvp.Key,
+                });
+            }
+            //设置等级属性
+            thing.Properties[World.PropertyManager.LevelPropertyName] = newLevel;
+            changes?.Add(new GamePropertyChangeItem<object>()
+            {
+                HasNewValue = true,
+                NewValue = newLevel,
+                HasOldValue = true,
+                OldValue = olv,
+                Object = thing,
+                PropertyName = World.PropertyManager.LevelPropertyName,
+            });
+        }
+
+        /// <summary>
+        /// 获取数组指定索引处的值，若索引超出范围则返回默认值。
+        /// </summary>
+        /// <param name="ary"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        T GetOrDefault<T>(T[] ary, int index, T defaultValue = default) =>
+            index < ary.GetLowerBound(0) || index > ary.GetUpperBound(0) ? defaultValue : ary[index];
 
         /// <summary>
         /// 移动一个物品的一部分到另一个容器。
@@ -1271,7 +1328,7 @@ namespace OW.Game.Item
         /// <param name="propertyBag"></param>
         /// <param name="prefix"></param>
         /// <param name="changes"></param>
-        public virtual void DecrementCount(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null,
+        public virtual bool DecrementCount(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null,
             ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var list = Lookup(gameChar, propertyBag, prefix);
@@ -1279,9 +1336,10 @@ namespace OW.Game.Item
             if (list.Count < count)    //若资源不足
             {
                 VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
-                return;
+                return false;
             }
             DecrementCount(list, changes);
+            return true;
         }
 
         /// <summary>
@@ -1296,7 +1354,7 @@ namespace OW.Game.Item
         }
 
         /// <summary>
-        /// 尽可能将指定物品放入容器，如果有剩余则放入<paramref name="remainder"/>中。
+        /// 尽可能将指定物品放入容器(可合并则合并)，如果有剩余则放入<paramref name="remainder"/>中。
         /// </summary>
         /// <param name="gItem"></param>
         /// <param name="count">移动的数量，不能大于物品已有数量。不可堆叠物品则必须是1。</param>

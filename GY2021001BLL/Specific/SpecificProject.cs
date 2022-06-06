@@ -321,11 +321,6 @@ namespace GuangYuan.GY001.BLL
         public const string FastChangingPropertyName = "fcp";
 
         /// <summary>
-        /// 级别属性的名字。
-        /// </summary>
-        public const string LevelPropertyName = "lv";   //Runes
-
-        /// <summary>
         /// 升级计时快速变化属性名。
         /// </summary>
         public const string UpgradeTimeName = "upgradecd";

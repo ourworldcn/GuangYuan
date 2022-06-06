@@ -1279,7 +1279,7 @@ namespace GuangYuan.GY001.BLL
             var oldExp = gameChar.Properties.GetDecimalOrDefault("exp");    //当前经验值
             if (newExp != oldExp)
                 e.MarkAndSet(gameChar, "exp", newExp);
-            var oldLv = gameChar.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName); //当前等级
+            var oldLv = gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName); //当前等级
             var limit = gameChar.Properties.GetValueOrDefault("expLimit");
             int newLv;
             if (gameChar.GetTemplate().Properties.GetValueOrDefault("expLimit") is IEnumerable limitSeq && newExp >= oldExp)   //若经验已经变化

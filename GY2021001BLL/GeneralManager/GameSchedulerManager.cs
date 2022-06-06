@@ -286,11 +286,11 @@ namespace GuangYuan.GY001.BLL
                 //TO DO
                 return;
             }
-            var fcp = gi.RemoveFastChangingProperty(ProjectConstant.LevelPropertyName);
+            var fcp = gi.RemoveFastChangingProperty(World.PropertyManager.LevelPropertyName);
             if (null != fcp)  //若存在升级冷却
             {
-                var lv = gi.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);  //当前级别
-                World.ItemManager.SetPropertyValue(gi, ProjectConstant.LevelPropertyName, lv + 1);
+                var lv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);  //当前级别
+                World.ItemManager.SetPropertyValue(gi, World.PropertyManager.LevelPropertyName, lv + 1);
                 gi.Properties.Remove("UpgradedSchedulerId");    //删除定时任务Id
             }
         }

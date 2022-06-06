@@ -55,7 +55,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>升级需要的资源及消耗量，null表示不可升级,此时可通过<see cref="VWorld.GetLastError"/>获取详细信息。</returns>
         public List<(GameItem, decimal)> GetCost()
         {
-            var lv = GameItem.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+            var lv = GameItem.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
 
             var result = new List<(GameItem, decimal)>();
 
@@ -396,18 +396,6 @@ namespace GuangYuan.GY001.BLL
                         BuyPveCount(datas);
                         succ = true;
                         break;
-                    case "3af71bc0-db28-4f42-a1ca-38fb5b5030cc":    //攻击神纹升级
-                    case "d40c1818-06cf-4d19-9f6e-5ba54472b6fc":    //血量神纹升级
-                    case "dd999eee-9d4e-40de-bff9-16d5054d139b":    //质量神纹升级
-                        ShenwenLevelUp(datas);
-                        succ = true;
-                        break;
-                    case "92f63905-a39f-4e1a-ad17-ea648a99be7a":    //神纹攻击突破
-                    case "e35d12f0-c2d6-40bf-a2b0-f04b057ff68c":    //神纹血量突破
-                    case "7fc78174-f884-4918-a4fc-b84db5360cf9":    //神纹质量突破
-                        ShenwenTupo(datas);
-                        succ = true;
-                        break;
                     case "c7051e47-0a73-4319-85dc-7b02f26f14f4": //兽栏背包扩容
                         if (datas.GameItems.Count == 0)    //若没指定物品
                         {
@@ -580,169 +568,6 @@ namespace GuangYuan.GY001.BLL
 
         #endregion 通用功能
 
-        #region 神纹相关
-
-        /// <summary>
-        /// 神纹升级。
-        /// </summary>
-        /// <param name="datas"></param>
-        public void ShenwenLevelUp(ApplyBlueprintDatas datas)
-        {
-            if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。"))
-            {
-                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                return;
-            }
-            var gi = datas.GameItems[0];    //升级的神纹
-            var gc = datas.GameChar;
-            if (!datas.Verify(gc.GetShenwenBag().Children.Contains(gi) && gi.GetTemplate().CatalogNumber == 10, "要升级的不是一个神纹对象。"))
-            {
-                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                return;
-            }
-            string pname; //主属性名后缀
-            int gcode;  //主属性名对应的类型码
-            switch (datas.Blueprint.IdString)
-            {
-                case "3af71bc0-db28-4f42-a1ca-38fb5b5030cc":    //攻击
-                    pname = "atk";
-                    gcode = 16;
-                    break;
-                case "d40c1818-06cf-4d19-9f6e-5ba54472b6fc":   //血量
-                    pname = "mhp";
-                    gcode = 15;
-                    break;
-                case "dd999eee-9d4e-40de-bff9-16d5054d139b":     //质量
-                    pname = "qlt";
-                    gcode = 17;
-                    break;
-                default:
-                    datas.HasError = true;
-                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.DebugMessage = "不正确的模板";
-                    return;
-            }
-            //道具
-            var bodyCode = gi.GetDecimalWithFcpOrDefault("body");
-            var daoju = gc.GetItemBag().Children.FirstOrDefault(c => c.Properties.GetDecimalOrDefault("body") == bodyCode && c.GetCatalogNumber() == gcode); //碎片道具
-            if (!(daoju?.Count > 0)) //若道具不足
-            {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
-                return;
-            }
-            //升级次数
-            var lvpname = $"lv{pname}"; //主属性名
-            var mlvpname = $"mlv{pname}"; //上限属性名
-            var lv = gi.GetDecimalWithFcpOrDefault(lvpname); //级别
-            var mlv = gi.GetDecimalWithFcpOrDefault(mlvpname); //级别上限
-            var maxCount = Math.Min(datas.Count, mlv - lv);   //实际的升级次数
-            if (maxCount <= 0) //若已经升级到顶
-            {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                datas.DebugMessage = "不可继续升级。";
-                return;
-            }
-            maxCount = Math.Min(maxCount, daoju.Count.Value);   //实际升级次数
-            //修改数据
-            World.ItemManager.SetLevel(gi, pname, (int)(lv + maxCount));
-            gi.Properties[lvpname] = (lv + maxCount);
-
-            daoju.Count -= maxCount;
-            datas.SuccCount = (int)maxCount;
-            if (daoju.Count > 0)
-                datas.ChangeItems.AddToChanges(gi, daoju);
-            else
-            {
-                datas.ChangeItems.AddToRemoves(gc.GetItemBag().Id, daoju.Id);
-                datas.GameChar.GameUser.DbContext.Remove(daoju);
-                gc.GetItemBag().Children.Remove(daoju);
-            }
-            datas.ChangeItems.AddToChanges(gi);
-        }
-
-        /// <summary>
-        /// 神纹突破。
-        /// </summary>
-        /// <param name="datas"></param>
-        public void ShenwenTupo(ApplyBlueprintDatas datas)
-        {
-            decimal[] costs = new decimal[] { -1, -3, -5, -8, -11, -15, -19, -24, -30 }; //突破石耗损
-            double[] probs = new double[] { 1, 1, 1, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5 };    //突破概率
-            if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。"))
-            {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                return;
-            }
-            var gi = datas.GameItems[0];    //突破的神纹
-            var gc = datas.GameChar;
-            string pname;
-            switch (datas.Blueprint.IdString)
-            {
-                case "92f63905-a39f-4e1a-ad17-ea648a99be7a":    //神纹攻击突破
-                    pname = "atk";
-                    break;
-                case "e35d12f0-c2d6-40bf-a2b0-f04b057ff68c":    //神纹血量突破
-                    pname = "mhp";
-                    break;
-                case "7fc78174-f884-4918-a4fc-b84db5360cf9":    //神纹质量突破
-                    pname = "qlt";
-                    break;
-                default:
-                    datas.HasError = true;
-                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.DebugMessage = "不正确的模板";
-                    return;
-            }
-            var lvName = $"lv{pname}";
-            var ssc = (int)gi.Properties.GetDecimalOrDefault($"ssc{pname}");    //突破次数
-            if (ssc >= costs.Length)
-            {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                return;
-            }
-            var cost = costs[ssc];  //所需突破石数量
-            var itemBag = gc.GetItemBag();
-            var tid = new Guid("A9BD0E89-1105-4A52-982A-97E6EE4AD577"); //突破石道具
-            var tupoItem = itemBag.Children.FirstOrDefault(c => c.TemplateId == tid);
-            if (tupoItem is null || tupoItem.Count + cost < 0)   //若突破石不足
-            {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
-                return;
-            }
-            //测算是否成功突破
-            var prob = probs[ssc];
-            bool ok = World.IsHit(prob);
-            //修改数据
-            tupoItem.Count += cost;
-            if (tupoItem.Count > 0)    //若还有剩余
-            {
-                datas.ChangeItems.AddToChanges(tupoItem);
-            }
-            else //若已经全部消耗
-            {
-                datas.ChangeItems.AddToRemoves(tupoItem.GetContainerId().Value, tupoItem.Id);
-                gc.GameUser.DbContext.Remove(tupoItem);
-                itemBag.Children.Remove(tupoItem);
-            }
-            if (ok)  //若突破成功
-            {
-                gi.Properties[$"ssc{pname}"] = ssc + 1;
-                gi.Properties[$"mlv{pname}"] = gi.Properties.GetDecimalOrDefault($"mlv{pname}") + 10;
-            }
-            else //若突破失败
-            {
-                var lv = gi.Properties.GetDecimalOrDefault(lvName);
-                World.ItemManager.SetPropertyValue(gi, lvName, (int)Math.Max(lv - 3, 0));
-            }
-            datas.ChangeItems.AddToChanges(gi);
-        }
-        #endregion 神纹相关
-
         #region 升级相关
 
         ILookup<Guid, (GameItemTemplate, GameValidation)> _MainBaseLuItems;
@@ -799,7 +624,7 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
                 LastChangesItems.Clear();
-                int lv = (int)gameItem.GetDecimalWithFcpOrDefault(ProjectConstant.LevelPropertyName, 0m);  //新等级
+                int lv = (int)gameItem.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName, 0m);  //新等级
                 List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
                 if (gameItem.TemplateId == ProjectConstant.MainControlRoomSlotId) //如果是主控室升级
                 {
@@ -884,7 +709,7 @@ namespace GuangYuan.GY001.BLL
             int lv;
             for (int i = 0; i < datas.Count; i++)
             {
-                lv = (int)gi.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
+                lv = (int)gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
                 if (template.GetMaxLevel(template.SequencePropertyNames.FirstOrDefault()) <= lv)  //若已达最大等级
                 {
                     if (i > 0) //若已经成功升级过至少一次
@@ -928,8 +753,8 @@ namespace GuangYuan.GY001.BLL
                 if (lut == decimal.Zero)   //若没有升级延时
                 {
                     //升级
-                    var oldLv = luDatas.GameItem.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
-                    gim.SetPropertyValue(luDatas.GameItem, ProjectConstant.LevelPropertyName, oldLv + 1);
+                    var oldLv = luDatas.GameItem.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+                    gim.SetPropertyValue(luDatas.GameItem, World.PropertyManager.LevelPropertyName, oldLv + 1);
                     //记录变化信息
                     datas.ChangeItems.AddToChanges(cost.Select(c => c.Item1).ToArray());
                     datas.SuccCount = i + 1;
@@ -1016,13 +841,13 @@ namespace GuangYuan.GY001.BLL
             if (!gi.Name2FastChangingProperty.TryGetValue(ProjectConstant.UpgradeTimeName, out var fcp))    //若已经处理了
                 return;
             //升级
-            var oldLv = gi.Properties.GetDecimalOrDefault(ProjectConstant.LevelPropertyName);
-            World.ItemManager.SetPropertyValue(gi, ProjectConstant.LevelPropertyName, oldLv + 1);
+            var oldLv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+            World.ItemManager.SetPropertyValue(gi, World.PropertyManager.LevelPropertyName, oldLv + 1);
             //通知属性发生变化
             try
             {
                 OnLevelUpCompleted(sender);
-                gi.InvokeDynamicPropertyChanged(new DynamicPropertyChangedEventArgs(ProjectConstant.LevelPropertyName, oldLv));
+                gi.InvokeDynamicPropertyChanged(new DynamicPropertyChangedEventArgs(World.PropertyManager.LevelPropertyName, oldLv));
             }
             catch (Exception)
             {
@@ -1154,7 +979,7 @@ namespace GuangYuan.GY001.BLL
             LevelUp(datas);
             if (datas.HasError)
                 return;
-            if (!datas.Verify(gi.TryGetPropertyWithFcp(ProjectConstant.LevelPropertyName, out decimal lvDec), "级别属性类型错误。"))
+            if (!datas.Verify(gi.TryGetPropertyWithFcp(World.PropertyManager.LevelPropertyName, out decimal lvDec), "级别属性类型错误。"))
             {
                 return;
             }
@@ -1260,7 +1085,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             if (!datas.Verify(td.Name2FastChangingProperty.TryGetValue("Count", out _), "找不到自动恢复属性。"))
                 return;
-            var lv = td.GetDecimalWithFcpOrDefault(ProjectConstant.LevelPropertyName);
+            var lv = td.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);
             DateTime dt = DateTime.UtcNow;  //当前时间
             if (td.TryGetProperty("ltlv", out var ltlvObj) && DateTime.TryParse(ltlvObj as string, out var ltlv))  //若找到上次升级时间属性
             {
@@ -1280,7 +1105,7 @@ namespace GuangYuan.GY001.BLL
             if (!datas.Verify(lud <= diam.Count, "钻石不足")) return;
             //修改数据
             var gim = World.ItemManager;
-            gim.SetPropertyValue(td, ProjectConstant.LevelPropertyName, lv + 1);    //变更购买价格
+            gim.SetPropertyValue(td, World.PropertyManager.LevelPropertyName, lv + 1);    //变更购买价格
             td.SetPropertyValue("ltlv", ltlv.ToString());  //记录购时间
             datas.ChangeItems.AddToChanges(td.GetContainerId().Value, td);
             td.Name2FastChangingProperty["Count"].LastValue++;

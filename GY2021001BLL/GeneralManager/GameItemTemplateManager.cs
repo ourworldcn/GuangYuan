@@ -197,10 +197,10 @@ namespace GuangYuan.GY001.BLL
         {
             if (!template.Properties.TryGetValue(seqPropName, out object obj) || !(obj is decimal[]))
                 return null;
-            var pn = $"{ProjectConstant.LevelPropertyName}{seqPropName}";
+            var pn = $"{World.PropertyManager.LevelPropertyName}{seqPropName}";
             if (template.Properties.ContainsKey(pn))
                 return pn;
-            return ProjectConstant.LevelPropertyName;
+            return World.PropertyManager.LevelPropertyName;
         }
 
     }
