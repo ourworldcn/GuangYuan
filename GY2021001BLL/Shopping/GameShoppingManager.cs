@@ -293,6 +293,18 @@ namespace GuangYuan.GY001.BLL
                     result.Add((gameChar.GetJinbi(), -Math.Abs(tt.Properties.GetDecimalOrDefault("bg")) * count));
                 }
             }
+            if (template.Properties.ContainsKey("bmg"))  //若有公会币售价
+            {
+                result.Add((gameChar.GetGuildCurrency(), -Math.Abs(template.Properties.GetDecimalOrDefault("bmg")) * count));
+            }
+            else
+            {
+                var tt = gitm.GetTemplateFromeId(template.ItemTemplateId ?? Guid.Empty);
+                if (tt != null && tt.Properties.ContainsKey("bmg"))    //若有基础模板公会币售价
+                {
+                    result.Add((gameChar.GetGuildCurrency(), -Math.Abs(tt.Properties.GetDecimalOrDefault("bmg")) * count));
+                }
+            }
             return result;
         }
 

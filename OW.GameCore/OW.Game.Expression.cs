@@ -1,5 +1,4 @@
-﻿using GuangYuan.GY001.BLL;
-using GuangYuan.GY001.UserDb;
+﻿using GuangYuan.GY001.UserDb;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
@@ -278,7 +277,7 @@ namespace OW.Game.Expression
                 case 1:
                     if (string.IsNullOrWhiteSpace(strs[0]))
                         return false;
-                    result.TemplateId = ProjectConstant.CharTemplateId;
+                    //result.TemplateId = ProjectConstant.CharTemplateId;
                     result.PropertyName = strs[0];
                     break;
                 default:
@@ -325,11 +324,11 @@ namespace OW.Game.Expression
             GameThingBase gt;
             if (ParentTemplateId is null)   //若不限定容器
             {
-                gt = TemplateId == ProjectConstant.CharTemplateId ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
+                gt = TemplateId == gameChar.TemplateId ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
             }
             else //若限定容器
             {
-                gt = ParentTemplateId == ProjectConstant.CharTemplateId ? gameChar.GameItems.FirstOrDefault(c => c.TemplateId == TemplateId) :
+                gt = ParentTemplateId == gameChar.TemplateId ? gameChar.GameItems.FirstOrDefault(c => c.TemplateId == TemplateId) :
                     gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ParentTemplateId.Value)?.Children.FirstOrDefault(c => c.TemplateId == TemplateId);
             }
             return gt?.GetDecimalWithFcpOrDefault(PropertyName);
@@ -345,15 +344,16 @@ namespace OW.Game.Expression
             GameThingBase gt;
             if (ParentTemplateId is null)   //若不限定容器
             {
-                gt = TemplateId == ProjectConstant.CharTemplateId ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
+                gt = TemplateId == gameChar.TemplateId ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
             }
             else //若限定容器
             {
-                gt = ParentTemplateId == ProjectConstant.CharTemplateId ? gameChar.GameItems.FirstOrDefault(c => c.TemplateId == TemplateId) :
+                gt = ParentTemplateId == gameChar.TemplateId ? gameChar.GameItems.FirstOrDefault(c => c.TemplateId == TemplateId) :
                     gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ParentTemplateId.Value)?.Children.FirstOrDefault(c => c.TemplateId == TemplateId);
             }
             if (null != gt)
                 gt.Properties[PropertyName] = value;
+
         }
     }
 }

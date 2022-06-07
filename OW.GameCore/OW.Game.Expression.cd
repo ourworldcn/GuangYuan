@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="OW.Game.Expression.GameExpression">
+    <Position X="5.75" Y="3.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>DEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAEAIAA=</HashCode>
+      <FileName>OW.Game.Expression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.BinaryGameExpression">
+    <Position X="4" Y="6.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>OW.Game.Expression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.GameCharExpression">
+    <Position X="7.25" Y="6.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAIAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAA=</HashCode>
+      <FileName>OW.Game.Expression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.GameValidation">
+    <Position X="11.75" Y="3.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAABAAAAAAAAAgAAAAAAAAACAAAAAAgAAAAIAA=</HashCode>
+      <FileName>OW.Game.Expression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Expression.GameReference">
+    <Position X="9.75" Y="3.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAIAAAAgAAAAAAAAAAAAAEAABAAAAAAABAAAA=</HashCode>
+      <FileName>OW.Game.Expression.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

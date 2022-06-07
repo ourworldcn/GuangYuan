@@ -147,6 +147,11 @@ namespace GuangYuan.GY001.BLL
 
         #region 货币类模板Id
         /// <summary>
+        /// 公会币模板id。
+        /// </summary>
+        public static readonly Guid GuildCurrencyTId = new Guid("{eeb2e638-845b-4738-a6d4-b36cf43692a8}");
+
+        /// <summary>
         /// 金币Id，这个不是槽，它的Count属性直接记录了金币数，目前其子代为空。这个省事，但未来在金币袋上开脑洞，不能保证不变。
         /// </summary>
         public static readonly Guid JinbiId = new Guid("{2B83C942-1E9C-4B45-9816-AD2CBF0E473F}");
@@ -313,7 +318,7 @@ namespace GuangYuan.GY001.BLL
 
         #endregion 固定模板Id
 
-        public const string GuildChannelId= "5E36F81C-00BD-446D-B781-E48F2B088591";
+        public const string GuildChannelId = "5E36F81C-00BD-446D-B781-E48F2B088591";
 
         /// <summary>
         /// 快速变化属性的属性名前缀。
@@ -783,6 +788,15 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetJinbi(this GameChar gameChar) =>
             gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.JinbiId);
+
+        /// <summary>
+        /// 获取公会币对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetGuildCurrency(this GameChar gameChar) =>
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildCurrencyTId);
 
         /// <summary>
         /// 获取木材对象。

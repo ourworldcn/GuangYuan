@@ -48,7 +48,7 @@ namespace GuangYuan.GY001.UserDb.Social
         void Initialize()
         {
             using var db = World.CreateNewUserDbContext();
-            foreach (var item in db.Set<GameGuild>().AsNoTracking())
+            foreach (var item in db.Set<GameGuild>())
             {
                 World.EventsManager.GameGuildLoaded(item);
                 _Id2Guild[item.Id] = item;
