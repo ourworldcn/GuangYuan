@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Item;
+using OW.Game.Log;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
 using OW.Script;
@@ -258,6 +259,20 @@ namespace GuangYuan.GY001.BLL
             {
                 using var dw = DisposeHelper.Create(c => { }, this);
             }
+
+            var coll = new SimpleGameLogCollection();
+            var tmp = new SimpleGameLog() { Action = "act1", DateTime = DateTime.UtcNow, };
+            tmp.Params.Add("{}");
+            tmp.Params.Add("1");
+            coll.Add(tmp);
+            tmp = new SimpleGameLog() { Action = "act2", DateTime = DateTime.UtcNow, };
+            tmp.Params.Add("{2}");
+            tmp.Params.Add("2");
+            coll.Add(tmp);
+            var jsonstr = JsonSerializer.Serialize(coll);
+
+            var re = (SimpleGameLogCollection)JsonSerializer.Deserialize(jsonstr, typeof(SimpleGameLogCollection));
+
         }
 
         /// <summary>

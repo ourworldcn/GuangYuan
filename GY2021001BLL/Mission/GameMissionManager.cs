@@ -3,9 +3,11 @@ using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Social;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OW.Game.Item;
+using OW.Game.Log;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -545,21 +547,23 @@ namespace OW.Game.Mission
             }
             else //工会任务
             {
+                var now = DateTime.UtcNow;
                 if (!World.AllianceManager.Lock(datas.GameChar, out var guild))   //若锁定工会失败
                 {
                     datas.FillErrorFromWorld();
                     return;
                 }
                 using var dwGuild = DisposeHelper.Create(c => World.AllianceManager.Unlock(c), guild);  //解锁工会
-                var coll = GetGuildMission(datas.GameChar); //工会任务的当日已完成模板id集合
-                if (coll.Count() >= 5)
+                var sgc = GetGuildMission(datas.GameChar);
+                sgc.Remove(now.Date);
+                if (sgc.Count >= 5)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
                     datas.ErrorMessage = "当日已经完成最大工会任务数量";
                     return;
                 }
                 //物品增减
-                if (!World.ItemManager.DecrementCount(datas.GameChar, template.Properties, "repay", null))    //若资源不足
+                if (!World.ItemManager.DecrementCount(datas.GameChar, template.Properties, "repay", datas.PropertyChanges))    //若资源不足
                 {
                     datas.FillErrorFromWorld();
                     return;
@@ -575,6 +579,8 @@ namespace OW.Game.Mission
                 //计算工会经验
                 World.AllianceManager.Upgrade(guild, 1, datas.PropertyChanges);
                 //标记已经完成
+                sgc.Add(string.Empty, datas.MissionTId, 1);
+                sgc.Save();
             }
         }
 
@@ -633,25 +639,10 @@ namespace OW.Game.Mission
         /// </summary>
         /// <param name="gameChar"></param>
         /// <returns>工会任务模板Id集合。</returns>
-        public IEnumerable<Guid> GetGuildMission(GameChar gameChar)
+        public SimpleGameLogCollection GetGuildMission(GameChar gameChar)
         {
-            if (!World.CharManager.Lock(gameChar.GameUser))
-                return Array.Empty<Guid>();
-            using var dw = DisposeHelper.Create(c => World.CharManager.Unlock(c.GameUser), gameChar);
-            var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
-            if (slot is null)
-            {
-                VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
-                VWorld.SetLastErrorMessage("角色没有加入行会。");
-                return Array.Empty<Guid>();
-            }
-            using var wrapper = TodayDataWrapper<Guid>.Create(gameChar.Properties, "guildMission", DateTime.UtcNow);
-            wrapper.GetOrAddLastValues(() =>
-            {
-                return Array.Empty<Guid>();
-            });
-            wrapper.Save();
-            return wrapper.TodayValues;
+            var sgc = SimpleGameLogCollection.Parse(gameChar.Properties, "guildMission");
+            return sgc;
         }
 
         #endregion 工会任务相关

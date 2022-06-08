@@ -21,18 +21,19 @@
       <FileName>OW.Game.Expression.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.Expression.GameValidation">
+  <Class Name="OW.Game.Validation.GameValidation">
     <Position X="11.75" Y="3.5" Width="2" />
     <TypeIdentifier>
       <HashCode>AIAAAAAABAAAAAAAAAgAAAAAAAAACAAAAAAgAAAAIAA=</HashCode>
-      <FileName>OW.Game.Expression.cs</FileName>
+      <FileName>OW.Game.Validation.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.Expression.GameReference">
-    <Position X="9.75" Y="3.5" Width="1.75" />
+  <Class Name="OW.Game.Operate.GameOperate">
+    <Position X="0.75" Y="5.25" Width="2" />
     <TypeIdentifier>
-      <HashCode>AIAAAAAAIAAAAgAAAAAAAAAAAAAEAABAAAAAAABAAAA=</HashCode>
-      <FileName>OW.Game.Expression.cs</FileName>
+      <HashCode>AAAAAACAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>OW.Game.Operate.cs</FileName>
+      <NewMemberFileName>OW.Game.Validation.cs</NewMemberFileName>
     </TypeIdentifier>
   </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />

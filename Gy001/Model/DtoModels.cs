@@ -4288,11 +4288,13 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 工会任务模板Id。
         /// </summary>
+        [DataMember]
         public string GuildTemplateId { get; set; }
 
         /// <summary>
         /// 是否已经完成了。true已经完成，false未完成。
         /// </summary>
+        [DataMember]
         public bool Completed { get; set; }
     }
 

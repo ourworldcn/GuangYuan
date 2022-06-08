@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 
 namespace Microsoft.Extensions.ObjectPool
 {
@@ -35,7 +36,7 @@ namespace Microsoft.Extensions.ObjectPool
         [MethodImpl(MethodImplOptions.Synchronized)]
         static DictionaryPool()
         {
-            Shared ??= new DefaultObjectPool<Dictionary<TKey, TValue>>(new DictionaryPooledObjectPolicy<TKey, TValue>(), 128);
+            Interlocked.CompareExchange(ref Shared, new DefaultObjectPool<Dictionary<TKey, TValue>>(new DictionaryPooledObjectPolicy<TKey, TValue>(), 128), null);
         }
     }
 

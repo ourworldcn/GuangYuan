@@ -1291,7 +1291,7 @@ namespace OW.Game.Item
                 if (!OwConvert.TryToGuid(tidVt.Item2, out var tid)) //若没有模板id
                     continue;
                 var countVt = item.FirstOrDefault(c => c.Item1 == "count");
-                if (countVt.Item1 != "count" || OwConvert.TryToDecimal(countVt.Item2, out var count))   //若没有指定数量
+                if (countVt.Item1 != "count" || !OwConvert.TryToDecimal(countVt.Item2, out var count))   //若没有指定数量
                     continue;
                 var ptidVt = item.FirstOrDefault(c => c.Item1 == "ptid");
                 GameItem gi;

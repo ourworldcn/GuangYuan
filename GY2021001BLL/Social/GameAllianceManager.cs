@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using OW.Game.PropertyChange;
 using System.Threading;
 using GuangYuan.GY001.BLL.GeneralManager;
+using OW.Game.Log;
 
 namespace GuangYuan.GY001.UserDb.Social
 {
@@ -170,19 +171,24 @@ namespace GuangYuan.GY001.UserDb.Social
         /// </summary>
         /// <param name="guild"></param>
         /// <returns></returns>
-        public IEnumerable<Guid> GetMission(GameGuild guild)
+        public SimpleGameLogCollection GetMissionOrCreate(GameGuild guild, DateTime now)
         {
-            if (!Lock(guild.Id, Options.DefaultTimeout, out guild))
-                return Array.Empty<Guid>();
-            using var dw = DisposeHelper.Create(c => Unlock(c), guild);
-            using var wrapper = TodayDataWrapper<Guid>.Create(guild.Properties, "mission", DateTime.UtcNow);
-            wrapper.GetOrAddLastValues(() =>
+            //if (!Lock(guild.Id, Options.DefaultTimeout, out guild))
+            //    return null;
+            //using var dw = DisposeHelper.Create(c => Unlock(c), guild);
+            var sgc = SimpleGameLogCollection.Parse(guild.Properties, "mission");
+            sgc.Remove(now.Date);
+            if (sgc.Count <= 0)
             {
                 var coll = World.ItemTemplateManager.Id2Mission.Values.Where(c => c.GroupNumber == "1001").ToList();
-                return GameHelper.GetRandom(coll, VWorld.WorldRandom, 5).Select(c => c.Id);
-            });
-            wrapper.Save();
-            return wrapper.TodayValues;
+                foreach (var item in GameHelper.GetRandom(coll, VWorld.WorldRandom, 5).Select(c => c.Id))
+                {
+                    var tmp = sgc.Add(string.Empty, item, 1);
+                    tmp.DateTime = now;
+                }
+                sgc.Save();
+            }
+            return sgc;
         }
 
         /// <summary>
