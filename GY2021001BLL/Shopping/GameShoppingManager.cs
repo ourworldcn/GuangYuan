@@ -83,10 +83,20 @@ namespace GuangYuan.GY001.BLL
                 return;
 
             IEnumerable<GameShoppingTemplate> coll; //不可刷新商品
-            if (datas.Genus.Count == 0)
-                coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => IsValid(c, datas.Now) && c.GroupNumber is null);
-            else
-                coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => datas.Genus.Contains(c.Genus) && IsValid(c, datas.Now) && c.GroupNumber is null);
+            if (datas.Genus.Count == 0) //若显示全部页签商品
+                coll = World.ItemTemplateManager.Id2Shopping.Values.Where(
+                    c => !c.Genus.Contains("2001") && !c.Genus.Contains("2002") && !c.Genus.Contains("2003") && !c.Genus.Contains("2004") && !c.Genus.Contains("2005")).    //过滤掉工会商品
+                    Where(c => IsValid(c, datas.Now) && c.GroupNumber is null);
+            else //若显示指定页签商品
+                coll = World.ItemTemplateManager.Id2Shopping.Values.Where(c => !c.Genus.Contains("2001") && !c.Genus.Contains("2002") && !c.Genus.Contains("2003") && !c.Genus.Contains("2004") && !c.Genus.Contains("2005")).Where(c => datas.Genus.Contains(c.Genus) && IsValid(c, datas.Now) && c.GroupNumber is null);
+            //工会商品
+            if (datas.Genus.Count == 0 || datas.Genus.Count > 0 && datas.Genus.Any(c => int.TryParse(c, out var tmp) && tmp >= 2000 && tmp < 3000)) //若需要工会商品
+            {
+                var guild = World.AllianceManager.GetGuild(datas.GameChar);
+                var lv = (int)guild.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);    //工会等级
+                var genus = (lv + 1 + 2000).ToString(); //对应的页签号
+                coll = coll.Concat(World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.Genus == genus));  //追加当前公会等级的商城物品
+            }
             var view = new ShoppingSlotView(World, datas.GameChar, datas.Now);
             //可刷新商品
             List<GameShoppingTemplate> rg = new List<GameShoppingTemplate>();

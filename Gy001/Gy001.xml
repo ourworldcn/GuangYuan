@@ -3290,20 +3290,26 @@
             工会任务模板Id。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.GuildMissionDto.Completed">
-            <summary>
-            是否已经完成了。true已经完成，false未完成。
-            </summary>
-        </member>
         <member name="P:GY2021001WebApi.Models.GetGuildMissionReturnDto.GuildMissions">
             <summary>
-            工会任务信息集合。
+            工会任务信息集合。这里进返回当前工会的任务。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetGuildMissionReturnDto.CharDones">
+            <summary>
+            角色完成的工会任务信息。这里是角色完成的任务信息。
             </summary>
         </member>
         <member name="T:Gy001.Controllers.BlueprintController">
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

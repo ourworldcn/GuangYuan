@@ -4291,21 +4291,22 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string GuildTemplateId { get; set; }
 
-        /// <summary>
-        /// 是否已经完成了。true已经完成，false未完成。
-        /// </summary>
-        [DataMember]
-        public bool Completed { get; set; }
     }
 
     [DataContract]
     public class GetGuildMissionReturnDto : ReturnDtoBase
     {
         /// <summary>
-        /// 工会任务信息集合。
+        /// 工会任务信息集合。这里进返回当前工会的任务。
         /// </summary>
         [DataMember]
         public List<GuildMissionDto> GuildMissions { get; set; } = new List<GuildMissionDto>();
+
+        /// <summary>
+        /// 角色完成的工会任务信息。这里是角色完成的任务信息。
+        /// </summary>
+        [DataMember]
+        public List<GuildMissionDto> CharDones { get; set; } = new List<GuildMissionDto>();
     }
 
     [DataContract]

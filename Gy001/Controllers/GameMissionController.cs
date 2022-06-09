@@ -150,17 +150,9 @@ namespace Gy001.Controllers
             using var dw = DisposeHelper.Create(c => World.CharManager.Unlock(c), gu);
             var collDone = World.MissionManager.GetGuildMission(gc);    //已完成任务
             var coll = World.AllianceManager.GetMissionOrCreate(guild, now); //工会任务
-            var done = collDone.Join(coll, c => c.Params[0], c => c.Params[0], (l, r) => l);    //在当前工会完成的任务
 
-            result.GuildMissions.AddRange(done.Select(c => new GuildMissionDto() { Completed = true, GuildTemplateId = Guid.Parse(c.Params[0]).ToBase64String() })); //已完成任务
-            //result.GuildMissions.AddRange(collDone.Except(done).Select(c => new GuildMissionDto() { Completed = true, GuildTemplateId = Guid.Parse(c.Params[0]).ToBase64String() })); //在其他公会完成的任务
-            foreach (var item in coll)
-            {
-                if (done.Any(c => c.Params[0] == item.Params[0]))
-                    continue;
-                result.GuildMissions.Add(new GuildMissionDto() { Completed = false, GuildTemplateId = Guid.Parse(item.Params[0]).ToBase64String() });
-            }
-            //result.GuildMissions.AddRange(coll.Except(done,new EqualityComparer<SimpleGameLog>()).Select(c => new GuildMissionDto() { Completed = false, GuildTemplateId = Guid.Parse(c.Params[0]).ToBase64String() })); //在当前公会未完成的任务
+            result.GuildMissions.AddRange(coll.Select(c => new GuildMissionDto() { GuildTemplateId = Guid.Parse(c.Params[0]).ToBase64String() })); //已完成任务
+            result.CharDones.AddRange(collDone.Select(c => new GuildMissionDto() { GuildTemplateId = Guid.Parse(c.Params[0]).ToBase64String() })); //在当前公会未完成的任务
             return result;
         }
     }

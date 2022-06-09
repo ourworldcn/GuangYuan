@@ -269,9 +269,10 @@ namespace GuangYuan.GY001.BLL
             tmp.Params.Add("{2}");
             tmp.Params.Add("2");
             coll.Add(tmp);
-            var jsonstr = JsonSerializer.Serialize(coll);
+            Dictionary<string, object> dic = new Dictionary<string, object>();
+            coll.Save(dic, "d");
 
-            var re = (SimpleGameLogCollection)JsonSerializer.Deserialize(jsonstr, typeof(SimpleGameLogCollection));
+            var re = SimpleGameLogCollection.Parse(dic, "d");
 
         }
 

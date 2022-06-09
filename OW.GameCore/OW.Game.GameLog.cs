@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 
@@ -77,14 +79,26 @@ namespace OW.Game.Log
         /// </summary>
         /// <param name="dic"></param>
         /// <param name="kenName"></param>
-        public void Save(IDictionary<string, object> dic, string kenName)
+        public virtual void Save(IDictionary<string, object> dic, string kenName)
         {
+            //MemoryStream ms;
+            //using (ms = new MemoryStream())
+            //{
+            //    using BrotliStream bs = new BrotliStream(ms, CompressionMode.Compress);
+            //    using var u8w = new Utf8JsonWriter(bs);
+            //    JsonSerializer.Serialize(u8w, this);
+            //}
+            //if (ms.TryGetBuffer(out var buffer))
+            //    Convert.ToBase64String(buffer);
             dic[kenName] = Uri.EscapeDataString(JsonSerializer.Serialize(this));
         }
 
+        /// <summary>
+        /// 保存类内信息。需要正确设置<see cref="Dictionary"/>和<see cref="KeyName"/>属性。
+        /// </summary>
         public void Save()
         {
-            Dictionary[KeyName] = Uri.EscapeDataString(JsonSerializer.Serialize(this));
+            Save(Dictionary, KeyName);
         }
 
         public SimpleGameLog Add(string action, Guid id, decimal count)
@@ -107,6 +121,25 @@ namespace OW.Game.Log
                 if (this[i].DateTime < end)
                     RemoveAt(i);
             }
+        }
+
+        /// <summary>
+        /// 移除与指定的谓词所定义的条件相匹配的所有元素。
+        /// </summary>
+        /// <param name="match">用于定义要移除的元素应满足的条件。</param>
+        /// <returns>移除的元素数。</returns>
+        public int RemoveAll(Predicate<SimpleGameLog> match)
+        {
+            var result = 0;
+            for (int i = Count - 1; i >= 0; i--)
+            {
+                if (match(this[i]))
+                {
+                    RemoveAt(i);
+                    result++;
+                }
+            }
+            return result;
         }
 
         public IEnumerable<SimpleGameLog> Get(DateTime today)
