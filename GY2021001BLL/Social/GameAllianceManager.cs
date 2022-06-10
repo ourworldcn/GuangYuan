@@ -521,6 +521,12 @@ namespace GuangYuan.GY001.UserDb.Social
                     datas.ErrorMessage = "至少一个成员不属于工会。";
                     return;
                 }
+                if (slot.ExtraDecimal < 10 || slot.ExtraDecimal >= 20)
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.ErrorMessage = "不能用此函数改变会长或除名。";
+                    return;
+                }
             }
             foreach (var charId in datas.CharIds)
             {
