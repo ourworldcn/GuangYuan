@@ -93,9 +93,12 @@ namespace GuangYuan.GY001.BLL
             if (datas.Genus.Count == 0 || datas.Genus.Count > 0 && datas.Genus.Any(c => int.TryParse(c, out var tmp) && tmp >= 2000 && tmp < 3000)) //若需要工会商品
             {
                 var guild = World.AllianceManager.GetGuild(datas.GameChar);
-                var lv = (int)guild.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);    //工会等级
-                var genus = (lv + 1 + 2000).ToString(); //对应的页签号
-                coll = coll.Concat(World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.Genus == genus));  //追加当前公会等级的商城物品
+                if (guild != null)
+                {
+                    var lv = (int)guild.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);    //工会等级
+                    var genus = (lv + 1 + 2000).ToString(); //对应的页签号
+                    coll = coll.Concat(World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.Genus == genus));  //追加当前公会等级的商城物品
+                }
             }
             var view = new ShoppingSlotView(World, datas.GameChar, datas.Now);
             //可刷新商品

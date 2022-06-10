@@ -591,7 +591,7 @@ namespace GuangYuan.GY001.BLL
                         if (tmp.Count > 0)
                             result.AddRange(tmp.Select(c => (tt, c)));
                     }
-                    return result.ToLookup(c => c.Item2.GameReference.TemplateId);
+                    return result.ToLookup(c => c.Item2.PropertyReference.ItemReference.TemplateId);
                 });
             }
         }

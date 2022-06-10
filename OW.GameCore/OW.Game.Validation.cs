@@ -7,6 +7,92 @@ using System.Linq;
 namespace OW.Game.Validation
 {
     /// <summary>
+    /// 
+    /// </summary>
+    public class GameItemReference
+    {
+        public static bool TryParse(string str, out GameItemReference result)
+        {
+            var span = str.Split(OwHelper.SemicolonArrayWithCN).AsSpan();
+            return TryParse(span, out result);
+        }
+
+        public static bool TryParse(ReadOnlySpan<string> strs, out GameItemReference result)
+        {
+            result = new GameItemReference();
+            switch (strs.Length)
+            {
+                case 1:
+                    if (!Guid.TryParse(strs[0], out var tid))
+                        return false;
+                    result.TemplateId = tid;
+                    break;
+                case 2:
+                    if (!Guid.TryParse(strs[0], out var ptid))
+                        return false;
+                    if (!Guid.TryParse(strs[1], out tid))
+                        return false;
+                    result.ParentTemplateId = ptid;
+                    result.TemplateId = tid;
+                    break;
+                default:
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 设置或获取父容器模板id。如果为空则不限定父容器模板id。
+        /// </summary>
+        public Guid? ParentTemplateId { get; set; }
+
+        /// <summary>
+        /// 设置或获取对象的模板id。为<see cref="Guid.Empty"/>(也可能直接指定角色模板)时表示角色自身。
+        /// </summary>
+        public Guid TemplateId { get; set; }
+
+        public virtual object GetValue(GameThingBase thing)
+        {
+            GameThingBase result;
+            if (ParentTemplateId is null)   //若不限定容器
+            {
+                if (TemplateId == thing.TemplateId || TemplateId == Guid.Empty)  //指定本体
+                {
+                    result = thing;
+                }
+                else //若是子对象
+                {
+                    if (thing is GameChar gc)
+                        result = gc.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
+                    else if (thing is GameItem gi)
+                        result = gi.GetAllChildren().FirstOrDefault(c => c.TemplateId == TemplateId);
+                    else
+                        throw new ArgumentException();
+                }
+            }
+            else //若限定容器
+            {
+                IEnumerable<GameItem> parent;
+                if (thing is GameChar gc)
+                    parent = gc.AllChildren;
+                else if (thing is GameItem gi)
+                    parent = gi.GetAllChildren();
+                else
+                    throw new ArgumentException();
+                if (TemplateId == thing.TemplateId || TemplateId == Guid.Empty)  //指定本体
+                {
+                    result = thing;
+                }
+                else //若是子对象
+                {
+                    result = parent.FirstOrDefault(c => c.TemplateId == TemplateId);
+                }
+            }
+            return result;
+        }
+    }
+
+    /// <summary>
     /// 属性引用对象。
     /// </summary>
     public class GamePropertyReference
@@ -37,27 +123,25 @@ namespace OW.Game.Validation
             switch (strs.Length)
             {
                 case 3:
-                    if (!Guid.TryParse(strs[0], out var ptid))
-                        return false;
-                    if (!Guid.TryParse(strs[1], out var tid))
+                    if (!GameItemReference.TryParse(strs.Slice(0, 2), out var gir))
                         return false;
                     if (string.IsNullOrWhiteSpace(strs[2]))
                         return false;
-                    result.ParentTemplateId = ptid;
-                    result.TemplateId = tid;
+                    result.ItemReference = gir;
                     result.PropertyName = strs[2];
                     break;
                 case 2:
-                    if (!Guid.TryParse(strs[0], out tid))
+                    if (!GameItemReference.TryParse(strs.Slice(0, 1), out gir))
                         return false;
                     if (string.IsNullOrWhiteSpace(strs[1]))
                         return false;
-                    result.TemplateId = tid;
+                    result.ItemReference = gir;
                     result.PropertyName = strs[1];
                     break;
                 case 1:
                     if (string.IsNullOrWhiteSpace(strs[0]))
                         return false;
+                    result.ItemReference = new GameItemReference();
                     result.PropertyName = strs[0];
                     break;
                 default:
@@ -78,14 +162,9 @@ namespace OW.Game.Validation
         #region 属性
 
         /// <summary>
-        /// 设置或获取父容器模板id。如果为空则不限定父容器模板id。
+        /// 引用的对象。
         /// </summary>
-        public Guid? ParentTemplateId { get; set; }
-
-        /// <summary>
-        /// 设置或获取对象的模板id。为<see cref="Guid.Empty"/>(也可能直接指定角色模板)时表示角色自身。
-        /// </summary>
-        public Guid TemplateId { get; set; }
+        public GameItemReference ItemReference { get; set; }
 
         /// <summary>
         /// 设置或获取限定的属性名。
@@ -101,17 +180,7 @@ namespace OW.Game.Validation
         /// <returns></returns>
         public object GetValue(GameChar gameChar)
         {
-            GameThingBase gt;
-            if (ParentTemplateId is null)   //若不限定容器
-            {
-                gt = TemplateId == gameChar.TemplateId || TemplateId == Guid.Empty ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
-            }
-            else //若限定容器
-            {
-                gt = ParentTemplateId == gameChar.TemplateId ? gameChar.GameItems.FirstOrDefault(c => c.TemplateId == TemplateId) :
-                    gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ParentTemplateId.Value)?.Children.FirstOrDefault(c => c.TemplateId == TemplateId);
-            }
-            return gt?.GetDecimalWithFcpOrDefault(PropertyName);
+            return (ItemReference.GetValue(gameChar) as GameThingBase).GetDecimalWithFcpOrDefault(PropertyName);
         }
 
         /// <summary>
@@ -121,19 +190,7 @@ namespace OW.Game.Validation
         /// <param name="value"></param>
         public void SetValue(GameChar gameChar, object value)
         {
-            GameThingBase gt;
-            if (ParentTemplateId is null)   //若不限定容器
-            {
-                gt = TemplateId == gameChar.TemplateId || TemplateId == Guid.Empty ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
-            }
-            else //若限定容器
-            {
-                gt = ParentTemplateId == gameChar.TemplateId ? gameChar.GameItems.FirstOrDefault(c => c.TemplateId == TemplateId) :
-                    gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ParentTemplateId.Value)?.Children.FirstOrDefault(c => c.TemplateId == TemplateId);
-            }
-            if (null != gt)
-                gt.Properties[PropertyName] = value;
-
+            (ItemReference.GetValue(gameChar) as GameThingBase).Properties[PropertyName] = value;
         }
     }
 
@@ -167,7 +224,7 @@ namespace OW.Game.Validation
             if (!OwConvert.TryToDecimal(ary[^1], out var val))
                 return false;
             result.Value = val;
-            result.GameReference = gr;
+            result.PropertyReference = gr;
             return true;
         }
 
@@ -217,7 +274,7 @@ namespace OW.Game.Validation
         /// <summary>
         /// 左算子。
         /// </summary>
-        public GamePropertyReference GameReference { get; set; }
+        public GamePropertyReference PropertyReference { get; set; }
 
         /// <summary>
         /// 设置或获取比较运算符。
@@ -238,7 +295,7 @@ namespace OW.Game.Validation
         /// <returns></returns>
         public bool IsValid(GameChar gameChar)
         {
-            if (!OwConvert.TryToDecimal(GameReference.GetValue(gameChar), out var val))
+            if (!OwConvert.TryToDecimal(PropertyReference.GetValue(gameChar), out var val))
                 val = default;
             bool result;
             switch (Operator)

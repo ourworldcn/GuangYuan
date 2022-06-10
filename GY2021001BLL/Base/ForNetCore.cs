@@ -21,6 +21,7 @@ using OW.Game.Item;
 using OW.Game.Log;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
+using OW.Game.Validation;
 using OW.Script;
 using System;
 using System.Buffers;
@@ -269,9 +270,10 @@ namespace GuangYuan.GY001.BLL
             tmp.Params.Add("{2}");
             tmp.Params.Add("2");
             coll.Add(tmp);
-            Dictionary<string, object> dic = new Dictionary<string, object>();
+            Dictionary<string, object> dic = new Dictionary<string, object>() { { "rqeq", "{D0008CBA-0848-4F15-8E1E-89D083081676};{D0008CBA-0848-4F15-8E1E-89D083081676}；lv；1" } };
             coll.Save(dic, "d");
-
+            var coll1 = dic.Where(c => c.Key == "rqeq").Select(c => ("eq", c.Value)).First();
+            GameValidation.TryParse(coll1, out var dd);
             var re = SimpleGameLogCollection.Parse(dic, "d");
 
         }
