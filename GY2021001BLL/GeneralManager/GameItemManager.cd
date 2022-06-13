@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="OW.Game.Item.GameItemManagerOptions" Collapsed="true">
+    <Position X="11" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.GameItemManager">
+    <Position X="3.25" Y="4.25" Width="3.25" />
+    <TypeIdentifier>
+      <HashCode>BAmAAAQAAkAAQQAAUAHwYEBqgIAAAwEAAEAAAIAYIAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.AddItemsOrMailDatas" Collapsed="true">
+    <Position X="9.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.UseItemsView" Collapsed="true">
+    <Position X="9.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAgAAAAEAAAgAAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.GetRankOfTuiguanDatas" Collapsed="true">
+    <Position X="7.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgABAAAAAAAAACAAAAAAAAAAAAAAAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.UseItemsWorkDatas" Collapsed="true">
+    <Position X="0.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAACAAABAAAAAAgAAAAAQEAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.SellDatas" Collapsed="true">
+    <Position X="2.75" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.SetLineupDatas" Collapsed="true">
+    <Position X="5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.ActiveStyleDatas" Collapsed="true">
+    <Position X="7.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.GameItemManagerExtensions" Collapsed="true">
+    <Position X="9.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAQAAAAAIAAAAAAEAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.BinaryExtensions" Collapsed="true">
+    <Position X="11" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAAAAAAACAAAAAAAAgAAAAAAAAEAAAQ=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Item.ChangeItemsWorkDatasBase" Collapsed="true">
+    <Position X="2.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAACCAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GeneralManager\GameItemManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

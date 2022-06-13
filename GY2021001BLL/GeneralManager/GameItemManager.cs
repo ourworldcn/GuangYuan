@@ -1482,6 +1482,38 @@ namespace OW.Game.Item
         }
 
         #endregion 物品操作
+
+        #region 项目特定代码
+
+        /// <summary>
+        /// 扫描坐骑是否变化，若变化了则加入相应坐骑图鉴。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="changes">变化数据容器。</param>
+        public void ScanMountsIllustrated(GameChar gameChar, ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            var bag = gameChar.GetZuojiBag();
+            var gim = World.ItemManager;
+            var mounts = bag.Children.Select(c => (Id: (gim.GetHeadTemplate(c).GId.Value, gim.GetBodyTemplate(c).GId.Value), Mounts: c));  //坐骑
+            var ills = gim.GetOrCreateItem(gameChar, ProjectConstant.MountsIllSlotId).Children.Select(c => (Id: ((int)c.Properties.GetDecimalOrDefault("headtid"),
+                (int)c.Properties.GetDecimalOrDefault("bodytid")), Ill: c));    //动物图鉴
+            var addIds = mounts.Select(c => c.Id).Except(ills.Select(c => c.Id));
+            var items = addIds.Join(mounts, c => c, c => c.Id, (l, r) => r); //尚无图鉴的坐骑
+
+            foreach (var item in items.ToArray())
+            {
+                var tt = World.ItemTemplateManager.Id2Template.Values.FirstOrDefault(c => c.Properties.GetDecimalOrDefault("headtid") == item.Id.Item1 &&
+                      c.Properties.GetDecimalOrDefault("bodytid") == item.Id.Item2);    //要添加的动物图鉴模板
+                if (tt is null)
+                    continue;
+                var gi = new GameItem();
+                World.EventsManager.GameItemCreated(gi, tt);
+                var parent = World.EventsManager.GetDefaultContainer(gi, gameChar);
+                World.ItemManager.MoveItem(gi, gi.Count ?? 1, parent, null, changes);
+            }
+        }
+
+        #endregion 项目特定代码
     }
 
     public class AddItemsOrMailDatas : ChangeItemsAndMailWorkDatsBase

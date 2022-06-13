@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OW.Game.Item;
 using OW.Game.Log;
+using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -582,6 +583,9 @@ namespace OW.Game.Mission
                 sgc.Add(string.Empty, datas.MissionTId, 1);
                 sgc.Save();
             }
+            //扫描坐骑图鉴变化
+            World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.PropertyChanges);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 
         /// <summary>

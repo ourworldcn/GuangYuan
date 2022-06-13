@@ -269,6 +269,9 @@ namespace GuangYuan.GY001.BLL
             view.AddItem(template, datas.Count);
             view.Save();
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
+            //扫描坐骑图鉴变化
+            World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.PropertyChanges);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 
         /// <summary>
@@ -511,6 +514,9 @@ namespace GuangYuan.GY001.BLL
             //修改其他资源
             World.ItemManager.ForcedAddCount(quan, -(datas.LotteryTypeCount1 + datas.LotteryTypeCount10 * 10), datas.ChangeItems);
             ChangeItem.Reduce(datas.ChangeItems);
+            //扫描坐骑图鉴变化
+            World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.PropertyChanges);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 
         /// <summary>

@@ -1566,6 +1566,9 @@ namespace GuangYuan.GY001.BLL
             datas.ChangeItems.AddToRemoves(gameItem2.GetContainerId().Value, gameItem2.Id);
             gim.ForcedDelete(gameItem2);
             datas.ChangeItems.AddToChanges(gameItem.GetContainerId().Value, gameItem);
+            //扫描坐骑图鉴变化
+            World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.PropertyChanges);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
         #endregion 合成相关
 
@@ -1761,6 +1764,30 @@ namespace GuangYuan.GY001.BLL
             zuanshi.Count -= 20 * 10;    //扣除钻石
             datas.ChangeItems.AddToChanges(zuanshi);
             datas.ChangeItems.AddToChanges(tili);
+        }
+
+        /// <summary>
+        /// 领取动物图鉴奖励。
+        /// </summary>
+        /// <remarks>卡池 商城 孵化 新手任务都可能送坐骑，导致动物图鉴数量增加。</remarks>
+        [BlueprintMethod("{E05399BF-5770-4038-840E-4231DA17D703}")]
+        public void GetMountsRewards(ApplyBlueprintDatas datas)
+        {
+            var items = datas.GameItems.Join(datas.GameChar.AllChildren, c => c.Id, c => c.Id, (l, r) => r).ToArray();
+            foreach (var item in items) //逐一领取奖励
+            {
+                var alred = item.GetDecimalWithFcpOrDefault("used");
+                if (alred > 0)
+                    continue;
+                var tt = item.GetTemplate();
+                var reward = World.ItemManager.ToGameItems(tt.Properties, "reward");
+                foreach (var re in reward)  //逐一加入物品
+                {
+                    World.ItemManager.MoveItem(re, re.Count ?? 1, World.EventsManager.GetDefaultContainer(re, datas.GameChar), null, datas.Changes);
+                }
+                item.Properties["used"] = 1m;
+            }
+            datas.Changes.CopyTo(datas.ChangeItems);
         }
 
         #region 社交相关

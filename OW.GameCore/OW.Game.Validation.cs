@@ -202,7 +202,7 @@ namespace OW.Game.Validation
         #region 静态成员
 
         /// <summary>
-        /// 
+        /// 将值元组的表示形式转换为它的等效 <see cref="GameValidation"/>。 一个指示转换是否成功的返回值。
         /// </summary>
         /// <param name="keyValue">Item1是算子（注意要去掉前缀如:rq），Item2是参数字符串。</param>
         /// <param name="result"></param>
@@ -229,7 +229,7 @@ namespace OW.Game.Validation
         }
 
         /// <summary>
-        /// 
+        /// 分析一组条件对象。
         /// </summary>
         /// <param name="dic"></param>
         /// <param name="prefix"></param>

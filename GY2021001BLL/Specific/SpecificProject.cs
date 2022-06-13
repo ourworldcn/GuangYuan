@@ -99,6 +99,11 @@ namespace GuangYuan.GY001.BLL
         #region 角色直属槽及其相关
 
         /// <summary>
+        /// 动物图鉴槽模板Id。
+        /// </summary>
+        public static readonly Guid MountsIllSlotId = new Guid("{62873631-f688-4c81-9ed7-72b7cc22975a}");
+
+        /// <summary>
         /// 神纹槽Id。放在此槽中是装备的神纹。当前每种类型的野兽身体对应一种神纹。
         /// </summary>
         public static readonly Guid ShenWenSlotId = new Guid("{88A4EED6-0AEB-4A70-8FDE-67F75E5E2C0A}");
