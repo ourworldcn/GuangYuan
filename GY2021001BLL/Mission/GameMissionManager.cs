@@ -383,7 +383,7 @@ namespace OW.Game.Mission
                     var tuple = view.Metrics.First(c => c.Item1 == zhibiao);
                     var gi = gim.Clone(tuple.Item2);  //复制新物品
                     var container = World.EventsManager.GetDefaultContainer(gi, datas.GameChar);
-                    gim.AddItem(gi, container, remainder, datas.ChangeItems);//自动加入对应容器
+                    gim.MoveItem(gi, gi.Count ?? 1, container, remainder, datas.PropertyChanges);//自动加入对应容器
                     if (remainder.Count > 0)
                     {
                         var mail = new GameMail() { };
@@ -394,6 +394,7 @@ namespace OW.Game.Mission
             }
             var keys = objs.Select(c => $"mcid{c.Id}").ToList();
             keys.ForEach(c => slot.Properties.Remove(c));
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
             ChangeItem.Reduce(datas.ChangeItems);
             return;
         }

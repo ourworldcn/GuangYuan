@@ -5,6 +5,7 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Item;
+using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Buffers;
@@ -415,7 +416,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="db">访问公共数据使用的数据库上下文对象。</param>
         /// <param name="changes"></param>
         /// <param name="results">每一项的获取结果。</param>
-        public bool GetAttachmentes(IEnumerable<Guid> attachmentesIds, GameChar gameChar, DbContext db, IList<ChangeItem> changes = null,
+        public bool GetAttachmentes(IEnumerable<Guid> attachmentesIds, GameChar gameChar, DbContext db, IList<ChangeItem> changeItems = null,
             ICollection<(Guid, GetAttachmenteItemResult)> results = null)
         {
             using var dwChar = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
@@ -434,6 +435,7 @@ namespace GuangYuan.GY001.BLL
                 VWorld.SetLastErrorMessage("至少有一个附件不属于指定角色。");
                 return false;
             }
+            var changes = new List<GamePropertyChangeItem<object>>();
             var gim = World.ItemManager;
             bool dirty = false;
             List<GameItem> remainder = new List<GameItem>();
@@ -461,7 +463,7 @@ namespace GuangYuan.GY001.BLL
                         }
                     }
                     remainder.Clear();
-                    gim.AddItem(gameItem, parent, remainder, changes);
+                    gim.MoveItem(gameItem, gameItem.Count ?? 1, parent, remainder, changes);
                     if (remainder.Count > 0)
                     {
                         results?.Add((item.Id, GetAttachmenteItemResult.Full));
@@ -490,6 +492,8 @@ namespace GuangYuan.GY001.BLL
                     return false;
                 }
             }
+            if (null != changeItems)
+                changes.CopyTo(changeItems);
             return true;
         }
 
@@ -1209,7 +1213,7 @@ namespace GuangYuan.GY001.BLL
                     var gameItem = datas.Mount;
                     GameItem sendGi = World.ItemManager.CloneMounts(gameItem, ProjectConstant.HomelandPatCard); //创建幻影
                     sendGi.Properties["charDisplayName"] = datas.OtherChar.DisplayName;
-                    World.ItemManager.AddItem(sendGi, datas.GameChar.GetItemBag(), null, datas.ChangeItems); //放入道具背包
+                    World.ItemManager.MoveItem(sendGi, sendGi.Count ?? 1, datas.GameChar.GetItemBag(), null, datas.PropertyChanges); //放入道具背包
                 }
             }
             //删除其他签约坐骑
@@ -1217,6 +1221,7 @@ namespace GuangYuan.GY001.BLL
             removbes.ForEach(c => datas.Visitors.Remove(c));
             datas.Save();
             datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
             return;
         }
 

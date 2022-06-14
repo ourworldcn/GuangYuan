@@ -3,6 +3,7 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -649,23 +650,18 @@ namespace GuangYuan.GY001.BLL
             data.NextTemplate = cmbm.GetNext(data.Template);
             if (null == data.NextTemplate || data.EndRequested) //若大关卡已经结束
             {
-                var changes = new List<ChangeItem>();
+                var changes = new List<GamePropertyChangeItem<object>>();
                 //移动收益槽数据到各自背包。
                 //金币
-                gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar, changes);
+                var gis = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.JinbiId);
+                if (gis.Any())
+                    gim.MoveItems(gis, gameChar.GetCurrencyBag(), null, changes);
                 //野生怪物
                 var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
-                gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi, shoulan, changes);
-                //神纹碎片
-                var shenwenBag = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);   //神纹背包
-                gim.MoveItems(shouyiSlot, c =>
-                {
-                    var _ = gitm.GetTemplateFromeId(c.TemplateId)?.GenusCode;
-                    return _ >= 15 && _ <= 17;
-                }, shenwenBag, changes);
-                //压缩变化数据
-                ChangeItem.Reduce(changes);
-                data.ChangesItems.AddRange(changes);
+                gis = shoulan.Children.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi);
+                if (gis.Any())
+                    gim.MoveItems(gis, shoulan, null, changes);
+                changes.CopyTo(data.ChangesItems);
             }
 
             return true;

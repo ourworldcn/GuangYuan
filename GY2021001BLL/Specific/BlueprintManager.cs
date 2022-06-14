@@ -1234,7 +1234,9 @@ namespace GuangYuan.GY001.BLL
                 gameItem.Properties["nemhp"] = Math.Round(gameItem.GetDecimalWithFcpOrDefault("nemhp"), MidpointRounding.AwayFromZero);
                 gameItem.Properties["neqlt"] = Math.Round(gameItem.GetDecimalWithFcpOrDefault("neqlt"), MidpointRounding.AwayFromZero);
                 var oldpid = gameItem.ParentId;
-                if (!gim.MoveItem(gameItem, 1, slotSl, datas.ChangeItems))   //若无法放入
+                List<GameItem> listRe = new List<GameItem>();
+                gim.MoveItem(gameItem, gameItem.Count ?? 1, slotSl, listRe, datas.Changes);
+                if (listRe.Count > 0)   //若无法放入
                 {
                     //发邮件
                     var social = World.SocialManager;
@@ -1254,7 +1256,7 @@ namespace GuangYuan.GY001.BLL
                 gameItem.Properties["neatk"] = 10m;
                 gameItem.Properties["nemhp"] = 10m;
                 gameItem.Properties["neqlt"] = 10m;
-                gim.MoveItem(gameItem, 1, slotZq, datas.ChangeItems);
+                gim.MoveItem(gameItem, gameItem.Count ?? 1, slotZq, null, datas.Changes);
             }
             //成就
             var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.孵化成就);
@@ -1264,6 +1266,7 @@ namespace GuangYuan.GY001.BLL
                 mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
                 World.MissionManager.ScanAsync(datas.GameChar);
             }
+            datas.Changes.CopyTo(datas.ChangeItems);
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
 
@@ -1334,7 +1337,7 @@ namespace GuangYuan.GY001.BLL
             child.Name2FastChangingProperty.Add("fhcd", new FastChangingProperty(TimeSpan.FromSeconds(1), 1, 3600 * 8, 0, DateTime.UtcNow)
             {
             });
-            gim.AddItem(child, fuhuaSlot, null, datas.ChangeItems); //放入孵化槽
+            gim.MoveItem(child, child.Count ?? 1, fuhuaSlot, null, datas.Changes); //放入孵化槽
             var qiwu = datas.GameChar.GetQiwuBag();
             if (jiyin.Count > 1)    //若尚有剩余基因蛋
             {
@@ -1343,13 +1346,14 @@ namespace GuangYuan.GY001.BLL
             }
             else //若基因蛋用完
             {
-                gim.MoveItem(jiyin, 1, qiwu, datas.ChangeItems);
+                gim.MoveItem(jiyin, 1, qiwu, null, datas.Changes);
             }
 
             if (parent1.TemplateId == ProjectConstant.HomelandPatCard) //若是卡片
-                gim.MoveItem(parent1, 1, qiwu, datas.ChangeItems);
+                gim.MoveItem(parent1, 1, qiwu, null, datas.Changes);
             if (parent2.TemplateId == ProjectConstant.HomelandPatCard) //若是卡片
-                gim.MoveItem(parent2, 1, qiwu, datas.ChangeItems);
+                gim.MoveItem(parent2, 1, qiwu, null, datas.Changes);
+            datas.Changes.CopyTo(datas.ChangeItems);
         }
 
         /// <summary>

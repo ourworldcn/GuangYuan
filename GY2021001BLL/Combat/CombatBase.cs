@@ -2,6 +2,7 @@
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using OW.Game;
+using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +20,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="changes"></param>
         public static void SetGameItems(this GameBooty booty, VWorld world, ICollection<ChangeItem> changes = null)
         {
+            var changes1 = new List<GamePropertyChangeItem<object>>();
             var gc = world.CharManager.GetCharFromId(booty.CharId);
             var hl = gc.GetHomeland();
             GameItem gi = new GameItem();
@@ -56,7 +58,9 @@ namespace GuangYuan.GY001.BLL
             }
             else
                 throw new InvalidOperationException();
-            gim.AddItem(gi, parent, null, changes);
+            gim.MoveItem(gi, gi.Count ?? 1, parent, null, changes1);
+            if (null != changes)
+                changes1.CopyTo(changes);
         }
 
         /// <summary>

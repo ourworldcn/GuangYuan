@@ -300,30 +300,6 @@
             <returns></returns>
             <response code="401">令牌错误。</response>
         </member>
-        <member name="M:GY2021001WebApi.Controllers.GameCharController.GetHomelandStyle(GY2021001WebApi.Models.GetHomelandFenggeParamsDto)">
-            <summary>
-            获取家园方案。
-            此接口不重置下线计时器。
-            </summary>
-            <param name="model"></param>
-            <returns>建立账号后第一次返回的所有方案中，除了Id是有效的其他属性是空或空集合。</returns>
-            <response code="401">令牌错误。</response>
-        </member>
-        <member name="M:GY2021001WebApi.Controllers.GameCharController.SetHomelandStyle(GY2021001WebApi.Models.SetHomelandFenggeParamsDto)">
-            <summary>
-            设置家园方案。
-            </summary>
-            <param name="model"></param>
-            <returns>如果有错大概率是不认识的Id。</returns>
-            <response code="401">令牌错误。</response>
-        </member>
-        <member name="M:GY2021001WebApi.Controllers.GameCharController.ApplyHomelandStyle(GY2021001WebApi.Models.ApplyHomelandStyleParamsDto)">
-            <summary>
-            应用指定方案。
-            </summary>
-            <param name="model"></param>
-            <returns></returns>
-        </member>
         <member name="M:GY2021001WebApi.Controllers.GameCharController.GetRankOfTuiguanForMe(GY2021001WebApi.Models.GetRankOfTuiguanForMeParamsDto)">
             <summary>
             获取推关战力排名，

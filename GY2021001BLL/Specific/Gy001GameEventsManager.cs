@@ -579,12 +579,13 @@ namespace OW.Game
             //清除锁定属性槽内物品，放回道具背包中
             var gim = World.ItemManager;
             var daojuBag = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包
+
             var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockAtkSlotId); //锁定槽
-            gim.MoveItems(slot, c => true, daojuBag);
+            gim.MoveItems(slot.Children, daojuBag);
             slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockMhpSlotId); //锁定槽
-            gim.MoveItems(slot, c => true, daojuBag);
+            gim.MoveItems(slot.Children, daojuBag);
             slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockQltSlotId); //锁定槽
-            gim.MoveItems(slot, c => true, daojuBag);
+            gim.MoveItems(slot.Children, daojuBag);
             //挂接升级回调
             var hl = gameChar.GetHomeland();
             foreach (var item in hl.GetAllChildren())

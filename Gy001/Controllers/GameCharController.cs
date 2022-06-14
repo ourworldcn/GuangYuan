@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Item;
+using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -306,12 +307,13 @@ namespace GY2021001WebApi.Controllers
                 }
                 try
                 {
+                    List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
                     List<ChangeItem> changesItems = new List<ChangeItem>();
                     foreach (var item in coll)
                     {
-                        world.ItemManager.MoveItem(allGi[item.Id], item.Count, allGi[item.PId], changesItems);
+                        world.ItemManager.MoveItem(allGi[item.Id], item.Count, allGi[item.PId], null, changes);
                     }
-                    ChangeItem.Reduce(changesItems);
+                    changes.CopyTo(changesItems);
                     result.ChangesItems.AddRange(changesItems.Select(c => (ChangesItemDto)c));
                 }
                 catch (Exception)
@@ -365,19 +367,21 @@ namespace GY2021001WebApi.Controllers
                     }
                 }
                 var dic = OwHelper.GetAllSubItemsOfTree(gc.GameItems, c => c.Children).ToDictionary(c => c.Id);
-                List<ChangeItem> changes = new List<ChangeItem>();
+                List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
                 foreach (var item in lst)   //加入
                 {
                     if (item.Item1.ParentId == gc.Id)
-                        gim.AddItems(new GameItem[] { item.Item1 }, gc, null, changes);
+                        gim.MoveItem(item.Item1, item.Item1.Count ?? 1, gc, null, changes);
                     else
                     {
                         var parent = item.Item2;
-                        gim.AddItems(new GameItem[] { item.Item1 }, parent, null, changes);
+                        gim.MoveItem(item.Item1, item.Item1.Count ?? 1, parent, null, changes);
                     }
 
                 }
-                var coll = changes.SelectMany(c => c.Adds.Concat(c.Changes)).Distinct();
+                List<ChangeItem> list = new List<ChangeItem>();
+                changes.CopyTo(list);
+                var coll = list.SelectMany(c => c.Adds.Concat(c.Changes)).Distinct();
                 result.AddRange(coll.Select(c => (GameItemDto)c));
                 world.CharManager.NotifyChange(gu);
             }
@@ -508,84 +512,6 @@ namespace GY2021001WebApi.Controllers
             var gc = gu.CurrentChar;
             gc.ChangesItems.Clear();
             return Ok();
-        }
-
-        /// <summary>
-        /// 获取家园方案。
-        /// 此接口不重置下线计时器。
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns>建立账号后第一次返回的所有方案中，除了Id是有效的其他属性是空或空集合。</returns>
-        /// <response code="401">令牌错误。</response>
-        [HttpPut]
-        [Obsolete("接口已废弃。")]
-        public ActionResult<GetHomelandFenggeReturnDto> GetHomelandStyle(GetHomelandFenggeParamsDto model)
-        {
-            return NotFound();
-            //var result = new GetHomelandFenggeReturnDto() { };
-            //var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            //if (!world.CharManager.Lock(OwConvert.ToGuid(model.Token), out GameUser gu))
-            //    return base.Unauthorized("令牌无效");
-            //Guid[] filterTIds = new Guid[] { ProjectConstant.WorkerOfHomelandTId, ProjectConstant.HomelandPlanBagTId, ProjectConstant.HomelandBuildingBagTId };
-            //string[] ary = null;
-            //try
-            //{
-            //    var gitm = world.ItemTemplateManager;
-            //    var gc = gu.CurrentChar;
-            //    var fengges = gc.GetFengges();
-            //    //if (fengges.Count == 0) //若未初始化
-            //    gc.MergeFangans(fengges, gitm);
-            //    result.Plans.AddRange(fengges.Select(c => (HomelandFenggeDto)c));
-            //    ary = gc.GetHomeland().GetAllChildren().Where(c => filterTIds.Contains(c.TemplateId)).Select(c => c.Id.ToBase64String()).ToArray(); //排除的容器Id集合
-            //}
-            //catch (Exception err)
-            //{
-            //    result.DebugMessage = err.Message + err.StackTrace;
-            //    result.HasError = true;
-            //}
-            //finally
-            //{
-            //    world.CharManager.Unlock(gu, true);
-            //}
-            //if (null != ary)
-            //    foreach (var fengge in result.Plans)
-            //    {
-            //        for (int i = fengge.Fangans.Count - 1; i >= 0; i--)
-            //        {
-            //            var fangan = fengge.Fangans[i];
-            //            for (int j = fangan.FanganItems.Count - 1; j >= 0; j--)
-            //            {
-            //                if (ary.Contains(fangan.FanganItems[j].ContainerId)) //若需要删除
-            //                    fangan.FanganItems.RemoveAt(j);
-            //            }
-            //        }
-            //    }
-            //return result;
-        }
-
-        /// <summary>
-        /// 设置家园方案。
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns>如果有错大概率是不认识的Id。</returns>
-        /// <response code="401">令牌错误。</response>
-        [HttpPost]
-        [Obsolete("家园数据结构已经更改，请使用ModifyProperties方法代替此方法。")]
-        public ActionResult<SetHomelandFenggeReturnDto> SetHomelandStyle(SetHomelandFenggeParamsDto model)
-        {
-            return NotFound("请改用api/GameChar/ModifyProperties接口");
-        }
-
-        /// <summary>
-        /// 应用指定方案。
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Obsolete("家园数据结构已经更改，请使用ModifyProperties方法代替此方法。修改家园对象的 ActiveNumber 属性。")]
-        public ActionResult<ApplyHomelandStyleReturnDto> ApplyHomelandStyle(ApplyHomelandStyleParamsDto model)
-        {
-            return NotFound("请改用api/GameChar/ModifyProperties接口");
         }
 
         /// <summary>

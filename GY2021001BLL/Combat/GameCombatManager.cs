@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using OW.Game.Item;
 using OW.Game.Mission;
+using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -427,31 +428,33 @@ namespace GuangYuan.GY001.BLL
                     {
 
                     }
-                    var changes = new List<ChangeItem>();
+                    var changes = new List<GamePropertyChangeItem<object>>();
                     //移动收益槽数据到各自背包。
                     //金币
-                    gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.JinbiId, gameChar.GetCurrencyBag(), changes);
+                    var gis = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.JinbiId);
+                    if (gis.Any())
+                        gim.MoveItems(gis, gameChar.GetCurrencyBag(), null, changes);
                     //木材
-                    gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.MucaiId, gameChar.GetCurrencyBag(), changes);
-                    shouyiSlot.Children.RemoveAll(c => c.TemplateId == ProjectConstant.MucaiId);
+                    gis = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.MucaiId);
+                    if (gis.Any())
+                        gim.MoveItems(gis, gameChar.GetCurrencyBag(), null, changes);
                     //野生怪物
+                    gis = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi);
                     var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
-                    gim.MoveItems(shouyiSlot, c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi, shoulan, changes);
+                    if (gis.Any())
+                        gim.MoveItems(gis, shoulan, null, changes);
                     //其他道具
                     var daojuBag = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);   //道具背包
-                    gim.MoveItems(shouyiSlot, c =>
-                    {
-                        return c.TemplateId != ProjectConstant.JinbiId && c.TemplateId != ProjectConstant.ZuojiZuheRongqi;
-                    }, daojuBag, changes);
-                    //压缩变化数据
-                    ChangeItem.Reduce(changes);
-                    data.ChangesItems.AddRange(changes);
+                    gis = shouyiSlot.Children.Where(c => c.TemplateId != ProjectConstant.JinbiId && c.TemplateId != ProjectConstant.ZuojiZuheRongqi);
+                    gim.MoveItems(gis, daojuBag, null, changes);
+                    changes.CopyTo(data.ChangesItems);
+
                     //将剩余未能获取的收益放置于弃物槽中
                     var qiwu = gameChar.GetQiwuBag();
                     foreach (var item in shouyiSlot.Children)
                     {
                         data.ChangesItems.AddToRemoves(shouyiSlot.Id, item.Id);
-                        gim.ForcedMove(item,item.Count.Value, qiwu);
+                        gim.ForcedMove(item, item.Count.Value, qiwu);
                         data.ChangesItems.AddToAdds(item);
                     }
                     //设置成就数据

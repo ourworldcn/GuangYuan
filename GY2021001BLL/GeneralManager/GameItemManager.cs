@@ -44,13 +44,20 @@ namespace OW.Game.Item
 
         public GameItemManager() : base()
         {
-
+            Initialize();
         }
 
         public GameItemManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
+            Initialize();
         }
+
         public GameItemManager(IServiceProvider serviceProvider, GameItemManagerOptions options) : base(serviceProvider, options)
+        {
+            Initialize();
+        }
+
+        void Initialize()
         {
 
         }
@@ -59,7 +66,15 @@ namespace OW.Game.Item
         #region 属性及相关
         private GameItemTemplateManager _ItemTemplateManager;
 
-        private GameItemTemplateManager ItemTemplateManager { get => _ItemTemplateManager ??= World.ItemTemplateManager; }
+        private GameItemTemplateManager ItemTemplateManager
+        {
+            get
+            {
+                if (_ItemTemplateManager is null)
+                    Interlocked.CompareExchange(ref _ItemTemplateManager, World.ItemTemplateManager, null);
+                return _ItemTemplateManager;
+            }
+        }
         #endregion
 
         /// <summary>
@@ -125,11 +140,12 @@ namespace OW.Game.Item
                 var oldParent = World.EventsManager.GetCurrentContainer(gameItem); //现有容器
                 if (null == oldParent) //若不是属于其他物品
                 {
-                    AddItem(gameItem, parent);
+                    MoveItem(gameItem, gameItem.Count ?? 1, parent);
                 }
                 else
                 {
-                    MoveItems(oldParent, c => c.Id == gameItem.Id, parent);
+                    var gis = World.PropertyManager.GetChildrenCollection(oldParent).Where(c => c.Id == gameItem.Id);
+                    MoveItems(gis, parent);
                 }
             }
             else if (propName.Equals("Count", StringComparison.InvariantCultureIgnoreCase))
@@ -332,312 +348,7 @@ namespace OW.Game.Item
         T GetOrDefault<T>(T[] ary, int index, T defaultValue = default) =>
             index < ary.GetLowerBound(0) || index > ary.GetUpperBound(0) ? defaultValue : ary[index];
 
-        /// <summary>
-        /// 移动一个物品的一部分到另一个容器。
-        /// </summary>
-        /// <param name="item"></param>
-        /// <param name="count"></param>
-        /// <param name="destContainer"></param>
-        /// <param name="changesItems">物品变化信息，null或省略则不生成具体的变化信息。</param>
-        /// <returns>true成功移动了物品，false是以下情况的一种或多种：物品现存数量小于要求移动的数量，没有可以移动的物品,目标背包已经满,。</returns>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/>应该大于0。</exception>
-        public bool MoveItem(GameItem item, decimal count, GameItemBase destContainer, ICollection<ChangeItem> changesItems = null)
-        {
-            var propMng = World.PropertyManager;
-            var container = propMng.GetChildrenCollection(destContainer);
-            //TO DO 不会堆叠
-            if (count <= 0)
-                throw new ArgumentOutOfRangeException(nameof(count), "应大于0");
-            var result = false;
-            var cap = propMng.GetRemainderCap(destContainer);
-            if (cap <= 0)   //若目标背包已经满
-                return false;
-            if (item.Count < count)
-                return false;
-            if (!World.PropertyManager.IsStc(item, out _) || count == item.Count)  //若不可堆叠或全部移动
-            {
-                var parent = World.EventsManager.GetCurrentContainer(item);   //获取父容器
-                MoveItems(parent, c => c.Id == item.Id, destContainer, changesItems);
-                result = true;
-            }
-            else //若可能堆叠且不是全部移动
-            {
-                var moveItem = new GameItem();
-                World.EventsManager.GameItemCreated(moveItem, item.TemplateId, null, null, null);
-                moveItem.Count = count;
-                item.Count -= count;
-                var parent = World.EventsManager.GetCurrentContainer(item);   //获取源父容器
-                AddItem(moveItem, destContainer, null, changesItems);  //TO DO 需要处理无法完整放入问题
-                if (null != changesItems)
-                {
-                    //增加变化 
-                    changesItems.AddToChanges(item.ParentId ?? item.OwnerId.Value, item);
-                    //增加新增
-                    //changesItems.AddToAdds(moveItem.ParentId ?? moveItem.OwnerId.Value, moveItem);
-                }
-            }
-            return result;
-        }
-
         #endregion 动态属性相关
-
-        #region 物品增减相关
-
-        /// <summary>
-        /// 将符合条件的物品对象及其子代从容器中移除并返回。
-        /// </summary>
-        /// <param name="parent"></param>
-        /// <param name="filter"></param>
-        /// <param name="removes">变化的数据。可以是null或省略，此时忽略。</param>
-        public void RemoveItemsWhere(GameObjectBase parent, Func<GameItem, bool> filter, ICollection<GameItem> removes = null)
-        {
-            IList<GameItem> lst = (parent as GameItem)?.Children;
-            lst ??= (parent as GameChar)?.GameItems;
-            if (null != lst)
-                for (int i = lst.Count - 1; i >= 0; i--)    //倒序删除
-                {
-                    var item = lst[i];
-                    if (!filter(item))
-                        continue;
-                    lst.RemoveAt(i);
-                    removes?.Add(item);
-                    item.Parent = null;
-                    item.ParentId = null;
-                    item.OwnerId = null;
-                }
-
-        }
-
-        /// <summary>
-        /// 将符合条件的所有物品移入另一个容器。
-        /// </summary>
-        /// <param name="src"></param>
-        /// <param name="filter"></param>
-        /// <param name="dest"></param>
-        /// <param name="changes">变化的数据。可以是null或省略，此时忽略。</param>
-        /// <param name="remainder">无法移动的物品。</param>
-        public void MoveItems(GameThingBase src, Func<GameItem, bool> filter, GameThingBase dest, ICollection<ChangeItem> changes = null, ICollection<GameItem> remainder = null)
-        {
-            var tmp = World.ObjectPoolListGameItem.Get();
-            var adds = World.ObjectPoolListGameItem.Get();
-            var remainder2 = World.ObjectPoolListGameItem.Get();
-            remainder ??= new List<GameItem>();
-            try
-            {
-                //移动物品
-                RemoveItemsWhere(src, filter, tmp); //移除物品
-                var removeIds = tmp.Select(c => c.Id).ToArray();  //移除物品的Id集合
-                AddItems(tmp, dest, remainder, changes);
-                //已经增加的物品数据
-                var addChanges = (new ChangeItem()
-                {
-                    ContainerId = dest.Id,
-                });
-                addChanges.Adds.AddRange(adds);
-                changes?.Add(addChanges);
-
-                if (remainder.Count > 0)    //若有一些物品不能加入
-                {
-                    tmp.Clear();
-                    AddItems(remainder, src, remainder2, changes);
-                    Trace.Assert(remainder2.Count == 0);    //TO DO当前版本逻辑上不会出现此问题
-                                                            //变化物品
-                    adds.Clear();
-                    List<Guid> guids = new List<Guid>();
-                    List<(Guid, GameItem)> l_r = new List<(Guid, GameItem)>();
-                    removeIds.ApartWithWithRepeated(tmp, c => c, c => c.Id, guids, l_r, adds);
-
-                    var change = new ChangeItem()
-                    {
-                        ContainerId = src.Id,
-                    };
-                    change.Removes.AddRange(guids);
-                    change.Changes.AddRange(l_r.Select(c => c.Item2));
-                    change.Adds.AddRange(adds);
-                    changes?.Add(change);
-                }
-                else //全部移动了
-                {
-                    if (null != changes)
-                        foreach (var item in removeIds)
-                            changes.AddToRemoves(src.Id, item);
-                }
-            }
-            finally
-            {
-                World.ObjectPoolListGameItem.Return(remainder2);
-                World.ObjectPoolListGameItem.Return(adds);
-                World.ObjectPoolListGameItem.Return(tmp);
-            }
-        }
-
-        /// <summary>
-        /// 将一组物品加入一个容器下。
-        /// 如果合并后数量为0，则会试图删除对象。
-        /// </summary>
-        /// <param name="gameItems">一组对象。</param>
-        /// <param name="parent">容器。</param>
-        /// <param name="remainder">追加不能放入的物品到此集合，可以是null或省略，此时忽略。</param>
-        /// <param name="changeItems">变化的数据。可以是null或省略，此时忽略。</param>
-        public void AddItems(IEnumerable<GameItem> gameItems, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
-        {
-            foreach (var item in gameItems) //TO DO 性能优化未做
-            {
-                AddItem(item, parent, remainder, changeItems);
-            }
-        }
-
-        /// <summary>
-        /// 将一个物品放入容器。根据属性确定是否可以合并堆叠。
-        /// </summary>
-        /// <param name="gameItem">要放入的物品，返回时属性<see cref="GameItem.Count"/>可能被更改。</param>
-        /// <param name="parent">放入的容器事物对象，或是一个角色对象。</param>
-        /// <param name="remainder">追加不能放入的物品到此集合，可以是null或省略，此时忽略。</param>
-        /// <param name="changeItems">变化的数据。可以是null或省略，此时忽略。
-        /// 基于堆叠限制和容量限制，无法放入的部分。实际是<paramref name="gameItem"/>对象或拆分后的对象集合，对于可堆叠对象可能修改了<see cref="GameItem.Count"/>属性。若没有剩余则返回null。
-        /// </param>
-        /// <returns>放入后的对象，如果是不可堆叠或堆叠后有剩余则是 <paramref name="gameItem"/> 和堆叠对象，否则是容器内原有对象。返回空集合，因容量限制没有放入任何物品。</returns>
-        public void AddItem(GameItem gameItem, GameThingBase parent, ICollection<GameItem> remainder = null, ICollection<ChangeItem> changeItems = null)
-        {
-            var propMng = World.PropertyManager;
-            var children = propMng.GetChildrenCollection(parent);
-            var stcItem = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId) ?? gameItem;
-            Debug.Assert(null != children);
-            if (!World.PropertyManager.IsStc(stcItem, out _)) //若不可堆叠
-            {
-                if (parent is GameItemBase gib) //若是容器
-                {
-                    var freeCap = propMng.GetRemainderCap(gib);
-                    if (freeCap == 0)   //若不可再放入物品
-                    {
-                        remainder?.Add(gameItem);
-                        return;
-                    }
-                }
-                if (parent is GameItem gi && gi.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(gameItem) && this.IsExistsMounts(gameItem, gi.GetGameChar()))  //若要放入坐骑且有同款坐骑
-                {
-                    var bag = gi.GetGameChar().GetShoulanBag();  //兽栏
-                    if (propMng.GetRemainderCap(bag) == 0) //若兽栏满
-                    {
-                        remainder?.Add(gameItem);
-                        return;
-                    }
-                    parent = bag;
-                }
-                var succ = ForcedAdd(gameItem, parent);
-                changeItems?.AddToAdds(parent.Id, gameItem);
-                if (this.IsMounts(gameItem)) //若是坐骑
-                    World.CombatManager.UpdatePveInfo(gameItem.GetGameChar());
-                return;
-            }
-            else //若可堆叠
-            {
-                gameItem.Count ??= 0;
-                var upper = World.PropertyManager.GetRemainderCap(parent);    //TO DO 暂时未限制是否是容器
-                if (children.Count >= upper)  //若超过容量
-                {
-                    remainder?.Add(gameItem);
-                    return;
-                }
-                //处理存在物品的堆叠问题
-                var result = new List<GameItem>();
-                var dest = children.FirstOrDefault(c => c.TemplateId == gameItem.TemplateId && World.PropertyManager.GetRemainderStc(c) > 0);    //找到已有的物品且尚可加入堆叠的
-                if (null != dest)  //若存在同类物品
-                {
-                    var redCount = Math.Min(World.PropertyManager.GetRemainderStc(dest), gameItem.Count ?? 0);   //移动的数量
-                    this.ForcedAddCount(gameItem, -redCount, changeItems);
-                    this.ForcedAddCount(dest, redCount, changeItems);
-                    result.Add(dest);
-                }
-                if (gameItem.Count <= 0)   //若已经全部堆叠进入
-                {
-                    return;
-                }
-                else if (gameItem.GetTemplate() == null || !gameItem.GetTemplate().Properties.TryGetDecimal("isuni", out var isuni) || isuni != decimal.One) //放入剩余物品,容错
-                {
-                    var tmp = new List<GameItem>();
-                    SplitItem(gameItem, tmp, parent);
-                    var _ = new ChangeItem(parent.Id);
-                    for (int i = tmp.Count - 1; i >= 0; i--)
-                    {
-                        if (-1 != upper && children.Count >= upper)    //若已经满
-                            break;
-                        var item = tmp[i];
-                        if (ForcedAdd(item, parent))    //若成功加入
-                        {
-                            result.Add(item);
-                            _.Adds.Add(item);
-                        }
-                        else //TO DO当前不会不成功
-                            throw new InvalidOperationException("加入物品异常失败。");
-                        tmp.RemoveAt(i);
-                    }
-                    if (_.Adds.Count > 0)
-                        changeItems?.Add(_);
-                    foreach (var item in tmp)   //未能加入的
-                        remainder?.Add(item);
-                }
-                else
-                {
-                    remainder?.Add(gameItem);
-                }
-                //当有剩余物品
-                return;
-            }
-        }
-
-        /// <summary>
-        /// 按堆叠要求将物品拆分未多个。
-        /// </summary>
-        /// <param name="gameItem">要拆分的物品。返回时该物品<see cref="GameItem.Count"/>可能被改变。
-        /// 若未设置数量，则对不可堆叠物品视同0，可堆叠物品视同1。</param>
-        /// <param name="results">拆分后的物品。可能包含<paramref name="gameItem"/>，且其<see cref="GameItem.Count"/>属性被修正。
-        /// <paramref name="gameItem"/>总是被放在第一个位置上。</param>
-        /// <param name="parent">父对象。</param>
-        public void SplitItem(GameItem gameItem, ICollection<GameItem> results, GameObjectBase parent = null)
-        {
-            var stcItem = gameItem;
-            if (gameItem.TemplateId == ProjectConstant.MucaiId)  //若是木材
-            {
-                var gameCher = parent as GameChar ?? (parent as GameItem)?.GetGameChar();
-                stcItem = gameCher.GetMucai();
-            }
-            if (!World.PropertyManager.IsStc(stcItem, out var stc)) //若不可堆叠
-            {
-                gameItem.Count ??= 1;
-                var count = gameItem.Count.Value - 1;   //记录原始数量少1的值
-                gameItem.Count = Math.Min(gameItem.Count.Value, 1); //设置第一堆的数量
-                results.Add(gameItem);
-                for (; count >= 0; count--)   //分解出多余物品
-                {
-                    var item = new GameItem();
-                    World.EventsManager.GameItemCreated(item, gameItem.TemplateId);
-                    item.Count = Math.Min(1, count);
-                    results.Add(item);
-                }
-            }
-            else if (decimal.MaxValue == stc)  //若无堆叠上限限制
-            {
-                results.Add(gameItem);
-            }
-            else //若可堆叠且有限制
-            {
-                gameItem.Count ??= 0;
-                var count = gameItem.Count.Value - stc;   //记录当前数量减去第一堆以后的数量
-                gameItem.Count = Math.Min(gameItem.Count.Value, stc);    //取当前数量，和允许最大堆叠数量中较小的值
-                results.Add(gameItem);  //加入第一个堆
-                while (count > 0) //当需要拆分
-                {
-                    var item = new GameItem();
-                    World.EventsManager.GameItemCreated(item, gameItem.TemplateId);
-                    item.Count = Math.Min(count, stc); //取当前剩余数量，和允许最大堆叠数量中较小的值
-                    results.Add(item);
-                    count -= stc;
-                }
-            }
-        }
-
-        #endregion 物品增减相关
 
         /// <summary>
         /// 标准化物品，避免有后增加的槽没有放置上去。
@@ -664,49 +375,6 @@ namespace OW.Game.Item
                 }
             }
         }
-
-        ///// <summary>
-        ///// 变化指定物品的模板。
-        ///// 追加新属性，变化序列属性。
-        ///// </summary>
-        ///// <param name="container"></param>
-        ///// <param name="newContainer"></param>
-        //public void ChangeTemplate(GameItem container, GameItemTemplate newContainer)
-        //{
-        //    if (container.TemplateId == newContainer.Id)    //若无需换Id
-        //        return;
-        //    var keys = container.Properties.Keys.Intersect(newContainer.Properties.Keys).ToArray(); //共有Id
-        //    foreach (var key in keys)
-        //    {
-        //        if (container.TryGetDecimalPropertyValue(key, out var tmp))   //若是数值属性
-        //        {
-        //            var lv = container.GetIndexPropertyValue(key);
-        //            if (lv >= 0)    //若是序列属性
-        //                tmp -= seq[lv];
-        //            var seq = container.Template.GetSequenceProperty<decimal>(key);
-        //            if (null != seq)   //若是序列属性
-        //            {
-        //                var lv = container.GetIndexPropertyValue(key);
-        //                if (lv >= 0)    //若是序列属性
-        //                    tmp -= seq[lv];
-        //            }
-        //            else //非序列属性
-        //                newContainer.GetSequenceValueOrValue(key);
-        //        }
-        //        else //若非数值属性
-        //        {
-
-        //        }
-        //        //TO DO
-        //        container.Properties[key] =;
-        //    }
-        //    foreach (var key in keys.Except(newContainer.Properties.Keys))  //追加属性值
-        //    {
-
-        //    }
-        //    container.TemplateId = newContainer.Id;
-        //    container.Template = newContainer;
-        //}
 
         /// <summary>
         /// 获取指定阵容的所有坐骑。
@@ -775,9 +443,7 @@ namespace OW.Game.Item
             //改写物品对象
             foreach (var item in list)
             {
-                //datas.ChangeItems.AddToRemoves(item.Item1.ContainerId.Value, item.Item1.Id);
-                gim.MoveItem(item.Item1, item.Item2, qiwu, datas.ChangeItems);
-                //datas.ChangeItems.AddToAdds(qiwu.Id, item.Item1);
+                gim.MoveItem(item.Item1, item.Item2, qiwu, null, datas.PropertyChanges);
             }
             //改写金币
             if (totalGold != 0)
@@ -794,6 +460,7 @@ namespace OW.Game.Item
                 zuanshi.Count += totalDia;
                 datas.ChangeItems.AddToChanges(zuanshi);
             }
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 
         /// <summary>
@@ -989,18 +656,17 @@ namespace OW.Game.Item
                 foreach (var item in g)
                 {
                     if (parent.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(item) && this.IsExistsMounts(item, datas.GameChar))   //若向坐骑背包放入重复坐骑
-                        AddItem(item, datas.GameChar.GetShoulanBag(), re, datas.ChangeItems);
+                        MoveItem(item, item.Count ?? 1, datas.GameChar.GetShoulanBag(), re, datas.PropertyChanges);
                     else
-                        AddItem(item, parent, re, datas.ChangeItems);
+                        MoveItem(item, item.Count ?? 1, parent, re, datas.PropertyChanges);
                 }
-                //AddItems(g, container, re, datas.ChangeItems);
             }
             if (re.Count > 0)  //若需要发送邮件
             {
                 var mail = new GameMail();
                 World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, re.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
             }
-            ChangeItem.Reduce(datas.ChangeItems);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 
         /// <summary>
@@ -1419,7 +1085,7 @@ namespace OW.Game.Item
         public virtual void MoveItems(IEnumerable<GameItem> gItems, GameThingBase container, [AllowNull] ICollection<GameItem> remainder = null,
             [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
-            foreach (var gItem in gItems)
+            foreach (var gItem in gItems.ToArray()) //TODO 遍历每个物品
             {
                 MoveItem(gItem, gItem.Count.Value, container, remainder, changes);
             }
