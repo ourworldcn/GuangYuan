@@ -457,7 +457,7 @@ namespace GY2021001WebApi.Models
     {
         public static implicit operator GeneralCharSummaryDto(GameChar obj)
         {
-            var pmng = (GamePropertyManager)obj.GameUser.Services.GetService(typeof(GamePropertyManager));
+            var pmng = (GamePropertyManager)obj.GameUser.Services.GetService(typeof(IGamePropertyManager));
             var result = new GeneralCharSummaryDto()
             {
                 Id = obj.Base64IdString,

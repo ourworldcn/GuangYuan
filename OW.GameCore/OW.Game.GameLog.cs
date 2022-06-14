@@ -147,4 +147,5 @@ namespace OW.Game.Log
             return this.Where(c => c.DateTime.Date == today.Date);
         }
     }
+
 }

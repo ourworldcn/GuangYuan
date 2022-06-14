@@ -3101,6 +3101,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class GetPvpListParamsDto : TokenDtoBase
     {
+        public GetPvpListParamsDto()
+        {
+
+        }
+
         /// <summary>
         /// 是否强制使用钻石刷新。
         /// false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。

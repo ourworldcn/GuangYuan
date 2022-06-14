@@ -1692,35 +1692,6 @@ namespace GuangYuan.GY001.BLL
 
             var list = hColl.Concat(mColl).Concat(lColl).Include(c => c.Parent).ToList();
 
-            //var excludeIds = (from bag in context.Set<GameItem>().Where(c => c.OwnerId.HasValue && excludeCharIds.Contains(c.OwnerId.Value)).AsNoTracking()
-            //                  join gi in context.Set<GameItem>().AsNoTracking()
-            //                  on bag.Id equals gi.ParentId
-            //                  where gi.TemplateId == pvpObjectTId
-            //                  select gi.Id).ToArray();  //pvp对象Id集合
-            //int lv = 4;
-            //var lvStr = lv.ToString("D10");
-            //var allow = from gi in context.Set<GameItem>()
-            //            join bag in context.Set<GameItem>() on gi.ParentId equals bag.Id
-            //            join gc in context.Set<GameChar>() on bag.OwnerId equals gc.Id
-            //            where gi.TemplateId == pvpObjectTId && string.Compare(gc.ExtraString, lvStr) >= 0
-            //            select gi.Id;   //可以参与pvp的角色
-
-            //var lower = (from tmp in pvpObjectQuery //取下手
-            //             where tmp.Count < gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
-            //             orderby tmp.Count descending
-            //             select tmp).Take(maxCount);
-
-            //var equals = (from tmp in pvpObjectQuery //取平手
-            //              where tmp.Count == gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
-            //              orderby tmp.Count descending
-            //              select tmp).Take(maxCount);
-
-            //var higher = (from tmp in pvpObjectQuery //取上手
-            //              where tmp.Count > gcPvpObject.Count && !excludeIds.Contains(tmp.Id) && allow.Contains(tmp.Id)
-            //              orderby tmp.Count
-            //              select tmp).Take(maxCount);
-            //var list = lower.Concat(equals).Concat(higher).ToList();
-
             var listGameItems = new List<GameItem>();
             //获取下手
             var addItem = list.FirstOrDefault(c => c.ExtraDecimal < gcPvpObject.ExtraDecimal - diff);    //下手
