@@ -584,7 +584,7 @@ namespace Gy001.Controllers
                 if (!result.HasError)    //若没有错误
                 {
                     //增补客户端需要的额外数据
-                    using var dwUsers = _World.CharManager.LockOrLoadWithCharIds(datas.CharIds, _World.CharManager.Options.DefaultLockTimeout* datas.CharIds.Count);
+                    using var dwUsers = _World.CharManager.LockOrLoadWithCharIds(datas.CharIds, _World.CharManager.Options.DefaultLockTimeout * datas.CharIds.Count);
                     if (dwUsers is null)
                     {
                         result.HasError = true;
@@ -640,7 +640,8 @@ namespace Gy001.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost][Obsolete("应使用GetItems接口替代。")]
+        [HttpPost]
+        [Obsolete("应使用GetItems接口替代。")]
         public ActionResult<GetCharInfoReturnDto> GetCharInfo(GetCharInfoParamsDto model)
         {
             var result = new GetCharInfoReturnDto();
