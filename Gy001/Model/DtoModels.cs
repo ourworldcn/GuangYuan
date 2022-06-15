@@ -4117,6 +4117,19 @@ namespace GY2021001WebApi.Models
     {
         [DataMember]
         public GameGuildDto Guild { get; set; } = new GameGuildDto();
+
+        /// <summary>
+        /// 个人已经完成的工会任务模板id。
+        /// </summary>
+        [DataMember]
+        public List<string> DoneGuildMissionTIds { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 工会今天发布的任务模板id。
+        /// </summary>
+        [DataMember]
+        public List<string> GuildMissionTIds { get; set; } = new List<string>();
+
     }
 
     [DataContract]

@@ -237,6 +237,23 @@ namespace GuangYuan.GY001.UserDb.Social
             if (!_Id2Guild.TryGetValue(gid, out var guild))
                 return;
             datas.Guild = guild;
+            var now = DateTime.UtcNow;
+            //个人已完成的工会任务模板Id
+            var guildMissions = World.MissionManager.GetGuildMission(datas.GameChar);
+            datas.DoneGuildMissionTIds.AddRange(guildMissions.Select(c =>
+            {
+                if (!OwConvert.TryToGuid(c.Params[0], out var tid))
+                    return Guid.Empty;
+                return tid;
+            }));
+            //工会发布的任务
+            var missions = GetMissionOrCreate(datas.Guild, now);
+            datas.GuildMissionTIds.AddRange(missions.Select(c =>
+            {
+                if (!OwConvert.TryToGuid(c.Params[0], out var tid))
+                    return Guid.Empty;
+                return tid;
+            }));
             return;
         }
 
@@ -589,6 +606,14 @@ namespace GuangYuan.GY001.UserDb.Social
             else
                 slot.ExtraDecimal = 0;
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
+            var db = datas.GameChar.GetDbContext();
+            var guildIdString = datas.GuildId.ToString();
+            var charIds = db.Set<GameItem>().AsNoTracking().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == guildIdString && c.ExtraDecimal >= 14) //工会管理层
+                 .Select(c => c.OwnerId.Value);
+            foreach (var charId in charIds)
+            {
+                NotifyChar(charId);
+            }
         }
 
         /// <summary>
@@ -647,6 +672,7 @@ namespace GuangYuan.GY001.UserDb.Social
                     slot.ExtraString = guild.IdString;
                     World.CharManager.NotifyChange(gc.GameUser);
                     this.JoinGuildChatChannel(gc);  //加入工会聊天
+                    NotifyChar(gc.Id);
                 }
             else //若拒绝
                 foreach (var charId in datas.CharIds)
@@ -654,6 +680,7 @@ namespace GuangYuan.GY001.UserDb.Social
                     var gc = World.CharManager.GetCharFromId(charId);
                     var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
                     World.ItemManager.ForcedRemove(slot);
+                    NotifyChar(gc.Id);
                 }
         }
 
@@ -764,10 +791,37 @@ namespace GuangYuan.GY001.UserDb.Social
                 World.ItemManager.ForcedDelete(slot);
                 World.CharManager.NotifyChange(tmp.GameUser);
                 World.ChatManager.LeaveChannel(tmp.Id.ToString(), channelId, Options.DefaultTimeout);
+                //通知被删除的在线个人
+                NotifyChar(id);
             }
         }
         #endregion 人事管理
 
+        /// <summary>
+        /// 通知在线角色，工会信息已经变化。
+        /// </summary>
+        /// <param name="charId"></param>
+        /// <returns></returns>
+        public bool NotifyChar(Guid charId)
+        {
+            var gc = World.CharManager.GetCharFromId(charId);
+            using var dwUser = World.CharManager.LockAndReturnDisposer(gc.GameUser);
+            if (dwUser is null)  //若无法锁定用户
+                return false;
+            var lst = World.CharManager.GetChangeData(gc);  //通知数据对象
+            var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            var np = new ChangeData()
+            {
+                ActionId = 2,
+                NewValue = 0,
+                ObjectId = slot?.Id ?? Guid.Empty,
+                OldValue = 0,
+                PropertyName = "Count",
+                TemplateId = ProjectConstant.GuildSlotId,
+            };
+            lst.Add(np);
+            return true;
+        }
     }
 
     public class SetGuildContext : GameCharGameContext
@@ -1011,6 +1065,17 @@ namespace GuangYuan.GY001.UserDb.Social
         /// 返回的工会信息。若角色没有加入工会则返回null。
         /// </summary>
         public GameGuild Guild { get; set; }
+
+        /// <summary>
+        /// 个人已经完成的工会任务模板id。
+        /// </summary>
+        public List<Guid> DoneGuildMissionTIds { get; set; } = new List<Guid>();
+
+        /// <summary>
+        /// 工会今天发布的任务模板id。
+        /// </summary>
+        public List<Guid> GuildMissionTIds { get; set; } = new List<Guid>();
+
     }
 
     /// <summary>

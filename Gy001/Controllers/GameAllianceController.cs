@@ -93,8 +93,12 @@ namespace Gy001.Controllers
             World.AllianceManager.GetGuild(datas);
             var result = new GetGuildReturnDto();
             result.FillFrom(datas);
-            if (!result.HasError && datas.Guild!=null)
+            if (!result.HasError && datas.Guild != null)
+            {
                 GameGuildDto.FillMembers(datas.Guild, result.Guild, World);
+                OwHelper.SafeCopy(datas.DoneGuildMissionTIds.Select(c => c.ToBase64String()), result.DoneGuildMissionTIds);
+                OwHelper.SafeCopy(datas.GuildMissionTIds.Select(c => c.ToBase64String()), result.DoneGuildMissionTIds);
+            }
             return result;
         }
 

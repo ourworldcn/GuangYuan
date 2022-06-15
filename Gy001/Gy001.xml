@@ -3185,6 +3185,16 @@
             申请加入的工会Id。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetGuildReturnDto.DoneGuildMissionTIds">
+            <summary>
+            个人已经完成的工会任务模板id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetGuildReturnDto.GuildMissionTIds">
+            <summary>
+            工会今天发布的任务模板id。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.SetGuildParamsDto.DisplayName">
             <summary>
             行会名。
