@@ -22,7 +22,7 @@ namespace GY2021001WebApi.Models
     {
         public static implicit operator ChatMessageDto(ChatMessage obj)
         {
-               var result = new ChatMessageDto()
+            var result = new ChatMessageDto()
             {
                 ChannelId = obj.ChannelId,
                 Message = obj.Message as string,
@@ -56,6 +56,7 @@ namespace GY2021001WebApi.Models
                 ObjectId = (obj.Object as GameThingBase)?.Base64IdString,
                 OldValue = obj.OldValue,
                 PropertyName = obj.PropertyName,
+                TId = (obj.Object as GameThingBase)?.TemplateId.ToBase64String(),
             };
             return result;
         }

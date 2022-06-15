@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Buffers;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OW.Game
 {
@@ -40,7 +43,6 @@ namespace OW.Game
         /// </summary>
         public GameManagerBase()
         {
-
         }
 
         /// <summary>
@@ -65,5 +67,25 @@ namespace OW.Game
 
         #endregion 构造函数
 
+        Task _InitializeTask;
+
+        /// <summary>
+        /// 重载此函数用于异步初始化。
+        /// </summary>
+        /// <returns>异步初始化的任务对象。</returns>
+        protected virtual Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 等待异步初始化结束。
+        /// </summary>
+        /// <param name="timeout">等待的超时。<see cref="TimeSpan.Zero"/>立即返回结果，<see cref="Timeout.InfiniteTimeSpan"/>则直到完成才返回。</param>
+        /// <returns>true已经完成或没有初始化函数，false未完成初始化。</returns>
+        public bool WaitInitialize(TimeSpan timeout)
+        {
+            return _InitializeTask?.Wait(timeout) ?? true;
+        }
     }
 }

@@ -71,6 +71,11 @@ namespace GY2021001WebApi.Models
 
         }
 
+        /// <summary>
+        /// 对象的模板Id。
+        /// </summary>
+        [DataMember]
+        public string TId { get; set; }
 
         /// <summary>
         /// 对象Id。指出是什么对象变化了属性。

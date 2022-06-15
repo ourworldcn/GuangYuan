@@ -420,6 +420,11 @@
             </summary>
             <remarks>这个类的新值和旧值都用Object表示，对于数据量极大的一些情况会使用具体的类表示如GamePropertyChangeFloatItemDto表示大量的即时战斗数据包导致的人物属性变化。</remarks>
         </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.TId">
+            <summary>
+            对象的模板Id。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.ObjectId">
             <summary>
             对象Id。指出是什么对象变化了属性。
@@ -3290,6 +3295,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

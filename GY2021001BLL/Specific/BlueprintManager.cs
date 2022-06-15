@@ -1257,6 +1257,7 @@ namespace GuangYuan.GY001.BLL
                 gameItem.Properties["nemhp"] = 10m;
                 gameItem.Properties["neqlt"] = 10m;
                 gim.MoveItem(gameItem, gameItem.Count ?? 1, slotZq, null, datas.Changes);
+                World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.Changes);
             }
             //成就
             var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.孵化成就);
@@ -1790,6 +1791,7 @@ namespace GuangYuan.GY001.BLL
                     World.ItemManager.MoveItem(re, re.Count ?? 1, World.EventsManager.GetDefaultContainer(re, datas.GameChar), null, datas.Changes);
                 }
                 item.Properties["used"] = 1m;
+                datas.ChangeItems.AddToChanges(item);
             }
             datas.Changes.CopyTo(datas.ChangeItems);
         }
