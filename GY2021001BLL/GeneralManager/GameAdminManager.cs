@@ -69,7 +69,7 @@ namespace GuangYuan.GY001.BLL
                     continue;
                 if (!(datas.PvpScore is null))
                 {
-                    gu.CurrentChar.GetPvpObject().Count = datas.PvpScore;
+                    gu.CurrentChar.GetPvpObject().ExtraDecimal = datas.PvpScore;
                     //gu.CurrentChar.GetPveT().Count = datas.PveScore;
                     World.CharManager.NotifyChange(gu);
                 }

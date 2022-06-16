@@ -1202,31 +1202,6 @@ namespace OW.Game.Item
         public List<(GameItem, Guid)> Items { get; } = new List<(GameItem, Guid)>();
     }
 
-    public class UseItemsView
-    {
-        private readonly VWorld _World;
-        private readonly GameItem _GameItem;
-
-        public UseItemsView(GameItem gameItem, VWorld world)
-        {
-            _World = world;
-            _GameItem = gameItem;
-        }
-
-        private readonly List<(Guid, decimal, Guid)> _Datas;
-
-        public List<(Guid, decimal, Guid)> Datas
-        {
-            get
-            {
-                if (_Datas is null)
-                {
-                }
-                return _Datas;
-            }
-        }
-    }
-
     public class GetRankOfTuiguanDatas : ComplexWorkGameContext
     {
         public GetRankOfTuiguanDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)

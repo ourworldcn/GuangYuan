@@ -289,7 +289,7 @@ namespace OW.Game
                         switch (i)
                         {
                             case 3: //玩家等级5（游戏流程第3天)，PVP模式，好友系统
-                                World.CombatManager.UpdatePvpInfo(spcc.Thing as GameChar);
+                                //TODO World.CombatManager.UpdatePvpInfo(spcc.Thing as GameChar);
                                 break;
                             default:
                                 break;

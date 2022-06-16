@@ -494,8 +494,6 @@ namespace GuangYuan.GY001.BLL
 
         #region PVP相关
 
-        public const string PvpRankName = "PVP排行";
-
         /// <summary>
         /// 获取指定用户的pvp排名。
         /// </summary>
@@ -517,41 +515,6 @@ namespace GuangYuan.GY001.BLL
                         select gi;
             var result = coll1.Count();
             return result;
-        }
-
-        /// <summary>
-        /// 用角色的最新信息更新pvp排行的缓存数据。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        public void UpdatePvpInfo(GameChar gameChar)
-        {
-            using var dwUser = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
-            if (dwUser is null)
-                return;
-            var context = gameChar.GameUser.DbContext;
-            var pvp = gameChar.GetPvpObject();
-            var pvpInfo = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == PvpRankName);
-            bool isDirty = false;
-            if (pvpInfo is null)
-            {
-                pvpInfo = new GameExtendProperty()
-                {
-                    Id = gameChar.Id,
-                    Name = PvpRankName,
-                    DecimalValue = pvp.Count,
-                    StringValue = gameChar.DisplayName,
-                };
-                gameChar.ExtendProperties.Add(pvpInfo);
-                isDirty = true;
-            }
-            else
-            {
-                pvpInfo.DecimalValue = pvp.Count;
-                pvpInfo.StringValue = gameChar.DisplayName;
-                isDirty = true;
-            }
-            if (isDirty)
-                World.CharManager.NotifyChange(gameChar.GameUser);
         }
 
         /// <summary>
@@ -590,6 +553,10 @@ namespace GuangYuan.GY001.BLL
             using var dwUser = datas.LockAll();
             if (dwUser is null)
                 return;
+            var pvp1 = datas.GameChar.GetPvpObject();
+            var pvp2 = datas.OtherChar.GetPvpObject();
+            var oldScopeAtt = pvp1.ExtraDecimal;  //进攻者积分
+            var oldScopeDef = pvp2.ExtraDecimal; //防御者积分
             //分不同情况调用
             if (pTId == ProjectConstant.PvpDungeonTId) //若是正常pvp
             {
@@ -612,18 +579,14 @@ namespace GuangYuan.GY001.BLL
             }
             if (!datas.HasError) //若成功
             {
-                var pvp1 = datas.GameChar.GetOrAddPvpExtendProperty();
-                var pvp2 = datas.OtherChar.GetOrAddPvpExtendProperty();
                 datas.Combat.Properties["attackerRankBefore"] = GetPvpRank(datas.GameChar);   //进攻者排名
-                datas.Combat.Properties["attackerScoreBefore"] = pvp1.DecimalValue;  //进攻者积分
+                datas.Combat.Properties["attackerScoreBefore"] = oldScopeAtt;  //进攻者积分
                 datas.Combat.Properties["defenderRankBefore"] = GetPvpRank(datas.OtherChar);
-                datas.Combat.Properties["defenderScoreBefore"] = pvp2.DecimalValue;
-                UpdatePvpInfo(datas.GameChar);
-                UpdatePvpInfo(datas.OtherChar);
+                datas.Combat.Properties["defenderScoreBefore"] = oldScopeDef;
                 datas.Combat.Properties["attackerRankAfter"] = GetPvpRank(datas.GameChar);   //进攻者排名
-                datas.Combat.Properties["attackerScoreAfter"] = pvp1.DecimalValue;  //进攻者积分
+                datas.Combat.Properties["attackerScoreAfter"] = pvp1.ExtraDecimal;  //进攻者积分
                 datas.Combat.Properties["defenderRankAfter"] = GetPvpRank(datas.OtherChar);
-                datas.Combat.Properties["defenderScoreAfter"] = pvp2.DecimalValue;
+                datas.Combat.Properties["defenderScoreAfter"] = pvp2.ExtraDecimal;
                 //记录信息
                 var gim = World.ItemManager;
                 var view = new WarNewspaperView(datas.Combat, World.Service);
@@ -690,12 +653,11 @@ namespace GuangYuan.GY001.BLL
                 decimal diff = 0;
                 pvpObj = datas.GameChar.GetPvpObject();
                 otherPvpObj = datas.OtherChar.GetPvpObject();
-                diff = 1 + Math.Round((otherPvpObj.Count.Value - pvpObj.Count.Value) / 10, MidpointRounding.ToPositiveInfinity);
+                diff = 1 + Math.Round((otherPvpObj.ExtraDecimal.Value - pvpObj.ExtraDecimal.Value) / 10, MidpointRounding.ToPositiveInfinity);
                 diff = Math.Clamp(diff, 0, 6);
-                pvpObj.Count += diff;
-                pvpObj.ExtraDecimal = pvpObj.Count; //排序使用该值
-                otherPvpObj.Count -= diff;
-                otherPvpObj.ExtraDecimal = otherPvpObj.Count;    //排序使用该值
+                
+                pvpObj.ExtraDecimal += diff; //排序使用该值
+                otherPvpObj.ExtraDecimal -= diff;    //排序使用该值
                 if (diff != 0)  //若等级分发生变化
                 {
                     datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
@@ -1368,23 +1330,6 @@ namespace GuangYuan.GY001.BLL
 
     public static class GameCombatManagerExtensions
     {
-        public static GameExtendProperty GetOrAddPvpExtendProperty(this GameChar gameChar)
-        {
-            var pvpEp = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == GameCombatManager.PvpRankName);
-            if (pvpEp is null)
-            {
-                var pvp = gameChar.GetPvpObject();
-                pvpEp = new GameExtendProperty()
-                {
-                    Id = gameChar.Id,
-                    Name = GameCombatManager.PvpRankName,
-                    DecimalValue = pvp.Count,
-                    StringValue = gameChar.DisplayName,
-                };
-                gameChar.ExtendProperties.Add(pvpEp);
-            }
-            return pvpEp;
-        }
 
     }
 
