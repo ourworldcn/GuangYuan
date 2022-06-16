@@ -150,6 +150,10 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public static readonly Guid RenwuSlotTId = new Guid("{46005860-9DD8-4932-9DE1-D89E4161044E}");
 
+        /// <summary>
+        /// 变化数据槽。
+        /// </summary>
+        public static readonly Guid ChangeDataTId = new Guid("{16356935-7D9E-4825-8B04-5C8FE4034003}");
         #endregion  角色直属槽及其相关
 
         #region 货币类模板Id
