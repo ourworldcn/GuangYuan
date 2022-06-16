@@ -321,41 +321,6 @@ namespace OW.Game
         #region 阵容相关
         private void OnLineupChenged(DynamicPropertyChangedCollection args)
         {
-            var chars = args.Where(c => IsLineup0(c)).Select(c => c.Thing).OfType<GameItem>().Select(c => c.GetGameChar()).Distinct();
-            Dictionary<string, double> dic = new Dictionary<string, double>();
-            foreach (var gc in chars)   //遍历每个角色
-            {
-                decimal zhanli = 0;
-                var gis = World.ItemManager.GetLineup(gc, 0);
-                foreach (var gi in gis)
-                {
-                    World.CombatManager.UpdateAbility(gi, dic);
-                    zhanli += (decimal)dic.GetValueOrDefault("abi");
-                }
-                var ep = gc.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.ZhangLiName);
-                if (ep is null)
-                {
-                    ep = new GameExtendProperty()
-                    {
-                        Name = ProjectConstant.ZhangLiName,
-                        DecimalValue = zhanli,
-                        StringValue = gc.DisplayName,
-                    };
-                    gc.ExtendProperties.Add(ep);
-                }
-                else
-                    ep.DecimalValue = zhanli;
-            }
-        }
-
-        /// <summary>
-        /// 是否是一个推关阵营的变化信息。
-        /// </summary>
-        /// <param name="coll"></param>
-        /// <returns></returns>
-        private bool IsLineup0(SimplePropertyChangedCollection coll)
-        {
-            return coll.Any(c => c.PropertyName.StartsWith(ProjectConstant.ZhenrongPropertyName) && int.TryParse(c.PropertyName[ProjectConstant.ZhenrongPropertyName.Length..], out var ln) && ln == 0);
         }
 
         #endregion 阵容相关

@@ -107,11 +107,13 @@ namespace GuangYuan.GY001.BLL
             }
             try
             {
-                sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = NONE)";
+                sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE);"+
+                    "ALTER INDEX IX_GameItems_TemplateId_ExtraString_ExtraDecimal ON [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE)";   //按页压缩
                 db.Database.ExecuteSqlRaw(sql);
             }
-            catch (Exception)
+            catch (Exception err)
             {
+                Trace.WriteLine(err.Message);
             }
 #if !DEBUG  //若正式运行版本
 
@@ -193,11 +195,6 @@ namespace GuangYuan.GY001.BLL
                 if (gu is null)
                     continue;
                 gu.CurrentChar.DisplayName = $"{item.Item1}";
-                var zhanli = gu.CurrentChar.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.ZhangLiName);
-                if (null != zhanli)
-                {
-                    zhanli.StringValue = gu.CurrentChar.DisplayName;
-                }
                 world.CharManager.SetExp(gu.CurrentChar, VWorld.WorldRandom.Next(maxExp));
                 gu.Timeout = TimeSpan.FromSeconds(1);
                 world.CharManager.Unlock(gu);

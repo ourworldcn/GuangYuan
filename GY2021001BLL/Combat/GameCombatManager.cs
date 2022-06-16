@@ -4,11 +4,13 @@ using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Item;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -523,20 +525,8 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         public void UpdatePveInfo(GameChar gameChar)
         {
-            var data = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.ZhangLiName);
-            if (data is null)
-            {
-                data = new GameExtendProperty()
-                {
-                    Id = gameChar.Id,
-                    Name = ProjectConstant.ZhangLiName,
-                    StringValue = gameChar.DisplayName,
-                    DecimalValue = World.CombatManager.GetTotalAbility(gameChar),
-                };
-                gameChar.ExtendProperties.Add(data);
-            }
-            else
-                data.DecimalValue = World.CombatManager.GetTotalAbility(gameChar);
+            var slot = gameChar.GetTuiguanObject();
+            slot.ExtraDecimal = World.CombatManager.GetTotalAbility(gameChar);
         }
 
         /// <summary>
@@ -655,7 +645,7 @@ namespace GuangYuan.GY001.BLL
                 otherPvpObj = datas.OtherChar.GetPvpObject();
                 diff = 1 + Math.Round((otherPvpObj.ExtraDecimal.Value - pvpObj.ExtraDecimal.Value) / 10, MidpointRounding.ToPositiveInfinity);
                 diff = Math.Clamp(diff, 0, 6);
-                
+
                 pvpObj.ExtraDecimal += diff; //排序使用该值
                 otherPvpObj.ExtraDecimal -= diff;    //排序使用该值
                 if (diff != 0)  //若等级分发生变化
@@ -1241,7 +1231,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         public decimal GetTotalAbility(GameChar gc)
         {
-            var dic = new Dictionary<string, double>();
+            var dic = DictionaryPool<string, double>.Shared.Get();
             var bag = gc.GetZuojiBag();
             var gim = World.ItemManager;
             var gis = bag.Children.Where(c => gim.IsChunzhongMounts(c));
@@ -1252,6 +1242,7 @@ namespace GuangYuan.GY001.BLL
                 result += (decimal)dic.GetValueOrDefault("abi");
                 dic.Clear();
             }
+            DictionaryPool<string, double>.Shared.Return(dic);
             return result;
         }
 

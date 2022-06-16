@@ -3,6 +3,7 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using OW.Game.Item;
 using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
@@ -208,6 +209,10 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public static readonly Guid PvpTId = new Guid("{4805434E-605E-4479-B426-9A27C083D7D4}");
 
+        /// <summary>
+        /// 推关战力对象。
+        /// </summary>
+        public static readonly Guid TuiGuanTId = new Guid("{1860FB2E-B2CB-41E7-8D17-B474D115E530}");
         #endregion  货币类模板Id
 
         #region 邮件类型Id
@@ -314,8 +319,6 @@ namespace GuangYuan.GY001.BLL
         public const string HomelandPlanPropertyName = "d681df0c-73ed-434a-9eb7-5c6c158ea1af";
 
         #endregion 家园及相关
-
-        public const string ZhangLiName = "推关战力";
 
         /// <summary>
         /// 工会槽模板Id。
@@ -862,5 +865,19 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetPvpObject(this GameChar gameChar) =>
             gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.PvpObjectTId);
+
+        /// <summary>
+        /// 获取推关战力对象。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GameItem GetTuiguanObject(this GameChar gameChar)
+        {
+            var srv = gameChar?.GameUser?.Services?.GetService<GameItemManager>();
+            if (null != srv)
+                return srv.GetOrCreateItem(gameChar.GetCurrencyBag(), ProjectConstant.TuiGuanTId);
+            return gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.TuiGuanTId);
+        }
     }
 }

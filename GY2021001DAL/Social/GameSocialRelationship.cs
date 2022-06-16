@@ -66,16 +66,16 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="gameChar">角色对象。</param>
         /// <param name="charSummary">角色摘要对象。</param>
         /// <param name="records">查询操作记录的接口。</param>
-        public static void Fill(GameChar gameChar, CharSummary charSummary, IQueryable<GameActionRecord> records)
-        {
-            charSummary.Id = gameChar.Id;
-            charSummary.DisplayName = gameChar.DisplayName;
-            charSummary.Level = (int)gameChar.Properties.GetDecimalOrDefault("lv", decimal.Zero);
-            charSummary.CombatCap = 4000;
-            var ary = records.Where(c => c.ParentId == gameChar.Id && (c.ActionId == "Logout" || c.ActionId == "Login")).
-                 OrderByDescending(c => c.DateTimeUtc).Take(1).ToArray();
-            charSummary.LastLogoutDatetime = ary.Length == 0 || ary[0].ActionId == "Logout" ? new DateTime?() : ary[0].DateTimeUtc;
-        }
+        //public static void Fill(GameChar gameChar, CharSummary charSummary, IQueryable<GameActionRecord> records)
+        //{
+        //    charSummary.Id = gameChar.Id;
+        //    charSummary.DisplayName = gameChar.DisplayName;
+        //    charSummary.Level = (int)gameChar.Properties.GetDecimalOrDefault("lv", decimal.Zero);
+        //    charSummary.CombatCap = 4000;
+        //    var ary = records.Where(c => c.ParentId == gameChar.Id && (c.ActionId == "Logout" || c.ActionId == "Login")).
+        //         OrderByDescending(c => c.DateTimeUtc).Take(1).ToArray();
+        //    charSummary.LastLogoutDatetime = ary.Length == 0 || ary[0].ActionId == "Logout" ? new DateTime?() : ary[0].DateTimeUtc;
+        //}
 
         /// <summary>
         /// 角色的Id。
@@ -106,31 +106,6 @@ namespace GuangYuan.GY001.UserDb
         /// 家园内展示动物的集合。
         /// </summary>
         public List<GameItem> HomelandShows { get; } = new List<GameItem>();
-    }
-
-    /// <summary>
-    /// 好友信息摘要类。
-    /// </summary>
-    public class FrientSummary : CharSummary
-    {
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        public FrientSummary()
-        {
-        }
-
-        /// <summary>
-        /// 用指定角色填充好友摘要信息。
-        /// </summary>
-        /// <param name="gameChar">角色对象。</param>
-        /// <param name="charSummary">好友摘要对象。</param>
-        /// <param name="records">查询操作记录的接口。</param>
-        public static void Fill(GameChar gameChar, FrientSummary charSummary, IQueryable<GameActionRecord> records)
-        {
-            CharSummary.Fill(gameChar, charSummary, records);
-        }
-
     }
 
     /// <summary>

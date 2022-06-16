@@ -720,14 +720,18 @@ namespace OW.Game
         /// </summary>
         /// <param name="topN">前多少位的排名。过大的值将导致缓慢，设计时考虑100左右。</param>
         /// <returns></returns>
-        public IList<GameExtendProperty> GetRankOfTuiguanQuery(int topN)
+        public IList<(Guid, decimal, string)> GetRankOfTuiguanQuery(int topN)
         {
             using var db = CreateNewUserDbContext();
-            var coll = from tmp in db.Set<GameExtendProperty>().AsNoTracking()
-                       where tmp.Name == ProjectConstant.ZhangLiName
-                       orderby tmp.DecimalValue descending, tmp.StringValue
-                       select tmp;
-            return coll.Take(topN).ToList();
+            var coll = from slot in db.Set<GameItem>()
+                        where slot.TemplateId == ProjectConstant.TuiGuanTId
+                        join parent in db.Set<GameItem>()
+                        on slot.ParentId equals parent.Id
+                        join gc in db.Set<GameChar>()
+                        on parent.OwnerId equals gc.Id
+                        select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value };
+            var result = coll.AsNoTracking().OrderByDescending(c => c.Value).Take(topN).AsEnumerable().Select(c => (c.Id, c.Value, c.DisplayName));
+            return result.ToList();
         }
         #endregion 功能
     }

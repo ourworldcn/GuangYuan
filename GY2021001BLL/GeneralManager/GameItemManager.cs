@@ -601,36 +601,33 @@ namespace OW.Game.Item
             using var dwUser = datas.LockUser();
             if (dwUser is null)
                 return;
-            var dbSet = datas.UserDbContext.Set<GameExtendProperty>().AsNoTracking();
-            var gc = datas.GameChar;
-            var gp = gc.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.ZhangLiName);
-            if (gp is null)
-            {
-                gp = new GameExtendProperty()
-                {
-                    Id = gc.Id,
-                    Name = ProjectConstant.ZhangLiName,
-                    StringValue = gc.DisplayName,
-                    DecimalValue = 0,
-                };
-                gc.ExtendProperties.Add(gp);
-            }
-            var coll = from tmp in dbSet    //排名在当前角色之前的角色
-                       where tmp.Name == ProjectConstant.ZhangLiName && (tmp.DecimalValue > gp.DecimalValue.Value || tmp.DecimalValue == gp.DecimalValue.Value && string.Compare(tmp.StringValue, gc.DisplayName) < 0)
-                       orderby tmp.DecimalValue, tmp.StringValue
-                       select tmp;
+            var db = datas.UserDbContext;
+            var tuiguanObj = datas.GameChar.GetTuiguanObject();
+            var coll = from slot in db.Set<GameItem>()
+                       where slot.TemplateId == ProjectConstant.TuiGuanTId
+                       join parent in db.Set<GameItem>()
+                       on slot.ParentId equals parent.Id
+                       join gc in db.Set<GameChar>()
+                       on parent.OwnerId equals gc.Id
+                       select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value };
+
+            var gChar = datas.GameChar;
+            var coll1 = from tmp in coll    //排名在当前角色之前的角色
+                        where (tmp.Value > tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal.Value && string.Compare(tmp.DisplayName, gChar.DisplayName) < 0)
+                        orderby tmp.Value, tmp.DisplayName
+                        select tmp;
             var rank = coll.Count();
             datas.Rank = rank;
-            datas.Scope = gp.DecimalValue.Value;
+            datas.Scope = tuiguanObj.ExtraDecimal.Value;
             var prv = coll.Take(25).ToList();   //排在前面的的紧邻数据
-            datas.Prv.AddRange(prv);
+            datas.Prv.AddRange(prv.Select(c=>(c.Id,c.Value,c.DisplayName)));
 
-            var collNext = from tmp in dbSet    //排在指定角色之后的
-                           where tmp.Name == ProjectConstant.ZhangLiName && (tmp.DecimalValue < gp.DecimalValue.Value || tmp.DecimalValue == gp.DecimalValue && string.Compare(tmp.StringValue, gc.DisplayName) > 0)
-                           orderby tmp.DecimalValue descending, tmp.StringValue descending
+            var collNext = from tmp in coll    //排在指定角色之后的
+                           where  (tmp.Value < tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal && string.Compare(tmp.DisplayName, gChar.DisplayName) > 0)
+                           orderby tmp.Value descending, tmp.DisplayName descending
                            select tmp;
             var next = collNext.Take(25).ToList();
-            datas.Next.AddRange(next);
+            datas.Next.AddRange(next.Select(c => (c.Id, c.Value, c.DisplayName)));
         }
 
         /// <summary>
@@ -1217,9 +1214,9 @@ namespace OW.Game.Item
         }
 
 
-        public List<GameExtendProperty> Prv { get; } = new List<GameExtendProperty>();
+        public List<(Guid, decimal, string)> Prv { get; } = new List<(Guid, decimal, string)>();
 
-        public List<GameExtendProperty> Next { get; } = new List<GameExtendProperty>();
+        public List<(Guid, decimal, string)> Next { get; } = new List<(Guid, decimal, string)>();
 
         /// <summary>
         /// 自己的战力排名。

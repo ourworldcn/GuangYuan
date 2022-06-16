@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -107,7 +108,12 @@ namespace GY2021001WebApi.Controllers
         {
             var coll = _World.GetRankOfTuiguanQuery(50);
             var result = new GetRankOfTuiguanQueryReturnDto();
-            result.Datas.AddRange(coll.Select(c => (RankDataItemDto)c));
+            result.Datas.AddRange(coll.Select(c => new RankDataItemDto
+            {
+                CharId = c.Item1.ToBase64String(),
+                DisplayName=c.Item3,
+                Metrics=c.Item2,
+            }));
             for (int i = 0; i < result.Datas.Count; i++)
             {
                 result.Datas[i].OrderNumber = i;

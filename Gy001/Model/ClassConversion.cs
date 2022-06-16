@@ -593,6 +593,17 @@ namespace GY2021001WebApi.Models
             };
             return result;
         }
+
+        public static explicit operator RankDataItemDto((Guid, decimal, string) obj)
+        {
+            var result = new RankDataItemDto()
+            {
+                CharId = obj.Item1.ToBase64String(),
+                DisplayName = obj.Item3,
+                Metrics = (int)obj.Item2,
+            };
+            return result;
+        }
     }
     #endregion  排行相关
 
@@ -645,7 +656,9 @@ namespace GY2021001WebApi.Models
                        where slot.ExtraDecimal >= 0    //包含待批准成员
                        join gc in db.Set<GameChar>()
                        on slot.OwnerId equals gc.Id
-                       select new { gc, slot };
+                       join tuiguan in db.Set<GameItem>()
+                       on gc.Id equals tuiguan.Parent.OwnerId.Value
+                       select new { gc, slot, tuiguan };
             dto.Members.AddRange(coll.AsEnumerable().Select(c =>
             {
                 var r = new GuildMemberDto()
@@ -655,7 +668,7 @@ namespace GY2021001WebApi.Models
                     Title = (int)c.slot.ExtraDecimal,
                     Level = (int)c.gc.Properties.GetDecimalOrDefault("lv"),
                     IconIndex = (int)c.gc.Properties.GetDecimalOrDefault("charIcon", 0),
-                    Power = 4000 + new Random().Next(100) * 10,  //TO DO
+                    Power = c.tuiguan.ExtraDecimal.Value,
                 };
                 return r;
             }));
