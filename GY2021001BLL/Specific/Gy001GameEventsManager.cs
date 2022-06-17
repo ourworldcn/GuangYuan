@@ -193,13 +193,7 @@ namespace OW.Game
         public override void Clone(GameChar src, GameChar dest)
         {
             base.Clone(src, dest);
-            var bag = dest.GetHomeland().Children.First(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId);   //方案背包
-            var ep = bag.ExtendProperties.FirstOrDefault(c => c.Name == ProjectConstant.HomelandPlanPropertyName);
-            if (ep != null)
-            {
-                bag.ExtendProperties.Remove(ep);
-            }
-
+            var bag = dest.GetHomeland().Children.First(c => c.TemplateId == ProjectConstant.HomelandStyleBagTId);   //方案背包
         }
 
         public override void OnDynamicPropertyChanged(DynamicPropertyChangedCollection args)

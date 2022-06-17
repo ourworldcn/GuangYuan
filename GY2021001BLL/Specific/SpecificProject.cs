@@ -303,9 +303,9 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid MucaiStoreTId = new Guid("{8caea73b-e210-47bf-a121-06cc12973baf}");
 
         /// <summary>
-        /// 家园方案背包模板Id。
+        /// 风格背包模板Id。
         /// </summary>
-        public static readonly Guid HomelandPlanBagTId = new Guid("{366468d3-00d7-42ec-811d-8822fb0def42}");
+        public static readonly Guid HomelandStyleBagTId = new Guid("{366468d3-00d7-42ec-811d-8822fb0def42}");
 
         /// <summary>
         /// 家园建筑背包模板Id。
@@ -316,11 +316,6 @@ namespace GuangYuan.GY001.BLL
         /// 家园方案对象的模板Id。
         /// </summary>
         public static readonly Guid HomelandPlanTId = new Guid("{5d374961-a072-4222-ab46-94d72dc394f7}");
-
-        /// <summary>
-        /// 家园数据存储于家园方案背包对象中 <see cref="GameThingBase.ExtendProperties"/> 属性的名字。
-        /// </summary>
-        public const string HomelandPlanPropertyName = "d681df0c-73ed-434a-9eb7-5c6c158ea1af";
 
         #endregion 家园及相关
 

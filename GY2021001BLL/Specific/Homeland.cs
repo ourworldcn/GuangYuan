@@ -56,7 +56,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameChar"></param>
         /// <returns>如果没有找到，可能返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameItem GetFenggeBag(this GameChar gameChar) => gameChar.GetHomeland()?.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandPlanBagTId);
+        public static GameItem GetFenggeBag(this GameChar gameChar) => gameChar.GetHomeland()?.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandStyleBagTId);
 
         /// <summary>
         /// 获取建筑背包。
