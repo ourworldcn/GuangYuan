@@ -684,6 +684,7 @@ namespace OW.Game
             dest.SetTemplate(src.GetTemplate());
             dest.ExtraString = src.ExtraString;
             dest.ExtraDecimal = src.ExtraDecimal;
+            dest.BinaryArray = src.BinaryArray.ToArray();
             OwHelper.Copy(src.Properties, dest.Properties);
             if (null != dest.GetDbContext())
                 Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);

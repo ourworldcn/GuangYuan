@@ -305,11 +305,17 @@ namespace GuangYuan.GY001.UserDb
     /// </summary>
     public abstract class GameCharBase : GameThingBase, IDisposable
     {
-
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
         protected GameCharBase()
         {
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="id"></param>
         protected GameCharBase(Guid id) : base(id)
         {
         }

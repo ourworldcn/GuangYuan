@@ -1,6 +1,7 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using OW.Game;
+using OW.Game.Mission;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,11 @@ namespace OW.Extensions.Game.Store
         /// 持久的变化数据。
         /// </summary>
         public List<ChangeData> ChangeDatas { get; set; } = new List<ChangeData>();
+
+        /// <summary>
+        /// 任务状态字典。
+        /// </summary>
+        public Dictionary<string, MissionState> MissionStates { get; set; } = new Dictionary<string, MissionState>();
     }
 
     public static class GameThingBaseExtensions

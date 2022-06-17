@@ -498,7 +498,7 @@ namespace GuangYuan.GY001.UserDb
                 }
             if (_BinaryObject != null)
             {
-                var fullName = _BinaryObject.GetType().FullName;
+                var fullName = _BinaryObject.GetType().AssemblyQualifiedName;
                 MemoryStream ms;
                 using (ms = new MemoryStream())
                 {

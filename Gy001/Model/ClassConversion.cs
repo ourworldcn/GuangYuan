@@ -651,6 +651,9 @@ namespace GY2021001WebApi.Models
         /// <param name="world">根服务。</param>
         public static void FillMembers(GameGuild guild, GameGuildDto dto, VWorld world)
         {
+            if (!world.AllianceManager.Lock(guild.Id, world.AllianceManager.Options.DefaultTimeout, out guild))
+                return;
+            using var dw = DisposeHelper.Create(c => world.AllianceManager.Unlock(c), guild);
             var db = guild.GetDbContext();
             var coll = from slot in world.AllianceManager.GetAllMemberSlotQuery(guild.Id, db)
                        where slot.ExtraDecimal >= 0    //包含待批准成员
@@ -658,6 +661,7 @@ namespace GY2021001WebApi.Models
                        on slot.OwnerId equals gc.Id
                        join tuiguan in db.Set<GameItem>()
                        on gc.Id equals tuiguan.Parent.OwnerId.Value
+                       where tuiguan.TemplateId == ProjectConstant.TuiGuanTId
                        select new { gc, slot, tuiguan };
             dto.Members.AddRange(coll.AsEnumerable().Select(c =>
             {
@@ -668,7 +672,7 @@ namespace GY2021001WebApi.Models
                     Title = (int)c.slot.ExtraDecimal,
                     Level = (int)c.gc.Properties.GetDecimalOrDefault("lv"),
                     IconIndex = (int)c.gc.Properties.GetDecimalOrDefault("charIcon", 0),
-                    Power = c.tuiguan.ExtraDecimal.Value,
+                    Power = c.tuiguan.ExtraDecimal ?? 0,
                 };
                 return r;
             }));

@@ -236,7 +236,6 @@ namespace GuangYuan.GY001.BLL
         /// 插槽:	1
         /// 内核:	6
         /// 逻辑处理器:	12		DateTime.UtcNow.ToString("s")	"2022-03-08T02:59:32"	string
-
         /// 虚拟化:	已启用
         /// L1 缓存:	384 KB
         /// L2 缓存:	1.5 MB
@@ -249,9 +248,20 @@ namespace GuangYuan.GY001.BLL
             using var db = world.CreateNewUserDbContext();
 
             var sw = Stopwatch.StartNew();
-            var gu = world.CharManager.Login("test1", "test1", "");
-            var gc = gu.CurrentChar;
-            var gi = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.CurrencyBagTId);
+            using var dw = DisposeHelper.Create(c => c.Stop(), sw);
+
+            try
+            {
+                var ary = new Dictionary<string, MissionState>() { { Guid.NewGuid().ToString(), MissionState.Completion } };
+                var str = JsonSerializer.Serialize(ary);
+                var tmp = JsonSerializer.Deserialize(str, ary.GetType());
+            }
+            catch (Exception)
+            {
+
+            }
+
+
         }
 
         /// <summary>

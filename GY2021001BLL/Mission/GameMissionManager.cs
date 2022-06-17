@@ -6,6 +6,7 @@ using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OW.Extensions.Game.Store;
 using OW.Game.Item;
 using OW.Game.Log;
 using OW.Game.PropertyChange;
@@ -505,9 +506,9 @@ namespace OW.Game.Mission
             if (template.GroupNumber != "1001") //若非工会任务
             {
                 using MissionView view = new MissionView(datas.World, datas.GameChar);
-                if (template.PreMissionIds.All(c => view.MissionStates.TryGetValue(c, out var state) && state == MissionState.Completion))   //若可以完成
+                if (template.PreMissionIds.All(c => view.MissionStates.TryGetValue(c.ToString(), out var state) && state == MissionState.Completion))   //若可以完成
                 {
-                    if (view.MissionStates.TryGetValue(datas.MissionTId, out var state) && state == MissionState.Completion)  //若已经完成
+                    if (view.MissionStates.TryGetValue(datas.MissionTId.ToString(), out var state) && state == MissionState.Completion)  //若已经完成
                     {
                         datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
                         datas.ErrorMessage = "指定任务已经完成。";
@@ -537,7 +538,7 @@ namespace OW.Game.Mission
                         }
                     }
                     //保存数据
-                    view.MissionStates[datas.MissionTId] = MissionState.Completion;
+                    view.MissionStates[datas.MissionTId.ToString()] = MissionState.Completion;
                     view.Save();
                     World.CharManager.NotifyChange(datas.GameChar.GameUser);
                 }
@@ -622,7 +623,7 @@ namespace OW.Game.Mission
             for (int i = 0; i < list.Count; i++)
             {
                 var tid = datas.TIds[i];
-                if (view.MissionStates.TryGetValue(tid, out var state))
+                if (view.MissionStates.TryGetValue(tid.ToString(), out var state))
                     datas.State.Add(state);
                 else
                     datas.State.Add(MissionState.WaitingForActivation);
@@ -741,34 +742,18 @@ namespace OW.Game.Mission
         {
         }
 
-        Dictionary<Guid, MissionState> _MissionStates;
-        const string KeyName = "MissionStates";
+        Dictionary<string, MissionState> _MissionStates;
 
         /// <summary>
         /// 任务状态字典。
         /// </summary>
-        public Dictionary<Guid, MissionState> MissionStates
+        public Dictionary<string, MissionState> MissionStates
         {
             get
             {
                 if (_MissionStates is null)
                 {
-                    _MissionStates = new Dictionary<Guid, MissionState>();
-                    var gep = GameChar.ExtendProperties.FirstOrDefault(c => c.Name == KeyName);
-                    if (gep != null && gep.ByteArray.Length > 0)
-                    {
-                        using (var ms = new MemoryStream(gep.ByteArray))
-                        using (var br = new BinaryReader(ms))
-                        {
-                            var count = br.ReadInt32();
-                            for (int i = 0; i < count; i++)
-                            {
-                                var key = br.ReadGuid();
-                                var val = (MissionState)br.ReadInt32();
-                                _MissionStates[key] = val;
-                            }
-                        }
-                    }
+                    _MissionStates = GameChar.GetOrCreateBinaryObject<CharBinaryExProperties>().MissionStates;
                 }
                 return _MissionStates;
             }
@@ -776,27 +761,6 @@ namespace OW.Game.Mission
 
         public override void Save()
         {
-            if (null != _MissionStates)    //若需要存储
-            {
-                var gep = GameChar.ExtendProperties.FirstOrDefault(c => c.Name == KeyName);
-                if (gep is null)
-                {
-                    gep = new GameExtendProperty(KeyName, GameChar.Id);
-                    GameChar.ExtendProperties.Add(gep);
-                }
-                MemoryStream ms;
-                using (ms = new MemoryStream())
-                using (var bw = new BinaryWriter(ms))
-                {
-                    bw.Write(_MissionStates.Count);
-                    foreach (var item in _MissionStates)
-                    {
-                        bw.Write(item.Key);
-                        bw.Write((int)item.Value);
-                    }
-                }
-                gep.ByteArray = ms.ToArray();
-            }
             base.Save();
         }
     }
