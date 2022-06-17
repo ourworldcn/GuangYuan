@@ -57,11 +57,6 @@ namespace GuangYuan.GY001.UserDb
         SuperAdmin = 32,
     }
 
-    public class CharBinaryExProperties
-    {
-        public Dictionary<string, string> ClientProperties { get; set; } = new Dictionary<string, string>();
-    }
-
     [Table("GameChars")]
     public class GameChar : GameCharBase, IDisposable
     {
@@ -98,28 +93,6 @@ namespace GuangYuan.GY001.UserDb
         public DateTime CreateUtc { get; set; } = DateTime.UtcNow;
 
         private List<GameItem> _GameItems;
-
-        CharBinaryExProperties _BinaryExProperties;
-        /// <summary>
-        /// 用二进制根式存储的数据。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public CharBinaryExProperties BinaryExProperties
-        {
-            get
-            {
-                if (_BinaryExProperties is null)
-                {
-                    if (BinaryArray is null || BinaryArray.Length <= 0)
-                        _BinaryExProperties = new CharBinaryExProperties();
-                    else
-                        _BinaryExProperties = JsonSerializer.Deserialize(BinaryArray, typeof(CharBinaryExProperties)) as CharBinaryExProperties;
-                }
-                return _BinaryExProperties;
-            }
-        }
-
 
         /// <summary>
         /// 直接拥有的事物。
@@ -203,10 +176,6 @@ namespace GuangYuan.GY001.UserDb
                     exProp = new GameExtendProperty();
                 exProp.Text = JsonSerializer.Serialize(_ChangesItems.Select(c => (ChangesItemSummary)c).ToList());
             }
-            if (_BinaryExProperties != null)
-            {
-                BinaryArray = JsonSerializer.SerializeToUtf8Bytes(_BinaryExProperties, typeof(CharBinaryExProperties));
-            }
             base.PrepareSaving(db);
         }
 
@@ -228,19 +197,6 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public CharType CharType { get; set; }
 
-        /// <summary>
-        /// 客户端的属性。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public Dictionary<string, string> ClientProperties
-        {
-            get
-            {
-                return BinaryExProperties.ClientProperties;
-            }
-        }
-
         #region IDisposable接口相关
 
         /// <summary>
@@ -261,7 +217,6 @@ namespace GuangYuan.GY001.UserDb
                 _GameItems = null;
                 _ChangesItems = null;
                 GameUser = null;
-                _BinaryExProperties = null;
                 base.Dispose(disposing);
             }
         }

@@ -147,7 +147,7 @@ namespace GY2021001WebApi.Controllers
                 var gc = gu.CurrentChar;
                 if (model.IsRemove)
                 {
-                    if (!gc.ClientProperties.Remove(model.Name))    //已经移除
+                    if (!gc.GetOrCreateBinaryObject<CharBinaryExProperties>().ClientProperties.Remove(model.Name))    //已经移除
                     {
                         result.DebugMessage = $"没有找到要移除的键{model.Name}。";
                         return result;
@@ -155,7 +155,7 @@ namespace GY2021001WebApi.Controllers
                 }
                 else //若尚不存在
                 {
-                    gc.ClientProperties[model.Name] = model.Value;
+                    gc.GetOrCreateBinaryObject<CharBinaryExProperties>().ClientProperties[model.Name] = model.Value;
                 }
                 world.CharManager.Nope(gu);
             }

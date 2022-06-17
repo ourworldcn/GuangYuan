@@ -16,12 +16,6 @@ namespace GuangYuan.GY001.UserDb
     public class GameExtendProperty : GameObjectBase
     {
         /// <summary>
-        /// 客户端属性使用的键名。
-        /// <see cref="Name"/>是该值的，表示由客户端使用，服务器不会使用该对象。
-        /// </summary>
-        public const string ClientPropertyName = "d51b3d58-2dec-4d24-b85d-a57aafe10dd7";
-
-        /// <summary>
         /// <inheritdoc/>
         /// </summary>
         public GameExtendProperty()

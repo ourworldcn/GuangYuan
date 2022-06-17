@@ -359,7 +359,7 @@ namespace GY2021001WebApi.Models
             {
                 result.Properties[item.Key] = item.Value;
             }
-            foreach (var item in obj.ClientProperties)  //初始化客户端扩展属性
+            foreach (var item in obj.GetOrCreateBinaryObject<CharBinaryExProperties>().ClientProperties)  //初始化客户端扩展属性
             {
                 result.ClientExtendProperties[item.Key] = item.Value;
             }

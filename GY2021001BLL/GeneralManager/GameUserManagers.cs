@@ -1320,15 +1320,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>返回对变化通知集合的引用,需要锁定用户才能安全访问。</returns>
         public List<ChangeData> GetChangeData(GameChar gameChar)
         {
-            const string NotifyChangeDataName = "0c4d549e-f4aa-4b46-936e-1a80fa0de534";
-            var epd = gameChar.ExtendPropertyDictionary.GetOrAdd(NotifyChangeDataName, c => new ExtendPropertyDescriptor()
-            {
-                IsPersistence = true,
-                Name = NotifyChangeDataName,
-                Type = typeof(List<ChangeData>),
-                Data = new List<ChangeData>(),
-            });
-            return (List<ChangeData>)epd.Data;
+            return gameChar.GetOrCreateBinaryObject<CharBinaryExProperties>().ChangeDatas;
         }
 
         /// <summary>
@@ -1461,7 +1453,7 @@ namespace GuangYuan.GY001.BLL
             var coll1 = datas.Modifies.Where(c => c.Item1 == datas.GameChar.Id);
             foreach (var item in coll1)
             {
-                datas.GameChar.Properties[item.Item2] = item.Item3 ;
+                datas.GameChar.Properties[item.Item2] = item.Item3;
             }
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }

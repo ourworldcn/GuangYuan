@@ -4,6 +4,7 @@ using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OW.Extensions.Game.Store;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -95,7 +96,7 @@ namespace Gy001.Controllers
                 result.HasError = false; result.ErrorCode = ErrorCodes.NO_ERROR; result.DebugMessage = string.Empty;
                 gContext.Message = msg.Message;
                 gContext.ChannelId = NormChannelId(msg.ChannelId, gc);
-                gContext.ExString = $"{gu.CurrentChar.ClientProperties.GetValueOrDefault("charIcon", "0")},{gu.CurrentChar.DisplayName}";
+                gContext.ExString = $"{gu.CurrentChar.GetOrCreateBinaryObject<CharBinaryExProperties>().ClientProperties.GetValueOrDefault("charIcon", "0")},{gu.CurrentChar.DisplayName}";
                 if (gContext.ChannelId is null)
                 {
                     result.FillFromWorld();

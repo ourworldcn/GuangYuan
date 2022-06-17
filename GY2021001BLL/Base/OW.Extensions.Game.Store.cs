@@ -1,5 +1,6 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using OW.Game;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,30 @@ using System.Runtime.CompilerServices;
 
 namespace OW.Extensions.Game.Store
 {
+    /// <summary>
+    /// GameChar对象 BinaryArray 属性包含对象的视图类。
+    /// </summary>
+    public class CharBinaryExProperties
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public CharBinaryExProperties()
+        {
+
+        }
+
+        /// <summary>
+        /// 获取或设置客户端使用的字符串字典。
+        /// </summary>
+        public Dictionary<string, string> ClientProperties { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// 持久的变化数据。
+        /// </summary>
+        public List<ChangeData> ChangeDatas { get; set; } = new List<ChangeData>();
+    }
+
     public static class GameThingBaseExtensions
     {
         /// <summary>

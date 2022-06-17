@@ -11,8 +11,10 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -316,37 +318,41 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public byte[] BinaryArray { get; set; }
 
-        /// <summary>
-        /// 指定<see cref="BinaryArray"/>中存储的对象类型。
-        /// 成功调用<see cref="GetBinaryObjectOrDefault{T}(T)"/>可以自动设置该字段。
-        /// 未能设置该值则对象不会被自动序列化到数据库中。
-        /// </summary>
-        Type _BinaryObjectType;
-
-        /// <summary>
-        /// 暂存<see cref="BinaryArray"/>内存储的对象表示形式。
-        /// </summary>
         object _BinaryObject;
-
         /// <summary>
-        /// 
+        /// <see cref="BinaryArray"/>中存储的对象视图。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="creator">null或省略则调用默认构造函数创建新对象。</param>
-        /// <returns>返回的对象更改后在保存时可以自动保存最新值，但值类型无法自动保存，建议这里仅保存引用型可以Json序列化的对象。</returns>
-        public T GetBinaryObject<T>(Func<T> creator = null)
+        /// <remarks>在保存时会调用<see cref="BinaryObject"/>的GetType获取类型。</remarks>
+        [NotMapped, JsonIgnore]
+        public object BinaryObject
         {
-            if (_BinaryObjectType is null)   //若尚未初始化
+            get
             {
-                if (BinaryArray is null || BinaryArray.Length <= 0)
-                    _BinaryObject = creator is null ? TypeDescriptor.CreateInstance(null, typeof(T), null, null) : creator();
-                else
-                    _BinaryObject = JsonSerializer.Deserialize<T>(BinaryArray);
-                _BinaryObjectType = typeof(T);
+                if (_BinaryObject is null && BinaryArray != null && BinaryArray.Length > 0)
+                {
+                    using MemoryStream ms = new MemoryStream(BinaryArray);
+                    string fullName;
+                    using (var br = new BinaryReader(ms, Encoding.UTF8, true))
+                        fullName = br.ReadString();
+                    var type = Type.GetType(fullName);
+                    _BinaryObject = JsonSerializer.DeserializeAsync(ms, type).Result;
+                }
+                return _BinaryObject;
             }
-            return (T)_BinaryObject;    //若试图更改为不可转化的类型 则抛出异常
+            set => _BinaryObject = value;
         }
 
+        /// <summary>
+        /// 获取BinaryObject中的对象。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T GetOrCreateBinaryObject<T>() where T : class, new()
+        {
+            if (BinaryObject is null)
+                _BinaryObject = new T();
+            return (T)_BinaryObject;
+        }
         #endregion 扩展对象相关
 
         #region 快速变化属性相关
@@ -404,29 +410,6 @@ namespace GuangYuan.GY001.UserDb
         #endregion 快速变化属性相关
 
         #region 通用扩展属性及相关
-        private ConcurrentDictionary<string, ExtendPropertyDescriptor> _ExtendPropertyDictionary;
-
-        /// <summary>
-        /// 扩展属性的封装字典。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public ConcurrentDictionary<string, ExtendPropertyDescriptor> ExtendPropertyDictionary
-        {
-            get
-            {
-                if (_ExtendPropertyDictionary is null)
-                {
-                    _ExtendPropertyDictionary = new ConcurrentDictionary<string, ExtendPropertyDescriptor>();
-                    foreach (var item in ExtendProperties)
-                    {
-                        if (ExtendPropertyDescriptor.TryParse(item, out var tmp))
-                            ExtendPropertyDictionary[tmp.Name] = tmp;
-                    }
-                }
-                return _ExtendPropertyDictionary;
-            }
-        }
 
         private ObservableCollection<GameExtendProperty> _ExtendProperties;
 
@@ -508,33 +491,23 @@ namespace GuangYuan.GY001.UserDb
         /// <param name="db"></param>
         public override void PrepareSaving(DbContext db)
         {
-            if (null != _ExtendPropertyDictionary) //若需要写入
-            {
-                ExtendPropertyDescriptor.Fill(_ExtendPropertyDictionary.Values, ExtendProperties);
-                //TO DO
-                //var removeNames = new HashSet<string>(ExtendProperties.Select(c => c.Tag).Except(
-                //    _ExtendPropertyDictionary.Where(c => c.Value.IsPersistence).Select(c => c.Key)));    //需要删除的对象名称
-                //var removeItems = ExtendProperties.Where(c => removeNames.Contains(c.Tag)).ToArray();
-                //foreach (var item in removeItems)
-                //    ExtendProperties.Remove(item);
-            }
-            if (null != _BinaryObjectType) //若需持久化对象值
-            {
-                if (_BinaryObject is null)
-                {
-                    BinaryArray = null;
-                }
-                else
-                {
-                    BinaryArray = JsonSerializer.SerializeToUtf8Bytes(_BinaryObject, _BinaryObjectType);
-                }
-            }
             if (null != _Name2FastChangingProperty)   //若需要写入快速变化属性
                 foreach (var item in _Name2FastChangingProperty)
                 {
                     item.Value.ToDictionary(Properties, item.Key);
                 }
-
+            if (_BinaryObject != null)
+            {
+                var fullName = _BinaryObject.GetType().FullName;
+                MemoryStream ms;
+                using (ms = new MemoryStream())
+                {
+                    using (var bw = new BinaryWriter(ms, Encoding.UTF8, true))
+                        bw.Write(fullName);
+                    JsonSerializer.SerializeAsync(ms, _BinaryObject, _BinaryObject.GetType()).Wait();
+                }
+                BinaryArray = ms.ToArray();
+            }
             base.PrepareSaving(db);
         }
 
@@ -551,7 +524,6 @@ namespace GuangYuan.GY001.UserDb
 
                 // 释放未托管的资源(未托管的对象)并重写终结器
                 // 将大型字段设置为 null
-                _ExtendPropertyDictionary = null;
                 _ExtendProperties = null;
                 _Name2FastChangingProperty = null;
                 _BinaryObject = null;

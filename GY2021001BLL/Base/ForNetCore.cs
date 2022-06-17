@@ -107,7 +107,7 @@ namespace GuangYuan.GY001.BLL
             }
             try
             {
-                sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE);"+
+                sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE);" +
                     "ALTER INDEX IX_GameItems_TemplateId_ExtraString_ExtraDecimal ON [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE)";   //按页压缩
                 db.Database.ExecuteSqlRaw(sql);
             }
@@ -249,30 +249,9 @@ namespace GuangYuan.GY001.BLL
             using var db = world.CreateNewUserDbContext();
 
             var sw = Stopwatch.StartNew();
-            var exp = new Win32Exception(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
-            sw.Stop();
-            var excp = new Win32Exception(2340 << 16 + 2);
-            var str = excp.Message;
-            for (int i = 0; i < 10; i++)
-            {
-                using var dw = DisposeHelper.Create(c => { }, this);
-            }
-
-            var coll = new SimpleGameLogCollection();
-            var tmp = new SimpleGameLog() { Action = "act1", DateTime = DateTime.UtcNow, };
-            tmp.Params.Add("{}");
-            tmp.Params.Add("1");
-            coll.Add(tmp);
-            tmp = new SimpleGameLog() { Action = "act2", DateTime = DateTime.UtcNow, };
-            tmp.Params.Add("{2}");
-            tmp.Params.Add("2");
-            coll.Add(tmp);
-            Dictionary<string, object> dic = new Dictionary<string, object>() { { "rqeq", "{D0008CBA-0848-4F15-8E1E-89D083081676};{D0008CBA-0848-4F15-8E1E-89D083081676}；lv；1" } };
-            coll.Save(dic, "d");
-            var coll1 = dic.Where(c => c.Key == "rqeq").Select(c => ("eq", c.Value)).First();
-            GameValidation.TryParse(coll1, out var dd);
-            var re = SimpleGameLogCollection.Parse(dic, "d");
-
+            var gu = world.CharManager.Login("test1", "test1", "");
+            var gc = gu.CurrentChar;
+            var gi = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.CurrencyBagTId);
         }
 
         /// <summary>
