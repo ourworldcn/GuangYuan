@@ -12,6 +12,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -331,6 +332,7 @@ namespace GuangYuan.GY001.UserDb
                 if (_BinaryObject is null && BinaryArray != null && BinaryArray.Length > 0)
                 {
                     using MemoryStream ms = new MemoryStream(BinaryArray);
+                    //using BrotliStream bs = new BrotliStream(ms, CompressionLevel.Fastest);
                     string fullName;
                     using (var br = new BinaryReader(ms, Encoding.UTF8, true))
                         fullName = br.ReadString();

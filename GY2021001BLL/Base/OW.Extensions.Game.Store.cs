@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 namespace OW.Extensions.Game.Store
 {
@@ -40,7 +41,71 @@ namespace OW.Extensions.Game.Store
         /// <summary>
         /// 老版本持久化的变化数据。
         /// </summary>
-        public List<ChangesItemSummary> ChangesItem { get; set; } = new List<ChangesItemSummary>();
+        public List<ChangesItemSummary> ChangeItems { get; set; } = new List<ChangesItemSummary>();
+    }
+
+    /// <summary>
+    /// 可以持久序列化的变化数据。
+    /// </summary>
+    [DataContract]
+    public class ChangesItemSummary
+    {
+        /// <summary>
+        /// 转换为摘要类。
+        /// </summary>
+        /// <param name="obj"></param>
+        public static explicit operator ChangesItemSummary(ChangeItem obj)
+        {
+            var result = new ChangesItemSummary()
+            {
+                ContainerId = obj.ContainerId,
+                DateTimeUtc = obj.DateTimeUtc,
+            };
+            result.AddIds.AddRange(obj.Adds.Select(c => c.Id));
+            result.RemoveIds.AddRange(obj.Removes);
+            result.ChangeIds.AddRange(obj.Changes.Select(c => c.Id));
+            return result;
+        }
+
+        /// <summary>
+        /// 从摘要类恢复完整对象。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="gameChar"></param>
+        /// <returns></returns>
+        public static List<ChangeItem> ToChangesItem(IEnumerable<ChangesItemSummary> objs, GameChar gameChar)
+        {
+            var results = new List<ChangeItem>();
+            var dic = gameChar.AllChildren.ToDictionary(c => c.Id);
+            foreach (var obj in objs)
+            {
+                var result = new ChangeItem()
+                {
+                    ContainerId = obj.ContainerId,
+                    DateTimeUtc = obj.DateTimeUtc
+                };
+                result.Adds.AddRange(obj.AddIds.Select(c => dic.GetValueOrDefault(c)).Where(c => c != null));
+                result.Changes.AddRange(obj.ChangeIds.Select(c => dic.GetValueOrDefault(c)).Where(c => c != null));
+                result.Removes.AddRange(obj.AddIds);
+                results.Add(result);
+            }
+            return results;
+        }
+
+        [DataMember]
+        public Guid ContainerId { get; set; }
+
+        [DataMember]
+        public List<Guid> AddIds { get; set; } = new List<Guid>();
+
+        [DataMember]
+        public List<Guid> RemoveIds { get; set; } = new List<Guid>();
+
+        [DataMember]
+        public List<Guid> ChangeIds { get; set; } = new List<Guid>();
+
+        [DataMember]
+        public DateTime DateTimeUtc { get; set; }
     }
 
     public static class GameThingBaseExtensions
