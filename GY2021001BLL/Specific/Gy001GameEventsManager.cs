@@ -528,13 +528,6 @@ namespace OW.Game
         public override void GameCharLoaded(GameChar gameChar)
         {
             base.GameCharLoaded(gameChar);
-            //未发送给客户端的数据
-            var exProp = gameChar.ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);
-            if (null != exProp)    //若有需要反序列化的对象
-            {
-                var tmp = JsonSerializer.Deserialize<List<ChangesItemSummary>>(exProp.Text);
-                gameChar.ChangesItems.AddRange(ChangesItemSummary.ToChangesItem(tmp, gameChar));
-            }
             //清除锁定属性槽内物品，放回道具背包中
             var gim = World.ItemManager;
             var daojuBag = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包

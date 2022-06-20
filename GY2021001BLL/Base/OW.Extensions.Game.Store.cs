@@ -36,6 +36,11 @@ namespace OW.Extensions.Game.Store
         /// 任务状态字典。
         /// </summary>
         public Dictionary<string, MissionState> MissionStates { get; set; } = new Dictionary<string, MissionState>();
+
+        /// <summary>
+        /// 老版本持久化的变化数据。
+        /// </summary>
+        public List<ChangesItemSummary> ChangesItem { get; set; } = new List<ChangesItemSummary>();
     }
 
     public static class GameThingBaseExtensions

@@ -164,30 +164,6 @@ namespace GuangYuan.GY001.UserDb
         public DateTime? CombatStartUtc { get; set; }
 
         /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <param name="db"></param>
-        public override void PrepareSaving(DbContext db)
-        {
-            if (_ChangesItems != null)    //若需要序列化变化属性
-            {
-                var exProp = ExtendProperties.FirstOrDefault(c => c.Name == ChangesItemExPropertyName);
-                if (exProp is null)
-                    exProp = new GameExtendProperty();
-                exProp.Text = JsonSerializer.Serialize(_ChangesItems.Select(c => (ChangesItemSummary)c).ToList());
-            }
-            base.PrepareSaving(db);
-        }
-
-        private List<ChangeItem> _ChangesItems = new List<ChangeItem>();
-
-        /// <summary>
-        /// 保存未能发送给客户端的变化数据。
-        /// </summary>
-        [JsonIgnore]
-        public List<ChangeItem> ChangesItems => _ChangesItems;
-
-        /// <summary>
         /// 未发送给客户端的数据保存在<see cref="GameThingBase.ExtendProperties"/>中使用的属性名称。
         /// </summary>
         public const string ChangesItemExPropertyName = "{BAD410C8-6393-44B4-9EB1-97F91ED11C12}";
@@ -215,7 +191,6 @@ namespace GuangYuan.GY001.UserDb
                 // 释放未托管的资源(未托管的对象)并重写终结器
                 // 将大型字段设置为 null
                 _GameItems = null;
-                _ChangesItems = null;
                 GameUser = null;
                 base.Dispose(disposing);
             }
@@ -239,6 +214,9 @@ namespace GuangYuan.GY001.UserDb
         #endregion IDisposable接口相关
     }
 
+    /// <summary>
+    /// 可以持久序列化的变化数据。
+    /// </summary>
     [DataContract]
     public class ChangesItemSummary
     {

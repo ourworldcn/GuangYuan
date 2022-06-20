@@ -484,7 +484,8 @@ namespace GY2021001WebApi.Controllers
 #if DEBUG
                 logger.LogDebug($"[{DateTime.UtcNow}] Call GetChangesItem");
 #endif //DEBUG
-                result.Changes.AddRange(gc.ChangesItems.Select(c => (ChangesItemDto)c));
+                var collTmp = ChangesItemSummary.ToChangesItem(gc.GetOrCreateBinaryObject<CharBinaryExProperties>().ChangesItem, gc);
+                result.Changes.AddRange(collTmp.Select(c => (ChangesItemDto)c));
                 //gc.ChangesItems.Clear();
             }
             catch (Exception err)
@@ -510,7 +511,7 @@ namespace GY2021001WebApi.Controllers
                 return Unauthorized(VWorld.GetLastErrorMessage());
             }
             var gc = gu.CurrentChar;
-            gc.ChangesItems.Clear();
+            gc.GetOrCreateBinaryObject<CharBinaryExProperties>().ChangesItem.Clear();
             return Ok();
         }
 

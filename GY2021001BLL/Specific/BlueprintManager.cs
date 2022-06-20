@@ -808,7 +808,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             LevelUpCompleted((gcId, giId));
             if (LastChangesItems.Count > 0)
-                gc.ChangesItems.AddRange(LastChangesItems);
+                gc.GetOrCreateBinaryObject<CharBinaryExProperties>().ChangesItem.AddRange(LastChangesItems.Select(c => ((ChangesItemSummary)c)));
 
         }
 
