@@ -132,44 +132,6 @@ namespace GuangYuan.GY001.UserDb
 
         #region 扩展属性
 
-        List<GameExtendProperty> _ExtendProperties;
-        [NotMapped]
-        public List<GameExtendProperty> ExtendProperties
-        {
-            get
-            {
-                if (_ExtendProperties is null)
-                {
-                    _ExtendProperties = DbContext?.Set<GameExtendProperty>().Where(c => c.Id == Id).ToList() ?? new List<GameExtendProperty>();
-                }
-                return _ExtendProperties;
-            }
-            set
-            {
-                _ExtendProperties = value;
-                if (null != _ExtendProperties)
-                {
-                    DbContext?.AddRange(_ExtendProperties);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 获取或初始化一个指定名称的扩展属性对象。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public GameExtendProperty GetOrAddExtendProperty(string name)
-        {
-            var result = ExtendProperties.FirstOrDefault(c => c.Name == name);
-            if (result is null)  //若没有指定对象
-            {
-                result = new GameExtendProperty(name);
-                DbContext.Add(result);
-            }
-            return result;
-        }
-
         /// <summary>
         /// 禁言到期时间。空表示没有禁言。
         /// </summary>
@@ -184,24 +146,19 @@ namespace GuangYuan.GY001.UserDb
         {
             get
             {
-                var ep = ExtendProperties.FirstOrDefault(c => c.Name == nameof(BlockUtc));
-                return ep is null ? (DateTime?)null : new DateTime((long)ep.DecimalValue);
+                if (Properties.TryGetDateTime(nameof(BlockUtc), out var result))
+                    return result;
+                return null;
             }
             set
             {
                 if (value is null)
                 {
-                    var ep = ExtendProperties.FirstOrDefault(c => c.Name == nameof(BlockUtc));
-                    if (null != ep)
-                    {
-                        ExtendProperties.Remove(ep);
-                        DbContext.Remove(ep);
-                    }
+                    Properties.Remove(nameof(BlockUtc));
                 }
                 else
                 {
-                    var ep = GetOrAddExtendProperty(nameof(BlockUtc));
-                    ep.DecimalValue = value.Value.Ticks;
+                    Properties[nameof(BlockUtc)] = value.Value.ToString();
                 }
             }
         }

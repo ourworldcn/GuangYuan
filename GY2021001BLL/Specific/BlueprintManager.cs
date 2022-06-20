@@ -1816,7 +1816,7 @@ namespace GuangYuan.GY001.BLL
             {
                 var gi = datas.GameItems[0];
                 var tt = gi.GetTemplate();
-                var coll = tt.Properties.GetValuesWithoutPrefix("use");
+                //var coll = tt.Properties.GetValuesWithoutPrefix("use");
                 var htid = tt.Properties.GetGuidOrDefault("usehtid");
                 var btid = tt.Properties.GetGuidOrDefault("usebtid");
                 var tid = tt.Properties.GetGuidOrDefault("usetid");

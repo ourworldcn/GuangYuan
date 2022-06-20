@@ -1009,63 +1009,6 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// 通用扩展属性封装类。
-    /// </summary>
-    [DataContract]
-    public partial class GameExtendPropertyDto
-    {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public GameExtendPropertyDto()
-        {
-
-        }
-
-        /// <summary>
-        /// 名字，最长64字符。
-        /// </summary>
-        [DataMember]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// 字符串值，最长256字符。
-        /// </summary>
-        [DataMember]
-        public string StringValue { get; set; }
-
-        /// <summary>
-        /// 32bit整型值。
-        /// </summary>
-        [DataMember]
-        public int? IntValue { get; set; }
-
-        /// <summary>
-        /// 大定点数。大致范围±1.0 x 1e28 至 ±7.9228 x 1e28
-        /// </summary>
-        [DataMember]
-        public decimal? DecimalValue { get; set; }
-
-        /// <summary>
-        /// 长字符串。
-        /// </summary>
-        [DataMember]
-        public string Text { get; set; }
-
-        /// <summary>
-        /// 日期值。
-        /// </summary>
-        [DataMember]
-        public DateTime? DateTimeValue { get; set; }
-
-        /// <summary>
-        /// 所属对象Id。
-        /// </summary>
-        [DataMember]
-        public Guid? ParentId { get; set; }
-    }
-
-    /// <summary>
     /// 行为简要记录的数据封装类。
     /// </summary>
     [DataContract]

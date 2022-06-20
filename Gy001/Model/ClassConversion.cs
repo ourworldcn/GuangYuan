@@ -436,24 +436,6 @@ namespace GY2021001WebApi.Models
         }
     }
 
-    public partial class GameExtendPropertyDto
-    {
-        public static implicit operator GameExtendPropertyDto(GameExtendProperty obj)
-        {
-            var result = new GameExtendPropertyDto()
-            {
-                DateTimeValue = obj.DateTimeValue,
-                DecimalValue = obj.DecimalValue,
-                IntValue = obj.IntValue,
-                Name = obj.Name,
-                StringValue = obj.StringValue,
-                Text = obj.Text,
-                ParentId = obj.Id,
-            };
-            return result;
-        }
-    }
-
     public partial class GeneralCharSummaryDto
     {
         public static implicit operator GeneralCharSummaryDto(GameChar obj)
@@ -583,16 +565,16 @@ namespace GY2021001WebApi.Models
     #region 排行相关
     public partial class RankDataItemDto
     {
-        public static explicit operator RankDataItemDto(GameExtendProperty obj)
-        {
-            var result = new RankDataItemDto()
-            {
-                CharId = obj.Base64IdString,
-                DisplayName = obj.StringValue,
-                Metrics = (int)obj.DecimalValue,
-            };
-            return result;
-        }
+        //public static explicit operator RankDataItemDto(GameExtendProperty obj)
+        //{
+        //    var result = new RankDataItemDto()
+        //    {
+        //        CharId = obj.Base64IdString,
+        //        DisplayName = obj.StringValue,
+        //        Metrics = (int)obj.DecimalValue,
+        //    };
+        //    return result;
+        //}
 
         public static explicit operator RankDataItemDto((Guid, decimal, string) obj)
         {

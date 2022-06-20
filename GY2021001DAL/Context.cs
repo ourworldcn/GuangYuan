@@ -46,12 +46,6 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
             modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
-            //通用扩展属性
-            modelBuilder.Entity<GameExtendProperty>().HasKey(c => new { c.Id, c.Name });
-            //modelBuilder.Entity<GameExtendProperty>().HasIndex(c => c.Name).IsUnique(false);
-            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => new { c.Name, c.IntValue }).IsUnique(false);
-            modelBuilder.Entity<GameExtendProperty>().HasIndex(c => new { c.Name, c.DecimalValue }).IsUnique(false);
-
             //邮件相关
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
 
@@ -101,11 +95,6 @@ namespace GuangYuan.GY001.UserDb
         /// 全局动态设置表。
         /// </summary>
         public DbSet<GameSetting> GameSettings { get; set; }
-
-        /// <summary>
-        /// 游戏服务器用通用属性记录表。
-        /// </summary>
-        public DbSet<GameExtendProperty> ExtendProperties { get; set; }
 
         /// <summary>
         /// 

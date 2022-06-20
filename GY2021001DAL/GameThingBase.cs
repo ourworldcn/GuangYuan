@@ -411,80 +411,6 @@ namespace GuangYuan.GY001.UserDb
 
         #region 通用扩展属性及相关
 
-        private ObservableCollection<GameExtendProperty> _ExtendProperties;
-
-        bool _ExtendPropertiesInited;
-        /// <summary>
-        /// 通用扩展属性。
-        /// </summary>
-        [NotMapped]
-        public ObservableCollection<GameExtendProperty> ExtendProperties
-        {
-            get
-            {
-                if (_ExtendPropertiesInited)    //为使用json反序列化需要，强制被设置null后，不能返回有效实例，否则报错
-                    return _ExtendProperties;
-                if (_ExtendProperties is null && GetDbContext() != null)
-                {
-                    try
-                    {
-                        var coll = GetDbContext().Set<GameExtendProperty>().Where(c => c.Id == Id);
-                        _ExtendProperties = new ObservableCollection<GameExtendProperty>(coll);
-                        _ExtendProperties.CollectionChanged += GameExtendPropertiesCollectionChanged;
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-                }
-                else if (GetDbContext() == null)
-                {
-                    _ExtendProperties = new ObservableCollection<GameExtendProperty>();
-                    _ExtendProperties.CollectionChanged += GameExtendPropertiesCollectionChanged;
-                }
-                return _ExtendProperties;
-            }
-            set
-            {
-                if (null != _ExtendProperties)
-                    _ExtendProperties.CollectionChanged -= GameExtendPropertiesCollectionChanged;
-                _ExtendProperties = value;
-                if (null != _ExtendProperties)
-                {
-                    GetDbContext()?.AddRange(value);
-                    value.CollectionChanged += GameExtendPropertiesCollectionChanged;
-                }
-                _ExtendPropertiesInited = true;
-            }
-        }
-
-        private void GameExtendPropertiesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (var item in e.NewItems.OfType<GameExtendProperty>())
-                    {
-                        item.Id = Id;
-                    }
-                    GetDbContext().Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    GetDbContext().Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    throw new NotSupportedException();
-                case NotifyCollectionChangedAction.Move:
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    GetDbContext().Set<GameExtendProperty>().RemoveRange(e.OldItems.OfType<GameExtendProperty>());
-                    GetDbContext().Set<GameExtendProperty>().AddRange(e.NewItems.OfType<GameExtendProperty>());
-                    break;
-                default:
-                    break;
-            }
-        }
-
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
@@ -524,9 +450,9 @@ namespace GuangYuan.GY001.UserDb
 
                 // 释放未托管的资源(未托管的对象)并重写终结器
                 // 将大型字段设置为 null
-                _ExtendProperties = null;
                 _Name2FastChangingProperty = null;
                 _BinaryObject = null;
+                BinaryArray = null;
                 base.Dispose(disposing);
             }
         }

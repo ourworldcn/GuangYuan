@@ -568,8 +568,6 @@ namespace OW.Game
         public virtual void ThingBaseJsonDeserialized(GameThingBase thingBase)
         {
             thingBase.SetTemplate(World.ItemTemplateManager.GetTemplateFromeId(thingBase.TemplateId));
-            var db = thingBase.GetDbContext();
-            db.AddRange(thingBase.ExtendProperties);
         }
 
         public virtual void JsonDeserialized(GameItem gameItem)
@@ -611,7 +609,6 @@ namespace OW.Game
             dest.DbContext ??= world.CreateNewUserDbContext();
             dest.Region = src.Region;
             OwHelper.Copy(src.Properties, dest.Properties);
-            Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
             foreach (var item in src.GameChars)
             {
                 var gc = new GameChar()
@@ -686,45 +683,8 @@ namespace OW.Game
             dest.ExtraDecimal = src.ExtraDecimal;
             dest.BinaryArray = src.BinaryArray.ToArray();
             OwHelper.Copy(src.Properties, dest.Properties);
-            if (null != dest.GetDbContext())
-                Clone(src.ExtendProperties, dest.ExtendProperties, dest.Id);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="src"></param>
-        /// <param name="dest"></param>
-        /// <param name="destId">目标<see cref="GameExtendProperty"/>对象的Id属性。</param>
-        public void Clone(IEnumerable<GameExtendProperty> src, ICollection<GameExtendProperty> dest, Guid destId)
-        {
-            foreach (var item in src)
-            {
-                var exp = new GameExtendProperty(item.Name, destId) { };
-                CloneExtendProperty(item, exp, destId);
-                dest.Add(exp);
-            }
-        }
-
-        /// <summary>
-        /// 克隆一个新的<see cref="GameExtendProperty"/>对象。
-        /// </summary>
-        /// <param name="src"></param>
-        /// <param name="dest"></param>
-        /// <param name="destId">目标<see cref="GameExtendProperty"/>对象的 Id 属性。</param>
-        public void CloneExtendProperty(GameExtendProperty src, GameExtendProperty dest, Guid destId)
-        {
-            dest.Id = destId;
-            dest.Name = src.Name;
-            dest.ByteArray = (byte[])src.ByteArray?.Clone();
-            dest.DateTimeValue = src.DateTimeValue;
-            dest.DecimalValue = src.DecimalValue;
-            dest.GuidValue = src.GuidValue;
-            dest.IntValue = src.IntValue;
-            dest.StringValue = src.StringValue;
-            dest.Text = src.Text;
-            OwHelper.Copy(src.Properties, dest.Properties);
-        }
         #endregion 复制信息相关
 
         #region 物品相关
