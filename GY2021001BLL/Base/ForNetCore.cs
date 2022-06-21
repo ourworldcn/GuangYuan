@@ -106,8 +106,8 @@ namespace GuangYuan.GY001.BLL
             }
             try
             {
-                sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE);" +
-                    "ALTER INDEX IX_GameItems_TemplateId_ExtraString_ExtraDecimal ON [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE)";   //按页压缩
+                sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ROW);" +
+                    "ALTER INDEX IX_GameItems_TemplateId_ExtraString_ExtraDecimal ON [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE)";   //按行压缩
                 db.Database.ExecuteSqlRaw(sql);
             }
             catch (Exception err)
