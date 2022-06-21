@@ -503,10 +503,10 @@ namespace Gy001.Controllers
         }
 
         /// <summary>
-        /// 与好友家园的展示坐骑互动。
+        /// 与好友家园的展示坐骑互动。返回码：160=今日已经与该坐骑互动过了；1721=今日互动次数已经用完。
         /// </summary>
-        /// <param name="model"><seealso cref="PatWithMountsParamsDto"/></param>
-        /// <returns><seealso cref="PatWithMountsReturnDto"/></returns>
+        /// <param name="model">参见 "PatWithMountsParamsDto" </param>
+        /// <returns> 返回码：160=今日已经与该坐骑互动过了；1721=今日互动次数已经用完。</returns>
         /// <response code="401">令牌错误。</response>
         /// <response code="400">其他异常错误。</response>
         [HttpPost]

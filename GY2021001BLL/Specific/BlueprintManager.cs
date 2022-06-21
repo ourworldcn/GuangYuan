@@ -423,6 +423,8 @@ namespace GuangYuan.GY001.BLL
                             succ = false;
                         break;
                 }
+                //增加推关战力
+                World.CombatManager.UpdatePveInfo(datas.GameChar);
             }
             catch (Exception err)
             {

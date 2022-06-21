@@ -3287,6 +3287,12 @@ namespace GY2021001WebApi.Models
         /// 角色的昵称。
         /// </summary>
         public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 用户头像号。
+        /// </summary>
+        [DataMember]
+        public int IconIndex { get; set; }
     }
 
     /// <summary>

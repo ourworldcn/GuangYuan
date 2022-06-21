@@ -609,10 +609,10 @@ namespace OW.Game.Item
                        on slot.ParentId equals parent.Id
                        join gc in db.Set<GameChar>()
                        on parent.OwnerId equals gc.Id
-                       select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value };
-
+                       select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value, gc.PropertiesString };
+            //gc.Properties.GetDecimalOrDefault("charIcon", 0)
             var gChar = datas.GameChar;
-            var coll1 = from tmp in coll    //排名在当前角色之前的角色
+            var coll1 = from tmp in coll.AsNoTracking()    //排名在当前角色之前的角色
                         where (tmp.Value > tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal.Value && string.Compare(tmp.DisplayName, gChar.DisplayName) < 0)
                         orderby tmp.Value, tmp.DisplayName
                         select tmp;
@@ -620,14 +620,26 @@ namespace OW.Game.Item
             datas.Rank = rank;
             datas.Scope = tuiguanObj.ExtraDecimal.Value;
             var prv = coll.Take(25).ToList();   //排在前面的的紧邻数据
-            datas.Prv.AddRange(prv.Select(c=>(c.Id,c.Value,c.DisplayName)));
+            datas.Prv.AddRange(prv.Select(c =>
+            {
+                var tmp = new Dictionary<string, object>();
+                OwConvert.Copy(c.PropertiesString, tmp);
+                var icon = tmp.GetDecimalOrDefault("charIcon", 0);
+                return (c.Id, c.Value, c.DisplayName, icon);
+            }));
 
             var collNext = from tmp in coll    //排在指定角色之后的
-                           where  (tmp.Value < tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal && string.Compare(tmp.DisplayName, gChar.DisplayName) > 0)
+                           where (tmp.Value < tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal && string.Compare(tmp.DisplayName, gChar.DisplayName) > 0)
                            orderby tmp.Value descending, tmp.DisplayName descending
                            select tmp;
             var next = collNext.Take(25).ToList();
-            datas.Next.AddRange(next.Select(c => (c.Id, c.Value, c.DisplayName)));
+            datas.Next.AddRange(next.Select(c =>
+            {
+                var tmp = new Dictionary<string, object>();
+                OwConvert.Copy(c.PropertiesString, tmp);
+                var icon = tmp.GetDecimalOrDefault("charIcon", 0);
+                return (c.Id, c.Value, c.DisplayName, icon);
+            }));
         }
 
         /// <summary>
@@ -1214,9 +1226,9 @@ namespace OW.Game.Item
         }
 
 
-        public List<(Guid, decimal, string)> Prv { get; } = new List<(Guid, decimal, string)>();
+        public List<(Guid, decimal, string, decimal)> Prv { get; } = new List<(Guid, decimal, string, decimal)>();
 
-        public List<(Guid, decimal, string)> Next { get; } = new List<(Guid, decimal, string)>();
+        public List<(Guid, decimal, string, decimal)> Next { get; } = new List<(Guid, decimal, string, decimal)>();
 
         /// <summary>
         /// 自己的战力排名。

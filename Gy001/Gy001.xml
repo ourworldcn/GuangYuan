@@ -1140,6 +1140,11 @@
             角色的昵称。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.RankDataItemDto.IconIndex">
+            <summary>
+            用户头像号。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GameCardTemplateDto">
             <summary>
             卡池配置项。
@@ -3251,12 +3256,6 @@
             外围系统。
             </summary>
         </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
             使用蓝图制造或升级物品。
@@ -3616,10 +3615,10 @@
         </member>
         <member name="M:Gy001.Controllers.SocialController.PatWithMounts(GY2021001WebApi.Models.PatWithMountsParamsDto)">
             <summary>
-            与好友家园的展示坐骑互动。
+            与好友家园的展示坐骑互动。返回码：160=今日已经与该坐骑互动过了；1721=今日互动次数已经用完。
             </summary>
-            <param name="model"><seealso cref="T:GY2021001WebApi.Models.PatWithMountsParamsDto"/></param>
-            <returns><seealso cref="T:GY2021001WebApi.Models.PatWithMountsReturnDto"/></returns>
+            <param name="model">参见 "PatWithMountsParamsDto" </param>
+            <returns> 返回码：160=今日已经与该坐骑互动过了；1721=今日互动次数已经用完。</returns>
             <response code="401">令牌错误。</response>
             <response code="400">其他异常错误。</response>
         </member>

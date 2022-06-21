@@ -576,13 +576,14 @@ namespace GY2021001WebApi.Models
         //    return result;
         //}
 
-        public static explicit operator RankDataItemDto((Guid, decimal, string) obj)
+        public static explicit operator RankDataItemDto((Guid, decimal, string, decimal) obj)
         {
             var result = new RankDataItemDto()
             {
                 CharId = obj.Item1.ToBase64String(),
-                DisplayName = obj.Item3,
                 Metrics = (int)obj.Item2,
+                DisplayName = obj.Item3,
+                IconIndex = (int)obj.Item4,
             };
             return result;
         }

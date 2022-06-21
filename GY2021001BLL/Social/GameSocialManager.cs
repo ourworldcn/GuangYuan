@@ -592,22 +592,51 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 获取一组角色的摘要数据。
         /// </summary>
-        /// <param name="ids">要获得摘要信息的角色Id集合。</param>
+        /// <param name="innerIds">要获得摘要信息的角色Id集合。</param>
         /// <param name="db">使用的用户数据库上下文。</param>
         /// <returns>指定的角色摘要信息。</returns>
         /// <exception cref="ArgumentException">至少一个指定的Id不是有效角色Id。</exception>
         public IEnumerable<CharSummary> GetCharSummary(IEnumerable<Guid> ids, [NotNull] DbContext db)
         {
-            var gameChars = db.Set<GameChar>().Where(c => ids.Contains(c.Id)).ToArray();
-            if (gameChars.Length != ids.Count())
-                throw new ArgumentException("至少一个指定的Id不是有效角色Id。", nameof(ids));
-            var result = gameChars.Select(c =>
+            var innerIds = ids.Distinct().ToArray();
+            var collBase = (from gc in db.Set<GameChar>()
+                            where innerIds.Contains(gc.Id)
+                            join tuiguan in db.Set<GameItem>()   //推关战力对象
+                            on gc.Id equals tuiguan.Parent.OwnerId
+                            where tuiguan.TemplateId == ProjectConstant.TuiGuanTId
+                            select new { gc, tuiguan, }).AsNoTracking();   //基准集合
+            if (collBase.Count() != innerIds.Count())
+                throw new ArgumentException("至少一个指定的Id不是有效角色Id。", nameof(innerIds));
+            var mounts = (from gc in db.Set<GameChar>()
+                          where innerIds.Contains(gc.Id)
+                          join gi in db.Set<GameItem>()
+                          on gc.Id equals gi.Parent.OwnerId
+                          where gi.TemplateId == ProjectConstant.ZuojiZuheRongqi && gi.PropertiesString.Contains("for10=")
+                          select new { gc.Id, gi }).AsNoTracking().ToList();    //展示坐骑
+            var logoutTime = (from tmp in db.Set<GameActionRecord>()
+                              where innerIds.Contains(tmp.ParentId) && tmp.ActionId == "Logout"
+                              group tmp by tmp.ParentId into g
+                              select new { g.Key, LastLogoutDatetime = g.Max(c => c.DateTimeUtc) }).AsEnumerable().ToDictionary(c => c.Key, c => c.LastLogoutDatetime); //下线时间
+            var result = new List<CharSummary>();
+            foreach (var item in collBase)  //逐一生成结果
             {
-                var cs = new CharSummary();
-                FillCharSummary(c, cs, db); //TO DO 效率低下，应支持批量处理
-                return cs;
-            });
-
+                var tmp = new CharSummary
+                {
+                    CombatCap = (int)item.tuiguan.ExtraDecimal,
+                    DisplayName = item.gc.DisplayName,
+                    Id = item.gc.Id,
+                    Level = (int)item.gc.Properties.GetDecimalOrDefault("lv", decimal.Zero),
+                    IconIndex = (int)item.gc.Properties.GetDecimalOrDefault("charIcon", decimal.Zero),
+                };
+                var mount = mounts.Where(c => c.Id == item.gc.Id).Select(c => c.gi);
+                if (null != mount)
+                    tmp.HomelandShows.AddRange(mount);
+                if (World.CharManager.IsOnline(item.gc.Id))
+                    tmp.LastLogoutDatetime = new DateTime?();
+                else
+                    tmp.LastLogoutDatetime = logoutTime.TryGetValue(item.gc.Id, out var dt) ? dt : new DateTime?();
+                result.Add(tmp);
+            }
             return result.ToList();
         }
 
@@ -645,34 +674,6 @@ namespace GuangYuan.GY001.BLL
             }
             datas.CharIds.AddRange(result);
             view.Save();
-        }
-
-        /// <summary>
-        /// 填充角色的摘要信息。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="summary"></param>
-        /// <param name="db"></param>
-        public void FillCharSummary(GameChar gameChar, CharSummary summary, DbContext db)
-        {
-            summary.Id = gameChar.Id;
-            summary.DisplayName = gameChar.DisplayName;
-            summary.Level = (int)gameChar.Properties.GetDecimalOrDefault("lv", decimal.Zero);
-            summary.CombatCap = 4000;
-            var coll1 = from tmp in db.Set<GameActionRecord>().AsNoTracking()
-                        where tmp.ActionId == "Logout"
-                        orderby tmp.DateTimeUtc descending
-                        select tmp.DateTimeUtc;
-            summary.LastLogoutDatetime = World.CharManager.IsOnline(gameChar.Id) ? new DateTime?() : coll1.FirstOrDefault();
-            var str = "for10=";
-            var bags = db.Set<GameItem>().Where(c => c.OwnerId == gameChar.Id && c.TemplateId == ProjectConstant.ZuojiBagSlotId);  //坐骑背包
-            var mounts = db.Set<GameItem>().Where(c => c.PropertiesString.Contains(str)); //展示坐骑
-            var coll = from bag in bags
-                       join mount in mounts
-                       on bag.Id equals mount.ParentId
-                       select mount;
-
-            summary.HomelandShows.AddRange(coll);
         }
 
         /// <summary>
@@ -1012,9 +1013,10 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 去好友家互动以获得体力。
+        /// 去好友家互动以获得体力。 返回值参见 PatForTiliResult。
         /// </summary>
         /// <param name="datas">工作数据。</param>
+        /// <returns><seealso cref="PatForTiliResult"/></returns>
         public PatForTiliResult PatForTili(PatForTiliWorkData datas)
         {
             using var dwUsers = datas.LockAll();
@@ -1156,7 +1158,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 与好友坐骑互动。
+        /// 与好友坐骑互动。返回码：160=今日已经与该坐骑互动过了；1721=今日互动次数已经用完。
         /// </summary>
         /// <param name="datas">参数及返回值的封装类。</param>
         public void PatWithMounts(PatWithMountsDatas datas)

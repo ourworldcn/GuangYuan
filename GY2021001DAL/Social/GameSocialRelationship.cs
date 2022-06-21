@@ -93,7 +93,7 @@ namespace GuangYuan.GY001.UserDb
         public int Level { get; set; }
 
         /// <summary>
-        /// 角色战力。
+        /// 角色战力。目前就是推关战力。
         /// </summary>
         public decimal CombatCap { get; set; }
 
@@ -106,6 +106,11 @@ namespace GuangYuan.GY001.UserDb
         /// 家园内展示动物的集合。
         /// </summary>
         public List<GameItem> HomelandShows { get; } = new List<GameItem>();
+
+        /// <summary>
+        /// 头像索引号。默认为0。
+        /// </summary>
+        public int IconIndex { get; set; }
     }
 
     /// <summary>
