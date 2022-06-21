@@ -136,28 +136,27 @@ namespace GuangYuan.GY001.UserDb
             return this.GetGameChar()?.GetDbContext();
         }
 
-        private decimal? _Count;
-
         /// <summary>
         /// 此物品的数量。
         /// 可能没有数量属性，如装备永远是1。对货币类(积分)都使用的是实际值。
         /// </summary>
+        [NotMapped, JsonIgnore]
         public decimal? Count
         {
             get
             {
-                if (_Count.HasValue)
-                    return _Count.Value;
-                if (Name2FastChangingProperty is null)
-                    return _Count;
-                return Name2FastChangingProperty.TryGetValue("Count", out var fcp) ? fcp.LastValue : _Count;
+                if (null != Name2FastChangingProperty && Name2FastChangingProperty.TryGetValue(nameof(Count), out var fcp))
+                    return fcp.LastValue;
+                if (Properties.TryGetDecimal(nameof(Count), out var result))
+                    return result;
+                return null;
             }
 
             set
             {
-                if (Name2FastChangingProperty.TryGetValue("Count", out var fcp) && value.HasValue)
+                if (null != Name2FastChangingProperty && Name2FastChangingProperty.TryGetValue(nameof(Count), out var fcp) && value.HasValue)
                     fcp.LastValue = value.Value;
-                _Count = value;
+                Properties[nameof(Count)] = value;
             }
         }
 

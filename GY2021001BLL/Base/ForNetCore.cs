@@ -81,7 +81,6 @@ namespace GuangYuan.GY001.BLL
             #region 版本升级
             // TO DO应放入专门的版本管理服务中
             using var db = service.GetRequiredService<GY001UserContext>();
-            db.Database.ExecuteSqlRaw("UPDATE [dbo].[GameItems] SET [ExtraDecimal] = [Count] where TemplateId = 'D1A2750B-9300-4C57-A407-941EC1024B1C' and [ExtraDecimal] is null");
             #endregion 版本升级
             return result;
         }
