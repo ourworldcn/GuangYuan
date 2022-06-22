@@ -3,6 +3,7 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.BLL.Social;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
+using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Item;
 using OW.Game.PropertyChange;
@@ -1605,10 +1606,8 @@ namespace GuangYuan.GY001.BLL
                 datas.FillErrorFromWorld();
                 return;
             }
-            const string pricePName = "refreshPriceD";    //升级的代价属性名
             const string pvpChar = "PvpChar";   //PVP当日数据名的前缀
             using var todayData = TodayDataWrapper<Guid>.Create(datas.PvpObject.Properties, pvpChar, datas.Now);    //当日数据的帮助器类
-
             if (!todayData.HasData)  //若当日无数据
             {
                 if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, 0))   //若无法设置级别
@@ -1619,39 +1618,35 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             var lv = (int)datas.PvpObject.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);    //级别数据
-            if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel(pricePName) - 1 && datas.IsRefresh)  //若当日已经不可再刷
+            if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel() - 1 && datas.IsRefresh)  //若当日已经不可再刷
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;
                 return;
             }
-            var priceD = datas.PvpObject.GetDecimalWithFcpOrDefault(pricePName); //钻石计费的代价
-            var dia = datas.GameChar.GetZuanshi();  //钻石
             if (datas.IsRefresh || !todayData.HasData) //若强制刷新或需要刷新
             {
-                if (dia.Count < priceD)    //若钻石不足
+                using var dataBlueprint = new ApplyBlueprintDatas(World, datas.GameChar)
                 {
-                    datas.HasError = true;
-                    datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
+                    Count = 1,
+                };
+                dataBlueprint.GameItems.Add(datas.PvpObject);
+                World.BlueprintManager.LevelUp(dataBlueprint);
+                datas.ErrorCode = dataBlueprint.ErrorCode;
+                datas.HasError = dataBlueprint.HasError;
+                datas.ErrorMessage = dataBlueprint.ErrorMessage;
+                if (dataBlueprint.HasError) //若出错
                     return;
-                }
-
-                if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, lv + 1))   //若无法设置级别
-                {
-                    datas.HasError = true;
-                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    return;
-                }
+                datas.PropertyChanges.AddRange(dataBlueprint.PropertyChanges);
                 //修改数据
                 //获取列表
                 var ids = RefreshPvpList(datas.GameChar, datas.UserDbContext, todayData.TodayValues);
                 todayData.TodayValues.AddRange(ids);
                 todayData.LastValues.Clear();
                 todayData.LastValues.AddRange(ids);
-                dia.Count -= priceD;    //减去钻石
-                if (priceD != 0)
-                    datas.ChangeItems.AddToChanges(dia);
                 datas.CharIds.AddRange(todayData.LastValues);
+                //变化数据
+                datas.PropertyChanges.CopyTo(datas.ChangeItems);
             }
             else //不刷新
             {

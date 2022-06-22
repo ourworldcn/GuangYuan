@@ -130,10 +130,10 @@ namespace GuangYuan.GY001.BLL
             var defYumi = new GameBooty() { CharId = OtherChar.Id };    //防御方玉米田
             defYumi.Properties["tid"] = ProjectConstant.YumitianTId.ToString();
 
-            var attJinbiBase = lvAtt * 30 + dMucai.Count.Value * 0.2m + dMucaiShu.Count.Value * 0.5m;   //进攻方获得金币的基数
+            var attJinbiBase = lvAtt * 30 + (dMucai.Count ?? 0) * 0.2m + dMucaiShu.Count.Value * 0.5m;   //进攻方获得金币的基数
             var attMucaiBase = lvAtt * 100 + dYumi.Count.Value * 0.5m;  //进攻方获得木材的基数
             var defYumiBase = dYumi.Count.Value * 0.5m; //防御方玉米损失基数
-            var defMucaiBase = dMucai.Count.Value * 0.2m;   //防御方木材损失基数
+            var defMucaiBase = dMucai.Count.GetValueOrDefault() * 0.2m;   //防御方木材损失基数
             var defMucaiShuBase = dMucaiShu.Count.Value * 0.5m; //防御方木材树损失基数
             if (IsWin)   //若击溃主控室
             {

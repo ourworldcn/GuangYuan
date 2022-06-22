@@ -11,6 +11,72 @@ using System.Runtime.Serialization;
 namespace OW.Extensions.Game.Store
 {
     /// <summary>
+    /// 角色信息摘要类。
+    /// </summary>
+    public class CharSummary
+    {
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public CharSummary()
+        {
+
+        }
+
+        /// <summary>
+        /// 用指定角色填充角色摘要信息。
+        /// </summary>
+        /// <param name="gameChar">角色对象。</param>
+        /// <param name="charSummary">角色摘要对象。</param>
+        /// <param name="records">查询操作记录的接口。</param>
+        //public static void Fill(GameChar gameChar, CharSummary charSummary, IQueryable<GameActionRecord> records)
+        //{
+        //    charSummary.Id = gameChar.Id;
+        //    charSummary.DisplayName = gameChar.DisplayName;
+        //    charSummary.Level = (int)gameChar.Properties.GetDecimalOrDefault("lv", decimal.Zero);
+        //    charSummary.CombatCap = 4000;
+        //    var ary = records.Where(c => c.ParentId == gameChar.Id && (c.ActionId == "Logout" || c.ActionId == "Login")).
+        //         OrderByDescending(c => c.DateTimeUtc).Take(1).ToArray();
+        //    charSummary.LastLogoutDatetime = ary.Length == 0 || ary[0].ActionId == "Logout" ? new DateTime?() : ary[0].DateTimeUtc;
+        //}
+
+        /// <summary>
+        /// 角色的Id。
+        /// </summary>
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// 角色的昵称。
+        /// </summary>
+        public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 角色等级。
+        /// </summary>
+        public int Level { get; set; }
+
+        /// <summary>
+        /// 角色战力。目前就是推关战力。
+        /// </summary>
+        public decimal CombatCap { get; set; }
+
+        /// <summary>
+        /// 最后一次下线时间。空表示当前在线。
+        /// </summary>
+        public DateTime? LastLogoutDatetime { get; set; }
+
+        /// <summary>
+        /// 家园内展示动物的集合。
+        /// </summary>
+        public List<GameItem> HomelandShows { get; } = new List<GameItem>();
+
+        /// <summary>
+        /// 头像索引号。默认为0。
+        /// </summary>
+        public int IconIndex { get; set; }
+    }
+
+    /// <summary>
     /// GameChar对象 BinaryArray 属性包含对象的视图类。
     /// </summary>
     public class CharBinaryExProperties
@@ -108,6 +174,9 @@ namespace OW.Extensions.Game.Store
         public DateTime DateTimeUtc { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public static class GameThingBaseExtensions
     {
         /// <summary>
@@ -305,13 +374,4 @@ namespace OW.Extensions.Game.Store
         #endregion 待重构代码
     }
 
-    public static class GameCharBaseExtensions
-    {
-
-    }
-
-    public static class GameUserBaseExtensions
-    {
-
-    }
 }

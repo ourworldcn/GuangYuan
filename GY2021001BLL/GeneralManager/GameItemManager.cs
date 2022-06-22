@@ -22,6 +22,110 @@ using System.Threading;
 
 namespace OW.Game.Item
 {
+    public class ItemIncrement : IDisposable
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="prefix">前缀，null表示无前缀。</param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public static bool TryParse(IReadOnlyDictionary<string, object> dic, [AllowNull] string prefix, out ItemIncrement result)
+        {
+            result = new ItemIncrement();
+            var props = dic.GetValuesWithoutPrefix(prefix);
+            var dics = props.Select(c => c.ToDictionary(c2 => c2.Item1, c2 => c2.Item2));
+            result._Datas.AddRange(dics);
+            return true;
+        }
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public ItemIncrement()
+        {
+
+        }
+
+        List<IReadOnlyDictionary<string, object>> _Datas = new List<IReadOnlyDictionary<string, object>>();
+
+        //public static IEnumerable<GameItem> ToGameItems(this GameItemManager manager, IReadOnlyDictionary<string, object> bag, string prefix = null)
+        //{
+        //    var props = bag.GetValuesWithoutPrefix(prefix);
+        //    var dics = props.Select(c => c.ToDictionary(c2 => c2.Item1, c2 => c2.Item2));
+        //    var eventMng = manager.World.EventsManager;
+        //    List<GameItem> result = new List<GameItem>();
+        //    foreach (var item in dics)
+        //    {
+        //        if (!item.ContainsKey("tid") && !item.ContainsKey("tt"))    //若没有模板数据
+        //            continue;
+        //        if (!item.ContainsKey("tt") && item.GetGuidOrDefault("tid") == Guid.Empty)
+        //            continue;
+        //        var gi = new GameItem();
+        //        eventMng.GameItemCreated(gi, item);
+        //        result.Add(gi);
+        //    }
+        //    return result;
+        //}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="world"></param>
+        /// <param name="remainder">剩余物品放在此集合内。</param>
+        /// <param name="changes"></param>
+        public void Add(GameChar gameChar, VWorld world, ICollection<GameItem> remainder, ICollection<GamePropertyChangeItem<object>> changes)
+        {
+
+        }
+
+        public bool IsEnough(GameChar gameChar, VWorld world)
+        {
+            return true;
+        }
+
+        public void Deplete(GameChar gameChar, VWorld world, ICollection<GamePropertyChangeItem<object>> changes)
+        {
+
+        }
+        #region IDisposable接口及相关
+
+        private bool disposedValue;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~ItemIncrement()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion IDisposable接口及相关
+    }
+
     public class GameItemManagerOptions
     {
         public GameItemManagerOptions()

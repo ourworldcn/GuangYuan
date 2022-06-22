@@ -118,6 +118,22 @@ namespace GuangYuan.GY001.TemplateDb
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int? GetMaxLevel(string name) => (Properties.GetValueOrDefault(name) as Array)?.Length;
 
+        /// <summary>
+        /// 获取最大得等级。
+        /// </summary>
+        /// <returns></returns>
+        public int GetMaxLevel()
+        {
+            int result = 0;
+            var keys = Properties.Keys.Where(c => c.StartsWith("lu"));
+            foreach (var key in keys)
+            {
+                if (Properties[key] is decimal[] ary)
+                    result = Math.Max(ary.Length, result);
+            }
+            return result;
+        }
+
         private string[] _SequencePropertyNames;
         /// <summary>
         /// 获取所有序列属性名的数组。

@@ -1,40 +1,60 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="OW.Game.Expression.GameExpression">
-    <Position X="5.75" Y="3.5" Width="2" />
+    <Position X="2.25" Y="5.75" Width="2" />
     <TypeIdentifier>
       <HashCode>DEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAEAIAA=</HashCode>
       <FileName>OW.Game.Expression.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Expression.BinaryGameExpression">
-    <Position X="4" Y="6.75" Width="2.5" />
+    <Position X="0.5" Y="9" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>OW.Game.Expression.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Expression.GameCharExpression">
-    <Position X="7.25" Y="6.75" Width="2.25" />
+    <Position X="3.75" Y="9" Width="2.25" />
     <TypeIdentifier>
       <HashCode>EAAAAAAAAAAIAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAA=</HashCode>
       <FileName>OW.Game.Expression.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Validation.GameValidation">
-    <Position X="11.75" Y="3.5" Width="2" />
+    <Position X="8.75" Y="3.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AIAAAAAABAAAAAAAAAgAAAAAAAAACAAAAAAgAAAAIAA=</HashCode>
+      <HashCode>AIAAAAAAAAAAAAAAAAgABAAAAAAACAAAAAAgAAAAIAA=</HashCode>
       <FileName>OW.Game.Validation.cs</FileName>
     </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="PropertyReference" />
+    </ShowAsAssociation>
   </Class>
-  <Class Name="OW.Game.Operate.GameOperate">
-    <Position X="0.75" Y="5.25" Width="2" />
+  <Class Name="OW.Game.Operate.GameOperate" Collapsed="true">
+    <Position X="15.5" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAACAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>OW.Game.Operate.cs</FileName>
       <NewMemberFileName>OW.Game.Validation.cs</NewMemberFileName>
     </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Validation.GameItemReference">
+    <Position X="12.5" Y="7" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAIAAAAAAAAAAAAAAAAAAEAABAAAAAAAAAAAA=</HashCode>
+      <FileName>OW.Game.Validation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Validation.GamePropertyReference">
+    <Position X="8.75" Y="7.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAIAAAggAAAAAAAAAAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>OW.Game.Validation.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ItemReference" />
+    </ShowAsAssociation>
   </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />
 </ClassDiagram>

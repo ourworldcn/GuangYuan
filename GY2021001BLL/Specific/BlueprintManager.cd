@@ -7,42 +7,35 @@
     <Position X="0.5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>BlueprintManager.cs</FileName>
+      <FileName>Specific\BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.LevelUpDatas" Collapsed="true">
     <Position X="5.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BQAAAAAAABAACAAAAAAAAAIAAAAAAAgAAAAAAAAAAAA=</HashCode>
-      <FileName>BlueprintManager.cs</FileName>
+      <FileName>Specific\BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.ApplyBlueprintDatas" Collapsed="true">
     <Position X="0.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>BKAAAAAAQAAAigAAAAAAAAQAEAEEAAAAAAQAAAAAACA=</HashCode>
-      <FileName>BlueprintManager.cs</FileName>
+      <HashCode>BKAAAAAAQAAAiggAAAAAAAQAEAEEAAAAAAQAAABAACA=</HashCode>
+      <FileName>Specific\BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.BlueprintManager" Collapsed="true">
     <Position X="5.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAgCAAEAAgIAAUAAFAACAAAZCQAIQAACADAABAABAYk=</HashCode>
-      <FileName>BlueprintManager.cs</FileName>
+      <HashCode>BAgCQQEAAgIQAUoAJEECAAAZCQAIQIADEHAABAABAYk=</HashCode>
+      <FileName>Specific\BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GuangYuan.GY001.BLL.ApplyBlueprintDatasExtensions" Collapsed="true">
     <Position X="2.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAQAAAAAAIAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>BlueprintManager.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="GuangYuan.GY001.BLL.MainbaseUpgradePrv" Collapsed="true">
-    <Position X="0.5" Y="2.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAIAAAAAAAAAAAAAAAIIAAAAABAAAAABAAAAAAAAQQA=</HashCode>
-      <FileName>BlueprintManager.cs</FileName>
+      <FileName>Specific\BlueprintManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Font Name="Microsoft YaHei UI" Size="9" />

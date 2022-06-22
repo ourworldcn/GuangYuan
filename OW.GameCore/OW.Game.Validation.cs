@@ -7,7 +7,7 @@ using System.Linq;
 namespace OW.Game.Validation
 {
     /// <summary>
-    /// 
+    /// GameItem引用对象。
     /// </summary>
     public class GameItemReference
     {
