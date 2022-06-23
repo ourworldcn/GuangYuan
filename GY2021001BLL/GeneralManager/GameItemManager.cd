@@ -10,7 +10,7 @@
   <Class Name="OW.Game.Item.GameItemManager">
     <Position X="3.25" Y="4.25" Width="3.25" />
     <TypeIdentifier>
-      <HashCode>BAmAAAQAAkAAQQAAUAHwYEBqgIAAAwEAAEAAAIAYIAA=</HashCode>
+      <HashCode>BAOAAAQAAkBAQQAAUAHwYEJqAAAAAwEAAEAAAIAYIAA=</HashCode>
       <FileName>GeneralManager\GameItemManager.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -18,13 +18,6 @@
     <Position X="9.25" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>GeneralManager\GameItemManager.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="OW.Game.Item.UseItemsView" Collapsed="true">
-    <Position X="9.25" Y="3.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAgAAAAEAAAgAAA=</HashCode>
       <FileName>GeneralManager\GameItemManager.cs</FileName>
     </TypeIdentifier>
   </Class>

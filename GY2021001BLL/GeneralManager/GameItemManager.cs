@@ -50,6 +50,8 @@ namespace OW.Game.Item
 
         List<IReadOnlyDictionary<string, object>> _Datas = new List<IReadOnlyDictionary<string, object>>();
 
+        public List<IReadOnlyDictionary<string, object>> Datas => _Datas;
+
         //public static IEnumerable<GameItem> ToGameItems(this GameItemManager manager, IReadOnlyDictionary<string, object> bag, string prefix = null)
         //{
         //    var props = bag.GetValuesWithoutPrefix(prefix);
@@ -69,27 +71,6 @@ namespace OW.Game.Item
         //    return result;
         //}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="world"></param>
-        /// <param name="remainder">剩余物品放在此集合内。</param>
-        /// <param name="changes"></param>
-        public void Add(GameChar gameChar, VWorld world, ICollection<GameItem> remainder, ICollection<GamePropertyChangeItem<object>> changes)
-        {
-
-        }
-
-        public bool IsEnough(GameChar gameChar, VWorld world)
-        {
-            return true;
-        }
-
-        public void Deplete(GameChar gameChar, VWorld world, ICollection<GamePropertyChangeItem<object>> changes)
-        {
-
-        }
         #region IDisposable接口及相关
 
         private bool disposedValue;
@@ -180,6 +161,22 @@ namespace OW.Game.Item
             }
         }
         #endregion
+
+        /// <summary>
+        /// 复位锁定槽中的道具，送回道具背包。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        public void ResetSlot(GameChar gameChar)
+        {
+            var gim = this;
+            var daojuBag = gim.GetOrCreateItem(gameChar, ProjectConstant.DaojuBagSlotId);
+            var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockAtkSlotId); //锁定槽
+            gim.MoveItems(slot.Children, daojuBag);
+            slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockMhpSlotId); //锁定槽
+            gim.MoveItems(slot.Children, daojuBag);
+            slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockQltSlotId); //锁定槽
+            gim.MoveItems(slot.Children, daojuBag);
+        }
 
         /// <summary>
         /// 刷新指定角色的木材堆叠上限属性。

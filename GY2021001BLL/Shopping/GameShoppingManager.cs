@@ -482,7 +482,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 
+        /// 抽奖。
         /// </summary>
         /// <param name="datas">
         /// <see cref="ErrorCodes.RPC_S_OUT_OF_RESOURCES"/> 表示没有足够的抽奖卷。
@@ -661,7 +661,7 @@ namespace GuangYuan.GY001.BLL
                     if (!templates.TryGetValue(idProb.Key, out var tts) || tts.Length <= 0)
                     {
                         datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                        datas.ErrorMessage = "没有找到指定的讲池。";
+                        datas.ErrorMessage = "没有找到指定的奖池。";
                         return;
                     }
                     var tt = tts[VWorld.WorldRandom.Next(tts.Length)];    //概率命中的模板
@@ -742,6 +742,7 @@ namespace GuangYuan.GY001.BLL
             var remainder = new List<GameItem>(); //无法放入的剩余物品
             var changes = new List<GamePropertyChangeItem<object>>();
             var bag = datas.GameChar.GetShoppingSlot();
+            var gim = World.ItemManager;
             foreach (var tt in templates)
             {
                 list.Clear();
@@ -755,7 +756,22 @@ namespace GuangYuan.GY001.BLL
                     }
                     else //若无需自动使用
                     {
-                        World.ItemManager.MoveItem(item, item.Count.Value, World.EventsManager.GetDefaultContainer(item, datas.GameChar), remainder, changes);
+                        if (gim.IsMounts(item))  //若是生物
+                        {
+                            if (gim.IsExistsMounts(item, datas.GameChar)) //若存在坐骑
+                            {
+                                World.ItemManager.MoveItem(item, item.Count.Value, gim.GetOrCreateItem(datas.GameChar, ProjectConstant.ShoulanSlotId), remainder, changes);
+                            }
+                            else //若不存在坐骑
+                            {
+                                item.Properties["neatk"] = 0m;
+                                item.Properties["neqlt"] = 0m;
+                                item.Properties["nemhp"] = 0m;
+                                World.ItemManager.MoveItem(item, item.Count.Value, gim.GetOrCreateItem(datas.GameChar, ProjectConstant.ZuojiBagSlotId), remainder, changes);
+                            }
+                        }
+                        else
+                            World.ItemManager.MoveItem(item, item.Count.Value, World.EventsManager.GetDefaultContainer(item, datas.GameChar), remainder, changes);
                     }
                 }
             }

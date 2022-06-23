@@ -1192,13 +1192,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
 
-            GameItem slotFh = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId); //孵化槽
-            if (null == slotFh)
-            {
-                datas.HasError = true;
-                datas.DebugMessage = "找不到孵化槽。";
-                return;
-            }
+            GameItem slotFh = World.ItemManager.GetOrCreateItem(datas.GameChar, ProjectConstant.FuhuaSlotTId); //孵化槽
             GameItem gameItem = datas.GameItems.Join(slotFh.Children, c => c.Id, c => c.Id, (l, r) => r).FirstOrDefault();    //要取出的物品
             if (null == gameItem)
             {
@@ -1218,19 +1212,10 @@ namespace GuangYuan.GY001.BLL
 
             GameItem slotZq = datas.GameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);   //坐骑背包
             GameItemManager gim = World.ItemManager;
-            Guid headTid = gim.GetHead(gameItem).TemplateId;
-            Guid bodyTid = gim.GetBody(gameItem).TemplateId;
-            GameItem zq = slotZq.Children.FirstOrDefault(c =>    //找同头同身坐骑
+
+            if (World.ItemManager.IsExistsMounts(gameItem, datas.GameChar))    //若已经有同种坐骑
             {
-                return c.Children.Any(c2 => c2.TemplateId == headTid) && c.Children.Any(c2 => c2.TemplateId == bodyTid);
-            });
-            if (null != zq)    //若已经有同种坐骑
-            {
-                GameItem slotSl = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
-                if (!datas.Verify(null != slotSl, "找不到兽栏。"))
-                {
-                    return;
-                }
+                GameItem slotSl = World.ItemManager.GetOrCreateItem(datas.GameChar, ProjectConstant.ShoulanSlotId);
 
                 gameItem.Properties["neatk"] = Math.Round(gameItem.GetDecimalWithFcpOrDefault("neatk"), MidpointRounding.AwayFromZero);
                 gameItem.Properties["nemhp"] = Math.Round(gameItem.GetDecimalWithFcpOrDefault("nemhp"), MidpointRounding.AwayFromZero);
@@ -1255,9 +1240,9 @@ namespace GuangYuan.GY001.BLL
             }
             else //若尚无同种坐骑
             {
-                gameItem.Properties["neatk"] = 10m;
-                gameItem.Properties["nemhp"] = 10m;
-                gameItem.Properties["neqlt"] = 10m;
+                gameItem.Properties["neatk"] = 0m;
+                gameItem.Properties["nemhp"] = 0m;
+                gameItem.Properties["neqlt"] = 0m;
                 gim.MoveItem(gameItem, gameItem.Count ?? 1, slotZq, null, datas.Changes);
                 World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.Changes);
             }
@@ -1340,6 +1325,8 @@ namespace GuangYuan.GY001.BLL
             child.Name2FastChangingProperty.Add("fhcd", new FastChangingProperty(TimeSpan.FromSeconds(1), 1, 3600 * 8, 0, DateTime.UtcNow)
             {
             });
+            //写入资质
+
             gim.MoveItem(child, child.Count ?? 1, fuhuaSlot, null, datas.Changes); //放入孵化槽
             var qiwu = datas.GameChar.GetQiwuBag();
             if (jiyin.Count > 1)    //若尚有剩余基因蛋
@@ -1447,17 +1434,20 @@ namespace GuangYuan.GY001.BLL
             var rank1 = parent1.Properties.GetDecimalOrDefault("nerank");
             var rank2 = parent2.Properties.GetDecimalOrDefault("nerank");
 
+            var lv1 = parent1.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+            var lv2 = parent2.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+
             var ne1 = parent1.Properties.GetDecimalOrDefault("neatk");
             var ne2 = parent2.Properties.GetDecimalOrDefault("neatk");
-            var atk = Math.Clamp((ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-50, 51), 0, 100);
+            var atk = Math.Clamp(ne1 * 0.2m + ne2 * 0.2m + lv1 + lv2 + VWorld.WorldRandom.Next(-20, 20), 0, 100);
 
             ne1 = parent1.Properties.GetDecimalOrDefault("nemhp");
             ne2 = parent2.Properties.GetDecimalOrDefault("nemhp");
-            var mhp = Math.Clamp((ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-50, 51), 0, 100);
+            var mhp = Math.Clamp(ne1 * 0.2m + ne2 * 0.2m + lv1 + lv2 + VWorld.WorldRandom.Next(-20, 20), 0, 100);
 
             ne1 = parent1.Properties.GetDecimalOrDefault("neqlt");
             ne2 = parent2.Properties.GetDecimalOrDefault("neqlt");
-            var qlt = Math.Clamp((ne1 * rank1 * 0.15m + ne2 * rank2 * 0.15m) / 2 + VWorld.WorldRandom.Next(-50, 51), 0, 100);
+            var qlt = Math.Clamp(ne1 * 0.2m + ne2 * 0.2m + lv1 + lv2 + VWorld.WorldRandom.Next(-20, 20), 0, 100);
             child.Properties["atk"] = atk;
             child.Properties["mhp"] = mhp;
             child.Properties["qlt"] = qlt;

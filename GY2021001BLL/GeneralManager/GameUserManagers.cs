@@ -930,6 +930,7 @@ namespace GuangYuan.GY001.BLL
                 _Store._Id2OnlineChars.AddOrUpdate(gc.Id, gc, (c1, c2) => gc);  //标记在线
                 gu.Timeout = Options.LogoutTimeout; //置超时时间
                 gu.NodeNum = World.NodeNumber;
+                World.ItemManager.ResetSlot(gc);
                 Nope(gu.CurrentToken);
             }
             else //未登录
