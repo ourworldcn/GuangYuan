@@ -1448,9 +1448,9 @@ namespace GuangYuan.GY001.BLL
             ne1 = parent1.Properties.GetDecimalOrDefault("neqlt");
             ne2 = parent2.Properties.GetDecimalOrDefault("neqlt");
             var qlt = Math.Clamp(ne1 * 0.2m + ne2 * 0.2m + lv1 + lv2 + VWorld.WorldRandom.Next(-20, 20), 0, 100);
-            child.Properties["atk"] = atk;
-            child.Properties["mhp"] = mhp;
-            child.Properties["qlt"] = qlt;
+            child.Properties["neatk"] = atk;
+            child.Properties["nemhp"] = mhp;
+            child.Properties["neqlt"] = qlt;
         }
         #endregion 孵化相关
 

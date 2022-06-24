@@ -653,11 +653,18 @@ namespace GuangYuan.GY001.BLL
             for (int i = 0; i < datas.LotteryTypeCount10; i++)
             {
                 hits.Clear();
-                for (int j = 0; j < 10; j++)
+                for (int j = 0; j < 10; j++)    //单次抽取
                 {
                     var tmp = new Dictionary<string, decimal>(probDic);
+                    var countUnhits = datas.GameChar.GetLotteryCount(null, false, datas.CardPoolId, "0");
+                    KeyValuePair<string, decimal> idProb;
+                    if (countUnhits >= 79) //若79次没有中大奖
+                    {
+                        idProb = new KeyValuePair<string, decimal>("0", 1);
+                    }
                     //AdjProb10(datas, tmp);
-                    var idProb = OwHelper.RandomSelect(tmp, c => c.Value, VWorld.WorldRandom.NextDouble()); //命中的奖池
+                    else
+                        idProb = OwHelper.RandomSelect(tmp, c => c.Value, VWorld.WorldRandom.NextDouble()); //命中的奖池
                     if (!templates.TryGetValue(idProb.Key, out var tts) || tts.Length <= 0)
                     {
                         datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
@@ -861,6 +868,9 @@ namespace GuangYuan.GY001.BLL
 
         #region 内部使用属性
 
+        /// <summary>
+        /// 键是奖池id,值模板数组。
+        /// </summary>
         public Dictionary<string, GameCardPoolTemplate[]> _Templates;
 
         /// <summary>
