@@ -2698,6 +2698,41 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public List<GameItemDto> HomelandShows { get; set; } = new List<GameItemDto>();
 
+        /// <summary>
+        /// 玉米田中的金币数量
+        /// </summary>
+        [DataMember]
+        public decimal GoldOfStore { get; set; }
+
+        /// <summary>
+        /// 金币数量
+        /// </summary>
+        [DataMember]
+        public decimal Gold { get; set; }
+
+        /// <summary>
+        /// 木材数量。
+        /// </summary>
+        [DataMember]
+        public decimal Wood { get; set; }
+
+        /// <summary>
+        /// 树林中的木材数量。
+        /// </summary>
+        [DataMember]
+        public decimal WoodOfStore { get; set; }
+
+        /// <summary>
+        /// pvp积分。
+        /// </summary>
+        [DataMember]
+        public decimal PvpScores { get; set; }
+
+        /// <summary>
+        /// 主基地等级。
+        /// </summary>
+        [DataMember]
+        public int MainBaseLevel { get; set; }
     }
 
     /// <summary>

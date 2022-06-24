@@ -605,7 +605,31 @@ namespace GuangYuan.GY001.BLL
                             join tuiguan in db.Set<GameItem>()   //推关战力对象
                             on gc.Id equals tuiguan.Parent.OwnerId
                             where tuiguan.TemplateId == ProjectConstant.TuiGuanTId
-                            select new { gc, tuiguan, }).AsNoTracking();   //基准集合
+
+                            join gold in db.Set<GameItem>() //金币对象
+                            on gc.Id equals gold.Parent.OwnerId
+                            where gold.TemplateId == ProjectConstant.JinbiId
+
+                            join goldOfStore in db.Set<GameItem>() //玉米田
+                            on gc.Id equals goldOfStore.Parent.Parent.OwnerId
+                            where goldOfStore.TemplateId == ProjectConstant.YumitianTId
+
+                            join wood in db.Set<GameItem>() //木材
+                            on gc.Id equals wood.Parent.OwnerId
+                            where wood.TemplateId == ProjectConstant.MucaiId
+
+                            join woodOfStore in db.Set<GameItem>() //树林
+                            on gc.Id equals woodOfStore.Parent.Parent.OwnerId
+                            where woodOfStore.TemplateId == ProjectConstant.MucaishuTId
+
+                            join mainRoom in db.Set<GameItem>() //主控室
+                            on gc.Id equals mainRoom.Parent.Parent.OwnerId
+                            where mainRoom.TemplateId == ProjectConstant.MainControlRoomSlotId
+
+                            join pvpObject in db.Set<GameItem>() //pvp积分
+                            on gc.Id equals pvpObject.Parent.OwnerId
+                            where pvpObject.TemplateId == ProjectConstant.PvpObjectTId
+                            select new { gc, tuiguan, gold, goldOfStore, wood, woodOfStore, mainRoom, pvpObject }).AsNoTracking();   //基准集合
             if (collBase.Count() != innerIds.Count())
                 throw new ArgumentException("至少一个指定的Id不是有效角色Id。", nameof(innerIds));
             var mounts = (from gc in db.Set<GameChar>()
@@ -613,7 +637,7 @@ namespace GuangYuan.GY001.BLL
                           join gi in db.Set<GameItem>()
                           on gc.Id equals gi.Parent.OwnerId
                           where gi.TemplateId == ProjectConstant.ZuojiZuheRongqi && gi.PropertiesString.Contains("for10=")
-                          select new { gc.Id, gi }).AsNoTracking().ToList();    //展示坐骑
+                          select new { gc.Id, gi }).ToList();    //展示坐骑
             var logoutTime = (from tmp in db.Set<GameActionRecord>()
                               where innerIds.Contains(tmp.ParentId) && tmp.ActionId == "Logout"
                               group tmp by tmp.ParentId into g
@@ -628,6 +652,12 @@ namespace GuangYuan.GY001.BLL
                     Id = item.gc.Id,
                     Level = (int)item.gc.Properties.GetDecimalOrDefault("lv", decimal.Zero),
                     IconIndex = (int)item.gc.Properties.GetDecimalOrDefault("charIcon", decimal.Zero),
+                    Gold = item.gold.Count ?? 0,
+                    GoldOfStore = item.goldOfStore.Count ?? 0,
+                    Wood = item.wood.Count ?? 0,
+                    WoodOfStore = item.woodOfStore.Count ?? 0,
+                    MainBaseLevel = (int)item.mainRoom.GetPropertyWithFcpOrDefalut(World.PropertyManager.LevelPropertyName),
+                    PvpScores = item.pvpObject.ExtraDecimal ?? 0,
                 };
                 var mount = mounts.Where(c => c.Id == item.gc.Id).Select(c => c.gi);
                 if (null != mount)

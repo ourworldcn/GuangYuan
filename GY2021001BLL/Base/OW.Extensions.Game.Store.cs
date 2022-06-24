@@ -74,6 +74,36 @@ namespace OW.Extensions.Game.Store
         /// 头像索引号。默认为0。
         /// </summary>
         public int IconIndex { get; set; }
+
+        /// <summary>
+        /// 玉米田中的金币数量
+        /// </summary>
+        public decimal GoldOfStore { get; set; }
+
+        /// <summary>
+        /// 金币数量
+        /// </summary>
+        public decimal Gold { get; set; }
+
+        /// <summary>
+        /// 木材数量。
+        /// </summary>
+        public decimal Wood { get; set; }
+
+        /// <summary>
+        /// 树林中的木材数量。
+        /// </summary>
+        public decimal WoodOfStore { get; set; }
+
+        /// <summary>
+        /// pvp积分。
+        /// </summary>
+        public decimal PvpScores { get; set; }
+
+        /// <summary>
+        /// 主基地等级。
+        /// </summary>
+        public int MainBaseLevel { get; set; }
     }
 
     /// <summary>

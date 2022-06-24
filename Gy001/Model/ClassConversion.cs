@@ -532,6 +532,12 @@ namespace GY2021001WebApi.Models
                 Id = obj.Id.ToBase64String(),
                 LastLogoutDatetime = obj.LastLogoutDatetime,
                 Level = obj.Level,
+                Gold = obj.Gold,
+                GoldOfStore = obj.GoldOfStore,
+                MainBaseLevel = obj.MainBaseLevel,
+                PvpScores = obj.PvpScores,
+                Wood = obj.Wood,
+                WoodOfStore = obj.WoodOfStore,
             };
             result.HomelandShows.AddRange(obj.HomelandShows.Select(c => (GameItemDto)c));
             return result;

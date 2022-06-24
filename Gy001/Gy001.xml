@@ -1094,6 +1094,36 @@
             最后一次下线时间。空表示当前在线。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.GoldOfStore">
+            <summary>
+            玉米田中的金币数量
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Gold">
+            <summary>
+            金币数量
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Wood">
+            <summary>
+            木材数量。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.WoodOfStore">
+            <summary>
+            树林中的木材数量。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.PvpScores">
+            <summary>
+            pvp积分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.MainBaseLevel">
+            <summary>
+            主基地等级。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GameSocialRelationshipDto">
             <summary>
             GameSocialRelationship 对象的传输封装。
