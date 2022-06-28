@@ -249,8 +249,6 @@ namespace GuangYuan.GY001.BLL
         // This is a positional argument
         public BlueprintMethodAttribute(string blueprintId)
         {
-
-
             _BlueprintId = Guid.Parse(blueprintId);
         }
 
@@ -922,7 +920,7 @@ namespace GuangYuan.GY001.BLL
             {
                 src.Count -= count;
             }
-
+            //World.ItemManager.ForcedAddCount(destItem, count, datas.Changes);
             destItem.Count += count;
             datas.ChangeItems.AddToChanges(src.GetContainerId().Value, src);
             datas.ChangeItems.AddToChanges(destItem.GetContainerId().Value, destItem);
@@ -1667,6 +1665,16 @@ namespace GuangYuan.GY001.BLL
             ChangeItem.Reduce(datas.ChangeItems);
             if (datas.SuccCount > 0)
                 World.CharManager.NotifyChange(datas.GameChar.GameUser);
+        }
+
+        /// <summary>
+        /// 合成道具蓝图，ActionId是要合成的物品模板id,Count是要合成的数量，要求有足够的材料，否则失败。
+        /// </summary>
+        /// <param name="datas"></param>
+        [BlueprintMethod("{3DDD25FA-3C97-48DC-A23B-7EE1B1F29A4C}")] //合成
+        public void MakeItem(ApplyBlueprintDatas datas)
+        {
+            
         }
 
         /// <summary>

@@ -584,19 +584,8 @@ namespace Gy001.Controllers
                 if (!result.HasError)    //若没有错误
                 {
                     //增补客户端需要的额外数据
-                    using var dwUsers = _World.CharManager.LockOrLoadWithCharIds(datas.CharIds, _World.CharManager.Options.DefaultLockTimeout * datas.CharIds.Count);
-                    if (dwUsers is null)
-                    {
-                        result.HasError = true;
-                        result.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
-                    }
-                    foreach (var charId in datas.CharIds)
-                    {
-                        var gc = _World.CharManager.GetCharFromId(charId);
-                        result.CurrencyBags[charId.ToBase64String()] = gc.GetCurrencyBag(); //设置货币带
-                        result.MainBases[charId.ToBase64String()] = gc.GetMainbase(); //设置主地块
-                        result.CharSummary.Add(gc);
-                    }
+                    var summary = datas.World.SocialManager.GetCharSummary(datas.CharIds, datas.UserDbContext);
+                    result.CharSummary.AddRange(summary.Select(c => (CharSummaryDto)c));
                 }
             }
             catch (Exception err)

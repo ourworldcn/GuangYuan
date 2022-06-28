@@ -436,20 +436,6 @@ namespace GY2021001WebApi.Models
         }
     }
 
-    public partial class GeneralCharSummaryDto
-    {
-        public static implicit operator GeneralCharSummaryDto(GameChar obj)
-        {
-            var pmng = (GamePropertyManager)obj.GameUser.Services.GetService(typeof(IGamePropertyManager));
-            var result = new GeneralCharSummaryDto()
-            {
-                Id = obj.Base64IdString,
-                DisplayName = obj.DisplayName,
-                Level = (int)obj.Properties.GetDecimalOrDefault(pmng.LevelPropertyName),
-            };
-            return result;
-        }
-    }
     #endregion 基础数据
 
     public partial class CombatStartReturnDto
@@ -534,7 +520,7 @@ namespace GY2021001WebApi.Models
                 Level = obj.Level,
                 Gold = obj.Gold,
                 GoldOfStore = obj.GoldOfStore,
-                MainBaseLevel = obj.MainBaseLevel,
+                MainControlRoomLevel = obj.MainBaseLevel,
                 PvpScores = obj.PvpScores,
                 Wood = obj.Wood,
                 WoodOfStore = obj.WoodOfStore,

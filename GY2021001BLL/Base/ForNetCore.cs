@@ -152,7 +152,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 
+        /// 生成测试账号。
         /// </summary>
         [Conditional("DEBUG")]
         private void CreateNewUserAndChar()

@@ -971,36 +971,6 @@
             格式为：主版本号.次要版本号.修正号，修正号仅仅是修复bug等，只要主要和次要版本号一致就是同一个版本。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.GeneralCharSummaryDto">
-            <summary>
-            角色信息概览。非敏感且非需要付费查看的信息，都将放入此类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GeneralCharSummaryDto.Id">
-            <summary>
-            角色的Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GeneralCharSummaryDto.DisplayName">
-            <summary>
-            角色的昵称。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GeneralCharSummaryDto.Level">
-            <summary>
-            角色等级。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GeneralCharSummaryDto.CombatCap">
-            <summary>
-            角色战力。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GeneralCharSummaryDto.Gameitems">
-            <summary>
-            相关物品的信息。根据不同接口这里包含不同信息，如可能是家园展示坐骑等。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
             <summary>
             开始战斗的返回数据传输类
@@ -1119,7 +1089,7 @@
             pvp积分。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.MainBaseLevel">
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.MainControlRoomLevel">
             <summary>
             主基地等级。
             </summary>
@@ -2740,18 +2710,6 @@
         <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.CharSummary">
             <summary>
             相关角色的信息。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.CurrencyBags">
-            <summary>
-            货币袋及子对象数据。
-            键是角色Id，值是货币袋及其子对象。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.MainBases">
-            <summary>
-            家园主地块及子对象数据。
-            键是角色Id，值是主地块及其子对象。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.RemoveBlackParamsDto.CharId">

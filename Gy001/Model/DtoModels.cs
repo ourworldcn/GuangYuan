@@ -2431,47 +2431,6 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// 角色信息概览。非敏感且非需要付费查看的信息，都将放入此类。
-    /// </summary>
-    [DataContract]
-    public partial class GeneralCharSummaryDto
-    {
-        /// <summary>
-        /// 角色的Id。
-        /// </summary>
-        [DataMember]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// 角色的昵称。
-        /// </summary>
-        [DataMember]
-        public string DisplayName { get; set; }
-
-        /// <summary>
-        /// 角色等级。
-        /// </summary>
-        [DataMember]
-        public int Level { get; set; }
-
-        /// <summary>
-        /// 角色战力。
-        /// </summary>
-        [DataMember]
-        public decimal CombatCap { get; set; }
-
-        //[DataMember]
-        //public DateTime? LastLogoutDatetime { get; set; }
-
-        /// <summary>
-        /// 相关物品的信息。根据不同接口这里包含不同信息，如可能是家园展示坐骑等。
-        /// </summary>
-        [DataMember]
-        public List<GameItemDto> Gameitems { get; set; } = new List<GameItemDto>();
-
-    }
-
-    /// <summary>
     /// 
     /// </summary>
     [DataContract]
@@ -2732,7 +2691,7 @@ namespace GY2021001WebApi.Models
         /// 主基地等级。
         /// </summary>
         [DataMember]
-        public int MainBaseLevel { get; set; }
+        public int MainControlRoomLevel { get; set; }
     }
 
     /// <summary>
@@ -3114,21 +3073,7 @@ namespace GY2021001WebApi.Models
         /// 相关角色的信息。
         /// </summary>
         [DataMember]
-        public List<GeneralCharSummaryDto> CharSummary { get; set; } = new List<GeneralCharSummaryDto>();
-
-        /// <summary>
-        /// 货币袋及子对象数据。
-        /// 键是角色Id，值是货币袋及其子对象。
-        /// </summary>
-        [DataMember]
-        public Dictionary<string, GameItemDto> CurrencyBags { get; set; } = new Dictionary<string, GameItemDto>();
-
-        /// <summary>
-        /// 家园主地块及子对象数据。
-        /// 键是角色Id，值是主地块及其子对象。
-        /// </summary>
-        [DataMember]
-        public Dictionary<string, GameItemDto> MainBases { get; set; } = new Dictionary<string, GameItemDto>();
+        public List<CharSummaryDto> CharSummary { get; set; } = new List<CharSummaryDto>();
     }
 
     public class RemoveBlackParamsDto : TokenDtoBase

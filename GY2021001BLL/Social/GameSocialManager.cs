@@ -131,21 +131,6 @@ namespace GuangYuan.GY001.BLL
 
         #endregion 构造函数及相关
 
-
-        public void GetGeneralCharSummary(GetGeneralCharSummaryDatas datas)
-        {
-            using var dwUsers = datas.LockAll();
-            if (dwUsers is null)
-                return;
-            var list = datas.OtherCharIds.Select(c => World.CharManager.GetCharFromId(c)).ToList();
-            if (list.All(c => c is null))
-            {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_USER;
-            }
-            datas.GameChars.AddRange(datas.OtherCharIds.Select(c => World.CharManager.GetCharFromId(c)));
-        }
-
         #region 邮件及相关
 
         /// <summary>
@@ -591,7 +576,7 @@ namespace GuangYuan.GY001.BLL
              db.Set<GameChar>().Join(db.Set<GameActionRecord>(), c => c.Id, c => c.ParentId, (l, r) => new { l, r }).OrderByDescending(c => c.r.DateTimeUtc).Select(c => c.l);
 
         /// <summary>
-        /// 获取一组角色的摘要数据。
+        /// 获取一组角色的摘要数据。从数据库直接获取，可能有延迟。
         /// </summary>
         /// <param name="innerIds">要获得摘要信息的角色Id集合。</param>
         /// <param name="db">使用的用户数据库上下文。</param>
