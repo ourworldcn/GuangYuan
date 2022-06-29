@@ -1674,7 +1674,31 @@ namespace GuangYuan.GY001.BLL
         [BlueprintMethod("{3DDD25FA-3C97-48DC-A23B-7EE1B1F29A4C}")] //合成
         public void MakeItem(ApplyBlueprintDatas datas)
         {
-            
+            using var dw = datas.LockUser();
+            if (dw is null)
+                return;
+            if (!OwConvert.TryToGuid(datas.ActionId, out var ttTid))
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = $"找不到指定的物品模板，Id={datas.ActionId}";
+                return;
+            }
+            var tt = World.ItemTemplateManager.GetTemplateFromeId(ttTid);
+            if (tt is null)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = $"找不到指定的物品模板，Id={ttTid}";
+                return;
+            }
+            if (!World.ItemManager.DecrementCount(datas.GameChar, tt.Properties, "unl", datas.Changes))  //若无法找到材料
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            var gi = new GameItem();
+            World.EventsManager.GameItemCreated(gi, tt);
+            World.ItemManager.MoveItem(gi, gi.Count.Value, World.EventsManager.GetDefaultContainer(gi, datas.GameChar), null, datas.Changes);
+            datas.Changes.CopyTo(datas.ChangeItems);
         }
 
         /// <summary>

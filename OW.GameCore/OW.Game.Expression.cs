@@ -17,12 +17,12 @@ namespace OW.Game.Expression
         /// <summary>
         /// 操作符。
         /// </summary>
-        private static readonly string[] op = new string[] { "gtq", "gt", "ltq", "lt", "eq", "neq" };
+        public static readonly string[] op = new string[] { "gtq", "gt", "ltq", "lt", "eq", "neq" };
 
         /// <summary>
         /// 操作符。
         /// </summary>
-        private string _Operator;
+        private readonly string _Operator;
 
         /// <summary>
         /// 

@@ -48,7 +48,7 @@ namespace OW.Game.Item
 
         }
 
-        List<IReadOnlyDictionary<string, object>> _Datas = new List<IReadOnlyDictionary<string, object>>();
+        readonly List<IReadOnlyDictionary<string, object>> _Datas = new List<IReadOnlyDictionary<string, object>>();
 
         public List<IReadOnlyDictionary<string, object>> Datas => _Datas;
 
@@ -1114,7 +1114,8 @@ namespace OW.Game.Item
                 VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
                 return false;
             }
-            DecrementCount(list, changes);
+            if (list.Count > 0)
+                DecrementCount(list, changes);
             return true;
         }
 

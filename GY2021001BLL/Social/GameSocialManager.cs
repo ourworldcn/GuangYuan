@@ -615,8 +615,8 @@ namespace GuangYuan.GY001.BLL
                             on gc.Id equals pvpObject.Parent.OwnerId
                             where pvpObject.TemplateId == ProjectConstant.PvpObjectTId
                             select new { gc, tuiguan, gold, goldOfStore, wood, woodOfStore, mainRoom, pvpObject }).AsNoTracking();   //基准集合
-            if (collBase.Count() != innerIds.Count())
-                throw new ArgumentException("至少一个指定的Id不是有效角色Id。", nameof(innerIds));
+            if (collBase.Count() != innerIds.Length)
+                throw new ArgumentException("至少一个指定的Id不是有效角色Id。", nameof(ids));
             var mounts = (from gc in db.Set<GameChar>()
                           where innerIds.Contains(gc.Id)
                           join gi in db.Set<GameItem>()

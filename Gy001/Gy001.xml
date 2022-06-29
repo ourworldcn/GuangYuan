@@ -1864,6 +1864,12 @@
             蓝图的模板Id。这个见另行说明文档。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintParamsDto.ActionId">
+            <summary>
+            要求进行工作的Id。
+            可能不需要。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.ApplyBlueprintParamsDto.GameItems">
             <summary>
             要执行蓝图制造的对象集合。元素仅需要Id属性正确，当前版本忽略其他属性。

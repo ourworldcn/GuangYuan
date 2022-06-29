@@ -93,10 +93,12 @@ namespace Gy001.Controllers
                     Blueprint = world.BlueprintManager.GetTemplateFromId(OwConvert.ToGuid(model.BlueprintId)) as BlueprintTemplate,  //这里不处理是空的情况
                     Count = model.Count,
                 };
+                if (OwConvert.TryToGuid(model.ActionId, out var actionId))
+                    datas.ActionId = actionId;
                 datas.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
                 world.BlueprintManager.ApplyBluprint(datas);
 
-                result = (ApplyBlueprintReturnDto)datas;
+                result.FillFrom(datas);
                 world.CharManager.NotifyChange(gu);
             }
             catch (Exception err)

@@ -1575,6 +1575,13 @@ namespace GY2021001WebApi.Models
         public string BlueprintId { get; set; }
 
         /// <summary>
+        /// 要求进行工作的Id。
+        /// 可能不需要。
+        /// </summary>
+        [DataMember]
+        public string ActionId { get; set; }
+
+        /// <summary>
         /// 要执行蓝图制造的对象集合。元素仅需要Id属性正确，当前版本忽略其他属性。
         /// 可以仅给出关键物品，在制造过成中会补足其他所需物品。如神纹升级与突破，给出神纹对象即可。
         /// </summary>
@@ -1586,6 +1593,8 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public int Count { get; set; } = 1;
+
+
     }
 
     /// <summary>
@@ -2751,14 +2760,6 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string PropertyString { get; set; }
 
-        private void Demo()
-        {
-            var dt = DateTime.UtcNow;
-            //调用接口
-            GetSocialRelationshipsReturnDto result = null;
-            result.SocialRelationships.Where(c => c.ObjectId == "动物id" && c.KeyType == 20000 && DateTime.Parse(PropertyString).Date == dt.Date);
-        }
-
     }
 
     /// <summary>
@@ -3729,13 +3730,13 @@ namespace GY2021001WebApi.Models
         /// 销售周期的单位字符(小写)。n表示无限。
         /// </summary>
         [DataMember]
-        public char SellPeriodUnit => string.IsNullOrWhiteSpace(SellPeriod) ? 'n' : char.ToLower(SellPeriod[SellPeriod.Length - 1]);
+        public char SellPeriodUnit => string.IsNullOrWhiteSpace(SellPeriod) ? 'n' : char.ToLower(SellPeriod[^1]);
 
         /// <summary>
         /// 销售周期的单位的标量数值。
         /// </summary>
         [DataMember]
-        public decimal SellPeriodValue => !string.IsNullOrWhiteSpace(SellPeriod) && decimal.TryParse(SellPeriod.Substring(0, SellPeriod.Length - 1), out var val) ? val : -1;
+        public decimal SellPeriodValue => !string.IsNullOrWhiteSpace(SellPeriod) && decimal.TryParse(SellPeriod[0..^1], out var val) ? val : -1;
 
         /// <summary>
         /// 销售的最大数量。-1表示不限制。
