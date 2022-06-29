@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
+#pragma warning disable IDE0057 // 使用范围运算符
 #pragma warning disable IDE0074 // 使用复合分配
 
 namespace GY2021001WebApi.Models
@@ -3730,13 +3731,13 @@ namespace GY2021001WebApi.Models
         /// 销售周期的单位字符(小写)。n表示无限。
         /// </summary>
         [DataMember]
-        public char SellPeriodUnit => string.IsNullOrWhiteSpace(SellPeriod) ? 'n' : char.ToLower(SellPeriod[^1]);
+        public char SellPeriodUnit => string.IsNullOrWhiteSpace(SellPeriod) ? 'n' : char.ToLower(SellPeriod.Last());
 
         /// <summary>
         /// 销售周期的单位的标量数值。
         /// </summary>
         [DataMember]
-        public decimal SellPeriodValue => !string.IsNullOrWhiteSpace(SellPeriod) && decimal.TryParse(SellPeriod[0..^1], out var val) ? val : -1;
+        public decimal SellPeriodValue => !string.IsNullOrWhiteSpace(SellPeriod) && decimal.TryParse(SellPeriod.Substring(0, SellPeriod.Length - 1), out var val) ? val : -1;
 
         /// <summary>
         /// 销售的最大数量。-1表示不限制。
@@ -4275,3 +4276,4 @@ namespace GY2021001WebApi.Models
     #endregion 行会相关
 }
 #pragma warning restore IDE0074 // 使用复合分配
+#pragma warning restore IDE0057 // 使用范围运算符

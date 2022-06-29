@@ -145,11 +145,11 @@ namespace Gy001.Controllers
                             group guild by guild.Id into g
                             select new { GuildId = g.Key, Count = g.Count() }).ToDictionary(c => c.GuildId, c => c.Count);
                 result.Guilds.AddRange(World.AllianceManager.Id2Guild.Values.Where(c => coll.ContainsKey(c.Id) && c.Properties.GetDecimalOrDefault("maxMemberCount") > coll[c.Id]).Take(model.Top).Select(c =>
-                  {
-                      var dto = new GameGuildDto();
-                      GameGuildDto.FillMembers(c, dto, World);
-                      return dto;
-                  }));
+                {
+                    var dto = new GameGuildDto();
+                    GameGuildDto.FillMembers(c, dto, World);
+                    return dto;
+                }));
             }
             else
             {
