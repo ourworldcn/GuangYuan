@@ -98,6 +98,7 @@ namespace Gy001.Controllers
                 datas.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
                 world.BlueprintManager.ApplyBluprint(datas);
 
+                result = (ApplyBlueprintReturnDto)datas;
                 result.FillFrom(datas);
                 world.CharManager.NotifyChange(gu);
             }
