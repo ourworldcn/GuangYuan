@@ -3954,6 +3954,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 随机的获取多少工会。DisplayName 省略或为null则不限定工会的名称，使用此数字限定返回的最大数量。
+        /// </summary>
+        [DataMember]
+        public int Top { get; set; }
     }
 
     [DataContract]

@@ -3106,6 +3106,11 @@
             搜索工会的名字。省略或为null则不限定工会的名称。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetAllGuildParamsDto.Top">
+            <summary>
+            随机的获取多少工会。DisplayName 省略或为null则不限定工会的名称，使用此数字限定返回的最大数量。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.GetAllGuildReturnDto.Guilds">
             <summary>
             所有工会信息集合。
@@ -3249,6 +3254,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

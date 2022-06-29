@@ -1,4 +1,6 @@
-﻿using GuangYuan.GY001.UserDb.Social;
+﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Social;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -132,12 +134,32 @@ namespace Gy001.Controllers
         public ActionResult<GetAllGuildReturnDto> GetAllGuild(GetAllGuildParamsDto model)
         {
             var result = new GetAllGuildReturnDto();
-            result.Guilds.AddRange(World.AllianceManager.Id2Guild.Values.Where(c => string.IsNullOrWhiteSpace(model.DisplayName) || c.DisplayName.Contains(model.DisplayName)).Select(c =>
+            if (string.IsNullOrEmpty(model.DisplayName))    //若需要按排名取前n个工会
             {
-                var dto = new GameGuildDto();
-                GameGuildDto.FillMembers(c, dto, World);
-                return dto;
-            }));
+                using var db = World.World.CreateNewUserDbContext();
+                var keys = World.AllianceManager.Id2Guild.Keys.Select(c => c.ToString());
+                var coll = (from slot in db.Set<GameItem>()
+                            join guild in db.Set<GameGuild>()
+                            on slot.ExtraString equals guild.Id.ToString()
+                            where slot.TemplateId == ProjectConstant.GuildSlotId && slot.ExtraDecimal >= 10 //工会成员
+                            group guild by guild.Id into g
+                            select new { GuildId = g.Key, Count = g.Count() }).ToDictionary(c => c.GuildId, c => c.Count);
+                result.Guilds.AddRange(World.AllianceManager.Id2Guild.Values.Where(c => coll.ContainsKey(c.Id) && c.Properties.GetDecimalOrDefault("maxMemberCount") > coll[c.Id]).Take(model.Top).Select(c =>
+                  {
+                      var dto = new GameGuildDto();
+                      GameGuildDto.FillMembers(c, dto, World);
+                      return dto;
+                  }));
+            }
+            else
+            {
+                result.Guilds.AddRange(World.AllianceManager.Id2Guild.Values.Where(c => string.IsNullOrWhiteSpace(model.DisplayName) || c.DisplayName.Contains(model.DisplayName)).Select(c =>
+                {
+                    var dto = new GameGuildDto();
+                    GameGuildDto.FillMembers(c, dto, World);
+                    return dto;
+                }));
+            }
             return result;
         }
 
