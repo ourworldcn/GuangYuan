@@ -527,6 +527,7 @@ namespace OW.Game
 
         public override void GameCharLoaded(GameChar gameChar)
         {
+            var now = DateTime.UtcNow;
             base.GameCharLoaded(gameChar);
             //清除锁定属性槽内物品，放回道具背包中
             var gim = World.ItemManager;
@@ -541,7 +542,6 @@ namespace OW.Game
                     continue;
 
                 var dt = fcp.GetComplateDateTime();
-                var now = DateTime.UtcNow;
                 TimeSpan ts;
                 if (now >= dt)   //若已经超时
                     ts = TimeSpan.Zero;
@@ -553,8 +553,6 @@ namespace OW.Game
             //复位角色级别缓存字符串
             var lv = (int)gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
             gameChar.ExtraString = lv.ToString("D10");
-            //复位pvp信息
-            //复位塔防信息
         }
 
         public override void GameUserLoaded(GameUser user, DbContext context)
@@ -566,6 +564,18 @@ namespace OW.Game
 
         #endregion 加载对象相关
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="gameChar"></param>
+        public override void GameCharLogined(GameChar gameChar)
+        {
+            var now = DateTime.UtcNow;
+            base.GameCharLogined(gameChar);
+            //复位pvp信息
+            World.SocialManager.ResetPvpObject(gameChar, now);
+            //复位塔防信息
+        }
         #region Json反序列化
         public override void JsonDeserialized(GameUser gameUser)
         {

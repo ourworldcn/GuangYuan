@@ -1606,6 +1606,28 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 如果已经是新日则复位pvp信息。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="now">使用的时间点。</param>
+        /// <returns>true数据已经变化，false数据没有变化(指定日期已经有数据)。</returns>
+        public bool ResetPvpObject(GameChar gameChar, DateTime now)
+        {
+            var pvpObj = gameChar.GetPvpObject();
+            var today = pvpObj.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();
+            var todayData = today.GetTodayData(now);    //获取当日数据
+            if (!todayData.Any()) //若没有当日数据
+            {
+                World.ItemManager.SetLevel(pvpObj, 0);
+                pvpObj.Properties[World.PropertyManager.LevelPropertyName] = 0m;
+                today.ResetTodayData(now);
+                today.RemoveAll(c => c.DateTime.Date < now.Date);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 获取该用户的指定日期的可pvp对象。
         /// </summary>
         /// <param name="datas"></param>
