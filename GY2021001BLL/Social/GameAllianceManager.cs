@@ -15,6 +15,7 @@ using OW.Game.PropertyChange;
 using System.Threading;
 using GuangYuan.GY001.BLL.GeneralManager;
 using OW.Game.Log;
+using System.Collections.ObjectModel;
 
 namespace GuangYuan.GY001.UserDb.Social
 {
@@ -171,13 +172,13 @@ namespace GuangYuan.GY001.UserDb.Social
         /// </summary>
         /// <param name="guild"></param>
         /// <returns></returns>
-        public SimpleGameLogCollection GetMissionOrCreate(GameGuild guild, DateTime now)
+        public SmallGameLogCollection GetMissionOrCreate(GameGuild guild, DateTime now)
         {
             //if (!Lock(guild.Id, Options.DefaultTimeout, out guild))
             //    return null;
             //using var dw = DisposeHelper.Create(c => Unlock(c), guild);
-            var sgc = SimpleGameLogCollection.Parse(guild.Properties, "mission");
-            sgc.Remove(now.Date);
+            var sgc = SmallGameLogCollection.Parse(guild.Properties, "mission");
+            sgc.RemoveAll(c => c.DateTime < now.Date);
             if (sgc.Count <= 0)
             {
                 var coll = World.ItemTemplateManager.Id2Mission.Values.Where(c => c.GroupNumber == "1001").ToList();

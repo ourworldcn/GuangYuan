@@ -553,6 +553,8 @@ namespace OW.Game
             //复位角色级别缓存字符串
             var lv = (int)gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
             gameChar.ExtraString = lv.ToString("D10");
+            //复位pvp信息
+            //复位塔防信息
         }
 
         public override void GameUserLoaded(GameUser user, DbContext context)

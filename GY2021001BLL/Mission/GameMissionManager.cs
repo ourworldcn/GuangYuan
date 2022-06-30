@@ -12,6 +12,7 @@ using OW.Game.Log;
 using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -558,7 +559,7 @@ namespace OW.Game.Mission
                 }
                 using var dwGuild = DisposeHelper.Create(c => World.AllianceManager.Unlock(c), guild);  //解锁工会
                 var sgc = GetGuildMission(datas.GameChar);
-                sgc.Remove(now.Date);
+                sgc.RemoveAll(c => c.DateTime < now.Date);
                 if (sgc.Count >= 5)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
@@ -645,9 +646,9 @@ namespace OW.Game.Mission
         /// </summary>
         /// <param name="gameChar"></param>
         /// <returns>工会任务模板Id集合。</returns>
-        public SimpleGameLogCollection GetGuildMission(GameChar gameChar)
+        public SmallGameLogCollection GetGuildMission(GameChar gameChar)
         {
-            var sgc = SimpleGameLogCollection.Parse(gameChar.Properties, "guildMission");
+            var sgc = SmallGameLogCollection.Parse(gameChar.Properties, "guildMission");
             return sgc;
         }
 

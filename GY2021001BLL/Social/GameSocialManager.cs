@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Item;
+using OW.Game.Log;
 using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
@@ -1337,17 +1338,17 @@ namespace GuangYuan.GY001.BLL
             /// </summary>
             public FastChangingProperty Counter => _Counter ??= GameChar.GetHomeland().Name2FastChangingProperty[FcpName];
 
-            private TodayDataWrapper<Guid> _Hudong;
+            private TodayDataLog<Guid> _Hudong;
             /// <summary>
             /// 互动数据。
             /// </summary>
-            public TodayDataWrapper<Guid> Hudong
+            public TodayDataLog<Guid> Hudong
             {
                 get
                 {
                     if (_Hudong is null)
                     {
-                        _Hudong = TodayDataWrapper<Guid>.Create(GameChar.GetHomeland().Properties, PatTodayName, Now);
+                        _Hudong = TodayDataLog<Guid>.Create(GameChar.GetHomeland().Properties, PatTodayName, Now);
                     }
                     return _Hudong;
                 }
@@ -1622,7 +1623,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             const string pvpChar = "PvpChar";   //PVP当日数据名的前缀
-            using var todayData = TodayDataWrapper<Guid>.Create(datas.PvpObject.Properties, pvpChar, datas.Now);    //当日数据的帮助器类
+            using var todayData = TodayDataLog<Guid>.Create(datas.PvpObject.Properties, pvpChar, datas.Now);    //当日数据的帮助器类
             if (!todayData.HasData)  //若当日无数据
             {
                 if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, 0))   //若无法设置级别

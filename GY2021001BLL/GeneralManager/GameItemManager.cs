@@ -1455,6 +1455,7 @@ namespace OW.Game.Item
 
         public ActiveStyleDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
+            
         }
 
         /// <summary>
@@ -1590,17 +1591,6 @@ namespace OW.Game.Item
                 gameItems.Add(gi);
             }
         }
-
-        /// <summary>
-        /// 强制修改数量。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="diff">可以是合理范围内的负数。</param>
-        /// <param name="changes">变化数据，可以是空表示不记录变化数据。</param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ForcedAddCount(this GameItemManager mng, GameItem gameItem, decimal diff, [AllowNull] ICollection<ChangeItem> changes = null) =>
-            mng.ForcedSetCount(gameItem, gameItem.Count.GetValueOrDefault() + diff, changes);
 
         /// <summary>
         /// 强制修改数量。

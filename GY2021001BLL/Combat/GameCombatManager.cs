@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Item;
+using OW.Game.Log;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
 using System;
@@ -610,7 +611,7 @@ namespace GuangYuan.GY001.BLL
             }
 
             var pvpObject = datas.GameChar.GetPvpObject();  //PVP对象
-            using var todayData = TodayDataWrapper<Guid>.Create(pvpObject.Properties, pvpChar, datas.Now);
+            using var todayData = TodayDataLog<Guid>.Create(pvpObject.Properties, pvpChar, datas.Now);
             if (!todayData.LastValues.Contains(datas.OtherChar.Id))  //若不能攻击
             {
                 datas.HasError = true;
