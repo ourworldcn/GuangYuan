@@ -58,6 +58,18 @@ namespace GY2021001WebApi.Models
                 PropertyName = obj.PropertyName,
                 TId = (obj.Object as GameThingBase)?.TemplateId.ToBase64String(),
             };
+            if (obj.IsCollectionRemoved())  //若是集合删除元素
+                result.OldValue = (obj.OldValue as GameThingBase)?.Base64IdString;
+            if (obj.IsCollectionAdded()) //若添加了元素
+            {
+                if (obj.NewValue is GameItem gi)
+                    result.NewValue = (GameItemDto)gi;
+                else if (obj.NewValue is GameChar gc)
+                    result.NewValue = (GameCharDto)gc;
+                else if (obj.NewValue is GameGuild gg)
+                    result.NewValue = (GameGuildDto)gg;
+                //TO DO 不认识的对象类型
+            }
             return result;
         }
     }
