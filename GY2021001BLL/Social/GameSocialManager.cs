@@ -1618,9 +1618,11 @@ namespace GuangYuan.GY001.BLL
             var todayData = today.GetTodayData(now);    //获取当日数据
             if (!todayData.Any()) //若没有当日数据
             {
-                World.ItemManager.SetLevel(pvpObj, 0);
-                pvpObj.Properties[World.PropertyManager.LevelPropertyName] = 0m;
-                today.ResetTodayData(now);
+                var datas = new GetPvpCharsWorkDatas(World, gameChar)
+                {
+                    Now = now,
+                };
+                GetPvpChars(datas);
                 today.RemoveAll(c => c.DateTime.Date < now.Date);
                 return true;
             }
