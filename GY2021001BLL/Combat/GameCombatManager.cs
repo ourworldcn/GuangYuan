@@ -599,7 +599,6 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datats"></param>
         public void Pvp(EndCombatPvpWorkData datas)
         {
-            const string pvpChar = "PvpChar";   //PVP当日数据名的前缀
 #pragma warning disable CS0219 // 变量“pvpRetaliation”已被赋值，但从未使用过它的值
             const string pvpRetaliation = "pvpRetaliation";   //反击字段
 #pragma warning restore CS0219 // 变量“pvpRetaliation”已被赋值，但从未使用过它的值
@@ -611,8 +610,8 @@ namespace GuangYuan.GY001.BLL
             }
 
             var pvpObject = datas.GameChar.GetPvpObject();  //PVP对象
-            using var todayData = TodayDataLog<Guid>.Create(pvpObject.Properties, pvpChar, datas.Now);
-            if (!todayData.LastValues.Contains(datas.OtherChar.Id))  //若不能攻击
+            var todayData = pvpObject.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();
+            if (!todayData.GetLastData(datas.Now).Contains(datas.OtherChar.Id))  //若不能攻击
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
@@ -620,18 +619,10 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpAttack);
-            //var sr = datas.SocialRelationships.FirstOrDefault(c => c.Id2 == datas.OtherChar.Id);  //关系数据
-            //if (sr is null) //若不准攻击
-            //{
-            //    datas.HasError = true;
-            //    VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
-            //    return;
-            //}
             //更改数据
             var db = datas.UserDbContext;
-            //datas.SocialRelationships.Remove(sr);
             //移除攻击权
-            todayData.LastValues.Remove(datas.OtherCharId);
+            todayData.RemoveLastData(datas.OtherCharId, datas.Now);
             GameItem pvpObj, otherPvpObj;
             //增加战报
             WarNewspaper pc = new WarNewspaper()
@@ -663,8 +654,7 @@ namespace GuangYuan.GY001.BLL
             datas.Combat = pc;
             db.Add(pc);
             //移除攻击权
-            todayData.LastValues.Remove(datas.GameChar.Id);
-            todayData.Save();
+            todayData.RemoveLastData(datas.OtherCharId, datas.Now);
             //设置战利品
             List<GameBooty> bootyOfAttacker = new List<GameBooty>();
             List<GameBooty> bootyOfDefenser = new List<GameBooty>();

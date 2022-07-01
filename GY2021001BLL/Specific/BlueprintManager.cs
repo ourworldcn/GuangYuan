@@ -105,24 +105,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 消耗资源。
-        /// </summary>
-        /// <param name="cost"></param>
-        /// <returns>true,消耗资源成功，false至少有一种资源不足。</returns>
-        public bool Deplete(List<(GameItem, decimal)> cost)
-        {
-            var errItem = cost.FirstOrDefault(item => item.Item1.Count + item.Item2 < 0);
-            if (null != errItem.Item1)  //若有资源不足
-            {
-                VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
-                VWorld.SetLastErrorMessage($"{errItem.Item1.GetTemplate().DisplayName} 不足。");
-                return false;
-            }
-            cost.ForEach(c => c.Item1.Count += c.Item2);    //应用资源损耗
-            return true;
-        }
-
-        /// <summary>
         /// 获取升级所需的时间。
         /// <see cref="TimeSpan.Zero"/>表示升级立即完成。
         /// </summary>
@@ -738,8 +720,9 @@ namespace GuangYuan.GY001.BLL
                     datas.DebugMessage = VWorld.GetLastErrorMessage();
                     return;
                 }
-                var succ = luDatas.Deplete(cost);
-                if (!succ)  //若资源不足
+
+                var errItem = cost.FirstOrDefault(c => c.Item1.Count.Value < c.Item2);
+                if (errItem.Item1 != null)  //若资源不足
                 {
                     if (datas.SuccCount == 0)
                     {
@@ -749,6 +732,7 @@ namespace GuangYuan.GY001.BLL
                     }
                     return;
                 }
+                World.ItemManager.DecrementCount(cost, datas.Changes);
                 lut = gi.GetDecimalWithFcpOrDefault("lut");    //升级耗时，单位：秒
                 if (lut == decimal.Zero)   //若没有升级延时
                 {
@@ -756,16 +740,22 @@ namespace GuangYuan.GY001.BLL
                     var oldLv = luDatas.GameItem.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
                     gim.SetPropertyValue(luDatas.GameItem, World.PropertyManager.LevelPropertyName, oldLv + 1);
                     //记录变化信息
-                    datas.ChangeItems.AddToChanges(cost.Select(c => c.Item1).ToArray());
                     datas.SuccCount = i + 1;
-                    datas.ChangeItems.AddToChanges(gi);
+                    datas.Changes.Add(new GamePropertyChangeItem<object>()
+                    {
+                        Object = luDatas.GameItem,
+                        PropertyName = World.PropertyManager.LevelPropertyName,
+                        HasOldValue = true,
+                        OldValue = oldLv,
+                        HasNewValue = true,
+                        NewValue = oldLv + 1,
+                    });
                 }
                 else //若有升级延时
                 {
                     //记录变化信息
-                    datas.ChangeItems.AddToChanges(cost.Select(c => c.Item1).ToArray());
                     datas.SuccCount = i + 1;
-                    datas.ChangeItems.AddToChanges(gi);
+                    //datas.ChangeItems.AddToChanges(gi);
                     if (fcp is null)
                     {
                         var now = DateTime.UtcNow;
@@ -787,8 +777,8 @@ namespace GuangYuan.GY001.BLL
 
                         gi.Properties["UpgradedSchedulerId"] = sd.Id.ToString();
                     }
-                    return;
                 }
+                datas.Changes.CopyTo(datas.ChangeItems);
             }
         }
 

@@ -1644,9 +1644,9 @@ namespace GuangYuan.GY001.BLL
                 datas.FillErrorFromWorld();
                 return;
             }
-            const string pvpChar = "PvpChar";   //PVP当日数据名的前缀
-            using var todayData = TodayDataLog<Guid>.Create(datas.PvpObject.Properties, pvpChar, datas.Now);    //当日数据的帮助器类
-            if (!todayData.HasData)  //若当日无数据
+            var todayData = datas.PvpObject.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();    //当日数据的帮助器类
+            var hasData = todayData.GetTodayData(datas.Now).Any();
+            if (!hasData)  //若当日无数据
             {
                 if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, 0))   //若无法设置级别
                 {
@@ -1662,7 +1662,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;
                 return;
             }
-            if (datas.IsRefresh || !todayData.HasData) //若强制刷新或需要刷新
+            if (datas.IsRefresh || !hasData) //若强制刷新或需要刷新
             {
                 using var dataBlueprint = new ApplyBlueprintDatas(World, datas.GameChar)
                 {
@@ -1674,23 +1674,22 @@ namespace GuangYuan.GY001.BLL
 
                 if (dataBlueprint.HasError) //若出错
                     return;
-                datas.PropertyChanges.AddRange(dataBlueprint.PropertyChanges);
+                datas.PropertyChanges.AddRange(dataBlueprint.Changes);
                 //修改数据
                 //获取列表
-                var ids = RefreshPvpList(datas.GameChar, datas.UserDbContext, todayData.TodayValues);
-                todayData.TodayValues.AddRange(ids);
-                todayData.LastValues.Clear();
-                todayData.LastValues.AddRange(ids);
-                datas.CharIds.AddRange(todayData.LastValues);
+                todayData.ResetLastData(datas.Now);
+                var ids = RefreshPvpList(datas.GameChar, datas.UserDbContext, todayData.GetTodayData(datas.Now));
+                todayData.AddLastDataRange(ids, datas.Now);
+                datas.CharIds.AddRange(todayData.GetLastData(datas.Now));
                 //变化数据
                 datas.PropertyChanges.CopyTo(datas.ChangeItems);
             }
             else //不刷新
             {
-                datas.CharIds.AddRange(todayData.LastValues);
+                datas.CharIds.AddRange(todayData.GetLastData(datas.Now));
             }
             //两种情况都要修改的数据
-            todayData.Save();   //保存当日当次数据
+            //todayData.Save();   //保存当日当次数据
             datas.ChangeItems.AddToChanges(datas.PvpObject);    //pvp数据对象
             World.CharManager.NotifyChange(datas.GameChar.GameUser);    //修改用户数据
         }

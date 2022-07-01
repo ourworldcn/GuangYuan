@@ -473,6 +473,21 @@ namespace OW.Game.Log
         }
 
         /// <summary>
+        /// 从最后一次的数据中移除一个数据。
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="date"></param>
+        public void RemoveLastData(T data, DateTime date)
+        {
+            var item= this.FirstOrDefault(c => c.DateTime.Date == date.Date && c.Action == LastValuesKeyName);
+            if(null!=item)
+            {
+                var tmp = Converter.ConvertToString(data);
+                item.Params.RemoveAll(c => c == tmp);
+            }
+        }
+
+        /// <summary>
         /// 追加最后一次的数据，同时加入指定日期数据。
         /// </summary>
         /// <param name="data"></param>
