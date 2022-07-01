@@ -235,7 +235,7 @@ namespace OW.Game
                     //计算经验值增加量
                     var seq = gi.GetTemplate().GetSequenceProperty<decimal>("lut");
                     var time = seq[Convert.ToInt32(item.OldValue ?? 0)];
-                    var exp = Math.Round(time / 60, MidpointRounding.ToZero);
+                    var exp = Math.Round(time / 600, MidpointRounding.ToPositiveInfinity);   //TO DO建筑升级结束时增加玩家经验值,应属性化控制
                     World.CharManager.AddExp(gc, exp);  //增加经验值
                 }
             }

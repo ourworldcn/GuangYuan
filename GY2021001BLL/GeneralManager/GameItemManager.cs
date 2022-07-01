@@ -1050,12 +1050,12 @@ namespace OW.Game.Item
         }
 
         /// <summary>
-        /// 按属性包内指定的条件寻找指定的物品。
+        /// 按属性包内指定的条件寻找指定的物品。条件不满足，数量不足的不会返回在结果中。
         /// </summary>
         /// <param name="gameChar"></param>
         /// <param name="propertyBag"></param>
         /// <param name="prefix"></param>
-        /// <returns></returns>
+        /// <returns>物品和要求数量的集合。</returns>
         public virtual List<(GameItem, decimal)> Lookup(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null)
         {
             var coll = propertyBag.GetValuesWithoutPrefix(prefix);
@@ -1094,7 +1094,7 @@ namespace OW.Game.Item
         public virtual void DecrementCount(IEnumerable<(GameItem, decimal)> obj, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             foreach (var item in obj)
-                this.ForcedAddCount(item.Item1, -item.Item2, changes);
+                this.ForcedAddCount(item.Item1, -Math.Abs(item.Item2), changes);
         }
 
         /// <summary>
@@ -1104,18 +1104,30 @@ namespace OW.Game.Item
         /// <param name="propertyBag"></param>
         /// <param name="prefix"></param>
         /// <param name="changes"></param>
+        /// <returns>true减少了所有材料，false至少有一种材料缺失。</returns>
         public virtual bool DecrementCount(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null,
             ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var list = Lookup(gameChar, propertyBag, prefix);
-            var count = propertyBag.GetValuesWithoutPrefix(prefix).Count();
+            var cost = propertyBag.GetValuesWithoutPrefix(prefix);
+            var count = cost.Count();
             if (list.Count < count)    //若资源不足
             {
+                VWorld.SetLastErrorMessage($"缺少材料种类不齐。");
                 VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
                 return false;
             }
             if (list.Count > 0)
+            {
+                var errItem = list.FirstOrDefault(c => c.Item1.Count.Value < c.Item2);
+                if (errItem.Item1 != null)    //若至少有一个材料不够
+                {
+                    VWorld.SetLastErrorMessage($"至少有一个材料不够。{errItem.Item1.GetTemplate().DisplayName}需要{errItem.Item2},但只有{errItem.Item1.Count}");
+                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                    return false;
+                }
                 DecrementCount(list, changes);
+            }
             return true;
         }
 
@@ -1455,7 +1467,7 @@ namespace OW.Game.Item
 
         public ActiveStyleDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
-            
+
         }
 
         /// <summary>

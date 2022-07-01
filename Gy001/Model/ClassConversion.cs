@@ -10,6 +10,7 @@ using OW.Game;
 using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -59,7 +60,8 @@ namespace GY2021001WebApi.Models
                 TId = (obj.Object as GameThingBase)?.TemplateId.ToBase64String(),
             };
             if (obj.IsCollectionRemoved())  //若是集合删除元素
-                result.OldValue = (obj.OldValue as GameThingBase)?.Base64IdString;
+                if (obj.OldValue is GameThingBase gt)
+                    result.OldValue = gt.Base64IdString;
             if (obj.IsCollectionAdded()) //若添加了元素
             {
                 if (obj.NewValue is GameItem gi)
@@ -68,6 +70,7 @@ namespace GY2021001WebApi.Models
                     result.NewValue = (GameCharDto)gc;
                 else if (obj.NewValue is GameGuild gg)
                     result.NewValue = (GameGuildDto)gg;
+                Debug.WriteLine($"不认识的对象类型{obj.NewValue.GetType()}");
                 //TO DO 不认识的对象类型
             }
             return result;

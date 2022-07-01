@@ -1670,9 +1670,8 @@ namespace GuangYuan.GY001.BLL
                 };
                 dataBlueprint.GameItems.Add(datas.PvpObject);
                 World.BlueprintManager.LevelUp(dataBlueprint);
-                datas.ErrorCode = dataBlueprint.ErrorCode;
-                datas.HasError = dataBlueprint.HasError;
-                datas.ErrorMessage = dataBlueprint.ErrorMessage;
+                datas.FillErrorFrom(dataBlueprint);
+
                 if (dataBlueprint.HasError) //若出错
                     return;
                 datas.PropertyChanges.AddRange(dataBlueprint.PropertyChanges);
