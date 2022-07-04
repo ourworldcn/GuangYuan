@@ -164,11 +164,6 @@ namespace GuangYuan.GY001.UserDb
         public DateTime? CombatStartUtc { get; set; }
 
         /// <summary>
-        /// 未发送给客户端的数据保存在<see cref="GameThingBase.ExtendProperties"/>中使用的属性名称。
-        /// </summary>
-        public const string ChangesItemExPropertyName = "{BAD410C8-6393-44B4-9EB1-97F91ED11C12}";
-
-        /// <summary>
         /// 用户的类型。
         /// </summary>
         public CharType CharType { get; set; }

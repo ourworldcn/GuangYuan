@@ -2126,7 +2126,7 @@ namespace GY2021001WebApi.Models
     /// 开始战斗的返回数据传输类
     /// </summary>
     [DataContract]
-    public partial class CombatStartReturnDto : ReturnDtoBase
+    public partial class CombatStartReturnDto : ChangesReturnDtoBaseV2
     {
         /// <summary>
         /// 构造函数。

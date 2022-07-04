@@ -971,21 +971,6 @@
             格式为：主版本号.次要版本号.修正号，修正号仅仅是修复bug等，只要主要和次要版本号一致就是同一个版本。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
-            <summary>
-            开始战斗的返回数据传输类
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.CombatStartReturnDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.TemplateId">
-            <summary>
-            要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
             <summary>
             结束战斗的返回数据传输类。
@@ -2183,6 +2168,21 @@
             关卡Id。第一个小关卡Id或整个大关卡Id。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
+            <summary>
+            开始战斗的返回数据传输类
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatStartReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.TemplateId">
+            <summary>
+            要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.CombatEndParamsDto">
             <summary>
             结束战斗的参数传输类。
@@ -3254,6 +3254,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

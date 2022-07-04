@@ -453,20 +453,6 @@ namespace GY2021001WebApi.Models
 
     #endregion 基础数据
 
-    public partial class CombatStartReturnDto
-    {
-        public static explicit operator CombatStartReturnDto(StartCombatData obj)
-        {
-            var result = new CombatStartReturnDto()
-            {
-                TemplateId = obj.Template?.Id.ToBase64String(),
-                HasError = obj.HasError,
-                DebugMessage = obj.DebugMessage,
-            };
-            return result;
-        }
-    }
-
     public partial class CombatEndReturnDto
     {
         public static explicit operator CombatEndReturnDto(EndCombatData obj)

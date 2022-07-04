@@ -122,10 +122,6 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public GameItemTemplate Template { get; set; }
 
-        /// <summary>
-        /// 调试信息。调试状态下返回时填写。
-        /// </summary>
-        public string DebugMessage { get; set; }
     }
 
     /// <summary>
@@ -305,7 +301,7 @@ namespace GuangYuan.GY001.BLL
             using var dwUser = data.LockUser();
             if (dwUser is null)
             {
-                data.DebugMessage = "令牌无效。";
+                data.ErrorMessage = "令牌无效。";
                 data.HasError = true;
                 return;
             }
@@ -318,7 +314,7 @@ namespace GuangYuan.GY001.BLL
             }
             if (gameChar.CurrentDungeonId.HasValue && gameChar.CurrentDungeonId != data.Template.Id)
             {
-                data.DebugMessage = "错误的关卡Id";
+                data.ErrorMessage = "错误的关卡Id";
                 data.HasError = true;
                 return;
             }
@@ -335,7 +331,7 @@ namespace GuangYuan.GY001.BLL
             }
             gameChar.CurrentDungeonId = data.Template.Id;
             gameChar.CombatStartUtc = DateTime.UtcNow;
-            data.DebugMessage = null;
+            data.ErrorMessage = null;
             data.HasError = false;
             return;
         }

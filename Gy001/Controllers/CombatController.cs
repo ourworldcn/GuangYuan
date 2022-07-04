@@ -41,7 +41,14 @@ namespace GY2021001WebApi.Controllers
                 Template = World.ItemTemplateManager.GetTemplateFromeId(OwConvert.ToGuid(model.DungeonId)),
             };
             cbm.StartCombat(data);
-            return (CombatStartReturnDto)data;
+            var result = new CombatStartReturnDto();
+            result.FillFrom(data);
+            if (!result.HasError)
+            {
+                result.TemplateId = data.Template?.Id.ToBase64String();
+                result.Changes.AddRange(data.PropertyChanges.Select(c => (GamePropertyChangeItemDto)c));
+            }
+            return result;
         }
 
         /// <summary>

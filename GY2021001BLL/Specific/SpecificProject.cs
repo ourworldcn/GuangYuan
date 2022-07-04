@@ -547,10 +547,11 @@ namespace GuangYuan.GY001.BLL
                 if (fcp.GetCurrentValueWithUtc() < pp)
                 {
                     data.HasError = true;
-                    data.DebugMessage = $"体力只有{fcp.LastValue},但是需要{pp}";
+                    data.ErrorMessage = $"体力只有{fcp.LastValue},但是需要{pp}";
                     return false;
                 }
                 fcp.LastValue -= pp;
+                data.PropertyChanges.ModifyAndAddChanged(tili, "Count", fcp.LastValue);
                 //扣除次数
                 if (parent.Properties.GetDecimalOrDefault("typ") == 2)    //若是塔防
                 {
@@ -561,7 +562,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         data.HasError = true;
                         data.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
-                        data.DebugMessage = $"允许的进攻次数只有{0},但是需要至少{tdt}。";
+                        data.ErrorMessage = $"允许的进攻次数只有{0},但是需要至少{tdt}。";
                         return false;
                     }
                     data.PropertyChanges.ModifyAndAddChanged(pveT, "Count", pveT.Count - 1);
