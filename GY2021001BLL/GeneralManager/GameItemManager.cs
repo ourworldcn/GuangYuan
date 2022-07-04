@@ -366,8 +366,9 @@ namespace OW.Game.Item
         /// <param name="gameItem">要改变的对象。</param>
         /// <param name="seqPName">序列属性的名字。如果对象中没有索引必须的属性，则视同初始化属性。若无序列属性的值，但找到索引属性的话，则视同此属性值是模板中指定的值。</param>
         /// <param name="newLevel">新等级。</param>
+        /// <returns>true成功设置，false没有找到指定级别的元素，通常是索引超限。</returns>
         /// <exception cref="ArgumentException">无法找到指定模板。</exception>
-        public void SetLevel(GameItem gameItem, string seqPName, int newLevel)
+        public bool SetLevel(GameItem gameItem, string seqPName, int newLevel)
         {
             var template = GetTemplate(gameItem);
             if (null == template)   //若无法找到模板
@@ -384,13 +385,18 @@ namespace OW.Game.Item
             else
             {
                 var lv = Convert.ToInt32(objLv);   //当前等级
+                if (lv >= seq.Length || lv < 0) //若等级超过限制
+                {
+                    //gameItem.Properties.Remove(seqPName);
+                    return false;
+                }
                 var oov = seq[lv];  //原级别模板值
 
                 var val = Convert.ToDecimal(gameItem.Properties.GetValueOrDefault(seqPName, oov));  //物品的属性值
                 var old = newLevel < seq.Length ? seq[newLevel] : oov;  //可能缺失最后一级数据
                 gameItem.Properties[seqPName] = old + val - oov; //TO DO缺少对快速变化属性的同步
             }
-            return;
+            return true;
         }
 
         /// <summary>
@@ -1247,7 +1253,7 @@ namespace OW.Game.Item
                 else
                 {
                     OwHelper.SafeCopy(bpDatas.Remainder, remainder);
-                    OwHelper.SafeCopy(bpDatas.Changes.Select(c => c.Clone() as GamePropertyChangeItem<object>), changes);
+                    OwHelper.SafeCopy(bpDatas.PropertyChanges.Select(c => c.Clone() as GamePropertyChangeItem<object>), changes);
                     result = true;
                 }
             }

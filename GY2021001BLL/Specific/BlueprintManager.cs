@@ -7,6 +7,7 @@ using Microsoft.Extensions.ObjectPool;
 using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Item;
+using OW.Game.Log;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
 using OW.Game.Store;
@@ -202,10 +203,6 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public List<GameItem> Remainder { get; } = new List<GameItem>();
 
-        /// <summary>
-        /// 详细的变化信息。
-        /// </summary>
-        public List<GamePropertyChangeItem<object>> Changes { get; } = new List<GamePropertyChangeItem<object>>();
     }
 
     /// <summary>
@@ -446,7 +443,7 @@ namespace GuangYuan.GY001.BLL
             var gim = World.ItemManager;
             var parent = gc.AllChildren.FirstOrDefault(c => c.TemplateId == dest.Properties.GetGuidOrDefault("ptid"));
             //gim.AddItem(dest, parent, null, datas.ChangeItems);
-            gim.MoveItem(dest, dest.Count.Value, parent, datas.Remainder, datas.Changes);
+            gim.MoveItem(dest, dest.Count.Value, parent, datas.Remainder, datas.PropertyChanges);
             //送固定物品
             dic = coll.First(c => c.Key == string.Empty).ToDictionary(c => c.Item1, c => c.Item2);
             var dest2 = new GameItem();
@@ -454,7 +451,7 @@ namespace GuangYuan.GY001.BLL
             var parent2 = gc.AllChildren.FirstOrDefault(c => c.TemplateId == dest2.Properties.GetGuidOrDefault("ptid"));
 
             //gim.AddItem(dest2, parent2, null, datas.ChangeItems);
-            gim.MoveItem(dest2, dest2.Count.Value, parent2, datas.Remainder, datas.Changes);
+            gim.MoveItem(dest2, dest2.Count.Value, parent2, datas.Remainder, datas.PropertyChanges);
             gc.Properties[Day30CountKeyName] = totalDay + 1; //设置已经获取的天计数
         }
 
@@ -531,19 +528,19 @@ namespace GuangYuan.GY001.BLL
                 World.EventsManager.GameItemCreated(gi, propBag);
                 if (World.ItemManager.IsExistsMounts(gi, datas.GameChar))    //若已经存在此类坐骑
                 {
-                    World.ItemManager.MoveItem(gi, gi.Count.Value, datas.GameChar.GetShoulanBag(), datas.Remainder, datas.Changes);
+                    World.ItemManager.MoveItem(gi, gi.Count.Value, datas.GameChar.GetShoulanBag(), datas.Remainder, datas.PropertyChanges);
                 }
                 else //若没有此种坐骑
                 {
                     gi.Properties["neatk"] = 0m;
                     gi.Properties["nemhp"] = 0m;
                     gi.Properties["neqlt"] = 0m;
-                    World.ItemManager.MoveItem(gi, gi.Count.Value, datas.GameChar.GetZuojiBag(), datas.Remainder, datas.Changes);
+                    World.ItemManager.MoveItem(gi, gi.Count.Value, datas.GameChar.GetZuojiBag(), datas.Remainder, datas.PropertyChanges);
                 }
                 DictionaryPool<string, object>.Shared.Return(propBag);
                 datas.SuccCount++;
             }
-            World.ItemManager.ForcedSetCount(gameItem, gameItem.Count.Value - datas.SuccCount, datas.Changes);
+            World.ItemManager.ForcedSetCount(gameItem, gameItem.Count.Value - datas.SuccCount, datas.PropertyChanges);
         }
 
         #region 通用功能
@@ -732,7 +729,7 @@ namespace GuangYuan.GY001.BLL
                     }
                     return;
                 }
-                World.ItemManager.DecrementCount(cost, datas.Changes);
+                World.ItemManager.DecrementCount(cost, datas.PropertyChanges);
                 lut = gi.GetDecimalWithFcpOrDefault("lut");    //升级耗时，单位：秒
                 if (lut == decimal.Zero)   //若没有升级延时
                 {
@@ -741,7 +738,7 @@ namespace GuangYuan.GY001.BLL
                     gim.SetPropertyValue(luDatas.GameItem, World.PropertyManager.LevelPropertyName, oldLv + 1);
                     //记录变化信息
                     datas.SuccCount = i + 1;
-                    datas.Changes.Add(new GamePropertyChangeItem<object>()
+                    datas.PropertyChanges.Add(new GamePropertyChangeItem<object>()
                     {
                         Object = luDatas.GameItem,
                         PropertyName = World.PropertyManager.LevelPropertyName,
@@ -762,7 +759,7 @@ namespace GuangYuan.GY001.BLL
                         fcp = new FastChangingProperty(TimeSpan.FromSeconds(1), 1, lut, 0, now) { Tag = ProjectConstant.UpgradeTimeName };
                         DateTime dtComplated = fcp.GetComplateDateTime();   //预估完成时间
                         gi.Name2FastChangingProperty.Add(fcp.Tag as string, fcp);
-                        fcp.ToDictionary(gi.Properties, fcp.Tag as string);
+                        fcp.ToDictionary(gi, fcp.Tag as string, "fcp", datas.PropertyChanges);
                         //定时任务
                         var scId = Guid.NewGuid();  //定时任务Id
                         var sd = new SchedulerDescriptor(scId)
@@ -778,7 +775,7 @@ namespace GuangYuan.GY001.BLL
                         gi.Properties["UpgradedSchedulerId"] = sd.Id.ToString();
                     }
                 }
-                datas.Changes.CopyTo(datas.ChangeItems);
+                datas.PropertyChanges.CopyTo(datas.ChangeItems);
             }
         }
 
@@ -1067,41 +1064,49 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas">钻石和塔防次数对象会在变化中返回。</param>
         private void BuyPveCount(ApplyBlueprintDatas datas)
         {
-            //5，5，10，10，30,0
+            using var dwUser = datas.LockUser();    //锁定用户
+            if (dwUser is null) //若无法锁定
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            var now = DateTime.UtcNow;
             //ltlv 记载最后一次升级的时间
             var gc = datas.GameChar;    //角色对象
             var td = datas.Lookup(gc.GetCurrencyBag().Children, ProjectConstant.PveTCounterTId);
-            if (td is null) //若无塔防对象
-                return;
-            if (!datas.Verify(td.Name2FastChangingProperty.TryGetValue("Count", out _), "找不到自动恢复属性。"))
-                return;
-            var lv = td.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);
-            DateTime dt = DateTime.UtcNow;  //当前时间
-            if (td.TryGetProperty("ltlv", out var ltlvObj) && DateTime.TryParse(ltlvObj as string, out var ltlv))  //若找到上次升级时间属性
+            var vo = td.Properties.GetDateTimeOrDefault("ltlv");
+
+            if (vo.Date == now.Date)    //若今日已经有数据
             {
-                if (dt.Date <= ltlv.Date && !datas.Verify(td.GetTemplate().GetMaxLevel("lud") > lv + 1, "已经用尽全部购买次数。"))
+                var lv = (int)td.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);    //级别数据
+                if (lv >= td.GetTemplate().GetMaxLevel())  //若当日已经不可再刷
+                {
+                    datas.HasError = true;
+                    datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;
+                    datas.DebugMessage = "已经用尽全部购买次数。";
                     return;
+                }
+                using var dataBlueprint = new ApplyBlueprintDatas(World, gc)
+                {
+                    Count = 1,
+                };
+                dataBlueprint.GameItems.Add(td);
+                World.BlueprintManager.LevelUp(dataBlueprint);
+                datas.FillErrorFrom(dataBlueprint);
+
+                if (dataBlueprint.HasError) //若出错
+                    return;
+                World.ItemManager.ForcedAddCount(td, 1, datas.PropertyChanges);
+                datas.PropertyChanges.ModifyAndAddChanged(td, "ltlv", now.ToString(), null);
+                datas.PropertyChanges.AddRange(dataBlueprint.PropertyChanges);
             }
-            else
+            else //今日无数据
             {
-                ltlv = dt;
-                lv = 0;
+                datas.PropertyChanges.ModifyAndAddChanged(td, "Count", 1, null);
+                datas.PropertyChanges.ModifyAndAddChanged(td, "ltlv", now.ToString(), null);
             }
-            var diam = datas.Lookup(gc.GetCurrencyBag().Children, ProjectConstant.ZuanshiId);//钻石
-            if (diam is null)   //若没有钻石
-                return;
-            if (!datas.Verify(td.TryGetPropertyWithFcp("lud", out var lud), "没有找到升级所需钻石数量。"))
-                return;
-            if (!datas.Verify(lud <= diam.Count, "钻石不足")) return;
             //修改数据
-            var gim = World.ItemManager;
-            gim.SetPropertyValue(td, World.PropertyManager.LevelPropertyName, lv + 1);    //变更购买价格
-            td.SetPropertyValue("ltlv", ltlv.ToString());  //记录购时间
-            datas.ChangeItems.AddToChanges(td.GetContainerId().Value, td);
-            td.Name2FastChangingProperty["Count"].LastValue++;
-            diam.Count -= lud;  //改钻石
-            datas.ChangeItems.AddToChanges(diam);
-            datas.ChangeItems.AddToChanges(td);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
         #endregion 家园相关
 
@@ -1210,7 +1215,7 @@ namespace GuangYuan.GY001.BLL
                 gameItem.Properties["neqlt"] = Math.Round(gameItem.GetDecimalWithFcpOrDefault("neqlt"), MidpointRounding.AwayFromZero);
                 var oldpid = gameItem.ParentId;
                 List<GameItem> listRe = new List<GameItem>();
-                gim.MoveItem(gameItem, gameItem.Count ?? 1, slotSl, listRe, datas.Changes);
+                gim.MoveItem(gameItem, gameItem.Count ?? 1, slotSl, listRe, datas.PropertyChanges);
                 if (listRe.Count > 0)   //若无法放入
                 {
                     //发邮件
@@ -1231,8 +1236,8 @@ namespace GuangYuan.GY001.BLL
                 gameItem.Properties["neatk"] = 0m;
                 gameItem.Properties["nemhp"] = 0m;
                 gameItem.Properties["neqlt"] = 0m;
-                gim.MoveItem(gameItem, gameItem.Count ?? 1, slotZq, null, datas.Changes);
-                World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.Changes);
+                gim.MoveItem(gameItem, gameItem.Count ?? 1, slotZq, null, datas.PropertyChanges);
+                World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.PropertyChanges);
             }
             //成就
             var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.孵化成就);
@@ -1242,7 +1247,7 @@ namespace GuangYuan.GY001.BLL
                 mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
                 World.MissionManager.ScanAsync(datas.GameChar);
             }
-            datas.Changes.CopyTo(datas.ChangeItems);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }
 
@@ -1315,7 +1320,7 @@ namespace GuangYuan.GY001.BLL
             });
             //写入资质
 
-            gim.MoveItem(child, child.Count ?? 1, fuhuaSlot, null, datas.Changes); //放入孵化槽
+            gim.MoveItem(child, child.Count ?? 1, fuhuaSlot, null, datas.PropertyChanges); //放入孵化槽
             var qiwu = datas.GameChar.GetQiwuBag();
             if (jiyin.Count > 1)    //若尚有剩余基因蛋
             {
@@ -1324,14 +1329,14 @@ namespace GuangYuan.GY001.BLL
             }
             else //若基因蛋用完
             {
-                gim.MoveItem(jiyin, 1, qiwu, null, datas.Changes);
+                gim.MoveItem(jiyin, 1, qiwu, null, datas.PropertyChanges);
             }
 
             if (parent1.TemplateId == ProjectConstant.HomelandPatCard) //若是卡片
-                gim.MoveItem(parent1, 1, qiwu, null, datas.Changes);
+                gim.MoveItem(parent1, 1, qiwu, null, datas.PropertyChanges);
             if (parent2.TemplateId == ProjectConstant.HomelandPatCard) //若是卡片
-                gim.MoveItem(parent2, 1, qiwu, null, datas.Changes);
-            datas.Changes.CopyTo(datas.ChangeItems);
+                gim.MoveItem(parent2, 1, qiwu, null, datas.PropertyChanges);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 
         /// <summary>
@@ -1680,15 +1685,25 @@ namespace GuangYuan.GY001.BLL
                 datas.DebugMessage = $"找不到指定的物品模板，Id={ttTid}";
                 return;
             }
-            if (!World.ItemManager.DecrementCount(datas.GameChar, tt.Properties, "unl", datas.Changes))  //若无法找到材料
+            if(tt.CatalogNumber==100)   //若是激活风格
+            {
+                var fengge = datas.GameChar.GetFenggeBag().Children.FirstOrDefault(c => c.TemplateId == tt.Id);
+                if(fengge!=null)
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.DebugMessage = $"不能重复激活风格。";
+                    return;
+                }
+            }
+            if (!World.ItemManager.DecrementCount(datas.GameChar, tt.Properties, "unl", datas.PropertyChanges))  //若无法找到材料
             {
                 datas.FillErrorFromWorld();
                 return;
             }
             var gi = new GameItem();
             World.EventsManager.GameItemCreated(gi, tt);
-            World.ItemManager.MoveItem(gi, gi.Count.Value, World.EventsManager.GetDefaultContainer(gi, datas.GameChar), null, datas.Changes);
-            datas.Changes.CopyTo(datas.ChangeItems);
+            World.ItemManager.MoveItem(gi, gi.Count.Value, World.EventsManager.GetDefaultContainer(gi, datas.GameChar), null, datas.PropertyChanges);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 
         /// <summary>
@@ -1802,12 +1817,12 @@ namespace GuangYuan.GY001.BLL
                 var reward = World.ItemManager.ToGameItems(tt.Properties, "reward");
                 foreach (var re in reward)  //逐一加入物品
                 {
-                    World.ItemManager.MoveItem(re, re.Count ?? 1, World.EventsManager.GetDefaultContainer(re, datas.GameChar), null, datas.Changes);
+                    World.ItemManager.MoveItem(re, re.Count ?? 1, World.EventsManager.GetDefaultContainer(re, datas.GameChar), null, datas.PropertyChanges);
                 }
                 item.Properties["used"] = 1m;
                 datas.ChangeItems.AddToChanges(item);
             }
-            datas.Changes.CopyTo(datas.ChangeItems);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 
         #region 社交相关
@@ -1840,12 +1855,12 @@ namespace GuangYuan.GY001.BLL
                     mounts.Properties["neatk"] = 80 + VWorld.WorldRandom.Next(21);
                     mounts.Properties["nemhp"] = 80 + VWorld.WorldRandom.Next(21);
                     mounts.Properties["neqlt"] = 80 + VWorld.WorldRandom.Next(21);
-                    World.ItemManager.MoveItem(mounts, 1, datas.GameChar.GetShoulanBag(), null, datas.Changes);
+                    World.ItemManager.MoveItem(mounts, 1, datas.GameChar.GetShoulanBag(), null, datas.PropertyChanges);
                     //World.ItemManager.AddItem(mounts, datas.GameChar.GetShoulanBag(), null, datas.ChangeItems);
                 }
                 else //若不存在该纯种坐骑
                 {
-                    World.ItemManager.MoveItem(mounts, 1, datas.GameChar.GetZuojiBag(), null, datas.Changes);
+                    World.ItemManager.MoveItem(mounts, 1, datas.GameChar.GetZuojiBag(), null, datas.PropertyChanges);
                     //World.ItemManager.AddItem(mounts, datas.GameChar.GetZuojiBag(), null, datas.ChangeItems);
                 }
             }

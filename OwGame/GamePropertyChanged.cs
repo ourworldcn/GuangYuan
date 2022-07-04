@@ -223,22 +223,33 @@ namespace OW.Game.PropertyChange
     }
 
     /// <summary>
-    /// 
+    /// <see cref="GamePropertyChangeItem{T}"/>类的扩展方法封装类。
     /// </summary>
     public static class GamePropertyChangedItemExtensions
     {
-        public static void PostDynamicPropertyChanged<T>(this ICollection<GamePropertyChangeItem<T>> collection, SimpleDynamicPropertyBase obj, string name, object newValue, object tag)
+        /// <summary>
+        /// 修改一个对象的属性，并正确填写变化数据。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        /// <param name="obj"></param>
+        /// <param name="name">只能针对简单属性，不可针对集合属性。调试状态下Children会报错。</param>
+        /// <param name="newValue"></param>
+        /// <param name="tag"></param>
+        public static void ModifyAndAddChanged<T>(this ICollection<GamePropertyChangeItem<T>> collection, SimpleDynamicPropertyBase obj, string name, T newValue, object tag = null)
         {
-            var arg = GamePropertyChangeItemPool<object>.Shared.Get();
+            Debug.Assert(name != "Children");
+            var arg = GamePropertyChangeItemPool<T>.Shared.Get();
             arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
-            if (obj.Properties.TryGetValue(name, out var oldValue))
+            if (obj.Properties.TryGetValue(name, out var oldValue) && oldValue is T old)
             {
-                arg.OldValue = oldValue;
+                arg.OldValue = old;
                 arg.HasOldValue = true;
             }
             obj.Properties[name] = newValue;
             arg.NewValue = newValue;
             arg.HasNewValue = true;
+            collection.Add(arg);
         }
 
     }

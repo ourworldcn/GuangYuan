@@ -1,6 +1,7 @@
 ﻿using GuangYuan.GY001.TemplateDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
+using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Collections.Concurrent;
@@ -73,6 +74,30 @@ namespace GuangYuan.GY001.UserDb
             dic[$"{classPrefix}m{name}"] = obj.MaxValue;
             dic[$"{classPrefix}c{name}"] = obj.LastValue;
             dic[$"{classPrefix}t{name}"] = obj.LastDateTime.ToString("s");
+        }
+
+        /// <summary>
+        /// 将当前值写入字典，不会自己计算更新属性。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="dynamicPropertyBase"></param>
+        /// <param name="name"></param>
+        /// <param name="classPrefix"></param>
+        /// <param name="changes"></param>
+        public static void ToDictionary(this FastChangingProperty obj, SimpleDynamicPropertyBase dynamicPropertyBase, string name, string classPrefix = DefaultClassPrefix,
+            ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            Debug.Assert(!string.IsNullOrWhiteSpace(name));
+            if (changes != null)
+            {
+                changes.ModifyAndAddChanged(dynamicPropertyBase, $"{classPrefix}i{name}", obj.Increment);
+                changes.ModifyAndAddChanged(dynamicPropertyBase, $"{classPrefix}d{name}", obj.Delay.TotalSeconds);
+                changes.ModifyAndAddChanged(dynamicPropertyBase, $"{classPrefix}m{name}", obj.MaxValue);
+                changes.ModifyAndAddChanged(dynamicPropertyBase, $"{classPrefix}c{name}", obj.LastValue);
+                changes.ModifyAndAddChanged(dynamicPropertyBase, $"{classPrefix}t{name}", obj.LastDateTime.ToString("s"));
+            }
+            else
+                obj.ToDictionary(dynamicPropertyBase.Properties, name, classPrefix);
         }
 
         /// <summary>

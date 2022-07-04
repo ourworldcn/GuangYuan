@@ -575,6 +575,16 @@ namespace OW.Game
             //复位pvp信息
             World.SocialManager.ResetPvpObject(gameChar, now);
             //复位塔防信息
+            var td = World.ItemManager.GetOrCreateItem(gameChar.GetCurrencyBag(), ProjectConstant.PveTCounterTId);
+            var vo = td.Properties.GetDateTimeOrDefault("ltlv");
+
+            if (vo.Date != now.Date)    //若今日没有有数据
+            {
+                td.Count = 1;
+                td.Properties["ltlv"] = now.ToString();
+                World.ItemManager.SetLevel(td, 1);
+                td.Properties[World.PropertyManager.LevelPropertyName] = 1m;
+            }
         }
         #region Json反序列化
         public override void JsonDeserialized(GameUser gameUser)

@@ -552,19 +552,19 @@ namespace GuangYuan.GY001.BLL
                 }
                 fcp.LastValue -= pp;
                 //扣除次数
-                var tdt = parent.Properties.GetDecimalOrDefault("tdt", 0m);
-                if (tdt > 0)
+                if (parent.Properties.GetDecimalOrDefault("typ") == 2)    //若是塔防
                 {
-                    var pveT = gc.GetPveT();
-                    fcp = pveT.Name2FastChangingProperty.GetValueOrDefault("Count");
-                    var count = fcp?.GetCurrentValueWithUtc() ?? pveT.Count.Value;
-                    if (count < tdt)
+                    var tdt = parent.Properties.GetDecimalOrDefault("tdt", 0m);
+                    var pveT = world.ItemManager.GetOrCreateItem(gc.GetCurrencyBag(), ProjectConstant.PveTCounterTId);
+
+                    if ((pveT.Count ?? 0) < tdt)
                     {
                         data.HasError = true;
-                        data.DebugMessage = $"允许的进攻次数只有{count},但是需要{tdt}。";
+                        data.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
+                        data.DebugMessage = $"允许的进攻次数只有{0},但是需要至少{tdt}。";
                         return false;
                     }
-                    fcp.LastValue -= tdt;
+                    data.PropertyChanges.ModifyAndAddChanged(pveT, "Count", pveT.Count - 1);
                 }
                 //设置角色经验增加
                 if (pp != decimal.Zero)
@@ -827,15 +827,6 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetTili(this GameChar gameChar) =>
             gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.TiliId);
-
-        /// <summary>
-        /// 获取Pve次数对象。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameItem GetPveT(this GameChar gameChar) =>
-            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.PveTCounterTId);
 
         /// <summary>
         /// 获取友情商店货币。

@@ -1658,7 +1658,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             var lv = (int)datas.PvpObject.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);    //级别数据
-            if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel() - 1 && datas.IsRefresh)  //若当日已经不可再刷
+            if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel() && datas.IsRefresh)  //若当日已经不可再刷
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;
@@ -1676,7 +1676,7 @@ namespace GuangYuan.GY001.BLL
 
                 if (dataBlueprint.HasError) //若出错
                     return;
-                datas.PropertyChanges.AddRange(dataBlueprint.Changes);
+                datas.PropertyChanges.AddRange(dataBlueprint.PropertyChanges);
                 //修改数据
                 //获取列表
                 todayData.ResetLastData(datas.Now);
