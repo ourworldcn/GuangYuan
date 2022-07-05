@@ -1149,6 +1149,65 @@ namespace OW.Game.Item
         }
 
         /// <summary>
+        /// 获取可移动的数量。
+        /// </summary>
+        /// <param name="gItem"></param>
+        /// <param name="count">试图移动的数量。</param>
+        /// <param name="container"></param>
+        /// <returns>可移动的实际数量（可能小于或等于期望值。）对于不可堆叠物品要么是0要么是1，对于超过规则限制的情况会返回0。</returns>
+        public decimal GetMovableCount(GameItem gItem, decimal count, GameThingBase container)
+        {
+            var propMng = World.PropertyManager;
+            if (propMng.IsStc(gItem, out _)) //若可堆叠
+            {
+                if (count > gItem.Count.Value)
+                    count = gItem.Count.Value;
+                var children = propMng.GetChildrenCollection(container);    //子容器
+                var gi = children.FirstOrDefault(c => c.TemplateId == gItem.TemplateId);    //已存在的同类物品
+                if (gi is null)  //若不存在同类物品
+                {
+                    var rCap = propMng.GetRemainderCap(container);
+                    if (rCap < 1) //若不可容纳
+                        return decimal.Zero;
+                    var max = propMng.GetStcOrOne(gi);  //最大堆叠数
+                    if (max < count)    //若堆叠过多
+                        return max;
+                }
+                else //若存在同类物品
+                {
+                    var countMove = GetCountOfMergeable(gItem, gi, count);  //实际移动数量
+                    if (countMove < count)    //若部分移动
+                        return countMove;
+                }
+            }
+            else //若不可堆叠
+            {
+                var rCap = propMng.GetRemainderCap(container);  //还可容纳的数量
+                if (rCap < 1) //若不可容纳
+                    return decimal.Zero;
+                count = 1;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// 尽可能将指定物品放入容器(可合并则合并),如果不能完全按要求放入，则不会放入。
+        /// </summary>
+        /// <param name="gItem"></param>
+        /// <param name="count"></param>
+        /// <param name="container"></param>
+        /// <param name="changes"></param>
+        /// <returns>true成功移入，false没有移入（规则不允许）。</returns>
+        public virtual bool MoveItemWithoutRemainder(GameItem gItem, decimal count, GameThingBase container, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            var countFact = GetMovableCount(gItem, count, container);
+            if (countFact < count)
+                return false;
+            ForcedMove(gItem, count, container, changes);
+            return true;
+        }
+
+        /// <summary>
         /// 尽可能将指定物品放入容器(可合并则合并)，如果有剩余则放入<paramref name="remainder"/>中。
         /// </summary>
         /// <param name="gItem"></param>

@@ -158,13 +158,6 @@ namespace GuangYuan.GY001.BLL.Social
             return result;
         }
 
-        //IQueryable cm = EF.CompileQuery((DbContext db, string name) => from tmp in db.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.FriendSlotTId)
-        //                                                              orderby tmp.ExPropertyString descending
-        //                                                              join gameChar in db.Set<GameChar>()
-        //                                                              on tmp.OwnerId.Value equals gameChar.Id
-        //                                                              where EF.Functions.Like(gameChar.DisplayName, $"%{name}%")
-        //                                                              where /*allows.Any(c => c.Id == gameChar.Id) &&*/ !frees.Any(c => c == gameChar.Id) && !notAllows.Contains(gameChar.Id)
-        //                                                              select tmp.OwnerId.Value);
         public IQueryable<Guid> RefreshLastList(string displayName)
         {
             var db = DbCoutext;
@@ -178,7 +171,7 @@ namespace GuangYuan.GY001.BLL.Social
                      orderby tmp.ExtraString descending
                      join gameChar in db.Set<GameChar>()
                      on tmp.OwnerId.Value equals gameChar.Id
-                     where EF.Functions.Like(gameChar.DisplayName, $"%{displayName}%")
+                     where EF.Functions.Like(gameChar.DisplayName, $"{displayName}%") && gameChar.Id != GameChar.Id
                      where /*allows.Any(c => c.Id == gameChar.Id) &&*/ !frees.Any(c => c == gameChar.Id) && !notAllows.Contains(gameChar.Id)
                      select tmp.OwnerId.Value;
             return result;

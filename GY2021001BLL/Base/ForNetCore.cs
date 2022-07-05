@@ -254,6 +254,12 @@ namespace GuangYuan.GY001.BLL
                 var ary = new Dictionary<string, MissionState>() { { Guid.NewGuid().ToString(), MissionState.Completion } };
                 var str = JsonSerializer.Serialize(ary);
                 var tmp = JsonSerializer.Deserialize(str, ary.GetType());
+                var coll = from gi in db.Set<GameItem>()
+                           join gg in db.Set<GameGuild>() 
+                           on gi.ExtraString equals gg.Id.ToString() into j
+                           from jtmp in j.DefaultIfEmpty()
+                           select tmp;
+                var lst = coll.Take(7).ToArray();
             }
             catch (Exception)
             {
