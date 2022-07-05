@@ -589,6 +589,25 @@ namespace OW.Game.Mission
             //扫描坐骑图鉴变化
             World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.PropertyChanges);
             datas.PropertyChanges.CopyTo(datas.ChangeItems);
+            var ttid = new Guid("{55ce0c66-732f-46b9-bd8b-9d49a04bfe10}");
+            if (template.Id == ttid)  //若要激活好友系统
+            {
+                ActiveFriend(datas.GameChar);
+            }
+        }
+
+        /// <summary>
+        /// 激活好友系统。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        private void ActiveFriend(GameChar gameChar)
+        {
+            using (var dwRobot = World.CharManager.LockOrLoad(GameCharManager.FriendRobotLoginName, out var robotUser))
+            {
+                var datas = new RequestFriendData(World,robotUser.CurrentChar,gameChar.Id);
+                World.SocialManager.RequestFriend(datas);
+            }
+
         }
 
         /// <summary>

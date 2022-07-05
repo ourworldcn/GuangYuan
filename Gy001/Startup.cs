@@ -83,7 +83,7 @@ namespace Gy001
             #endregion 配置通用服务
 
             #region 配置Swagger
-            //注册Swagger生成器，定义一个Swagger 文档
+            //注册Swagger生成器，定义一个 Swagger 文档
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo

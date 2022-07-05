@@ -187,6 +187,8 @@ namespace GuangYuan.GY001.BLL
             #endregion IDisposable接口及相关
         }
 
+        public const string FriendRobotLoginName = "A3B4B3F7-8CAD-4B95-9983-4D5DAFDAA5F0";
+        
         /// <summary>
         /// 获取一个新的不重复的昵称。
         /// </summary>
@@ -405,6 +407,28 @@ namespace GuangYuan.GY001.BLL
                 {
                     adminUser.CurrentChar.CharType |= CharType.SuperAdmin;
                     world.CharManager.NotifyChange(adminUser);
+                }
+            //复位加好友机器人
+            var friendRobotPwd = "9D4C2381-F000-43F2-AB75-1A53718D44C0";
+            var friendRobotCharId = new Guid("{1D860E58-74C9-4442-A3B4-A2406DA9566A}");
+            using (var dwRobot = world.CharManager.LockOrLoad(FriendRobotLoginName, out var robotUser))
+                if (dwRobot is null) //若未建立机器人账号
+                {
+                    robotUser = world.CharManager.CreateNewUserAndLock(adminLoginName, adminPwd);
+                    try
+                    {
+                        robotUser.CurrentChar.CharType |= CharType.Robot;
+                        world.CharManager.NotifyChange(robotUser);
+                    }
+                    finally
+                    {
+                        world.CharManager.Unlock(robotUser);
+                    }
+                }
+                else
+                {
+                    robotUser.CurrentChar.CharType |= CharType.Robot;
+                    world.CharManager.NotifyChange(robotUser);
                 }
             while (true)
             {
