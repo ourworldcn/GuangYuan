@@ -90,7 +90,8 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         void SetDbConfig()
         {
-            //设置sql server使用内存，避免sql server 贪婪使用内存导致内存过大
+            #region 设置sql server使用内存，避免sql server 贪婪使用内存导致内存过大
+
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
             var sql = @$"EXEC sys.sp_configure N'show advanced options', N'1'  RECONFIGURE WITH OVERRIDE;" +
@@ -104,6 +105,8 @@ namespace GuangYuan.GY001.BLL
             catch (Exception)
             {
             }
+            #endregion
+
             try
             {
                 sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ROW);" +
@@ -255,7 +258,7 @@ namespace GuangYuan.GY001.BLL
                 var str = JsonSerializer.Serialize(ary);
                 var tmp = JsonSerializer.Deserialize(str, ary.GetType());
                 var coll = from gi in db.Set<GameItem>()
-                           join gg in db.Set<GameGuild>() 
+                           join gg in db.Set<GameGuild>()
                            on gi.ExtraString equals gg.Id.ToString() into j
                            from jtmp in j.DefaultIfEmpty()
                            select tmp;

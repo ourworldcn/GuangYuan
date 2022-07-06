@@ -680,7 +680,7 @@ namespace GuangYuan.GY001.BLL
                 if (view.HasData && datas.DonotRefresh)  //若不需要刷新数据
                     result = view.LastListIds;
                 else
-                    result = view.RefreshLastList(datas.BodyTIds).Take(5).ToArray();
+                    result = view.RefreshLastList(datas.BodyTIds).Where(c => c != datas.GameChar.Id).Take(5).ToArray();
                 //记录已刷新用户Id
                 if (result.Any())
                 {
