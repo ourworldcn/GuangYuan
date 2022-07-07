@@ -206,7 +206,7 @@ namespace GuangYuan.GY001.UserDb
             var tt = thing.GetTemplate();
             if (tt is null)
                 return false;
-            return tt.TryGetPropertyValue(propertyName, out result);
+            return tt.Properties.TryGetValue(propertyName, out result);
         }
 
         /// <summary>

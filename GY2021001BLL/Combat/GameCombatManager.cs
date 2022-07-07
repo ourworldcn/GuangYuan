@@ -1012,7 +1012,7 @@ namespace GuangYuan.GY001.BLL
             errorString = string.Empty;
             //typ关卡类别=1普通管卡 mis大关数 sec=小关，gold=数金币掉落上限，aml=获得资质野怪的数量，mne=资质和上限，mt=神纹数量上限，wood=木头掉落上限，
             //tl = 通关最短时限，idt = 道具掉落上限,tdt=pve减少pveT的次数，minCE=最低战力要求，
-            if (dungeon.TryGetPropertyValue("gold", out var goldObj) && OwConvert.TryToDecimal(goldObj, out var gold)) //若需要限定金币
+            if (dungeon.Properties.TryGetDecimal("gold", out var gold)) //若需要限定金币
             {
                 var tmp = gameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).Sum(c => c.Count.Value);
                 if (tmp > gold) //若超限
@@ -1021,7 +1021,7 @@ namespace GuangYuan.GY001.BLL
                     return false;
                 }
             }
-            if (dungeon.TryGetPropertyValue("wood", out var woodObj) && OwConvert.TryToDecimal(woodObj, out var wood)) //若需要限定木材
+            if (dungeon.Properties.TryGetDecimal("wood", out var wood)) //若需要限定木材
             {
                 var tmp = gameItems.Where(c => c.TemplateId == ProjectConstant.MucaiId).Sum(c => c.Count.Value);
                 if (tmp > wood) //若超限
@@ -1032,7 +1032,7 @@ namespace GuangYuan.GY001.BLL
             }
             var gim = World.ItemManager;
             var aryMounts = gameItems.Where(c => gim.IsMounts(c)).ToArray();
-            if (dungeon.TryGetPropertyValue("aml", out var amlObj) && OwConvert.TryToDecimal(amlObj, out var aml)) //若需要限定资质野怪的数量
+            if (dungeon.Properties.TryGetDecimal("aml", out var aml)) //若需要限定资质野怪的数量
             {
                 var tmp = aryMounts.Length;
                 if (tmp > aml) //若超限
@@ -1049,7 +1049,7 @@ namespace GuangYuan.GY001.BLL
                 //    return false;
                 //}
             }
-            if (dungeon.TryGetPropertyValue("mne", out var mneObj) && OwConvert.TryToDecimal(mneObj, out var mne)) //若需要限定资质野怪的最高资质
+            if (dungeon.Properties.TryGetDecimal("mne", out var mne)) //若需要限定资质野怪的最高资质
             {
                 var tmp = aryMounts.FirstOrDefault(c => GetTotalNe(c.Properties) > mne);
                 if (null != tmp)   //若资质超限
@@ -1060,7 +1060,7 @@ namespace GuangYuan.GY001.BLL
             }
             var gimt = World.ItemTemplateManager;
             var aryShenwen = gameItems.Where(c => gimt.GetTemplateFromeId(c.TemplateId).GenusCode >= 15 && gimt.GetTemplateFromeId(c.TemplateId).GenusCode <= 17).ToArray();
-            if (dungeon.TryGetPropertyValue("mt", out var mtObj) && OwConvert.TryToDecimal(mtObj, out var mt)) //若需要限定神纹数量上限
+            if (dungeon.Properties.TryGetDecimal("mt", out var mt)) //若需要限定神纹数量上限
             {
                 var tmp = aryShenwen.Sum(c => c.Count ?? 1);
                 if (tmp > mt)   //若神纹道具数量超限
@@ -1070,7 +1070,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             var items = gameItems.Where(c => c.TemplateId != ProjectConstant.JinbiId && c.TemplateId != ProjectConstant.MucaiId && c.TemplateId != ProjectConstant.ZuojiZuheRongqi).Except(aryShenwen);  //道具
-            if (dungeon.TryGetPropertyValue("idt", out var idtObj) && OwConvert.TryToDecimal(idtObj, out var idt)) //若需要限定其他道具数量上限
+            if (dungeon.Properties.TryGetDecimal("idt", out var idt)) //若需要限定其他道具数量上限
             {
                 var tmp = items.Sum(c => c.Count ?? 1);
                 if (tmp > idt)

@@ -943,7 +943,7 @@ namespace GuangYuan.GY001.BLL
             GameItemManager gim = World.ItemManager;
             GameItemTemplate template = gim.GetTemplateFromeId(gi.TemplateId); //物品的模板对象
             #region 等级校验
-            if (template.TryGetPropertyValue("mbnlv", out object mbnlvObj) && OwConvert.TryToDecimal(mbnlvObj, out decimal mbnlv))    //若需要根据主控室等级限定升级
+            if (template.Properties.TryGetDecimal("mbnlv", out decimal mbnlv))    //若需要根据主控室等级限定升级
             {
                 GameItem mb = hl.GetAllChildren().FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);    //主控室
                 decimal mbLv = mb.GetDecimalWithFcpOrDefault(GameThingTemplateBase.LevelPrefix, 0m); //当前主控室等级
@@ -1685,10 +1685,10 @@ namespace GuangYuan.GY001.BLL
                 datas.DebugMessage = $"找不到指定的物品模板，Id={ttTid}";
                 return;
             }
-            if(tt.CatalogNumber==100)   //若是激活风格
+            if (tt.CatalogNumber == 100)   //若是激活风格
             {
                 var fengge = datas.GameChar.GetFenggeBag().Children.FirstOrDefault(c => c.TemplateId == tt.Id);
-                if(fengge!=null)
+                if (fengge != null)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                     datas.DebugMessage = $"不能重复激活风格。";

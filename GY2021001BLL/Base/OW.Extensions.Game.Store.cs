@@ -294,53 +294,53 @@ namespace OW.Extensions.Game.Store
         /// <summary>
         /// 换新模板。
         /// </summary>
-        /// <param name="this"></param>
+        /// <param name="gameItem"></param>
         /// <param name="template"></param>
-        public static void ChangeTemplate(this GameItem @this, GameItemTemplate template)
+        public static void ChangeTemplate(this GameItem gameItem, GameItemTemplate template)
         {
-            var keysBoth = @this.Properties.Keys.Intersect(template.Properties.Keys).ToArray();
+            var keysBoth = gameItem.Properties.Keys.Intersect(template.Properties.Keys).ToArray();
             var keysNew = template.Properties.Keys.Except(keysBoth).ToArray();
             foreach (var key in keysNew)    //新属性
             {
-                var newValue = template.GetPropertyValue(key);
+                var newValue = template.Properties.GetValueOrDefault(key);
                 if (newValue is decimal[] ary)   //若是一个序列属性
                 {
                     var indexName = template.GetIndexPropertyName(key); //索引属性名
-                    if (@this.TryGetPropertyWithFcp(indexName, out var index) || template.Properties.TryGetDecimal(indexName, out index))
+                    if (gameItem.TryGetPropertyWithFcp(indexName, out var index) || template.Properties.TryGetDecimal(indexName, out index))
                     {
                         index = Math.Round(index, MidpointRounding.AwayFromZero);
-                        @this.SetPropertyValue(key, ary[(int)index]);
+                        gameItem.SetPropertyValue(key, ary[(int)index]);
                     }
                     else
-                        @this.SetPropertyValue(key, ary[0]);
+                        gameItem.SetPropertyValue(key, ary[0]);
                 }
                 else
-                    @this.SetPropertyValue(key, newValue);
+                    gameItem.SetPropertyValue(key, newValue);
             }
             foreach (var key in keysBoth)   //遍历两者皆有的属性
             {
-                var currentVal = @this.GetPropertyOrDefault(key);
-                var oldVal = @this.GetTemplate().GetPropertyValue(key);    //模板值
+                var currentVal = gameItem.GetPropertyOrDefault(key);
+                var oldVal = gameItem.GetTemplate().Properties.GetValueOrDefault(key);    //模板值
                 if (oldVal is decimal[] ary && OwConvert.TryToDecimal(currentVal, out var currentDec))   //若是一个序列属性
                 {
-                    var lv = @this.GetIndexPropertyValue(key);    //当前等级
+                    var lv = gameItem.GetIndexPropertyValue(key);    //当前等级
                     var nVal = currentDec - ary[lv] + template.GetSequencePropertyValueOrDefault<decimal>(key, lv); //求新值
-                    @this.SetPropertyValue(key, nVal);
+                    gameItem.SetPropertyValue(key, nVal);
                 }
                 else if (OwConvert.TryToDecimal(currentVal, out var dec)) //若是一个数值属性
                 {
-                    OwConvert.TryToDecimal(@this.GetTemplate().GetPropertyValue(key, 0), out var nDec);    //当前模板中该属性
-                    OwConvert.TryToDecimal(template.GetPropertyValue(key), out var tDec);
+                    OwConvert.TryToDecimal(gameItem.GetTemplate().Properties.GetValueOrDefault(key, 0), out var nDec);    //当前模板中该属性
+                    OwConvert.TryToDecimal(template.Properties.GetValueOrDefault(key), out var tDec);
                     var nVal = dec - nDec + tDec;
-                    @this.SetPropertyValue(key, nVal);
+                    gameItem.SetPropertyValue(key, nVal);
                 }
                 else //其他类型属性
                 {
-                    @this.SetPropertyValue(key, template.GetPropertyValue(key));
+                    gameItem.SetPropertyValue(key, template.Properties.GetValueOrDefault(key));
                 }
             }
-            @this.TemplateId = template.Id;
-            @this.SetTemplate((GameThingTemplateBase)template);
+            gameItem.TemplateId = template.Id;
+            gameItem.SetTemplate((GameThingTemplateBase)template);
         }
 
         /// <summary>

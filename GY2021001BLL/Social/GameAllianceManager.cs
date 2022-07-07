@@ -201,7 +201,7 @@ namespace GuangYuan.GY001.UserDb.Social
         {
             var exp = guild.GetDecimalWithFcpOrDefault("exp");  //经验
             var tt = guild.GetTemplate();
-            var ary = tt.GetPropertyValue("expLimit") as decimal[];
+            var ary = tt.Properties.GetValueOrDefault("expLimit", Array.Empty<decimal>()) as decimal[];
             if (ary is null || ary.Length < 1) //若没有升级要求
                 return;
             var lv = (int)guild.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);

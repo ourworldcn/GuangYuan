@@ -79,34 +79,6 @@ namespace GuangYuan.GY001.TemplateDb
             }
         }
 
-        /// <summary>
-        /// 获取属性值。
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object GetPropertyValue(string propertyName, object defaultVal = default) => TryGetPropertyValue(propertyName, out var result) ? result : defaultVal;
-
-        /// <summary>
-        /// 获取指定属性名的属性值。
-        /// </summary>
-        /// <param name="propertyName">属性名。</param>
-        /// <param name="result">属性的值。</param>
-        /// <returns>true成功返回属性值，false没有找到指定名称的属性。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0066:将 switch 语句转换为表达式", Justification = "<挂起>")]
-        public virtual bool TryGetPropertyValue(string propertyName, out object result)
-        {
-            bool succ;
-            switch (propertyName)
-            {
-                default:
-                    succ = Properties.TryGetValue(propertyName, out result);
-                    break;
-            }
-            return succ;
-        }
-
         #region 序列属性相关
 
 
@@ -208,7 +180,7 @@ namespace GuangYuan.GY001.TemplateDb
         {
             var seq = obj.GetSequenceProperty<decimal>(name);
             if (seq is null) //若非序列属性
-                return obj.TryGetPropertyValue(name, out var resultObj) && OwConvert.TryToDecimal(resultObj, out var result) ? result : default;
+                return obj.Properties.TryGetValue(name, out var resultObj) && OwConvert.TryToDecimal(resultObj, out var result) ? result : default;
             else //是序列属性
                 return seq[lv];
         }

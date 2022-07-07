@@ -228,17 +228,6 @@ namespace GuangYuan.GY001.BLL.Homeland
         }
 
         /// <summary>
-        /// 获取数据库中所有免费的风格号。
-        /// TO DO 未来可能加缓存机制。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<int> GetFenggeNumbersWithFree(this GameItemTemplateManager manager) =>
-           manager.GetAllDikuai().Where(c => c.Value.CatalogNumber == 100 && c.Value.IsFree()) //免费的
-                .Select(c => c.Value.GetFenggeNumber()).Distinct();
-
-        /// <summary>
         /// 获取当前激活的风格号，若没有激活风格则返回-1。
         /// </summary>
         /// <param name="gameChar"></param>

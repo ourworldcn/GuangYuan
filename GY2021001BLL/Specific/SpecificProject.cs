@@ -534,7 +534,7 @@ namespace GuangYuan.GY001.BLL
             var gc = data.GameChar;
             var cm = world.CombatManager;
             var parent = cm.GetParent(data.Template);   //取大关
-            if (parent.TryGetPropertyValue("minCE", out var minCEObj) && OwConvert.TryToDecimal(minCEObj, out _))  //若需要校验战力
+            if (parent.Properties.TryGetDecimal("minCE", out var minCE))  //若需要校验战力
             {
                 //TO DO
             }

@@ -165,6 +165,8 @@ namespace Gy001
             {
                 endpoints.MapControllers();
             });
+
+            
         }
 
     }
