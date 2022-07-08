@@ -34,7 +34,10 @@ namespace Gy001.Controllers
         [HttpGet]
         public ActionResult<ApplyBlueprintReturnDto> Test()
         {
+            var svc = _World.Service.GetService<PublisherT78>();
+
             var world = _World;   //获取总服务
+            return Ok();
             var gitm = world.ItemTemplateManager;
             var gim = world.ItemManager;
             //注册并登录新账号
