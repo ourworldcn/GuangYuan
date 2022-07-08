@@ -3673,10 +3673,5 @@
               使用此强类型资源类的所有资源查找执行重写。
             </summary>
         </member>
-        <member name="T:Gy001.PublisherT78">
-            <summary>
-            连接特定发行商的客户端服务。
-            </summary>
-        </member>
     </members>
 </doc>
