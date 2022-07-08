@@ -32,3 +32,4 @@ GO
 
 select * from master.dbo.sysprocesses where dbid = DB_ID('GY2021001Dev') --取活动链接数量
 
+https://krm.icebirdgame.com/fusion/verifySign
