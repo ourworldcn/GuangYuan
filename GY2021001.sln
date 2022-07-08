@@ -37,6 +37,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		行会2.png = 行会2.png
 		远期待办事项.txt = 远期待办事项.txt
 		部署说明.txt = 部署说明.txt
+		韩国海外服务端接口文档v1.0.4.docx = 韩国海外服务端接口文档v1.0.4.docx
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gy001Tools", "Gy001Tools\Gy001Tools.csproj", "{C2D1831F-5FF5-41A0-91E6-88370A7DF2E4}"
