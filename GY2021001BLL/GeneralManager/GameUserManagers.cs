@@ -188,7 +188,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         public const string FriendRobotLoginName = "A3B4B3F7-8CAD-4B95-9983-4D5DAFDAA5F0";
-        
+
         /// <summary>
         /// 获取一个新的不重复的昵称。
         /// </summary>
@@ -990,6 +990,42 @@ namespace GuangYuan.GY001.BLL
             if (logined)    //若需要通知用户登录
                 World.EventsManager.GameCharLogined(gu.CurrentChar);
             return gu;
+        }
+
+        /// <summary>
+        /// T78发行商登录或创建用户。
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns>登录的用户对象，null出现错误,此时会在VWorld中设置详细错误信息。</returns>
+        public GameUser LoginT78(string sid)
+        {
+            //验证sid有效性
+            var t78 = Service.GetService<PublisherT78>();
+            var dto = t78.Login(sid);
+            if (dto.Ret != "0")
+            {
+                VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                VWorld.SetLastErrorMessage(dto.msg);
+                return null;
+            }
+            var db = World.CreateNewUserDbContext();
+            var t78Uid = dto.Content?.Data?.UserId;
+            var slot = db.Set<GameItem>().SingleOrDefault(c => c.TemplateId == ProjectConstant.T78PublisherSlotTId && c.ExtraString == t78Uid);
+            if (slot is null)    //若没有注册用户
+            {
+                string pwd = null;
+                return QuicklyRegister(ref pwd);
+            }
+            else //若已经注册用户
+            {
+                var charId = slot.OwnerId.Value;
+                using var dw = LockOrLoad(charId, out var gu);  //加载用户
+                if (dw is null)
+                    return null;
+                if (!IsOnline(charId))   //若没有登录
+                    World.EventsManager.GameCharLogined(gu.CurrentChar);
+                return gu;
+            }
         }
 
         /// <summary>

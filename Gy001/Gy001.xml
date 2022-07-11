@@ -24,6 +24,13 @@
             <response code="500">用户名或密码错误。</response>
             <response code="503">登录人数过多。请稍后登录。目前按每颗CPU带10000在线计算，未来更具实际数据增减。</response>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AccountController.LoginT78(GY2021001WebApi.Models.LoginT78ParamsDto)">
+            <summary>
+            特定发行商sdk创建或登录用户。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:GY2021001WebApi.Controllers.AccountController.Nop(GY2021001WebApi.Models.NopParamsDto)">
             <summary>
             发送一个空操作以保证闲置下线重新开始计时。
@@ -1627,6 +1634,11 @@
         <member name="P:GY2021001WebApi.Models.QuicklyRegisterReturnDto.Pwd">
             <summary>
             密码。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT78ParamsDto.Sid">
+            <summary>
+            发行商SDK给的的sid。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.LoginReturnDto">

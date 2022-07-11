@@ -101,6 +101,11 @@ namespace GuangYuan.GY001.BLL
         #region 角色直属槽及其相关
 
         /// <summary>
+        /// T78发行商数据槽模板id。
+        /// </summary>
+        public static readonly Guid T78PublisherSlotTId = new Guid("{308F90FE-E4F2-4460-8435-7E0C79A15E9B}");
+
+        /// <summary>
         /// 动物图鉴槽模板Id。
         /// </summary>
         public static readonly Guid MountsIllSlotId = new Guid("{62873631-f688-4c81-9ed7-72b7cc22975a}");

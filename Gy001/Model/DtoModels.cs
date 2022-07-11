@@ -1248,6 +1248,21 @@ namespace GY2021001WebApi.Models
 
     }
 
+    [DataContract]
+    public class LoginT78ParamsDto
+    {
+        /// <summary>
+        /// 发行商SDK给的的sid。
+        /// </summary>
+        [DataMember]
+        public string Sid { get; set; }
+    }
+
+    [DataContract]
+    public class LoginT78ReturnDto: LoginReturnDto
+    {
+    }
+
     /// <summary>
     /// 登录接口返回类。
     /// </summary>

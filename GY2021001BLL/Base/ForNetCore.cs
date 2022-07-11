@@ -268,8 +268,6 @@ namespace GuangYuan.GY001.BLL
             {
 
             }
-            var svc = _Services.GetService<PublisherT78>();
-            svc.Login("1234567890");
         }
 
         /// <summary>
