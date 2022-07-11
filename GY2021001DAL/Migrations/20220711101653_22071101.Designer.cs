@@ -4,14 +4,16 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    partial class GY001UserContextModelSnapshot : ModelSnapshot
+    [Migration("20220711101653_22071101")]
+    partial class _22071101
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -383,20 +385,11 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.Property<byte[]>("Timestamp")
                         .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .HasColumnType("varbinary(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
-
                     b.HasIndex("ParentId");
-
-                    b.HasIndex("TemplateId", "ExtraDecimal", "ExtraString")
-                        .HasAnnotation("SqlServer:Include", new[] { "ParentId" });
-
-                    b.HasIndex("TemplateId", "ExtraString", "ExtraDecimal")
-                        .HasAnnotation("SqlServer:Include", new[] { "ParentId" });
 
                     b.ToTable("SeparateThings");
                 });

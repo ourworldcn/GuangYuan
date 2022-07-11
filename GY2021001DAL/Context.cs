@@ -54,7 +54,6 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.Flag).IsUnique(false);
             modelBuilder.Entity<GameSocialRelationship>().HasIndex(c => c.PropertyString).IsUnique(false);
 
-
             //操作记录
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => new { c.DateTimeUtc, c.ParentId, c.ActionId }).IsUnique(false);
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => new { c.ParentId, c.ActionId }).IsUnique(false);
@@ -65,6 +64,11 @@ namespace GuangYuan.GY001.UserDb
 
             //行会
             modelBuilder.Entity<GameGuild>().HasIndex(c => c.DisplayName).IsUnique(true);
+
+            //游离对象
+            modelBuilder.Entity<SeparateThing>().HasIndex(c => c.OwnerId);
+            modelBuilder.Entity<SeparateThing>().HasIndex(c => new { c.TemplateId, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<SeparateThing>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal, c.ExtraString }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
             //调用基类方法。
             base.OnModelCreating(modelBuilder);
@@ -124,6 +128,11 @@ namespace GuangYuan.GY001.UserDb
         /// 行会表。
         /// </summary>
         public DbSet<GameGuild> Guild { get; set; }
+
+        /// <summary>
+        /// 游离对象表。
+        /// </summary>
+        public DbSet<SeparateThing> SeparateThings { get; set; }
 
         public override void Dispose()
         {
