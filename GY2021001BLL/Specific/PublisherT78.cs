@@ -16,14 +16,15 @@ namespace GuangYuan.GY001.BLL
     {
         public string GameId { get; set; }
 
-        public string ChannelId { get; set; }
+        public int ChannelId { get; set; }
 
         public string AppId { get; set; }
 
         public string UserId { get; set; }
 
-        public string SdkData { get; set; }
+        public object SdkData { get; set; }
 
+        public string AccessToken { get; set; }
     }
 
     public class T78LoginReturnDto
@@ -39,14 +40,15 @@ namespace GuangYuan.GY001.BLL
 
         public T78LoginContentDto Content { get; set; } = new T78LoginContentDto();
 
-        public string CData { get; set; }
+        public string ResultString { get; set; }
     }
 
     public class T78LoginContentDto
     {
         public T78DataDto Data { get; set; } = new T78DataDto();
 
-        public string AccessToken { get; set; }
+        public object CData { get; set; }
+
     }
 
     /// <summary>
@@ -54,8 +56,9 @@ namespace GuangYuan.GY001.BLL
     /// </summary>
     public class PublisherT78
     {
-        const string AppSecret = "202cb962234w4ers2aa";    //基础加密矢量
+        //const string AppSecret = "202cb962234w4ers2aa";    //基础加密矢量
 
+        const string AppSecret = "c73f8a6a27cb3e13c4bf455bef422cdb";    //基础加密矢量
         public static void Config(IHttpClientBuilder builder)
         {
             builder.SetHandlerLifetime(TimeSpan.FromMinutes(5)).ConfigureHttpClient(c =>
@@ -75,9 +78,11 @@ namespace GuangYuan.GY001.BLL
 
         public T78LoginReturnDto Login(string sid)
         {
+            var options = new JsonSerializerOptions() { PropertyNameCaseInsensitive=true };
             var httpResult = PostAsync(new Dictionary<string, string>() { { "sid", sid }, }).Result;
             var resultString = httpResult.Content.ReadAsStringAsync().Result;
-            var result=(T78LoginReturnDto)JsonSerializer.Deserialize(resultString, typeof(T78LoginReturnDto));
+            var result=(T78LoginReturnDto)JsonSerializer.Deserialize(resultString, typeof(T78LoginReturnDto),options);
+            result.ResultString = resultString;
             return result;
         }
 

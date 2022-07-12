@@ -14,10 +14,10 @@ using System.Text.Json.Serialization;
 namespace GuangYuan.GY001.UserDb
 {
     /// <summary>
-    /// 游戏中物品，装备，货币，积分的类，只是不随用户数据加载的放在这个类中。
+    /// 游戏中虚拟事物的类，不随用户数据一起加载到内存中的数据放在这个类中。如邮件、工会、战报等。
     /// </summary>
     [Table("SeparateThings")]
-    public class SeparateThing : GameThingBase, IDisposable
+    public class SeparateThing : GameThingBaseV2, IDisposable
     {
         /// <summary>
         /// 构造函数。
@@ -36,40 +36,11 @@ namespace GuangYuan.GY001.UserDb
 
         }
 
-        public override DbContext GetDbContext()
-        {
-            return default;
-        }
-
         /// <summary>
         /// 乐观锁的并发令牌。
         /// </summary>
         [Timestamp]
         public byte[] Timestamp { get; set; }
-
-        /// <summary>
-        /// 此物品的数量。
-        /// 可能没有数量属性，如装备永远是1。对货币类(积分)都使用的是实际值。
-        /// </summary>
-        [NotMapped, JsonIgnore]
-        public decimal? Count
-        {
-            get
-            {
-                if (null != Name2FastChangingProperty && Name2FastChangingProperty.TryGetValue(nameof(Count), out var fcp))
-                    return fcp.LastValue;
-                if (Properties.TryGetDecimal(nameof(Count), out var result))
-                    return result;
-                return null;
-            }
-
-            set
-            {
-                if (null != Name2FastChangingProperty && Name2FastChangingProperty.TryGetValue(nameof(Count), out var fcp) && value.HasValue)
-                    fcp.LastValue = value.Value;
-                Properties[nameof(Count)] = value;
-            }
-        }
 
         #region 导航属性
 
@@ -101,16 +72,16 @@ namespace GuangYuan.GY001.UserDb
         /// 
         /// </summary>
         /// <returns></returns>
-        public override string ToString()
-        {
-            var result = this.GetTemplate()?.DisplayName ?? this.GetTemplate()?.Remark;
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                return base.ToString();
-            }
+        //public override string ToString()
+        //{
+        //    var result = this.GetTemplate()?.DisplayName ?? this.GetTemplate()?.Remark;
+        //    if (string.IsNullOrWhiteSpace(result))
+        //    {
+        //        return base.ToString();
+        //    }
 
-            return $"{{{result},{Count}}}";
-        }
+        //    return $"{{{result},{}}}";
+        //}
 
         #region IDisposable接口相关
 
@@ -151,23 +122,23 @@ namespace GuangYuan.GY001.UserDb
     /// </summary>
     public static class SeparateThingExtensions
     {
-        /// <summary>
-        /// 获取模板对象。
-        /// </summary>
-        /// <param name="gItem"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameItemTemplate GetTemplate(this SeparateThing gItem) =>
-            ((GameThingBase)gItem).GetTemplate() as GameItemTemplate;
+        ///// <summary>
+        ///// 获取模板对象。
+        ///// </summary>
+        ///// <param name="gItem"></param>
+        ///// <returns></returns>
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static GameItemTemplate GetTemplate(this SeparateThing gItem) =>
+        //    ((GameThingBase)gItem).GetTemplate() as GameItemTemplate;
 
-        /// <summary>
-        /// 设置模板对象。
-        /// </summary>
-        /// <param name="thing"></param>
-        /// <param name="template"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetTemplate(this SeparateThing gItem, GameItemTemplate template) =>
-            ((GameThingBase)gItem).SetTemplate(template);
+        ///// <summary>
+        ///// 设置模板对象。
+        ///// </summary>
+        ///// <param name="thing"></param>
+        ///// <param name="template"></param>
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static void SetTemplate(this SeparateThing gItem, GameItemTemplate template) =>
+        //    ((GameThingBase)gItem).SetTemplate(template);
 
         public static IEnumerable<SeparateThing> GetAllChildren(this SeparateThing gameItem)
         {

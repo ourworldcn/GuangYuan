@@ -1008,24 +1008,29 @@ namespace GuangYuan.GY001.BLL
                 VWorld.SetLastErrorMessage(dto.msg);
                 return null;
             }
-            var db = World.CreateNewUserDbContext();
+            using var db = World.CreateNewUserDbContext();
             var t78Uid = dto.Content?.Data?.UserId;
             var slot = db.Set<GameItem>().SingleOrDefault(c => c.TemplateId == ProjectConstant.T78PublisherSlotTId && c.ExtraString == t78Uid);
+            GameUser result = null;
             if (slot is null)    //若没有注册用户
             {
                 string pwd = null;
-                return QuicklyRegister(ref pwd);
+                result = QuicklyRegister(ref pwd);
+                slot = new GameItem() { ExtraString = t78Uid };
+                World.EventsManager.GameItemCreated(slot, ProjectConstant.T78PublisherSlotTId);
+                result.CurrentChar.GameItems.Add(slot);
             }
             else //若已经注册用户
             {
                 var charId = slot.OwnerId.Value;
-                using var dw = LockOrLoad(charId, out var gu);  //加载用户
+                using var dw = LockOrLoad(charId, out result);  //加载用户
                 if (dw is null)
                     return null;
                 if (!IsOnline(charId))   //若没有登录
-                    World.EventsManager.GameCharLogined(gu.CurrentChar);
-                return gu;
+                    World.EventsManager.GameCharLogined(result.CurrentChar);
             }
+            result.RuntimeProperties["T78LoginResultString"] = dto.ResultString;
+            return result;
         }
 
         /// <summary>

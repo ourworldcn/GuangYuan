@@ -1261,6 +1261,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class LoginT78ReturnDto: LoginReturnDto
     {
+        /// <summary>
+        /// T78服务器返回的值完整的放在此处。仅当成功登录时才有。
+        /// </summary>
+        [DataMember]
+        public string ResultString { get; set; }
     }
 
     /// <summary>

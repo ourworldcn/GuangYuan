@@ -157,8 +157,6 @@ namespace OW.Game.Store
             }
         }
 
-        private volatile bool _IsDisposed;
-
         #region 事件及其相关
 
         protected virtual void OnDynamicPropertyChanged(DynamicPropertyChangedEventArgs e) => DynamicPropertyChanged?.Invoke(this, e);
@@ -195,17 +193,6 @@ namespace OW.Game.Store
         }
 
         /// <summary>
-        /// 对象是否已经被处置。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public bool IsDisposed
-        {
-            get => _IsDisposed;
-            protected set => _IsDisposed = value;
-        }
-
-        /// <summary>
         /// <inheritdoc/>
         /// </summary>
         /// <param name="db"><inheritdoc/></param>
@@ -222,6 +209,20 @@ namespace OW.Game.Store
         [NotMapped]
         [JsonIgnore]
         public bool SuppressSave { get; set; }
+
+        #region IDisposable接口及相关
+
+        private volatile bool _IsDisposed;
+        /// <summary>
+        /// 对象是否已经被处置。
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public bool IsDisposed
+        {
+            get => _IsDisposed;
+            protected set => _IsDisposed = value;
+        }
 
         /// <summary>
         /// 实际处置当前对象的方法。
@@ -264,6 +265,9 @@ namespace OW.Game.Store
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+        #endregion IDisposable接口及相关
+
     }
 
     public class SimpleExtendPropertyBaseExtensions

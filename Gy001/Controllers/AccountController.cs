@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OW.Game;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
@@ -129,6 +130,7 @@ namespace GY2021001WebApi.Controllers
                 result.Token = gu.CurrentToken.ToBase64String();
                 using var dwUsers = gm.LockAndReturnDisposer(gu);
                 result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
+                result.ResultString = gu.RuntimeProperties.GetStringOrDefault("T78LoginResultString");
             }
             return result;
         }

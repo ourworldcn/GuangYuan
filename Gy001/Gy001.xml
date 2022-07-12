@@ -1641,6 +1641,11 @@
             发行商SDK给的的sid。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.LoginT78ReturnDto.ResultString">
+            <summary>
+            T78服务器返回的值完整的放在此处。仅当成功登录时才有。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.LoginReturnDto">
             <summary>
             登录接口返回类。

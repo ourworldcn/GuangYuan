@@ -7,26 +7,43 @@ namespace GuangYuan.GY001.UserDb.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<byte[]>(
+            migrationBuilder.DropColumn(
+                name: "Timestamp",
+                table: "SeparateThings");
+            migrationBuilder.AddColumn<byte[]>(
                 name: "Timestamp",
                 table: "SeparateThings",
                 rowVersion: true,
-                nullable: true,
-                oldClrType: typeof(byte[]),
-                oldType: "varbinary(max)",
-                oldNullable: true);
+                nullable: true);
+            //migrationBuilder.AlterColumn<byte[]>(
+            //    name: "Timestamp",
+            //    table: "SeparateThings",
+            //    rowVersion: true,
+            //    nullable: true,
+            //    oldClrType: typeof(byte[]),
+            //    oldType: "varbinary(max)",
+            //    oldNullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<byte[]>(
+            migrationBuilder.DropColumn(
+                name: "Timestamp",
+                table: "SeparateThings");
+            migrationBuilder.AddColumn<byte[]>(
                 name: "Timestamp",
                 table: "SeparateThings",
                 type: "varbinary(max)",
-                nullable: true,
-                oldClrType: typeof(byte[]),
-                oldRowVersion: true,
-                oldNullable: true);
+                nullable: true);
+
+            //migrationBuilder.AlterColumn<byte[]>(
+            //    name: "Timestamp",
+            //    table: "SeparateThings",
+            //    type: "varbinary(max)",
+            //    nullable: true,
+            //    oldClrType: typeof(byte[]),
+            //    oldRowVersion: true,
+            //    oldNullable: true);
         }
     }
 }

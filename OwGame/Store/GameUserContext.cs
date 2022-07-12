@@ -197,6 +197,8 @@ namespace OW.Game.Store
             }
         }
 
+        #region RuntimeProperties属性相关
+
         private ConcurrentDictionary<string, object> _RuntimeProperties;
 
         /// <summary>
@@ -215,6 +217,8 @@ namespace OW.Game.Store
         /// </summary>
         [NotMapped, JsonIgnore]
         public bool IsCreatedOfRuntimeProperties => _RuntimeProperties != null;
+
+        #endregion RuntimeProperties属性相关
 
         /// <summary>
         /// <inheritdoc/>
@@ -242,6 +246,4 @@ namespace OW.Game.Store
 
         #endregion 事件及相关
     }
-
-
 }
