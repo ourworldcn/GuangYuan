@@ -48,7 +48,7 @@ namespace Gy001.Controllers
                 var guild = World.AllianceManager.GetGuild(datas.Id);
                 result.Guild = guild;
                 GameGuildDto.FillMembers(guild, result.Guild, World);
-                result.Changes.AddRange(datas.Changes.Select(c => (GamePropertyChangeItemDto)c));
+                result.Changes.AddRange(datas.PropertyChanges.Select(c => (GamePropertyChangeItemDto)c));
             }
             return result;
         }

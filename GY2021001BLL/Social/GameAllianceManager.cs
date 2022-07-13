@@ -309,8 +309,8 @@ namespace GuangYuan.GY001.UserDb.Social
 #endif
             }
             //校验人员是否已经有公会
-            var slot = World.ItemManager.GetOrCreateItem(datas.GameChar, ProjectConstant.GuildSlotId);
-            if (OwConvert.TryToGuid(slot.ExtraString, out var guildId) && GetGuild(guildId) != null)
+            var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraDecimal >= 10);
+            if (slot != null && OwConvert.TryToGuid(slot.ExtraString, out var guildId) && GetGuild(guildId) != null)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
                 datas.ErrorMessage = "已经在工会中，不可创建工会。";
@@ -339,11 +339,21 @@ namespace GuangYuan.GY001.UserDb.Social
             {
                 if (_Id2Guild.TryAdd(guild.Id, guild))  //若成功加入集合
                 {
+                    if (slot is null)
+                    {
+                        slot = new GameItem() { };
+                        World.EventsManager.GameItemCreated(slot, ProjectConstant.GuildSlotId);
+                        datas.GameChar.GameItems.Add(slot);
+                    }
                     guild.GetMemberIds().Add(datas.GameChar.Id);    //追加工会成员
                     guild.GetDbContext().Add(guild);
                     guild.GetDbContext().SaveChanges();
                     slot.ExtraString = guild.IdString;
                     slot.ExtraDecimal = (int)GuildDivision.会长;
+
+                    var deletes = datas.GameChar.GameItems.Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c != slot).ToArray();  //需要删除的槽
+                    foreach (var item in deletes)
+                        World.ItemManager.ForcedDelete(item, null, datas.PropertyChanges);
                 }
                 else
                 {
@@ -359,7 +369,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 if (item.Item1 is GameItem gi)
                 {
                     var count = item.Item2.GetDecimalOrDefault("count");
-                    World.ItemManager.ForcedSetCount(gi, gi.Count.Value - count, datas.Changes);
+                    World.ItemManager.ForcedSetCount(gi, gi.Count.Value - count, datas.PropertyChanges);
                 }
             }
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
@@ -460,10 +470,10 @@ namespace GuangYuan.GY001.UserDb.Social
             foreach (var charId in charIds) //删除每个成员的所属工会信息
             {
                 var gc = World.CharManager.GetCharFromId(charId);
-                var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+                var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == guild.IdString);
                 if (slot is null)
                     continue;
-                World.ItemManager.ForcedDelete(slot);
+                World.ItemManager.ForcedDelete(slot, null, datas.PropertyChanges);
                 World.CharManager.NotifyChange(gc.GameUser);
             }
             //删除工会对象。
@@ -571,21 +581,22 @@ namespace GuangYuan.GY001.UserDb.Social
             if (dwUser is null)
                 return;
             //校验条件
-            var slot = World.ItemManager.GetOrCreateItem(datas.GameChar, ProjectConstant.GuildSlotId);
+            var slot = datas.GameChar.GameItems.FirstOrDefault(c => c.ExtraDecimal >= 10);
 
-            if (slot is null)    //若未创建行会槽
+            if (slot != null)    //若已经处于一个工会内
             {
-                datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;
-                datas.ErrorMessage = "数据格式错误，工会槽不存在。";
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "已经处于一个工会内，不可申请新工会。";
                 return;
             }
-            if (!string.IsNullOrWhiteSpace(slot.ExtraString) && slot.ExtraDecimal > 0 && slot.ExtraString != guild.IdString)    //若已有行会
+            slot = datas.GameChar.GameItems.FirstOrDefault(c => c.ExtraString == guild.IdString);
+            if (slot != null)    //若已经在申请了
             {
-                datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;    //已有行会
-                datas.ErrorMessage = "需要退出现有行会才能申请加入另一个";    //已有行会
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "已经申请加入此工会，不可重复申请。";
                 return;
             }
-            var count = GetAllMemberSlotQuery(guild.Id, guild.GetDbContext()).Count();  //当前成员数
+            var count = GetAllMemberSlotQuery(guild.Id, guild.GetDbContext()).Where(c => c.ExtraDecimal >= 10).Count();  //当前成员数
             if (guild.GetDecimalWithFcpOrDefault("maxMemberCount") <= count)   //若满员
             {
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;    //
@@ -602,18 +613,31 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             slot.ExtraString = guild.IdString;
             var autoAccept = guild.Properties.GetBooleanOrDefaut("AutoAccept");
-            if (autoAccept)
-                slot.ExtraDecimal = 10;
-            else
-                slot.ExtraDecimal = 0;
-            World.CharManager.NotifyChange(datas.GameChar.GameUser);
-            var db = datas.GameChar.GetDbContext();
-            var guildIdString = datas.GuildId.ToString();
-            var charIds = db.Set<GameItem>().AsNoTracking().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == guildIdString && c.ExtraDecimal >= 14) //工会管理层
-                 .Select(c => c.OwnerId.Value);
-            foreach (var charId in charIds)
+            if (autoAccept) //若自动接受
             {
-                NotifyChar(charId);
+                var subData = new AcceptJoinContext(datas.World, datas.GameChar)
+                {
+                    IsAccept = true,
+                };
+                subData.CharIds.Add(datas.GameChar.Id);
+                AcceptJoin(subData);
+                datas.FillErrorFrom(subData);
+                if (datas.HasError)
+                    return;
+                datas.PropertyChanges.AddRange(subData.PropertyChanges);
+            }
+            else //未设置未自动接受
+            {
+                slot.ExtraDecimal = 0;
+                World.CharManager.NotifyChange(datas.GameChar.GameUser);
+                var db = datas.GameChar.GetDbContext();
+                var guildIdString = datas.GuildId.ToString();
+                var charIds = db.Set<GameItem>().AsNoTracking().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == guildIdString && c.ExtraDecimal >= 14) //工会管理层
+                     .Select(c => c.OwnerId.Value);
+                foreach (var charId in charIds)
+                {
+                    NotifyChar(charId);
+                }
             }
         }
 
@@ -653,6 +677,12 @@ namespace GuangYuan.GY001.UserDb.Social
                 return;
             }
             using var dwChars = World.CharManager.LockOrLoadWithCharIds(datas.CharIds, Options.DefaultTimeout * datas.CharIds.Count);   //锁定这组用户
+            if (dwChars is null)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = "至少有一个角色id无效。";
+                return;
+            }
             foreach (var charId in datas.CharIds)
             {
                 var gc = World.CharManager.GetCharFromId(charId);
@@ -674,13 +704,16 @@ namespace GuangYuan.GY001.UserDb.Social
                     World.CharManager.NotifyChange(gc.GameUser);
                     this.JoinGuildChatChannel(gc);  //加入工会聊天
                     NotifyChar(gc.Id);
+                    //清理其它申请
+                    var deletes = gc.GameItems.Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c != slot).ToArray();
+                    deletes.ForEach(c => World.ItemManager.ForcedDelete(c, null, datas.PropertyChanges));
                 }
             else //若拒绝
                 foreach (var charId in datas.CharIds)
                 {
                     var gc = World.CharManager.GetCharFromId(charId);
                     var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
-                    World.ItemManager.ForcedRemove(slot);
+                    World.ItemManager.ForcedDelete(slot, null, datas.PropertyChanges);
                     NotifyChar(gc.Id);
                 }
         }
@@ -1117,9 +1150,5 @@ namespace GuangYuan.GY001.UserDb.Social
         /// </summary>
         public Guid Id { get; set; }
 
-        /// <summary>
-        /// 详细的变化信息。
-        /// </summary>
-        public List<GamePropertyChangeItem<object>> Changes { get; } = new List<GamePropertyChangeItem<object>>();
     }
 }

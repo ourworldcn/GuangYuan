@@ -414,7 +414,7 @@ namespace GuangYuan.GY001.BLL
             using (var dwRobot = world.CharManager.LockOrLoad(FriendRobotLoginName, out var robotUser))
                 if (dwRobot is null) //若未建立机器人账号
                 {
-                    robotUser = world.CharManager.CreateNewUserAndLock(adminLoginName, adminPwd);
+                    robotUser = world.CharManager.CreateNewUserAndLock(FriendRobotLoginName, friendRobotPwd);
                     try
                     {
                         robotUser.CurrentChar.CharType |= CharType.Robot;

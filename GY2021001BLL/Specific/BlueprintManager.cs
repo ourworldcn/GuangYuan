@@ -497,12 +497,6 @@ namespace GuangYuan.GY001.BLL
             datas.DebugMessage = datasInner.DebugMessage;
             //设置成就数据
             World.MissionManager.ScanAsync(datas.GameChar);
-            //if (body.Properties.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName) >= 19)    //达到20级
-            //{
-            //    var bag = datas.GameChar.GetZuojiBag();
-            //    var metrics = bag.Children.Count(c => World.ItemManager.GetBody(c)?.Properties.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName) >= 19);
-            //    World.MissionManager.SetMetrics(datas.GameChar.GetRenwuSlot(), ProjectMissionConstant.LV20坐骑数量, metrics);
-            //}
         }
 
         /// <summary>
@@ -718,7 +712,7 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
 
-                var errItem = cost.FirstOrDefault(c => c.Item1.Count.Value < c.Item2);
+                var errItem = cost.FirstOrDefault(c => c.Item1.Count.Value < Math.Abs(c.Item2));
                 if (errItem.Item1 != null)  //若资源不足
                 {
                     if (datas.SuccCount == 0)

@@ -45,6 +45,11 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
             modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
+            //游离对象
+            modelBuilder.Entity<SeparateThing>().HasIndex(c => c.OwnerId);
+            modelBuilder.Entity<SeparateThing>().HasIndex(c => new { c.TemplateId, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<SeparateThing>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal, c.ExtraString }).IsUnique(false).IncludeProperties(c => c.ParentId);
+
             //邮件相关
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
 
@@ -64,11 +69,6 @@ namespace GuangYuan.GY001.UserDb
 
             //行会
             modelBuilder.Entity<GameGuild>().HasIndex(c => c.DisplayName).IsUnique(true);
-
-            //游离对象
-            modelBuilder.Entity<SeparateThing>().HasIndex(c => c.OwnerId);
-            modelBuilder.Entity<SeparateThing>().HasIndex(c => new { c.TemplateId, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
-            modelBuilder.Entity<SeparateThing>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal, c.ExtraString }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
             //调用基类方法。
             base.OnModelCreating(modelBuilder);
