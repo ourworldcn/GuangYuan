@@ -723,7 +723,7 @@ namespace OW.Game.Item
                         where (tmp.Value > tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal.Value && string.Compare(tmp.DisplayName, gChar.DisplayName) < 0)
                         orderby tmp.Value, tmp.DisplayName
                         select tmp;
-            var rank = coll.Count();
+            var rank = coll1.Count();
             datas.Rank = rank;
             datas.Scope = tuiguanObj.ExtraDecimal.Value;
             var prv = coll.Take(25).ToList();   //排在前面的的紧邻数据

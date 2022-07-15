@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -24,7 +25,7 @@ namespace GY2021001WebApi.Controllers
     {
         public AccountController()
         {
-
+            
         }
 
         /// <summary>
@@ -131,6 +132,7 @@ namespace GY2021001WebApi.Controllers
                 using var dwUsers = gm.LockAndReturnDisposer(gu);
                 result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
                 result.ResultString = gu.RuntimeProperties.GetStringOrDefault("T78LoginResultString");
+                result.IsCreated = gu.RuntimeProperties.GetBooleanOrDefaut("T78IsCreated");
             }
             return result;
         }

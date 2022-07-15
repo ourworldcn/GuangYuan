@@ -1018,7 +1018,9 @@ namespace GuangYuan.GY001.BLL
                 result = QuicklyRegister(ref pwd);
                 slot = new GameItem() { ExtraString = t78Uid };
                 World.EventsManager.GameItemCreated(slot, ProjectConstant.T78PublisherSlotTId);
-                result.CurrentChar.GameItems.Add(slot);
+                World.ItemManager.ForcedAdd(slot, result.CurrentChar);
+                result.DbContext.Add(slot);
+                result.RuntimeProperties["T78IsCreated"] = true;
             }
             else //若已经注册用户
             {
@@ -1028,8 +1030,10 @@ namespace GuangYuan.GY001.BLL
                     return null;
                 if (!IsOnline(charId))   //若没有登录
                     World.EventsManager.GameCharLogined(result.CurrentChar);
+                result.RuntimeProperties["T78IsCreated"] = false;
             }
             result.RuntimeProperties["T78LoginResultString"] = dto.ResultString;
+            World.CharManager.NotifyChange(result);
             return result;
         }
 

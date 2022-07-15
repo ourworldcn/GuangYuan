@@ -290,8 +290,12 @@ namespace OW.Game.Mission
                         break;
                     case "5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d": //	旗帜成就	51019
                         {
-                            var homeland = gc.GetHomeland();
-                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 42).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
+                            var homeland = gc.GetHomeland();    //TO DO可能没有子元素
+                            var collTmp = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 42);
+                            if (collTmp.Any())
+                                metrics = collTmp.Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
+                            else
+                                metrics = 0;
                         }
                         break;
                     default:
@@ -604,7 +608,7 @@ namespace OW.Game.Mission
         {
             using (var dwRobot = World.CharManager.LockOrLoad(GameCharManager.FriendRobotLoginName, out var robotUser))
             {
-                var datas = new RequestFriendData(World,robotUser.CurrentChar,gameChar.Id);
+                var datas = new RequestFriendData(World, robotUser.CurrentChar, gameChar.Id);
                 World.SocialManager.RequestFriend(datas);
             }
 

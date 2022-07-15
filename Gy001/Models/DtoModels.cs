@@ -1256,6 +1256,7 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string Sid { get; set; }
+
     }
 
     [DataContract]
@@ -1266,6 +1267,13 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string ResultString { get; set; }
+
+        /// <summary>
+        /// 指示是否为初创接口。true是初始创建，false不是初始创建。
+        /// </summary>
+        [DataMember]
+        public bool IsCreated { get; set; }
+
     }
 
     /// <summary>

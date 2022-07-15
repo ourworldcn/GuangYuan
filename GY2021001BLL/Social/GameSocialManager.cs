@@ -617,7 +617,10 @@ namespace GuangYuan.GY001.BLL
                             where pvpObject.TemplateId == ProjectConstant.PvpObjectTId
                             select new { gc, tuiguan, gold, goldOfStore, wood, woodOfStore, mainRoom, pvpObject }).AsNoTracking();   //基准集合
             if (collBase.Count() != innerIds.Length)
-                throw new ArgumentException("至少一个指定的Id不是有效角色Id。", nameof(ids));
+            {
+                var errColl = innerIds.Except(collBase.Select(c => c.gc.Id).ToArray());
+                throw new ArgumentException($"至少一个指定的Id不是有效角色Id。如:{errColl.First()}", nameof(ids));
+            }
             var mounts = (from gc in db.Set<GameChar>()
                           where innerIds.Contains(gc.Id)
                           join gi in db.Set<GameItem>()
@@ -1575,6 +1578,8 @@ namespace GuangYuan.GY001.BLL
         public bool ResetPvpObject(GameChar gameChar, DateTime now)
         {
             var pvpObj = gameChar.GetPvpObject();
+            if (pvpObj is null)
+                return false;
             var today = pvpObj.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();
             var todayData = today.GetTodayData(now);    //获取当日数据
             if (!todayData.Any()) //若没有当日数据

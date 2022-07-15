@@ -131,13 +131,13 @@ namespace GuangYuan.GY001.UserDb.Social
         /// 获取指定角色当前所处行会。
         /// </summary>
         /// <param name="gameChar"></param>
-        /// <returns>指定角色当前所处行会。若没有加入行会则返回null。</returns>
+        /// <returns>指定角色当前所处行会(不含申请未通过的)。若没有加入行会则返回null。</returns>
         public GameGuild GetGuild(GameChar gameChar)
         {
-            var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
+            var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraDecimal >= 10);
             if (slot is null)
                 return null;
-            if (slot.ExtraDecimal < 10 || !OwConvert.TryToGuid(slot.ExtraString, out var guildId))
+            if (!OwConvert.TryToGuid(slot.ExtraString, out var guildId))
                 return null;
             return GetGuild(guildId);
         }
@@ -221,7 +221,7 @@ namespace GuangYuan.GY001.UserDb.Social
         public IQueryable<GameItem> GetAllMemberSlotQuery(Guid guidId, DbContext db)
         {
             var str = guidId.ToString();
-            var result = db.Set<GameItem>().AsNoTracking().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == str);
+            var result = db.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c.ExtraString == str);
             return result;
         }
 
@@ -343,7 +343,8 @@ namespace GuangYuan.GY001.UserDb.Social
                     {
                         slot = new GameItem() { };
                         World.EventsManager.GameItemCreated(slot, ProjectConstant.GuildSlotId);
-                        datas.GameChar.GameItems.Add(slot);
+                        World.ItemManager.ForcedAdd(slot, datas.GameChar, datas.PropertyChanges);
+                        datas.GameChar.GetDbContext().Add(slot);
                     }
                     guild.GetMemberIds().Add(datas.GameChar.Id);    //追加工会成员
                     guild.GetDbContext().Add(guild);
@@ -372,7 +373,7 @@ namespace GuangYuan.GY001.UserDb.Social
                     World.ItemManager.ForcedSetCount(gi, gi.Count.Value - count, datas.PropertyChanges);
                 }
             }
-            World.CharManager.NotifyChange(datas.GameChar.GameUser);
+            datas.GameChar.GameUser.DbContext.SaveChanges();
             datas.Id = guild.Id;
             DictionaryPool<string, object>.Shared.Return(pg);
             //加入行会聊天
@@ -608,8 +609,8 @@ namespace GuangYuan.GY001.UserDb.Social
             {
                 slot = new GameItem();
                 World.EventsManager.GameItemCreated(slot, ProjectConstant.GuildSlotId);
+                World.ItemManager.ForcedAdd(slot, datas.GameChar, datas.PropertyChanges);
                 datas.GameChar.GetDbContext().Add(slot);
-                datas.GameChar.GameItems.Add(slot);
             }
             slot.ExtraString = guild.IdString;
             var autoAccept = guild.Properties.GetBooleanOrDefaut("AutoAccept");
