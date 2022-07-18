@@ -2958,6 +2958,32 @@
             设置角色经验接口使用的返回值传输类。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmPayT78ParamsDto.cpOrderId">
+            <summary>
+            游戏方的订单ID。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmPayT78ParamsDto.money">
+            <summary>
+            金额。单位:分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmPayT78ParamsDto.currency">
+            <summary>
+            币种。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.PayCallbackFromT78ReturnDto">
+            <summary>
+            付费回调的返回类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.PayCallbackFromT78ReturnDto.Ret">
+            <summary>
+            0=成功，表示游戏服务器成功接收了该次充值结果通知,注意是0为成功
+            1=失败，表示游戏服务器无法接收或识别该次充值结果通知，如：签名检验不正确、游戏服务器接收失败
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.GetAllShoppingTemplatesResultDto.Templates">
             <summary>
             所有商品模板的信息集合。
@@ -3277,12 +3303,6 @@
             外围系统。
             </summary>
         </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
             使用蓝图制造或升级物品。
@@ -3499,6 +3519,24 @@
         <member name="M:Gy001.Controllers.GameShoppingController.Lottery(GY2021001WebApi.Models.LotteryParamsDto)">
             <summary>
             抽奖接口。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameShoppingController.PayCallbackFromT78(GuangYuan.GY001.BLL.PayCallbackFromT78ParamsDto,System.String,System.String)">
+            <summary>
+            付费回调。
+            </summary>
+            <param name="model"></param>
+            <param name="isSandbox">"1"表示沙箱；其他表示正式。</param>
+            <param name="payType">支付方式：
+            "mycard"表示mycard，"google"表示google-play支付，"mol"表示mol支付，"apple"表示苹果支付，“onestore”韩国onestore商店支付，“samsung”三星支付
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameShoppingController.ConfirmPayT78(GY2021001WebApi.Models.ConfirmPayT78ParamsDto)">
+            <summary>
+            确认来自T78发行商的付费信息。
             </summary>
             <param name="model"></param>
             <returns></returns>

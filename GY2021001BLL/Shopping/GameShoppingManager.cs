@@ -6,6 +6,7 @@ using OW.Game.Item;
 using OW.Game.PropertyChange;
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -27,6 +28,7 @@ namespace GuangYuan.GY001.BLL
     public class GameShoppingManager : GameManagerBase<GameShoppingManagerOptions>
     {
         private Lazy<Dictionary<string, int[]>> _Genus2GroupNumbers;
+
         /// <summary>
         /// 键是刷新商品的属，值刷新商品的组号。
         /// </summary>
@@ -808,6 +810,34 @@ namespace GuangYuan.GY001.BLL
             return template;
         }
         #endregion 卡池相关
+
+        #region 充值相关
+
+        /// <summary>
+        /// 充值接口。
+        /// </summary>
+        /// <param name="data"></param>
+        public void Pay(PayContext data)
+        {
+
+        }
+
+        #endregion 充值相关
+    }
+
+    public class PayContext : ComplexWorkGameContext
+    {
+        public PayContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public PayContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public PayContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
     }
 
     /// <summary>

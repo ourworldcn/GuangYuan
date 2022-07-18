@@ -3521,6 +3521,42 @@ namespace GY2021001WebApi.Models
 
     #region 商城相关
 
+    public class ConfirmPayT78ParamsDto :TokenDtoBase
+    {
+        /// <summary>
+        /// 游戏方的订单ID。
+        /// </summary>
+        public string cpOrderId { get; set; }
+
+        /// <summary>
+        /// 金额。单位:分。
+        /// </summary>
+        public int money { get; set; }
+
+        /// <summary>
+        /// 币种。
+        /// </summary>
+        public string currency { get; set; }
+    }
+
+    public class ConfirmPayT78ResultDto :ReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 付费回调的返回类。
+    /// </summary>
+    [DataContract]
+    public class PayCallbackFromT78ReturnDto
+    {
+        /// <summary>
+        /// 0=成功，表示游戏服务器成功接收了该次充值结果通知,注意是0为成功
+        /// 1=失败，表示游戏服务器无法接收或识别该次充值结果通知，如：签名检验不正确、游戏服务器接收失败
+        /// </summary>
+        [DataMember(Name ="ret")]
+        public int Ret { get; set; }
+    }
+
     public class GetAllShoppingTemplatesParamsDto : TokenDtoBase
     {
     }

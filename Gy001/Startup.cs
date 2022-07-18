@@ -79,7 +79,6 @@ namespace Gy001
                 options.JsonSerializerOptions.PropertyNamingPolicy = null;  //直接用属性名
                 options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;  //忽略只读属性。
             });
-            PublisherT78.Config(services.AddHttpClient<PublisherT78, PublisherT78>());  //加入访问冰鸟sdk的服务
             #endregion 配置通用服务
 
             #region 配置Swagger
@@ -116,6 +115,8 @@ namespace Gy001
             services.Replace(ServiceDescriptor.Singleton<GameEventsManager>(c => new Gy001GameEventsManager(c, new Gy001GameEventsManagerOptions())));
             services.Replace(ServiceDescriptor.Singleton<GamePropertyChangeManager>(c => new Gy001GamePropertyChangeManager(c, new GamePropertyChangeManagerOptions())));
             #endregion 配置游戏专用服务
+
+            services.AddPublisherT78();  //加入访问冰鸟sdk的服务
         }
 
         private Task ExceptionHandler(HttpContext context)

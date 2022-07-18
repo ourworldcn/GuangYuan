@@ -681,7 +681,7 @@ namespace OW.Game
             dest.SetTemplate(src.GetTemplate());
             dest.ExtraString = src.ExtraString;
             dest.ExtraDecimal = src.ExtraDecimal;
-            dest.BinaryArray = src.BinaryArray.ToArray();
+            dest.BinaryArray = src.BinaryArray?.ToArray();
             OwHelper.Copy(src.Properties, dest.Properties);
         }
 

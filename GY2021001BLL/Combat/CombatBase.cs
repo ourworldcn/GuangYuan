@@ -50,14 +50,15 @@ namespace GuangYuan.GY001.BLL
             }
             else if (tid == ProjectConstant.MucaishuTId)
             {
-                parent = gc.GetMainbase().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId).Parent;
+                parent = gc.GetMainbase()?.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId)?.Parent;
             }
             else if (tid == ProjectConstant.YumitianTId)
             {
-                parent = gc.GetMainbase().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId).Parent;
+                parent = gc.GetMainbase()?.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId)?.Parent;
             }
             else
                 throw new InvalidOperationException();
+            if(parent !=null)
             gim.MoveItem(gi, gi.Count ?? 1, parent, null, changes1);
             if (null != changes)
                 changes1.CopyTo(changes);
