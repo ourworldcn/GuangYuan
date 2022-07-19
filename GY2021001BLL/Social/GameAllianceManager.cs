@@ -209,6 +209,7 @@ namespace GuangYuan.GY001.UserDb.Social
             var index = Array.FindIndex(ary, c => c <= exp);
             if (index > -1 && index != lv + 1)    //若找到了匹配项
                 World.ItemManager.SetLevel(guild, index + 1, changes);
+            guild.SetPropertyAndMarkChanged("exp", exp, changes);
         }
         #endregion 基础操作
 
@@ -670,7 +671,7 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             using var dwGuild = DisposeHelper.Create(Unlock, guild);
             var db = guild.GetDbContext();
-            var qs = GetAllMemberSlotQuery(guidId, db).Where(c => c.ExtraDecimal == 0).Select(c => c.OwnerId.Value).AsEnumerable();  //所有申请者
+            var qs = GetAllMemberSlotQuery(guidId, db).AsEnumerable().Where(c => c.ExtraDecimal ==decimal.Zero).Select(c => c.OwnerId.Value);  //所有申请者
             if (!datas.CharIds.All(c => qs.Contains(c)))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
@@ -702,12 +703,12 @@ namespace GuangYuan.GY001.UserDb.Social
                     var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
                     slot.ExtraDecimal = (int)GuildDivision.见习会员;
                     slot.ExtraString = guild.IdString;
-                    World.CharManager.NotifyChange(gc.GameUser);
                     this.JoinGuildChatChannel(gc);  //加入工会聊天
                     NotifyChar(gc.Id);
                     //清理其它申请
                     var deletes = gc.GameItems.Where(c => c.TemplateId == ProjectConstant.GuildSlotId && c != slot).ToArray();
                     deletes.ForEach(c => World.ItemManager.ForcedDelete(c, null, datas.PropertyChanges));
+                    gc.GetDbContext().SaveChanges();
                 }
             else //若拒绝
                 foreach (var charId in datas.CharIds)
@@ -716,7 +717,9 @@ namespace GuangYuan.GY001.UserDb.Social
                     var slot = gc.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildSlotId);
                     World.ItemManager.ForcedDelete(slot, null, datas.PropertyChanges);
                     NotifyChar(gc.Id);
+                    gc.GetDbContext().SaveChanges();
                 }
+
         }
 
         /// <summary>

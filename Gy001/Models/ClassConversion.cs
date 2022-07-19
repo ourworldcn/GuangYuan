@@ -5,6 +5,7 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using GuangYuan.GY001.UserDb.Social;
+using Microsoft.Extensions.DependencyInjection;
 using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.PropertyChange;
@@ -630,9 +631,9 @@ namespace GY2021001WebApi.Models
             if (!world.AllianceManager.Lock(guild.Id, world.AllianceManager.Options.DefaultTimeout, out guild))
                 return;
             using var dw = DisposeHelper.Create(c => world.AllianceManager.Unlock(c), guild);
-            var db = guild.GetDbContext();
+            //var db = guild.GetDbContext();
+            using var db = world.CreateNewUserDbContext();
             var coll = from slot in world.AllianceManager.GetAllMemberSlotQuery(guild.Id, db)
-                       where slot.ExtraDecimal >= 0    //包含待批准成员
                        join gc in db.Set<GameChar>()
                        on slot.OwnerId equals gc.Id
                        join tuiguan in db.Set<GameItem>()
