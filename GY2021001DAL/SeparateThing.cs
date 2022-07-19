@@ -17,7 +17,7 @@ namespace GuangYuan.GY001.UserDb
     /// 游戏中虚拟事物的类，不随用户数据一起加载到内存中的数据放在这个类中。如邮件、工会、战报等。
     /// </summary>
     [Table("SeparateThings")]
-    public class SeparateThing : GameThingBaseV2, IDisposable
+    public class SeparateThing : GameThingBase, IDisposable
     {
         /// <summary>
         /// 构造函数。
@@ -65,6 +65,11 @@ namespace GuangYuan.GY001.UserDb
         /// 所属事物的Id或其他关联对象的Id。
         /// </summary>
         public Guid? OwnerId { get; set; }
+
+        public override DbContext GetDbContext()
+        {
+            throw default;
+        }
 
         #endregion 导航属性
 

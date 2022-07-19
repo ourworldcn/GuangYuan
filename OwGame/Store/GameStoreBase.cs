@@ -15,39 +15,6 @@ using System.Threading;
 
 namespace OW.Game.Store
 {
-    public abstract class OrmObjectBase<TKey>
-    {
-        private TKey _Id;
-
-        /// <summary>
-        /// 构造函数。
-        /// 不会给<see cref="Id"/>属性赋值。
-        /// </summary>
-        public OrmObjectBase()
-        {
-        }
-
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        /// <param name="id">初始化<see cref="Id"/>属性的值。</param>
-        public OrmObjectBase(TKey id)
-        {
-            _Id = id;
-        }
-
-        /// <summary>
-        /// Id属性。
-        /// </summary>
-        [Key, Column(Order = 0)]
-        public TKey Id
-        {
-            get { return _Id; }
-            set { _Id = value; }
-        }
-
-    }
-
     /// <summary>
     /// 以<see cref="Guid"/>为键类型的实体类的基类。
     /// </summary>

@@ -4,14 +4,16 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    partial class GY001UserContextModelSnapshot : ModelSnapshot
+    [Migration("20220719084653_22071901")]
+    partial class _22071901
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,9 +28,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.Property<Guid>("CharId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("JsonObjectString")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("ParentId")
                         .HasColumnType("uniqueidentifier");
@@ -64,9 +63,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.Property<DateTime>("EndUtc")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("JsonObjectString")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
@@ -145,9 +141,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("GameUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("JsonObjectString")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
@@ -179,9 +172,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("ExtraString")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
-
-                    b.Property<string>("JsonObjectString")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("OwnerId")
                         .HasColumnType("uniqueidentifier");
@@ -221,9 +211,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<DateTime>("CreateUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("JsonObjectString")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
@@ -245,9 +232,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<string>("JsonObjectString")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Kind")
                         .HasColumnType("int");
@@ -274,9 +258,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("JsonObjectString")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("MailId")
                         .HasColumnType("uniqueidentifier");
@@ -347,9 +328,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<DateTime>("CreateUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("JsonObjectString")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("LoginName")
                         .IsRequired()
                         .HasColumnType("nvarchar(64)")
@@ -392,9 +370,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("ExtraString")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
-
-                    b.Property<string>("JsonObjectString")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("OwnerId")
                         .HasColumnType("uniqueidentifier");
@@ -446,9 +421,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("ExtraString")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
-
-                    b.Property<string>("JsonObjectString")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");

@@ -40,16 +40,12 @@ namespace OW.Game.Store
         /// <summary>
         /// 属性字符串。格式数Json字符串。
         /// </summary>
-        [NotMapped,JsonIgnore]
         public string JsonObjectString
         {
             get => _JsonObjectString;
             set
             {
-                if (!ReferenceEquals(_JsonObjectString, value))
-                {
-                    _JsonObjectString = value;
-                }
+                _JsonObjectString = value;
             }
         }
 
@@ -76,11 +72,14 @@ namespace OW.Game.Store
         }
 
         /// <summary>
-        /// 用<see cref="GetJsonObject{T}"/>获取。
+        /// 用<see cref="GetJsonObject{T}"/>获取。最后一次调用后，结果存储在这里。
         /// </summary>
         [JsonIgnore, NotMapped]
         public object JsonObject { get; set; }
 
+        /// <summary>
+        /// 最后一次调用<see cref="GetJsonObject{T}"/>时的泛型参数。
+        /// </summary>
         [JsonIgnore, NotMapped]
         public Type JsonObjectType { get; set; }
 
