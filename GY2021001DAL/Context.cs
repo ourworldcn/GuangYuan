@@ -45,10 +45,9 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
             modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
-            //游离对象
-            modelBuilder.Entity<SeparateThing>().HasIndex(c => c.OwnerId);
-            modelBuilder.Entity<SeparateThing>().HasIndex(c => new { c.TemplateId, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
-            modelBuilder.Entity<SeparateThing>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal, c.ExtraString }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            //树状节点对象
+            modelBuilder.Entity<DbTreeNode>().HasIndex(c => new { c.TemplateId, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<DbTreeNode>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal, c.ExtraString }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
             //邮件相关
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
@@ -129,10 +128,7 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public DbSet<GameGuild> Guild { get; set; }
 
-        /// <summary>
-        /// 游离对象表。
-        /// </summary>
-        public DbSet<SeparateThing> SeparateThings { get; set; }
+        public DbSet<DbTreeNode> TreeNodes { get; set; }
 
         public override void Dispose()
         {

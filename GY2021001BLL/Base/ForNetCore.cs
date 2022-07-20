@@ -253,9 +253,10 @@ namespace GuangYuan.GY001.BLL
 
             var sw = Stopwatch.StartNew();
             using var dw = DisposeHelper.Create(c => c.Stop(), sw);
-            Dictionary<string, object> dic = new Dictionary<string, object> { { "dec", 1m }, { "str", "str" },{ "dt",DateTime.UtcNow} };
-            var json = JsonSerializer.Serialize(dic);
-            var dic1 = JsonSerializer.Deserialize(json, typeof(Dictionary<string, object>));
+            Dictionary<string, object> dic = new Dictionary<string, object> { { "dec", 1m }, { "str", "str" }, { "dt", DateTime.UtcNow } };
+            var gi1 = new GameItem() { BinaryArray = Enumerable.Range(1, 100).Select(c => (byte)c).ToArray() };
+            var json = JsonSerializer.Serialize(gi1);
+            var dic1 = JsonSerializer.Deserialize(json, typeof(GameItem));
             try
             {
                 var ary = new Dictionary<string, MissionState>() { { Guid.NewGuid().ToString(), MissionState.Completion } };

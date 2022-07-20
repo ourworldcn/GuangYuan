@@ -410,6 +410,7 @@ namespace OW.Game.Log
         /// <summary>
         /// 类型的转换器。
         /// </summary>
+        [JsonIgnore]
         public static TypeConverter Converter
         {
             get

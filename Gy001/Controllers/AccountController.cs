@@ -25,7 +25,7 @@ namespace GY2021001WebApi.Controllers
     {
         public AccountController()
         {
-            
+
         }
 
         /// <summary>
@@ -63,8 +63,8 @@ namespace GY2021001WebApi.Controllers
                     GameItem gi = new GameItem();
                     gcm.World.EventsManager.GameItemCreated(gi, ProjectConstant.ZuanshiId);
                     gi.Count = 500;
-                    gcm.World.SocialManager.SendMail(mail, new Guid[] { gu.CurrentChar.Id }, SocialConstant.FromSystemId,
-                        new (GameItem, Guid)[] { (gi, ProjectConstant.CurrencyBagTId) });
+                    //gcm.World.SocialManager.SendMail(mail, new Guid[] { gu.CurrentChar.Id }, SocialConstant.FromSystemId,
+                    //    new (GameItem, Guid)[] { (gi, ProjectConstant.CurrencyBagTId) });
                 }
                 return result;
             }

@@ -129,7 +129,8 @@ namespace OW.Game.Store
 
         public virtual void PrepareSaving(DbContext db)
         {
-            JsonObjectString = JsonSerializer.Serialize(JsonObject, JsonObjectType ?? JsonObject.GetType());
+            if (JsonObject != null)
+                JsonObjectString = JsonSerializer.Serialize(JsonObject, JsonObjectType ?? JsonObject.GetType());
         }
 
     }

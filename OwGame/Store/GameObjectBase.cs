@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace OW.Game.Store
 {
@@ -137,8 +139,12 @@ namespace OW.Game.Store
         [NotMapped, JsonIgnore]
         public ConcurrentDictionary<string, object> RuntimeProperties
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.Synchronized)]
-            get => _RuntimeProperties ??= new ConcurrentDictionary<string, object>();
+            get
+            {
+                if (_RuntimeProperties is null)
+                    Interlocked.CompareExchange(ref _RuntimeProperties, new ConcurrentDictionary<string, object>(), null);
+                return _RuntimeProperties;
+            }
         }
 
         /// <summary>
@@ -169,11 +175,19 @@ namespace OW.Game.Store
                 _Base64IdString = null;
                 _IdString = null;
                 _RuntimeProperties = null;
+                _JsonObjectString = null;
                 base.Dispose(disposing);
             }
         }
 
         #endregion IDisposable接口相关
+
+        public override void PrepareSaving(DbContext db)
+        {
+            if (JsonObject != null)
+                JsonObjectString = JsonSerializer.Serialize(JsonObject, JsonObjectType ?? JsonObject.GetType());
+            base.PrepareSaving(db);
+        }
 
         #region 事件及相关
 
