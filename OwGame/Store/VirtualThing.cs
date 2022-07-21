@@ -5,7 +5,7 @@ using System.Text;
 namespace OW.Game.Store
 {
 
-    public class VirtualThingBase : DbTreeNode
+    public class VirtualThingBase : DbTreeNode, IDisposable
     {
         public VirtualThingBase()
         {
@@ -16,7 +16,7 @@ namespace OW.Game.Store
         }
     }
 
-    public class VirtualThing : VirtualThingBase
+    public class VirtualThing : VirtualThingBase, IDisposable
     {
     }
 }

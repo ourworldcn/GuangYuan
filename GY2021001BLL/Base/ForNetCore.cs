@@ -261,21 +261,17 @@ namespace GuangYuan.GY001.BLL
 
             var sw = Stopwatch.StartNew();
             using var dw = DisposeHelper.Create(c => c.Stop(), sw);
-            Dictionary<string, object> dic = new Dictionary<string, object> { { "dec", 1m }, { "str", "str" }, { "dt", DateTime.UtcNow } };
-            var gi1 = new GameItem() { BinaryArray = Enumerable.Range(1, 100).Select(c => (byte)c).ToArray() };
-            var json = JsonSerializer.Serialize(gi1);
-            var dic1 = JsonSerializer.Deserialize(json, typeof(GameItem));
+            Guid id = new Guid("{7E0A0B9C-ECEE-498B-96CF-2680BC1216E0}");
             try
             {
-                var ary = new Dictionary<string, MissionState>() { { Guid.NewGuid().ToString(), MissionState.Completion } };
-                var str = JsonSerializer.Serialize(ary);
-                var tmp = JsonSerializer.Deserialize(str, ary.GetType());
-                var coll = from gi in db.Set<GameItem>()
-                           join gg in db.Set<GameGuild>()
-                           on gi.ExtraString equals gg.Id.ToString() into j
-                           from jtmp in j.DefaultIfEmpty()
-                           select tmp;
-                var lst = coll.Take(7).ToArray();
+                //ThreadPool.GetMaxThreads(out var work, out var compl);
+                //ThreadPool.GetAvailableThreads(out var w1,out var c1);
+                //ThreadPool.GetMinThreads(out var w2,out var c2);
+                var entity = db.Set<DbTreeNode>().Attach(new DbTreeNode(id) { ExtraDecimal = 2 });
+                entity.State = EntityState.Modified;
+                entity.Entity.ExtraDecimal = 2;
+                //entity.Reload(); 
+                //db.SaveChanges();
             }
             catch (Exception)
             {

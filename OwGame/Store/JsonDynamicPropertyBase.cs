@@ -8,13 +8,24 @@ namespace OW.Game.Store
 {
     public class JsonDynamicPropertyBase : GuidKeyObjectBase, IDisposable, IBeforeSave
     {
+        #region 构造函数
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
         public JsonDynamicPropertyBase()
         {
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="id"></param>
         public JsonDynamicPropertyBase(Guid id) : base(id)
         {
         }
+
+        #endregion 构造函数
 
         #region 数据库属性
 

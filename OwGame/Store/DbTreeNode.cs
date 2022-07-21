@@ -7,15 +7,52 @@ using System.Text.Json.Serialization;
 
 namespace OW.Game.Store
 {
-    public class DbTreeNodeBase : JsonDynamicPropertyBase
+    /// <summary>
+    /// 
+    /// </summary>
+    public class DbTreeNodeBase : JsonDynamicPropertyBase, IDisposable
     {
+        #region 构造函数
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
         public DbTreeNodeBase()
         {
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="id"></param>
         public DbTreeNodeBase(Guid id) : base(id)
         {
         }
+
+        #endregion 构造函数
+
+        #region 析构及处置对象相关
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+                    // 释放托管状态(托管对象)
+                }
+
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
+                ExtraString = null;
+                base.Dispose(disposing);
+            }
+        }
+        #endregion 析构及处置对象相关
 
         #region 数据库属性
 
@@ -42,10 +79,43 @@ namespace OW.Game.Store
         /// 时间戳。
         /// </summary>
         [Timestamp]
+        [JsonIgnore]
         public byte[] Timestamp { get; set; }
 
         #endregion 数据库属性
+    }
 
+    /// <summary>
+    /// 存储于数据库的树状节点。
+    /// </summary>
+    [Table("TreeNodes")]
+    public class DbTreeNode : DbTreeNodeBase, IDisposable
+    {
+        #region 构造函数
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public DbTreeNode()
+        {
+        }
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="id"></param>
+        public DbTreeNode(Guid id) : base(id)
+        {
+        }
+
+        #endregion 构造函数
+
+        #region 析构及处置对象相关
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             if (!IsDisposed)
@@ -57,24 +127,13 @@ namespace OW.Game.Store
 
                 // 释放未托管的资源(未托管的对象)并重写终结器
                 // 将大型字段设置为 null
-                ExtraString = null;
+                Parent = null;
+                _Children = null;
+                base.Dispose(disposing);
             }
         }
-    }
 
-    /// <summary>
-    /// 存储于数据库的树状节点。
-    /// </summary>
-    [Table("TreeNodes")]
-    public class DbTreeNode : DbTreeNodeBase
-    {
-        public DbTreeNode()
-        {
-        }
-
-        public DbTreeNode(Guid id) : base(id)
-        {
-        }
+        #endregion 析构及处置对象相关
 
         #region 导航属性
 
@@ -97,21 +156,25 @@ namespace OW.Game.Store
         public virtual List<DbTreeNode> Children { get => _Children ??= new List<DbTreeNode>(); set => _Children = value; }
 
         #endregion 导航属性
+    }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (!IsDisposed)
-            {
-                if (disposing)
-                {
-                    // 释放托管状态(托管对象)
-                }
+    public interface IDbTreeNode
+    {
+        /// <summary>
+        /// 所属槽导航属性。
+        /// </summary>
+        [JsonIgnore]
+        public DbTreeNode Parent { get; set; }
 
-                // 释放未托管的资源(未托管的对象)并重写终结器
-                // 将大型字段设置为 null
-                Parent = null;
-                _Children = null;
-            }
-        }
+        /// <summary>
+        /// 所属槽Id。
+        /// </summary>
+        [ForeignKey(nameof(Parent))]
+        public Guid? ParentId { get; set; }
+
+        /// <summary>
+        /// 拥有的子物品或槽。
+        /// </summary>
+        public List<DbTreeNode> Children { get; set; }
     }
 }
