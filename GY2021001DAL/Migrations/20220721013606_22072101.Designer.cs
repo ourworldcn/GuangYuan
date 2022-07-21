@@ -4,14 +4,16 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GuangYuan.GY001.UserDb.Migrations
 {
     [DbContext(typeof(GY001UserContext))]
-    partial class GY001UserContextModelSnapshot : ModelSnapshot
+    [Migration("20220721013606_22072101")]
+    partial class _22072101
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -423,9 +425,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<decimal?>("ExtraDecimal")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("ExtraGuid")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("ExtraString")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
@@ -434,6 +433,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TemplateId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("Timestamp")
@@ -445,10 +447,10 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.HasIndex("ExtraGuid", "ExtraDecimal", "ExtraString")
+                    b.HasIndex("TemplateId", "ExtraDecimal", "ExtraString")
                         .HasAnnotation("SqlServer:Include", new[] { "ParentId" });
 
-                    b.HasIndex("ExtraGuid", "ExtraString", "ExtraDecimal")
+                    b.HasIndex("TemplateId", "ExtraString", "ExtraDecimal")
                         .HasAnnotation("SqlServer:Include", new[] { "ParentId" });
 
                     b.ToTable("TreeNodes");

@@ -21,6 +21,7 @@ using OW.Game.Item;
 using OW.Game.Log;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
+using OW.Game.Store;
 using OW.Game.Validation;
 using OW.Script;
 using System;
@@ -111,9 +112,16 @@ namespace GuangYuan.GY001.BLL
 
             try
             {
+                var tn = db.Model.FindEntityType(typeof(GameItem)).GetTableName();
                 sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ROW);" +
                     "ALTER INDEX IX_GameItems_TemplateId_ExtraString_ExtraDecimal ON [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE)";   //按行压缩
                 db.Database.ExecuteSqlRaw(sql);
+                tn = db.Model.FindEntityType(typeof(DbTreeNode)).GetTableName();
+                if (tn != null)
+                {
+                    sql = $"ALTER TABLE {tn} REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ROW);";
+                    db.Database.ExecuteSqlRaw(sql);
+                }
             }
             catch (Exception err)
             {

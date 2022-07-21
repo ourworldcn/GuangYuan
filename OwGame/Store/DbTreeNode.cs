@@ -20,9 +20,12 @@ namespace OW.Game.Store
         #region 数据库属性
 
         /// <summary>
-        /// 模板Id。如果没有模板则是<see cref="Guid.Empty"/>。
+        ///记录一些额外的信息，通常这些信息用于排序，加速查找符合特定要求的对象。
+        ///常用于记录模板Id或与其它节点的特殊绑定关系，如果没有则是<see cref="Guid.Empty"/>。
         /// </summary>
-        public Guid TemplateId { get; set; }
+        /// <remarks><see cref="ExtraGuid"/><see cref="ExtraString"/><see cref="ExtraDecimal"/>三个字段按顺序形成多字段索引以加快搜索速度。
+        /// 也创建如下顺序创建索引<see cref="ExtraGuid"/><see cref="ExtraDecimal"/><see cref="ExtraString"/></remarks>
+        public Guid ExtraGuid { get; set; }
 
         /// <summary>
         /// 记录一些额外的信息，通常这些信息用于排序，加速查找符合特定要求的对象。
@@ -35,7 +38,14 @@ namespace OW.Game.Store
         /// </summary>
         public decimal? ExtraDecimal { get; set; }
 
+        /// <summary>
+        /// 时间戳。
+        /// </summary>
+        [Timestamp]
+        public byte[] Timestamp { get; set; }
+
         #endregion 数据库属性
+
         protected override void Dispose(bool disposing)
         {
             if (!IsDisposed)
