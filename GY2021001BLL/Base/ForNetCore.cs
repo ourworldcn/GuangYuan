@@ -28,6 +28,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
@@ -272,10 +273,12 @@ namespace GuangYuan.GY001.BLL
                 entity.Entity.ExtraDecimal = 2;
                 //entity.Reload(); 
                 //db.SaveChanges();
+                Dictionary<string, string> dic = new Dictionary<string, string> { { "k1", "v1" }, { "k2", "v2" } };
+                var str = JsonSerializer.Serialize(dic);
+                var obj = JsonSerializer.Deserialize(str, dic.GetType());
             }
             catch (Exception)
             {
-
             }
         }
 

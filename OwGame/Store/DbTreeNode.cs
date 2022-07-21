@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -164,6 +165,7 @@ namespace OW.Game.Store
         /// 所属槽导航属性。
         /// </summary>
         [JsonIgnore]
+        [MaybeNull]
         public DbTreeNode Parent { get; set; }
 
         /// <summary>
@@ -175,6 +177,6 @@ namespace OW.Game.Store
         /// <summary>
         /// 拥有的子物品或槽。
         /// </summary>
-        public List<DbTreeNode> Children { get; set; }
+        public IList<IDbTreeNode> Children { get; set; }
     }
 }
