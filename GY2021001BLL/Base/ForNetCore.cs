@@ -1,6 +1,7 @@
 ﻿using Game.Social;
 using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Script;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
@@ -487,6 +488,9 @@ namespace GuangYuan.GY001.BLL
 
             //加入联盟/工会管理器
             services.TryAddSingleton(c => new GameAllianceManager(c, new GameAllianceManagerOptions() { }));
+
+            //加入转换管理器。
+            services.TryAddSingleton(c => new MapperManager(c, new MapperManagerOptions()) { });
             #endregion  游戏专用服务
 
             return services;
