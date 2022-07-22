@@ -79,6 +79,8 @@ namespace Gy001
                 options.JsonSerializerOptions.PropertyNamingPolicy = null;  //直接用属性名
                 options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;  //忽略只读属性。
             });
+
+            services.AddAutoMapper(Array.Empty<Assembly>());
             #endregion 配置通用服务
 
             #region 配置Swagger

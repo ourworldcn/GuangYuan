@@ -1,6 +1,8 @@
-﻿using GuangYuan.GY001.BLL;
+﻿using AutoMapper;
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Homeland;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
@@ -11,6 +13,7 @@ using OW.Game;
 using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -247,6 +250,7 @@ namespace GY2021001WebApi.Models
         }
     }
 
+    [AutoMap(typeof(GameItem))]
     public partial class GameItemDto
     {
         /// <summary>

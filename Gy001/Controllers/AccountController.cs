@@ -1,5 +1,7 @@
-﻿using Game.Social;
+﻿using AutoMapper;
+using Game.Social;
 using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +11,8 @@ using Microsoft.Extensions.Logging;
 using OW.Game;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -172,6 +176,11 @@ namespace GY2021001WebApi.Controllers
         [HttpGet]
         public ActionResult<LoginReturnDto> QuicklyRegisterAndLogin()
         {
+            using var db = HttpContext.RequestServices.GetRequiredService<VWorld>().CreateNewUserDbContext();
+            GameItem gi = db.Set<GameItem>().First(c => c.Children.Count > 0);
+            var mapper = HttpContext.RequestServices.GetRequiredService<IMapper>();
+            var tmp = mapper.Map<GameItemDto>(gi);
+            //TypeDescriptor.GetConverter(typeof(GameItemDto)).ConvertFrom(new GameMapperTypeDescriptorContext(dto), CultureInfo.InvariantCulture, gi);
             try
             {
                 var services = HttpContext.RequestServices;

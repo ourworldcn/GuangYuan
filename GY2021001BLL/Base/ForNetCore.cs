@@ -490,7 +490,7 @@ namespace GuangYuan.GY001.BLL
             services.TryAddSingleton(c => new GameAllianceManager(c, new GameAllianceManagerOptions() { }));
 
             //加入转换管理器。
-            services.TryAddSingleton(c => new MapperManager(c, new MapperManagerOptions()) { });
+            services.TryAddSingleton(c => new GameMapperManager(c, new GameMapperManagerOptions()) { });
             #endregion  游戏专用服务
 
             return services;

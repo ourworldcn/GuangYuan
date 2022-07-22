@@ -2,6 +2,7 @@
  * 供Unity使用的SDK文件。
  * 目前使用C# 7.3版本语法。
  */
+
 using Game.Social;
 using GuangYuan.GY001.UserDb;
 using System;
@@ -654,7 +655,6 @@ namespace GY2021001WebApi.Models
     /// <summary>
     /// 游戏物品，道具，金币，积分等等的对象。
     /// </summary>
-    [DataContract]
     public partial class GameItemDto
     {
         public GameItemDto()

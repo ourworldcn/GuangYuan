@@ -8,8 +8,14 @@ using System.Linq;
 
 namespace GuangYuan.GY001.UserDb.Combat
 {
+    /// <summary>
+    /// CombatReport
+    /// </summary>
     public class WarNewspaper : GameObjectBase
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public const string Separator = "`";
 
         public WarNewspaper()
