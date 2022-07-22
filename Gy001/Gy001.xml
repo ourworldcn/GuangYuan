@@ -2771,6 +2771,11 @@
             完成任务接口的返回值数据封装类。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CompleteMissionReturnDto.MissionTId">
+            <summary>
+            要完成任务的模板Id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetMissionStateParamsDto">
             <summary>
             获取任务状态接口参数的数据封装类。

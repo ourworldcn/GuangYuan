@@ -176,11 +176,13 @@ namespace GY2021001WebApi.Controllers
         [HttpGet]
         public ActionResult<LoginReturnDto> QuicklyRegisterAndLogin()
         {
+#if DEBUG
             using var db = HttpContext.RequestServices.GetRequiredService<VWorld>().CreateNewUserDbContext();
             GameItem gi = db.Set<GameItem>().First(c => c.Children.Count > 0);
             var mapper = HttpContext.RequestServices.GetRequiredService<IMapper>();
             var tmp = mapper.Map<GameItemDto>(gi);
             //TypeDescriptor.GetConverter(typeof(GameItemDto)).ConvertFrom(new GameMapperTypeDescriptorContext(dto), CultureInfo.InvariantCulture, gi);
+#endif //DEBUG
             try
             {
                 var services = HttpContext.RequestServices;

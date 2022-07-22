@@ -3212,6 +3212,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class CompleteMissionReturnDto : ChangesAndMailReturnDtoBase
     {
+        /// <summary>
+        /// 要完成任务的模板Id。
+        /// </summary>
+        [DataMember]
+        public string MissionTId { get; set; }
     }
 
     /// <summary>

@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Text;
+using AutoMapper;
+using Microsoft.Extensions.DependencyInjection;
+using OW.Game.Store;
 
 namespace GuangYuan.GY001.BLL.Specific
 {
@@ -31,12 +34,28 @@ namespace GuangYuan.GY001.BLL.Specific
 
         void Initialize()
         {
-
+            _Mapper = Service.GetRequiredService<IMapper>();
         }
 
-        public TDest Convert<TSrc, TDest>(TSrc src)
+        IMapper _Mapper;
+
+        public TDestination Map<TDestination>(object source)
         {
-            return default;
+            return _Mapper.Map<TDestination>(source);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="dic">不会清理其中内容。</param>
+        /// <param name="prefix"></param>
+        public void Map(DbTreeNode node, IDictionary<string, string> dic, string prefix = null)
+        {
+            if (node.Parent != null)
+                dic[$"{prefix}ptid"] = node.Parent.ExtraDecimal.ToString();
+            dic[$"{prefix}tid"] = node.ExtraGuid.ToString();
+            dic[$"{prefix}Count"] = node.GetJsonObject<Dictionary<string, string>>().GetValueOrDefault("Count");
         }
     }
 
