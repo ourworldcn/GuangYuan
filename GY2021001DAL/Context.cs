@@ -46,8 +46,8 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
             //树状节点对象
-            modelBuilder.Entity<DbTreeNode>().HasIndex(c => new { c.ExtraGuid, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
-            modelBuilder.Entity<DbTreeNode>().HasIndex(c => new { c.ExtraGuid, c.ExtraDecimal, c.ExtraString }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<VirtualThing>().HasIndex(c => new { c.ExtraGuid, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<VirtualThing>().HasIndex(c => new { c.ExtraGuid, c.ExtraDecimal, c.ExtraString }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
             //邮件相关
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
@@ -128,7 +128,10 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public DbSet<GameGuild> Guild { get; set; }
 
-        public DbSet<DbTreeNode> TreeNodes { get; set; }
+        /// <summary>
+        /// 存储广义树状事物对象的集合。
+        /// </summary>
+        public DbSet<VirtualThing> VirtualThings { get; set; }
 
         public override void Dispose()
         {

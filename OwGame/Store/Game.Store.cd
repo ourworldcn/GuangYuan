@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="OW.Game.Store.GuidKeyObjectBase">
-    <Position X="3" Y="0.5" Width="1.5" />
+    <Position X="4.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.SimpleDynamicPropertyBase">
-    <Position X="3" Y="3" Width="1.5" />
+    <Position X="6" Y="3" Width="1.5" />
     <TypeIdentifier>
       <HashCode>EAAIAACAACAIABAAAACAABAAAAAAAAAAAAiAAAACAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
@@ -16,28 +16,28 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="OW.Game.Store.SimpleExtendPropertyBaseExtensions" Collapsed="true">
-    <Position X="11.5" Y="1.5" Width="1.5" />
+    <Position X="12.5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameEntityRelationshipBase">
-    <Position X="0.75" Y="7.75" Width="1.75" />
+    <Position X="3.5" Y="7.75" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAACAAAAAAAAAAAAAAAAAACAAIAQAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.PocoLoadingExtensions" Collapsed="true">
-    <Position X="9.75" Y="1.5" Width="1.5" />
+    <Position X="10.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameStoreBase" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="9.75" Y="0.5" Width="1.5" />
+    <Position X="10.75" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
@@ -45,81 +45,95 @@
     <Lollipop Position="0.2" Collapsed="true" />
   </Class>
   <Class Name="OW.Game.Store.GameTemplateContext" Collapsed="true">
-    <Position X="11.5" Y="0.5" Width="1.5" />
+    <Position X="12.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameTemplateContext.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameTemplateBase">
-    <Position X="3.25" Y="7.75" Width="1.5" />
+    <Position X="6" Y="7.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAEAAAAAAAAAAAAAAAAAABAAAQAAQAAAAAAAAAQA=</HashCode>
       <FileName>Store\GameTemplateContext.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameUserContext" Collapsed="true">
-    <Position X="8" Y="1.5" Width="1.5" />
+    <Position X="14.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>gAAIAAAAAQAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameUserContext.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OW.Game.Store.GameObjectBase">
-    <Position X="5.5" Y="7.75" Width="1.5" />
+    <Position X="8.25" Y="7.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAgJIEAAEKAAACAQAQAAAAAABAABAAABAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameObjectBase.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="OW.Game.Store.DbTreeNodeBase" Collapsed="true">
-    <Position X="0.5" Y="0.5" Width="1.5" />
+  <Class Name="OW.Game.Store.DbTreeNodeBase&lt;T&gt;" Collapsed="true">
+    <Position X="1" Y="7" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAACAAACEAAAACAAAAAAAAAAAAAAAAAAAAAQA=</HashCode>
+      <HashCode>AAAAAAAAACAAACEAAAAUQAAAAAAAAAAQAgAAAAAQAQA=</HashCode>
       <FileName>Store\DbTreeNode.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="OW.Game.Store.DbTreeNode">
-    <Position X="0.5" Y="2" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAACAAAAAAAAAUQAAAAAAAAAAAAgAAAAAAAAA=</HashCode>
-      <FileName>Store\DbTreeNode.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" />
-  </Class>
-  <Class Name="OW.Game.Managers.DbTreeNodeManager" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="8" Y="0.5" Width="1.5" />
+  <Class Name="OW.Game.Managers.VirtualThingManager" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="14.25" Y="1.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAACAACAAAAAAAAAABBAAAAAAAAAAAEIAAAAAAAA=</HashCode>
-      <FileName>Store\DbTreeNodeManager.cs</FileName>
+      <FileName>Store\VirtualThingManager.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" Collapsed="true" />
   </Class>
+  <Class Name="OW.Game.Store.JsonDynamicPropertyBase">
+    <Position X="0.5" Y="3" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAgJAACAACAAACAAAAAAABAAAAABAAABAAAAAAAAAAA=</HashCode>
+      <FileName>Store\JsonDynamicPropertyBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="OW.Game.Store.VirtualThingBase&lt;T&gt;" Collapsed="true">
+    <Position X="1" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Store\VirtualThing.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.Store.VirtualThing" Collapsed="true">
+    <Position X="1" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAEAACAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Store\VirtualThing.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Interface Name="OW.Game.Store.IBeforeSave" Collapsed="true">
-    <Position X="8" Y="2.75" Width="1.5" />
+    <Position X="10.75" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAIAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="OW.Game.Store.IGameStore" Collapsed="true">
-    <Position X="11.5" Y="2.75" Width="1.5" />
+    <Position X="14.25" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="OW.Game.Store.INotifyDynamicPropertyChanged" Collapsed="true">
-    <Position X="8" Y="3.5" Width="1.5" />
+    <Position X="10.75" Y="3.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAA=</HashCode>
       <FileName>Store\GameStoreBase.cs</FileName>
     </TypeIdentifier>
   </Interface>
-  <Interface Name="OW.Game.Store.IDbTreeNode&lt;T&gt;" Collapsed="true">
-    <Position X="9.75" Y="2.75" Width="1.5" />
+  <Interface Name="OW.Game.Store.IDbTreeNode&lt;TNode&gt;" Collapsed="true">
+    <Position X="12.5" Y="2.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAEQAAAAAAAAAAAAgAAAAAAAAA=</HashCode>
       <FileName>Store\DbTreeNode.cs</FileName>

@@ -7,14 +7,14 @@ using System.Text;
 
 namespace OW.Game.Managers
 {
-    public class DbTreeNodeManager : IDisposable
+    public class VirtualThingManager : IDisposable
     {
         #region 构造函数
 
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public DbTreeNodeManager()
+        public VirtualThingManager()
         {
 
         }
@@ -71,17 +71,17 @@ namespace OW.Game.Managers
 
         #endregion 构造函数
 
-        public void Remove(DbTreeNode node, Action<DbTreeNode> subNode)
+        public void Remove(VirtualThing node, Action<VirtualThing> subNode)
         {
 
         }
 
-        public void MoveLeafNode(DbTreeNode node)
+        public void MoveLeafNode(VirtualThing node)
         {
 
         }
 
-        public void RemoveLeafNode(DbTreeNode node, GamePropertyChangeItem<object> changes = null)
+        public void RemoveLeafNode(VirtualThing node, GamePropertyChangeItem<object> changes = null)
         {
 
         }

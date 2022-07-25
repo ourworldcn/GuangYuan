@@ -118,7 +118,7 @@ namespace GuangYuan.GY001.BLL
                 sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ROW);" +
                     "ALTER INDEX IX_GameItems_TemplateId_ExtraString_ExtraDecimal ON [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE)";   //按行压缩
                 db.Database.ExecuteSqlRaw(sql);
-                tn = db.Model.FindEntityType(typeof(DbTreeNode)).GetTableName();
+                tn = db.Model.FindEntityType(typeof(VirtualThing)).GetTableName();
                 if (tn != null)
                 {
                     sql = $"ALTER TABLE {tn} REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ROW);";

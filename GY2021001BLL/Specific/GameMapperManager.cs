@@ -50,7 +50,7 @@ namespace GuangYuan.GY001.BLL.Specific
         /// <param name="node"></param>
         /// <param name="dic">不会清理其中内容。</param>
         /// <param name="prefix"></param>
-        public void Map(DbTreeNode node, IDictionary<string, string> dic, string prefix = null)
+        public void Map(VirtualThing node, IDictionary<string, string> dic, string prefix = null)
         {
             if (node.Parent != null)
                 dic[$"{prefix}ptid"] = node.Parent.ExtraDecimal.ToString();
