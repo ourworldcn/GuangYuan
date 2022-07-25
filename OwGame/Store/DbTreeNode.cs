@@ -9,9 +9,25 @@ using System.Text.Json.Serialization;
 namespace OW.Game.Store
 {
     /// <summary>
+    /// 为可快速查找的数据库类提供基础接口。
+    /// </summary>
+    public interface IDbQuickFind
+    {
+        /// <summary>
+        /// 高频索引。
+        /// </summary>
+        Guid ExtraGuid { get; set; }
+
+        string ExtraString { get; set; }
+
+        decimal? ExtraDecimal { get; set; }
+
+    }
+
+    /// <summary>
     /// 
     /// </summary>
-    public class DbTreeNodeBase : JsonDynamicPropertyBase, IDisposable
+    public class DbTreeNodeBase : JsonDynamicPropertyBase, IDisposable, IDbQuickFind
     {
         #region 构造函数
 
@@ -90,7 +106,7 @@ namespace OW.Game.Store
     /// 存储于数据库的树状节点。
     /// </summary>
     [Table("TreeNodes")]
-    public class DbTreeNode : DbTreeNodeBase, IDisposable
+    public class DbTreeNode : DbTreeNodeBase, IDbTreeNode<DbTreeNode>, IDisposable
     {
         #region 构造函数
 
@@ -159,14 +175,14 @@ namespace OW.Game.Store
         #endregion 导航属性
     }
 
-    public interface IDbTreeNode
+    public interface IDbTreeNode<T> where T : GuidKeyObjectBase
     {
         /// <summary>
         /// 所属槽导航属性。
         /// </summary>
         [JsonIgnore]
         [MaybeNull]
-        public DbTreeNode Parent { get; set; }
+        public T Parent { get; set; }
 
         /// <summary>
         /// 所属槽Id。
@@ -177,6 +193,6 @@ namespace OW.Game.Store
         /// <summary>
         /// 拥有的子物品或槽。
         /// </summary>
-        public IList<IDbTreeNode> Children { get; set; }
+        public List<T> Children { get; set; }
     }
 }

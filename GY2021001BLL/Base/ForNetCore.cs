@@ -261,25 +261,23 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
+            Dictionary<string, string> dic = new Dictionary<string, string>();
             var sw = Stopwatch.StartNew();
             using var dw = DisposeHelper.Create(c => c.Stop(), sw);
-            Guid id = new Guid("{7E0A0B9C-ECEE-498B-96CF-2680BC1216E0}");
             try
             {
-                //ThreadPool.GetMaxThreads(out var work, out var compl);
-                //ThreadPool.GetAvailableThreads(out var w1,out var c1);
-                //ThreadPool.GetMinThreads(out var w2,out var c2);
-                var entity = db.Set<DbTreeNode>().Attach(new DbTreeNode(id) { ExtraDecimal = 2 });
-                entity.State = EntityState.Modified;
-                entity.Entity.ExtraDecimal = 2;
-                //entity.Reload(); 
-                //db.SaveChanges();
-                Dictionary<string, string> dic = new Dictionary<string, string> { { "k1", "v1" }, { "k2", "v2" } };
-                var str = JsonSerializer.Serialize(dic);
-                var obj = JsonSerializer.Deserialize(str, dic.GetType());
+                for (int i = 0; i < 1000; i++)
+                {
+                    var str = JsonSerializer.Serialize(dic);
+                }
             }
             catch (Exception)
             {
+            }
+            finally
+            {
+                sw.Stop();
+                Debug.WriteLine($"测试代码完成时间{sw.Elapsed}");
             }
         }
 
