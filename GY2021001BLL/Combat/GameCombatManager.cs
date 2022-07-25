@@ -623,7 +623,7 @@ namespace GuangYuan.GY001.BLL
             //增加战报
             WarNewspaper pc = new WarNewspaper()
             {
-
+                 
             };
             //计算等级分
             if (datas.IsWin) //若需要计算等级分

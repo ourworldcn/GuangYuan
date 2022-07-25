@@ -54,7 +54,7 @@ namespace GY2021001WebApi.Controllers
                 };
                 if (null != gu)    //若成功注册
                 {
-                    //TODO:发送欢迎邮件 
+                    //发送欢迎邮件 ，已被停止该功能
                     var mail = new GameMail()
                     {
                         Subject = "Welcome",

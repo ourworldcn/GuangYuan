@@ -117,6 +117,11 @@ namespace GuangYuan.GY001.BLL
                 var tn = db.Model.FindEntityType(typeof(GameItem)).GetTableName();
                 sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ROW);" +
                     "ALTER INDEX IX_GameItems_TemplateId_ExtraString_ExtraDecimal ON [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE)";   //按行压缩
+
+                //TODO 压缩索引
+                var indexNames = new string[] { "IX_VirtualThings_ExtraGuid_ExtraString_ExtraDecimal", "IX_VirtualThings_ExtraGuid_ExtraDecimal_ExtraString" };
+                var alterIndex = "ALTER INDEX {0} ON[dbo].[GameItems] REBUILD PARTITION = ALL WITH(DATA_COMPRESSION = PAGE); ";
+
                 db.Database.ExecuteSqlRaw(sql);
                 tn = db.Model.FindEntityType(typeof(VirtualThing)).GetTableName();
                 if (tn != null)
