@@ -20,7 +20,7 @@ namespace OW.Game.Store
         /// <remarks><see cref="ExtraGuid"/><see cref="ExtraString"/><see cref="ExtraDecimal"/>三个字段按顺序形成多字段索引以加快搜索速度。
         /// 也创建如下顺序创建索引<see cref="ExtraGuid"/><see cref="ExtraDecimal"/><see cref="ExtraString"/></remarks>
         Guid ExtraGuid { get; set; }
-
+        
         string ExtraString { get; set; }
 
         decimal? ExtraDecimal { get; set; }

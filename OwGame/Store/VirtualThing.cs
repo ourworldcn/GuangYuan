@@ -19,10 +19,19 @@ namespace OW.Game.Store
     }
 
     /// <summary>
+    /// 标识通用的虚拟事物类所实现的接口。
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public interface IVirtualThing<T> : IDbQuickFind, IDbTreeNode<T>, IDisposable where T : GuidKeyObjectBase
+    {
+
+    }
+
+    /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class VirtualThingBase<T> : DbTreeNodeBase<T> where T : GuidKeyObjectBase
+    public class VirtualThingBase<T> : DbTreeNodeBase<T>, IVirtualThing<T> where T : GuidKeyObjectBase
     {
         public VirtualThingBase()
         {
@@ -36,7 +45,7 @@ namespace OW.Game.Store
     }
 
     /// <summary>
-    /// 存储游戏世界树状事物的基本类。
+    /// 存储游戏世界事物的基本类。一般认为他们具有树状结构。
     /// </summary>
     [Table("VirtualThings")]
     public class VirtualThing : VirtualThingBase<VirtualThing>
@@ -66,6 +75,7 @@ namespace OW.Game.Store
 
                 // 释放未托管的资源(未托管的对象)并重写终结器
                 // 将大型字段设置为 null
+                _BinaryArray = null;
                 _Timestamp = null;
                 base.Dispose(disposing);
             }

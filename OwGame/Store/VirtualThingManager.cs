@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
@@ -16,7 +17,6 @@ namespace OW.Game.Managers
         /// </summary>
         public VirtualThingManager()
         {
-
         }
 
         #region 析构及处置对象相关
