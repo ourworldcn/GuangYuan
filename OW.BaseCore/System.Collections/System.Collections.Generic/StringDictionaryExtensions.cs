@@ -230,5 +230,68 @@ namespace System.Collections.Generic
         #endregion 获取指定类型的值或默认值
 
     }
+
+    public static class StringStringDictionaryExtensions
+    {
+        #region 获取指定类型的值或默认值
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryGetGuid(this IReadOnlyDictionary<string, string> dic, string name, out Guid result)
+        {
+            result = default;
+            return dic.TryGetValue(name.ToString(), out var obj) && OwConvert.TryToGuid(obj, out result);
+        }
+
+        /// <summary>
+        /// 获取指定键的值，并转换为Guid类型，如果没有指定键或不能转换则返回默认值。
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="name"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Guid GetGuidOrDefault(this IReadOnlyDictionary<string, string> dic, string name, Guid defaultVal = default) =>
+            dic.TryGetGuid(name, out var result) ? result : defaultVal;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryGetDecimal(this IReadOnlyDictionary<string, string> dic, string name, out decimal result)
+        {
+            if (dic.TryGetValue(name, out var obj) && OwConvert.TryToDecimal(obj, out result))
+                return true;
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dic"></param>
+        /// <param name="name"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static decimal GetDecimalOrDefault(this IReadOnlyDictionary<string, string> dic, string name, decimal defaultVal = default) =>
+            dic.TryGetDecimal(name, out var result) ? result : defaultVal;
+
+        #endregion 获取指定类型的值或默认值
+
+    }
 }
 

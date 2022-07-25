@@ -213,11 +213,11 @@ namespace GY2021001WebApi.Models
             var result = new GameBootyDto()
             {
                 CharId = obj.CharId.ToBase64String(),
-                Count = obj.Properties.GetDecimalOrDefault("count"),
-                ParentId = obj.ParentId.ToBase64String(),
-                TemplateId = obj.Properties.GetGuidOrDefault("tid").ToBase64String(),
+                Count = obj.StringDictionary.GetDecimalOrDefault("count"),
+                ParentId = obj.Thing.ParentId.Value.ToBase64String(),
+                TemplateId = obj.StringDictionary.GetGuidOrDefault("tid").ToBase64String(),
             };
-            OwHelper.Copy(obj.Properties, result.Properties);
+            OwHelper.Copy(obj.StringDictionary, result.Properties);
             return result;
         }
     }

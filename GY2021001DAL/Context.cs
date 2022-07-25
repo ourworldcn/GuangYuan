@@ -63,9 +63,6 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => new { c.ParentId, c.ActionId }).IsUnique(false);
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.ActionId).IsUnique(false);
 
-            //战利品
-            modelBuilder.Entity<GameBooty>().HasIndex(c => new { c.ParentId, c.CharId }).IsUnique(false);
-
             //行会
             modelBuilder.Entity<GameGuild>().HasIndex(c => c.DisplayName).IsUnique(true);
 
@@ -112,11 +109,6 @@ namespace GuangYuan.GY001.UserDb
         /// 操作记录。
         /// </summary>
         public DbSet<GameActionRecord> ActionRecords { get; set; }
-
-        /// <summary>
-        /// pvp战斗记录。
-        /// </summary>
-        public DbSet<WarNewspaper> WarNewspaper { get; set; }
 
         /// <summary>
         /// 战利品记录。

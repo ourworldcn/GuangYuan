@@ -71,12 +71,19 @@ namespace OW.Game.Managers
 
         #endregion 构造函数
 
-        public void Remove(VirtualThing node, Action<VirtualThing> subNode)
+        #region 关系操作
+
+        public void AddLeaf(VirtualThing node, VirtualThing parent, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
 
         }
 
-        public void MoveLeafNode(VirtualThing node)
+        public void RemoveLeaf(VirtualThing node, ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+
+        }
+
+        public void MoveLeafNode(VirtualThing node, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
 
         }
@@ -85,5 +92,6 @@ namespace OW.Game.Managers
         {
 
         }
+        #endregion 关系操作
     }
 }
