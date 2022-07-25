@@ -7,7 +7,21 @@ using System.Text.Json.Serialization;
 
 namespace OW.Game.Store
 {
+    public class VirtualThingExtraPropertiesBase
+    {
+        public VirtualThingExtraPropertiesBase()
+        {
 
+        }
+
+        public Dictionary<string, string> DictionaryPrpperties { get; set; } = new Dictionary<string, string>();
+
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class VirtualThingBase<T> : DbTreeNodeBase<T> where T : GuidKeyObjectBase
     {
         public VirtualThingBase()
@@ -21,6 +35,9 @@ namespace OW.Game.Store
 
     }
 
+    /// <summary>
+    /// 存储游戏世界树状事物的基本类。
+    /// </summary>
     [Table("VirtualThings")]
     public class VirtualThing : VirtualThingBase<VirtualThing>
     {
@@ -63,5 +80,16 @@ namespace OW.Game.Store
         [Timestamp]
         [JsonIgnore]
         public byte[] Timestamp { get => _Timestamp; set => _Timestamp = value; }
+
+        /// <summary>
+        /// 扩展的二进制大对象。
+        /// </summary>
+        private byte[] _BinaryArray;
+        public byte[] BinaryArray
+        {
+            get { return _BinaryArray; }
+            set { _BinaryArray = value; }
+        }
+
     }
 }
