@@ -79,19 +79,19 @@ namespace OW.Game.Managers
         /// <param name="node"></param>
         /// <param name="parent"></param>
         /// <param name="changes"></param>
-        public void Add(VirtualThing node, VirtualThing parent, ICollection<GamePropertyChangeItem<object>> changes = null)
+        public void Add<T>(IVirtualThing<T> node, IVirtualThing<T> parent, ICollection<GamePropertyChangeItem<object>> changes = null) where T : GuidKeyObjectBase
         {
-            parent.Children.Add(node);
+            parent.Children.Add(node as T);
             node.ParentId = parent.Id;
-            node.Parent = parent;
+            node.Parent = parent as T;
 
             changes?.Add(new GamePropertyChangeItem<object>()
             {
                 Object = parent,
                 HasOldValue = false,
-                HasNewValue=true,
-                NewValue=node,
-                PropertyName=nameof(parent.Children),
+                HasNewValue = true,
+                NewValue = node,
+                PropertyName = nameof(parent.Children),
             });
         }
 

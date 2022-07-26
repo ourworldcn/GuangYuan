@@ -31,7 +31,7 @@ namespace OW.Game.Store
     /// 存储在数据库中树状节点的基础接口。
     /// </summary>
     /// <typeparam name="TNode">节点类型。</typeparam>
-    public interface IDbTreeNode<TNode> where TNode : GuidKeyObjectBase
+    public interface IDbTreeNode<TNode> where TNode : IEntityWithSingleKey<Guid>
     {
         /// <summary>
         /// 所属槽导航属性。

@@ -82,11 +82,20 @@ namespace GY2021001WebApi.Controllers
             var gu = gitm.GetUserFromToken(OwConvert.ToGuid(model.Token));
             if (null == gu) //若令牌无效
                 return Unauthorized();
+            var displayName = model.DisplayName;
+            using var dw = World.LockStringAndReturnDisposer(ref displayName, TimeSpan.FromSeconds(2));
+            using var dwUser = World.CharManager.LockAndReturnDisposer(gu);
+            if (dw is null || dwUser is null)
+                return false;
             var gc = gu.CurrentChar;
+            //TODO 改名需要消耗道具
             //if (null != gc.DisplayName) //若已经有名字
-            //    return StatusCode((int)HttpStatusCode.PaymentRequired); //TO DO
-            gc.DisplayName = model.DisplayName;
-            gitm.NotifyChange(gu);
+            //    return StatusCode((int)HttpStatusCode.PaymentRequired);
+            if (gu.DbContext.Set<GameChar>().Where(c => c.DisplayName == displayName && gc.Id != c.Id).Count() > 0) //若重名
+                return false;
+            gc.DisplayName = displayName;
+            gu.DbContext.SaveChanges();
+            World.CharManager.Nope(gu);
             return true;
         }
 

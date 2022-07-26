@@ -90,7 +90,7 @@ namespace OW.Game.Store
         private Dictionary<string, string> _StringDictionary;
 
         /// <summary>
-        /// 
+        /// 记录一些扩展属性的字典。
         /// </summary>
         public Dictionary<string, string> StringDictionary { get => _StringDictionary ??= new Dictionary<string, string>(); set => _StringDictionary = value; }
 
@@ -107,7 +107,7 @@ namespace OW.Game.Store
     /// 标识通用的虚拟事物类所实现的接口。
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IVirtualThing<T> : IDbQuickFind, IDbTreeNode<T>, IDisposable where T : GuidKeyObjectBase
+    public interface IVirtualThing<T> : IDbQuickFind, IDbTreeNode<T>, IEntityWithSingleKey<Guid>, IDisposable where T : IEntityWithSingleKey<Guid>
     {
 
     }
