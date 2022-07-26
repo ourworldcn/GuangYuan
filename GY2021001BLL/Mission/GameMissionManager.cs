@@ -183,7 +183,7 @@ namespace OW.Game.Mission
 
             foreach (var item in bag.Children)
             {
-                Guid tid = item.TemplateId;
+                Guid tid = item.ExtraGuid;
                 var str = tid.ToString();   //其中 GUID 的值表示为一系列小写的十六进制位，这些十六进制位分别以 8 个、4 个、4 个、4 个和 12 个位为一组并由连字符分隔开。 例如，返回值可以是“382c74c3-721d-4f34-80e5-57657b6cbc27”。 
                 switch (str)
                 {
@@ -301,7 +301,7 @@ namespace OW.Game.Mission
                     default:
                         continue;
                 }
-                result = SetNewValue(bag, item.TemplateId, metrics) || result;
+                result = SetNewValue(bag, item.ExtraGuid, metrics) || result;
             }
             World.CharManager.NotifyChange(gu);
             return result;
@@ -326,7 +326,7 @@ namespace OW.Game.Mission
                 return false;
             }
             var slot = gChar.GetRenwuSlot();    //任务/成就槽对象
-            var missionObj = slot.Children.FirstOrDefault(c => c.TemplateId == tid);    //任务/成就的数据对象
+            var missionObj = slot.Children.FirstOrDefault(c => c.ExtraGuid == tid);    //任务/成就的数据对象
             if (missionObj.Count != newCount)   //若确实发生变化了
             {
                 result = SetNewValue(slot, tid, newCount);
@@ -353,7 +353,7 @@ namespace OW.Game.Mission
                 return;
             }
             var slot = datas.GameChar.GetRenwuSlot();   //任务槽
-            //var tmpId = slot.Children.First(c => c.TemplateId == ProjectMissionConstant.坐骑最高等级成就).Id;
+            //var tmpId = slot.Children.First(c => c.ExtraGuid == ProjectMissionConstant.坐骑最高等级成就).Id;
             //datas.ItemIds[0] = tmpId;
             var coll = from id in datas.ItemIds
                        join obj in slot.Children
@@ -382,7 +382,7 @@ namespace OW.Game.Mission
             foreach (var item in obj_keys)  //遍历每个要领取奖励的成就对象
             {
                 var zhibiaos = item.Item3.Split(OwHelper.SemicolonArrayWithCN, StringSplitOptions.RemoveEmptyEntries).Select(c => decimal.Parse(c));  //可领取的成就指标
-                var view = TId2Views[item.tmp.TemplateId];
+                var view = TId2Views[item.tmp.ExtraGuid];
                 foreach (var zhibiao in zhibiaos)   //对每个完成的成就获取物品
                 {
                     remainder.Clear();
@@ -393,7 +393,7 @@ namespace OW.Game.Mission
                     if (remainder.Count > 0)
                     {
                         var mail = new GameMail() { };
-                        World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, remainder.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+                        World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, remainder.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).ExtraGuid)));
                         datas.MailIds.Add(mail.Id);
                     }
                 }
@@ -415,7 +415,7 @@ namespace OW.Game.Mission
         private bool SetNewValue(GameItem missionSlot, Guid tid, decimal newValue)
         {
             //mcid5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d=10;50;100,...
-            var mObj = missionSlot.Children.FirstOrDefault(c => c.TemplateId == tid);   //任务/成就对象
+            var mObj = missionSlot.Children.FirstOrDefault(c => c.ExtraGuid == tid);   //任务/成就对象
             var lst = World.CharManager.GetChangeData(missionSlot.GetGameChar());  //通知数据对象
             var keyName = $"mcid{mObj.Id}"; //键名
             var template = missionSlot.GetTemplate();    //模板数据
@@ -439,7 +439,7 @@ namespace OW.Game.Mission
                     ObjectId = mObj.Id,
                     OldValue = oldVal,
                     PropertyName = "Count",
-                    TemplateId = mObj.TemplateId,
+                    TemplateId = mObj.ExtraGuid,
                 };
                 lst.Add(np);
             }
@@ -472,7 +472,7 @@ namespace OW.Game.Mission
         /// <returns>当前指标值。</returns>
         public virtual decimal GetMetrics(GameItem missionSlot, Guid tid)
         {
-            var mObj = missionSlot.Children.FirstOrDefault(c => c.TemplateId == tid);   //任务/成就对象
+            var mObj = missionSlot.Children.FirstOrDefault(c => c.ExtraGuid == tid);   //任务/成就对象
             if (mObj is null)
                 return decimal.Zero;
             var oldVal = mObj.Count.GetValueOrDefault();   //原值
@@ -820,7 +820,7 @@ namespace OW.Game.Mission
         /// <param name="gChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameItem GetRenwuSlot(this GameChar gChar) => gChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.RenwuSlotTId);
+        public static GameItem GetRenwuSlot(this GameChar gChar) => gChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.RenwuSlotTId);
     }
 
     /// <summary>

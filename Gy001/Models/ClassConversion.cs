@@ -61,7 +61,7 @@ namespace GY2021001WebApi.Models
                 ObjectId = (obj.Object as GameThingBase)?.Base64IdString,
                 OldValue = obj.OldValue,
                 PropertyName = obj.PropertyName,
-                TId = (obj.Object as GameThingBase)?.TemplateId.ToBase64String(),
+                TId = (obj.Object as GameThingBase)?.ExtraGuid.ToBase64String(),
             };
             if (obj.IsCollectionRemoved())  //若是集合删除元素
                 if (obj.OldValue is GameThingBase gt)
@@ -263,7 +263,7 @@ namespace GY2021001WebApi.Models
             {
                 Id = OwConvert.ToGuid(obj.Id),
                 Count = obj.Count,
-                TemplateId = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : OwConvert.ToGuid(obj.TemplateId),
+                ExtraGuid = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : OwConvert.ToGuid(obj.TemplateId),
                 OwnerId = string.IsNullOrEmpty(obj.OwnerId) ? Guid.Empty : OwConvert.ToGuid(obj.OwnerId),
                 ParentId = string.IsNullOrEmpty(obj.ParentId) ? Guid.Empty : OwConvert.ToGuid(obj.ParentId),
             };
@@ -286,7 +286,7 @@ namespace GY2021001WebApi.Models
             {
                 Id = obj.Id.ToBase64String(),
                 Count = obj.Count,
-                TemplateId = obj.TemplateId.ToBase64String(),
+                TemplateId = obj.ExtraGuid.ToBase64String(),
                 OwnerId = obj.OwnerId?.ToBase64String(),
                 ParentId = obj.ParentId?.ToBase64String(),
                 ClientString = obj.GetClientString(),
@@ -301,7 +301,7 @@ namespace GY2021001WebApi.Models
             result.Properties[nameof(GameItem.ExtraDecimal)] = obj.ExtraDecimal;
 
             //特殊处理处理木材堆叠数
-            if (ProjectConstant.MucaiId == obj.TemplateId)
+            if (ProjectConstant.MucaiId == obj.ExtraGuid)
                 result.Properties[ProjectConstant.StackUpperLimit] = obj.GetDecimalWithFcpOrDefault(ProjectConstant.StackUpperLimit);
             result.Children.AddRange(obj.Children.Select(c => (GameItemDto)c));
             return result;
@@ -313,7 +313,7 @@ namespace GY2021001WebApi.Models
             {
                 Id = obj.Id.ToBase64String(),
                 Count = obj.Count,
-                TemplateId = obj.TemplateId.ToBase64String(),
+                TemplateId = obj.ExtraGuid.ToBase64String(),
                 OwnerId = obj.OwnerId?.ToBase64String(),
                 ParentId = obj.ParentId?.ToBase64String(),
                 ClientString = obj.GetClientString(),
@@ -341,7 +341,7 @@ namespace GY2021001WebApi.Models
             var result = new GameChar()
             {
                 Id = OwConvert.ToGuid(obj.Id),
-                TemplateId = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : OwConvert.ToGuid(obj.TemplateId),
+                ExtraGuid = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : OwConvert.ToGuid(obj.TemplateId),
                 CreateUtc = obj.CreateUtc,
                 GameUserId = string.IsNullOrEmpty(obj.GameUserId) ? Guid.Empty : OwConvert.ToGuid(obj.GameUserId),
                 CurrentDungeonId = OwConvert.ToGuid(obj.CurrentDungeonId),
@@ -369,7 +369,7 @@ namespace GY2021001WebApi.Models
                 CreateUtc = obj.CreateUtc,
                 DisplayName = obj.DisplayName,
                 GameUserId = obj.GameUserId.ToBase64String(),
-                TemplateId = obj.TemplateId.ToBase64String(),
+                TemplateId = obj.ExtraGuid.ToBase64String(),
                 CurrentDungeonId = obj.CurrentDungeonId?.ToBase64String(),
                 CombatStartUtc = obj.CombatStartUtc,
             };
@@ -641,7 +641,7 @@ namespace GY2021001WebApi.Models
                        on slot.OwnerId equals gc.Id
                        join tuiguan in db.Set<GameItem>()
                        on gc.Id equals tuiguan.Parent.OwnerId.Value
-                       where tuiguan.TemplateId == ProjectConstant.TuiGuanTId
+                       where tuiguan.ExtraGuid == ProjectConstant.TuiGuanTId
                        select new { gc, slot, tuiguan };
             dto.Members.AddRange(coll.AsEnumerable().Select(c =>
             {

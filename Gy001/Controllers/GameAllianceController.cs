@@ -141,7 +141,7 @@ namespace Gy001.Controllers
                 var coll = (from slot in db.Set<GameItem>()
                             join guild in db.Set<GameGuild>()
                             on slot.ExtraString equals guild.Id.ToString()
-                            where slot.TemplateId == ProjectConstant.GuildSlotId && slot.ExtraDecimal >= 10 //工会成员
+                            where slot.ExtraGuid == ProjectConstant.GuildSlotId && slot.ExtraDecimal >= 10 //工会成员
                             group guild by guild.Id into g
                             select new { GuildId = g.Key, Count = g.Count() }).ToDictionary(c => c.GuildId, c => c.Count);
                 result.Guilds.AddRange(World.AllianceManager.Id2Guild.Values.Where(c => coll.ContainsKey(c.Id) && c.Properties.GetDecimalOrDefault("maxMemberCount") > coll[c.Id]).Take(model.Top).Select(c =>

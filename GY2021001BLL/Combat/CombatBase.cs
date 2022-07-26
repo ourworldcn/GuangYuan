@@ -29,11 +29,11 @@ namespace GuangYuan.GY001.BLL
             world.EventsManager.GameItemCreated(gi, dic);
             var gim = world.ItemManager;
             GameItem parent;
-            var tid = gi.TemplateId;
+            var tid = gi.ExtraGuid;
             if (tid == ProjectConstant.JinbiId)    //若是战利品
             {
                 //{
-                //    var yumiTian = hl.AllChildren.First(c => c.TemplateId == ProjectConstant.YumitianTId);
+                //    var yumiTian = hl.AllChildren.First(c => c.ExtraGuid == ProjectConstant.YumitianTId);
                 //    var fcpCount = yumiTian.Name2FastChangingProperty["Count"];
                 //    fcpCount.GetCurrentValueWithUtc();
                 //    fcpCount.LastValue += booty.Count;
@@ -43,7 +43,7 @@ namespace GuangYuan.GY001.BLL
             else if (tid == ProjectConstant.MucaiId)
             {
                 //{
-                //    var mucaiShu = hl.AllChildren.First(c => c.TemplateId == ProjectConstant.MucaishuTId);
+                //    var mucaiShu = hl.AllChildren.First(c => c.ExtraGuid == ProjectConstant.MucaishuTId);
                 //    var fcpCount = mucaiShu.Name2FastChangingProperty["Count"];
                 //    fcpCount.GetCurrentValueWithUtc();
                 //    fcpCount.LastValue += booty.Count;
@@ -52,11 +52,11 @@ namespace GuangYuan.GY001.BLL
             }
             else if (tid == ProjectConstant.MucaishuTId)
             {
-                parent = gc.GetMainbase()?.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId)?.Parent;
+                parent = gc.GetMainbase()?.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId)?.Parent;
             }
             else if (tid == ProjectConstant.YumitianTId)
             {
-                parent = gc.GetMainbase()?.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId)?.Parent;
+                parent = gc.GetMainbase()?.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.Parent;
             }
             else
                 throw new InvalidOperationException();

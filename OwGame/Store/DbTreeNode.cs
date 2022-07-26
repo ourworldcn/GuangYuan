@@ -21,6 +21,7 @@ namespace OW.Game.Store
         /// 也创建如下顺序创建索引<see cref="ExtraGuid"/><see cref="ExtraDecimal"/><see cref="ExtraString"/></remarks>
         Guid ExtraGuid { get; set; }
         
+        [MaxLength(64)]
         string ExtraString { get; set; }
 
         decimal? ExtraDecimal { get; set; }

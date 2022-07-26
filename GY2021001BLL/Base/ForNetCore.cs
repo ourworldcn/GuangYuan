@@ -85,8 +85,9 @@ namespace GuangYuan.GY001.BLL
             #region 版本升级
             // TO DO应放入专门的版本管理服务中
             using var db = service.GetRequiredService<GY001UserContext>();
+            var sql = $"{db.Model.FindEntityType(typeof(GameItem)).FindProperty(nameof(GameThingBase.ExtraGuid)).GetColumnName()}";
             db.Database.ExecuteSqlRaw($"DELETE FROM [dbo].[GameItems] WHERE [TemplateId]='{ProjectConstant.GuildSlotId}' and [ExtraString] is null;" +
-                $"DELETE FROM[dbo].[GameItems] where[TemplateId] = '{ProjectConstant.GuildSlotId}' and[ExtraString] = ''");  //清理无效个人工会槽
+                $"DELETE FROM[dbo].[GameItems] where [TemplateId] = '{ProjectConstant.GuildSlotId}' and[ExtraString] = ''");  //清理无效个人工会槽
             #endregion 版本升级
             return result;
         }

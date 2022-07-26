@@ -41,7 +41,7 @@ namespace OW.Game.Mission
         /// <summary>
         /// 特定的成就对象。
         /// </summary>
-        public GameItem ObjectItem => _ObjectItem ??= Slot.Children.FirstOrDefault(c => c.TemplateId == TemplateId);
+        public GameItem ObjectItem => _ObjectItem ??= Slot.Children.FirstOrDefault(c => c.ExtraGuid == TemplateId);
 
         private List<decimal> _TemplateMetrics;
         /// <summary>

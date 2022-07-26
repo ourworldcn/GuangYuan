@@ -387,7 +387,7 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
                 //核准总收益
-                var shouyiSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShouyiSlotId);   //收益槽
+                var shouyiSlot = gameChar.GameItems.First(c => c.ExtraGuid == ProjectConstant.ShouyiSlotId);   //收益槽
                 var totalItems = shouyiSlot.Children.Concat(data.GameItems);    //总计收益
                 succ = Verify(GetParent(data.Template), totalItems, data.GameChar, out errMsg);
                 if (!succ)   //若总收益不合法
@@ -405,7 +405,7 @@ namespace GuangYuan.GY001.BLL
                     {
 
                         var mounts = new GameItem();
-                        World.EventsManager.GameItemCreated(mounts, c.TemplateId, shouyiSlot, null,
+                        World.EventsManager.GameItemCreated(mounts, c.ExtraGuid, shouyiSlot, null,
                             new Dictionary<string, object>() { { "htid", gim.GetHeadTemplate(c).IdString }, { "btid", gim.GetBodyTemplate(c).IdString } });
                         mounts.Properties["neatk"] = c.Properties.GetDecimalOrDefault("neatk", 0);
                         mounts.Properties["nemhp"] = c.Properties.GetDecimalOrDefault("nemhp", 0);
@@ -434,21 +434,21 @@ namespace GuangYuan.GY001.BLL
                     var changes = new List<GamePropertyChangeItem<object>>();
                     //移动收益槽数据到各自背包。
                     //金币
-                    var gis = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.JinbiId);
+                    var gis = shouyiSlot.Children.Where(c => c.ExtraGuid == ProjectConstant.JinbiId);
                     if (gis.Any())
                         gim.MoveItems(gis, gameChar.GetCurrencyBag(), null, changes);
                     //木材
-                    gis = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.MucaiId);
+                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid == ProjectConstant.MucaiId);
                     if (gis.Any())
                         gim.MoveItems(gis, gameChar.GetCurrencyBag(), null, changes);
                     //野生怪物
-                    gis = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi);
-                    var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
+                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid == ProjectConstant.ZuojiZuheRongqi);
+                    var shoulan = gameChar.GameItems.First(c => c.ExtraGuid == ProjectConstant.ShoulanSlotId);
                     if (gis.Any())
                         gim.MoveItems(gis, shoulan, null, changes);
                     //其他道具
-                    var daojuBag = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);   //道具背包
-                    gis = shouyiSlot.Children.Where(c => c.TemplateId != ProjectConstant.JinbiId && c.TemplateId != ProjectConstant.ZuojiZuheRongqi);
+                    var daojuBag = gameChar.GameItems.First(c => c.ExtraGuid == ProjectConstant.DaojuBagSlotId);   //道具背包
+                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid != ProjectConstant.JinbiId && c.ExtraGuid != ProjectConstant.ZuojiZuheRongqi);
                     gim.MoveItems(gis, daojuBag, null, changes);
                     changes.CopyTo(data.ChangesItems);
 
@@ -463,7 +463,7 @@ namespace GuangYuan.GY001.BLL
                     //设置成就数据
                     if (data.IsWin && data.Template.Properties.GetDecimalOrDefault("typ") == 1) //若是推关
                     {
-                        var mission = data.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.关卡成就);
+                        var mission = data.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.关卡成就);
                         if (null != mission)   //若找到成就对象
                         {
                             var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
@@ -473,7 +473,7 @@ namespace GuangYuan.GY001.BLL
                     }
                     else if (data.IsWin && data.Template.Properties.GetDecimalOrDefault("typ") == 2)   //若是塔防
                     {
-                        var mission = data.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.累计塔防模式次数成就);
+                        var mission = data.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.累计塔防模式次数成就);
                         if (null != mission)   //若找到成就对象
                         {
                             var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
@@ -512,7 +512,7 @@ namespace GuangYuan.GY001.BLL
             var coll1 = from gi in context.Set<GameItem>()
                         join gc in context.Set<GameChar>()
                         on gi.Parent.OwnerId equals gc.Id
-                        where gi.TemplateId == ProjectConstant.PvpObjectTId && (gi.ExtraDecimal > pvp.ExtraDecimal ||
+                        where gi.ExtraGuid == ProjectConstant.PvpObjectTId && (gi.ExtraDecimal > pvp.ExtraDecimal ||
                             gi.ExtraDecimal == pvp.ExtraDecimal && string.Compare(gameChar.DisplayName, gc.DisplayName) > 0)
                         orderby gi.ExtraDecimal, gc.DisplayName
                         select gi;
@@ -703,7 +703,7 @@ namespace GuangYuan.GY001.BLL
             //计算成就数据
             if (datas.IsWin)    //若进攻胜利
             {
-                var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.PVP进攻成就);
+                var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.PVP进攻成就);
                 if (null != mission)   //若找到成就对象
                 {
                     var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
@@ -713,7 +713,7 @@ namespace GuangYuan.GY001.BLL
             }
             else //若防御剩余
             {
-                var mission = datas.OtherChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.PVP防御成就);
+                var mission = datas.OtherChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.PVP防御成就);
                 if (null != mission)   //若找到成就对象
                 {
                     var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
@@ -911,7 +911,7 @@ namespace GuangYuan.GY001.BLL
             //计算成就数据
             if (datas.IsWin)
             {
-                var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.TemplateId == ProjectMissionConstant.PVP助战成就);
+                var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.PVP助战成就);
                 if (null != mission)   //若找到成就对象
                 {
                     var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
@@ -1019,7 +1019,7 @@ namespace GuangYuan.GY001.BLL
             //tl = 通关最短时限，idt = 道具掉落上限,tdt=pve减少pveT的次数，minCE=最低战力要求，
             if (dungeon.Properties.TryGetDecimal("gold", out var gold)) //若需要限定金币
             {
-                var tmp = gameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).Sum(c => c.Count.Value);
+                var tmp = gameItems.Where(c => c.ExtraGuid == ProjectConstant.JinbiId).Sum(c => c.Count.Value);
                 if (tmp > gold) //若超限
                 {
                     errorString = $"金币最多允许掉落{gold}，实际掉落{tmp}。";
@@ -1028,7 +1028,7 @@ namespace GuangYuan.GY001.BLL
             }
             if (dungeon.Properties.TryGetDecimal("wood", out var wood)) //若需要限定木材
             {
-                var tmp = gameItems.Where(c => c.TemplateId == ProjectConstant.MucaiId).Sum(c => c.Count.Value);
+                var tmp = gameItems.Where(c => c.ExtraGuid == ProjectConstant.MucaiId).Sum(c => c.Count.Value);
                 if (tmp > wood) //若超限
                 {
                     errorString = $"木材最多允许掉落{wood}，实际掉落{tmp}。";
@@ -1045,7 +1045,7 @@ namespace GuangYuan.GY001.BLL
                     errorString = $"资质野怪最多允许掉落{aml}，实际掉落{tmp}。";
                     return false;
                 }
-                var mounts = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);    //坐骑包
+                var mounts = gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ZuojiBagSlotId);    //坐骑包
                 var lookup = mounts.Children.ToLookup(c => gim.GetMountsTIds(c));
                 //var coll = aryMounts.Where(c => !lookup.Contains(gim.GetMountsTIds(c)));   //错误的资质怪类型
                 //if (coll.Any())
@@ -1064,7 +1064,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             var gimt = World.ItemTemplateManager;
-            var aryShenwen = gameItems.Where(c => gimt.GetTemplateFromeId(c.TemplateId).GenusCode >= 15 && gimt.GetTemplateFromeId(c.TemplateId).GenusCode <= 17).ToArray();
+            var aryShenwen = gameItems.Where(c => gimt.GetTemplateFromeId(c.ExtraGuid).GenusCode >= 15 && gimt.GetTemplateFromeId(c.ExtraGuid).GenusCode <= 17).ToArray();
             if (dungeon.Properties.TryGetDecimal("mt", out var mt)) //若需要限定神纹数量上限
             {
                 var tmp = aryShenwen.Sum(c => c.Count ?? 1);
@@ -1074,7 +1074,7 @@ namespace GuangYuan.GY001.BLL
                     return false;
                 }
             }
-            var items = gameItems.Where(c => c.TemplateId != ProjectConstant.JinbiId && c.TemplateId != ProjectConstant.MucaiId && c.TemplateId != ProjectConstant.ZuojiZuheRongqi).Except(aryShenwen);  //道具
+            var items = gameItems.Where(c => c.ExtraGuid != ProjectConstant.JinbiId && c.ExtraGuid != ProjectConstant.MucaiId && c.ExtraGuid != ProjectConstant.ZuojiZuheRongqi).Except(aryShenwen);  //道具
             if (dungeon.Properties.TryGetDecimal("idt", out var idt)) //若需要限定其他道具数量上限
             {
                 var tmp = items.Sum(c => c.Count ?? 1);

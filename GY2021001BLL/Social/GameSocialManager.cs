@@ -438,7 +438,7 @@ namespace GuangYuan.GY001.BLL
                     var ptid = item.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty);
                     var gameItem = new GameItem();  //物品
                     World.EventsManager.GameItemCreated(gameItem, item.Properties);
-                    GameThingBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
+                    GameThingBase parent = gameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == ptid);
                     if (parent is null)
                     {
                         if (ptid == ProjectConstant.CharTemplateId)
@@ -590,31 +590,31 @@ namespace GuangYuan.GY001.BLL
                             where innerIds.Contains(gc.Id)
                             join tuiguan in db.Set<GameItem>()   //推关战力对象
                             on gc.Id equals tuiguan.Parent.OwnerId
-                            where tuiguan.TemplateId == ProjectConstant.TuiGuanTId
+                            where tuiguan.ExtraGuid == ProjectConstant.TuiGuanTId
 
                             join gold in db.Set<GameItem>() //金币对象
                             on gc.Id equals gold.Parent.OwnerId
-                            where gold.TemplateId == ProjectConstant.JinbiId
+                            where gold.ExtraGuid == ProjectConstant.JinbiId
 
                             join goldOfStore in db.Set<GameItem>() //玉米田
                             on gc.Id equals goldOfStore.Parent.Parent.OwnerId
-                            where goldOfStore.TemplateId == ProjectConstant.YumitianTId
+                            where goldOfStore.ExtraGuid == ProjectConstant.YumitianTId
 
                             join wood in db.Set<GameItem>() //木材
                             on gc.Id equals wood.Parent.OwnerId
-                            where wood.TemplateId == ProjectConstant.MucaiId
+                            where wood.ExtraGuid == ProjectConstant.MucaiId
 
                             join woodOfStore in db.Set<GameItem>() //树林
                             on gc.Id equals woodOfStore.Parent.Parent.OwnerId
-                            where woodOfStore.TemplateId == ProjectConstant.MucaishuTId
+                            where woodOfStore.ExtraGuid == ProjectConstant.MucaishuTId
 
                             join mainRoom in db.Set<GameItem>() //主控室
                             on gc.Id equals mainRoom.Parent.Parent.OwnerId
-                            where mainRoom.TemplateId == ProjectConstant.MainControlRoomSlotId
+                            where mainRoom.ExtraGuid == ProjectConstant.MainControlRoomSlotId
 
                             join pvpObject in db.Set<GameItem>() //pvp积分
                             on gc.Id equals pvpObject.Parent.OwnerId
-                            where pvpObject.TemplateId == ProjectConstant.PvpObjectTId
+                            where pvpObject.ExtraGuid == ProjectConstant.PvpObjectTId
                             select new { gc, tuiguan, gold, goldOfStore, wood, woodOfStore, mainRoom, pvpObject }).AsNoTracking();   //基准集合
             if (collBase.Count() != innerIds.Length)
             {
@@ -625,7 +625,7 @@ namespace GuangYuan.GY001.BLL
                           where innerIds.Contains(gc.Id)
                           join gi in db.Set<GameItem>()
                           on gc.Id equals gi.Parent.OwnerId
-                          where gi.TemplateId == ProjectConstant.ZuojiZuheRongqi && gi.PropertiesString.Contains("for10=")
+                          where gi.ExtraGuid == ProjectConstant.ZuojiZuheRongqi && gi.PropertiesString.Contains("for10=")
                           select new { gc.Id, gi }).ToList();    //展示坐骑
             var logoutTime = (from tmp in db.Set<GameActionRecord>()
                               where innerIds.Contains(tmp.ParentId) && tmp.ActionId == "Logout"
@@ -751,7 +751,7 @@ namespace GuangYuan.GY001.BLL
                     ObjectId = gi.Id,
                     OldValue = 0,
                     PropertyName = World.PropertyManager.LevelPropertyName,
-                    TemplateId = gi.TemplateId,
+                    TemplateId = gi.ExtraGuid,
                 };
                 np.Properties.Add("charId", objChar.Id.ToString());
                 lst.Add(np);
@@ -883,7 +883,7 @@ namespace GuangYuan.GY001.BLL
             }
             else //接受
             {
-                var slot = gameChar.AllChildren.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
+                var slot = gameChar.AllChildren.First(c => c.ExtraGuid == SocialConstant.FriendSlotTId);
                 if (World.PropertyManager.GetRemainderStc(slot) <= 0)
                 {
                     VWorld.SetLastErrorMessage("好友位已满。");
@@ -899,7 +899,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     using var dw = DisposeHelper.Create(c => World.CharManager.Unlock(c), otherGc.GameUser);
                     var list = World.CharManager.GetChangeData(otherGc);
-                    var otherSlot = otherGc.AllChildren.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
+                    var otherSlot = otherGc.AllChildren.First(c => c.ExtraGuid == SocialConstant.FriendSlotTId);
                     var np = new ChangeData()
                     {
                         ActionId = 2,
@@ -937,7 +937,7 @@ namespace GuangYuan.GY001.BLL
             var nsr = GetNSrOrAdd(db, gcId, friendId);
             if (sr.IsFriend())    //确定是好友关系
             {
-                var slot = gameChar.GameItems.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
+                var slot = gameChar.GameItems.First(c => c.ExtraGuid == SocialConstant.FriendSlotTId);
                 slot.Count--;
                 sr.SetNeutrally(); sr.SetConfirmed();
             }
@@ -1678,8 +1678,8 @@ namespace GuangYuan.GY001.BLL
 
             IEnumerable<Guid> excludeCharIds = excludes is null ? new Guid[] { gameChar.Id } : excludes.Append(gameChar.Id);   //排除的角色Id集合
 
-            //var pvpObjectQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId).AsNoTracking();    //查询的基础集合
-            var pvpObjectQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId && !excludeCharIds.Contains(c.Parent.OwnerId.Value)).AsNoTracking();    //查询的基础集合
+            //var pvpObjectQuery = context.Set<GameItem>().Where(c => c.ExtraGuid == pvpObjectTId).AsNoTracking();    //查询的基础集合
+            var pvpObjectQuery = context.Set<GameItem>().Where(c => c.ExtraGuid == pvpObjectTId && !excludeCharIds.Contains(c.Parent.OwnerId.Value)).AsNoTracking();    //查询的基础集合
 
             var hColl = (from tmp in pvpObjectQuery
                          where tmp.ExtraDecimal > gcPvpObject.ExtraDecimal + diff

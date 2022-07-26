@@ -2260,7 +2260,7 @@ namespace GY2021001WebApi.Models
 
     /// <summary>
     /// 结束战斗的返回数据传输类。
-    /// 变化数据中，角色下弃物槽（TemplateId={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
+    /// 变化数据中，角色下弃物槽（ExtraGuid={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
     /// ChangesItems 仅当结算大关卡时这里才有数据。
     /// </summary>
     [DataContract]

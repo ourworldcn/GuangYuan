@@ -39,7 +39,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <returns>没有找到则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetMainControlRoom(this GameChar gameChar) =>
-            gameChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.TemplateId == ProjectConstant.MainControlRoomSlotId);
+            gameChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MainControlRoomSlotId);
 
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameChar"></param>
         /// <returns>如果没有找到，可能返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameItem GetHomeland(this GameChar gameChar) => gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);
+        public static GameItem GetHomeland(this GameChar gameChar) => gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.HomelandSlotId);
 
         /// <summary>
         /// 获取风格背包。
@@ -56,7 +56,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameChar"></param>
         /// <returns>如果没有找到，可能返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameItem GetFenggeBag(this GameChar gameChar) => gameChar.GetHomeland()?.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandStyleBagTId);
+        public static GameItem GetFenggeBag(this GameChar gameChar) => gameChar.GetHomeland()?.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.HomelandStyleBagTId);
 
         /// <summary>
         /// 获取建筑背包。
@@ -64,7 +64,7 @@ namespace GuangYuan.GY001.BLL.Homeland
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameItem GetHomelandBuildingBag(this GameChar gameChar) => gameChar.GetHomeland().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandBuildingBagTId);
+        public static GameItem GetHomelandBuildingBag(this GameChar gameChar) => gameChar.GetHomeland().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.HomelandBuildingBagTId);
 
         /// <summary>
         /// 获取所有主基地模板。

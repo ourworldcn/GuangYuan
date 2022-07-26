@@ -599,7 +599,7 @@ namespace GuangYuan.GY001.BLL
             }
             else //若取指定角色对象
             {
-                var tid2gis = gc.AllChildren.ToLookup(c => c.TemplateId, c => c);
+                var tid2gis = gc.AllChildren.ToLookup(c => c.ExtraGuid, c => c);
                 var coll = tid2gis.Join(datas.Ids, c => c.Key, c => c, (l, r) => l).SelectMany(c => c);
                 datas.GameItems.AddRange(coll);
                 if (datas.Ids.Contains(ProjectConstant.CharTemplateId))   //若取角色对象
@@ -1010,7 +1010,7 @@ namespace GuangYuan.GY001.BLL
             }
             using var db = World.CreateNewUserDbContext();
             var t78Uid = dto.Content?.Data?.UserId;
-            var slot = db.Set<GameItem>().SingleOrDefault(c => c.TemplateId == ProjectConstant.T78PublisherSlotTId && c.ExtraString == t78Uid);
+            var slot = db.Set<GameItem>().SingleOrDefault(c => c.ExtraGuid == ProjectConstant.T78PublisherSlotTId && c.ExtraString == t78Uid);
             GameUser result = null;
             if (slot is null)    //若没有注册用户
             {
@@ -1474,7 +1474,7 @@ namespace GuangYuan.GY001.BLL
                     var tt = tp.Key.GetTemplate();
                     if (string.Compare(item.Item1, "tid", true) == 0 && tp.Key.GetTemplate().CatalogNumber == 42 && OwConvert.TryToGuid(item.Item2, out var id))   //若是水晶更改模板
                         tp.Key.ChangeTemplate(World.ItemTemplateManager.GetTemplateFromeId(id));
-                    else if (tp.Key.TemplateId == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "activeStyle", true) == 0)   //若是家园对象的当前激活风格属性
+                    else if (tp.Key.ExtraGuid == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "activeStyle", true) == 0)   //若是家园对象的当前激活风格属性
                     {
                         var str = item.Item2 as string; Debug.Assert(str != null);
                         tp.Key.Properties["activeStyle"] = str;
@@ -1506,7 +1506,7 @@ namespace GuangYuan.GY001.BLL
                             continue;
                         if (!OwConvert.TryToGuid(item.Item2, out var tidfor)) //若无法获取模板号
                             continue;
-                        var hl = datas.GameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);
+                        var hl = datas.GameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.HomelandSlotId);
                         tp.Key.Properties[item.Item1] = item.Item2;
                         var aciveStyle = hl.Properties.GetStringOrDefault("activeStyle", "1;1");    //激活号
                         if (GetStyleNumber(aciveStyle, out var sn, out var fn) && sn == styleNumber && fn == fanganNumber) //若设置了当前风格的模板号

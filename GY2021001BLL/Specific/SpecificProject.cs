@@ -615,7 +615,7 @@ namespace GuangYuan.GY001.BLL
                 data.HasError = true;
                 return false;
             }
-            var shouyiSlot = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShouyiSlotId);
+            var shouyiSlot = gameChar.GameItems.First(c => c.ExtraGuid == ProjectConstant.ShouyiSlotId);
             var totalItems = shouyiSlot.Children.Concat(gameItems);    //总计收益
             if (!Verify(service, cmbm.GetParent(tm), totalItems, out msg))  //若总计收益超过限制
             {
@@ -625,12 +625,12 @@ namespace GuangYuan.GY001.BLL
             }
             //记录收益——改写收益槽数据
             //坐骑
-            var mounts = data.GameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi).Select(c => //规范化坐骑数据
+            var mounts = data.GameItems.Where(c => c.ExtraGuid == ProjectConstant.ZuojiZuheRongqi).Select(c => //规范化坐骑数据
             {
                 var head = gim.GetHead(c);
-                var headTemplate = gitm.GetTemplateFromeId(head.TemplateId);
+                var headTemplate = gitm.GetTemplateFromeId(head.ExtraGuid);
                 var body = gim.GetBody(c);
-                var bodyTemplate = gitm.GetTemplateFromeId(body.TemplateId);
+                var bodyTemplate = gitm.GetTemplateFromeId(body.ExtraGuid);
                 var result = gim.CreateMounts(headTemplate, bodyTemplate);
 
                 if (c.Properties.TryGetValue("neatk", out object valObj) && OwConvert.TryToDecimal(valObj, out var dec))
@@ -644,7 +644,7 @@ namespace GuangYuan.GY001.BLL
             shouyiSlot.Children.AddRange(mounts);   //加入坐骑
                                                     //神纹
             var shenwen = from tmp in data.GameItems
-                          let template = gitm.GetTemplateFromeId(tmp.TemplateId)
+                          let template = gitm.GetTemplateFromeId(tmp.ExtraGuid)
                           where template.GenusCode >= 15 && template.GenusCode <= 17  //神纹碎片
                           select (template, tmp.Count ?? 1);
             shouyiSlot.Children.AddRange(shenwen.Select(c =>
@@ -655,7 +655,7 @@ namespace GuangYuan.GY001.BLL
                 return sw;
             }));
             //金币,暂时不用创建新的金币对象。
-            var coll = data.GameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).ToList();
+            var coll = data.GameItems.Where(c => c.ExtraGuid == ProjectConstant.JinbiId).ToList();
             coll.ForEach(c => c.Count ??= 1);
             shouyiSlot.Children.AddRange(coll); //收益槽
                                                 //下一关数据
@@ -665,12 +665,12 @@ namespace GuangYuan.GY001.BLL
                 var changes = new List<GamePropertyChangeItem<object>>();
                 //移动收益槽数据到各自背包。
                 //金币
-                var gis = shouyiSlot.Children.Where(c => c.TemplateId == ProjectConstant.JinbiId);
+                var gis = shouyiSlot.Children.Where(c => c.ExtraGuid == ProjectConstant.JinbiId);
                 if (gis.Any())
                     gim.MoveItems(gis, gameChar.GetCurrencyBag(), null, changes);
                 //野生怪物
-                var shoulan = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
-                gis = shoulan.Children.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi);
+                var shoulan = gameChar.GameItems.First(c => c.ExtraGuid == ProjectConstant.ShoulanSlotId);
+                gis = shoulan.Children.Where(c => c.ExtraGuid == ProjectConstant.ZuojiZuheRongqi);
                 if (gis.Any())
                     gim.MoveItems(gis, shoulan, null, changes);
                 changes.CopyTo(data.ChangesItems);
@@ -695,7 +695,7 @@ namespace GuangYuan.GY001.BLL
             {
                 if (goldObj is decimal gold)
                 {
-                    var _ = gameItems.Where(c => c.TemplateId == ProjectConstant.JinbiId).Select(c => c.Count).Sum();
+                    var _ = gameItems.Where(c => c.ExtraGuid == ProjectConstant.JinbiId).Select(c => c.Count).Sum();
                     if (_ > gold)   //若金币超过上限
                     {
                         msg = "金币超过上限";
@@ -707,7 +707,7 @@ namespace GuangYuan.GY001.BLL
             {
                 if (monsterCountObj is decimal monsterCount)
                 {
-                    var _ = gameItems.Where(c => c.TemplateId == ProjectConstant.ZuojiZuheRongqi).Count();
+                    var _ = gameItems.Where(c => c.ExtraGuid == ProjectConstant.ZuojiZuheRongqi).Count();
                     if (_ > monsterCount)   //若怪数量超过上限
                     {
                         msg = "怪数量超过上限";
@@ -727,14 +727,14 @@ namespace GuangYuan.GY001.BLL
                 var errItem = coll.FirstOrDefault();
                 if (null != errItem)   //若单个怪资质总和超过上限
                 {
-                    msg = $"单个怪资质总和超过上限,TemplateId={gitm.GetTemplateFromeId(errItem.TemplateId)?.GId.GetValueOrDefault()}";
+                    msg = $"单个怪资质总和超过上限,ExtraGuid={gitm.GetTemplateFromeId(errItem.ExtraGuid)?.GId.GetValueOrDefault()}";
                     return false;
                 }
             }
             if (itemTemplate.Properties.TryGetValue("mt", out object mtObj) && mtObj is decimal mt) //若要限制神纹数量
             {
                 var coll = gitm.Id2Template.Values.Where(c => c.GenusCode <= 17 && c.GenusCode >= 15); //获取所有神纹模板
-                var shenwen = gameItems.Join(coll, c => c.TemplateId, c => c.Id, (l, r) => l);    //获取神纹的集合
+                var shenwen = gameItems.Join(coll, c => c.ExtraGuid, c => c.Id, (l, r) => l);    //获取神纹的集合
                 if (shenwen.Sum(c => c.Count) > (int)mt) //若神纹数量超过上限
                 {
                     msg = "神纹数量超过上限";
@@ -774,7 +774,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsIncludeChildren(this GameItem item) =>
-            ProjectConstant.HomelandPatCard == item.TemplateId || ProjectConstant.ZuojiZuheRongqi == item.TemplateId;
+            ProjectConstant.HomelandPatCard == item.ExtraGuid || ProjectConstant.ZuojiZuheRongqi == item.ExtraGuid;
 
         /// <summary>
         /// 获取弃物槽对象。
@@ -782,7 +782,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetQiwuBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => ProjectConstant.QiwuBagTId == c.TemplateId);
+            gameChar.GameItems.FirstOrDefault(c => ProjectConstant.QiwuBagTId == c.ExtraGuid);
 
         /// <summary>
         /// 获取货币袋。
@@ -791,7 +791,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetCurrencyBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => ProjectConstant.CurrencyBagTId == c.TemplateId);
+            gameChar.GameItems.FirstOrDefault(c => ProjectConstant.CurrencyBagTId == c.ExtraGuid);
 
         /// <summary>
         /// 获取金币对象。
@@ -800,7 +800,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetJinbi(this GameChar gameChar) =>
-            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.JinbiId);
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.JinbiId);
 
         /// <summary>
         /// 获取公会币对象。
@@ -809,7 +809,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetGuildCurrency(this GameChar gameChar) =>
-            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.GuildCurrencyTId);
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.GuildCurrencyTId);
 
         /// <summary>
         /// 获取木材对象。
@@ -818,7 +818,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetMucai(this GameChar gameChar) =>
-            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaiId);
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaiId);
 
         /// <summary>
         /// 获取钻石对象。
@@ -827,7 +827,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetZuanshi(this GameChar gameChar) =>
-            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuanshiId);
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ZuanshiId);
 
         /// <summary>
         /// 获取体力对象。
@@ -836,7 +836,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetTili(this GameChar gameChar) =>
-            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.TiliId);
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.TiliId);
 
         /// <summary>
         /// 获取友情商店货币。
@@ -845,7 +845,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetFriendCurrency(this GameChar gameChar) =>
-            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.FriendCurrencyTId);
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.FriendCurrencyTId);
 
         /// <summary>
         /// 获取好友槽对象。
@@ -854,7 +854,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetFriendSlot(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FriendSlotTId);
+            gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.FriendSlotTId);
 
         /// <summary>
         /// 获取PVP数据记录对象。
@@ -864,7 +864,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetPvpObject(this GameChar gameChar) =>
-            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.PvpObjectTId);
+            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.PvpObjectTId);
 
         /// <summary>
         /// 获取推关战力对象。
@@ -877,7 +877,7 @@ namespace GuangYuan.GY001.BLL
             var srv = gameChar?.GameUser?.Services?.GetService<GameItemManager>();
             if (null != srv)
                 return srv.GetOrCreateItem(gameChar.GetCurrencyBag(), ProjectConstant.TuiGuanTId);
-            return gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.TuiGuanTId);
+            return gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.TuiGuanTId);
         }
     }
 }

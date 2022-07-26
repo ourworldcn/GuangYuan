@@ -231,7 +231,7 @@ namespace GY2021001WebApi.Controllers
                         {
                             var mail = new GameMail();
                             world.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId,
-                                datas.Remainder.Select(c => (c, world.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+                                datas.Remainder.Select(c => (c, world.EventsManager.GetDefaultContainer(c, datas.GameChar).ExtraGuid)));
                         }
                     }
                     result.SuccCount = datas.SuccCount;
@@ -342,7 +342,7 @@ namespace GY2021001WebApi.Controllers
         /// <summary>
         /// 给角色强行增加物品。调试用接口，正式版本将删除。
         /// </summary>
-        /// <param name="model">要增加的物品对象数组，需要设置Count,TemplateId,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
+        /// <param name="model">要增加的物品对象数组，需要设置Count,ExtraGuid,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
         /// <returns></returns>
         /// <response code="401">令牌错误。</response>
         [HttpPost]
@@ -370,7 +370,7 @@ namespace GY2021001WebApi.Controllers
                     else
                     {
                         var tmp = new GameItem();
-                        world.EventsManager.GameItemCreated(tmp, gi.TemplateId, null, null);
+                        world.EventsManager.GameItemCreated(tmp, gi.ExtraGuid, null, null);
                         tmp.Count = gi.Count;
                         lst.Add((tmp, gc.AllChildren.FirstOrDefault(c => c.Id == OwConvert.ToGuid(item.ParentId))));
                     }
@@ -450,7 +450,7 @@ namespace GY2021001WebApi.Controllers
                         CreateUtc = gc.CreateUtc,
                         DisplayName = gc.DisplayName,
                         GameUserId = gc.GameUserId.ToBase64String(),
-                        TemplateId = gc.TemplateId.ToBase64String(),
+                        TemplateId = gc.ExtraGuid.ToBase64String(),
                         CurrentDungeonId = gc.CurrentDungeonId?.ToBase64String(),
                         CombatStartUtc = gc.CombatStartUtc,
                     };

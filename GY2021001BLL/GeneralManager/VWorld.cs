@@ -741,7 +741,7 @@ namespace OW.Game
         {
             using var db = CreateNewUserDbContext();
             var coll = from slot in db.Set<GameItem>()
-                       where slot.TemplateId == ProjectConstant.TuiGuanTId
+                       where slot.ExtraGuid == ProjectConstant.TuiGuanTId
                        join parent in db.Set<GameItem>()
                        on slot.ParentId equals parent.Id
                        join gc in db.Set<GameChar>()

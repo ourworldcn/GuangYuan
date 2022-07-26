@@ -142,7 +142,7 @@ namespace OW.Game
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual bool TryGetPropertyWithTemplate(GameThingBase thing, string key, out object result) =>
-            DictionaryUtil.TryGetValue(key, out result, thing.Properties, World.ItemTemplateManager.GetTemplateFromeId(thing.TemplateId)?.Properties);
+            DictionaryUtil.TryGetValue(key, out result, thing.Properties, World.ItemTemplateManager.GetTemplateFromeId(thing.ExtraGuid)?.Properties);
 
         /// <summary>
         /// 获取属性，如果没有则寻找模板内同名属性。
@@ -154,7 +154,7 @@ namespace OW.Game
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual bool TryGetDecimalWithTemplate(GameThingBase thing, string propertyName, out decimal result)
         {
-            return DictionaryUtil.TryGetDecimal(propertyName, out result, thing.Properties, World.ItemTemplateManager.GetTemplateFromeId(thing.TemplateId)?.Properties);
+            return DictionaryUtil.TryGetDecimal(propertyName, out result, thing.Properties, World.ItemTemplateManager.GetTemplateFromeId(thing.ExtraGuid)?.Properties);
         }
 
         /// <summary>

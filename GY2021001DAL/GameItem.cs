@@ -374,14 +374,14 @@ namespace GuangYuan.GY001.UserDb
             bool succ;
             switch (propertyName)
             {
-                case GameItem.StackUpperLimit when gameItem.TemplateId == GameItem.MucaiId: //对木材特殊处理 TO DO应控制反转完成该工作
+                case GameItem.StackUpperLimit when gameItem.ExtraGuid == GameItem.MucaiId: //对木材特殊处理 TO DO应控制反转完成该工作
                     var coll = gameItem.Parent?.GetAllChildren() ?? gameItem.GetGameChar()?.GameItems;
                     if (coll is null)
                     {
                         result = 0m;
                         return false;
                     }
-                    var ary = coll.Where(c => c.TemplateId == GameItem.MucaiStoreTId).ToArray();   //取所有木材仓库对象
+                    var ary = coll.Where(c => c.ExtraGuid == GameItem.MucaiStoreTId).ToArray();   //取所有木材仓库对象
                     if (!OwConvert.TryToDecimal(gameItem.Properties.GetValueOrDefault(GameItem.StackUpperLimit, 0m), out var myselfStc))
                         myselfStc = 0;
                     result = ary.Any(c => c.GetStc() >= decimal.MaxValue) ? -1 : ary.Sum(c => c.GetStc()) + myselfStc;
