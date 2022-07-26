@@ -1,4 +1,5 @@
-﻿using Game.Social;
+﻿using AutoMapper;
+using Game.Social;
 using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Script;
 using GuangYuan.GY001.BLL.Specific;
@@ -268,15 +269,13 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
-            Dictionary<string, string> dic = new Dictionary<string, string>();
+            Dictionary<string, string> dic = new Dictionary<string, string>() { { "ExtraString","1"} };
             var sw = Stopwatch.StartNew();
             using var dw = DisposeHelper.Create(c => c.Stop(), sw);
             try
             {
-                for (int i = 0; i < 1000; i++)
-                {
-                    var str = JsonSerializer.Serialize(dic);
-                }
+                var mapper = _Services.GetRequiredService<IMapper>();
+                var gi = mapper.Map<GameItem>(dic);
             }
             catch (Exception)
             {

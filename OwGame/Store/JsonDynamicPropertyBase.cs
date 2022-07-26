@@ -6,7 +6,37 @@ using System.Text.Json.Serialization;
 
 namespace OW.Game.Store
 {
-    public class JsonDynamicPropertyBase : GuidKeyObjectBase, IDisposable, IBeforeSave
+    /// <summary>
+    /// 使用Json字符串存储动态对象的接口。
+    /// </summary>
+    public interface IJsonDynamicProperty
+    {
+        /// <summary>
+        /// Json字符串。
+        /// </summary>
+        string JsonObjectString { get; set; }
+
+        /// <summary>
+        /// 存储最后一次获取对象的类型。
+        /// </summary>
+        [NotMapped]
+        Type JsonObjectType { get; set; }
+
+        /// <summary>
+        /// Json字符串代表的对象。请调用<see cref="GetJsonObject{T}"/>生成该属性值。
+        /// </summary>
+        [NotMapped]
+        object JsonObject { get; set; }
+
+        /// <summary>
+        /// 将<see cref="JsonObjectString"/>解释为指定类型的对象。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        T GetJsonObject<T>() where T : new();
+    }
+
+    public class JsonDynamicPropertyBase : GuidKeyObjectBase, IDisposable, IBeforeSave, IJsonDynamicProperty
     {
         #region 构造函数
 

@@ -20,7 +20,7 @@ namespace OW.Game.Store
         /// <remarks><see cref="ExtraGuid"/><see cref="ExtraString"/><see cref="ExtraDecimal"/>三个字段按顺序形成多字段索引以加快搜索速度。
         /// 也创建如下顺序创建索引<see cref="ExtraGuid"/><see cref="ExtraDecimal"/><see cref="ExtraString"/></remarks>
         Guid ExtraGuid { get; set; }
-        
+
         [MaxLength(64)]
         string ExtraString { get; set; }
 
@@ -51,6 +51,23 @@ namespace OW.Game.Store
         /// 拥有的子物品或槽。
         /// </summary>
         public List<TNode> Children { get; set; }
+    }
+
+    /// <summary>
+    /// 物品的抽象接口。
+    /// </summary>
+    public interface IVirtualItem
+    {
+        /// <summary>
+        /// 物品的数量。习惯性把不可数物品的数量置为1(<see cref="decimal.One"/>)。
+        /// </summary>
+        public decimal Count { get; set; }
+
+        /// <summary>
+        /// 作为容器时的最大容量。
+        /// </summary>
+        public decimal MaxCapacity { get; set; }
+
     }
 
     /// <summary>

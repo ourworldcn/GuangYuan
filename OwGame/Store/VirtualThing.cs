@@ -106,7 +106,7 @@ namespace OW.Game.Store
     /// <summary>
     /// 标识通用的虚拟事物类所实现的接口。
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">对象类型。</typeparam>
     public interface IVirtualThing<T> : IDbQuickFind, IDbTreeNode<T>, IEntityWithSingleKey<Guid>, IDisposable where T : IEntityWithSingleKey<Guid>
     {
 
