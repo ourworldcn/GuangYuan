@@ -83,8 +83,8 @@ namespace GY2021001WebApi.Controllers
             if (null == gu) //若令牌无效
                 return Unauthorized();
             var gc = gu.CurrentChar;
-            if (null != gc.DisplayName) //若已经有名字
-                return StatusCode((int)HttpStatusCode.PaymentRequired); //TO DO
+            //if (null != gc.DisplayName) //若已经有名字
+            //    return StatusCode((int)HttpStatusCode.PaymentRequired); //TO DO
             gc.DisplayName = model.DisplayName;
             gitm.NotifyChange(gu);
             return true;

@@ -147,6 +147,8 @@ namespace OW.Game.Store
                 // 释放未托管的资源(未托管的对象)并重写终结器
                 // 将大型字段设置为 null
                 _RuntimeProperties = null;
+                _Base64IdString = null;
+                _IdString = null;
                 base.Dispose(disposing);
             }
         }
@@ -219,7 +221,6 @@ namespace OW.Game.Store
         }
 
         #endregion 减低内存分配速率
-
     }
 
     /// <summary>

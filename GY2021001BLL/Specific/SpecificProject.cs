@@ -161,6 +161,10 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid ChangeDataTId = new Guid("{16356935-7D9E-4825-8B04-5C8FE4034003}");
         #endregion  角色直属槽及其相关
 
+        #region 其他类型顶层节点
+        public static readonly Guid CombatReportTId = new Guid("{BB418C7C-FEC4-4EB7-8B8B-550E864934DB}");
+        #endregion 其他类型顶层节点
+
         #region 货币类模板Id
         /// <summary>
         /// 公会币模板id。
