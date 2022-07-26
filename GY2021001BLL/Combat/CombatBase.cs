@@ -24,7 +24,9 @@ namespace GuangYuan.GY001.BLL
             var gc = world.CharManager.GetCharFromId(booty.CharId);
             var hl = gc.GetHomeland();
             GameItem gi = new GameItem();
-            world.EventsManager.GameItemCreated(gi, booty.Properties);
+            var dic = new Dictionary<string, object>();
+            OwHelper.Copy(booty.StringDictionary, dic);
+            world.EventsManager.GameItemCreated(gi, dic);
             var gim = world.ItemManager;
             GameItem parent;
             var tid = gi.TemplateId;
@@ -58,8 +60,8 @@ namespace GuangYuan.GY001.BLL
             }
             else
                 throw new InvalidOperationException();
-            if(parent !=null)
-            gim.MoveItem(gi, gi.Count ?? 1, parent, null, changes1);
+            if (parent != null)
+                gim.MoveItem(gi, gi.Count ?? 1, parent, null, changes1);
             if (null != changes)
                 changes1.CopyTo(changes);
         }
@@ -73,7 +75,7 @@ namespace GuangYuan.GY001.BLL
         public static void FillToDictionary(this GameBooty booty, VWorld world, IDictionary<string, object> dic)
         {
             const string prefix = "gTId";
-            dic[$"{prefix}{booty.Properties.GetGuidOrDefault("tid")}"] = booty.Properties.GetDecimalOrDefault("count");
+            dic[$"{prefix}{booty.StringDictionary.GetGuidOrDefault("tid")}"] = booty.StringDictionary.GetDecimalOrDefault("count");
         }
 
     }

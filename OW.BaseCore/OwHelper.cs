@@ -106,7 +106,7 @@ namespace System
         /// <param name="dest"></param>
         /// <param name="predicate">过滤器，返回false则不会复制，省略或者为null，则不调用过滤器。</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Copy<Tkey, TValue>(IReadOnlyDictionary<Tkey, TValue> src, IDictionary<Tkey, TValue> dest, Func<Tkey, bool> predicate = null)
+        public static void Copy<Tkey, TSrc, TDest>(IReadOnlyDictionary<Tkey, TSrc> src, IDictionary<Tkey, TDest> dest, Func<Tkey, bool> predicate = null) where TSrc : TDest
         {
             if (predicate is null)
                 foreach (var item in src)

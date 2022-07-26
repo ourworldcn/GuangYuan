@@ -1,5 +1,4 @@
-﻿using GuangYuan.GY001.UserDb.Combat;
-using GuangYuan.GY001.UserDb.Social;
+﻿using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Store;
@@ -109,11 +108,6 @@ namespace GuangYuan.GY001.UserDb
         /// 操作记录。
         /// </summary>
         public DbSet<GameActionRecord> ActionRecords { get; set; }
-
-        /// <summary>
-        /// 战利品记录。
-        /// </summary>
-        public DbSet<GameBooty> GameBooty { get; set; }
 
         /// <summary>
         /// 行会表。

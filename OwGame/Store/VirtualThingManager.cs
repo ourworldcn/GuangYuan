@@ -73,6 +73,28 @@ namespace OW.Game.Managers
 
         #region 关系操作
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="parent"></param>
+        /// <param name="changes"></param>
+        public void Add(VirtualThing node, VirtualThing parent, ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            parent.Children.Add(node);
+            node.ParentId = parent.Id;
+            node.Parent = parent;
+
+            changes?.Add(new GamePropertyChangeItem<object>()
+            {
+                Object = parent,
+                HasOldValue = false,
+                HasNewValue=true,
+                NewValue=node,
+                PropertyName=nameof(parent.Children),
+            });
+        }
+
         public void AddLeaf(VirtualThing node, VirtualThing parent, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
 

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game.Item;
+using OW.Game.Managers;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
 using OW.Game.Store;
@@ -399,6 +400,16 @@ namespace OW.Game
         /// 转换管理器。
         /// </summary>
         public GameMapperManager MapperManager { get => _MapperManager ??= Service.GetService<GameMapperManager>(); }
+
+        private VirtualThingManager _VirtualThingManager;
+
+        /// <summary>
+        /// 虚拟事物管理器。
+        /// </summary>
+        public VirtualThingManager VirtualThingManager
+        {
+            get => _VirtualThingManager ??= Service.GetService<VirtualThingManager>();
+        }
 
         #endregion 子管理器
 

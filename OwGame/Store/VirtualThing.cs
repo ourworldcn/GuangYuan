@@ -288,7 +288,7 @@ namespace OW.Game.Store
         public new T GetJsonObject<T>() where T : new()
         {
             var result = base.GetJsonObject<T>();
-            if (JsonObject is VirtualThingExtraPropertiesBase viewBase)
+            if (result is VirtualThingExtraPropertiesBase viewBase)
                 viewBase.Thing = this;
             return result;
         }

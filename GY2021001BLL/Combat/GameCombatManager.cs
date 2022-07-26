@@ -657,7 +657,7 @@ namespace GuangYuan.GY001.BLL
             datas.GetBooty(bootyOfAttacker, bootyOfDefenser);
             foreach (var item in bootyOfAttacker) //进攻方战利品
             {
-                item.ParentId = pc.Id;
+                //TODO item.ParentId = pc.Id;
                 item.SetGameItems(World, datas.ChangeItems);   //设置物品实际增减
                 datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
             }
@@ -667,7 +667,7 @@ namespace GuangYuan.GY001.BLL
             {
                 foreach (var item in bootyOfDefenser) //防御方战利品
                 {
-                    item.ParentId = pc.Id;
+                    //TODO item.ParentId = pc.Id;
                     item.SetGameItems(World);   //设置物品实际增减
                     datas.World.CharManager.NotifyChange(datas.OtherChar.GameUser);
                 }
@@ -782,13 +782,13 @@ namespace GuangYuan.GY001.BLL
                 {
                     var attackerBooties = booties.Select(c =>
                     {
-                        var r = new GameBooty()
-                        {
-                            ParentId = pc.Thing.Id,
-                            CharId = datas.GameChar.Id,
-                        };
+                        var node = new VirtualThing();
+                        var r = node.GetJsonObject<GameBooty>();
+                        r.CharId = datas.GameChar.Id;
+
                         r.StringDictionary["tid"] = c.StringDictionary["tid"];
                         r.StringDictionary["count"] = c.StringDictionary["count"];
+                        World.VirtualThingManager.Add(node, pc.Thing, datas.PropertyChanges);
                         return r;
                     }).ToList(); //本战斗攻击者战利品
                     //设计：本次战斗防御者不丢失资源
@@ -864,20 +864,24 @@ namespace GuangYuan.GY001.BLL
             //获取战利品
             if (datas.IsWin)    //若赢得战斗
             {
-                var oriBooty = db.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == oldWar.Id && oldView.AttackerIds.Contains(c.CharId)).ToList();     //原始战斗攻击方战利品
-                var boo = oldView.BootyOfAttacker(datas.UserDbContext);  //原始进攻方的战利品
+                var oriBooty = db.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == oldWar.Id )     //原始战斗攻击方战利品
+                    .AsEnumerable().Select(c => c.GetJsonObject<GameBooty>()).Where(c => oldView.AttackerIds.Contains(c.CharId))
+                    .ToList();  //原战斗的攻击者战利品
+
+                //TODO 未知
+                //var boo = oldView.BootyOfAttacker(datas.UserDbContext);  //原始进攻方的战利品
+                var boo = oriBooty;  //原始进攻方的战利品
 
                 var newBooty = boo.Select(c =>
                 {
-                    var r = new GameBooty   //计算进攻方战利品
-                    {
-                        ParentId = pc.Thing.Id,
-                        CharId = datas.GameChar.Id,
-                    };
-                    r.StringDictionary["count"] = Math.Round(c.Properties.GetDecimalOrDefault("count") * 0.3m, MidpointRounding.AwayFromZero);
+                    var thing = new VirtualThing();
+                    var r = thing.GetJsonObject<GameBooty>();   //计算进攻方战利品
+                    r.CharId = datas.GameChar.Id;
+                    r.StringDictionary["count"] = (Math.Round(c.StringDictionary.GetDecimalOrDefault("count") * 0.3m, MidpointRounding.AwayFromZero)).ToString();
                     if (r.StringDictionary.GetDecimalOrDefault("count") == decimal.Zero)
                         return null;
-                    r.StringDictionary["tid"] = c.Properties["tid"];
+                    r.StringDictionary["tid"] = c.StringDictionary["tid"];
+                    World.VirtualThingManager.Add(thing, pc.Thing);
                     return r;
                 }).ToList();
                 newBooty.RemoveAll(c => c is null); //去掉空引用
@@ -886,13 +890,12 @@ namespace GuangYuan.GY001.BLL
 
                 var oldBooties = boo.Select(c =>
                 {
-                    var r = new GameBooty   //原始被掠夺角色的战利品
-                    {
-                        ParentId = pc.Thing.Id,
-                        CharId = oldView.DefenserIds.First(),
-                    };
-                    r.StringDictionary["tid"] = c.Properties["tid"];
-                    r.StringDictionary["count"] = c.Properties["count"];
+                    var thing = new VirtualThing();
+                    var r = thing.GetJsonObject<GameBooty>();   //原始被掠夺角色的战利品
+                    r.CharId = oldView.DefenserIds.First();
+                    r.StringDictionary["tid"] = c.StringDictionary["tid"];
+                    r.StringDictionary["count"] = c.StringDictionary["count"];
+                    World.VirtualThingManager.Add(thing, pc.Thing, datas.PropertyChanges);
                     return r;
                 }).ToList();
                 oldBooties.ForEach(c => c.SetGameItems(world));

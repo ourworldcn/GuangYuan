@@ -191,17 +191,16 @@ namespace GY2021001WebApi.Models
 
     public partial class CombatDto
     {
-        public static implicit operator CombatDto(WarNewspaper obj)
+        public static implicit operator CombatDto(CombatReport obj)
         {
             var result = new CombatDto()
             {
                 EndUtc = obj.EndUtc,
-                Id = obj.Base64IdString,
+                Id = obj.Thing.Base64IdString,
             };
             result.AttackerIds.AddRange(obj.AttackerIds.Select(c => c.ToBase64String()));
             result.DefenserIds.AddRange(obj.DefenserIds.Select(c => c.ToBase64String()));
-            foreach (var item in obj.Properties)
-                result.Properties[item.Key] = item.Value;
+            OwHelper.Copy(obj.StringDictionary, result.Properties);
             return result;
         }
     }

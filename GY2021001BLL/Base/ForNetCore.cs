@@ -20,6 +20,7 @@ using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Item;
 using OW.Game.Log;
+using OW.Game.Managers;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
 using OW.Game.Store;
@@ -425,6 +426,8 @@ namespace GuangYuan.GY001.BLL
             #endregion 基础服务
 
             #region 游戏专用服务
+
+            services.AddSingleton<VirtualThingManager>();
 
             services.AddHostedService<GameHostedService>();
 

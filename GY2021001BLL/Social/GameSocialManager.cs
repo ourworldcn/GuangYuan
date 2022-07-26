@@ -501,7 +501,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = $"找不到指定的战报对象，Id={datas.RootCombatId}";
                 return;
             }
-            var rootView = new WarNewspaperView(rootCombat, World.Service);
+            var rootView = rootCombat;
             if (rootView.Assistancing || rootView.Assistanced)   //若已经请求了协助
             {
                 datas.HasError = true;
@@ -517,7 +517,7 @@ namespace GuangYuan.GY001.BLL
             {
             };
             mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_被求助者_求助.ToString();
-            mail.Properties["CombatId"] = rootCombat.Id.ToString();
+            mail.Properties["CombatId"] = rootCombat.Thing.IdString;
             World.SocialManager.SendMail(mail, new Guid[] { datas.OtherCharId }, datas.GameChar.Id); //被攻击邮件
             //关系数据
             datas.SocialRelationship.Flag++;
