@@ -27,14 +27,29 @@ namespace OW.Game.Store
         /// Json字符串代表的对象。请调用<see cref="GetJsonObject{T}"/>生成该属性值。
         /// </summary>
         [NotMapped]
-        object JsonObject { get; set; }
+        abstract object JsonObject { get; set; }
 
         /// <summary>
         /// 将<see cref="JsonObjectString"/>解释为指定类型的对象。
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        T GetJsonObject<T>() where T : new();
+        abstract T GetJsonObject<T>() where T : new();
+        //{
+        //    if (typeof(T) != JsonObjectType || JsonObject is null)
+        //    {
+        //        if (string.IsNullOrWhiteSpace(JsonObjectString))
+        //        {
+        //            JsonObject = new T();
+        //        }
+        //        else
+        //        {
+        //            JsonObject = JsonSerializer.Deserialize(JsonObjectString, typeof(T));
+        //        }
+        //        JsonObjectType = typeof(T);
+        //    }
+        //    return (T)JsonObject;
+        //}
     }
 
     /// <summary>
@@ -163,7 +178,7 @@ namespace OW.Game.Store
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public T GetJsonObject<T>() where T : new()
+        public virtual T GetJsonObject<T>() where T : new()
         {
             if (typeof(T) != JsonObjectType || JsonObject is null)
             {

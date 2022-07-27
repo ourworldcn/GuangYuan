@@ -108,7 +108,7 @@ namespace GuangYuan.GY001.UserDb
     /// 游戏中物品，装备，货币，积分的基类。
     /// </summary>
     [Table("GameItems")]
-    public class GameItem : GameItemBase, IDisposable
+    public class GameItem : GameItemBase, IVirtualThing<GameItem>, IDisposable
     {
         /// <summary>
         /// 构造函数。

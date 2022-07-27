@@ -229,6 +229,8 @@ namespace OW.Game.Store
     [Table("VirtualThings")]
     public class VirtualThing : VirtualThingBase<VirtualThing>
     {
+        #region 构造函数
+
         public VirtualThing()
         {
         }
@@ -236,6 +238,8 @@ namespace OW.Game.Store
         public VirtualThing(Guid id) : base(id)
         {
         }
+
+        #endregion 构造函数
 
         #region 析构及处置对象相关
 
@@ -270,10 +274,10 @@ namespace OW.Game.Store
         [JsonIgnore]
         public byte[] Timestamp { get => _Timestamp; set => _Timestamp = value; }
 
+        private byte[] _BinaryArray;
         /// <summary>
         /// 扩展的二进制大对象。
         /// </summary>
-        private byte[] _BinaryArray;
         public byte[] BinaryArray
         {
             get { return _BinaryArray; }
@@ -286,7 +290,7 @@ namespace OW.Game.Store
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public new T GetJsonObject<T>() where T : new()
+        public override T GetJsonObject<T>()
         {
             var result = base.GetJsonObject<T>();
             if (result is VirtualThingExtraPropertiesBase viewBase)

@@ -9,6 +9,7 @@ using System.Text;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game.Store;
+using GuangYuan.GY001.UserDb.Combat;
 
 namespace GuangYuan.GY001.BLL.Specific
 {
@@ -92,7 +93,7 @@ namespace GuangYuan.GY001.BLL.Specific
 
         public PropertyDescriptor PropertyDescriptor { get; }
 
-        IServiceProvider _Services;
+        readonly IServiceProvider _Services;
 
         public object GetService(Type serviceType) => _Services.GetService(serviceType);
 

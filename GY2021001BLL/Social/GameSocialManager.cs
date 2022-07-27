@@ -586,6 +586,7 @@ namespace GuangYuan.GY001.BLL
         public IEnumerable<CharSummary> GetCharSummary(IEnumerable<Guid> ids, [NotNull] DbContext db)
         {
             var innerIds = ids.Distinct().ToArray();
+
             var collBase = (from gc in db.Set<GameChar>()
                             where innerIds.Contains(gc.Id)
                             join tuiguan in db.Set<GameItem>()   //推关战力对象

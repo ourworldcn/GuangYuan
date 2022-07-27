@@ -274,14 +274,12 @@ namespace GuangYuan.GY001.BLL
             using var dw = DisposeHelper.Create(c => c.Stop(), sw);
             try
             {
-                var gi1 = new GameItem();
-                world.EventsManager.GameItemCreated(gi1,ProjectConstant.GuildSlotId);
-
-                var gi2 = new VirtualThing();
-                var tt = world.ItemTemplateManager.GetTemplateFromeId(ProjectConstant.GuildTemplateId);
-                world.VirtualThingManager.ThingCreated(gi2,tt.Properties);
-                var str = JsonSerializer.Serialize(dic);
-                var r = JsonSerializer.Deserialize<MyClass>(str);
+                var tmpColl = from gc in db.Set<GameChar>()
+                              join tuiguan in db.Set<GameItem>().Where(c=>c.ExtraGuid== ProjectConstant.PvpObjectTId)   //推关战力对象
+                              on gc.Id equals tuiguan.Parent.OwnerId into lj
+                              from all in lj.DefaultIfEmpty()
+                              select new { gc.DisplayName, all.BinaryArray };
+                var ary = tmpColl.ToArray();
             }
             catch (Exception)
             {
@@ -293,22 +291,6 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
-        public class MyClass
-        {
-            public string ExtraString { get; set; }
-
-            private DateTime d1;
-
-            public DateTime Getd()
-            {
-                return d1;
-            }
-
-            public void Setd(DateTime value)
-            {
-                d1 = value;
-            }
-        }
         /// <summary>
         /// 创建所有<see cref="VWorld"/>链接的游戏管理器以初始化。
         /// </summary>

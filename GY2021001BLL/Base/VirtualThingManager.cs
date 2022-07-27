@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -111,7 +112,7 @@ namespace OW.Game.Managers
         public void ThingCreated<T>(IVirtualThing<T> thing, IReadOnlyDictionary<string, object> propertyBag) where T : GuidKeyObjectBase
         {
             var obj = (T)thing;
-            GameItemTemplate tt;
+            GameItemTemplate tt = null;
             if (propertyBag.TryGetValue("tt", out var ttObj) && ttObj is GameItemTemplate)
             {
                 tt = (GameItemTemplate)ttObj;
@@ -120,9 +121,13 @@ namespace OW.Game.Managers
             {
                 tt = World.ItemTemplateManager.GetTemplateFromeId(tid);
             }
+
             var coll = TypeDescriptor.GetProperties(obj).OfType<PropertyDescriptor>();
             var tmpDic = DictionaryPool<string, object>.Shared.Get();
             using var dw = DisposeHelper.Create(c => DictionaryPool<string, object>.Shared.Return(c), tmpDic);
+
+            if (null != tt)
+                OwHelper.Copy(tt.Properties, tmpDic);
             OwHelper.Copy(propertyBag, tmpDic);
             var lv = (int)tmpDic.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName, 0m);  //取等级
             foreach (var item in coll)
@@ -141,6 +146,7 @@ namespace OW.Game.Managers
                 }
                 catch (Exception)
                 {
+                    Debug.WriteLine($"无法写入属性:要求类型{item.PropertyType.Name},实际类型{val.GetType().Name}");
                 }
             }
             var coll1 = from tmp in tmpDic
@@ -149,8 +155,14 @@ namespace OW.Game.Managers
                         select (tmp.Key, list[lv]);
             var dic1 = coll1.ToDictionary(c => c.Key, c => c.Item2);
             OwHelper.Copy(dic1, tmpDic);
-
             thing.JsonObjectString = JsonSerializer.Serialize(tmpDic);
+        }
+
+        public void ThingSetProperty<T>(IVirtualThing<T> thing, IEnumerable<(string, object)> propertyBag) where T : GuidKeyObjectBase
+        {
+            var obj = (T)thing;
+            var coll = TypeDescriptor.GetProperties(obj).OfType<PropertyDescriptor>().Join(propertyBag, c => c.Name, c => c.Item1, (l, r) => (Descriptor: l, Value: r.Item2));
+            coll.ForEach(c => c.Descriptor.SetValue(obj, c.Value));
         }
 
         #region 关系操作

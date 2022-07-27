@@ -61,7 +61,7 @@ namespace GuangYuan.GY001.UserDb.Social
         IMemoryCache _Cache;
         public IMemoryCache Cache => _Cache ??= Service.GetRequiredService<IMemoryCache>();
 
-        ConcurrentDictionary<Guid, GameGuild> _Id2Guild = new ConcurrentDictionary<Guid, GameGuild>();
+         ConcurrentDictionary<Guid, GameGuild> _Id2Guild = new ConcurrentDictionary<Guid, GameGuild>();
 
         /// <summary>
         /// 所有工会，键是工会id，值是工会对象。
@@ -650,7 +650,6 @@ namespace GuangYuan.GY001.UserDb.Social
         public void AcceptJoin(AcceptJoinContext datas)
         {
             Guid guidId;
-            GameGuild guild;
             using (var dw = datas.LockUser())
             {
                 if (dw is null)
@@ -664,7 +663,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 }
                 guidId = OwConvert.ToGuid(slot.ExtraString);
             }
-            if (!Lock(guidId, Options.DefaultTimeout, out guild))
+            if (!Lock(guidId, Options.DefaultTimeout, out GameGuild guild))
             {
                 datas.FillErrorFromWorld();
                 return;
