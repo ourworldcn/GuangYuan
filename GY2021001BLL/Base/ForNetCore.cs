@@ -269,13 +269,19 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
-            Dictionary<string, string> dic = new Dictionary<string, string>() { { "ExtraString","1"} };
+            var dic = new Dictionary<string, object>() { { "ExtraString","1"},{ "d",DateTime.UtcNow} };
             var sw = Stopwatch.StartNew();
             using var dw = DisposeHelper.Create(c => c.Stop(), sw);
             try
             {
-                var mapper = _Services.GetRequiredService<IMapper>();
-                var gi = mapper.Map<GameItem>(dic);
+                var gi1 = new GameItem();
+                world.EventsManager.GameItemCreated(gi1,ProjectConstant.GuildSlotId);
+
+                var gi2 = new VirtualThing();
+                var tt = world.ItemTemplateManager.GetTemplateFromeId(ProjectConstant.GuildTemplateId);
+                world.VirtualThingManager.ThingCreated(gi2,tt.Properties);
+                var str = JsonSerializer.Serialize(dic);
+                var r = JsonSerializer.Deserialize<MyClass>(str);
             }
             catch (Exception)
             {
@@ -287,6 +293,22 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
+        public class MyClass
+        {
+            public string ExtraString { get; set; }
+
+            private DateTime d1;
+
+            public DateTime Getd()
+            {
+                return d1;
+            }
+
+            public void Setd(DateTime value)
+            {
+                d1 = value;
+            }
+        }
         /// <summary>
         /// 创建所有<see cref="VWorld"/>链接的游戏管理器以初始化。
         /// </summary>
@@ -427,7 +449,7 @@ namespace GuangYuan.GY001.BLL
 
             #region 游戏专用服务
 
-            services.AddSingleton<VirtualThingManager>();
+            services.AddSingleton(c=>new VirtualThingManager(c,new VirtualThingManagerOptions()));
 
             services.AddHostedService<GameHostedService>();
 

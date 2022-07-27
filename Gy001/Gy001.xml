@@ -3405,7 +3405,7 @@
             申请加入工会。
             </summary>
             <param name="model"></param>
-            <returns></returns>
+            <returns>错误码1292是工会已满，160=重复申请。</returns>
         </member>
         <member name="M:Gy001.Controllers.GameAllianceController.AccepteGuildMember(GY2021001WebApi.Models.AccepteGuildMemberParamsDto)">
             <summary>

@@ -171,7 +171,7 @@ namespace Gy001.Controllers
         /// 申请加入工会。
         /// </summary>
         /// <param name="model"></param>
-        /// <returns></returns>
+        /// <returns>错误码1292是工会已满，160=重复申请。</returns>
         [HttpPost]
         public ActionResult<RequestJoinGuildReturnDto> RequestJoinGuild(RequestJoinGuildParamsDto model)
         {

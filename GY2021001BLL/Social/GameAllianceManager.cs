@@ -842,6 +842,9 @@ namespace GuangYuan.GY001.UserDb.Social
         /// <returns></returns>
         public bool NotifyChar(Guid charId)
         {
+            using var dw = World.CharManager.LockOrLoadWithCharIds(new Guid[] { charId }, TimeSpan.FromSeconds(2));
+            if (dw is null)
+                return false;
             var gc = World.CharManager.GetCharFromId(charId);
             using var dwUser = World.CharManager.LockAndReturnDisposer(gc.GameUser);
             if (dwUser is null)  //若无法锁定用户

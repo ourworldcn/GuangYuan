@@ -107,7 +107,7 @@ namespace OW.Game.Store
     /// 标识通用的虚拟事物类所实现的接口。
     /// </summary>
     /// <typeparam name="T">对象类型。</typeparam>
-    public interface IVirtualThing<T> : IDbQuickFind, IDbTreeNode<T>, IEntityWithSingleKey<Guid>, IDisposable where T : IEntityWithSingleKey<Guid>
+    public interface IVirtualThing<T> : IJsonDynamicProperty, IDbQuickFind, IDbTreeNode<T>, IEntityWithSingleKey<Guid> where T : IEntityWithSingleKey<Guid>
     {
 
     }
@@ -116,7 +116,7 @@ namespace OW.Game.Store
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class VirtualThingBase<T> : DbTreeNodeBase<T>, IVirtualThing<T> where T : GuidKeyObjectBase
+    public abstract class VirtualThingBase<T> : DbTreeNodeBase<T>, IVirtualThing<T> where T : GuidKeyObjectBase
     {
         #region 构造函数
 

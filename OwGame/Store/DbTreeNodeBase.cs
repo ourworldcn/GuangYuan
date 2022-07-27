@@ -54,23 +54,6 @@ namespace OW.Game.Store
     }
 
     /// <summary>
-    /// 物品的抽象接口。
-    /// </summary>
-    public interface IVirtualItem
-    {
-        /// <summary>
-        /// 物品的数量。习惯性把不可数物品的数量置为1(<see cref="decimal.One"/>)。
-        /// </summary>
-        public decimal Count { get; set; }
-
-        /// <summary>
-        /// 作为容器时的最大容量。
-        /// </summary>
-        public decimal MaxCapacity { get; set; }
-
-    }
-
-    /// <summary>
     /// 
     /// </summary>
     public class DbTreeNodeBase<T> : JsonDynamicPropertyBase, IDisposable, IDbQuickFind, IDbTreeNode<T> where T : GuidKeyObjectBase
