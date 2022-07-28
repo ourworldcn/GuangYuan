@@ -4099,7 +4099,7 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// 批准加入公会申请的返回数据封装类。
+    /// 
     /// </summary>
     [DataContract]
     public class AccepteGuildMemberReturnDto : ReturnDtoBase
