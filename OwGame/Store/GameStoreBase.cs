@@ -15,43 +15,16 @@ using System.Threading;
 
 namespace OW.Game.Store
 {
-    public abstract class OrmObjectBase<TKey>
+    public interface IEntityWithSingleKey<T>
     {
-        private TKey _Id;
-
-        /// <summary>
-        /// 构造函数。
-        /// 不会给<see cref="Id"/>属性赋值。
-        /// </summary>
-        public OrmObjectBase()
-        {
-        }
-
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        /// <param name="id">初始化<see cref="Id"/>属性的值。</param>
-        public OrmObjectBase(TKey id)
-        {
-            _Id = id;
-        }
-
-        /// <summary>
-        /// Id属性。
-        /// </summary>
-        [Key, Column(Order = 0)]
-        public TKey Id
-        {
-            get { return _Id; }
-            set { _Id = value; }
-        }
-
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.None), Column(Order = 0)]
+        T Id { get; set; }
     }
 
     /// <summary>
     /// 以<see cref="Guid"/>为键类型的实体类的基类。
     /// </summary>
-    public abstract class GuidKeyObjectBase
+    public abstract class GuidKeyObjectBase : IEntityWithSingleKey<Guid>
     {
         /// <summary>
         /// 构造函数。
@@ -157,8 +130,6 @@ namespace OW.Game.Store
             }
         }
 
-        private volatile bool _IsDisposed;
-
         #region 事件及其相关
 
         protected virtual void OnDynamicPropertyChanged(DynamicPropertyChangedEventArgs e) => DynamicPropertyChanged?.Invoke(this, e);
@@ -195,17 +166,6 @@ namespace OW.Game.Store
         }
 
         /// <summary>
-        /// 对象是否已经被处置。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public bool IsDisposed
-        {
-            get => _IsDisposed;
-            protected set => _IsDisposed = value;
-        }
-
-        /// <summary>
         /// <inheritdoc/>
         /// </summary>
         /// <param name="db"><inheritdoc/></param>
@@ -222,6 +182,20 @@ namespace OW.Game.Store
         [NotMapped]
         [JsonIgnore]
         public bool SuppressSave { get; set; }
+
+        #region IDisposable接口及相关
+
+        private volatile bool _IsDisposed;
+        /// <summary>
+        /// 对象是否已经被处置。
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public bool IsDisposed
+        {
+            get => _IsDisposed;
+            protected set => _IsDisposed = value;
+        }
 
         /// <summary>
         /// 实际处置当前对象的方法。
@@ -264,6 +238,9 @@ namespace OW.Game.Store
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+        #endregion IDisposable接口及相关
+
     }
 
     public class SimpleExtendPropertyBaseExtensions

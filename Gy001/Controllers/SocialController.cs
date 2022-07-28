@@ -167,13 +167,13 @@ namespace Gy001.Controllers
                 DisplayName = model.DisplayName,
                 UserDbContext = _UserContext,
             };
-            data.BodyTIds.AddRange(model.BodyTIds.Select(c => OwConvert.ToGuid(c)));
+            var result = new GetCharSummaryReturnDto();
             using var disposer = data.LockUser();
             if (disposer is null)
             {
-                return StatusCode(data.ErrorCode, data.ErrorMessage);
+                result.FillFromWorld();
+                return result;
             }
-            var result = new GetCharSummaryReturnDto();
             try
             {
                 data.BodyTIds.AddRange(model.BodyTIds.Select(c => OwConvert.ToGuid(c)));

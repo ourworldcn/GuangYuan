@@ -148,7 +148,18 @@ namespace OW.Game
         {
             obj.ErrorCode = VWorld.GetLastError();
             obj.ErrorMessage = VWorld.GetLastErrorMessage();
+        }
 
+        /// <summary>
+        /// 从另一个对象填充错误。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="src"></param>
+        public static void FillErrorFrom(this IResultWorkData obj, IResultWorkData src)
+        {
+            obj.ErrorCode = src.ErrorCode;
+            obj.ErrorMessage = src.ErrorMessage;
+            obj.HasError = src.HasError;
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Script;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game.Item;
+using OW.Game.Managers;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
 using OW.Game.Store;
@@ -393,6 +395,21 @@ namespace OW.Game
         /// </summary>
         public GameAllianceManager AllianceManager { get => _AllianceManager ??= Service.GetService<GameAllianceManager>(); }
 
+        GameMapperManager _MapperManager;
+        /// <summary>
+        /// 转换管理器。
+        /// </summary>
+        public GameMapperManager MapperManager { get => _MapperManager ??= Service.GetService<GameMapperManager>(); }
+
+        private VirtualThingManager _VirtualThingManager;
+
+        /// <summary>
+        /// 虚拟事物管理器。
+        /// </summary>
+        public VirtualThingManager VirtualThingManager
+        {
+            get => _VirtualThingManager ??= Service.GetService<VirtualThingManager>();
+        }
 
         #endregion 子管理器
 
@@ -724,12 +741,12 @@ namespace OW.Game
         {
             using var db = CreateNewUserDbContext();
             var coll = from slot in db.Set<GameItem>()
-                        where slot.TemplateId == ProjectConstant.TuiGuanTId
-                        join parent in db.Set<GameItem>()
-                        on slot.ParentId equals parent.Id
-                        join gc in db.Set<GameChar>()
-                        on parent.OwnerId equals gc.Id
-                        select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value };
+                       where slot.ExtraGuid == ProjectConstant.TuiGuanTId
+                       join parent in db.Set<GameItem>()
+                       on slot.ParentId equals parent.Id
+                       join gc in db.Set<GameChar>()
+                       on parent.OwnerId equals gc.Id
+                       select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value };
             var result = coll.AsNoTracking().OrderByDescending(c => c.Value).Take(topN).AsEnumerable().Select(c => (c.Id, c.Value, c.DisplayName));
             return result.ToList();
         }

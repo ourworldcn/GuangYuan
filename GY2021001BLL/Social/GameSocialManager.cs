@@ -438,7 +438,7 @@ namespace GuangYuan.GY001.BLL
                     var ptid = item.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty);
                     var gameItem = new GameItem();  //物品
                     World.EventsManager.GameItemCreated(gameItem, item.Properties);
-                    GameThingBase parent = gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
+                    GameThingBase parent = gameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == ptid);
                     if (parent is null)
                     {
                         if (ptid == ProjectConstant.CharTemplateId)
@@ -501,7 +501,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = $"找不到指定的战报对象，Id={datas.RootCombatId}";
                 return;
             }
-            var rootView = new WarNewspaperView(rootCombat, World.Service);
+            var rootView = rootCombat;
             if (rootView.Assistancing || rootView.Assistanced)   //若已经请求了协助
             {
                 datas.HasError = true;
@@ -517,7 +517,7 @@ namespace GuangYuan.GY001.BLL
             {
             };
             mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_被求助者_求助.ToString();
-            mail.Properties["CombatId"] = rootCombat.Id.ToString();
+            mail.Properties["CombatId"] = rootCombat.Thing.IdString;
             World.SocialManager.SendMail(mail, new Guid[] { datas.OtherCharId }, datas.GameChar.Id); //被攻击邮件
             //关系数据
             datas.SocialRelationship.Flag++;
@@ -585,65 +585,71 @@ namespace GuangYuan.GY001.BLL
         /// <exception cref="ArgumentException">至少一个指定的Id不是有效角色Id。</exception>
         public IEnumerable<CharSummary> GetCharSummary(IEnumerable<Guid> ids, [NotNull] DbContext db)
         {
+            Debug.WriteLineIf(ids.Count() > 1000, "GetCharSummary查询用户摘要信息过多。");
             var innerIds = ids.Distinct().ToArray();
+
             var collBase = (from gc in db.Set<GameChar>()
                             where innerIds.Contains(gc.Id)
-                            join tuiguan in db.Set<GameItem>()   //推关战力对象
-                            on gc.Id equals tuiguan.Parent.OwnerId
-                            where tuiguan.TemplateId == ProjectConstant.TuiGuanTId
+                            join tuiguan in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.TuiGuanTId)   //推关战力对象
+                            on gc.Id equals tuiguan.Parent.OwnerId into l1
+                            from tuiguanR in l1.DefaultIfEmpty()
 
-                            join gold in db.Set<GameItem>() //金币对象
-                            on gc.Id equals gold.Parent.OwnerId
-                            where gold.TemplateId == ProjectConstant.JinbiId
+                            join gold in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.JinbiId) //金币对象
+                            on gc.Id equals gold.Parent.OwnerId into l2
+                            from goldR in l2.DefaultIfEmpty()
 
-                            join goldOfStore in db.Set<GameItem>() //玉米田
-                            on gc.Id equals goldOfStore.Parent.Parent.OwnerId
-                            where goldOfStore.TemplateId == ProjectConstant.YumitianTId
+                            join goldOfStore in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.YumitianTId) //玉米田
+                            on gc.Id equals goldOfStore.Parent.Parent.OwnerId into l3
+                            from goldOfStoreR in l3.DefaultIfEmpty()
 
-                            join wood in db.Set<GameItem>() //木材
+                            join wood in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.MucaiId) //木材
                             on gc.Id equals wood.Parent.OwnerId
-                            where wood.TemplateId == ProjectConstant.MucaiId
 
-                            join woodOfStore in db.Set<GameItem>() //树林
-                            on gc.Id equals woodOfStore.Parent.Parent.OwnerId
-                            where woodOfStore.TemplateId == ProjectConstant.MucaishuTId
+                            join woodOfStore in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.MucaishuTId) //树林
+                            on gc.Id equals woodOfStore.Parent.Parent.OwnerId into l4
+                            from woodOfStoreR in l4.DefaultIfEmpty()
 
-                            join mainRoom in db.Set<GameItem>() //主控室
-                            on gc.Id equals mainRoom.Parent.Parent.OwnerId
-                            where mainRoom.TemplateId == ProjectConstant.MainControlRoomSlotId
+                            join mainRoom in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.MainControlRoomSlotId) //主控室
+                            on gc.Id equals mainRoom.Parent.Parent.OwnerId into l5
+                            from mainRoomR in l5.DefaultIfEmpty()
 
-                            join pvpObject in db.Set<GameItem>() //pvp积分
-                            on gc.Id equals pvpObject.Parent.OwnerId
-                            where pvpObject.TemplateId == ProjectConstant.PvpObjectTId
-                            select new { gc, tuiguan, gold, goldOfStore, wood, woodOfStore, mainRoom, pvpObject }).AsNoTracking();   //基准集合
+                            join pvpObject in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.PvpObjectTId) //pvp积分
+                            on gc.Id equals pvpObject.Parent.OwnerId into l6
+                            from pvpObjectR in l6.DefaultIfEmpty()
+
+                            select new { gc, tuiguanR, goldR, goldOfStoreR, wood, woodOfStoreR, mainRoomR, pvpObjectR }).AsNoTracking();   //基准集合
+                                                                                                                                           //where pvpObjectR.ExtraGuid == 
             if (collBase.Count() != innerIds.Length)
-                throw new ArgumentException("至少一个指定的Id不是有效角色Id。", nameof(ids));
+            {
+                var errColl = innerIds.Except(collBase.Select(c => c.gc.Id).ToArray());
+                throw new ArgumentException($"至少一个指定的Id不是有效角色Id。如:{errColl.First()}", nameof(ids));
+            }
             var mounts = (from gc in db.Set<GameChar>()
                           where innerIds.Contains(gc.Id)
                           join gi in db.Set<GameItem>()
                           on gc.Id equals gi.Parent.OwnerId
-                          where gi.TemplateId == ProjectConstant.ZuojiZuheRongqi && gi.PropertiesString.Contains("for10=")
+                          where gi.ExtraGuid == ProjectConstant.ZuojiZuheRongqi && gi.PropertiesString.Contains("for10=")
                           select new { gc.Id, gi }).ToList();    //展示坐骑
             var logoutTime = (from tmp in db.Set<GameActionRecord>()
                               where innerIds.Contains(tmp.ParentId) && tmp.ActionId == "Logout"
                               group tmp by tmp.ParentId into g
                               select new { g.Key, LastLogoutDatetime = g.Max(c => c.DateTimeUtc) }).AsEnumerable().ToDictionary(c => c.Key, c => c.LastLogoutDatetime); //下线时间
             var result = new List<CharSummary>();
-            foreach (var item in collBase)  //逐一生成结果
+            foreach (var item in collBase.AsEnumerable())  //逐一生成结果
             {
                 var tmp = new CharSummary
                 {
-                    CombatCap = (int)item.tuiguan.ExtraDecimal,
+                    CombatCap = (int)item.tuiguanR?.ExtraDecimal.GetValueOrDefault(),
                     DisplayName = item.gc.DisplayName,
                     Id = item.gc.Id,
                     Level = (int)item.gc.Properties.GetDecimalOrDefault("lv", decimal.Zero),
                     IconIndex = (int)item.gc.Properties.GetDecimalOrDefault("charIcon", decimal.Zero),
-                    Gold = item.gold.Count ?? 0,
-                    GoldOfStore = item.goldOfStore.Count ?? 0,
+                    Gold = item.goldR.Count.GetValueOrDefault(),
+                    GoldOfStore = item.goldOfStoreR.Count.GetValueOrDefault(),
                     Wood = item.wood.Count ?? 0,
-                    WoodOfStore = item.woodOfStore.Count ?? 0,
-                    MainBaseLevel = (int)item.mainRoom.GetPropertyWithFcpOrDefalut(World.PropertyManager.LevelPropertyName),
-                    PvpScores = item.pvpObject.ExtraDecimal ?? 0,
+                    WoodOfStore = item.woodOfStoreR?.Count.GetValueOrDefault() ?? default,
+                    MainBaseLevel = (int)(item.mainRoomR?.GetPropertyWithFcpOrDefalut(World.PropertyManager.LevelPropertyName) ?? 0),
+                    PvpScores = item.pvpObjectR?.ExtraDecimal.GetValueOrDefault() ?? 0,
                 };
                 var mount = mounts.Where(c => c.Id == item.gc.Id).Select(c => c.gi);
                 if (null != mount)
@@ -665,6 +671,8 @@ namespace GuangYuan.GY001.BLL
         public void GetCharIdsForRequestFriend(GetCharIdsForRequestFriendDatas datas)
         {
             using var view = new FriendDataView(World, datas.GameChar, DateTime.UtcNow);
+            //var friend = datas.GameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.SocialRelationshipSlotTId);
+
             IEnumerable<Guid> result;
             if (!string.IsNullOrWhiteSpace(datas.DisplayName))   //若需要按角色昵稱过滤
             {
@@ -680,7 +688,7 @@ namespace GuangYuan.GY001.BLL
                 if (view.HasData && datas.DonotRefresh)  //若不需要刷新数据
                     result = view.LastListIds;
                 else
-                    result = view.RefreshLastList(datas.BodyTIds).Take(5).ToArray();
+                    result = view.RefreshLastList(datas.BodyTIds).Where(c => c != datas.GameChar.Id).Take(5).ToArray();
                 //记录已刷新用户Id
                 if (result.Any())
                 {
@@ -748,7 +756,7 @@ namespace GuangYuan.GY001.BLL
                     ObjectId = gi.Id,
                     OldValue = 0,
                     PropertyName = World.PropertyManager.LevelPropertyName,
-                    TemplateId = gi.TemplateId,
+                    TemplateId = gi.ExtraGuid,
                 };
                 np.Properties.Add("charId", objChar.Id.ToString());
                 lst.Add(np);
@@ -880,7 +888,7 @@ namespace GuangYuan.GY001.BLL
             }
             else //接受
             {
-                var slot = gameChar.AllChildren.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
+                var slot = gameChar.AllChildren.First(c => c.ExtraGuid == SocialConstant.FriendSlotTId);
                 if (World.PropertyManager.GetRemainderStc(slot) <= 0)
                 {
                     VWorld.SetLastErrorMessage("好友位已满。");
@@ -896,7 +904,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     using var dw = DisposeHelper.Create(c => World.CharManager.Unlock(c), otherGc.GameUser);
                     var list = World.CharManager.GetChangeData(otherGc);
-                    var otherSlot = otherGc.AllChildren.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
+                    var otherSlot = otherGc.AllChildren.First(c => c.ExtraGuid == SocialConstant.FriendSlotTId);
                     var np = new ChangeData()
                     {
                         ActionId = 2,
@@ -934,7 +942,7 @@ namespace GuangYuan.GY001.BLL
             var nsr = GetNSrOrAdd(db, gcId, friendId);
             if (sr.IsFriend())    //确定是好友关系
             {
-                var slot = gameChar.GameItems.First(c => c.TemplateId == SocialConstant.FriendSlotTId);
+                var slot = gameChar.GameItems.First(c => c.ExtraGuid == SocialConstant.FriendSlotTId);
                 slot.Count--;
                 sr.SetNeutrally(); sr.SetConfirmed();
             }
@@ -1523,45 +1531,6 @@ namespace GuangYuan.GY001.BLL
 
         }
 
-        /// <summary>
-        /// 获取其他玩家的家园数据。
-        /// </summary>
-        public void GetHomelandData(GetHomelandDataDatas datas)
-        {
-            using var dwUsers = datas.LockAll();
-            if (dwUsers is null)
-                return;
-            var gc = datas.GameChar;
-            var gim = World.ItemManager;
-            var db = datas.Context;
-            var objChar = datas.OtherChar;
-            var mountsBag = objChar.GetZuojiBag();
-            datas.Homeland = datas.OtherChar.GetHomeland();
-            //获取阵容数据
-            var lineupNumbers = datas.OtherChar.GetZuojiBag().Children.Where(c =>
-            {
-                foreach (var item in c.Properties)
-                {
-                    if (item.Key.StartsWith("for") && int.TryParse(item.Key[3..], out var number) && number >= 100000 && number < 200000)
-                        return true;
-                }
-                return false;
-            }); //可能上阵的坐骑集合
-            datas.Mounts.AddRange(lineupNumbers);
-            //增加签约坐骑数据
-            var sr = datas.UserDbContext.Set<GameSocialRelationship>().Where(c => c.Id == datas.GameChar.Id && c.KeyType == (int)SocialKeyTypes.PatWithMounts).AsEnumerable().
-                 FirstOrDefault(c => c.Properties.GetGuidOrDefault("charid") == datas.OtherCharId); //获取签约关系
-            //IEnumerable<GameItem> resultColl;
-            //if (null != sr && !collMounts.Any(c => c.Id == sr.Id2))    //若有签约坐骑且需要加入集合
-            //{
-            //    var mounts = datas.UserDbContext.Set<GameItem>().Find(sr.Id2);
-            //    resultColl = collMounts.Prepend(mounts);
-            //}
-            //else
-            //    resultColl = collMounts;
-            //datas.Mounts.AddRange(resultColl);
-        }
-
         public class GetPvpCharsWorkDatas : ChangeItemsWorkDatasBase
         {
             public GetPvpCharsWorkDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
@@ -1614,13 +1583,17 @@ namespace GuangYuan.GY001.BLL
         public bool ResetPvpObject(GameChar gameChar, DateTime now)
         {
             var pvpObj = gameChar.GetPvpObject();
+            if (pvpObj is null)
+                return false;
             var today = pvpObj.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();
             var todayData = today.GetTodayData(now);    //获取当日数据
             if (!todayData.Any()) //若没有当日数据
             {
-                World.ItemManager.SetLevel(pvpObj, 0);
-                pvpObj.Properties[World.PropertyManager.LevelPropertyName] = 0m;
-                today.ResetTodayData(now);
+                var datas = new GetPvpCharsWorkDatas(World, gameChar)
+                {
+                    Now = now,
+                };
+                GetPvpChars(datas);
                 today.RemoveAll(c => c.DateTime.Date < now.Date);
                 return true;
             }
@@ -1644,9 +1617,9 @@ namespace GuangYuan.GY001.BLL
                 datas.FillErrorFromWorld();
                 return;
             }
-            const string pvpChar = "PvpChar";   //PVP当日数据名的前缀
-            using var todayData = TodayDataLog<Guid>.Create(datas.PvpObject.Properties, pvpChar, datas.Now);    //当日数据的帮助器类
-            if (!todayData.HasData)  //若当日无数据
+            var todayData = datas.PvpObject.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();    //当日数据的帮助器类
+            var hasData = todayData.GetTodayData(datas.Now).Any();
+            if (!hasData)  //若当日无数据
             {
                 if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, 0))   //若无法设置级别
                 {
@@ -1656,13 +1629,13 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             var lv = (int)datas.PvpObject.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);    //级别数据
-            if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel() - 1 && datas.IsRefresh)  //若当日已经不可再刷
+            if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel() && datas.IsRefresh)  //若当日已经不可再刷
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;
                 return;
             }
-            if (datas.IsRefresh || !todayData.HasData) //若强制刷新或需要刷新
+            if (datas.IsRefresh || !hasData) //若强制刷新或需要刷新
             {
                 using var dataBlueprint = new ApplyBlueprintDatas(World, datas.GameChar)
                 {
@@ -1670,28 +1643,26 @@ namespace GuangYuan.GY001.BLL
                 };
                 dataBlueprint.GameItems.Add(datas.PvpObject);
                 World.BlueprintManager.LevelUp(dataBlueprint);
-                datas.ErrorCode = dataBlueprint.ErrorCode;
-                datas.HasError = dataBlueprint.HasError;
-                datas.ErrorMessage = dataBlueprint.ErrorMessage;
+                datas.FillErrorFrom(dataBlueprint);
+
                 if (dataBlueprint.HasError) //若出错
                     return;
                 datas.PropertyChanges.AddRange(dataBlueprint.PropertyChanges);
                 //修改数据
                 //获取列表
-                var ids = RefreshPvpList(datas.GameChar, datas.UserDbContext, todayData.TodayValues);
-                todayData.TodayValues.AddRange(ids);
-                todayData.LastValues.Clear();
-                todayData.LastValues.AddRange(ids);
-                datas.CharIds.AddRange(todayData.LastValues);
+                todayData.ResetLastData(datas.Now);
+                var ids = RefreshPvpList(datas.GameChar, datas.UserDbContext, todayData.GetTodayData(datas.Now));
+                todayData.AddLastDataRange(ids, datas.Now);
+                datas.CharIds.AddRange(todayData.GetLastData(datas.Now));
                 //变化数据
                 datas.PropertyChanges.CopyTo(datas.ChangeItems);
             }
             else //不刷新
             {
-                datas.CharIds.AddRange(todayData.LastValues);
+                datas.CharIds.AddRange(todayData.GetLastData(datas.Now));
             }
             //两种情况都要修改的数据
-            todayData.Save();   //保存当日当次数据
+            //todayData.Save();   //保存当日当次数据
             datas.ChangeItems.AddToChanges(datas.PvpObject);    //pvp数据对象
             World.CharManager.NotifyChange(datas.GameChar.GameUser);    //修改用户数据
         }
@@ -1712,8 +1683,8 @@ namespace GuangYuan.GY001.BLL
 
             IEnumerable<Guid> excludeCharIds = excludes is null ? new Guid[] { gameChar.Id } : excludes.Append(gameChar.Id);   //排除的角色Id集合
 
-            //var pvpObjectQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId).AsNoTracking();    //查询的基础集合
-            var pvpObjectQuery = context.Set<GameItem>().Where(c => c.TemplateId == pvpObjectTId && !excludeCharIds.Contains(c.Parent.OwnerId.Value)).AsNoTracking();    //查询的基础集合
+            //var pvpObjectQuery = context.Set<GameItem>().Where(c => c.ExtraGuid == pvpObjectTId).AsNoTracking();    //查询的基础集合
+            var pvpObjectQuery = context.Set<GameItem>().Where(c => c.ExtraGuid == pvpObjectTId && !excludeCharIds.Contains(c.Parent.OwnerId.Value)).AsNoTracking();    //查询的基础集合
 
             var hColl = (from tmp in pvpObjectQuery
                          where tmp.ExtraDecimal > gcPvpObject.ExtraDecimal + diff
@@ -1794,53 +1765,6 @@ namespace GuangYuan.GY001.BLL
                 _Mounts = null;
             }
             base.Dispose(disposing);
-        }
-    }
-
-    /// <summary>
-    /// <see cref="GameSocialManager.GetHomelandData(GetHomelandDataDatas)"/>使用的工作数据封装类。
-    /// </summary>
-    public class GetHomelandDataDatas : BinaryRelationshipGameContext
-    {
-        public GetHomelandDataDatas([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
-        {
-        }
-
-        public GetHomelandDataDatas([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar, otherGCharId)
-        {
-        }
-
-        public GetHomelandDataDatas([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token, otherGCharId)
-        {
-        }
-
-        private List<GameItem> _Mounts;
-
-        /// <summary>
-        /// 相关坐骑的数据。
-        /// </summary>
-        public List<GameItem> Mounts => _Mounts ??= new List<GameItem>();
-
-        /// <summary>
-        /// 地块信息。
-        /// </summary>
-        public GameItem Homeland { get; set; }
-
-        public DbContext Context { get; set; }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (!IsDisposed)
-            {
-                if (disposing)
-                {
-                    //Context?.DisposeAsync();
-                }
-
-                base.Dispose(disposing);
-            }
-            Homeland = null;
-            _Mounts = null;
         }
     }
 

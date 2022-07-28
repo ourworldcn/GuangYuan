@@ -3,6 +3,7 @@
  */
 using Microsoft.Extensions.ObjectPool;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -103,10 +104,10 @@ namespace System
         /// <typeparam name="Tkey"></typeparam>
         /// <typeparam name="TValue"></typeparam>
         /// <param name="src"></param>
-        /// <param name="dest"></param>
+        /// <param name="dest">追加或覆盖该字典的内容。</param>
         /// <param name="predicate">过滤器，返回false则不会复制，省略或者为null，则不调用过滤器。</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Copy<Tkey, TValue>(IReadOnlyDictionary<Tkey, TValue> src, IDictionary<Tkey, TValue> dest, Func<Tkey, bool> predicate = null)
+        public static void Copy<Tkey, TSrc, TDest>(IReadOnlyDictionary<Tkey, TSrc> src, IDictionary<Tkey, TDest> dest, Func<Tkey, bool> predicate = null) where TSrc : TDest
         {
             if (predicate is null)
                 foreach (var item in src)
@@ -405,6 +406,36 @@ namespace System
 
         }
 
+        #region 字符串暂存池及相关
+
+        /// <summary>
+        /// 字符串暂存池。
+        /// </summary>
+        public static readonly ConcurrentDictionary<string, string> StringInterning = new ConcurrentDictionary<string, string>();
+
+        /// <summary>
+        /// 获取原有引用或新引用。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <remarks>由于使用 Ngen.exe (本机映像生成器) 以便在运行时提前编译程序集时，不会在模块之间暂存字符串。
+        /// 所以，非常依赖于锁定同一个字符串实例的大型应用不宜使用<see cref="string.Intern(string)"/></remarks>
+        /// <returns>如果暂存了 str，则返回系统对其的引用；否则返回对值为 str 的字符串的引用并暂存。</returns>
+        public static string Intern(string str)
+        {
+            return StringInterning.GetOrAdd(str, str);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns>如果 str 在暂存池中，则返回对它的引用；否则返回 null。</returns>
+        public static string IsInterned(string str)
+        {
+            return StringInterning.TryGetValue(str, out var result) ? result : null;
+        }
+
+        #endregion 字符串暂存池及相关
     }
 
     public static class ConcurrentHelper

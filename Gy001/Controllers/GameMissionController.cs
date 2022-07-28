@@ -86,9 +86,8 @@ namespace Gy001.Controllers
                 MissionTId = OwConvert.ToGuid(model.MissionTId),
             };
             World.MissionManager.Complete(datas);
-            result.HasError = datas.HasError;
-            result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.ErrorMessage;
+            result.MissionTId = model.MissionTId;
+            result.FillFrom(datas);
             if (!result.HasError)
             {
                 datas.PropertyChanges.CopyTo(datas.ChangeItems);

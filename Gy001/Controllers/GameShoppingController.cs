@@ -29,9 +29,9 @@ namespace Gy001.Controllers
         [HttpPut]
         public ActionResult<GetAllShoppingTemplatesResultDto> GetAllShoppingTemplates(GetAllShoppingTemplatesParamsDto model)
         {
-             var result = new GetAllShoppingTemplatesResultDto();
+            var result = new GetAllShoppingTemplatesResultDto();
             var coll = World.ShoppingManager.GetAllShoppingTemplates();
-            result.Templates.AddRange(coll.Select(c=>(ShoppingItemDto)c));
+            result.Templates.AddRange(coll.Select(c => (ShoppingItemDto)c));
             return result;
         }
 
@@ -154,6 +154,41 @@ namespace Gy001.Controllers
         }
 
         #endregion 卡池相关
+
+        #region 付费相关
+
+        /// <summary>
+        /// 付费回调。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="isSandbox">"1"表示沙箱；其他表示正式。</param>
+        /// <param name="payType">支付方式：
+        /// "mycard"表示mycard，"google"表示google-play支付，"mol"表示mol支付，"apple"表示苹果支付，“onestore”韩国onestore商店支付，“samsung”三星支付
+        /// </param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<PayCallbackFromT78ReturnDto> PayCallbackFromT78([FromForm] PayCallbackFromT78ParamsDto model, [FromHeader(Name = "X-BNPAY-SANDBOX")] string isSandbox,
+            [FromHeader(Name = "X-BNPAY-PAYTYPE")] string payType)
+        {
+            var result = new PayCallbackFromT78ReturnDto();
+            var svc = HttpContext.RequestServices.GetRequiredService<PublisherT78>();
+            return result;
+        }
+
+        /// <summary>
+        /// 确认来自T78发行商的付费信息。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<ConfirmPayT78ResultDto> ConfirmPayT78(ConfirmPayT78ParamsDto model)
+        {
+            var result = new ConfirmPayT78ResultDto();
+            var svc = HttpContext.RequestServices.GetRequiredService<PublisherT78>();
+            return result;
+        }
+
+        #endregion 付费相关
     }
 
 }

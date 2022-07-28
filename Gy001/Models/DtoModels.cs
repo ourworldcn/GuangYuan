@@ -2,6 +2,7 @@
  * 供Unity使用的SDK文件。
  * 目前使用C# 7.3版本语法。
  */
+
 using Game.Social;
 using GuangYuan.GY001.UserDb;
 using System;
@@ -654,7 +655,6 @@ namespace GY2021001WebApi.Models
     /// <summary>
     /// 游戏物品，道具，金币，积分等等的对象。
     /// </summary>
-    [DataContract]
     public partial class GameItemDto
     {
         public GameItemDto()
@@ -1245,6 +1245,34 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember(Name = nameof(Pwd))]
         public string Pwd { get; set; }
+
+    }
+
+    [DataContract]
+    public class LoginT78ParamsDto
+    {
+        /// <summary>
+        /// 发行商SDK给的的sid。
+        /// </summary>
+        [DataMember]
+        public string Sid { get; set; }
+
+    }
+
+    [DataContract]
+    public class LoginT78ReturnDto: LoginReturnDto
+    {
+        /// <summary>
+        /// T78服务器返回的值完整的放在此处。仅当成功登录时才有。
+        /// </summary>
+        [DataMember]
+        public string ResultString { get; set; }
+
+        /// <summary>
+        /// 指示是否为初创接口。true是初始创建，false不是初始创建。
+        /// </summary>
+        [DataMember]
+        public bool IsCreated { get; set; }
 
     }
 
@@ -2126,7 +2154,7 @@ namespace GY2021001WebApi.Models
     /// 开始战斗的返回数据传输类
     /// </summary>
     [DataContract]
-    public partial class CombatStartReturnDto : ReturnDtoBase
+    public partial class CombatStartReturnDto : ChangesReturnDtoBaseV2
     {
         /// <summary>
         /// 构造函数。
@@ -2232,7 +2260,7 @@ namespace GY2021001WebApi.Models
 
     /// <summary>
     /// 结束战斗的返回数据传输类。
-    /// 变化数据中，角色下弃物槽（TemplateId={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
+    /// 变化数据中，角色下弃物槽（ExtraGuid={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
     /// ChangesItems 仅当结算大关卡时这里才有数据。
     /// </summary>
     [DataContract]
@@ -3184,6 +3212,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class CompleteMissionReturnDto : ChangesAndMailReturnDtoBase
     {
+        /// <summary>
+        /// 要完成任务的模板Id。
+        /// </summary>
+        [DataMember]
+        public string MissionTId { get; set; }
     }
 
     /// <summary>
@@ -3492,6 +3525,42 @@ namespace GY2021001WebApi.Models
     #endregion 管理相关
 
     #region 商城相关
+
+    public class ConfirmPayT78ParamsDto :TokenDtoBase
+    {
+        /// <summary>
+        /// 游戏方的订单ID。
+        /// </summary>
+        public string cpOrderId { get; set; }
+
+        /// <summary>
+        /// 金额。单位:分。
+        /// </summary>
+        public int money { get; set; }
+
+        /// <summary>
+        /// 币种。
+        /// </summary>
+        public string currency { get; set; }
+    }
+
+    public class ConfirmPayT78ResultDto :ReturnDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 付费回调的返回类。
+    /// </summary>
+    [DataContract]
+    public class PayCallbackFromT78ReturnDto
+    {
+        /// <summary>
+        /// 0=成功，表示游戏服务器成功接收了该次充值结果通知,注意是0为成功
+        /// 1=失败，表示游戏服务器无法接收或识别该次充值结果通知，如：签名检验不正确、游戏服务器接收失败
+        /// </summary>
+        [DataMember(Name ="ret")]
+        public int Ret { get; set; }
+    }
 
     public class GetAllShoppingTemplatesParamsDto : TokenDtoBase
     {
@@ -4032,6 +4101,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class AccepteGuildMemberReturnDto : ReturnDtoBase
     {
+        /// <summary>
+        /// 是否接受。true表示接受，false表示拒绝。
+        /// </summary>
+        [DataMember]
+        public bool IsAccept { get; set; }
     }
 
     [DataContract]

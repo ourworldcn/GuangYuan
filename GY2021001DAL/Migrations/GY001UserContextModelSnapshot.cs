@@ -15,63 +15,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.16")
+                .HasAnnotation("ProductVersion", "3.1.26")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("GuangYuan.GY001.UserDb.Combat.GameBooty", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CharId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ParentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("PropertiesString")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ParentId", "CharId");
-
-                    b.ToTable("GameBooty");
-                });
-
-            modelBuilder.Entity("GuangYuan.GY001.UserDb.Combat.WarNewspaper", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<byte[]>("AttackerExInfo")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("AttackerIdString")
-                        .HasColumnType("nvarchar(320)")
-                        .HasMaxLength(320);
-
-                    b.Property<byte[]>("DefenserExInfo")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("DefenserIdString")
-                        .HasColumnType("nvarchar(320)")
-                        .HasMaxLength(320);
-
-                    b.Property<DateTime>("EndUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PropertiesString")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("StartUtc")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WarNewspaper");
-                });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameActionRecord", b =>
                 {
@@ -139,6 +85,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<Guid>("GameUserId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("JsonObjectString")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
@@ -170,6 +119,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("ExtraString")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
+
+                    b.Property<string>("JsonObjectString")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("OwnerId")
                         .HasColumnType("uniqueidentifier");
@@ -209,6 +161,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<DateTime>("CreateUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("JsonObjectString")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
@@ -230,6 +185,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("JsonObjectString")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Kind")
                         .HasColumnType("int");
@@ -256,6 +214,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("JsonObjectString")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("MailId")
                         .HasColumnType("uniqueidentifier");
@@ -326,6 +287,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<DateTime>("CreateUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("JsonObjectString")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("LoginName")
                         .IsRequired()
                         .HasColumnType("nvarchar(64)")
@@ -373,6 +337,9 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
+                    b.Property<string>("JsonObjectString")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
@@ -386,6 +353,48 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .HasFilter("[DisplayName] IS NOT NULL");
 
                     b.ToTable("Guild");
+                });
+
+            modelBuilder.Entity("OW.Game.Store.VirtualThing", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("BinaryArray")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<decimal?>("ExtraDecimal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("ExtraGuid")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ExtraString")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("JsonObjectString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Timestamp")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("ExtraGuid", "ExtraDecimal", "ExtraString")
+                        .HasAnnotation("SqlServer:Include", new[] { "ParentId" });
+
+                    b.HasIndex("ExtraGuid", "ExtraString", "ExtraDecimal")
+                        .HasAnnotation("SqlServer:Include", new[] { "ParentId" });
+
+                    b.ToTable("VirtualThings");
                 });
 
             modelBuilder.Entity("GuangYuan.GY001.UserDb.GameChar", b =>
@@ -420,6 +429,13 @@ namespace GuangYuan.GY001.UserDb.Migrations
                         .HasForeignKey("MailId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OW.Game.Store.VirtualThing", b =>
+                {
+                    b.HasOne("OW.Game.Store.VirtualThing", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId");
                 });
 #pragma warning restore 612, 618
         }

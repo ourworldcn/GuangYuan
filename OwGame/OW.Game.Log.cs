@@ -410,6 +410,7 @@ namespace OW.Game.Log
         /// <summary>
         /// 类型的转换器。
         /// </summary>
+        [JsonIgnore]
         public static TypeConverter Converter
         {
             get
@@ -470,6 +471,21 @@ namespace OW.Game.Log
                 Add(lasts);
             }
             lasts.Params.Add(val);
+        }
+
+        /// <summary>
+        /// 从最后一次的数据中移除一个数据。
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="date"></param>
+        public void RemoveLastData(T data, DateTime date)
+        {
+            var item= this.FirstOrDefault(c => c.DateTime.Date == date.Date && c.Action == LastValuesKeyName);
+            if(null!=item)
+            {
+                var tmp = Converter.ConvertToString(data);
+                item.Params.RemoveAll(c => c == tmp);
+            }
         }
 
         /// <summary>

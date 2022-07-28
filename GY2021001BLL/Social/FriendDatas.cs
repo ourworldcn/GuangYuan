@@ -6,6 +6,7 @@ using System.Text;
 using OW.Game;
 using Game.Social;
 using Microsoft.EntityFrameworkCore;
+using OW.Game.Log;
 
 namespace GuangYuan.GY001.BLL.Social
 {
@@ -150,7 +151,7 @@ namespace GuangYuan.GY001.BLL.Social
                          select g.Key;
             else
                 result = from gi in db.Set<GameItem>()
-                         where gi.TemplateId == slotTId && gi.Id != GameChar.Id  //不能查出自己
+                         where gi.ExtraGuid == slotTId && gi.Id != GameChar.Id  //不能查出自己
                          orderby gi.ExtraString descending
                          let gcId = gi.OwnerId ?? Guid.Empty
                          where /*allows.Any(c => c.Id == gcId) &&*/ !frees.Any(c => c == gcId) && !TodayIds.Contains(gcId) && !notAllows.Contains(gcId)
@@ -158,13 +159,6 @@ namespace GuangYuan.GY001.BLL.Social
             return result;
         }
 
-        //IQueryable cm = EF.CompileQuery((DbContext db, string name) => from tmp in db.Set<GameItem>().Where(c => c.TemplateId == ProjectConstant.FriendSlotTId)
-        //                                                              orderby tmp.ExPropertyString descending
-        //                                                              join gameChar in db.Set<GameChar>()
-        //                                                              on tmp.OwnerId.Value equals gameChar.Id
-        //                                                              where EF.Functions.Like(gameChar.DisplayName, $"%{name}%")
-        //                                                              where /*allows.Any(c => c.Id == gameChar.Id) &&*/ !frees.Any(c => c == gameChar.Id) && !notAllows.Contains(gameChar.Id)
-        //                                                              select tmp.OwnerId.Value);
         public IQueryable<Guid> RefreshLastList(string displayName)
         {
             var db = DbCoutext;
@@ -174,11 +168,11 @@ namespace GuangYuan.GY001.BLL.Social
             var frees = db.Set<GameSocialRelationship>().Where(c => c.PropertiesString.Contains(tmpStr1)).GroupBy(c => c.Id).Where(c => c.Count() >= 20).Select(c => c.Key); //未处理好友申请数量>20
             var slotTId = ProjectConstant.FriendSlotTId;
             IQueryable<Guid> result;
-            result = from tmp in db.Set<GameItem>().Where(c => c.TemplateId == slotTId)
+            result = from tmp in db.Set<GameItem>().Where(c => c.ExtraGuid == slotTId)
                      orderby tmp.ExtraString descending
                      join gameChar in db.Set<GameChar>()
                      on tmp.OwnerId.Value equals gameChar.Id
-                     where EF.Functions.Like(gameChar.DisplayName, $"%{displayName}%")
+                     where EF.Functions.Like(gameChar.DisplayName, $"{displayName}%") && gameChar.Id != GameChar.Id
                      where /*allows.Any(c => c.Id == gameChar.Id) &&*/ !frees.Any(c => c == gameChar.Id) && !notAllows.Contains(gameChar.Id)
                      select tmp.OwnerId.Value;
             return result;
@@ -210,4 +204,14 @@ namespace GuangYuan.GY001.BLL.Social
         }
     }
 
+    public class PersonSocialEntity
+    {
+        public SmallGameLogCollection CharIdsLog { get; set; } = new SmallGameLogCollection();
+
+        public List<Guid> LastDayCharIds { get; set; } = new List<Guid>();
+
+        public DateTime LastDay { get; set; }
+
+        public List<Guid> LastCharIds { get; set; } = new List<Guid>();
+    }
 }

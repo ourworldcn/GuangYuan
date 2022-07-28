@@ -56,16 +56,16 @@ namespace OW.Game.Validation
             GameThingBase result;
             if (ParentTemplateId is null)   //若不限定容器
             {
-                if (TemplateId == thing.TemplateId || TemplateId == Guid.Empty)  //指定本体
+                if (TemplateId == thing.ExtraGuid || TemplateId == Guid.Empty)  //指定本体
                 {
                     result = thing;
                 }
                 else //若是子对象
                 {
                     if (thing is GameChar gc)
-                        result = gc.AllChildren.FirstOrDefault(c => c.TemplateId == TemplateId);
+                        result = gc.AllChildren.FirstOrDefault(c => c.ExtraGuid == TemplateId);
                     else if (thing is GameItem gi)
-                        result = gi.GetAllChildren().FirstOrDefault(c => c.TemplateId == TemplateId);
+                        result = gi.GetAllChildren().FirstOrDefault(c => c.ExtraGuid == TemplateId);
                     else
                         throw new ArgumentException();
                 }
@@ -79,13 +79,13 @@ namespace OW.Game.Validation
                     parent = gi.GetAllChildren();
                 else
                     throw new ArgumentException();
-                if (TemplateId == thing.TemplateId || TemplateId == Guid.Empty)  //指定本体
+                if (TemplateId == thing.ExtraGuid || TemplateId == Guid.Empty)  //指定本体
                 {
                     result = thing;
                 }
                 else //若是子对象
                 {
-                    result = parent.FirstOrDefault(c => c.TemplateId == TemplateId);
+                    result = parent.FirstOrDefault(c => c.ExtraGuid == TemplateId);
                 }
             }
             return result;

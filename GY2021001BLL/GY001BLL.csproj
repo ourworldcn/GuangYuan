@@ -12,12 +12,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.16" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="3.1.16" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.16" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.16" />
+    <Compile Remove="Script\**" />
+    <Compile Remove="Template\**" />
+    <EmbeddedResource Remove="Script\**" />
+    <EmbeddedResource Remove="Template\**" />
+    <None Remove="Script\**" />
+    <None Remove="Template\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="10.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="3.1.26" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.16" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="3.1.16" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.26" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,11 +42,6 @@
     <None Update="代码用清理账号相关数据.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Script\" />
-    <Folder Include="Template\" />
   </ItemGroup>
 
 </Project>

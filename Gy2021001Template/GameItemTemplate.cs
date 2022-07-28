@@ -124,7 +124,7 @@ namespace GuangYuan.GY001.TemplateDb
         /// <param name="propertyName"><inheritdoc/></param>
         /// <param name="result"><inheritdoc/></param>
         /// <returns><inheritdoc/></returns>
-        public override bool TryGetPropertyValue(string propertyName, out object result)
+        public bool TryGetPropertyValue(string propertyName, out object result)
         {
             bool succ;
             switch (propertyName)
@@ -138,7 +138,7 @@ namespace GuangYuan.GY001.TemplateDb
                     succ = true;
                     break;
                 default:
-                    succ = base.TryGetPropertyValue(propertyName, out result);
+                    succ = Properties.TryGetValue(propertyName, out result);
                     break;
             }
             return succ;

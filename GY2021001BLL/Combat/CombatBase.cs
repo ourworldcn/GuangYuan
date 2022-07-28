@@ -24,14 +24,16 @@ namespace GuangYuan.GY001.BLL
             var gc = world.CharManager.GetCharFromId(booty.CharId);
             var hl = gc.GetHomeland();
             GameItem gi = new GameItem();
-            world.EventsManager.GameItemCreated(gi, booty.Properties);
+            var dic = new Dictionary<string, object>();
+            OwHelper.Copy(booty.StringDictionary, dic);
+            world.EventsManager.GameItemCreated(gi, dic);
             var gim = world.ItemManager;
             GameItem parent;
-            var tid = gi.TemplateId;
+            var tid = gi.ExtraGuid;
             if (tid == ProjectConstant.JinbiId)    //若是战利品
             {
                 //{
-                //    var yumiTian = hl.AllChildren.First(c => c.TemplateId == ProjectConstant.YumitianTId);
+                //    var yumiTian = hl.AllChildren.First(c => c.ExtraGuid == ProjectConstant.YumitianTId);
                 //    var fcpCount = yumiTian.Name2FastChangingProperty["Count"];
                 //    fcpCount.GetCurrentValueWithUtc();
                 //    fcpCount.LastValue += booty.Count;
@@ -41,7 +43,7 @@ namespace GuangYuan.GY001.BLL
             else if (tid == ProjectConstant.MucaiId)
             {
                 //{
-                //    var mucaiShu = hl.AllChildren.First(c => c.TemplateId == ProjectConstant.MucaishuTId);
+                //    var mucaiShu = hl.AllChildren.First(c => c.ExtraGuid == ProjectConstant.MucaishuTId);
                 //    var fcpCount = mucaiShu.Name2FastChangingProperty["Count"];
                 //    fcpCount.GetCurrentValueWithUtc();
                 //    fcpCount.LastValue += booty.Count;
@@ -50,15 +52,16 @@ namespace GuangYuan.GY001.BLL
             }
             else if (tid == ProjectConstant.MucaishuTId)
             {
-                parent = gc.GetMainbase().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.MucaishuTId).Parent;
+                parent = gc.GetMainbase()?.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId)?.Parent;
             }
             else if (tid == ProjectConstant.YumitianTId)
             {
-                parent = gc.GetMainbase().Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.YumitianTId).Parent;
+                parent = gc.GetMainbase()?.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.Parent;
             }
             else
                 throw new InvalidOperationException();
-            gim.MoveItem(gi, gi.Count ?? 1, parent, null, changes1);
+            if (parent != null)
+                gim.MoveItem(gi, gi.Count ?? 1, parent, null, changes1);
             if (null != changes)
                 changes1.CopyTo(changes);
         }
@@ -72,7 +75,7 @@ namespace GuangYuan.GY001.BLL
         public static void FillToDictionary(this GameBooty booty, VWorld world, IDictionary<string, object> dic)
         {
             const string prefix = "gTId";
-            dic[$"{prefix}{booty.Properties.GetGuidOrDefault("tid")}"] = booty.Properties.GetDecimalOrDefault("count");
+            dic[$"{prefix}{booty.StringDictionary.GetGuidOrDefault("tid")}"] = booty.StringDictionary.GetDecimalOrDefault("count");
         }
 
     }

@@ -80,10 +80,11 @@ namespace Gy001
                 options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;  //忽略只读属性。
             });
 
+            services.AddAutoMapper(Array.Empty<Assembly>());
             #endregion 配置通用服务
 
             #region 配置Swagger
-            //注册Swagger生成器，定义一个Swagger 文档
+            //注册Swagger生成器，定义一个 Swagger 文档
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
@@ -116,6 +117,8 @@ namespace Gy001
             services.Replace(ServiceDescriptor.Singleton<GameEventsManager>(c => new Gy001GameEventsManager(c, new Gy001GameEventsManagerOptions())));
             services.Replace(ServiceDescriptor.Singleton<GamePropertyChangeManager>(c => new Gy001GamePropertyChangeManager(c, new GamePropertyChangeManagerOptions())));
             #endregion 配置游戏专用服务
+
+            services.AddPublisherT78();  //加入访问冰鸟sdk的服务
         }
 
         private Task ExceptionHandler(HttpContext context)
@@ -165,6 +168,8 @@ namespace Gy001
             {
                 endpoints.MapControllers();
             });
+
+
         }
 
     }

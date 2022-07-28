@@ -2,6 +2,7 @@
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -28,18 +29,19 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public Guid RootCombatId { get; set; }
 
-        private WarNewspaper _RootCombat;
+        private CombatReport _RootCombat;
 
         /// <summary>
         /// 初始战斗对象。
         /// </summary>
-        public WarNewspaper RootCombat
+        public CombatReport RootCombat
         {
             get
             {
                 if (_RootCombat is null)
                 {
-                    _RootCombat = UserDbContext.Set<WarNewspaper>().FirstOrDefault(c => c.Id == RootCombatId);
+                    var thing = UserDbContext.Set<VirtualThing>().FirstOrDefault(c => c.Id == RootCombatId);
+                    _RootCombat = thing?.GetJsonObject<CombatReport>();
                 }
                 return _RootCombat;
             }

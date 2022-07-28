@@ -24,6 +24,13 @@
             <response code="500">用户名或密码错误。</response>
             <response code="503">登录人数过多。请稍后登录。目前按每颗CPU带10000在线计算，未来更具实际数据增减。</response>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AccountController.LoginT78(GY2021001WebApi.Models.LoginT78ParamsDto)">
+            <summary>
+            特定发行商sdk创建或登录用户。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:GY2021001WebApi.Controllers.AccountController.Nop(GY2021001WebApi.Models.NopParamsDto)">
             <summary>
             发送一个空操作以保证闲置下线重新开始计时。
@@ -272,7 +279,7 @@
             <summary>
             给角色强行增加物品。调试用接口，正式版本将删除。
             </summary>
-            <param name="model">要增加的物品对象数组，需要设置Count,TemplateId,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
+            <param name="model">要增加的物品对象数组，需要设置Count,ExtraGuid,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
             <returns></returns>
             <response code="401">令牌错误。</response>
         </member>
@@ -971,25 +978,10 @@
             格式为：主版本号.次要版本号.修正号，修正号仅仅是修复bug等，只要主要和次要版本号一致就是同一个版本。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
-            <summary>
-            开始战斗的返回数据传输类
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.CombatStartReturnDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.TemplateId">
-            <summary>
-            要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
             <summary>
             结束战斗的返回数据传输类。
-            变化数据中，角色下弃物槽（TemplateId={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
+            变化数据中，角色下弃物槽（ExtraGuid={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
             ChangesItems 仅当结算大关卡时这里才有数据。
             </summary>
         </member>
@@ -1644,6 +1636,21 @@
             密码。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.LoginT78ParamsDto.Sid">
+            <summary>
+            发行商SDK给的的sid。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT78ReturnDto.ResultString">
+            <summary>
+            T78服务器返回的值完整的放在此处。仅当成功登录时才有。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT78ReturnDto.IsCreated">
+            <summary>
+            指示是否为初创接口。true是初始创建，false不是初始创建。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.LoginReturnDto">
             <summary>
             登录接口返回类。
@@ -2181,6 +2188,21 @@
         <member name="P:GY2021001WebApi.Models.CombatStartParamsDto.DungeonId">
             <summary>
             关卡Id。第一个小关卡Id或整个大关卡Id。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatStartReturnDto">
+            <summary>
+            开始战斗的返回数据传输类
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatStartReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartReturnDto.TemplateId">
+            <summary>
+            要启动的关卡。返回时可能更改为实际启动的小关卡（若指定了大关卡）。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.CombatEndParamsDto">
@@ -2749,6 +2771,11 @@
             完成任务接口的返回值数据封装类。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CompleteMissionReturnDto.MissionTId">
+            <summary>
+            要完成任务的模板Id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetMissionStateParamsDto">
             <summary>
             获取任务状态接口参数的数据封装类。
@@ -2934,6 +2961,32 @@
         <member name="T:GY2021001WebApi.Models.SetCharExpReturnDto">
             <summary>
             设置角色经验接口使用的返回值传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmPayT78ParamsDto.cpOrderId">
+            <summary>
+            游戏方的订单ID。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmPayT78ParamsDto.money">
+            <summary>
+            金额。单位:分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ConfirmPayT78ParamsDto.currency">
+            <summary>
+            币种。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.PayCallbackFromT78ReturnDto">
+            <summary>
+            付费回调的返回类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.PayCallbackFromT78ReturnDto.Ret">
+            <summary>
+            0=成功，表示游戏服务器成功接收了该次充值结果通知,注意是0为成功
+            1=失败，表示游戏服务器无法接收或识别该次充值结果通知，如：签名检验不正确、游戏服务器接收失败
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.GetAllShoppingTemplatesResultDto.Templates">
@@ -3140,6 +3193,11 @@
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.AccepteGuildMemberParamsDto.IsAccept">
+            <summary>
+            是否接受。true表示接受，false表示拒绝。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.AccepteGuildMemberReturnDto.IsAccept">
             <summary>
             是否接受。true表示接受，false表示拒绝。
             </summary>
@@ -3352,7 +3410,7 @@
             申请加入工会。
             </summary>
             <param name="model"></param>
-            <returns></returns>
+            <returns>错误码1292是工会已满，160=重复申请。</returns>
         </member>
         <member name="M:Gy001.Controllers.GameAllianceController.AccepteGuildMember(GY2021001WebApi.Models.AccepteGuildMemberParamsDto)">
             <summary>
@@ -3477,6 +3535,24 @@
         <member name="M:Gy001.Controllers.GameShoppingController.Lottery(GY2021001WebApi.Models.LotteryParamsDto)">
             <summary>
             抽奖接口。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameShoppingController.PayCallbackFromT78(GuangYuan.GY001.BLL.PayCallbackFromT78ParamsDto,System.String,System.String)">
+            <summary>
+            付费回调。
+            </summary>
+            <param name="model"></param>
+            <param name="isSandbox">"1"表示沙箱；其他表示正式。</param>
+            <param name="payType">支付方式：
+            "mycard"表示mycard，"google"表示google-play支付，"mol"表示mol支付，"apple"表示苹果支付，“onestore”韩国onestore商店支付，“samsung”三星支付
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:Gy001.Controllers.GameShoppingController.ConfirmPayT78(GY2021001WebApi.Models.ConfirmPayT78ParamsDto)">
+            <summary>
+            确认来自T78发行商的付费信息。
             </summary>
             <param name="model"></param>
             <returns></returns>
@@ -3657,17 +3733,17 @@
             
             </summary>
         </member>
-        <member name="T:Gy001.Properties.Resources">
+        <member name="T:Gy001.WebApi.Properties.Resources">
             <summary>
               一个强类型的资源类，用于查找本地化的字符串等。
             </summary>
         </member>
-        <member name="P:Gy001.Properties.Resources.ResourceManager">
+        <member name="P:Gy001.WebApi.Properties.Resources.ResourceManager">
             <summary>
               返回此类使用的缓存的 ResourceManager 实例。
             </summary>
         </member>
-        <member name="P:Gy001.Properties.Resources.Culture">
+        <member name="P:Gy001.WebApi.Properties.Resources.Culture">
             <summary>
               重写当前线程的 CurrentUICulture 属性，对
               使用此强类型资源类的所有资源查找执行重写。

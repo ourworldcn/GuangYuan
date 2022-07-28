@@ -187,6 +187,8 @@ namespace GuangYuan.GY001.BLL
             #endregion IDisposable接口及相关
         }
 
+        public const string FriendRobotLoginName = "A3B4B3F7-8CAD-4B95-9983-4D5DAFDAA5F0";
+
         /// <summary>
         /// 获取一个新的不重复的昵称。
         /// </summary>
@@ -406,6 +408,28 @@ namespace GuangYuan.GY001.BLL
                     adminUser.CurrentChar.CharType |= CharType.SuperAdmin;
                     world.CharManager.NotifyChange(adminUser);
                 }
+            //复位加好友机器人
+            var friendRobotPwd = "9D4C2381-F000-43F2-AB75-1A53718D44C0";
+            var friendRobotCharId = new Guid("{1D860E58-74C9-4442-A3B4-A2406DA9566A}");
+            using (var dwRobot = world.CharManager.LockOrLoad(FriendRobotLoginName, out var robotUser))
+                if (dwRobot is null) //若未建立机器人账号
+                {
+                    robotUser = world.CharManager.CreateNewUserAndLock(FriendRobotLoginName, friendRobotPwd);
+                    try
+                    {
+                        robotUser.CurrentChar.CharType |= CharType.Robot;
+                        world.CharManager.NotifyChange(robotUser);
+                    }
+                    finally
+                    {
+                        world.CharManager.Unlock(robotUser);
+                    }
+                }
+                else
+                {
+                    robotUser.CurrentChar.CharType |= CharType.Robot;
+                    world.CharManager.NotifyChange(robotUser);
+                }
             while (true)
             {
                 foreach (var key in _DirtyUsers.Keys)
@@ -575,7 +599,7 @@ namespace GuangYuan.GY001.BLL
             }
             else //若取指定角色对象
             {
-                var tid2gis = gc.AllChildren.ToLookup(c => c.TemplateId, c => c);
+                var tid2gis = gc.AllChildren.ToLookup(c => c.ExtraGuid, c => c);
                 var coll = tid2gis.Join(datas.Ids, c => c.Key, c => c, (l, r) => l).SelectMany(c => c);
                 datas.GameItems.AddRange(coll);
                 if (datas.Ids.Contains(ProjectConstant.CharTemplateId))   //若取角色对象
@@ -966,6 +990,51 @@ namespace GuangYuan.GY001.BLL
             if (logined)    //若需要通知用户登录
                 World.EventsManager.GameCharLogined(gu.CurrentChar);
             return gu;
+        }
+
+        /// <summary>
+        /// T78发行商登录或创建用户。
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns>登录的用户对象，null出现错误,此时会在VWorld中设置详细错误信息。</returns>
+        public GameUser LoginT78(string sid)
+        {
+            //验证sid有效性
+            var t78 = Service.GetService<PublisherT78>();
+            var dto = t78.Login(sid);
+            if (dto.Ret != "0")
+            {
+                VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                VWorld.SetLastErrorMessage(dto.msg);
+                return null;
+            }
+            using var db = World.CreateNewUserDbContext();
+            var t78Uid = dto.Content?.Data?.UserId;
+            var slot = db.Set<GameItem>().SingleOrDefault(c => c.ExtraGuid == ProjectConstant.T78PublisherSlotTId && c.ExtraString == t78Uid);
+            GameUser result = null;
+            if (slot is null)    //若没有注册用户
+            {
+                string pwd = null;
+                result = QuicklyRegister(ref pwd);
+                slot = new GameItem() { ExtraString = t78Uid };
+                World.EventsManager.GameItemCreated(slot, ProjectConstant.T78PublisherSlotTId);
+                World.ItemManager.ForcedAdd(slot, result.CurrentChar);
+                result.DbContext.Add(slot);
+                result.RuntimeProperties["T78IsCreated"] = true;
+            }
+            else //若已经注册用户
+            {
+                var charId = slot.OwnerId.Value;
+                using var dw = LockOrLoad(charId, out result);  //加载用户
+                if (dw is null)
+                    return null;
+                if (!IsOnline(charId))   //若没有登录
+                    World.EventsManager.GameCharLogined(result.CurrentChar);
+                result.RuntimeProperties["T78IsCreated"] = false;
+            }
+            result.RuntimeProperties["T78LoginResultString"] = dto.ResultString;
+            World.CharManager.NotifyChange(result);
+            return result;
         }
 
         /// <summary>
@@ -1405,7 +1474,7 @@ namespace GuangYuan.GY001.BLL
                     var tt = tp.Key.GetTemplate();
                     if (string.Compare(item.Item1, "tid", true) == 0 && tp.Key.GetTemplate().CatalogNumber == 42 && OwConvert.TryToGuid(item.Item2, out var id))   //若是水晶更改模板
                         tp.Key.ChangeTemplate(World.ItemTemplateManager.GetTemplateFromeId(id));
-                    else if (tp.Key.TemplateId == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "activeStyle", true) == 0)   //若是家园对象的当前激活风格属性
+                    else if (tp.Key.ExtraGuid == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "activeStyle", true) == 0)   //若是家园对象的当前激活风格属性
                     {
                         var str = item.Item2 as string; Debug.Assert(str != null);
                         tp.Key.Properties["activeStyle"] = str;
@@ -1437,7 +1506,7 @@ namespace GuangYuan.GY001.BLL
                             continue;
                         if (!OwConvert.TryToGuid(item.Item2, out var tidfor)) //若无法获取模板号
                             continue;
-                        var hl = datas.GameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ProjectConstant.HomelandSlotId);
+                        var hl = datas.GameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.HomelandSlotId);
                         tp.Key.Properties[item.Item1] = item.Item2;
                         var aciveStyle = hl.Properties.GetStringOrDefault("activeStyle", "1;1");    //激活号
                         if (GetStyleNumber(aciveStyle, out var sn, out var fn) && sn == styleNumber && fn == fanganNumber) //若设置了当前风格的模板号

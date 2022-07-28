@@ -42,4 +42,4 @@ ORDER BY user_scans DESC ,
 
         indexes.index_id;
 
-        select * from master.dbo.sysprocesses where dbid = DB_ID('GY2021001Dev') --取活动链接数量
+select * from master.dbo.sysprocesses where dbid = DB_ID('GY2021001Dev') --取活动链接数量

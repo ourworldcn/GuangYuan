@@ -6,6 +6,7 @@ using OW.Game.Item;
 using OW.Game.PropertyChange;
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -27,6 +28,7 @@ namespace GuangYuan.GY001.BLL
     public class GameShoppingManager : GameManagerBase<GameShoppingManagerOptions>
     {
         private Lazy<Dictionary<string, int[]>> _Genus2GroupNumbers;
+
         /// <summary>
         /// 键是刷新商品的属，值刷新商品的组号。
         /// </summary>
@@ -262,7 +264,7 @@ namespace GuangYuan.GY001.BLL
                 if (list.Count > 0)    //若需要发送邮件
                 {
                     var mail = new GameMail();
-                    World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, list.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+                    World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, list.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).ExtraGuid)));
                 }
             }
             //改写购买记录数据
@@ -793,7 +795,7 @@ namespace GuangYuan.GY001.BLL
                 {
                 };
                 World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id },
-                    SocialConstant.FromSystemId, remainder.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+                    SocialConstant.FromSystemId, remainder.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).ExtraGuid)));
             }
         }
 
@@ -808,6 +810,34 @@ namespace GuangYuan.GY001.BLL
             return template;
         }
         #endregion 卡池相关
+
+        #region 充值相关
+
+        /// <summary>
+        /// 充值接口。
+        /// </summary>
+        /// <param name="data"></param>
+        public void Pay(PayContext data)
+        {
+
+        }
+
+        #endregion 充值相关
+    }
+
+    public class PayContext : ComplexWorkGameContext
+    {
+        public PayContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public PayContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public PayContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
     }
 
     /// <summary>
@@ -1015,7 +1045,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetShoppingSlot(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ShoppingSlotTId);
+            gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ShoppingSlotTId);
 
         #region 卡池相关
 
@@ -1026,7 +1056,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetChoujiangquan(this GameChar gameChar) =>
-            gameChar.GetItemBag()?.Children?.FirstOrDefault(c => c.TemplateId == ProjectConstant.ChoujiangjuanTId);
+            gameChar.GetItemBag()?.Children?.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ChoujiangjuanTId);
 
         /// <summary>
         /// 抽奖相关的名称分隔符。

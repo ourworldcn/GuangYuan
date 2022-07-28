@@ -207,23 +207,6 @@ namespace GuangYuan.GY001.BLL
 
     public static class GameItemTemplateManagerExtensions
     {
-        /// <summary>
-        /// 获取该物品的价格，指钻石计价的价格。
-        /// </summary>
-        /// <param name="templat"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static decimal? GetPriceWithDiamond(this GameItemTemplate templat) =>
-            templat.TryGetPropertyValue("bd", out var sdObj) && OwConvert.TryToDecimal(sdObj, out var sd) ? new decimal?(sd) : null;
-
-        /// <summary>
-        /// 获取这个模板指出的物品是否是免费的（钻石计价）。
-        /// </summary>
-        /// <param name="templat"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsFree(this GameItemTemplate templat) =>
-            !templat.TryGetPropertyValue("bd", out var sdObj) || !OwConvert.TryToDecimal(sdObj, out var sd) || sd <= 0;
 
     }
 

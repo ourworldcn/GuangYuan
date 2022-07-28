@@ -1,6 +1,8 @@
-﻿using Game.Social;
+﻿using AutoMapper;
+using Game.Social;
 using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Script;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
@@ -17,16 +19,20 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
+using OW.Game.Entity.Log;
 using OW.Game.Item;
 using OW.Game.Log;
+using OW.Game.Managers;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
+using OW.Game.Store;
 using OW.Game.Validation;
 using OW.Script;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
@@ -81,6 +87,9 @@ namespace GuangYuan.GY001.BLL
             #region 版本升级
             // TO DO应放入专门的版本管理服务中
             using var db = service.GetRequiredService<GY001UserContext>();
+            var sql = $"{db.Model.FindEntityType(typeof(GameItem)).FindProperty(nameof(GameThingBase.ExtraGuid)).GetColumnName()}";
+            db.Database.ExecuteSqlRaw($"DELETE FROM [dbo].[GameItems] WHERE [TemplateId]='{ProjectConstant.GuildSlotId}' and [ExtraString] is null;" +
+                $"DELETE FROM[dbo].[GameItems] where [TemplateId] = '{ProjectConstant.GuildSlotId}' and[ExtraString] = ''");  //清理无效个人工会槽
             #endregion 版本升级
             return result;
         }
@@ -90,7 +99,8 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         void SetDbConfig()
         {
-            //设置sql server使用内存，避免sql server 贪婪使用内存导致内存过大
+            #region 设置sql server使用内存，避免sql server 贪婪使用内存导致内存过大
+
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
             var sql = @$"EXEC sys.sp_configure N'show advanced options', N'1'  RECONFIGURE WITH OVERRIDE;" +
@@ -104,11 +114,25 @@ namespace GuangYuan.GY001.BLL
             catch (Exception)
             {
             }
+            #endregion
+
             try
             {
+                var tn = db.Model.FindEntityType(typeof(GameItem)).GetTableName();
                 sql = "ALTER TABLE [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ROW);" +
                     "ALTER INDEX IX_GameItems_TemplateId_ExtraString_ExtraDecimal ON [dbo].[GameItems] REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = PAGE)";   //按行压缩
+
+                //TODO 压缩索引
+                var indexNames = new string[] { "IX_VirtualThings_ExtraGuid_ExtraString_ExtraDecimal", "IX_VirtualThings_ExtraGuid_ExtraDecimal_ExtraString" };
+                var alterIndex = "ALTER INDEX {0} ON[dbo].[GameItems] REBUILD PARTITION = ALL WITH(DATA_COMPRESSION = PAGE); ";
+
                 db.Database.ExecuteSqlRaw(sql);
+                tn = db.Model.FindEntityType(typeof(VirtualThing)).GetTableName();
+                if (tn != null)
+                {
+                    sql = $"ALTER TABLE {tn} REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ROW);";
+                    db.Database.ExecuteSqlRaw(sql);
+                }
             }
             catch (Exception err)
             {
@@ -246,21 +270,25 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
+            var dic = new Dictionary<string, object>() { { "ExtraString", "1" }, { "d", DateTime.UtcNow } };
             var sw = Stopwatch.StartNew();
             using var dw = DisposeHelper.Create(c => c.Stop(), sw);
-
             try
             {
-                var ary = new Dictionary<string, MissionState>() { { Guid.NewGuid().ToString(), MissionState.Completion } };
-                var str = JsonSerializer.Serialize(ary);
-                var tmp = JsonSerializer.Deserialize(str, ary.GetType());
+                TodayLogEntity<Guid> sglec = new TodayLogEntity<Guid>();
+                sglec.Last.Params.Add(Guid.NewGuid());
+                sglec.Last.Params.Add(Guid.NewGuid());
+                var str = JsonSerializer.Serialize(sglec);
+                var ver = JsonSerializer.Deserialize<TodayLogEntity<Guid>>(str);
             }
             catch (Exception)
             {
-
             }
-
-
+            finally
+            {
+                sw.Stop();
+                Debug.WriteLine($"测试代码完成时间{sw.Elapsed}");
+            }
         }
 
         /// <summary>
@@ -403,6 +431,8 @@ namespace GuangYuan.GY001.BLL
 
             #region 游戏专用服务
 
+            services.AddSingleton(c => new VirtualThingManager(c, new VirtualThingManagerOptions()));
+
             services.AddHostedService<GameHostedService>();
 
             services.AddSingleton(c => new VWorld(c, new VWorldOptions()
@@ -468,6 +498,9 @@ namespace GuangYuan.GY001.BLL
 
             //加入联盟/工会管理器
             services.TryAddSingleton(c => new GameAllianceManager(c, new GameAllianceManagerOptions() { }));
+
+            //加入转换管理器。
+            services.TryAddSingleton(c => new GameMapperManager(c, new GameMapperManagerOptions()) { });
             #endregion  游戏专用服务
 
             return services;

@@ -170,11 +170,11 @@ namespace OW.Game.Item
         {
             var gim = this;
             var daojuBag = gim.GetOrCreateItem(gameChar, ProjectConstant.DaojuBagSlotId);
-            var slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockAtkSlotId); //锁定槽
+            var slot = gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.LockAtkSlotId); //锁定槽
             gim.MoveItems(slot.Children, daojuBag);
-            slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockMhpSlotId); //锁定槽
+            slot = gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.LockMhpSlotId); //锁定槽
             gim.MoveItems(slot.Children, daojuBag);
-            slot = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.LockQltSlotId); //锁定槽
+            slot = gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.LockQltSlotId); //锁定槽
             gim.MoveItems(slot.Children, daojuBag);
         }
 
@@ -186,7 +186,7 @@ namespace OW.Game.Item
         {
             var mucai = gameChar.GetMucai();
             var stc = mucai.GetTemplate().Properties.GetDecimalOrDefault("stc");
-            var coll = gameChar.GetHomeland().GetAllChildren().Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);
+            var coll = gameChar.GetHomeland().GetAllChildren().Where(c => c.ExtraGuid == ProjectConstant.MucaiStoreTId);
             stc += coll.Sum(c => c.Properties.GetDecimalOrDefault("stc"));
             mucai.Properties["stc"] = stc;
         }
@@ -198,7 +198,7 @@ namespace OW.Game.Item
         /// <returns>如果无效的模板Id，则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameItemTemplate GetTemplate(GameItemBase gameObject) =>
-            gameObject.GetTemplate() as GameItemTemplate ?? ItemTemplateManager.GetTemplateFromeId(gameObject.TemplateId);
+            gameObject.GetTemplate() as GameItemTemplate ?? ItemTemplateManager.GetTemplateFromeId(gameObject.ExtraGuid);
 
         /// <summary>
         /// <inheritdoc/>
@@ -225,7 +225,7 @@ namespace OW.Game.Item
             //TO DO
             if (propName.Equals("tid", StringComparison.InvariantCultureIgnoreCase))
             {
-                gameItem.TemplateId = (Guid)val;
+                gameItem.ExtraGuid = (Guid)val;
             }
             else if (propName.Equals("pid", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -237,7 +237,7 @@ namespace OW.Game.Item
             {
                 var coll = OwHelper.GetAllSubItemsOfTree(new GameItem[] { gameItem }, c => c.Children);
                 var tid = (Guid)val;
-                var parent = coll.FirstOrDefault(c => c.TemplateId == tid); //获取目标容器
+                var parent = coll.FirstOrDefault(c => c.ExtraGuid == tid); //获取目标容器
                 var oldParent = World.EventsManager.GetCurrentContainer(gameItem); //现有容器
                 if (null == oldParent) //若不是属于其他物品
                 {
@@ -329,7 +329,7 @@ namespace OW.Game.Item
         /// <returns>true成功设置，false,找不到指定的模板。</returns>
         public bool MergeProperty(GameItem gameItem)
         {
-            var template = ItemTemplateManager.GetTemplateFromeId(gameItem.TemplateId); //获取模板
+            var template = ItemTemplateManager.GetTemplateFromeId(gameItem.ExtraGuid); //获取模板
             if (null == template)   //若找不到模板
                 return false;
             var seqKeys = template.Properties.Where(c => c.Value is decimal[]).Select(c => (SeqPn: c.Key, IndexPn: ItemTemplateManager.GetIndexPropName(template, c.Key))).ToArray();    //序列属性的名字
@@ -366,12 +366,13 @@ namespace OW.Game.Item
         /// <param name="gameItem">要改变的对象。</param>
         /// <param name="seqPName">序列属性的名字。如果对象中没有索引必须的属性，则视同初始化属性。若无序列属性的值，但找到索引属性的话，则视同此属性值是模板中指定的值。</param>
         /// <param name="newLevel">新等级。</param>
+        /// <returns>true成功设置，false没有找到指定级别的元素，通常是索引超限。</returns>
         /// <exception cref="ArgumentException">无法找到指定模板。</exception>
-        public void SetLevel(GameItem gameItem, string seqPName, int newLevel)
+        public bool SetLevel(GameItem gameItem, string seqPName, int newLevel)
         {
             var template = GetTemplate(gameItem);
             if (null == template)   //若无法找到模板
-                throw new ArgumentException($"无法找到指定模板(TemplateId={gameItem.TemplateId}),对象Id={gameItem.Id}", nameof(gameItem));
+                throw new ArgumentException($"无法找到指定模板(ExtraGuid={gameItem.ExtraGuid}),对象Id={gameItem.Id}", nameof(gameItem));
             if (!template.Properties.TryGetValue(seqPName, out object objSeq) || !(objSeq is decimal[] seq))
                 throw new ArgumentOutOfRangeException($"模板{template.Id}({template.DisplayName})中没有指定 {seqPName} 属性，或其不是序列属性");
             var indexPN = ItemTemplateManager.GetIndexPropName(template, seqPName); //索引属性的名字
@@ -384,13 +385,18 @@ namespace OW.Game.Item
             else
             {
                 var lv = Convert.ToInt32(objLv);   //当前等级
+                if (lv >= seq.Length || lv < 0) //若等级超过限制
+                {
+                    //gameItem.Properties.Remove(seqPName);
+                    return false;
+                }
                 var oov = seq[lv];  //原级别模板值
 
                 var val = Convert.ToDecimal(gameItem.Properties.GetValueOrDefault(seqPName, oov));  //物品的属性值
                 var old = newLevel < seq.Length ? seq[newLevel] : oov;  //可能缺失最后一级数据
                 gameItem.Properties[seqPName] = old + val - oov; //TO DO缺少对快速变化属性的同步
             }
-            return;
+            return true;
         }
 
         /// <summary>
@@ -458,7 +464,7 @@ namespace OW.Game.Item
         {
             var gitm = World.ItemTemplateManager;
             var coll = (from tmp in OwHelper.GetAllSubItemsOfTree(gameItems, c => c.Children)
-                        let tt = gitm.GetTemplateFromeId(tmp.TemplateId)
+                        let tt = gitm.GetTemplateFromeId(tmp.ExtraGuid)
                         select (tmp, tt)).ToArray();
             var gim = World.ItemManager;
             List<Guid> adds = new List<Guid>();
@@ -467,7 +473,7 @@ namespace OW.Game.Item
                 tmp.GenerateIdIfEmpty();
                 tmp.SetTemplate(tt);
                 adds.Clear();
-                tmp.Children.ApartWithWithRepeated(tt.ChildrenTemplateIds, c => c.TemplateId, c => c, null, null, adds);
+                tmp.Children.ApartWithWithRepeated(tt.ChildrenTemplateIds, c => c.ExtraGuid, c => c, null, null, adds);
                 foreach (var addItem in adds)
                 {
                     var newItem = new GameItem();
@@ -629,7 +635,7 @@ namespace OW.Game.Item
                     pchange.MarkAndSet(mounts, key, item.Item3);
                     if (item.Item2 == 10)  //若是家园展示
                     {
-                        var tid = World.ItemManager.GetBody(mounts).TemplateId; //身体的模板Id
+                        var tid = World.ItemManager.GetBody(mounts).ExtraGuid; //身体的模板Id
                         var sr = db.Set<GameSocialRelationship>().Find(gc.Id, tid, SocialConstant.HomelandShowKeyType);
                         if (sr is null)
                         {
@@ -649,7 +655,7 @@ namespace OW.Game.Item
                     pchange.MarkAndRemove(mounts, key);
                     if (item.Item2 == 10)  //若是家园展示
                     {
-                        var tid = World.ItemManager.GetBody(mounts).TemplateId; //身体的模板Id
+                        var tid = World.ItemManager.GetBody(mounts).ExtraGuid; //身体的模板Id
                         var sr = db.Set<GameSocialRelationship>().Find(gc.Id, tid, SocialConstant.HomelandShowKeyType);
                         if (null != sr)
                         {
@@ -705,7 +711,7 @@ namespace OW.Game.Item
             var db = datas.UserDbContext;
             var tuiguanObj = datas.GameChar.GetTuiguanObject();
             var coll = from slot in db.Set<GameItem>()
-                       where slot.TemplateId == ProjectConstant.TuiGuanTId
+                       where slot.ExtraGuid == ProjectConstant.TuiGuanTId
                        join parent in db.Set<GameItem>()
                        on slot.ParentId equals parent.Id
                        join gc in db.Set<GameChar>()
@@ -717,7 +723,7 @@ namespace OW.Game.Item
                         where (tmp.Value > tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal.Value && string.Compare(tmp.DisplayName, gChar.DisplayName) < 0)
                         orderby tmp.Value, tmp.DisplayName
                         select tmp;
-            var rank = coll.Count();
+            var rank = coll1.Count();
             datas.Rank = rank;
             datas.Scope = tuiguanObj.ExtraDecimal.Value;
             var prv = coll.Take(25).ToList();   //排在前面的的紧邻数据
@@ -752,7 +758,7 @@ namespace OW.Game.Item
             using var dwUser = datas.LockUser();
             if (dwUser is null)
                 return;
-            var container = datas.GameChar.AllChildren.ToLookup(c => c.TemplateId);
+            var container = datas.GameChar.AllChildren.ToLookup(c => c.ExtraGuid);
 
             List<GameItem> re = new List<GameItem>();
             var coll = (from tmp in datas.Items
@@ -765,7 +771,7 @@ namespace OW.Game.Item
             {
                 foreach (var item in g)
                 {
-                    if (parent.TemplateId == ProjectConstant.ZuojiBagSlotId && this.IsMounts(item) && this.IsExistsMounts(item, datas.GameChar))   //若向坐骑背包放入重复坐骑
+                    if (parent.ExtraGuid == ProjectConstant.ZuojiBagSlotId && this.IsMounts(item) && this.IsExistsMounts(item, datas.GameChar))   //若向坐骑背包放入重复坐骑
                         MoveItem(item, item.Count ?? 1, datas.GameChar.GetShoulanBag(), re, datas.PropertyChanges);
                     else
                         MoveItem(item, item.Count ?? 1, parent, re, datas.PropertyChanges);
@@ -774,7 +780,7 @@ namespace OW.Game.Item
             if (re.Count > 0)  //若需要发送邮件
             {
                 var mail = new GameMail();
-                World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, re.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+                World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, re.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).ExtraGuid)));
             }
             datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
@@ -794,7 +800,7 @@ namespace OW.Game.Item
             }
             else if (decimal.Zero == gameItem.Count)   //若已经变为0
             {
-                if (!World.PropertyManager.IsStc(gameItem, out _) || gameItem.Parent?.TemplateId != ProjectConstant.CurrencyBagTId)   //若应删除对象
+                if (!World.PropertyManager.IsStc(gameItem, out _) || gameItem.Parent?.ExtraGuid != ProjectConstant.CurrencyBagTId)   //若应删除对象
                 {
                     var pid = gameItem.ParentId ?? gameItem.OwnerId.Value;
                     if (!ForcedDelete(gameItem)) //若无法删除
@@ -826,7 +832,7 @@ namespace OW.Game.Item
         public virtual GameItem GetOrCreateItem(GameThingBase parent, Guid tid, [AllowNull] Action<GameItem> creator = null)
         {
             var child = World.PropertyManager.GetChildrenCollection(parent);
-            var result = child.FirstOrDefault(c => c.TemplateId == tid);
+            var result = child.FirstOrDefault(c => c.ExtraGuid == tid);
             if (result is null) //若需要创建
             {
                 result = new GameItem();
@@ -867,7 +873,7 @@ namespace OW.Game.Item
             else if (gItem.Count.Value > count)//若部分移动
             {
                 var gi = new GameItem();
-                World.EventsManager.GameItemCreated(gi, gItem.TemplateId);
+                World.EventsManager.GameItemCreated(gi, gItem.ExtraGuid);
                 gi.Count = count;
                 ForcedSetCount(gItem, gItem.Count.Value - count, changes);
                 ForcedAdd(gi, container, changes);
@@ -915,7 +921,7 @@ namespace OW.Game.Item
         /// <returns>true可以合并，false不可以合并。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual bool IsAllowMerge(GameItem src, GameItem dest) =>
-            src.TemplateId != dest.TemplateId || !World.PropertyManager.IsStc(src, out _) || !World.PropertyManager.IsStc(dest, out _) ? false : true;
+            src.ExtraGuid != dest.ExtraGuid || !World.PropertyManager.IsStc(src, out _) || !World.PropertyManager.IsStc(dest, out _) ? false : true;
 
         /// <summary>
         /// 计算可移动的数量。不考虑是否是同类型物品。
@@ -1050,16 +1056,16 @@ namespace OW.Game.Item
         }
 
         /// <summary>
-        /// 按属性包内指定的条件寻找指定的物品。
+        /// 按属性包内指定的条件寻找指定的物品。条件不满足，数量不足的不会返回在结果中。
         /// </summary>
         /// <param name="gameChar"></param>
         /// <param name="propertyBag"></param>
         /// <param name="prefix"></param>
-        /// <returns></returns>
+        /// <returns>物品和要求数量的集合。</returns>
         public virtual List<(GameItem, decimal)> Lookup(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null)
         {
             var coll = propertyBag.GetValuesWithoutPrefix(prefix);
-            var tid2gi = gameChar.AllChildren.ToLookup(c => c.TemplateId);
+            var tid2gi = gameChar.AllChildren.ToLookup(c => c.ExtraGuid);
             var result = new List<(GameItem, decimal)>();
             foreach (var item in coll)
             {
@@ -1073,7 +1079,7 @@ namespace OW.Game.Item
                 GameItem gi;
                 if (OwConvert.TryToGuid(ptidVt.Item2, out var ptid))  //若限定容器
                 {
-                    gi = tid2gi[ptid].SelectMany(c => c.Children).FirstOrDefault(c => c.TemplateId == tid);
+                    gi = tid2gi[ptid].SelectMany(c => c.Children).FirstOrDefault(c => c.ExtraGuid == tid);
                 }
                 else //若未限定容器
                 {
@@ -1094,7 +1100,7 @@ namespace OW.Game.Item
         public virtual void DecrementCount(IEnumerable<(GameItem, decimal)> obj, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             foreach (var item in obj)
-                this.ForcedAddCount(item.Item1, -item.Item2, changes);
+                this.ForcedAddCount(item.Item1, -Math.Abs(item.Item2), changes);
         }
 
         /// <summary>
@@ -1104,18 +1110,30 @@ namespace OW.Game.Item
         /// <param name="propertyBag"></param>
         /// <param name="prefix"></param>
         /// <param name="changes"></param>
+        /// <returns>true减少了所有材料，false至少有一种材料缺失。</returns>
         public virtual bool DecrementCount(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null,
             ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var list = Lookup(gameChar, propertyBag, prefix);
-            var count = propertyBag.GetValuesWithoutPrefix(prefix).Count();
+            var cost = propertyBag.GetValuesWithoutPrefix(prefix);
+            var count = cost.Count();
             if (list.Count < count)    //若资源不足
             {
+                VWorld.SetLastErrorMessage($"缺少材料种类不齐。");
                 VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
                 return false;
             }
             if (list.Count > 0)
+            {
+                var errItem = list.FirstOrDefault(c => c.Item1.Count.Value < c.Item2);
+                if (errItem.Item1 != null)    //若至少有一个材料不够
+                {
+                    VWorld.SetLastErrorMessage($"至少有一个材料不够。{errItem.Item1.GetTemplate().DisplayName}需要{errItem.Item2},但只有{errItem.Item1.Count}");
+                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                    return false;
+                }
                 DecrementCount(list, changes);
+            }
             return true;
         }
 
@@ -1127,6 +1145,65 @@ namespace OW.Game.Item
         public virtual bool Verify(IEnumerable<(GameItem, decimal)> obj)
         {
             var first = obj.FirstOrDefault(c => c.Item1 is null || c.Item1.Count.GetValueOrDefault() < c.Item2);
+            return true;
+        }
+
+        /// <summary>
+        /// 获取可移动的数量。
+        /// </summary>
+        /// <param name="gItem"></param>
+        /// <param name="count">试图移动的数量。</param>
+        /// <param name="container"></param>
+        /// <returns>可移动的实际数量（可能小于或等于期望值。）对于不可堆叠物品要么是0要么是1，对于超过规则限制的情况会返回0。</returns>
+        public decimal GetMovableCount(GameItem gItem, decimal count, GameThingBase container)
+        {
+            var propMng = World.PropertyManager;
+            if (propMng.IsStc(gItem, out _)) //若可堆叠
+            {
+                if (count > gItem.Count.Value)
+                    count = gItem.Count.Value;
+                var children = propMng.GetChildrenCollection(container);    //子容器
+                var gi = children.FirstOrDefault(c => c.ExtraGuid == gItem.ExtraGuid);    //已存在的同类物品
+                if (gi is null)  //若不存在同类物品
+                {
+                    var rCap = propMng.GetRemainderCap(container);
+                    if (rCap < 1) //若不可容纳
+                        return decimal.Zero;
+                    var max = propMng.GetStcOrOne(gi);  //最大堆叠数
+                    if (max < count)    //若堆叠过多
+                        return max;
+                }
+                else //若存在同类物品
+                {
+                    var countMove = GetCountOfMergeable(gItem, gi, count);  //实际移动数量
+                    if (countMove < count)    //若部分移动
+                        return countMove;
+                }
+            }
+            else //若不可堆叠
+            {
+                var rCap = propMng.GetRemainderCap(container);  //还可容纳的数量
+                if (rCap < 1) //若不可容纳
+                    return decimal.Zero;
+                count = 1;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// 尽可能将指定物品放入容器(可合并则合并),如果不能完全按要求放入，则不会放入。
+        /// </summary>
+        /// <param name="gItem"></param>
+        /// <param name="count"></param>
+        /// <param name="container"></param>
+        /// <param name="changes"></param>
+        /// <returns>true成功移入，false没有移入（规则不允许）。</returns>
+        public virtual bool MoveItemWithoutRemainder(GameItem gItem, decimal count, GameThingBase container, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            var countFact = GetMovableCount(gItem, count, container);
+            if (countFact < count)
+                return false;
+            ForcedMove(gItem, count, container, changes);
             return true;
         }
 
@@ -1147,7 +1224,7 @@ namespace OW.Game.Item
                 if (count > gItem.Count.Value)
                     throw new ArgumentOutOfRangeException(nameof(count), "必须小于或等于物品的实际数量。");
                 var children = propMng.GetChildrenCollection(container);    //子容器
-                var gi = children.FirstOrDefault(c => c.TemplateId == gItem.TemplateId);    //已存在的同类物品
+                var gi = children.FirstOrDefault(c => c.ExtraGuid == gItem.ExtraGuid);    //已存在的同类物品
                 if (gi is null)  //若不存在同类物品
                 {
                     var rCap = propMng.GetRemainderCap(container);
@@ -1235,7 +1312,7 @@ namespace OW.Game.Item
                 else
                 {
                     OwHelper.SafeCopy(bpDatas.Remainder, remainder);
-                    OwHelper.SafeCopy(bpDatas.Changes.Select(c => c.Clone() as GamePropertyChangeItem<object>), changes);
+                    OwHelper.SafeCopy(bpDatas.PropertyChanges.Select(c => c.Clone() as GamePropertyChangeItem<object>), changes);
                     result = true;
                 }
             }
@@ -1455,7 +1532,7 @@ namespace OW.Game.Item
 
         public ActiveStyleDatas([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
-            
+
         }
 
         /// <summary>
@@ -1528,7 +1605,7 @@ namespace OW.Game.Item
             writer.Write(gameItem.Id);
             writer.Write(gameItem.OwnerId);
             writer.Write(gameItem.ParentId);
-            writer.Write(gameItem.TemplateId);
+            writer.Write(gameItem.ExtraGuid);
             writer.Write(gameItem.Children.Count);
             foreach (var item in gameItem.Children)
             {
@@ -1567,7 +1644,7 @@ namespace OW.Game.Item
             gameItem.Id = reader.ReadGuid();
             gameItem.OwnerId = reader.ReadNullableGuid();
             gameItem.ParentId = reader.ReadNullableGuid();
-            gameItem.TemplateId = reader.ReadGuid();
+            gameItem.ExtraGuid = reader.ReadGuid();
             var count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
             {

@@ -1,5 +1,7 @@
-﻿using Game.Social;
+﻿using AutoMapper;
+using Game.Social;
 using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
@@ -8,8 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OW.Game;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -48,7 +54,7 @@ namespace GY2021001WebApi.Controllers
                 };
                 if (null != gu)    //若成功注册
                 {
-                    //TODO:发送欢迎邮件 
+                    //发送欢迎邮件 ，已被停止该功能
                     var mail = new GameMail()
                     {
                         Subject = "Welcome",
@@ -61,8 +67,8 @@ namespace GY2021001WebApi.Controllers
                     GameItem gi = new GameItem();
                     gcm.World.EventsManager.GameItemCreated(gi, ProjectConstant.ZuanshiId);
                     gi.Count = 500;
-                    gcm.World.SocialManager.SendMail(mail, new Guid[] { gu.CurrentChar.Id }, SocialConstant.FromSystemId,
-                        new (GameItem, Guid)[] { (gi, ProjectConstant.CurrencyBagTId) });
+                    //gcm.World.SocialManager.SendMail(mail, new Guid[] { gu.CurrentChar.Id }, SocialConstant.FromSystemId,
+                    //    new (GameItem, Guid)[] { (gi, ProjectConstant.CurrencyBagTId) });
                 }
                 return result;
             }
@@ -105,6 +111,37 @@ namespace GY2021001WebApi.Controllers
         }
 
         /// <summary>
+        /// 特定发行商sdk创建或登录用户。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<LoginT78ReturnDto> LoginT78(LoginT78ParamsDto model)
+        {
+            var gm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
+            if (gm.Id2OnlineChar.Count > 10000 * Environment.ProcessorCount)
+                return StatusCode((int)HttpStatusCode.ServiceUnavailable, "登录人数过多，请稍后登录");
+            var gu = gm.LoginT78(model.Sid);
+
+            var worldServiceHost = $"{Request.Scheme}://{Request.Host}";
+            var chartServiceHost = $"{Request.Scheme}://{Request.Host}";
+            var result = new LoginT78ReturnDto()
+            {
+                WorldServiceHost = worldServiceHost,
+                ChartServiceHost = chartServiceHost,
+            };
+            if (null != gu)
+            {
+                result.Token = gu.CurrentToken.ToBase64String();
+                using var dwUsers = gm.LockAndReturnDisposer(gu);
+                result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
+                result.ResultString = gu.RuntimeProperties.GetStringOrDefault("T78LoginResultString");
+                result.IsCreated = gu.RuntimeProperties.GetBooleanOrDefaut("T78IsCreated");
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 发送一个空操作以保证闲置下线重新开始计时。
         /// </summary>
         /// <param name="model">令牌。</param>
@@ -139,6 +176,13 @@ namespace GY2021001WebApi.Controllers
         [HttpGet]
         public ActionResult<LoginReturnDto> QuicklyRegisterAndLogin()
         {
+#if DEBUG
+            using var db = HttpContext.RequestServices.GetRequiredService<VWorld>().CreateNewUserDbContext();
+            GameItem gi = db.Set<GameItem>().First(c => c.Children.Count > 0);
+            var mapper = HttpContext.RequestServices.GetRequiredService<IMapper>();
+            var tmp = mapper.Map<GameItemDto>(gi);
+            //TypeDescriptor.GetConverter(typeof(GameItemDto)).ConvertFrom(new GameMapperTypeDescriptorContext(dto), CultureInfo.InvariantCulture, gi);
+#endif //DEBUG
             try
             {
                 var services = HttpContext.RequestServices;

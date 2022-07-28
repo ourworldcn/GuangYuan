@@ -48,7 +48,7 @@ namespace Gy001.Controllers
                 var guild = World.AllianceManager.GetGuild(datas.Id);
                 result.Guild = guild;
                 GameGuildDto.FillMembers(guild, result.Guild, World);
-                result.Changes.AddRange(datas.Changes.Select(c => (GamePropertyChangeItemDto)c));
+                result.Changes.AddRange(datas.PropertyChanges.Select(c => (GamePropertyChangeItemDto)c));
             }
             return result;
         }
@@ -141,7 +141,7 @@ namespace Gy001.Controllers
                 var coll = (from slot in db.Set<GameItem>()
                             join guild in db.Set<GameGuild>()
                             on slot.ExtraString equals guild.Id.ToString()
-                            where slot.TemplateId == ProjectConstant.GuildSlotId && slot.ExtraDecimal >= 10 //工会成员
+                            where slot.ExtraGuid == ProjectConstant.GuildSlotId && slot.ExtraDecimal >= 10 //工会成员
                             group guild by guild.Id into g
                             select new { GuildId = g.Key, Count = g.Count() }).ToDictionary(c => c.GuildId, c => c.Count);
                 result.Guilds.AddRange(World.AllianceManager.Id2Guild.Values.Where(c => coll.ContainsKey(c.Id) && c.Properties.GetDecimalOrDefault("maxMemberCount") > coll[c.Id]).Take(model.Top).Select(c =>
@@ -171,7 +171,7 @@ namespace Gy001.Controllers
         /// 申请加入工会。
         /// </summary>
         /// <param name="model"></param>
-        /// <returns></returns>
+        /// <returns>错误码1292是工会已满，160=重复申请。</returns>
         [HttpPost]
         public ActionResult<RequestJoinGuildReturnDto> RequestJoinGuild(RequestJoinGuildParamsDto model)
         {
@@ -195,7 +195,7 @@ namespace Gy001.Controllers
             using var datas = new AcceptJoinContext(World, model.Token) { IsAccept = model.IsAccept, };
             datas.CharIds.AddRange(model.CharIds.Select(c => OwConvert.ToGuid(c)));
             World.AllianceManager.AcceptJoin(datas);
-            var result = new AccepteGuildMemberReturnDto();
+            var result = new AccepteGuildMemberReturnDto() { IsAccept = model.IsAccept };
             result.FillFrom(datas);
             return result;
         }

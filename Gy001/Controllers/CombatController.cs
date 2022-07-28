@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Linq;
 
@@ -41,7 +42,14 @@ namespace GY2021001WebApi.Controllers
                 Template = World.ItemTemplateManager.GetTemplateFromeId(OwConvert.ToGuid(model.DungeonId)),
             };
             cbm.StartCombat(data);
-            return (CombatStartReturnDto)data;
+            var result = new CombatStartReturnDto();
+            result.FillFrom(data);
+            if (!result.HasError)
+            {
+                result.TemplateId = data.Template?.Id.ToBase64String();
+                result.Changes.AddRange(data.PropertyChanges.Select(c => (GamePropertyChangeItemDto)c));
+            }
+            return result;
         }
 
         /// <summary>
@@ -131,10 +139,11 @@ namespace GY2021001WebApi.Controllers
             result.DebugMessage = datas.ErrorMessage;
             if (!datas.HasError)    //若成功返回
             {
-                var view = new WarNewspaperView(datas.CombatObject, World.Service);
-                result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => (GameItemDto)c));
-                result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => (GameItemDto)c));
-                result.Booty.AddRange(datas.UserDbContext.Set<GameBooty>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Id).AsEnumerable().Select(c => (GameBootyDto)c));
+                var view = datas.CombatObject;
+                result.AttackerMounts.AddRange(view.GetAttackerMounts(HttpContext.RequestServices).Select(c => (GameItemDto)c));
+                result.DefenserMounts.AddRange(view.GetDefenserMounts(HttpContext.RequestServices).Select(c => (GameItemDto)c));
+                result.Booty.AddRange(datas.UserDbContext.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Thing.Id)
+                    .AsEnumerable().Select(c => (GameBootyDto)c.GetJsonObject<GameBooty>()));
                 result.CombatObject = datas.CombatObject;
             }
             return result;
