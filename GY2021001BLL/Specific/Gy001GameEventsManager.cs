@@ -415,7 +415,7 @@ namespace OW.Game
         public override void GameItemCreated([NotNull] GameItem gameItem, [NotNull] IReadOnlyDictionary<string, object> propertyBag)
         {
             base.GameItemCreated(gameItem, propertyBag);
-            if (gameItem.ExtraGuid == ProjectConstant.ZuojiZuheRongqi)   //若是生物且可能有相应的初始化参数
+            if (gameItem.ExtraGuid == ProjectConstant.ZuojiZuheRongqi || gameItem.ExtraGuid == ProjectConstant.HomelandPatCard)   //若是生物且可能有相应的初始化参数
             {
                 var gitm = World.ItemTemplateManager;
 

@@ -195,7 +195,7 @@ namespace Gy001.Controllers
             using var datas = new AcceptJoinContext(World, model.Token) { IsAccept = model.IsAccept, };
             datas.CharIds.AddRange(model.CharIds.Select(c => OwConvert.ToGuid(c)));
             World.AllianceManager.AcceptJoin(datas);
-            var result = new AccepteGuildMemberReturnDto();
+            var result = new AccepteGuildMemberReturnDto() { IsAccept = model.IsAccept };
             result.FillFrom(datas);
             return result;
         }

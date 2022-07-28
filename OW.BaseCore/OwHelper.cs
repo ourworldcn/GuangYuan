@@ -3,6 +3,7 @@
  */
 using Microsoft.Extensions.ObjectPool;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -405,6 +406,36 @@ namespace System
 
         }
 
+        #region 字符串暂存池及相关
+
+        /// <summary>
+        /// 字符串暂存池。
+        /// </summary>
+        public static readonly ConcurrentDictionary<string, string> StringInterning = new ConcurrentDictionary<string, string>();
+
+        /// <summary>
+        /// 获取原有引用或新引用。
+        /// </summary>
+        /// <param name="str"></param>
+        /// <remarks>由于使用 Ngen.exe (本机映像生成器) 以便在运行时提前编译程序集时，不会在模块之间暂存字符串。
+        /// 所以，非常依赖于锁定同一个字符串实例的大型应用不宜使用<see cref="string.Intern(string)"/></remarks>
+        /// <returns>如果暂存了 str，则返回系统对其的引用；否则返回对值为 str 的字符串的引用并暂存。</returns>
+        public static string Intern(string str)
+        {
+            return StringInterning.GetOrAdd(str, str);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns>如果 str 在暂存池中，则返回对它的引用；否则返回 null。</returns>
+        public static string IsInterned(string str)
+        {
+            return StringInterning.TryGetValue(str, out var result) ? result : null;
+        }
+
+        #endregion 字符串暂存池及相关
     }
 
     public static class ConcurrentHelper

@@ -5,6 +5,7 @@
     <Description>游戏核心逻辑封装</Description>
     <RootNamespace>OW.Game</RootNamespace>
     <AssemblyName>OwGameCore</AssemblyName>
+    <PackageReleaseNotes>封装特定于游戏领域模型的基础件。</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

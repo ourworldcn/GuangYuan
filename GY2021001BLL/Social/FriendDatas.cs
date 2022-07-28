@@ -6,6 +6,7 @@ using System.Text;
 using OW.Game;
 using Game.Social;
 using Microsoft.EntityFrameworkCore;
+using OW.Game.Log;
 
 namespace GuangYuan.GY001.BLL.Social
 {
@@ -203,4 +204,14 @@ namespace GuangYuan.GY001.BLL.Social
         }
     }
 
+    public class PersonSocialEntity
+    {
+        public SmallGameLogCollection CharIdsLog { get; set; } = new SmallGameLogCollection();
+
+        public List<Guid> LastDayCharIds { get; set; } = new List<Guid>();
+
+        public DateTime LastDay { get; set; }
+
+        public List<Guid> LastCharIds { get; set; } = new List<Guid>();
+    }
 }

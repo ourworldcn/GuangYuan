@@ -19,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
+using OW.Game.Entity.Log;
 using OW.Game.Item;
 using OW.Game.Log;
 using OW.Game.Managers;
@@ -269,17 +270,16 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
-            var dic = new Dictionary<string, object>() { { "ExtraString","1"},{ "d",DateTime.UtcNow} };
+            var dic = new Dictionary<string, object>() { { "ExtraString", "1" }, { "d", DateTime.UtcNow } };
             var sw = Stopwatch.StartNew();
             using var dw = DisposeHelper.Create(c => c.Stop(), sw);
             try
             {
-                var tmpColl = from gc in db.Set<GameChar>()
-                              join tuiguan in db.Set<GameItem>().Where(c=>c.ExtraGuid== ProjectConstant.PvpObjectTId)   //推关战力对象
-                              on gc.Id equals tuiguan.Parent.OwnerId into lj
-                              from all in lj.DefaultIfEmpty()
-                              select new { gc.DisplayName, all.BinaryArray };
-                var ary = tmpColl.ToArray();
+                TodayLogEntity<Guid> sglec = new TodayLogEntity<Guid>();
+                sglec.Last.Params.Add(Guid.NewGuid());
+                sglec.Last.Params.Add(Guid.NewGuid());
+                var str = JsonSerializer.Serialize(sglec);
+                var ver = JsonSerializer.Deserialize<TodayLogEntity<Guid>>(str);
             }
             catch (Exception)
             {
@@ -431,7 +431,7 @@ namespace GuangYuan.GY001.BLL
 
             #region 游戏专用服务
 
-            services.AddSingleton(c=>new VirtualThingManager(c,new VirtualThingManagerOptions()));
+            services.AddSingleton(c => new VirtualThingManager(c, new VirtualThingManagerOptions()));
 
             services.AddHostedService<GameHostedService>();
 

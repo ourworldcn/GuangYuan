@@ -3197,6 +3197,11 @@
             是否接受。true表示接受，false表示拒绝。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.AccepteGuildMemberReturnDto.IsAccept">
+            <summary>
+            是否接受。true表示接受，false表示拒绝。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.RequestJoinGuildParamsDto.GuildId">
             <summary>
             申请加入的工会Id。

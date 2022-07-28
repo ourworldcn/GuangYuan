@@ -207,6 +207,12 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid FriendSlotTId = new Guid("7396db31-1d02-43d3-af05-c14f4ca2a5fc");
 
         /// <summary>
+        /// 个人关系槽的模板Id。
+        /// ExtraString是对方的角色Id，ExtraDecimal是关系值在[-10,10]区间，>=6就认为是好友，<=-6就认为是黑名单，理论上双方看对方的关系可以不一致，但目前是一致的。
+        /// </summary>
+        public static readonly Guid SocialRelationshipSlotTId = new Guid("{87346B90-66B7-4218-BC85-CED72AC7891C}");
+
+        /// <summary>
         /// 邮件槽的模板Id。
         /// </summary>
         public static readonly Guid MailSlotTId = new Guid("{0C741F97-12EC-4463-85B0-C1782656E853}");
