@@ -121,20 +121,20 @@ namespace OW.Game
         public override GameThingBase GetDefaultContainer(GameItem gameItem, GameChar gChar)
         {
             var result = base.GetDefaultContainer(gameItem, gChar);
-            if (null != result && result.TemplateId != ProjectConstant.ZuojiBagSlotId)  //若有指定容器且不是坐骑槽
+            if (null != result && result.ExtraGuid != ProjectConstant.ZuojiBagSlotId)  //若有指定容器且不是坐骑槽
                 return result;
-            else if (null != result || gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi)    //若有默认容器且是坐骑槽
+            else if (null != result || gameItem.ExtraGuid == ProjectConstant.ZuojiZuheRongqi)    //若有默认容器且是坐骑槽
             {
                 result = World.ItemManager.IsExistsMounts(gameItem, gChar) ? gChar.GetShoulanBag() : gChar.GetZuojiBag();
                 return result;
             }
             else if (null != result)    //若已经有指定的默认容器
                 return result;
-            var template = World.ItemTemplateManager.GetTemplateFromeId(gameItem.TemplateId);
+            var template = World.ItemTemplateManager.GetTemplateFromeId(gameItem.ExtraGuid);
             switch (template.CatalogNumber)
             {
                 case 0:
-                    if (gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi) //若是坐骑/野兽
+                    if (gameItem.ExtraGuid == ProjectConstant.ZuojiZuheRongqi) //若是坐骑/野兽
                     {
                         result = World.ItemManager.IsExistsMounts(gameItem, gChar) ? gChar.GetShoulanBag() : gChar.GetZuojiBag();
                     }
@@ -151,7 +151,7 @@ namespace OW.Game
                     result = gChar.GetItemBag();
                     break;
                 case 26:    //时装
-                    result = gChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShizhuangBagSlotId);
+                    result = gChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShizhuangBagSlotId);
                     break;
                 case 40:    //炮塔
                 case 41:    //陷阱
@@ -183,7 +183,7 @@ namespace OW.Game
         /// <returns></returns>
         public override bool IsAllowZero(GameItem gItem)
         {
-            if (World.PropertyManager.IsStc(gItem, out _) && gItem.Parent != null && gItem.Parent.TemplateId == ProjectConstant.CurrencyBagTId)  //若是货币
+            if (World.PropertyManager.IsStc(gItem, out _) && gItem.Parent != null && gItem.Parent.ExtraGuid == ProjectConstant.CurrencyBagTId)  //若是货币
                 return true;
             return base.IsAllowZero(gItem);
         }
@@ -193,13 +193,13 @@ namespace OW.Game
         public override void Clone(GameChar src, GameChar dest)
         {
             base.Clone(src, dest);
-            var bag = dest.GetHomeland().Children.First(c => c.TemplateId == ProjectConstant.HomelandStyleBagTId);   //方案背包
+            var bag = dest.GetHomeland().Children.First(c => c.ExtraGuid == ProjectConstant.HomelandStyleBagTId);   //方案背包
         }
 
         public override void OnDynamicPropertyChanged(DynamicPropertyChangedCollection args)
         {
             base.OnDynamicPropertyChanged(args);
-            var mrs = args.Where(c => c.Thing.TemplateId == ProjectConstant.MainControlRoomSlotId && c.Thing is GameItem); //主控室
+            var mrs = args.Where(c => c.Thing.ExtraGuid == ProjectConstant.MainControlRoomSlotId && c.Thing is GameItem); //主控室
             foreach (var item in mrs)
             {
                 var gi = item.Thing as GameItem;
@@ -350,11 +350,11 @@ namespace OW.Game
                 gameChar.DisplayName = World.CharManager.GetNewDisplayName(gameChar.GameUser);
             }
             //修正木材存贮最大量
-            //var mucai = gameChar.GameItems.First(c => c.TemplateId == ProjectConstant.MucaiId);
+            //var mucai = gameChar.GameItems.First(c => c.ExtraGuid == ProjectConstant.MucaiId);
             //var stcMucai = mucai.GetStc();
             //if (stcMucai < decimal.MaxValue)
             //{
-            //    var mucaiStore = gameChar.GetHomeland().Children.Where(c => c.TemplateId == ProjectConstant.MucaiStoreTId);
+            //    var mucaiStore = gameChar.GetHomeland().Children.Where(c => c.ExtraGuid == ProjectConstant.MucaiStoreTId);
             //    var stcs = mucaiStore.Select(c => c.GetStc());
             //    if (stcs.Any(c => c == decimal.MaxValue))   //若有任何仓库是最大堆叠
             //        mucai.SetPropertyValue(ProjectConstant.StackUpperLimit, -1);
@@ -380,7 +380,7 @@ namespace OW.Game
                 GameSocialRelationship gsr = new GameSocialRelationship()
                 {
                     Id = gameChar.Id,
-                    Id2 = gim.GetBody(showMount).TemplateId,
+                    Id2 = gim.GetBody(showMount).ExtraGuid,
                     KeyType = SocialConstant.HomelandShowKeyType,
                 };
                 db.Add(gsr);
@@ -415,7 +415,7 @@ namespace OW.Game
         public override void GameItemCreated([NotNull] GameItem gameItem, [NotNull] IReadOnlyDictionary<string, object> propertyBag)
         {
             base.GameItemCreated(gameItem, propertyBag);
-            if (gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi)   //若是生物且可能有相应的初始化参数
+            if (gameItem.ExtraGuid == ProjectConstant.ZuojiZuheRongqi || gameItem.ExtraGuid == ProjectConstant.HomelandPatCard)   //若是生物且可能有相应的初始化参数
             {
                 var gitm = World.ItemTemplateManager;
 
@@ -531,7 +531,7 @@ namespace OW.Game
             base.GameCharLoaded(gameChar);
             //清除锁定属性槽内物品，放回道具背包中
             var gim = World.ItemManager;
-            var daojuBag = gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId); //道具背包
+            var daojuBag = gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.DaojuBagSlotId); //道具背包
 
             gim.ResetSlot(gameChar);
             //挂接升级回调

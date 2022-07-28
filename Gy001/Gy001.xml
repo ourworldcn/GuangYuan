@@ -279,7 +279,7 @@
             <summary>
             给角色强行增加物品。调试用接口，正式版本将删除。
             </summary>
-            <param name="model">要增加的物品对象数组，需要设置Count,TemplateId,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
+            <param name="model">要增加的物品对象数组，需要设置Count,ExtraGuid,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
             <returns></returns>
             <response code="401">令牌错误。</response>
         </member>
@@ -981,7 +981,7 @@
         <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
             <summary>
             结束战斗的返回数据传输类。
-            变化数据中，角色下弃物槽（TemplateId={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
+            变化数据中，角色下弃物槽（ExtraGuid={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
             ChangesItems 仅当结算大关卡时这里才有数据。
             </summary>
         </member>
@@ -2771,6 +2771,11 @@
             完成任务接口的返回值数据封装类。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CompleteMissionReturnDto.MissionTId">
+            <summary>
+            要完成任务的模板Id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.GetMissionStateParamsDto">
             <summary>
             获取任务状态接口参数的数据封装类。
@@ -3192,6 +3197,11 @@
             是否接受。true表示接受，false表示拒绝。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.AccepteGuildMemberReturnDto.IsAccept">
+            <summary>
+            是否接受。true表示接受，false表示拒绝。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.RequestJoinGuildParamsDto.GuildId">
             <summary>
             申请加入的工会Id。
@@ -3400,7 +3410,7 @@
             申请加入工会。
             </summary>
             <param name="model"></param>
-            <returns></returns>
+            <returns>错误码1292是工会已满，160=重复申请。</returns>
         </member>
         <member name="M:Gy001.Controllers.GameAllianceController.AccepteGuildMember(GY2021001WebApi.Models.AccepteGuildMemberParamsDto)">
             <summary>

@@ -54,9 +54,9 @@ namespace GuangYuan.GY001.BLL
         /// <returns>找到的第一个对象，null没有找到，msg给出提示信息。</returns>
         public static GameItem FindFirstOrDefault(this GameItemManager manager, IEnumerable<GameItem> parent, Guid templateId, out string msg)
         {
-            var result = parent.FirstOrDefault(c => c.TemplateId == templateId);
+            var result = parent.FirstOrDefault(c => c.ExtraGuid == templateId);
             if (result is null)
-                msg = $"找不到指定模板Id的物品，TemplateId={templateId}";
+                msg = $"找不到指定模板Id的物品，ExtraGuid={templateId}";
             else
                 msg = null;
             return result;
@@ -119,7 +119,7 @@ namespace GuangYuan.GY001.BLL
         {
             if (source.Id != Guid.Empty)
                 dest.Id = source.Id;
-            dest.TemplateId = source.TemplateId;
+            dest.TemplateId = source.ExtraGuid;
             dest.Count = source.Count;
             foreach (var item in source.Properties)
                 dest.Properties[item.Key] = item.Value;
@@ -135,7 +135,7 @@ namespace GuangYuan.GY001.BLL
         {
             if (source.Id != Guid.Empty)
                 dest.Id = source.Id;
-            dest.TemplateId = source.TemplateId;
+            dest.ExtraGuid = source.TemplateId;
             dest.Count = source.Count;
             foreach (var item in source.Properties)
                 dest.Properties[item.Key] = item.Value;
@@ -149,7 +149,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <returns></returns>
         public static GameItem GetFuhuaSlot(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.FuhuaSlotTId);
+            gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.FuhuaSlotTId);
 
         /// <summary>
         /// 获取道具背包。
@@ -157,7 +157,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <returns></returns>
         public static GameItem GetItemBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.DaojuBagSlotId);
+            gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.DaojuBagSlotId);
 
         /// <summary>
         /// 获取时装背包。
@@ -165,7 +165,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <returns></returns>
         public static GameItem GetShizhuangBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShizhuangBagSlotId);
+            gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShizhuangBagSlotId);
 
         /// <summary>
         /// 获取坐骑背包。
@@ -174,7 +174,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetZuojiBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiBagSlotId);
+            gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ZuojiBagSlotId);
 
         /// <summary>
         /// 获取兽栏对象。
@@ -182,7 +182,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <returns></returns>
         public static GameItem GetShoulanBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShoulanSlotId);
+            gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShoulanSlotId);
 
         /// <summary>
         /// 获取神纹背包。
@@ -190,7 +190,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <returns></returns>
         public static GameItem GetShenwenBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.ShenWenBagSlotId);
+            gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShenWenBagSlotId);
 
         /// <summary>
         /// 按指定Id获取坐骑。仅从坐骑包中获取。
@@ -207,7 +207,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <returns></returns>
         public static GameItem GetTujianBag(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ProjectConstant.TujianBagTId);
+            gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.TujianBagTId);
 
         #endregion 获取特定对象的快捷方式
 
@@ -216,8 +216,8 @@ namespace GuangYuan.GY001.BLL
             manager.Fill(source, dest as GameItemSummery);
             if (source.IsIncludeChildren())
             {
-                dest.BodyTId = manager.GetBody(source)?.TemplateId;
-                dest.HeadTId = manager.GetHead(source)?.TemplateId;
+                dest.BodyTId = manager.GetBody(source)?.ExtraGuid;
+                dest.HeadTId = manager.GetHead(source)?.ExtraGuid;
             }
         }
 
@@ -228,13 +228,13 @@ namespace GuangYuan.GY001.BLL
             {
                 var body = new GameItem()
                 {
-                    TemplateId = source.BodyTId.Value,
+                    ExtraGuid = source.BodyTId.Value,
                 };
                 dest.Children.Add(body);
 
                 var head = new GameItem()
                 {
-                    TemplateId = source.HeadTId.Value,
+                    ExtraGuid = source.HeadTId.Value,
                 };
                 dest.Children.Add(head);
             }
@@ -279,7 +279,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>要创建的坐骑。仅复制容器的属性，头和身体对象是初始属性。</returns>
         public static GameItem CreateMounts(this GameItemManager manager, GameItem gameItem, Guid containerTId)
         {
-            var result = manager.CreateMounts(manager.GetHead(gameItem).TemplateId, manager.GetBody(gameItem).TemplateId, containerTId);
+            var result = manager.CreateMounts(manager.GetHead(gameItem).ExtraGuid, manager.GetBody(gameItem).ExtraGuid, containerTId);
             foreach (var item in gameItem.Properties)   //复制容器的属性
                 result.Properties[item.Key] = item.Value;
             return result;
@@ -315,7 +315,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameItem"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsMounts(this GameItemManager manager, GameItem gameItem) => gameItem.TemplateId == ProjectConstant.ZuojiZuheRongqi;
+        public static bool IsMounts(this GameItemManager manager, GameItem gameItem) => gameItem.ExtraGuid == ProjectConstant.ZuojiZuheRongqi;
 
         /// <summary>
         /// 获取头对象。
@@ -326,9 +326,9 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetHead(this GameItemManager manager, GameItem mounts)
         {
-            var result = mounts.Children.FirstOrDefault(c => manager.GetTemplateFromeId(c.TemplateId).CatalogNumber == 3);
+            var result = mounts.Children.FirstOrDefault(c => manager.GetTemplateFromeId(c.ExtraGuid).CatalogNumber == 3);
 #pragma warning disable CS0618 // 类型或成员已过时
-            return result ?? mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheTou)?.Children?.FirstOrDefault();
+            return result ?? mounts.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ZuojiZuheTou)?.Children?.FirstOrDefault();
 #pragma warning restore CS0618 // 类型或成员已过时
         }
 
@@ -343,7 +343,7 @@ namespace GuangYuan.GY001.BLL
         public static bool SetHead(this GameItemManager manager, GameItem mounts, GameItem head)
         {
 #pragma warning disable CS0618 // 类型或成员已过时
-            var slot = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheTou);
+            var slot = mounts.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ZuojiZuheTou);
 #pragma warning restore CS0618 // 类型或成员已过时
             return null != slot ? manager.ForcedAdd(head, slot) : manager.ForcedAdd(head, mounts);
         }
@@ -357,9 +357,9 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetBody(this GameItemManager manager, GameItem mounts)
         {
-            var result = mounts.Children.FirstOrDefault(c => manager.GetTemplateFromeId(c.TemplateId).CatalogNumber == 4);
+            var result = mounts.Children.FirstOrDefault(c => manager.GetTemplateFromeId(c.ExtraGuid).CatalogNumber == 4);
 #pragma warning disable CS0618 // 类型或成员已过时
-            return result ?? mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti)?.Children?.FirstOrDefault();
+            return result ?? mounts.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ZuojiZuheShenti)?.Children?.FirstOrDefault();
 #pragma warning restore CS0618 // 类型或成员已过时
 
         }
@@ -375,7 +375,7 @@ namespace GuangYuan.GY001.BLL
         public static bool SetBody(this GameItemManager manager, GameItem mounts, GameItem body)
         {
 #pragma warning disable CS0618 // 类型或成员已过时
-            var slot = mounts.Children.FirstOrDefault(c => c.TemplateId == ProjectConstant.ZuojiZuheShenti);
+            var slot = mounts.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ZuojiZuheShenti);
 #pragma warning restore CS0618 // 类型或成员已过时
             return null != slot ? manager.ForcedAdd(body, slot) : manager.ForcedAdd(body, mounts);
         }
@@ -388,7 +388,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns>返回(头模板Id,身体模板Id),若不是坐骑则返回(<see cref="Guid.Empty"/>,<see cref="Guid.Empty"/>)。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static (Guid, Guid) GetMountsTIds(this GameItemManager manager, GameItem mounts) =>
-            (manager.GetHead(mounts)?.TemplateId ?? Guid.Empty, manager.GetBody(mounts)?.TemplateId ?? Guid.Empty);
+            (manager.GetHead(mounts)?.ExtraGuid ?? Guid.Empty, manager.GetBody(mounts)?.ExtraGuid ?? Guid.Empty);
 
         /// <summary>
         /// 获取物品的头模板。
@@ -460,7 +460,7 @@ namespace GuangYuan.GY001.BLL
         public static GameItem Clone(this GameItemManager manager, GameItem gameItem)
         {
             var result = new GameItem();
-            manager.World.EventsManager.GameItemCreated(result, gameItem.TemplateId);
+            manager.World.EventsManager.GameItemCreated(result, gameItem.ExtraGuid);
             OwHelper.Copy(gameItem.Properties, result.Properties);
             result.Count = gameItem.Count;
             foreach (var item in gameItem.Children)
@@ -481,7 +481,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="destItem">目标对象。</param>
         public static void Clone(this GameItemManager manager, GameItem srcItem, GameItem destItem)
         {
-            destItem.TemplateId = srcItem.TemplateId;
+            destItem.ExtraGuid = srcItem.ExtraGuid;
             destItem.SetTemplate(srcItem.GetTemplate());
             OwHelper.Copy(srcItem.Properties, destItem.Properties);
             destItem.Count = srcItem.Count;

@@ -82,11 +82,20 @@ namespace GY2021001WebApi.Controllers
             var gu = gitm.GetUserFromToken(OwConvert.ToGuid(model.Token));
             if (null == gu) //若令牌无效
                 return Unauthorized();
+            var displayName = model.DisplayName;
+            using var dw = World.LockStringAndReturnDisposer(ref displayName, TimeSpan.FromSeconds(2));
+            using var dwUser = World.CharManager.LockAndReturnDisposer(gu);
+            if (dw is null || dwUser is null)
+                return false;
             var gc = gu.CurrentChar;
-            if (null != gc.DisplayName) //若已经有名字
-                return StatusCode((int)HttpStatusCode.PaymentRequired); //TO DO
-            gc.DisplayName = model.DisplayName;
-            gitm.NotifyChange(gu);
+            //TODO 改名需要消耗道具
+            //if (null != gc.DisplayName) //若已经有名字
+            //    return StatusCode((int)HttpStatusCode.PaymentRequired);
+            if (gu.DbContext.Set<GameChar>().Where(c => c.DisplayName == displayName && gc.Id != c.Id).Count() > 0) //若重名
+                return false;
+            gc.DisplayName = displayName;
+            gu.DbContext.SaveChanges();
+            World.CharManager.Nope(gu);
             return true;
         }
 
@@ -222,7 +231,7 @@ namespace GY2021001WebApi.Controllers
                         {
                             var mail = new GameMail();
                             world.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId,
-                                datas.Remainder.Select(c => (c, world.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+                                datas.Remainder.Select(c => (c, world.EventsManager.GetDefaultContainer(c, datas.GameChar).ExtraGuid)));
                         }
                     }
                     result.SuccCount = datas.SuccCount;
@@ -333,7 +342,7 @@ namespace GY2021001WebApi.Controllers
         /// <summary>
         /// 给角色强行增加物品。调试用接口，正式版本将删除。
         /// </summary>
-        /// <param name="model">要增加的物品对象数组，需要设置Count,TemplateId,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
+        /// <param name="model">要增加的物品对象数组，需要设置Count,ExtraGuid,ParentId属性。Properties属性中的键值可以设置会原样超入</param>
         /// <returns></returns>
         /// <response code="401">令牌错误。</response>
         [HttpPost]
@@ -361,7 +370,7 @@ namespace GY2021001WebApi.Controllers
                     else
                     {
                         var tmp = new GameItem();
-                        world.EventsManager.GameItemCreated(tmp, gi.TemplateId, null, null);
+                        world.EventsManager.GameItemCreated(tmp, gi.ExtraGuid, null, null);
                         tmp.Count = gi.Count;
                         lst.Add((tmp, gc.AllChildren.FirstOrDefault(c => c.Id == OwConvert.ToGuid(item.ParentId))));
                     }
@@ -441,7 +450,7 @@ namespace GY2021001WebApi.Controllers
                         CreateUtc = gc.CreateUtc,
                         DisplayName = gc.DisplayName,
                         GameUserId = gc.GameUserId.ToBase64String(),
-                        TemplateId = gc.TemplateId.ToBase64String(),
+                        TemplateId = gc.ExtraGuid.ToBase64String(),
                         CurrentDungeonId = gc.CurrentDungeonId?.ToBase64String(),
                         CombatStartUtc = gc.CombatStartUtc,
                     };

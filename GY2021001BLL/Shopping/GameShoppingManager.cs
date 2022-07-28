@@ -264,7 +264,7 @@ namespace GuangYuan.GY001.BLL
                 if (list.Count > 0)    //若需要发送邮件
                 {
                     var mail = new GameMail();
-                    World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, list.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+                    World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, list.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).ExtraGuid)));
                 }
             }
             //改写购买记录数据
@@ -795,7 +795,7 @@ namespace GuangYuan.GY001.BLL
                 {
                 };
                 World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id },
-                    SocialConstant.FromSystemId, remainder.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).TemplateId)));
+                    SocialConstant.FromSystemId, remainder.Select(c => (c, World.EventsManager.GetDefaultContainer(c, datas.GameChar).ExtraGuid)));
             }
         }
 
@@ -1045,7 +1045,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetShoppingSlot(this GameChar gameChar) =>
-            gameChar.GameItems.FirstOrDefault(c => c.TemplateId == ShoppingSlotTId);
+            gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ShoppingSlotTId);
 
         #region 卡池相关
 
@@ -1056,7 +1056,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetChoujiangquan(this GameChar gameChar) =>
-            gameChar.GetItemBag()?.Children?.FirstOrDefault(c => c.TemplateId == ProjectConstant.ChoujiangjuanTId);
+            gameChar.GetItemBag()?.Children?.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ChoujiangjuanTId);
 
         /// <summary>
         /// 抽奖相关的名称分隔符。

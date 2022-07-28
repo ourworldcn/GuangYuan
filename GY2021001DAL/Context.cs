@@ -1,5 +1,4 @@
-﻿using GuangYuan.GY001.UserDb.Combat;
-using GuangYuan.GY001.UserDb.Social;
+﻿using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
 using OW.Game;
 using OW.Game.Store;
@@ -42,12 +41,12 @@ namespace GuangYuan.GY001.UserDb
 
             //物品
             modelBuilder.Entity<GameItem>().HasIndex(c => c.OwnerId);
-            modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
-            modelBuilder.Entity<GameItem>().HasIndex(c => new { c.TemplateId, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<GameItem>().HasIndex(c => new { c.ExtraGuid, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<GameItem>().HasIndex(c => new { c.ExtraGuid, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
             //树状节点对象
-            modelBuilder.Entity<DbTreeNode>().HasIndex(c => new { c.ExtraGuid, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
-            modelBuilder.Entity<DbTreeNode>().HasIndex(c => new { c.ExtraGuid, c.ExtraDecimal, c.ExtraString }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<VirtualThing>().HasIndex(c => new { c.ExtraGuid, c.ExtraString, c.ExtraDecimal }).IsUnique(false).IncludeProperties(c => c.ParentId);
+            modelBuilder.Entity<VirtualThing>().HasIndex(c => new { c.ExtraGuid, c.ExtraDecimal, c.ExtraString }).IsUnique(false).IncludeProperties(c => c.ParentId);
 
             //邮件相关
             modelBuilder.Entity<GameMailAddress>().HasIndex(c => c.ThingId).IsUnique(false);
@@ -62,9 +61,6 @@ namespace GuangYuan.GY001.UserDb
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => new { c.DateTimeUtc, c.ParentId, c.ActionId }).IsUnique(false);
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => new { c.ParentId, c.ActionId }).IsUnique(false);
             modelBuilder.Entity<GameActionRecord>().HasIndex(c => c.ActionId).IsUnique(false);
-
-            //战利品
-            modelBuilder.Entity<GameBooty>().HasIndex(c => new { c.ParentId, c.CharId }).IsUnique(false);
 
             //行会
             modelBuilder.Entity<GameGuild>().HasIndex(c => c.DisplayName).IsUnique(true);
@@ -114,21 +110,14 @@ namespace GuangYuan.GY001.UserDb
         public DbSet<GameActionRecord> ActionRecords { get; set; }
 
         /// <summary>
-        /// pvp战斗记录。
-        /// </summary>
-        public DbSet<WarNewspaper> WarNewspaper { get; set; }
-
-        /// <summary>
-        /// 战利品记录。
-        /// </summary>
-        public DbSet<GameBooty> GameBooty { get; set; }
-
-        /// <summary>
         /// 行会表。
         /// </summary>
         public DbSet<GameGuild> Guild { get; set; }
 
-        public DbSet<DbTreeNode> TreeNodes { get; set; }
+        /// <summary>
+        /// 存储广义树状事物对象的集合。
+        /// </summary>
+        public DbSet<VirtualThing> VirtualThings { get; set; }
 
         public override void Dispose()
         {

@@ -300,7 +300,7 @@ namespace OW.Game
         public GameItem GetOrCreateChild(GameThingBase parent, Guid childTId)
         {
             var children = World.PropertyManager.GetChildrenCollection(parent);
-            var child = children.FirstOrDefault(c => c.TemplateId == childTId);
+            var child = children.FirstOrDefault(c => c.ExtraGuid == childTId);
             if (child != null)
                 return child;
             //若没有指定TId的孩子
@@ -443,7 +443,7 @@ namespace OW.Game
                 tt = World.ItemTemplateManager.GetTemplateFromeId(tid);
             if (null != tt)
             {
-                thing.TemplateId = tt.Id;
+                thing.ExtraGuid = tt.Id;
                 thing.SetTemplate(tt);
                 var coll = gpm is null ? tt.Properties as IDictionary<string, object> : new ConcurrentDictionary<string, object>(gpm.Filter(tt.Properties));
                 var dic = thing.Properties;
@@ -493,13 +493,13 @@ namespace OW.Game
             //{ "tid", "tt", "count", "Count", "ownerid", "parent", "ptid" };
             prefix ??= string.Empty;
             suffix ??= string.Empty;
-            propertyBag[$"{prefix}tid{suffix}"] = gameItem.TemplateId.ToString();
+            propertyBag[$"{prefix}tid{suffix}"] = gameItem.ExtraGuid.ToString();
             if (gameItem.Count != null)
                 propertyBag[$"{prefix}count{suffix}"] = gameItem.Count;
             if (gameItem.OwnerId != null)
                 propertyBag[$"{prefix}ownerid{suffix}"] = gameItem.OwnerId;
             else if (gameItem.Parent != null)
-                propertyBag[$"{prefix}ptid{suffix}"] = gameItem.Parent.TemplateId.ToString();
+                propertyBag[$"{prefix}ptid{suffix}"] = gameItem.Parent.ExtraGuid.ToString();
             else if (gameItem.Properties.TryGetGuid("ptid", out var ptid))
                 propertyBag[$"{prefix}ptid{suffix}"] = ptid.ToString();
         }
@@ -523,7 +523,7 @@ namespace OW.Game
             var tt = gameChar.GetTemplate();
             var ids = tt.ChildrenTemplateIds.ToList();
             var list = gameChar.GameItems.ToList();
-            var exists = list.Select(c => c.TemplateId).ToList();
+            var exists = list.Select(c => c.ExtraGuid).ToList();
             DbContext db = null;
             for (int i = ids.Count - 1; i >= 0; i--)
             {
@@ -561,13 +561,13 @@ namespace OW.Game
         /// </summary>
         /// <param name="thing"></param>
         protected virtual void GameThingLoaded(GameThingBase thing) =>
-            thing.SetTemplate(World.ItemTemplateManager.GetTemplateFromeId(thing.TemplateId));
+            thing.SetTemplate(World.ItemTemplateManager.GetTemplateFromeId(thing.ExtraGuid));
         #endregion 加载后初始化
 
         #region Json反序列化
         public virtual void ThingBaseJsonDeserialized(GameThingBase thingBase)
         {
-            thingBase.SetTemplate(World.ItemTemplateManager.GetTemplateFromeId(thingBase.TemplateId));
+            thingBase.SetTemplate(World.ItemTemplateManager.GetTemplateFromeId(thingBase.ExtraGuid));
         }
 
         public virtual void JsonDeserialized(GameItem gameItem)
@@ -677,7 +677,7 @@ namespace OW.Game
         /// <param name="dest"></param>
         public virtual void CloneThingBase(GameThingBase src, GameThingBase dest)
         {
-            dest.TemplateId = src.TemplateId;
+            dest.ExtraGuid = src.ExtraGuid;
             dest.SetTemplate(src.GetTemplate());
             dest.ExtraString = src.ExtraString;
             dest.ExtraDecimal = src.ExtraDecimal;
@@ -702,7 +702,7 @@ namespace OW.Game
         {
             bool result = true;
             var coll = pb.GetValuesWithoutPrefix(prefix);
-            var alls = gameChar.AllChildren.ToLookup(c => c.TemplateId); //所有物品
+            var alls = gameChar.AllChildren.ToLookup(c => c.ExtraGuid); //所有物品
             foreach (var item in coll)
             {
                 if (!OwConvert.TryToGuid(item.FirstOrDefault(c => c.Item1 == "tid").Item2, out var tid))  //若找不到tid
@@ -710,7 +710,7 @@ namespace OW.Game
                 GameItem gi;
                 if (OwConvert.TryToGuid(item.FirstOrDefault(c => c.Item1 == "ptid").Item2, out var ptid))  //若指定了容器
                 {
-                    gi = alls[ptid].SelectMany(c => c.Children).FirstOrDefault(c => c.TemplateId == tid);
+                    gi = alls[ptid].SelectMany(c => c.Children).FirstOrDefault(c => c.ExtraGuid == tid);
                 }
                 else //若没有指定容器
                 {
@@ -754,7 +754,7 @@ namespace OW.Game
         public virtual GameThingBase GetDefaultContainer(GameItem gameItem, GameChar gameChar)
         {
             if (World.PropertyManager.TryGetPropertyWithTemplate(gameItem, "ptid", out var obj) && OwConvert.TryToGuid(obj, out var ptid))
-                return gameChar.TemplateId == ptid ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.TemplateId == ptid);
+                return gameChar.ExtraGuid == ptid ? gameChar as GameThingBase : gameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == ptid);
             return null;
         }
 

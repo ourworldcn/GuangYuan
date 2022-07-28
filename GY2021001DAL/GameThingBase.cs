@@ -309,7 +309,7 @@ namespace GuangYuan.GY001.UserDb
     /// <summary>
     /// 游戏世界内能独立存在的事物的对象的基类。
     /// </summary>
-    public abstract class GameThingBase : GameObjectBase, IBeforeSave, IDisposable
+    public abstract class GameThingBase : GameObjectBase, IBeforeSave, IDisposable, IDbQuickFind
     {
         protected GameThingBase()
         {
@@ -319,12 +319,9 @@ namespace GuangYuan.GY001.UserDb
         {
         }
 
-        /// <summary>
-        /// 模板Id。
-        /// </summary>
-        public Guid TemplateId { get; set; }
-
         public abstract DbContext GetDbContext();
+
+        #region IDbQuickFind接口相关
 
         /// <summary>
         /// 记录一些额外的信息，通常这些信息用于排序，加速查找符合特定要求的对象。
@@ -336,6 +333,14 @@ namespace GuangYuan.GY001.UserDb
         /// 记录一些额外的信息，用于排序搜索使用的字段。
         /// </summary>
         public decimal? ExtraDecimal { get; set; }
+
+        /// <summary>
+        /// 模板Id。
+        /// </summary>
+        [Column("TemplateId")]
+        public Guid ExtraGuid { get; set; }
+
+        #endregion IDbQuickFind接口相关
 
         #region 扩展对象相关
 

@@ -15,10 +15,16 @@ using System.Threading;
 
 namespace OW.Game.Store
 {
+    public interface IEntityWithSingleKey<T>
+    {
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.None), Column(Order = 0)]
+        T Id { get; set; }
+    }
+
     /// <summary>
     /// 以<see cref="Guid"/>为键类型的实体类的基类。
     /// </summary>
-    public abstract class GuidKeyObjectBase
+    public abstract class GuidKeyObjectBase : IEntityWithSingleKey<Guid>
     {
         /// <summary>
         /// 构造函数。

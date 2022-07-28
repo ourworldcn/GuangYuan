@@ -2,6 +2,7 @@
  * 供Unity使用的SDK文件。
  * 目前使用C# 7.3版本语法。
  */
+
 using Game.Social;
 using GuangYuan.GY001.UserDb;
 using System;
@@ -654,7 +655,6 @@ namespace GY2021001WebApi.Models
     /// <summary>
     /// 游戏物品，道具，金币，积分等等的对象。
     /// </summary>
-    [DataContract]
     public partial class GameItemDto
     {
         public GameItemDto()
@@ -2260,7 +2260,7 @@ namespace GY2021001WebApi.Models
 
     /// <summary>
     /// 结束战斗的返回数据传输类。
-    /// 变化数据中，角色下弃物槽（TemplateId={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
+    /// 变化数据中，角色下弃物槽（ExtraGuid={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
     /// ChangesItems 仅当结算大关卡时这里才有数据。
     /// </summary>
     [DataContract]
@@ -3212,6 +3212,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class CompleteMissionReturnDto : ChangesAndMailReturnDtoBase
     {
+        /// <summary>
+        /// 要完成任务的模板Id。
+        /// </summary>
+        [DataMember]
+        public string MissionTId { get; set; }
     }
 
     /// <summary>
@@ -4096,6 +4101,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class AccepteGuildMemberReturnDto : ReturnDtoBase
     {
+        /// <summary>
+        /// 是否接受。true表示接受，false表示拒绝。
+        /// </summary>
+        [DataMember]
+        public bool IsAccept { get; set; }
     }
 
     [DataContract]

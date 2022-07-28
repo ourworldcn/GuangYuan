@@ -339,7 +339,7 @@ namespace OW.Extensions.Game.Store
                     gameItem.SetPropertyValue(key, template.Properties.GetValueOrDefault(key));
                 }
             }
-            gameItem.TemplateId = template.Id;
+            gameItem.ExtraGuid = template.Id;
             gameItem.SetTemplate((GameThingTemplateBase)template);
         }
 
