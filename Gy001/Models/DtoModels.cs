@@ -4098,6 +4098,9 @@ namespace GY2021001WebApi.Models
         public bool IsAccept { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     [DataContract]
     public class AccepteGuildMemberReturnDto : ReturnDtoBase
     {
