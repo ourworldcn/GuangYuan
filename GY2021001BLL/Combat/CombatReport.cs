@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OW.Game.Item;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace GuangYuan.GY001.UserDb.Combat
     /// <summary>
     /// CombatReport
     /// </summary>
-    public class CombatReport : VirtualThingExtraPropertiesBase
+    public class CombatReport : VirtualThingEntityBase
     {
         /// <summary>
         /// 
@@ -80,17 +81,17 @@ namespace GuangYuan.GY001.UserDb.Combat
         public IEnumerable<GameItem> GetAttackerMounts(IServiceProvider services)
         {
             //TODO 
-            throw new NotImplementedException();
-            //var gim = services.GetRequiredService<GameItemManager>();
-            //return gim.ToGameItems(AttackerExInfo);
+            //throw new NotImplementedException();
+            var gim = services.GetRequiredService<GameItemManager>();
+            return gim.ToGameItems(AttackerExInfo);
         }
 
         public IEnumerable<GameItem> GetDefenserMounts(IServiceProvider services)
         {
             //TODO 
-            throw new NotImplementedException();
-            //var gim = services.GetRequiredService<GameItemManager>();
-            //return gim.ToGameItems(DefenserExInfo);
+            //throw new NotImplementedException();
+            var gim = services.GetRequiredService<GameItemManager>();
+            return gim.ToGameItems(DefenserExInfo);
         }
 
         public string AttackerDisplayName { get; set; }
@@ -162,7 +163,7 @@ namespace GuangYuan.GY001.UserDb.Combat
     /// 战利品记录。
     /// <see cref="SimpleDynamicPropertyBase.Properties"/>记录了物品信息，如tid是模板id,count是数量(可能是负数)。
     /// </summary>
-    public class GameBooty : VirtualThingExtraPropertiesBase
+    public class GameBooty : VirtualThingEntityBase
     {
         public GameBooty()
         {

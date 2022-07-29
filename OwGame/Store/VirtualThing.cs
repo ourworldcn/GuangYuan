@@ -9,14 +9,14 @@ using System.Threading;
 
 namespace OW.Game.Store
 {
-    public class VirtualThingExtraPropertiesBase
+    public class VirtualThingEntityBase
     {
         #region 构造函数
 
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public VirtualThingExtraPropertiesBase()
+        public VirtualThingEntityBase()
         {
 
         }
@@ -25,7 +25,7 @@ namespace OW.Game.Store
         /// 构造函数。
         /// </summary>
         /// <param name="thing"></param>
-        public VirtualThingExtraPropertiesBase(VirtualThing thing)
+        public VirtualThingEntityBase(VirtualThing thing)
         {
             _Thing = thing;
         }
@@ -293,7 +293,7 @@ namespace OW.Game.Store
         public override T GetJsonObject<T>()
         {
             var result = base.GetJsonObject<T>();
-            if (result is VirtualThingExtraPropertiesBase viewBase)
+            if (result is VirtualThingEntityBase viewBase)
                 viewBase.Thing = this;
             return result;
         }

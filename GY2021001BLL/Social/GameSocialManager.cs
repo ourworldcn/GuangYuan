@@ -62,8 +62,6 @@ namespace GuangYuan.GY001.BLL
         }
     }
 
-
-
     /// <summary>
     /// 社交类功能管理器。
     /// </summary>

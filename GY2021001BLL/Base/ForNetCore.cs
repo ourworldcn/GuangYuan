@@ -178,14 +178,18 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 生成测试账号。
         /// </summary>
-        [Conditional("DEBUG")]
         private void CreateNewUserAndChar()
         {
             //Task.Run(() => SendMail());
+            int maxCount = 0;
 #if DEBUG
-            var maxCount = 150;
+            maxCount = 150;
 #else
-            var maxCount = 15;
+           var env = _Services.GetRequiredService<IHostEnvironment>();
+            if (env.EnvironmentName == "Staging_2")
+                 maxCount = 150;
+            else
+                return;
 #endif
             var world = _Services.GetRequiredService<VWorld>();
             var logger = _Services.GetService<ILogger<GameHostedService>>();
@@ -275,6 +279,7 @@ namespace GuangYuan.GY001.BLL
             using var dw = DisposeHelper.Create(c => c.Stop(), sw);
             try
             {
+                var id = OwConvert.ToGuid("B1//S1ndikmlqvGAaUZTog==");
                 TodayLogEntity<Guid> sglec = new TodayLogEntity<Guid>();
                 sglec.Last.Params.Add(Guid.NewGuid());
                 sglec.Last.Params.Add(Guid.NewGuid());

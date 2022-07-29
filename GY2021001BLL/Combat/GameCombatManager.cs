@@ -1279,11 +1279,12 @@ namespace GuangYuan.GY001.BLL
                 return;
             var idstring = datas.GameChar.IdString;
             var thing = datas.UserDbContext.Set<VirtualThing>().FirstOrDefault(c => c.Id == datas.CombatId /*&& (c.AttackerIdString.Contains(idstring) || c.DefenserIdString.Contains(idstring))*/);
-            if (datas.CombatObject is null)
+            if (thing is null)
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                 datas.ErrorMessage = "找不到指定战斗对象。";
+                return ;
             }
             datas.CombatObject = thing.GetJsonObject<CombatReport>();
             return;

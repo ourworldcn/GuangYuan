@@ -17,8 +17,8 @@ namespace OW.Game.Store
 {
     public interface IEntityWithSingleKey<T>
     {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.None), Column(Order = 0)]
         T Id { get; set; }
+
     }
 
     /// <summary>
