@@ -2,6 +2,9 @@ using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Combat;
+using Gy01.AutoMapper.Profiles;
+using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
@@ -116,9 +119,16 @@ namespace Gy001
             }));
             services.Replace(ServiceDescriptor.Singleton<GameEventsManager>(c => new Gy001GameEventsManager(c, new Gy001GameEventsManagerOptions())));
             services.Replace(ServiceDescriptor.Singleton<GamePropertyChangeManager>(c => new Gy001GamePropertyChangeManager(c, new GamePropertyChangeManagerOptions())));
+
+            services.TryAddSingleton(c => new GameMapperManager(c, new GameMapperManagerOptions()) { });//加入转换管理器。
+            services.AddAutoMapper(c =>
+            {
+                c.AddProfile<Gy01Profile>();
+            });
             #endregion 配置游戏专用服务
 
             services.AddPublisherT78();  //加入访问冰鸟sdk的服务
+
         }
 
         private Task ExceptionHandler(HttpContext context)

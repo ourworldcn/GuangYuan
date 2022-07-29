@@ -504,8 +504,6 @@ namespace GuangYuan.GY001.BLL
             //加入联盟/工会管理器
             services.TryAddSingleton(c => new GameAllianceManager(c, new GameAllianceManagerOptions() { }));
 
-            //加入转换管理器。
-            services.TryAddSingleton(c => new GameMapperManager(c, new GameMapperManagerOptions()) { });
             #endregion  游戏专用服务
 
             return services;

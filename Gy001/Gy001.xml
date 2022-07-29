@@ -636,36 +636,6 @@
             创建此条数据的Utc时间。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.CombatDto">
-            <summary>
-            战斗对象的数据传输类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatDto.Id">
-            <summary>
-            Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatDto.Properties">
-            <summary>
-            动态属性字典。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatDto.AttackerIds">
-            <summary>
-            攻击方角色Id集合。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatDto.DefenserIds">
-            <summary>
-            防御方角色Id集合。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatDto.EndUtc">
-            <summary>
-            该战斗结束的Utc时间。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.GameBootyDto">
             <summary>
             战利品数据传输对象。
@@ -769,7 +739,7 @@
             唯一Id。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.GameItemDto.TemplateId">
+        <member name="P:GY2021001WebApi.Models.GameItemDto.ExtraGuid">
             <summary>
             物品模板的Id。
             </summary>
@@ -1249,6 +1219,111 @@
         <member name="P:GY2021001WebApi.Models.ModifyPropertiesParamsDto.Items">
             <summary>
             设置要修改的项。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatDto">
+            <summary>
+            战斗对象的数据传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.Id">
+            <summary>
+            Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.Properties">
+            <summary>
+            动态属性字典。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.AttackerIds">
+            <summary>
+            攻击方角色Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.DefenserIds">
+            <summary>
+            防御方角色Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.StartUtc">
+            <summary>
+            该战斗开始的Utc时间。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.EndUtc">
+            <summary>
+            该战斗结束的Utc时间。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.Assistancing">
+            <summary>
+            获取或设置是否正在请求协助。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.Assistanced">
+            <summary>
+            获取或设置是否已经协助完毕。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.Retaliationed">
+            <summary>
+            是否已经反击。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.AttackerDisplayName">
+            <summary>
+            攻击者昵称。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.DefenserDisplayName">
+            <summary>
+            防御者昵称。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.AssistanceId">
+            <summary>
+            设置或获取协助者的角色Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.IsAttckerWin">
+            <summary>
+            获取或设置战斗结果，true进攻方胜利，false进攻方失败。null无胜负。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.IsCompleted">
+            <summary>
+            获取或设置该流程是否已经结束。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.attackerRankBefore">
+            <summary>
+            进攻者排名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.attackerScoreBefore">
+            <summary>
+            进攻者积分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.defenderRankBefore">
+            <summary>
+            防御者此战前排名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.defenderScoreBefore">
+            <summary>
+            防御者此战前积分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.attackerRankAfter">
+            <summary>
+            进攻者排名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatDto.attackerScoreAfter">
+            <summary>
+            进攻者积分。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
@@ -3752,6 +3827,24 @@
             <summary>
               重写当前线程的 CurrentUICulture 属性，对
               使用此强类型资源类的所有资源查找执行重写。
+            </summary>
+        </member>
+        <member name="T:GuangYuan.GY001.BLL.Specific.GameMapperManager">
+            <summary>
+            转换服务。
+            </summary>
+        </member>
+        <member name="M:GuangYuan.GY001.BLL.Specific.GameMapperManager.Map(OW.Game.Store.VirtualThing,System.Collections.Generic.IDictionary{System.String,System.String},System.String)">
+            <summary>
+            
+            </summary>
+            <param name="node"></param>
+            <param name="dic">不会清理其中内容。</param>
+            <param name="prefix"></param>
+        </member>
+        <member name="T:GuangYuan.GY001.BLL.Specific.GameMapperConverter">
+            <summary>
+            AutoMapper 底层使用转换，如果用了 AutoMapper 最好就不用转换器以避免冲突。
             </summary>
         </member>
     </members>

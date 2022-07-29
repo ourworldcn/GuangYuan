@@ -189,22 +189,6 @@ namespace GY2021001WebApi.Models
         }
     }
 
-    public partial class CombatDto
-    {
-        public static implicit operator CombatDto(CombatReport obj)
-        {
-            var result = new CombatDto()
-            {
-                EndUtc = obj.EndUtc,
-                Id = obj.Thing.Base64IdString,
-            };
-            result.AttackerIds.AddRange(obj.AttackerIds.Select(c => c.ToBase64String()));
-            result.DefenserIds.AddRange(obj.DefenserIds.Select(c => c.ToBase64String()));
-            OwHelper.Copy(obj.StringDictionary, result.Properties);
-            return result;
-        }
-    }
-
     public partial class GameBootyDto
     {
         public static implicit operator GameBootyDto(GameBooty obj)
@@ -263,7 +247,7 @@ namespace GY2021001WebApi.Models
             {
                 Id = OwConvert.ToGuid(obj.Id),
                 Count = obj.Count,
-                ExtraGuid = string.IsNullOrEmpty(obj.TemplateId) ? Guid.Empty : OwConvert.ToGuid(obj.TemplateId),
+                ExtraGuid = string.IsNullOrEmpty(obj.ExtraGuid) ? Guid.Empty : OwConvert.ToGuid(obj.ExtraGuid),
                 OwnerId = string.IsNullOrEmpty(obj.OwnerId) ? Guid.Empty : OwConvert.ToGuid(obj.OwnerId),
                 ParentId = string.IsNullOrEmpty(obj.ParentId) ? Guid.Empty : OwConvert.ToGuid(obj.ParentId),
             };
@@ -286,7 +270,7 @@ namespace GY2021001WebApi.Models
             {
                 Id = obj.Id.ToBase64String(),
                 Count = obj.Count,
-                TemplateId = obj.ExtraGuid.ToBase64String(),
+                ExtraGuid = obj.ExtraGuid.ToBase64String(),
                 OwnerId = obj.OwnerId?.ToBase64String(),
                 ParentId = obj.ParentId?.ToBase64String(),
                 ClientString = obj.GetClientString(),
@@ -313,7 +297,7 @@ namespace GY2021001WebApi.Models
             {
                 Id = obj.Id.ToBase64String(),
                 Count = obj.Count,
-                TemplateId = obj.ExtraGuid.ToBase64String(),
+                ExtraGuid = obj.ExtraGuid.ToBase64String(),
                 OwnerId = obj.OwnerId?.ToBase64String(),
                 ParentId = obj.ParentId?.ToBase64String(),
                 ClientString = obj.GetClientString(),

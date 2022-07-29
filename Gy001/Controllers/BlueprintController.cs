@@ -112,7 +112,7 @@ namespace Gy001.Controllers
                     case "c7051e47-0a73-4319-85dc-7b02f26f14f4":    //兽栏背包扩容
                         {
                             var tidStr = ProjectConstant.ShoulanSlotId.ToBase64String();
-                            result.ChangesItems.SelectMany(c => c.Changes).FirstOrDefault(c => c.TemplateId == tidStr)?.Children?.Clear();  //清空子对象。
+                            result.ChangesItems.SelectMany(c => c.Changes).FirstOrDefault(c => c.ExtraGuid == tidStr)?.Children?.Clear();  //清空子对象。
                         }
                         break;
                     default:

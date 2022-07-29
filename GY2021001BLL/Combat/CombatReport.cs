@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Text.Json;
 
 namespace GuangYuan.GY001.UserDb.Combat
 {
@@ -43,15 +44,53 @@ namespace GuangYuan.GY001.UserDb.Combat
         /// </summary>
         public List<Guid> DefenserIds { get => _DefenserIds ??= new List<Guid>(); set => _DefenserIds = value; }
 
+        #region 进攻方坐骑信息
+
+        private byte[] _AttackerMounts;
+        public byte[] AttackerMounts { get => _AttackerMounts; set => _AttackerMounts = value; }
+
         /// <summary>
         /// 进攻方附属信息。
         /// </summary>
-        public byte[] AttackerExInfo { get; set; }
+        public IEnumerable<GameItem> GetAttackerMounts()
+        {
+            if (_AttackerMounts is null || _AttackerMounts.Length == 0)
+                return Array.Empty<GameItem>();
+            return (IEnumerable<GameItem>)JsonSerializer.Deserialize(_AttackerMounts, typeof(GameItem[]));
+        }
+
+        /// <summary>
+        /// 进攻方附属信息。
+        /// </summary>
+        public void SetAttackerMounts(IEnumerable<GameItem> value)
+        {
+            _AttackerMounts = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+        #endregion 进攻方坐骑信息
+
+        #region 防御方坐骑信息
+
+        private byte[] _DefenserMounts;
+        public byte[] DefenserMounts { get => _DefenserMounts; set => _DefenserMounts = value; }
 
         /// <summary>
         /// 防御方附属信息。
         /// </summary>
-        public byte[] DefenserExInfo { get; set; }
+        public IEnumerable<GameItem> GetDefenserMounts()
+        {
+            if (_DefenserMounts is null || _DefenserMounts.Length == 0)
+                return Array.Empty<GameItem>();
+            return (IEnumerable<GameItem>)JsonSerializer.Deserialize(_DefenserMounts, typeof(GameItem[]));
+        }
+
+        /// <summary>
+        /// 防御方附属信息。
+        /// </summary>
+        public void SetDefenserMounts(IEnumerable<GameItem> value)
+        {
+            _DefenserMounts = JsonSerializer.SerializeToUtf8Bytes(value);
+        }
+        #endregion 防御方坐骑信息
 
         /// <summary>
         /// 该战斗开始的Utc时间。
@@ -78,24 +117,14 @@ namespace GuangYuan.GY001.UserDb.Combat
         /// </summary>
         public bool Retaliationed { get; set; }
 
-        public IEnumerable<GameItem> GetAttackerMounts(IServiceProvider services)
-        {
-            //TODO 
-            //throw new NotImplementedException();
-            var gim = services.GetRequiredService<GameItemManager>();
-            return gim.ToGameItems(AttackerExInfo);
-        }
-
-        public IEnumerable<GameItem> GetDefenserMounts(IServiceProvider services)
-        {
-            //TODO 
-            //throw new NotImplementedException();
-            var gim = services.GetRequiredService<GameItemManager>();
-            return gim.ToGameItems(DefenserExInfo);
-        }
-
+        /// <summary>
+        /// 攻击者昵称。
+        /// </summary>
         public string AttackerDisplayName { get; set; }
 
+        /// <summary>
+        /// 防御者昵称。
+        /// </summary>
         public string DefenserDisplayName { get; set; }
 
         /// <summary>
@@ -114,6 +143,40 @@ namespace GuangYuan.GY001.UserDb.Combat
         public bool IsCompleted { get; set; }
 
         /// <summary>
+        /// 进攻者排名。
+        /// </summary>
+        public int attackerRankBefore { get; set; }
+
+        /// <summary>
+        /// 进攻者积分。
+        /// </summary>
+        public decimal? attackerScoreBefore { get; set; }
+
+        /// <summary>
+        /// 防御者此战前排名。
+        /// </summary>
+        public int defenderRankBefore { get; set; }
+
+        /// <summary>
+        /// 防御者此战前积分。
+        /// </summary>
+        public decimal? defenderScoreBefore { get; set; }
+
+        /// <summary>
+        /// 进攻者排名。
+        /// </summary>
+        public int attackerRankAfter { get; set; }
+
+        /// <summary>
+        /// 进攻者积分。
+        /// </summary>
+        public decimal? attackerScoreAfter { get; set; }
+
+        public int defenderRankAfter { get; set; }
+
+        public decimal? defenderScoreAfter { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="disposing"></param>
@@ -130,33 +193,6 @@ namespace GuangYuan.GY001.UserDb.Combat
             }
         }
 
-        /// <summary>
-        /// 进攻者排名。
-        /// </summary>
-        public int attackerRankBefore { get; set; }
-
-        /// <summary>
-        /// 进攻者积分。
-        /// </summary>
-        public decimal? attackerScoreBefore { get; set; }
-
-        public int defenderRankBefore { get; set; }
-
-        public decimal? defenderScoreBefore { get; set; }
-
-        /// <summary>
-        /// 进攻者排名。
-        /// </summary>
-        public int attackerRankAfter { get; set; }
-
-        /// <summary>
-        /// 进攻者积分。
-        /// </summary>
-        public decimal? attackerScoreAfter { get; set; }
-
-        public int defenderRankAfter { get; set; }
-
-        public decimal? defenderScoreAfter { get; set; }
     }
 
     /// <summary>

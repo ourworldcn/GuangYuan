@@ -260,10 +260,112 @@ namespace GY2021001WebApi.Models
         //public DateTime StartUtc { get; set; } = DateTime.UtcNow;
 
         /// <summary>
+        /// 该战斗开始的Utc时间。
+        /// </summary>
+        [DataMember]
+        public DateTime StartUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
         /// 该战斗结束的Utc时间。
         /// </summary>
         [DataMember]
         public DateTime EndUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 获取或设置是否正在请求协助。
+        /// </summary>
+        [DataMember]
+        public bool Assistancing { get; set; }
+
+        /// <summary>
+        /// 获取或设置是否已经协助完毕。
+        /// </summary>
+        [DataMember]
+        public bool Assistanced { get; set; }
+
+        /// <summary>
+        /// 是否已经反击。
+        /// </summary>
+        [DataMember]
+        public bool Retaliationed { get; set; }
+
+        /// <summary>
+        /// 攻击者昵称。
+        /// </summary>
+        [DataMember]
+        public string AttackerDisplayName { get; set; }
+
+        /// <summary>
+        /// 防御者昵称。
+        /// </summary>
+        [DataMember]
+        public string DefenserDisplayName { get; set; }
+
+        /// <summary>
+        /// 设置或获取协助者的角色Id。
+        /// </summary>
+        [DataMember]
+        public Guid? AssistanceId { get; set; }
+
+        /// <summary>
+        /// 获取或设置战斗结果，true进攻方胜利，false进攻方失败。null无胜负。
+        /// </summary>
+        [DataMember]
+        public bool? IsAttckerWin { get; set; }
+
+        /// <summary>
+        /// 获取或设置该流程是否已经结束。
+        /// </summary>
+        [DataMember]
+        public bool IsCompleted { get; set; }
+
+        /// <summary>
+        /// 进攻者排名。
+        /// </summary>
+        [DataMember]
+        public int attackerRankBefore { get; set; }
+
+        /// <summary>
+        /// 进攻者积分。
+        /// </summary>
+        [DataMember]
+        public decimal? attackerScoreBefore { get; set; }
+
+        /// <summary>
+        /// 防御者此战前排名。
+        /// </summary>
+        [DataMember]
+        public int defenderRankBefore { get; set; }
+
+        /// <summary>
+        /// 防御者此战前积分。
+        /// </summary>
+        [DataMember]
+        public decimal? defenderScoreBefore { get; set; }
+
+        /// <summary>
+        /// 进攻者排名。
+        /// </summary>
+        [DataMember]
+        public int attackerRankAfter { get; set; }
+
+        /// <summary>
+        /// 进攻者积分。
+        /// </summary>
+        [DataMember]
+        public decimal? attackerScoreAfter { get; set; }
+
+        [DataMember]
+        public int defenderRankAfter { get; set; }
+
+        [DataMember]
+        public decimal? defenderScoreAfter { get; set; }
+
+        [DataMember]
+        public IEnumerable<GameItemDto> AttackerMounts { get; set; }
+
+        [DataMember]
+        public IEnumerable<GameItemDto> DefenserMounts { get; set; }
     }
 
     /// <summary>
@@ -671,8 +773,8 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 物品模板的Id。
         /// </summary>
-        [DataMember(Name = nameof(TemplateId))]
-        public string TemplateId { get; set; }
+        [DataMember(Name = "TemplateId")]
+        public string ExtraGuid { get; set; }
 
         /// <summary>
         /// 数量。
@@ -723,7 +825,7 @@ namespace GY2021001WebApi.Models
             get
             {
                 var id = DtoHelper.ToBase64String(DtoConstant.ZuojiZuheTou);
-                var result = Children.FirstOrDefault(c => c.TemplateId == id)?.Children?.FirstOrDefault();
+                var result = Children.FirstOrDefault(c => c.ExtraGuid == id)?.Children?.FirstOrDefault();
                 return result;
             }
         }
@@ -738,7 +840,7 @@ namespace GY2021001WebApi.Models
             get
             {
                 var id = DtoHelper.ToBase64String(DtoConstant.ZuojiZuheShenti);
-                var result = Children.FirstOrDefault(c => c.TemplateId == id)?.Children?.FirstOrDefault();
+                var result = Children.FirstOrDefault(c => c.ExtraGuid == id)?.Children?.FirstOrDefault();
                 return result;
             }
         }
@@ -834,7 +936,7 @@ namespace GY2021001WebApi.Models
             get
             {
                 var id = DtoHelper.ToBase64String(DtoConstant.DangqianZuoqiSlotId);
-                var result = GameItems.FirstOrDefault(c => c.TemplateId == id)?.Children.FirstOrDefault();
+                var result = GameItems.FirstOrDefault(c => c.ExtraGuid == id)?.Children.FirstOrDefault();
                 return result;
             }
         }
@@ -1260,7 +1362,7 @@ namespace GY2021001WebApi.Models
     }
 
     [DataContract]
-    public class LoginT78ReturnDto: LoginReturnDto
+    public class LoginT78ReturnDto : LoginReturnDto
     {
         /// <summary>
         /// T78服务器返回的值完整的放在此处。仅当成功登录时才有。
@@ -3526,7 +3628,7 @@ namespace GY2021001WebApi.Models
 
     #region 商城相关
 
-    public class ConfirmPayT78ParamsDto :TokenDtoBase
+    public class ConfirmPayT78ParamsDto : TokenDtoBase
     {
         /// <summary>
         /// 游戏方的订单ID。
@@ -3544,7 +3646,7 @@ namespace GY2021001WebApi.Models
         public string currency { get; set; }
     }
 
-    public class ConfirmPayT78ResultDto :ReturnDtoBase
+    public class ConfirmPayT78ResultDto : ReturnDtoBase
     {
     }
 
@@ -3558,7 +3660,7 @@ namespace GY2021001WebApi.Models
         /// 0=成功，表示游戏服务器成功接收了该次充值结果通知,注意是0为成功
         /// 1=失败，表示游戏服务器无法接收或识别该次充值结果通知，如：签名检验不正确、游戏服务器接收失败
         /// </summary>
-        [DataMember(Name ="ret")]
+        [DataMember(Name = "ret")]
         public int Ret { get; set; }
     }
 

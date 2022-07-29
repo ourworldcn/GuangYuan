@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using Gy001.Controllers;
@@ -116,7 +117,8 @@ namespace GY2021001WebApi.Controllers
             result.HasError = datas.HasError;
             result.DebugMessage = datas.ErrorMessage;
             result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
-            result.Combat = datas.Combat;
+            result.Combat = new CombatDto();
+            HttpContext.RequestServices.GetRequiredService<GameMapperManager>().Map(datas.Combat, result.Combat);
             return result;
         }
 
@@ -140,11 +142,12 @@ namespace GY2021001WebApi.Controllers
             if (!datas.HasError)    //若成功返回
             {
                 var view = datas.CombatObject;
-                result.AttackerMounts.AddRange(view.GetAttackerMounts(HttpContext.RequestServices).Select(c => (GameItemDto)c));
-                result.DefenserMounts.AddRange(view.GetDefenserMounts(HttpContext.RequestServices).Select(c => (GameItemDto)c));
+                result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => (GameItemDto)c));
+                result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => (GameItemDto)c));
                 result.Booty.AddRange(datas.UserDbContext.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Thing.Id)
                     .AsEnumerable().Select(c => (GameBootyDto)c.GetJsonObject<GameBooty>()));
-                result.CombatObject = datas.CombatObject;
+                result.CombatObject = new CombatDto();
+                HttpContext.RequestServices.GetRequiredService<GameMapperManager>().Map(datas.CombatObject, result.CombatObject);
             }
             return result;
         }

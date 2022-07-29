@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -581,12 +582,12 @@ namespace GuangYuan.GY001.BLL
                 //记录信息
                 var gim = World.ItemManager;
                 //攻击方信息
-                var Me = gim.ToByteArray(gim.GetLineup(datas.GameChar, 2));
-                datas.Combat.AttackerExInfo = Me;
+                var Me = gim.GetLineup(datas.GameChar, 2);
+                datas.Combat.SetAttackerMounts(Me);
                 datas.Combat.AttackerDisplayName = datas.GameChar.DisplayName;
                 //防御方信息
-                var other = gim.ToByteArray(gim.GetLineup(datas.OtherChar, 10000));
-                datas.Combat.DefenserExInfo = other;
+                var other = gim.GetLineup(datas.OtherChar, 10000);
+                datas.Combat.SetDefenserMounts(other);
                 datas.Combat.DefenserDisplayName = datas.OtherChar.DisplayName;
                 datas.Save();
             }
@@ -624,7 +625,7 @@ namespace GuangYuan.GY001.BLL
             todayData.RemoveLastData(datas.OtherCharId, datas.Now);
             GameItem pvpObj, otherPvpObj;
             //增加战报
-            var thing = new VirtualThing() {ExtraGuid=ProjectConstant.CombatReportTId };
+            var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
             CombatReport pc = thing.GetJsonObject<CombatReport>();
             //计算等级分
             if (datas.IsWin) //若需要计算等级分
@@ -1284,7 +1285,7 @@ namespace GuangYuan.GY001.BLL
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                 datas.ErrorMessage = "找不到指定战斗对象。";
-                return ;
+                return;
             }
             datas.CombatObject = thing.GetJsonObject<CombatReport>();
             return;

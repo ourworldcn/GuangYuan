@@ -10,6 +10,7 @@ using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game.Store;
 using GuangYuan.GY001.UserDb.Combat;
+using GY2021001WebApi.Models;
 
 namespace GuangYuan.GY001.BLL.Specific
 {
@@ -58,6 +59,34 @@ namespace GuangYuan.GY001.BLL.Specific
             dic[$"{prefix}tid"] = node.ExtraGuid.ToString();
             dic[$"{prefix}Count"] = node.GetJsonObject<Dictionary<string, string>>().GetValueOrDefault("Count");
         }
+
+        public void Map(CombatReport src, CombatDto dest)
+        {
+            var mapper = Service.GetRequiredService<IMapper>();
+            mapper.Map(src, dest);
+            dest.Id = src.Thing.Base64IdString;
+            
+            //dest.AttackerIds.AddRange(src.AttackerIds.Select(c => c.ToBase64String()));
+            //dest.DefenserIds.AddRange(src.DefenserIds.Select(c => c.ToBase64String()));
+        }
+
+        //public partial class CombatDto
+        //{
+        //    public static implicit operator CombatDto(CombatReport obj)
+        //    {
+        //        var result = new CombatDto()
+        //        {
+        //            EndUtc = obj.EndUtc,
+        //            Id = obj.Thing.Base64IdString,
+        //        };
+        //        result.AttackerIds.AddRange(obj.AttackerIds.Select(c => c.ToBase64String()));
+        //        result.DefenserIds.AddRange(obj.DefenserIds.Select(c => c.ToBase64String()));
+        //        OwHelper.Copy(obj.StringDictionary, result.Properties);
+        //        return result;
+        //    }
+        //}
+
+
     }
 
     public class GameMapperManagerOptions

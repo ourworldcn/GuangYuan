@@ -395,12 +395,6 @@ namespace OW.Game
         /// </summary>
         public GameAllianceManager AllianceManager { get => _AllianceManager ??= Service.GetService<GameAllianceManager>(); }
 
-        GameMapperManager _MapperManager;
-        /// <summary>
-        /// 转换管理器。
-        /// </summary>
-        public GameMapperManager MapperManager { get => _MapperManager ??= Service.GetService<GameMapperManager>(); }
-
         private VirtualThingManager _VirtualThingManager;
 
         /// <summary>
