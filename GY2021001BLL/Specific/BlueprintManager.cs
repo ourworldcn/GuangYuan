@@ -885,7 +885,7 @@ namespace GuangYuan.GY001.BLL
                 _ when gameItem.ExtraGuid == ProjectConstant.YumitianTId => gameChar.GetJinbi(), //玉米
                 _ => null,
             };
-            if (!src.TryGetPropertyValueWithFcp("Count", DateTime.UtcNow, true, out object countObj, out DateTime dt) || !OwConvert.TryToDecimal(countObj, out decimal count))
+            if (!World.PropertyManager.TryGetPropertyValueWithFcp(src, "Count", DateTime.UtcNow, true, out object countObj, out DateTime dt) || !OwConvert.TryToDecimal(countObj, out decimal count))
             {
                 datas.DebugMessage = "未知原因无法获取收获数量。";
                 datas.HasError = true;
@@ -960,7 +960,8 @@ namespace GuangYuan.GY001.BLL
             LevelUp(datas);
             if (datas.HasError)
                 return;
-            if (!datas.Verify(gi.TryGetPropertyWithFcp(World.PropertyManager.LevelPropertyName, out decimal lvDec), "级别属性类型错误。"))
+            ;
+            if (!datas.Verify(World.PropertyManager.TryGetDecimalWithFcp(gi, World.PropertyManager.LevelPropertyName, out var lvDec), "级别属性类型错误。"))
             {
                 return;
             }

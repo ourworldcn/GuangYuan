@@ -207,10 +207,6 @@ namespace GuangYuan.GY001.UserDb
         /// </summary>
         public static readonly Guid MucaiStoreTId = new Guid("{8caea73b-e210-47bf-a121-06cc12973baf}");
 
-        /// <summary>
-        /// 堆叠上限属性的名字。没有该属性的不可堆叠，无上限限制用-1表示。
-        /// </summary>
-        public const string StackUpperLimit = "stc";
 
         #region IDisposable接口相关
 
@@ -361,43 +357,6 @@ namespace GuangYuan.GY001.UserDb
                 obj.RuntimeProperties.Remove("GameChar", out _);
             else
                 obj.RuntimeProperties["GameChar"] = value;
-        }
-
-        /// <summary>
-        /// 获取指定名称的属性值。
-        /// </summary>
-        /// <param name="propertyName">属性名。</param>
-        /// <param name="result">返回属性值。</param>
-        /// <returns><inheritdoc/></returns>
-        public static bool TryGetProperty([NotNull] this GameItem gameItem, [NotNull] string propertyName, [MaybeNullWhen(false)] out object result)
-        {
-            bool succ;
-            switch (propertyName)
-            {
-                case GameItem.StackUpperLimit when gameItem.ExtraGuid == GameItem.MucaiId: //对木材特殊处理 TO DO应控制反转完成该工作
-                    var coll = gameItem.Parent?.GetAllChildren() ?? gameItem.GetGameChar()?.GameItems;
-                    if (coll is null)
-                    {
-                        result = 0m;
-                        return false;
-                    }
-                    var ary = coll.Where(c => c.ExtraGuid == GameItem.MucaiStoreTId).ToArray();   //取所有木材仓库对象
-                    if (!OwConvert.TryToDecimal(gameItem.Properties.GetValueOrDefault(GameItem.StackUpperLimit, 0m), out var myselfStc))
-                        myselfStc = 0;
-                    result = ary.Any(c => c.GetStc() >= decimal.MaxValue) ? -1 : ary.Sum(c => c.GetStc()) + myselfStc;
-                    succ = true;
-                    break;
-                case "count":
-                case "Count":
-                    var obj = gameItem.Count;
-                    succ = obj.HasValue;
-                    result = obj ?? 0;
-                    break;
-                default:
-                    succ = ((GameThingBase)gameItem).TryGetProperty(propertyName, out result);
-                    break;
-            }
-            return succ;
         }
 
         /// <summary>

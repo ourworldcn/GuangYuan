@@ -766,14 +766,12 @@ namespace GuangYuan.GY001.BLL
             var world = datas.World;
             //更改数据
             //增加战斗记录
-            CombatReport pc = new CombatReport()
-            {
-
-            };
+            VirtualThing thing = new VirtualThing();
+            db.Add(thing);
+            CombatReport pc = thing.GetJsonObject<CombatReport>();
             pc.AttackerIds.Add(datas.GameChar.Id);
             pc.DefenserIds.Add(datas.OtherCharId);
             datas.Combat = pc;
-            db.Add(pc);
             //计算战利品
             if (datas.IsWin) //若反击胜利
             {
@@ -796,7 +794,7 @@ namespace GuangYuan.GY001.BLL
                     //设计：本次战斗防御者不丢失资源
                     //设置战利品
                     attackerBooties.ForEach(c => c.SetGameItems(world, datas.ChangeItems));
-                    db.AddRange(attackerBooties);
+                    // TODO db.AddRange(attackerBooties);
                 }
             }
             //发送邮件
@@ -856,13 +854,12 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = $"指定的战报对象没有请求此角色协助攻击或已经攻击过了。";
             }
             //更改数据
-            var pc = new CombatReport  //本次战斗数据
-            {
-            };
+            var thing = new VirtualThing();
+            db.Add(thing);
+            var pc = thing.GetJsonObject<CombatReport>();  //本次战斗数据
             pc.AttackerIds.Add(datas.GameChar.Id);
             pc.DefenserIds.Add(datas.OtherCharId);
             datas.Combat = pc;
-            db.Add(pc);
             //获取战利品
             if (datas.IsWin)    //若赢得战斗
             {
@@ -887,7 +884,7 @@ namespace GuangYuan.GY001.BLL
                     return r;
                 }).ToList();
                 newBooty.RemoveAll(c => c is null); //去掉空引用
-                db.AddRange(newBooty);  //加入数据库
+                //TODO db.AddRange(newBooty);  //加入数据库
                 newBooty.ForEach(c => c.SetGameItems(World, datas.ChangeItems));
 
                 var oldBooties = boo.Select(c =>
@@ -1189,7 +1186,7 @@ namespace GuangYuan.GY001.BLL
             {
                 var shenwen = slotShenwen.Children.FirstOrDefault(c =>
                 {
-                    if (!c.TryGetProperty("body", out var bodyObj) || !OwConvert.TryToDecimal(bodyObj, out var bodyDec))
+                    if (!World.PropertyManager.TryGetDecimalWithFcp(c, "body", out var bodyDec))
                         return false;
                     return bodyDec == bodyGid;
                 });

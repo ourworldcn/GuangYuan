@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -180,7 +182,7 @@ namespace OW.Game.Store
         /// <returns></returns>
         public virtual T GetJsonObject<T>() where T : new()
         {
-            if (typeof(T) != JsonObjectType || JsonObject is null)
+            if (typeof(T) != JsonObjectType || JsonObject is null)  //若需要初始化
             {
                 if (string.IsNullOrWhiteSpace(JsonObjectString))
                 {
@@ -191,8 +193,15 @@ namespace OW.Game.Store
                     JsonObject = JsonSerializer.Deserialize(JsonObjectString, typeof(T));
                 }
                 JsonObjectType = typeof(T);
+                if (JsonObject is INotifyPropertyChanged changed)
+                    changed.PropertyChanged += Changed_PropertyChanged; ;
             }
             return (T)JsonObject;
+        }
+
+        private void Changed_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            
         }
 
         private object _JsonObject;

@@ -1290,7 +1290,7 @@ namespace OW.Game.Item
         {
             bool result;
             var gc = gItem.GetGameChar();
-            if (!gItem.TryGetProperty("usebpid", out var bpidObj) || !OwConvert.TryToGuid(bpidObj, out var bpid))
+            if (!World.PropertyManager.TryGetPropertyWithTemplate(gItem, "usebpid", out var bpidObj) || !OwConvert.TryToGuid(bpidObj, out var bpid))
                 bpid = Guid.Empty;
             if (bpid != Guid.Empty)    //若指定了蓝图
             {
@@ -1368,6 +1368,72 @@ namespace OW.Game.Item
         }
 
         #endregion 项目特定代码
+
+        decimal MergeNumberValue(decimal currentVal, decimal oldVal, decimal newVal) => currentVal - oldVal + newVal;
+
+        /// <summary>
+        /// 换新模板。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="template"></param>
+        /// <param name="changes"></param>
+        public void ChangeTemplate(GameItem gameItem, GameItemTemplate template, ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            var keysBoth = gameItem.Properties.Keys.Intersect(template.Properties.Keys).ToArray();
+            var keysNew = template.Properties.Keys.Except(keysBoth).ToArray();
+            foreach (var key in keysNew)    //新属性
+            {
+                var newValue = template.Properties.GetValueOrDefault(key);
+                if (newValue is decimal[] ary)   //若是一个序列属性
+                {
+                    var indexName = template.GetIndexPropertyName(key); //索引属性名
+
+                    if (gameItem.TryGetPropertyWithFcp(indexName, out var index) || template.Properties.TryGetDecimal(indexName, out index))
+                    {
+                        index = Math.Round(index, MidpointRounding.AwayFromZero);
+                        gameItem.SetPropertyValue(key, ary[(int)index]);
+                    }
+                    else
+                        gameItem.SetPropertyValue(key, ary[0]);
+                }
+                else
+                    gameItem.SetPropertyValue(key, newValue);
+            }
+            foreach (var key in keysBoth)   //遍历两者皆有的属性
+            {
+                var currentVal = gameItem.GetPropertyOrDefault(key);
+                var oldVal = gameItem.GetTemplate().Properties.GetValueOrDefault(key);    //模板值
+                if (oldVal is decimal[] ary && OwConvert.TryToDecimal(currentVal, out var currentDec))   //若是一个序列属性
+                {
+                    var lv = World.PropertyManager.GetIndexPropertyValue(gameItem, key);    //当前等级
+                    var nVal = currentDec - ary[lv] + template.GetSequencePropertyValueOrDefault<decimal>(key, lv); //求新值
+                    gameItem.SetPropertyValue(key, nVal);
+                }
+                else if (OwConvert.TryToDecimal(currentVal, out var dec)) //若是一个数值属性
+                {
+                    OwConvert.TryToDecimal(gameItem.GetTemplate().Properties.GetValueOrDefault(key, 0), out var nDec);    //当前模板中该属性
+                    OwConvert.TryToDecimal(template.Properties.GetValueOrDefault(key), out var tDec);
+                    var nVal = dec - nDec + tDec;
+                    gameItem.SetPropertyValue(key, nVal);
+                }
+                else //其他类型属性
+                {
+                    gameItem.SetPropertyValue(key, template.Properties.GetValueOrDefault(key));
+                }
+            }
+            gameItem.ExtraGuid = template.Id;
+            gameItem.SetTemplate((GameThingTemplateBase)template);
+            switch (gameItem)
+            {
+                case GameItem ss when ss is GameThingBase thing:
+                    var i = thing.GetDecimalWithFcpOrDefault("");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+
     }
 
     public class AddItemsOrMailDatas : ChangeItemsAndMailWorkDatsBase

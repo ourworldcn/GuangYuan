@@ -40,6 +40,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -280,11 +281,13 @@ namespace GuangYuan.GY001.BLL
             try
             {
                 var id = OwConvert.ToGuid("B1//S1ndikmlqvGAaUZTog==");
-                TodayLogEntity<Guid> sglec = new TodayLogEntity<Guid>();
-                sglec.Last.Params.Add(Guid.NewGuid());
-                sglec.Last.Params.Add(Guid.NewGuid());
+                var sglec = new MyClass { MyProperty = 2, str = "ds", dic = new Dictionary<string, object> { { "sd", new decimal[] { 2,3} } } };
                 var str = JsonSerializer.Serialize(sglec);
-                var ver = JsonSerializer.Deserialize<TodayLogEntity<Guid>>(str);
+                var ver = JsonSerializer.Deserialize(str, sglec.GetType());
+                if (((MyClass)ver).dic["sd"] is JsonElement je)
+                {
+                    var f = je.GetString();
+                }
             }
             catch (Exception)
             {
@@ -294,6 +297,14 @@ namespace GuangYuan.GY001.BLL
                 sw.Stop();
                 Debug.WriteLine($"测试代码完成时间{sw.Elapsed}");
             }
+        }
+
+        class MyClass
+        {
+            public Dictionary<string, object> dic { get; set; }
+            public int MyProperty { get; set; }
+
+            public string str { get; set; }
         }
 
         /// <summary>

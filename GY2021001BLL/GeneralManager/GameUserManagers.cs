@@ -1473,7 +1473,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     var tt = tp.Key.GetTemplate();
                     if (string.Compare(item.Item1, "tid", true) == 0 && tp.Key.GetTemplate().CatalogNumber == 42 && OwConvert.TryToGuid(item.Item2, out var id))   //若是水晶更改模板
-                        tp.Key.ChangeTemplate(World.ItemTemplateManager.GetTemplateFromeId(id));
+                        World.ItemManager.ChangeTemplate(tp.Key, World.ItemTemplateManager.GetTemplateFromeId(id));
                     else if (tp.Key.ExtraGuid == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "activeStyle", true) == 0)   //若是家园对象的当前激活风格属性
                     {
                         var str = item.Item2 as string; Debug.Assert(str != null);
@@ -1491,12 +1491,12 @@ namespace GuangYuan.GY001.BLL
                                 //设置默认模板号
                                 var ntt = GetDefaultTemplate(gi);
                                 if (ntt != gi.GetTemplate())
-                                    gi.ChangeTemplate(ntt);
+                                    World.ItemManager.ChangeTemplate(gi, ntt);
                             }
                             else
                             {
                                 var ntt = World.ItemTemplateManager.GetTemplateFromeId(tidfor);
-                                gi.ChangeTemplate(ntt);
+                                World.ItemManager.ChangeTemplate(gi, ntt);
                             }
                         }
                     }
@@ -1512,7 +1512,7 @@ namespace GuangYuan.GY001.BLL
                         if (GetStyleNumber(aciveStyle, out var sn, out var fn) && sn == styleNumber && fn == fanganNumber) //若设置了当前风格的模板号
                         {
                             var ntt = World.ItemTemplateManager.GetTemplateFromeId(tidfor);
-                            tp.Key.ChangeTemplate(ntt);
+                            World.ItemManager.ChangeTemplate(tp.Key, ntt);
                         }
                     }
                     else

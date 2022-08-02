@@ -283,7 +283,7 @@ namespace GY2021001WebApi.Models
             result._Properties = new Dictionary<string, object>(obj.Properties);
             result.Properties[nameof(GameItem.ExtraString)] = obj.ExtraString;
             result.Properties[nameof(GameItem.ExtraDecimal)] = obj.ExtraDecimal;
-
+            
             //特殊处理处理木材堆叠数
             if (ProjectConstant.MucaiId == obj.ExtraGuid)
                 result.Properties[ProjectConstant.StackUpperLimit] = obj.GetDecimalWithFcpOrDefault(ProjectConstant.StackUpperLimit);

@@ -159,6 +159,7 @@ namespace OW.Game
 
         /// <summary>
         /// 获取指定的属性值并转换为<see cref="decimal"/>,如果找不到，或不能转换则返回指定默认值。
+        /// 优先考虑快速渐变属性。如果没有则寻找动态属性，还没有则在模板中找同名属性。
         /// </summary>
         /// <param name="thing"></param>
         /// <param name="propertyName"></param>
@@ -319,6 +320,101 @@ namespace OW.Game
             else
                 return result == -1 ? decimal.MaxValue : Math.Max(result - GetChildrenCollection(thing).Count, 0);
         }
+
+        /// <summary>
+        /// 获取指定属性的当前级别索引值。
+        /// </summary>
+        /// <param name="this"></param>
+        /// <param name="name"></param>
+        /// <returns>如果不是序列属性或索引属性值不是数值类型则返回-1。如果没有找到索引属性返回0。</returns>
+        public int GetIndexPropertyValue(GameItem @this, string name)
+        {
+            if (!@this.GetTemplate().TryGetPropertyValue(name, out var tVal) || !(tVal is decimal[]))  //若不是序列属性
+                return -1;
+            var indexPName = @this.GetTemplate().GetIndexPropertyName(name);   //其索引属性名
+            int result;
+            //TryGetPropertyWithTemplate(indexPName, out var resultObj);
+            if (!TryGetPropertyWithTemplate(@this, indexPName, out var resultObj))    //若没有找到索引属性的值
+                result = 0;
+            else //若找到索引属性
+                result = OwConvert.TryToDecimal(resultObj, out var resultDec) ? OwHelper.RoundWithAwayFromZero(resultDec) : -1;
+            return result;
+        }
+
+        /// <summary>
+        /// 获取属性，且考虑是否刷新并写入快速变化属性。
+        /// </summary>
+        /// <param name="name">要获取值的属性名。</param>
+        /// <param name="refreshDate">当有快速变化属性时，刷新时间，如果为null则不刷新。</param>
+        /// <param name="writeDictionary">当有快速变化属性时，是否写入<see cref="Properties"/>属性。</param>
+        /// <param name="result">属性的当前返回值。对快速变化属性是其<see cref="FastChangingProperty.LastValue"/>,是否在之前刷新取决于<paramref name="refresh"/>参数。</param>
+        /// <param name="refreshDatetime">如果是快速变化属性且需要刷新，则此处返回实际的计算时间。
+        /// 如果找到的不是快速渐变属性返回<see cref="DateTime.MinValue"/></param>
+        /// <returns>true成功找到属性。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public bool TryGetPropertyValueWithFcp(GameItem gameItem, string name, DateTime? refreshDate, bool writeDictionary, out object result, out DateTime refreshDatetime)
+        {
+            bool succ;
+            if (gameItem.Name2FastChangingProperty.TryGetValue(name, out var fcp)) //若找到快速变化属性
+            {
+                if (refreshDate.HasValue) //若需要刷新
+                {
+                    refreshDatetime = refreshDate.Value;
+                    result = fcp.GetCurrentValue(ref refreshDatetime);
+                }
+                else
+                {
+                    refreshDatetime = DateTime.MinValue;
+                    result = fcp.LastValue;
+                }
+                if (writeDictionary)
+                    fcp.ToGameThing(gameItem);
+                succ = true;
+            }
+            else //若是其他属性
+            {
+                refreshDatetime = DateTime.MinValue;
+                succ = gameItem.Properties.TryGetValue(name, out result);
+            }
+            return succ;
+        }
+
+        /// <summary>
+        /// 获取指定名称的属性值。
+        /// </summary>
+        /// <param name="propertyName">属性名。</param>
+        /// <param name="result">返回属性值。</param>
+        /// <returns><inheritdoc/></returns>
+        //public bool TryGetProperty([NotNull] GameItem gameItem, [NotNull] string propertyName, [MaybeNullWhen(false)] out object result)
+        //{
+        //    bool succ;
+        //    switch (propertyName)
+        //    {
+        //        case "stc" when gameItem.ExtraGuid == GameItem.MucaiId: //TODO 对木材特殊处理 应控制反转完成该工作
+        //            var coll = gameItem.Parent?.GetAllChildren() ?? gameItem.GetGameChar()?.GameItems;
+        //            if (coll is null)
+        //            {
+        //                result = 0m;
+        //                return false;
+        //            }
+        //            var ary = coll.Where(c => c.ExtraGuid == GameItem.MucaiStoreTId).ToArray();   //取所有木材仓库对象
+        //            if (!OwConvert.TryToDecimal(gameItem.Properties.GetValueOrDefault(StackUpperLimitPropertyName, 0m), out var myselfStc))
+        //                myselfStc = 0;
+        //            result = ary.Any(c => c.GetStc() >= decimal.MaxValue) ? -1 : ary.Sum(c => c.GetStc()) + myselfStc;
+        //            succ = true;
+        //            break;
+        //        case "count":
+        //        case "Count":
+        //            var obj = gameItem.Count;
+        //            succ = obj.HasValue;
+        //            result = obj ?? 0;
+        //            break;
+        //        default:
+        //            succ = ((GameThingBase)gameItem).TryGetProperty(propertyName, out result);
+        //            break;
+        //    }
+        //    return succ;
+        //}
 
         #endregion 基础属性相关
     }
