@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.TemplateDb;
+﻿using GuangYuan.GY001.BLL.Homeland;
+using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
@@ -133,19 +134,42 @@ namespace OW.Game
             return dic.Where(c => !NoCopyNames.Contains(c.Key) && !NoCopyPrefixNames.Any(c1 => c.Key.StartsWith(c1)));
         }
 
+        #region 获取属性值相关
+
         /// <summary>
-        /// 获取动态属性，如果没有在指定的对象上找到，则试图在其模板中寻找。
+        /// 获取动态属性，如果没有在指定的对象上找到，则试图在其模板中寻找。忽略快速变化属性。
         /// </summary>
         /// <param name="thing"></param>
-        /// <param name="key"></param>
+        /// <param name="key">额外识别tid,ExtraGuid,ExtraString,ExtraDecimal属性。</param>
         /// <param name="result"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
-        public virtual bool TryGetPropertyWithTemplate(GameThingBase thing, string key, out object result) =>
-            DictionaryUtil.TryGetValue(key, out result, thing.Properties, World.ItemTemplateManager.GetTemplateFromeId(thing.ExtraGuid)?.Properties);
+        public virtual bool TryGetPropertyWithTemplate(GameThingBase thing, string key, out object result)
+        {
+            bool succ;
+            switch (key)
+            {
+                case "tid":
+                case nameof(thing.ExtraGuid):
+                    result = thing.ExtraGuid;
+                    succ = true;
+                    break;
+                case nameof(thing.ExtraString):
+                    result = thing.ExtraString;
+                    succ = true;
+                    break;
+                case nameof(thing.ExtraDecimal):
+                    result = thing.ExtraDecimal;
+                    succ = true;
+                    break;
+                default:
+                    return DictionaryUtil.TryGetValue(key, out result, thing.Properties, World.ItemTemplateManager.GetTemplateFromeId(thing.ExtraGuid)?.Properties);
+            }
+            return succ;
+        }
 
         /// <summary>
-        /// 获取属性，如果没有则寻找模板内同名属性。
+        /// 获取属性，如果没有则寻找模板内同名属性。忽略快速变化属性。
         /// </summary>
         /// <param name="thing"></param>
         /// <param name="propertyName"></param>
@@ -175,6 +199,8 @@ namespace OW.Game
             }
             return TryGetDecimalWithTemplate(thing, propertyName, out result);
         }
+
+        #endregion 获取属性值相关
 
         #region 设置属性
 
@@ -218,24 +244,6 @@ namespace OW.Game
         #endregion 设置属性
 
         /// <summary>
-        /// 获取是否可堆叠。
-        /// </summary>
-        /// <param name="thing"></param>
-        /// <param name="result"><see cref="decimal.MaxValue"/>表示无限堆叠。非堆叠物品这个值被设置为1。</param>
-        /// <returns>true可堆叠，false不可堆叠。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
-        public virtual bool IsStc(GameThingBase thing, out decimal result)
-        {
-            if (!TryGetDecimalWithFcp(thing, StackUpperLimitPropertyName, out var stc))
-            {
-                result = 1;
-                return false;
-            }
-            result = stc == -1 ? decimal.MaxValue : stc;
-            return true;
-        }
-
-        /// <summary>
         /// 获取其数量。
         /// </summary>
         /// <param name="thing"></param>
@@ -244,6 +252,26 @@ namespace OW.Game
         public virtual decimal GetCount(GameThingBase thing)
         {
             return TryGetDecimalWithFcp(thing, CountPropertyName, out var count) ? count : (IsStc(thing, out _) ? decimal.Zero : decimal.One);
+        }
+
+        #region 堆叠相关
+
+        /// <summary>
+        /// 获取是否可堆叠。
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="result"><see cref="decimal.MaxValue"/>表示无限堆叠。非堆叠物品这个值被设置为1。</param>
+        /// <returns>true可堆叠，false不可堆叠,此时<paramref name="result"/>返回<see cref="decimal.One"/>。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        public virtual bool IsStc(GameThingBase thing, out decimal result)
+        {
+            if (!TryGetDecimalWithFcp(thing, StackUpperLimitPropertyName, out var stc))
+            {
+                result = decimal.One;
+                return false;
+            }
+            result = stc == -1 ? decimal.MaxValue : stc;
+            return true;
         }
 
         /// <summary>
@@ -274,6 +302,8 @@ namespace OW.Game
             else
                 return result == -1 ? decimal.MaxValue : Math.Max(result - GetCount(thing), 0);
         }
+
+        #endregion 堆叠相关
 
         /// <summary>
         /// 获取作为容器的容量。如果没有指定则返回0，视同非容器。

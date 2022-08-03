@@ -1,6 +1,7 @@
 ﻿using Game.Social;
 using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -331,7 +332,8 @@ namespace Gy001.Controllers
                 result.Summary.AddRange(_World.SocialManager.GetCharSummary(ids, _UserContext).Select(c => (CharSummaryDto)c));
             }
             var relIds = coll.Select(c => c.Id2).Concat(coll.Select(c => c.Id)).ToArray();  //可能相关的物品信息
-            result.GameItems.AddRange(_UserContext.Set<GameItem>().Where(c => relIds.Contains(c.Id)).ToArray().Select(c => (GameItemDto)c));   //补足物品信息
+            var mapper = _World.Service.GetService<GameMapperManager>();
+            result.GameItems.AddRange(_UserContext.Set<GameItem>().Where(c => relIds.Contains(c.Id)).ToArray().Select(c => mapper.Map(c)));   //补足物品信息
             return result;
         }
 
@@ -637,10 +639,11 @@ namespace Gy001.Controllers
             using var datas = new GetCharInfoDatas(_World, model.Token, OwConvert.ToGuid(model.OtherCharId));
             _World.SocialManager.GetCharInfo(datas);
             result.FillFrom(datas);
+            var mapper = _World.Service.GetRequiredService<GameMapperManager>();
             if (!result.HasError)
             {
-                result.HomeLand.AddRange(datas.Homeland.Select(c => (GameItemDto)c));
-                result.Mounts.AddRange(datas.Mounts.Select(c => (GameItemDto)c));
+                result.HomeLand.AddRange(datas.Homeland.Select(c => mapper.Map(c)));
+                result.Mounts.AddRange(datas.Mounts.Select(c => mapper.Map(c)));
             }
             return result;
         }

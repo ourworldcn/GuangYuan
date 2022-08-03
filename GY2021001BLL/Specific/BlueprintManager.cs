@@ -860,7 +860,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         private void Harvest(ApplyBlueprintDatas datas)
         {
-            if (!datas.Verify(datas.GameItems.Count == 1, "只能升级一个对象。"))
+            if (!datas.Verify(datas.GameItems.Count == 1, "只能收获一个对象。"))
             {
                 return;
             }
@@ -876,6 +876,8 @@ namespace GuangYuan.GY001.BLL
             GameItem src = datas.Lookup(hl.GetAllChildren(), gameItem.ExtraGuid); //收获物
             if (src is null)
             {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "找不到要收获的物品。";
                 return;
             }
 
@@ -885,26 +887,23 @@ namespace GuangYuan.GY001.BLL
                 _ when gameItem.ExtraGuid == ProjectConstant.YumitianTId => gameChar.GetJinbi(), //玉米
                 _ => null,
             };
+            if (destItem is null)    //若不是合法的目标
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = "只能收获木材 玉米。";
+                return;
+            }
             if (!World.PropertyManager.TryGetPropertyValueWithFcp(src, "Count", DateTime.UtcNow, true, out object countObj, out DateTime dt) || !OwConvert.TryToDecimal(countObj, out decimal count))
             {
                 datas.DebugMessage = "未知原因无法获取收获数量。";
                 datas.HasError = true;
                 return;
             }
-            decimal stc = World.PropertyManager.GetRemainderStc(destItem);  //剩余可堆叠数
+            decimal stc = World.ItemManager.GetRemainderStc(destItem);  //剩余可堆叠数
             count = Math.Min(count, stc);   //实际移走数量
-            if (src.Name2FastChangingProperty.TryGetValue("Count", out FastChangingProperty fcp))    //若有快速变化属性
-            {
-                fcp.SetLastValue(fcp.LastValue - count, ref dt);
-            }
-            else
-            {
-                src.Count -= count;
-            }
-            //World.ItemManager.ForcedAddCount(destItem, count, datas.Changes);
-            destItem.Count += count;
-            datas.ChangeItems.AddToChanges(src.GetContainerId().Value, src);
-            datas.ChangeItems.AddToChanges(destItem.GetContainerId().Value, destItem);
+            World.ItemManager.ForcedAddCount(destItem, count, datas.PropertyChanges);
+            World.ItemManager.ForcedAddCount(src, -count, datas.PropertyChanges);
+            datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 
         /// <summary>
@@ -1419,8 +1418,8 @@ namespace GuangYuan.GY001.BLL
         /// <param name="parent1">双亲2。</param>
         private void SetNe(GameItem child, GameItem parent1, GameItem parent2)
         {
-            var rank1 = parent1.Properties.GetDecimalOrDefault("nerank");
-            var rank2 = parent2.Properties.GetDecimalOrDefault("nerank");
+            //var rank1 = parent1.Properties.GetDecimalOrDefault("nerank");
+            //var rank2 = parent2.Properties.GetDecimalOrDefault("nerank");
 
             var lv1 = parent1.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
             var lv2 = parent2.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);

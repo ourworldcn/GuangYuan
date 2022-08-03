@@ -142,7 +142,7 @@ namespace GY2021001WebApi.Controllers
             if (!datas.HasError)    //若成功返回
             {
                 var view = datas.CombatObject;
-                result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => (GameItemDto)c));
+                result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c =>World.map c));
                 result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => (GameItemDto)c));
                 result.Booty.AddRange(datas.UserDbContext.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Thing.Id)
                     .AsEnumerable().Select(c => (GameBootyDto)c.GetJsonObject<GameBooty>()));

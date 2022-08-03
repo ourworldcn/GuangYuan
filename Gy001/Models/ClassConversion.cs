@@ -260,37 +260,6 @@ namespace GY2021001WebApi.Models
             return result;
         }
 
-        /// <summary>
-        /// 从数据对象获取传输对象。
-        /// </summary>
-        /// <param name="obj"></param>
-        public static implicit operator GameItemDto(GameItem obj)
-        {
-            var result = new GameItemDto()
-            {
-                Id = obj.Id.ToBase64String(),
-                Count = obj.Count,
-                ExtraGuid = obj.ExtraGuid.ToBase64String(),
-                OwnerId = obj.OwnerId?.ToBase64String(),
-                ParentId = obj.ParentId?.ToBase64String(),
-                ClientString = obj.GetClientString(),
-            };
-            foreach (var item in obj.Name2FastChangingProperty)
-            {
-                item.Value.GetCurrentValueWithUtc();
-                FastChangingPropertyExtensions.ToDictionary(item.Value, obj.Properties, item.Key);
-            }
-            result._Properties = new Dictionary<string, object>(obj.Properties);
-            result.Properties[nameof(GameItem.ExtraString)] = obj.ExtraString;
-            result.Properties[nameof(GameItem.ExtraDecimal)] = obj.ExtraDecimal;
-            
-            //特殊处理处理木材堆叠数
-            if (ProjectConstant.MucaiId == obj.ExtraGuid)
-                result.Properties[ProjectConstant.StackUpperLimit] = obj.GetDecimalWithFcpOrDefault(ProjectConstant.StackUpperLimit);
-            result.Children.AddRange(obj.Children.Select(c => (GameItemDto)c));
-            return result;
-        }
-
         public static GameItemDto FromGameItem(GameItem obj, bool includeChildren = false)
         {
             var result = new GameItemDto()

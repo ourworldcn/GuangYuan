@@ -162,6 +162,78 @@ namespace OW.Game.Item
         }
         #endregion
 
+        #region 堆叠相关
+        /// <summary>
+        /// 获取最大堆叠数，不可堆叠的返回1，没有限制则返回<see cref="decimal.MaxValue"/>。
+        /// 会考虑木材的特殊情况。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>不可堆叠的返回1，若没有限制（-1）则返回<see cref="decimal.MaxValue"/>。
+        /// </returns>
+        public virtual decimal GetStcOrOne(GameItem gameItem)
+        {
+            if (gameItem.ExtraGuid == GameItem.MucaiId)  //若是木材
+            {
+                var coll = gameItem.GetGameChar()?.GetHomeland()?.GetAllChildren();
+                if (coll is null)
+                {
+                    return World.PropertyManager.GetStcOrOne(gameItem);
+                }
+                var ary = coll.Where(c => c.ExtraGuid == GameItem.MucaiStoreTId).ToArray();   //取所有木材仓库对象
+                var stc = decimal.Zero;
+                foreach (var item in ary) //计算所有木材仓库的容量
+                {
+                    var tmp = World.PropertyManager.GetStcOrOne(item);
+                    if (tmp == decimal.MaxValue)
+                    {
+                        stc = decimal.MaxValue;
+                        break;
+                    }
+                    stc += tmp;
+                }
+                if (stc < decimal.MaxValue)
+                {
+                    stc += World.PropertyManager.GetStcOrOne(gameItem);
+                }
+                return stc;
+            }
+            else
+                return World.PropertyManager.GetStcOrOne(gameItem);
+        }
+
+        /// <summary>
+        /// 获取指定物剩余的可堆叠量。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <returns>不可堆叠或已满堆叠都会返回0，否则返回剩余的可堆叠数。</returns>
+        public virtual decimal GetRemainderStc(GameItem gameItem)
+        {
+            if (!IsStc(gameItem, out var stc))
+                return decimal.Zero;
+            if (stc == decimal.MaxValue)
+                return stc;
+            if (!World.PropertyManager.TryGetDecimalWithFcp(gameItem, "Count", out var count))
+                count = 0;
+            return Math.Max(stc - count, 0);
+        }
+
+        /// <summary>
+        /// 获取是否可堆叠。会考虑到木材的特殊情况。
+        /// </summary>
+        /// <param name="gameItem"></param>
+        /// <param name="result"><see cref="decimal.MaxValue"/>表示无限堆叠。非堆叠物品这个值被设置为1。</param>
+        /// <returns>true可堆叠,此时result返回最大可堆叠数;false不可堆叠，此时<paramref name="result"/>返回<see cref="decimal.One"/></returns>
+        public virtual bool IsStc(GameItem gameItem, out decimal result)
+        {
+            if (World.PropertyManager.IsStc(gameItem, out result))  //若不可堆叠
+                return false;
+            result = GetStcOrOne(gameItem);
+            return true;
+        }
+
+
+        #endregion 堆叠相关
+
         /// <summary>
         /// 复位锁定槽中的道具，送回道具背包。
         /// </summary>
@@ -414,8 +486,7 @@ namespace OW.Game.Item
             var tt = thing.GetTemplate();
             foreach (var kvp in thing.Properties.ToArray())
             {
-                var ary = tt.Properties.GetValueOrDefault(kvp.Key) as decimal[];
-                if (ary is null || ary.Length < 1)  //若没有随级别变化的可能
+                if (!(tt.Properties.GetValueOrDefault(kvp.Key) is decimal[] ary) || ary.Length < 1)  //若没有随级别变化的可能
                     continue;
                 if (!OwConvert.TryToDecimal(kvp.Value, out var ov)) //若不是数值
                     continue;
@@ -921,7 +992,7 @@ namespace OW.Game.Item
         /// <returns>true可以合并，false不可以合并。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual bool IsAllowMerge(GameItem src, GameItem dest) =>
-            src.ExtraGuid != dest.ExtraGuid || !World.PropertyManager.IsStc(src, out _) || !World.PropertyManager.IsStc(dest, out _) ? false : true;
+            src.ExtraGuid == dest.ExtraGuid && World.PropertyManager.IsStc(src, out _) && World.PropertyManager.IsStc(dest, out _);
 
         /// <summary>
         /// 计算可移动的数量。不考虑是否是同类型物品。
@@ -933,7 +1004,7 @@ namespace OW.Game.Item
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual decimal GetCountOfMergeable(GameItem src, GameItem dest, decimal? maxCount = null)
         {
-            var stc = World.PropertyManager.GetRemainderStc(dest);  //堆叠还剩余多少数量
+            var stc = GetRemainderStc(dest);  //堆叠还剩余多少数量
             stc = Math.Min(stc, src.Count.Value);
             return maxCount.HasValue ? Math.Min(stc, maxCount.Value) : stc;
         }
@@ -1219,7 +1290,7 @@ namespace OW.Game.Item
             [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var propMng = World.PropertyManager;
-            if (propMng.IsStc(gItem, out _)) //若可堆叠
+            if (IsStc(gItem, out _)) //若可堆叠
             {
                 if (count > gItem.Count.Value)
                     throw new ArgumentOutOfRangeException(nameof(count), "必须小于或等于物品的实际数量。");
@@ -1354,10 +1425,10 @@ namespace OW.Game.Item
             var addIds = mounts.Select(c => c.Id).Except(ills.Select(c => c.Id));
             var items = addIds.Join(mounts, c => c, c => c.Id, (l, r) => r); //尚无图鉴的坐骑
 
-            foreach (var item in items.ToArray())
+            foreach (var (Id, Mounts) in items.ToArray())
             {
-                var tt = World.ItemTemplateManager.Id2Template.Values.FirstOrDefault(c => c.Properties.GetDecimalOrDefault("headtid") == item.Id.Item1 &&
-                      c.Properties.GetDecimalOrDefault("bodytid") == item.Id.Item2);    //要添加的动物图鉴模板
+                var tt = World.ItemTemplateManager.Id2Template.Values.FirstOrDefault(c => c.Properties.GetDecimalOrDefault("headtid") == Id.Item1 &&
+                      c.Properties.GetDecimalOrDefault("bodytid") == Id.Item2);    //要添加的动物图鉴模板
                 if (tt is null)
                     continue;
                 var gi = new GameItem();
@@ -1423,14 +1494,6 @@ namespace OW.Game.Item
             }
             gameItem.ExtraGuid = template.Id;
             gameItem.SetTemplate((GameThingTemplateBase)template);
-            switch (gameItem)
-            {
-                case GameItem ss when ss is GameThingBase thing:
-                    var i = thing.GetDecimalWithFcpOrDefault("");
-                    break;
-                default:
-                    break;
-            }
         }
 
 
@@ -1646,7 +1709,7 @@ namespace OW.Game.Item
         /// </summary>
         /// <param name="mng"></param>
         /// <param name="gameItem"></param>
-        /// <param name="diff"></param>
+        /// <param name="diff">可正可负。</param>
         /// <param name="changes"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using OW.Game.Store;
 using GuangYuan.GY001.UserDb.Combat;
 using GY2021001WebApi.Models;
+using GuangYuan.GY001.UserDb;
+using OW.Extensions.Game.Store;
 
 namespace GuangYuan.GY001.BLL.Specific
 {
@@ -60,15 +62,49 @@ namespace GuangYuan.GY001.BLL.Specific
             dic[$"{prefix}Count"] = node.GetJsonObject<Dictionary<string, string>>().GetValueOrDefault("Count");
         }
 
+        #region 特定类型映射
+
         public void Map(CombatReport src, CombatDto dest)
         {
             var mapper = Service.GetRequiredService<IMapper>();
             mapper.Map(src, dest);
             dest.Id = src.Thing.Base64IdString;
-            
+
             //dest.AttackerIds.AddRange(src.AttackerIds.Select(c => c.ToBase64String()));
             //dest.DefenserIds.AddRange(src.DefenserIds.Select(c => c.ToBase64String()));
         }
+
+        public void Map(GameItem src, GameItemDto dest)
+        {
+            dest.Id = src.Id.ToBase64String();
+            dest.Count = src.Count;
+            dest.ExtraGuid = src.ExtraGuid.ToBase64String();
+            dest.OwnerId = src.OwnerId?.ToBase64String();
+            dest.ParentId = src.ParentId?.ToBase64String();
+            dest.ClientString = src.GetClientString();
+            foreach (var item in src.Name2FastChangingProperty)
+            {
+                item.Value.GetCurrentValueWithUtc();
+                FastChangingPropertyExtensions.ToDictionary(item.Value, src.Properties, item.Key);
+            }
+            OwHelper.Copy(src.Properties, dest.Properties);
+
+            dest.Properties[nameof(GameItem.ExtraString)] = src.ExtraString;
+            dest.Properties[nameof(GameItem.ExtraDecimal)] = src.ExtraDecimal;
+
+            //特殊处理处理木材堆叠数
+            if (ProjectConstant.MucaiId == src.ExtraGuid)
+                dest.Properties[ProjectConstant.StackUpperLimit] = World.ItemManager.GetStcOrOne(src);
+            dest.Children.AddRange(src.Children.Select(c => Map(c)));
+        }
+
+        public GameItemDto Map(GameItem src)
+        {
+            var result = new GameItemDto();
+            Map(src, result);
+            return result;
+        }
+        #endregion 特定类型映射
 
         //public partial class CombatDto
         //{

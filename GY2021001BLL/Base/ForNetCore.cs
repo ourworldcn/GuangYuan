@@ -281,13 +281,9 @@ namespace GuangYuan.GY001.BLL
             try
             {
                 var id = OwConvert.ToGuid("B1//S1ndikmlqvGAaUZTog==");
-                var sglec = new MyClass { MyProperty = 2, str = "ds", dic = new Dictionary<string, object> { { "sd", new decimal[] { 2,3} } } };
+                var sglec = new Dictionary<string, object>();
                 var str = JsonSerializer.Serialize(sglec);
                 var ver = JsonSerializer.Deserialize(str, sglec.GetType());
-                if (((MyClass)ver).dic["sd"] is JsonElement je)
-                {
-                    var f = je.GetString();
-                }
             }
             catch (Exception)
             {
@@ -297,14 +293,6 @@ namespace GuangYuan.GY001.BLL
                 sw.Stop();
                 Debug.WriteLine($"测试代码完成时间{sw.Elapsed}");
             }
-        }
-
-        class MyClass
-        {
-            public Dictionary<string, object> dic { get; set; }
-            public int MyProperty { get; set; }
-
-            public string str { get; set; }
         }
 
         /// <summary>
@@ -360,25 +348,25 @@ namespace GuangYuan.GY001.BLL
 
         #region 自动生成数据库迁移文件
 
-        private void CreateDbTest(DbContext dbContext)
-        {
-            dbContext.Database.EnsureCreated();
-            IModel lastModel = null;
-            var lastMigration = dbContext.Set<MigrationLog>()
-                    .OrderByDescending(e => e.Id)
-                    .FirstOrDefault();
-            lastModel = lastMigration == null ? null : (CreateModelSnapshot(lastMigration.SnapshotDefine).Result?.Model);
+//        private void CreateDbTest(DbContext dbContext)
+//        {
+//            dbContext.Database.EnsureCreated();
+//            IModel lastModel = null;
+//            var lastMigration = dbContext.Set<MigrationLog>()
+//                    .OrderByDescending(e => e.Id)
+//                    .FirstOrDefault();
+//            lastModel = lastMigration == null ? null : (CreateModelSnapshot(lastMigration.SnapshotDefine).Result?.Model);
 
-            var modelDiffer = dbContext.GetInfrastructure().GetService<IMigrationsModelDiffer>();
-            var isDiff = modelDiffer.HasDifferences(lastModel, dbContext.Model); //这个方法返回值是true或者false，这个可以比较老版本的model和当前版本的model是否出现更改。
+//            var modelDiffer = dbContext.GetInfrastructure().GetService<IMigrationsModelDiffer>();
+//            var isDiff = modelDiffer.HasDifferences(lastModel, dbContext.Model); //这个方法返回值是true或者false，这个可以比较老版本的model和当前版本的model是否出现更改。
 
-            var upOperations = modelDiffer.GetDifferences(lastModel, dbContext.Model);  //这个方法返回的迁移的操作对象。
+//            var upOperations = modelDiffer.GetDifferences(lastModel, dbContext.Model);  //这个方法返回的迁移的操作对象。
 
-#pragma warning disable CA1806 // 不要忽略方法结果
-            dbContext.GetInfrastructure().GetRequiredService<IMigrationsSqlGenerator>().Generate(upOperations, dbContext.Model).ToList();   //这个方法是根据迁移对象和当前的model生成迁移sql脚本。
-#pragma warning restore CA1806 // 不要忽略方法结果
+//#pragma warning disable CA1806 // 不要忽略方法结果
+//            dbContext.GetInfrastructure().GetRequiredService<IMigrationsSqlGenerator>().Generate(upOperations, dbContext.Model).ToList();   //这个方法是根据迁移对象和当前的model生成迁移sql脚本。
+//#pragma warning restore CA1806 // 不要忽略方法结果
 
-        }
+//        }
 
         public class MigrationLog
         {
@@ -386,37 +374,37 @@ namespace GuangYuan.GY001.BLL
             public string SnapshotDefine { get; internal set; }
         }
 
-        private Task<ModelSnapshot> CreateModelSnapshot(string codedefine, DbContext db = null)
-        {
-            var ModuleDbContext = db.GetType();
-            var ContextAssembly = ModuleDbContext.Assembly.FullName;
-            string SnapshotName = "";
-            // 生成快照，需要存到数据库中供更新版本用
-            var references = ModuleDbContext.Assembly
-                .GetReferencedAssemblies()
-                .Select(e => MetadataReference.CreateFromFile(Assembly.Load(e).Location))
-                .Union(new MetadataReference[]
-                {
-                    MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
-                    MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(ModuleDbContext.Assembly.Location)
-                });
+        //private Task<ModelSnapshot> CreateModelSnapshot(string codedefine, DbContext db = null)
+        //{
+        //    var ModuleDbContext = db.GetType();
+        //    var ContextAssembly = ModuleDbContext.Assembly.FullName;
+        //    string SnapshotName = "";
+        //    // 生成快照，需要存到数据库中供更新版本用
+        //    var references = ModuleDbContext.Assembly
+        //        .GetReferencedAssemblies()
+        //        .Select(e => MetadataReference.CreateFromFile(Assembly.Load(e).Location))
+        //        .Union(new MetadataReference[]
+        //        {
+        //            MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
+        //            MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
+        //            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+        //            MetadataReference.CreateFromFile(ModuleDbContext.Assembly.Location)
+        //        });
 
-            var compilation = CSharpCompilation.Create(ContextAssembly)
-                .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-                .AddReferences(references)
-                .AddSyntaxTrees(SyntaxFactory.ParseSyntaxTree(codedefine));
+        //    var compilation = CSharpCompilation.Create(ContextAssembly)
+        //        .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+        //        .AddReferences(references)
+        //        .AddSyntaxTrees(SyntaxFactory.ParseSyntaxTree(codedefine));
 
-            return Task.Run(() =>
-            {
-                using var stream = new MemoryStream();
-                var compileResult = compilation.Emit(stream);
-                return compileResult.Success
-                    ? Assembly.Load(stream.GetBuffer()).CreateInstance(ContextAssembly + "." + SnapshotName) as ModelSnapshot
-                    : null;
-            });
-        }
+        //    return Task.Run(() =>
+        //    {
+        //        using var stream = new MemoryStream();
+        //        var compileResult = compilation.Emit(stream);
+        //        return compileResult.Success
+        //            ? Assembly.Load(stream.GetBuffer()).CreateInstance(ContextAssembly + "." + SnapshotName) as ModelSnapshot
+        //            : null;
+        //    });
+        //}
 
         #endregion 自动生成数据库迁移文件
 
