@@ -15,7 +15,7 @@ using System.Text.Json;
 
 namespace OW.Game.Managers
 {
-    public class VirtualThingManager : GameManagerBase<VirtualThingManagerOptions>
+    public class VirtualThingManager : GameManagerBase<VirtualThingManagerOptions>, IDisposable
     {
         #region 构造函数
 

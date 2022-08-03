@@ -131,7 +131,7 @@ namespace GuangYuan.GY001.BLL
 
             var defYumi = new GameBooty() { CharId = OtherChar.Id };    //防御方玉米田
             defYumi.StringDictionary["tid"] = ProjectConstant.YumitianTId.ToString();
-
+            
             var attJinbiBase = lvAtt * 100 + (dYumi.Count ?? 0) * 0.5m + dMucaiShu.Count.Value * 0.5m;   //进攻方获得金币的基数
             var attMucaiBase = lvAtt * 30 + dMucai.Count.Value * 0.5m;  //进攻方获得木材的基数
 
@@ -171,31 +171,6 @@ namespace GuangYuan.GY001.BLL
                 attackerBooty.Add(aJinbi);
             if (aMucai.StringDictionary.GetDecimalOrDefault("count", decimal.Zero) != decimal.Zero)  //若要记录进攻方获得木材
                 attackerBooty.Add(aMucai);
-        }
-
-        /// <summary>
-        /// 获取物品默认的容器对象。
-        /// </summary>
-        /// <returns></returns>
-        public List<GameThingBase> GetDefaultContainers(List<GameItem> gameItems)
-        {
-            var result = new List<GameThingBase>();
-            var gc = GameChar;
-            for (int i = 0; i < gameItems.Count; i++)
-            {
-                var item = gameItems[i];
-                if (item.ExtraGuid == ProjectConstant.JinbiId)
-                {
-                    result.Add(gc.GetCurrencyBag());
-                }
-                else if (item.ExtraGuid == ProjectConstant.MucaiId)
-                {
-                    result.Add(gc.GetCurrencyBag());
-                }
-                else
-                    throw new InvalidOperationException("不可获得物品。");
-            }
-            return result;
         }
 
     }

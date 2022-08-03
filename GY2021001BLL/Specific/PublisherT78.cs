@@ -14,6 +14,8 @@ using System.Buffers;
 
 namespace GuangYuan.GY001.BLL
 {
+#pragma warning disable IDE1006 // 命名样式
+
     public class T78DataDto
     {
         public string GameId { get; set; }
@@ -161,10 +163,9 @@ namespace GuangYuan.GY001.BLL
         const string AppSecret = "c73f8a6a27cb3e13c4bf455bef422cdb";    //基础加密矢量
 
         private readonly HttpClient _HttpClient;
+        readonly string _Url = "https://krm.icebirdgame.com/user/token/v2";
 
-        string _Url = "https://krm.icebirdgame.com/user/token/v2";
-
-        static ConcurrentDictionary<string, (PayCallbackFromT78ParamsDto, bool)> _Dic = new ConcurrentDictionary<string, (PayCallbackFromT78ParamsDto, bool)>();
+        static readonly ConcurrentDictionary<string, (PayCallbackFromT78ParamsDto, bool)> _Dic = new ConcurrentDictionary<string, (PayCallbackFromT78ParamsDto, bool)>();
 
         public PublisherT78(HttpClient httpClient)
         {
@@ -244,7 +245,7 @@ namespace GuangYuan.GY001.BLL
                 foreach (var item in dic.OrderBy(c => c.Key))
                 {
                     sb.Append(item.Key);
-                    sb.Append("=");
+                    sb.Append('=');
                     sb.Append(item.Value);
                 }
                 sb.Append(AppSecret);
@@ -274,4 +275,7 @@ namespace GuangYuan.GY001.BLL
             });
         }
     }
+
+#pragma warning restore IDE1006 // 命名样式
+
 }

@@ -13,6 +13,7 @@ using System.Runtime.Serialization;
 #pragma warning disable IDE0057 // 使用范围运算符
 #pragma warning disable IDE0074 // 使用复合分配
 #pragma warning disable IDE1006 // 命名样式
+#pragma warning disable IDE0060 // 删除未使用的参数
 
 namespace GY2021001WebApi.Models
 {
@@ -4456,6 +4457,7 @@ namespace GY2021001WebApi.Models
     #endregion 行会相关
 }
 
+#pragma warning restore IDE0060 // 删除未使用的参数
 #pragma warning restore IDE1006 // 命名样式
 #pragma warning restore IDE0074 // 使用复合分配
 #pragma warning restore IDE0057 // 使用范围运算符

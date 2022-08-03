@@ -426,25 +426,26 @@ namespace OW.Game
                     gameItem.Properties["nemhp"] = nemhp;
                 if (propertyBag.TryGetDecimal("neqlt", out var neqlt))    //若指定了质量资质
                     gameItem.Properties["neqlt"] = neqlt;
+
                 #endregion 处理资质数值
 
                 #region  处理随机资质数据
-                var nneatk = 0m;
-                bool b = propertyBag.TryGetDecimal("nneatk", out nneatk);
+                #endregion 处理资质数值
+
+                #region  处理随机资质数据
+                bool b = propertyBag.TryGetDecimal("nneatk", out decimal nneatk);
                 var mneatk = 100m;
                 b |= propertyBag.TryGetDecimal("mneatk", out mneatk);
                 if (b)   //若需要随机资质值
                     gameItem.Properties["neatk"] = (decimal)VWorld.WorldRandom.Next((int)nneatk, (int)mneatk + 1);
 
-                var nnemhp = 0m;
-                b = propertyBag.TryGetDecimal("nnemhp", out nnemhp);
+                b = propertyBag.TryGetDecimal("nnemhp", out decimal nnemhp);
                 var mnemhp = 100m;
                 b |= propertyBag.TryGetDecimal("mnemhp", out mnemhp);
                 if (b)   //若需要随机资质值
                     gameItem.Properties["nemhp"] = (decimal)VWorld.WorldRandom.Next((int)nnemhp, (int)mnemhp + 1);
 
-                var nneqlt = 0m;
-                b = propertyBag.TryGetDecimal("nneqlt", out nneqlt);
+                b = propertyBag.TryGetDecimal("nneqlt", out decimal nneqlt);
                 var mneqlt = 100m;
                 b |= propertyBag.TryGetDecimal("mneqlt", out mneqlt);
                 if (b)   //若需要随机资质值

@@ -45,43 +45,9 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 在指定集合中寻找指定模板Id的第一个对象。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="parent"></param>
-        /// <param name="templateId"></param>
-        /// <param name="msg"></param>
-        /// <returns>找到的第一个对象，null没有找到，msg给出提示信息。</returns>
-        public static GameItem FindFirstOrDefault(this GameItemManager manager, IEnumerable<GameItem> parent, Guid templateId, out string msg)
-        {
-            var result = parent.FirstOrDefault(c => c.ExtraGuid == templateId);
-            if (result is null)
-                msg = $"找不到指定模板Id的物品，ExtraGuid={templateId}";
-            else
-                msg = null;
-            return result;
-        }
-
-        /// <summary>
         /// 可移动的物品GIds。
         /// </summary>
         private static readonly int[] moveableGIds = new int[] { 11, 40, 41 };
-
-        /// <summary>
-        /// 激活风格。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="datas"></param>
-        public static void ActiveStyle(this GameItemManager manager, ActiveStyleDatas datas)
-        {
-            using var dw = datas.LockUser();
-            if (dw is null)
-                return;
-            var gc = datas.GameChar;
-            var hl = gc.GetHomeland();
-            hl.Properties["HomelandActiveNumber"] = (decimal)datas.ActiveNumber;
-            //TO DO变换物品形态
-        }
 
         /// <summary>
         /// 获取指定双亲符合条件的图鉴。
@@ -210,35 +176,6 @@ namespace GuangYuan.GY001.BLL
             gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.TujianBagTId);
 
         #endregion 获取特定对象的快捷方式
-
-        public static void Fill(this GameItemManager manager, GameItem source, GY001GameItemSummery dest)
-        {
-            manager.Fill(source, dest as GameItemSummery);
-            if (source.IsIncludeChildren())
-            {
-                dest.BodyTId = manager.GetBody(source)?.ExtraGuid;
-                dest.HeadTId = manager.GetHead(source)?.ExtraGuid;
-            }
-        }
-
-        public static void Fill(this GameItemManager manager, GY001GameItemSummery source, GameItem dest)
-        {
-            manager.Fill(source as GameItemSummery, dest);
-            if (source.BodyTId.HasValue && source.HeadTId.HasValue)  //若是生物
-            {
-                var body = new GameItem()
-                {
-                    ExtraGuid = source.BodyTId.Value,
-                };
-                dest.Children.Add(body);
-
-                var head = new GameItem()
-                {
-                    ExtraGuid = source.HeadTId.Value,
-                };
-                dest.Children.Add(head);
-            }
-        }
 
         /// <summary>
         /// 创建一个坐骑或野生动物。
@@ -471,27 +408,6 @@ namespace GuangYuan.GY001.BLL
                 result.Children.Add(subItem);
             }
             return result;
-        }
-
-        /// <summary>
-        /// 复制一个对象。
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="srcItem">源对象。</param>
-        /// <param name="destItem">目标对象。</param>
-        public static void Clone(this GameItemManager manager, GameItem srcItem, GameItem destItem)
-        {
-            destItem.ExtraGuid = srcItem.ExtraGuid;
-            destItem.SetTemplate(srcItem.GetTemplate());
-            OwHelper.Copy(srcItem.Properties, destItem.Properties);
-            destItem.Count = srcItem.Count;
-            foreach (var item in srcItem.Children)
-            {
-                var subItem = manager.Clone(item);
-                subItem.Parent = destItem;
-                subItem.ParentId = destItem.Id;
-                destItem.Children.Add(subItem);
-            }
         }
 
     }

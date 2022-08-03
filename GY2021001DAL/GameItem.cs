@@ -4,6 +4,7 @@ using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
