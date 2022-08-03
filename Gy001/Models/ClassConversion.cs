@@ -48,39 +48,6 @@ namespace GY2021001WebApi.Models
         }
     }
 
-    public partial class GamePropertyChangeItemDto
-    {
-        public static implicit operator GamePropertyChangeItemDto(GamePropertyChangeItem<object> obj)
-        {
-            var result = new GamePropertyChangeItemDto()
-            {
-                DateTimeUtc = obj.DateTimeUtc,
-                HasNewValue = obj.HasNewValue,
-                HasOldValue = obj.HasOldValue,
-                NewValue = obj.NewValue,
-                ObjectId = (obj.Object as GameThingBase)?.Base64IdString,
-                OldValue = obj.OldValue,
-                PropertyName = obj.PropertyName,
-                TId = (obj.Object as GameThingBase)?.ExtraGuid.ToBase64String(),
-            };
-            if (obj.IsCollectionRemoved())  //若是集合删除元素
-                if (obj.OldValue is GameThingBase gt)
-                    result.OldValue = gt.Base64IdString;
-            if (obj.IsCollectionAdded()) //若添加了元素
-            {
-                if (obj.NewValue is GameItem gi)
-                    result.NewValue = (GameItemDto)gi;
-                else if (obj.NewValue is GameChar gc)
-                    result.NewValue = (GameCharDto)gc;
-                else if (obj.NewValue is GameGuild gg)
-                    result.NewValue = (GameGuildDto)gg;
-                Debug.WriteLine($"不认识的对象类型{obj.NewValue.GetType()}");
-                //TO DO 不认识的对象类型
-            }
-            return result;
-        }
-    }
-
     public partial class ReturnDtoBase
     {
         public void FillFrom(IResultWorkData result)
@@ -309,34 +276,6 @@ namespace GY2021001WebApi.Models
             return result;
         }
 
-        /// <summary>
-        /// 从数据对象获取传输对象。
-        /// </summary>
-        /// <param name="obj"></param>
-        public static explicit operator GameCharDto(GameChar obj)
-        {
-            var result = new GameCharDto()
-            {
-                Id = obj.Id.ToBase64String(),
-                ClientGutsString = obj.GetClientString(),
-                CreateUtc = obj.CreateUtc,
-                DisplayName = obj.DisplayName,
-                GameUserId = obj.GameUserId.ToBase64String(),
-                TemplateId = obj.ExtraGuid.ToBase64String(),
-                CurrentDungeonId = obj.CurrentDungeonId?.ToBase64String(),
-                CombatStartUtc = obj.CombatStartUtc,
-            };
-            result.GameItems.AddRange(obj.GameItems.Select(c => (GameItemDto)c));
-            foreach (var item in obj.Properties)
-            {
-                result.Properties[item.Key] = item.Value;
-            }
-            foreach (var item in obj.GetOrCreateBinaryObject<CharBinaryExProperties>().ClientProperties)  //初始化客户端扩展属性
-            {
-                result.ClientExtendProperties[item.Key] = item.Value;
-            }
-            return result;
-        }
     }
 
     public partial class GameItemTemplateDto
@@ -375,24 +314,6 @@ namespace GY2021001WebApi.Models
     }
 
 
-    public partial class ChangesItemDto
-    {
-
-        public static implicit operator ChangesItemDto(ChangeItem obj)
-        {
-            var result = new ChangesItemDto()
-            {
-                ContainerId = obj.ContainerId.ToBase64String(),
-                DateTimeUtc = obj.DateTimeUtc,
-            };
-            result.Adds.AddRange(obj.Adds.Select(c => (GameItemDto)c));
-            result.Changes.AddRange(obj.Changes.Select(c => (GameItemDto)c));
-            result.Removes.AddRange(obj.Removes.Select(c => c.ToBase64String()));
-            return result;
-        }
-
-    }
-
     public partial class VWorldInfomationDto
     {
         public static implicit operator VWorldInfomationDto(VWorldInfomation obj)
@@ -410,46 +331,6 @@ namespace GY2021001WebApi.Models
 
     #endregion 基础数据
 
-    public partial class CombatEndReturnDto
-    {
-        public static explicit operator CombatEndReturnDto(EndCombatData obj)
-        {
-            var result = new CombatEndReturnDto()
-            {
-                NextDungeonId = obj.NextTemplate?.Id.ToBase64String(),
-                HasError = obj.HasError,
-                DebugMessage = obj.DebugMessage,
-            };
-            result.ChangesItems.AddRange(obj.ChangesItems.Select(c => (ChangesItemDto)c));
-            return result;
-        }
-
-    }
-
-
-    public partial class ApplyBlueprintReturnDto
-    {
-        public static explicit operator ApplyBlueprintReturnDto(ApplyBlueprintDatas obj)
-        {
-            var result = new ApplyBlueprintReturnDto()
-            {
-                HasError = obj.HasError,
-                DebugMessage = obj.DebugMessage,
-                SuccCount = obj.SuccCount,
-            };
-            if (!result.HasError)
-            {
-                result.ChangesItems.AddRange(obj.ChangeItems.Select(c => (ChangesItemDto)c));
-                result.FormulaIds.AddRange(obj.FormulaIds.Select(c => c.ToBase64String()));
-                result.ErrorTIds.AddRange(obj.ErrorItemTIds.Select(c => c.ToBase64String()));
-                result.MailIds.AddRange(obj.MailIds.Select(c => c.ToBase64String()));
-            }
-            return result;
-        }
-
-    }
-
-
     #region 家园相关
 
     public partial class ApplyHomelandStyleParamsDto : TokenDtoBase
@@ -463,30 +344,6 @@ namespace GY2021001WebApi.Models
     #endregion 家园相关
 
     #region 社交相关
-
-    public partial class CharSummaryDto
-    {
-
-        public static implicit operator CharSummaryDto(CharSummary obj)
-        {
-            var result = new CharSummaryDto()
-            {
-                CombatCap = obj.CombatCap,
-                DisplayName = obj.DisplayName,
-                Id = obj.Id.ToBase64String(),
-                LastLogoutDatetime = obj.LastLogoutDatetime,
-                Level = obj.Level,
-                Gold = obj.Gold,
-                GoldOfStore = obj.GoldOfStore,
-                MainControlRoomLevel = obj.MainBaseLevel,
-                PvpScores = obj.PvpScores,
-                Wood = obj.Wood,
-                WoodOfStore = obj.WoodOfStore,
-            };
-            result.HomelandShows.AddRange(obj.HomelandShows.Select(c => (GameItemDto)c));
-            return result;
-        }
-    }
 
     public partial class GameSocialRelationshipDto
     {
@@ -567,15 +424,6 @@ namespace GY2021001WebApi.Models
 
     public partial class GameGuildDto
     {
-        public static implicit operator GameGuildDto(GameGuild obj)
-        {
-            var result = new GameGuildDto()
-            {
-            };
-            result.Items.AddRange(obj.Items.Select(c => (GameItemDto)c));
-            return result;
-        }
-
         /// <summary>
         /// 填充成员信息。
         /// </summary>

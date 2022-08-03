@@ -1,4 +1,5 @@
-﻿using GY2021001WebApi.Models;
+﻿using GuangYuan.GY001.BLL.Specific;
+using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using OW.Game;
 using OW.Game.Log;
@@ -41,7 +42,8 @@ namespace Gy001.Controllers
             result.DebugMessage = datas.ErrorMessage;
             if (!result.HasError)
             {
-                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                var mapper = World.GetMapper();
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
                 result.MailIds.AddRange(datas.MailIds.Select(c => c.ToBase64String()));
             }
             if (result.ErrorCode == ErrorCodes.ERROR_INVALID_TOKEN)
@@ -90,8 +92,9 @@ namespace Gy001.Controllers
             result.FillFrom(datas);
             if (!result.HasError)
             {
+                var mapper = World.GetMapper();
                 datas.PropertyChanges.CopyTo(datas.ChangeItems);
-                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
                 result.MailIds.AddRange(datas.MailIds.Select(c => c.ToBase64String()));
             }
             return result;

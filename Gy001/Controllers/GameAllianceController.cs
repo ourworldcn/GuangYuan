@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
 using GY2021001WebApi.Models;
@@ -45,10 +46,11 @@ namespace Gy001.Controllers
             result.FillFrom(datas);
             if (!result.HasError)
             {
+                var mapper = World.GetMapper();
                 var guild = World.AllianceManager.GetGuild(datas.Id);
-                result.Guild = guild;
+                result.Guild = mapper.Map(guild);
                 GameGuildDto.FillMembers(guild, result.Guild, World);
-                result.Changes.AddRange(datas.PropertyChanges.Select(c => (GamePropertyChangeItemDto)c));
+                result.Changes.AddRange(datas.PropertyChanges.Select(c => mapper.Map(c)));
             }
             return result;
         }

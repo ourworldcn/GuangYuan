@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
@@ -56,7 +57,8 @@ namespace Gy001.Controllers
             diam.Count += 1000;
             var bpm = world.BlueprintManager;
             bpm.ApplyBluprint(applyBluprintDatas);
-            return (ApplyBlueprintReturnDto)applyBluprintDatas;
+            var mapper = world.GetMapper();
+            return mapper.Map(applyBluprintDatas);
         }
 
 #endif
@@ -93,7 +95,8 @@ namespace Gy001.Controllers
                 datas.GameItems.AddRange(model.GameItems.Select(c => (GameItem)c));
                 world.BlueprintManager.ApplyBluprint(datas);
 
-                result = (ApplyBlueprintReturnDto)datas;
+                var mapper = world.GetMapper();
+                result = mapper.Map(datas);
                 result.FillFrom(datas);
                 world.CharManager.NotifyChange(gu);
             }

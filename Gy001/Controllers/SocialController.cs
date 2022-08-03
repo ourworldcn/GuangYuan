@@ -132,7 +132,8 @@ namespace Gy001.Controllers
                 var social = _World.SocialManager;
                 var changes = new List<ChangeItem>();
                 social.GetAttachmentes(model.Ids.Select(c => OwConvert.ToGuid(c)), gu.CurrentChar, db, changes, results);
-                result.ChangesItems.AddRange(changes.Select(c => (ChangesItemDto)c));
+                var mapper = _World.GetMapper();
+                result.ChangesItems.AddRange(changes.Select(c => mapper.Map(c)));
                 result.Results.AddRange(results.Select(c => new GetAttachmentesResultItemDto
                 {
                     Id = c.Item1.ToBase64String(),
@@ -186,7 +187,8 @@ namespace Gy001.Controllers
                     return result;
                 }
                 var coll = _World.SocialManager.GetCharSummary(data.CharIds, data.UserDbContext);
-                result.CharSummaries.AddRange(coll.Select(c => (CharSummaryDto)c));
+                var mapper = _World.GetMapper();
+                result.CharSummaries.AddRange(coll.Select(c => mapper.Map(c)));
             }
             catch (Exception err)
             {
@@ -283,7 +285,8 @@ namespace Gy001.Controllers
                 result.SocialRelationships.AddRange(coll.Select(c => (GameSocialRelationshipDto)c));
                 var ids = coll.Select(c => c.Id).Union(coll.Select(c => c.Id2)).Distinct();
                 var summs = _World.SocialManager.GetCharSummary(ids, db);
-                result.Summary.AddRange(summs.Select(c => (CharSummaryDto)c));
+                var mapper = _World.GetMapper();
+                result.Summary.AddRange(summs.Select(c => mapper.Map(c)));
                 return result;
             }
             finally
@@ -327,12 +330,12 @@ namespace Gy001.Controllers
             var result = new GetSocialRelationshipsReturnDto();
             result.SocialRelationships.AddRange(coll.Select(c => (GameSocialRelationshipDto)c));
             var ids = coll.Where(c => c.Properties.ContainsKey("charid")).Select(c => c.Properties.GetGuidOrDefault("charid"));
+            var mapper = _World.GetMapper();
             if (ids.Any())
             {
-                result.Summary.AddRange(_World.SocialManager.GetCharSummary(ids, _UserContext).Select(c => (CharSummaryDto)c));
+                result.Summary.AddRange(_World.SocialManager.GetCharSummary(ids, _UserContext).Select(c => mapper.Map(c)));
             }
             var relIds = coll.Select(c => c.Id2).Concat(coll.Select(c => c.Id)).ToArray();  //可能相关的物品信息
-            var mapper = _World.Service.GetService<GameMapperManager>();
             result.GameItems.AddRange(_UserContext.Set<GameItem>().Where(c => relIds.Contains(c.Id)).ToArray().Select(c => mapper.Map(c)));   //补足物品信息
             return result;
         }
@@ -496,7 +499,8 @@ namespace Gy001.Controllers
                 result.HasError = true;
             }
             result.Code = r;
-            result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+            var mapper = _World.GetMapper();
+            result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
             if (result.HasError = datas.HasError)
             {
                 result.DebugMessage = datas.ErrorMessage;
@@ -530,8 +534,9 @@ namespace Gy001.Controllers
                 result.FillFrom(datas);
                 if (!result.HasError)
                 {
-                    result.Changes.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
-                    result.MailItems.AddRange(datas.MailItems.Select(c => (ChangesItemDto)c));
+                    var mapper = _World.GetMapper();
+                    result.Changes.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
+                    result.MailItems.AddRange(datas.MailItems.Select(c => mapper.Map(c)));
                     result.Relationship = datas.GetOrAddSr();
                 }
             }
@@ -579,15 +584,17 @@ namespace Gy001.Controllers
                     }
                     else
                     {
-                        result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                        var mapper = _World.GetMapper();
+                        result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
                         result.CharIds.AddRange(datas.CharIds.Select(c => c.ToBase64String()));
                     }
                 }
                 if (!result.HasError)    //若没有错误
                 {
                     //增补客户端需要的额外数据
+                    var mapper = _World.GetMapper();
                     var summary = datas.World.SocialManager.GetCharSummary(datas.CharIds, datas.UserDbContext);
-                    result.CharSummary.AddRange(summary.Select(c => (CharSummaryDto)c));
+                    result.CharSummary.AddRange(summary.Select(c => mapper.Map(c)));
                 }
             }
             catch (Exception err)

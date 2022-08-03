@@ -177,7 +177,9 @@ namespace OW.Game
                     var newVal = CreateNewUserDbContext();
                     var oldVal = Interlocked.CompareExchange(ref _TemporaryUserContext, CreateNewUserDbContext(), null);
                     if (null != oldVal) //若没有替换
-                        newVal.DisposeAsync();
+                    {
+                        using var disposer = newVal;
+                    }
                 }
                 return _TemporaryUserContext;
             }
@@ -685,30 +687,6 @@ namespace OW.Game
                 throw new SynchronizationLockException();
 #endif
             Monitor.Exit(str);
-        }
-
-        /// <summary>
-        /// 锁定字符串使用的结构。键是(比较方法,区域),值字符串值。
-        /// </summary>
-        ConcurrentDictionary<(StringComparer, string), HashSet<string>> _StringLocker = new ConcurrentDictionary<(StringComparer, string), HashSet<string>>();
-
-        /// <summary>
-        /// 锁定指定的字符串，并返回实际锁定的实例。
-        /// </summary>
-        /// <param name="str">锁定的字符串，返回时是一个值等价的字符串，但锁加在该唯一实例(在指定的区域范围内)上。</param>
-        /// <param name="region">区域范围，每个区域范围内值相等的字符串是唯一的。区分大小写。</param>
-        /// <param name="timeout">不可以是空null,但可以是空字符串<see cref="string.Empty"/></param>
-        /// <returns></returns>
-        public virtual bool LockString(ref string str, string region, StringComparer comparer, TimeSpan timeout)
-        {
-            var hs = _StringLocker.GetOrAdd((comparer, region), c => new HashSet<string>(comparer));
-            lock (hs)
-                if (hs.TryGetValue(str, out str))
-                    return true;
-                else
-                {
-                    return hs.Add(str);
-                }
         }
 
         ConcurrentDictionary<(StringComparer, string, string), string> _StringDic = new ConcurrentDictionary<(StringComparer, string, string), string>();

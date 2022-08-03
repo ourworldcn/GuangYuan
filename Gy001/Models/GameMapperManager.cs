@@ -13,6 +13,9 @@ using GuangYuan.GY001.UserDb.Combat;
 using GY2021001WebApi.Models;
 using GuangYuan.GY001.UserDb;
 using OW.Extensions.Game.Store;
+using GuangYuan.GY001.UserDb.Social;
+using OW.Game.PropertyChange;
+using System.Diagnostics;
 
 namespace GuangYuan.GY001.BLL.Specific
 {
@@ -102,6 +105,156 @@ namespace GuangYuan.GY001.BLL.Specific
         {
             var result = new GameItemDto();
             Map(src, result);
+            return result;
+        }
+
+        public void Map(GameChar obj, GameCharDto result)
+        {
+            result.Id = obj.Id.ToBase64String();
+            result.ClientGutsString = obj.GetClientString();
+            result.CreateUtc = obj.CreateUtc;
+            result.DisplayName = obj.DisplayName;
+            result.GameUserId = obj.GameUserId.ToBase64String();
+            result.TemplateId = obj.ExtraGuid.ToBase64String();
+            result.CurrentDungeonId = obj.CurrentDungeonId?.ToBase64String();
+            result.CombatStartUtc = obj.CombatStartUtc;
+
+            result.GameItems.AddRange(obj.GameItems.Select(c => Map(c)));
+            foreach (var item in obj.Properties)
+            {
+                result.Properties[item.Key] = item.Value;
+            }
+            foreach (var item in obj.GetOrCreateBinaryObject<CharBinaryExProperties>().ClientProperties)  //初始化客户端扩展属性
+            {
+                result.ClientExtendProperties[item.Key] = item.Value;
+            }
+        }
+
+        public GameCharDto Map(GameChar obj)
+        {
+            var result = new GameCharDto();
+            Map(obj, result);
+            return result;
+        }
+
+        public void Map(GameGuild obj, GameGuildDto result)
+        {
+            result.Items.AddRange(obj.Items.Select(c => Map(c)));
+        }
+
+        public GameGuildDto Map(GameGuild obj)
+        {
+            var result = new GameGuildDto();
+            Map(obj, result);
+            return result;
+        }
+
+        public void Map(CharSummary obj, CharSummaryDto result)
+        {
+            result.CombatCap = obj.CombatCap;
+            result.DisplayName = obj.DisplayName;
+            result.Id = obj.Id.ToBase64String();
+            result.LastLogoutDatetime = obj.LastLogoutDatetime;
+            result.Level = obj.Level;
+            result.Gold = obj.Gold;
+            result.GoldOfStore = obj.GoldOfStore;
+            result.MainControlRoomLevel = obj.MainBaseLevel;
+            result.PvpScores = obj.PvpScores;
+            result.Wood = obj.Wood;
+            result.WoodOfStore = obj.WoodOfStore;
+            result.HomelandShows.AddRange(obj.HomelandShows.Select(c => Map(c)));
+        }
+
+        public CharSummaryDto Map(CharSummary obj)
+        {
+            var result = new CharSummaryDto();
+            Map(obj, result);
+            return result;
+        }
+
+        public void Map(GamePropertyChangeItem<object> obj, GamePropertyChangeItemDto result)
+        {
+            result.DateTimeUtc = obj.DateTimeUtc;
+            result.HasNewValue = obj.HasNewValue;
+            result.HasOldValue = obj.HasOldValue;
+            result.NewValue = obj.NewValue;
+            result.ObjectId = (obj.Object as GameThingBase)?.Base64IdString;
+            result.OldValue = obj.OldValue;
+            result.PropertyName = obj.PropertyName;
+            result.TId = (obj.Object as GameThingBase)?.ExtraGuid.ToBase64String();
+
+            if (obj.IsCollectionRemoved())  //若是集合删除元素
+                if (obj.OldValue is GameThingBase gt)
+                    result.OldValue = gt.Base64IdString;
+            if (obj.IsCollectionAdded()) //若添加了元素
+            {
+                if (obj.NewValue is GameItem gi)
+                    result.NewValue = Map(gi);
+                else if (obj.NewValue is GameChar gc)
+                    result.NewValue = Map(gc);
+                else if (obj.NewValue is GameGuild gg)
+                    result.NewValue = Map(gg);
+                Debug.WriteLine($"不认识的对象类型{obj.NewValue.GetType()}");
+                //TO DO 不认识的对象类型
+            }
+        }
+
+        public GamePropertyChangeItemDto Map(GamePropertyChangeItem<object> obj)
+        {
+            var result = new GamePropertyChangeItemDto();
+            Map(obj, result);
+            return result;
+        }
+
+        public void Map(ChangeItem obj, ChangesItemDto result)
+        {
+            result.ContainerId = obj.ContainerId.ToBase64String();
+            result.DateTimeUtc = obj.DateTimeUtc;
+            result.Adds.AddRange(obj.Adds.Select(c => Map(c)));
+            result.Changes.AddRange(obj.Changes.Select(c => Map(c)));
+            result.Removes.AddRange(obj.Removes.Select(c => c.ToBase64String()));
+        }
+
+        public ChangesItemDto Map(ChangeItem obj)
+        {
+            var result = new ChangesItemDto();
+            Map(obj, result);
+            return result;
+        }
+
+        public void Map(ApplyBlueprintDatas obj, ApplyBlueprintReturnDto result)
+        {
+            result.HasError = obj.HasError;
+            result.DebugMessage = obj.DebugMessage;
+            result.SuccCount = obj.SuccCount;
+            if (!result.HasError)
+            {
+                result.ChangesItems.AddRange(obj.ChangeItems.Select(c => Map(c)));
+                result.FormulaIds.AddRange(obj.FormulaIds.Select(c => c.ToBase64String()));
+                result.ErrorTIds.AddRange(obj.ErrorItemTIds.Select(c => c.ToBase64String()));
+                result.MailIds.AddRange(obj.MailIds.Select(c => c.ToBase64String()));
+            }
+        }
+
+        public ApplyBlueprintReturnDto Map(ApplyBlueprintDatas obj)
+        {
+            var result = new ApplyBlueprintReturnDto();
+            Map(obj, result);
+            return result;
+        }
+
+        public void Map(EndCombatData obj, CombatEndReturnDto result)
+        {
+            result.NextDungeonId = obj.NextTemplate?.Id.ToBase64String();
+            result.HasError = obj.HasError;
+            result.DebugMessage = obj.DebugMessage;
+            result.ChangesItems.AddRange(obj.ChangesItems.Select(c => Map(c)));
+        }
+
+        public CombatEndReturnDto Map(EndCombatData obj)
+        {
+            var result = new CombatEndReturnDto();
+            Map(obj, result);
             return result;
         }
         #endregion 特定类型映射
@@ -224,5 +377,11 @@ namespace GuangYuan.GY001.BLL.Specific
             return context.Instance;
         }
 
+    }
+
+    public static class GameMapperManagerExtensions
+    {
+        static GameMapperManager _Mapper;
+        public static GameMapperManager GetMapper(this VWorld world) => _Mapper ??= world.Service.GetService<GameMapperManager>();
     }
 }

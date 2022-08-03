@@ -508,13 +508,6 @@ namespace GuangYuan.GY001.UserDb
     /// </summary>
     public static class ChangesItemExtensions
     {
-        public static void ToE(IEnumerable<GamePropertyChangeItem<object>> src, ICollection<ChangeItem> dest)
-        {
-            var coll = from tmp in src
-                       group tmp by tmp.Object;
-            coll.Select(c => c.Key);
-        }
-
         /// <summary>
         /// 追加物品到追加数据中。
         /// </summary>

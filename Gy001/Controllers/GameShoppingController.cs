@@ -1,4 +1,5 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
@@ -80,7 +81,8 @@ namespace Gy001.Controllers
             result.DebugMessage = datas.ErrorMessage;
             if (!result.HasError)
             {
-                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                var mapper = World.GetMapper();
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
             }
             return result;
         }
@@ -106,7 +108,8 @@ namespace Gy001.Controllers
             result.DebugMessage = datas.ErrorMessage;
             if (!result.HasError)
             {
-                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                var mapper = World.GetMapper();
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
             }
             return result;
         }
@@ -145,9 +148,10 @@ namespace Gy001.Controllers
             var result = new LotteryReturnDto();
             if (!datas.HasError)
             {
-                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+                var mapper = World.GetMapper();
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
                 result.TemplateIds.AddRange(datas.ResultTemplateIds.Select(c => c.ToBase64String()));
-                result.ResultItems.AddRange(datas.ResultItems.Select(c => (GameItemDto)c));
+                result.ResultItems.AddRange(datas.ResultItems.Select(c => mapper.Map(c)));
             }
             result.FillFrom(datas);
             return result;
@@ -171,7 +175,7 @@ namespace Gy001.Controllers
             [FromHeader(Name = "X-BNPAY-PAYTYPE")] string payType)
         {
             var result = new PayCallbackFromT78ReturnDto();
-            var svc = HttpContext.RequestServices.GetRequiredService<PublisherT78>();
+            _ = HttpContext.RequestServices.GetRequiredService<PublisherT78>();
             return result;
         }
 
@@ -184,7 +188,7 @@ namespace Gy001.Controllers
         public ActionResult<ConfirmPayT78ResultDto> ConfirmPayT78(ConfirmPayT78ParamsDto model)
         {
             var result = new ConfirmPayT78ResultDto();
-            var svc = HttpContext.RequestServices.GetRequiredService<PublisherT78>();
+            _ = HttpContext.RequestServices.GetRequiredService<PublisherT78>();
             return result;
         }
 

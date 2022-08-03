@@ -48,7 +48,8 @@ namespace GY2021001WebApi.Controllers
             if (!result.HasError)
             {
                 result.TemplateId = data.Template?.Id.ToBase64String();
-                result.Changes.AddRange(data.PropertyChanges.Select(c => (GamePropertyChangeItemDto)c));
+                var mapper = cbm.World.GetMapper();
+                result.Changes.AddRange(data.PropertyChanges.Select(c => mapper.Map(c)));
             }
             return result;
         }
@@ -85,7 +86,8 @@ namespace GY2021001WebApi.Controllers
                     result.DebugMessage = err.Message;
                 }
             }
-            return (CombatEndReturnDto)result;
+            var mapper = World.GetMapper();
+            return mapper.Map(result);
         }
 
 #if DEBUG
@@ -116,7 +118,8 @@ namespace GY2021001WebApi.Controllers
             World.CombatManager.EndCombatPvp(datas);
             result.HasError = datas.HasError;
             result.DebugMessage = datas.ErrorMessage;
-            result.ChangesItems.AddRange(datas.ChangeItems.Select(c => (ChangesItemDto)c));
+            var mapper = World.GetMapper();
+            result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
             result.Combat = new CombatDto();
             HttpContext.RequestServices.GetRequiredService<GameMapperManager>().Map(datas.Combat, result.Combat);
             return result;
@@ -141,9 +144,10 @@ namespace GY2021001WebApi.Controllers
             result.DebugMessage = datas.ErrorMessage;
             if (!datas.HasError)    //若成功返回
             {
+                var mapper = World.Service.GetRequiredService<GameMapperManager>();
                 var view = datas.CombatObject;
-                result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c =>World.map c));
-                result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => (GameItemDto)c));
+                result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => mapper.Map(c)));
+                result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => mapper.Map(c)));
                 result.Booty.AddRange(datas.UserDbContext.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Thing.Id)
                     .AsEnumerable().Select(c => (GameBootyDto)c.GetJsonObject<GameBooty>()));
                 result.CombatObject = new CombatDto();

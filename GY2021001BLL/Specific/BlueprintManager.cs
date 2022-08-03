@@ -893,7 +893,7 @@ namespace GuangYuan.GY001.BLL
                 datas.DebugMessage = "只能收获木材 玉米。";
                 return;
             }
-            if (!World.PropertyManager.TryGetPropertyValueWithFcp(src, "Count", DateTime.UtcNow, true, out object countObj, out DateTime dt) || !OwConvert.TryToDecimal(countObj, out decimal count))
+            if (!World.PropertyManager.TryGetPropertyValueWithFcp(src, "Count", DateTime.UtcNow, true, out object countObj, out DateTime _) || !OwConvert.TryToDecimal(countObj, out decimal count))
             {
                 datas.DebugMessage = "未知原因无法获取收获数量。";
                 datas.HasError = true;

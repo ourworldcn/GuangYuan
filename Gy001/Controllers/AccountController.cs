@@ -105,7 +105,8 @@ namespace GY2021001WebApi.Controllers
             {
                 result.Token = gu.CurrentToken.ToBase64String();
                 using var dwUsers = gm.LockAndReturnDisposer(gu);
-                result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
+                var mapper = gm.World.GetMapper();
+                result.GameChars.AddRange(gu.GameChars.Select(c => mapper.Map(c)));
             }
             return result;
         }
@@ -134,7 +135,8 @@ namespace GY2021001WebApi.Controllers
             {
                 result.Token = gu.CurrentToken.ToBase64String();
                 using var dwUsers = gm.LockAndReturnDisposer(gu);
-                result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
+                var mapper = gm.World.GetMapper();
+                result.GameChars.AddRange(gu.GameChars.Select(c => mapper.Map(c)));
                 result.ResultString = gu.RuntimeProperties.GetStringOrDefault("T78LoginResultString");
                 result.IsCreated = gu.RuntimeProperties.GetBooleanOrDefaut("T78IsCreated");
             }
@@ -179,8 +181,6 @@ namespace GY2021001WebApi.Controllers
 #if DEBUG
             using var db = HttpContext.RequestServices.GetRequiredService<VWorld>().CreateNewUserDbContext();
             GameItem gi = db.Set<GameItem>().First(c => c.Children.Count > 0);
-            var mapper = HttpContext.RequestServices.GetRequiredService<IMapper>();
-            var tmp = mapper.Map<GameItemDto>(gi);
             //TypeDescriptor.GetConverter(typeof(GameItemDto)).ConvertFrom(new GameMapperTypeDescriptorContext(dto), CultureInfo.InvariantCulture, gi);
 #endif //DEBUG
             try
@@ -197,7 +197,8 @@ namespace GY2021001WebApi.Controllers
                     Token = gu.CurrentToken.ToBase64String(),
                     WorldServiceHost = worldServiceHost,
                 };
-                result.GameChars.AddRange(gu.GameChars.Select(c => (GameCharDto)c));
+                var mapper = gcm.World.GetMapper();
+                result.GameChars.AddRange(gu.GameChars.Select(c => mapper.Map(c)));
                 return result;
             }
             catch (Exception err)

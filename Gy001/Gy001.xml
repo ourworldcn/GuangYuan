@@ -421,52 +421,6 @@
             用户头像号。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.GamePropertyChangeItemDto">
-            <summary>
-            用于精确描述变化数据的类。
-            </summary>
-            <remarks>这个类的新值和旧值都用Object表示，对于数据量极大的一些情况会使用具体的类表示如GamePropertyChangeFloatItemDto表示大量的即时战斗数据包导致的人物属性变化。</remarks>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.TId">
-            <summary>
-            对象的模板Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.ObjectId">
-            <summary>
-            对象Id。指出是什么对象变化了属性。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.PropertyName">
-            <summary>
-            属性的名字。事件发送者和处理者约定好即可，也可能是对象的其他属性名，如Children可以表示集合变化。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.HasOldValue">
-            <summary>
-            指示<see cref="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.OldValue"/>中的值是否有意义。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.OldValue">
-            <summary>
-            获取或设置旧值。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.HasNewValue">
-            <summary>
-            指示<see cref="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.NewValue"/>中的值是否有意义。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.NewValue">
-            <summary>
-            新值。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.DateTimeUtc">
-            <summary>
-            属性发生变化的时间点。Utc计时。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.ReturnDtoBase">
             <summary>
             返回数据对象的基类。
@@ -728,12 +682,6 @@
             </summary>
             <param name="obj"></param>
         </member>
-        <member name="M:GY2021001WebApi.Models.GameItemDto.op_Implicit(GuangYuan.GY001.UserDb.GameItem)~GY2021001WebApi.Models.GameItemDto">
-            <summary>
-            从数据对象获取传输对象。
-            </summary>
-            <param name="obj"></param>
-        </member>
         <member name="P:GY2021001WebApi.Models.GameItemDto.Id">
             <summary>
             唯一Id。
@@ -801,12 +749,6 @@
         <member name="M:GY2021001WebApi.Models.GameCharDto.op_Explicit(GY2021001WebApi.Models.GameCharDto)~GuangYuan.GY001.UserDb.GameChar">
             <summary>
             从传输对象获取数据对象。
-            </summary>
-            <param name="obj"></param>
-        </member>
-        <member name="M:GY2021001WebApi.Models.GameCharDto.op_Explicit(GuangYuan.GY001.UserDb.GameChar)~GY2021001WebApi.Models.GameCharDto">
-            <summary>
-            从数据对象获取传输对象。
             </summary>
             <param name="obj"></param>
         </member>
@@ -902,36 +844,6 @@
             一个说明性文字，服务器不使用该属性。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.ChangesItemDto">
-            <summary>
-            增量变化数据传输类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ChangesItemDto.ContainerId">
-            <summary>
-            容器的Id。如果是容器本身属性变化，这个成员是容器的上层容器Id,例如背包的容量变化了则这个成员就是角色Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ChangesItemDto.DateTimeUtc">
-            <summary>
-            该变化产生的时间，服务器的UTC时间。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ChangesItemDto.Adds">
-            <summary>
-            增加的数据。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ChangesItemDto.Removes">
-            <summary>
-            删除的对象的唯一Id集合。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ChangesItemDto.Changes">
-            <summary>
-            变化的数据。
-            </summary>
-        </member>
         <member name="P:GY2021001WebApi.Models.VWorldInfomationDto.StartDateTime">
             <summary>
             服务器的本次启动Utc时间。
@@ -948,44 +860,6 @@
             格式为：主版本号.次要版本号.修正号，修正号仅仅是修复bug等，只要主要和次要版本号一致就是同一个版本。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
-            <summary>
-            结束战斗的返回数据传输类。
-            变化数据中，角色下弃物槽（ExtraGuid={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
-            ChangesItems 仅当结算大关卡时这里才有数据。
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.CombatEndReturnDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.NextDungeonId">
-            <summary>
-            需要进入的下一关的Id。如果已经是最后一关结束或强制要求退出，则这里返回空引用或空字符串(string.IsNullOrEmpty测试为true)。
-            如果正常进入下一关，可以不必调用启动战斗的接口。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.ApplyBlueprintReturnDto">
-            <summary>
-            ApplyBluprint接口返回时数据。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.SuccCount">
-            <summary>
-            获取或设置成功执行的次数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.FormulaIds">
-            <summary>
-            返回命中公式的Id集合。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.ErrorTIds">
-            <summary>
-            存在问题的物品的模板Id。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.ApplyHomelandStyleParamsDto">
             <summary>
              ApplyHomelandStyle 接口用的参数封装类。
@@ -999,61 +873,6 @@
         <member name="T:GY2021001WebApi.Models.ApplyHomelandStyleReturnDto">
             <summary>
              ApplyHomelandStyle 接口返回值封装类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Id">
-            <summary>
-            角色的Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.DisplayName">
-            <summary>
-            角色的昵称。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Level">
-            <summary>
-            角色等级。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.CombatCap">
-            <summary>
-            角色战力。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.LastLogoutDatetime">
-            <summary>
-            最后一次下线时间。空表示当前在线。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.GoldOfStore">
-            <summary>
-            玉米田中的金币数量
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Gold">
-            <summary>
-            金币数量
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Wood">
-            <summary>
-            木材数量。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.WoodOfStore">
-            <summary>
-            树林中的木材数量。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.PvpScores">
-            <summary>
-            pvp积分。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CharSummaryDto.MainControlRoomLevel">
-            <summary>
-            主基地等级。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GameSocialRelationshipDto">
@@ -1219,6 +1038,52 @@
         <member name="P:GY2021001WebApi.Models.ModifyPropertiesParamsDto.Items">
             <summary>
             设置要修改的项。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GamePropertyChangeItemDto">
+            <summary>
+            用于精确描述变化数据的类。
+            </summary>
+            <remarks>这个类的新值和旧值都用Object表示，对于数据量极大的一些情况会使用具体的类表示如GamePropertyChangeFloatItemDto表示大量的即时战斗数据包导致的人物属性变化。</remarks>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.TId">
+            <summary>
+            对象的模板Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.ObjectId">
+            <summary>
+            对象Id。指出是什么对象变化了属性。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.PropertyName">
+            <summary>
+            属性的名字。事件发送者和处理者约定好即可，也可能是对象的其他属性名，如Children可以表示集合变化。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.HasOldValue">
+            <summary>
+            指示<see cref="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.OldValue"/>中的值是否有意义。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.OldValue">
+            <summary>
+            获取或设置旧值。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.HasNewValue">
+            <summary>
+            指示<see cref="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.NewValue"/>中的值是否有意义。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.NewValue">
+            <summary>
+            新值。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GamePropertyChangeItemDto.DateTimeUtc">
+            <summary>
+            属性发生变化的时间点。Utc计时。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.CombatDto">
@@ -1560,6 +1425,36 @@
         <member name="P:GY2021001WebApi.Models.PagingRetunDtoBase.MaxCount">
             <summary>
             最多有多少数据。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.ChangesItemDto">
+            <summary>
+            增量变化数据传输类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesItemDto.ContainerId">
+            <summary>
+            容器的Id。如果是容器本身属性变化，这个成员是容器的上层容器Id,例如背包的容量变化了则这个成员就是角色Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesItemDto.DateTimeUtc">
+            <summary>
+            该变化产生的时间，服务器的UTC时间。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesItemDto.Adds">
+            <summary>
+            增加的数据。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesItemDto.Removes">
+            <summary>
+            删除的对象的唯一Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ChangesItemDto.Changes">
+            <summary>
+            变化的数据。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.ChangesReturnDtoBase">
@@ -1963,6 +1858,26 @@
             执行蓝图的次数，当前版本未实现该功能，保留为1(默认)。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.ApplyBlueprintReturnDto">
+            <summary>
+            ApplyBluprint接口返回时数据。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.SuccCount">
+            <summary>
+            获取或设置成功执行的次数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.FormulaIds">
+            <summary>
+            返回命中公式的Id集合。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ApplyBlueprintReturnDto.ErrorTIds">
+            <summary>
+            存在问题的物品的模板Id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.SellParamsItemDto">
             <summary>
             SellParamsDto的详细项。
@@ -2345,6 +2260,24 @@
             数量。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.CombatEndReturnDto">
+            <summary>
+            结束战斗的返回数据传输类。
+            变化数据中，角色下弃物槽（ExtraGuid={346A2F55-9CE8-47DE-B0E0-525FFB765A93}）的新增项，是被丢弃的物品。
+            ChangesItems 仅当结算大关卡时这里才有数据。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.CombatEndReturnDto.#ctor">
+            <summary>
+            构造函数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndReturnDto.NextDungeonId">
+            <summary>
+            需要进入的下一关的Id。如果已经是最后一关结束或强制要求退出，则这里返回空引用或空字符串(string.IsNullOrEmpty测试为true)。
+            如果正常进入下一关，可以不必调用启动战斗的接口。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.SetCombatMountsParamsDto">
             <summary>
             SetCombatMounts接口的数据模型传输类。
@@ -2575,6 +2508,61 @@
         <member name="P:GY2021001WebApi.Models.GetCharSummaryParamsDto.DisplayName">
             <summary>
             指定角色的昵称。如果省略或为null，则不限定昵称而尽量返回活跃用户。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Id">
+            <summary>
+            角色的Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.DisplayName">
+            <summary>
+            角色的昵称。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Level">
+            <summary>
+            角色等级。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.CombatCap">
+            <summary>
+            角色战力。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.LastLogoutDatetime">
+            <summary>
+            最后一次下线时间。空表示当前在线。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.GoldOfStore">
+            <summary>
+            玉米田中的金币数量
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Gold">
+            <summary>
+            金币数量
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.Wood">
+            <summary>
+            木材数量。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.WoodOfStore">
+            <summary>
+            树林中的木材数量。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.PvpScores">
+            <summary>
+            pvp积分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.MainControlRoomLevel">
+            <summary>
+            主基地等级。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.RequestFriendReturnDto">
