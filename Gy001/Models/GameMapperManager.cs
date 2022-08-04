@@ -46,10 +46,18 @@ namespace GuangYuan.GY001.BLL.Specific
 
         IMapper _Mapper;
 
-        public TDestination Map<TDestination>(object source)
+        public TDestination Map<TSource, TDestination>(TSource source) where TDestination : new()
         {
-            return _Mapper.Map<TDestination>(source);
+            var result = new TDestination();
+            Map(source, result);
+            return result;
         }
+
+        public void Map<TSource, TDest>(TSource src, TDest dest)
+        {
+            _Mapper.Map(src, dest);
+        }
+        #region 特定类型映射
 
         /// <summary>
         /// 
@@ -64,8 +72,6 @@ namespace GuangYuan.GY001.BLL.Specific
             dic[$"{prefix}tid"] = node.ExtraGuid.ToString();
             dic[$"{prefix}Count"] = node.GetJsonObject<Dictionary<string, string>>().GetValueOrDefault("Count");
         }
-
-        #region 特定类型映射
 
         public void Map(CombatReport src, CombatDto dest)
         {
@@ -97,7 +103,7 @@ namespace GuangYuan.GY001.BLL.Specific
 
             //特殊处理处理木材堆叠数
             if (ProjectConstant.MucaiId == src.ExtraGuid)
-                dest.Properties[ProjectConstant.StackUpperLimit] = World.ItemManager.GetStcOrOne(src);
+                dest.Properties[World.PropertyManager.StackUpperLimitPropertyName] = World.ItemManager.GetStcOrOne(src);
             dest.Children.AddRange(src.Children.Select(c => Map(c)));
         }
 

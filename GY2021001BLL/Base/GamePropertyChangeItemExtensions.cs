@@ -33,6 +33,7 @@ namespace OW.Game.PropertyChange
                     data.HasOldValue = true;
                     data.OldValue = oldValue;
                 }
+                thing.Properties[propertyName] = value;
                 data.HasNewValue = true;
                 data.NewValue = value;
                 data.Object = thing;
@@ -153,7 +154,7 @@ namespace OW.Game.PropertyChange
         public static bool IsAdd(this GamePropertyChangeItem<object> obj)
         {
             if (obj.HasOldValue && OwConvert.TryToDecimal(obj.OldValue, out var oVal) && obj.HasNewValue && OwConvert.TryToDecimal(obj.NewValue, out var nVal))
-                return oVal<nVal;
+                return oVal < nVal;
             return false;
         }
 

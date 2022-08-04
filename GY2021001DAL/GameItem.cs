@@ -5,6 +5,7 @@ using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -109,7 +110,7 @@ namespace GuangYuan.GY001.UserDb
     /// 游戏中物品，装备，货币，积分的基类。
     /// </summary>
     [Table("GameItems")]
-    public class GameItem : GameItemBase, IVirtualThing<GameItem>, IDisposable
+    public class GameItem : GameItemBase, IVirtualThing<GameItem>, IDisposable, IValidatableObject
     {
         /// <summary>
         /// 构造函数。
@@ -198,17 +199,6 @@ namespace GuangYuan.GY001.UserDb
             return $"{{{result},{Count}}}";
         }
 
-        /// <summary>
-        /// 木材Id，这个不是槽，它的Count属性直接记录了数量，目前其子代为空。
-        /// </summary>
-        public static readonly Guid MucaiId = new Guid("{01959584-E2C9-4E54-BBB7-FCC58A9484EC}");
-
-        /// <summary>
-        /// 木材仓库模板Id。
-        /// </summary>
-        public static readonly Guid MucaiStoreTId = new Guid("{8caea73b-e210-47bf-a121-06cc12973baf}");
-
-
         #region IDisposable接口相关
 
         /// <summary>
@@ -230,6 +220,11 @@ namespace GuangYuan.GY001.UserDb
                 Parent = null;
                 base.Dispose(disposing);
             }
+        }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            return Array.Empty<ValidationResult>(); 
         }
 
         // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器

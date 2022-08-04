@@ -161,9 +161,13 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid ChangeDataTId = new Guid("{16356935-7D9E-4825-8B04-5C8FE4034003}");
         #endregion  角色直属槽及其相关
 
-        #region 其他类型顶层节点
+        #region 战报相关
+        /// <summary>
+        /// 战报顶层节点模板Id。
+        /// </summary>
         public static readonly Guid CombatReportTId = new Guid("{BB418C7C-FEC4-4EB7-8B8B-550E864934DB}");
-        #endregion 其他类型顶层节点
+        public static readonly Guid CombatBootyTId = new Guid("{6A5CB12E-519A-43B0-9EDC-A7FD2AFDE98F}");
+        #endregion 战报相关
 
         #region 货币类模板Id
         /// <summary>
@@ -352,11 +356,6 @@ namespace GuangYuan.GY001.BLL
         /// 升级计时快速变化属性名。
         /// </summary>
         public const string UpgradeTimeName = "upgradecd";
-
-        /// <summary>
-        /// 堆叠上限属性的名字。没有该属性的不可堆叠，无上限限制用-1表示。
-        /// </summary>
-        public const string StackUpperLimit = "stc";
 
         /// <summary>
         /// 容器容量上限属性。

@@ -401,7 +401,6 @@ namespace OW.Game
             World.CombatManager.UpdatePveInfo(gameChar);
             //不可加入pvp排名信息
             //World.CombatManager.UpdatePvpInfo(gameChar);
-            World.ItemManager.ComputeMucaiStc(gameChar);
         }
 
         private static readonly string[] _GameItemCreatedKeyNames = new string[] { "htid", "htt", "btid", "btt", "neatk", "nemhp", "neqlt" };
@@ -550,7 +549,6 @@ namespace OW.Game
                     ts = dt - now;
                 var tm = new Timer(World.BlueprintManager.LevelUpCompleted, ValueTuple.Create(gameChar.Id, item.Id), ts, Timeout.InfiniteTimeSpan);
             }
-            World.ItemManager.ComputeMucaiStc(gameChar);
             //复位角色级别缓存字符串
             var lv = (int)gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
             gameChar.ExtraString = lv.ToString("D10");

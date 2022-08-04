@@ -599,9 +599,6 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datats"></param>
         public void Pvp(EndCombatPvpWorkData datas)
         {
-#pragma warning disable CS0219 // 变量“pvpRetaliation”已被赋值，但从未使用过它的值
-            const string pvpRetaliation = "pvpRetaliation";   //反击字段
-#pragma warning restore CS0219 // 变量“pvpRetaliation”已被赋值，但从未使用过它的值
             using var dwUsers = datas.LockAll();
             if (dwUsers is null) //若无法锁定对象。
             {
@@ -657,13 +654,19 @@ namespace GuangYuan.GY001.BLL
             List<GameBooty> bootyOfAttacker = new List<GameBooty>();
             List<GameBooty> bootyOfDefenser = new List<GameBooty>();
             datas.GetBooty(bootyOfAttacker, bootyOfDefenser);
+            bootyOfAttacker.Concat(bootyOfDefenser).ForEach(c =>
+            {
+                var thing = new VirtualThing() { ExtraGuid = new Guid("{6A5CB12E-519A-43B0-9EDC-A7FD2AFDE98F}") };
+                thing.JsonObject = c;
+                thing.JsonObjectType = c.GetType();
+                c.Thing = thing;
+                World.VirtualThingManager.Add(thing, pc.Thing);
+            });
             foreach (var item in bootyOfAttacker) //进攻方战利品
             {
-                //TODO item.ParentId = pc.Id;
                 item.SetGameItems(World, datas.ChangeItems);   //设置物品实际增减
                 datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
             }
-            //TODO db.AddRange(bootyOfAttacker);
 
             if (!World.CharManager.IsOnline(datas.OtherCharId))    //若不在线
             {
@@ -673,7 +676,6 @@ namespace GuangYuan.GY001.BLL
                     item.SetGameItems(World);   //设置物品实际增减
                     datas.World.CharManager.NotifyChange(datas.OtherChar.GameUser);
                 }
-                //TODO db.AddRange(bootyOfDefenser);
             }
             //设置物品实际增减
             bootyOfAttacker.ForEach(c => c.SetGameItems(World, datas.ChangeItems));
@@ -768,7 +770,7 @@ namespace GuangYuan.GY001.BLL
             //增加战斗记录
             VirtualThing thing = new VirtualThing();
             db.Add(thing);
-            CombatReport pc = thing.GetJsonObject<CombatReport>();
+            CombatReport pc = thing.GetJsonObject<CombatReport>();  //本次战斗
             pc.AttackerIds.Add(datas.GameChar.Id);
             pc.DefenserIds.Add(datas.OtherCharId);
             datas.Combat = pc;
@@ -782,7 +784,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     var attackerBooties = booties.Select(c =>
                     {
-                        var node = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
+                        var node = new VirtualThing() { ExtraGuid = ProjectConstant.CombatBootyTId };
                         var r = node.GetJsonObject<GameBooty>();
                         r.CharId = datas.GameChar.Id;
 
@@ -794,7 +796,6 @@ namespace GuangYuan.GY001.BLL
                     //设计：本次战斗防御者不丢失资源
                     //设置战利品
                     attackerBooties.ForEach(c => c.SetGameItems(world, datas.ChangeItems));
-                    // TODO db.AddRange(attackerBooties);
                 }
             }
             //发送邮件
@@ -836,7 +837,8 @@ namespace GuangYuan.GY001.BLL
                 (datas as IResultWorkData).FillErrorFromWorld();
                 return;
             }
-            var oldWar = datas.UserDbContext.Set<VirtualThing>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
+            var db = datas.UserDbContext;
+            var oldWar = db.Set<VirtualThing>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
             if (oldWar is null)
             {
                 datas.HasError = true;
@@ -845,7 +847,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var oldView = oldWar.GetJsonObject<CombatReport>();
-            var db = datas.UserDbContext;
+
             var assId = oldView.AssistanceId;
             if (assId != datas.GameChar.Id || !oldView.Assistancing || oldView.IsCompleted) //没有请求当前角色协助或已经结束
             {
@@ -854,7 +856,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = $"指定的战报对象没有请求此角色协助攻击或已经攻击过了。";
             }
             //更改数据
-            var thing = new VirtualThing();
+            var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
             db.Add(thing);
             var pc = thing.GetJsonObject<CombatReport>();  //本次战斗数据
             pc.AttackerIds.Add(datas.GameChar.Id);
@@ -873,7 +875,7 @@ namespace GuangYuan.GY001.BLL
 
                 var newBooty = boo.Select(c =>
                 {
-                    var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
+                    var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatBootyTId };
                     var r = thing.GetJsonObject<GameBooty>();   //计算进攻方战利品
                     r.CharId = datas.GameChar.Id;
                     r.StringDictionary["count"] = (Math.Round(c.StringDictionary.GetDecimalOrDefault("count") * 0.3m, MidpointRounding.AwayFromZero)).ToString();
@@ -884,12 +886,12 @@ namespace GuangYuan.GY001.BLL
                     return r;
                 }).ToList();
                 newBooty.RemoveAll(c => c is null); //去掉空引用
-                //TODO db.AddRange(newBooty);  //加入数据库
+
                 newBooty.ForEach(c => c.SetGameItems(World, datas.ChangeItems));
 
                 var oldBooties = boo.Select(c =>
                 {
-                    var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
+                    var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatBootyTId };
                     var r = thing.GetJsonObject<GameBooty>();   //原始被掠夺角色的战利品
                     r.CharId = oldView.DefenserIds.First();
                     r.StringDictionary["tid"] = c.StringDictionary["tid"];

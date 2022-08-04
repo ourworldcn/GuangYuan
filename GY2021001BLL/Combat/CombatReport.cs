@@ -209,14 +209,10 @@ namespace GuangYuan.GY001.UserDb.Combat
         /// <summary>
         /// 所属角色(参与战斗的角色Id)。
         /// </summary>
+        public Guid CharId { get; set; }
+
         [JsonIgnore]
-        public Guid CharId { get => OwConvert.ToGuid(Thing.ExtraString); set => Thing.ExtraString = value.ToString(); }
-
-        public Guid TemplateId { get; set; }
-
-        public decimal Count { get; set; }
-
-        public Guid ParentTemplateId { get; set; }
+        public Guid? ParentId { get => Thing.ParentId; }
     }
 
 }

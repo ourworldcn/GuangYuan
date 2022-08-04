@@ -172,14 +172,14 @@ namespace OW.Game.Item
         /// </returns>
         public virtual decimal GetStcOrOne(GameItem gameItem)
         {
-            if (gameItem.ExtraGuid == GameItem.MucaiId)  //若是木材
+            if (gameItem.ExtraGuid == ProjectConstant.MucaiId)  //若是木材
             {
                 var coll = gameItem.GetGameChar()?.GetHomeland()?.GetAllChildren();
                 if (coll is null)
                 {
                     return World.PropertyManager.GetStcOrOne(gameItem);
                 }
-                var ary = coll.Where(c => c.ExtraGuid == GameItem.MucaiStoreTId).ToArray();   //取所有木材仓库对象
+                var ary = coll.Where(c => c.GetTemplate().CatalogNumber==43).ToArray();   //取所有木材仓库对象
                 var stc = decimal.Zero;
                 foreach (var item in ary) //计算所有木材仓库的容量
                 {
@@ -248,19 +248,6 @@ namespace OW.Game.Item
             gim.MoveItems(slot.Children, daojuBag);
             slot = gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.LockQltSlotId); //锁定槽
             gim.MoveItems(slot.Children, daojuBag);
-        }
-
-        /// <summary>
-        /// 刷新指定角色的木材堆叠上限属性。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        public void ComputeMucaiStc(GameChar gameChar)
-        {
-            var mucai = gameChar.GetMucai();
-            var stc = mucai.GetTemplate().Properties.GetDecimalOrDefault("stc");
-            var coll = gameChar.GetHomeland().GetAllChildren().Where(c => c.ExtraGuid == ProjectConstant.MucaiStoreTId);
-            stc += coll.Sum(c => c.Properties.GetDecimalOrDefault("stc"));
-            mucai.Properties["stc"] = stc;
         }
 
         /// <summary>
@@ -938,7 +925,7 @@ namespace OW.Game.Item
                 throw new ArgumentException("不可堆叠物品数量必须是1。", nameof(count));
             if (gItem.Count.Value == count || !propertyManager.IsStc(gItem, out _))    //若全部移动
             {
-                ForcedSetCount(gItem,0, changes);
+                //ForcedSetCount(gItem,0, changes);
                 //ForcedRemove(gItem, changes); //确保解除原有的拥有关系
                 ForcedAdd(gItem, container, changes);
             }

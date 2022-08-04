@@ -257,18 +257,6 @@ namespace GuangYuan.GY001.UserDb
         #endregion 获取属性相关
 
         /// <summary>
-        /// 获取堆叠上限。
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns><see cref="decimal.MaxValue"/>如果不可堆叠则为1.无限制是<see cref="decimal.MaxValue"/>。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static decimal GetStc(this GameItemBase obj)
-        {
-            var stc = obj.GetDecimalWithFcpOrDefault("stc", 1);
-            return stc == -1 ? decimal.MaxValue : stc;
-        }
-
-        /// <summary>
         /// 获取指定名称的属性值，如果快变属性存在则返回快变属性的当前值，如果在两处都没有没有找到该名称的属性或无法转化为数值，则返回指定的默认值。
         /// </summary>
         /// <param name="name"></param>

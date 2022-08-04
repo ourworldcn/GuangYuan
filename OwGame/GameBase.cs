@@ -256,22 +256,42 @@ namespace OW.Game
         /// <param name="random"></param>
         /// <param name="count">不可大于<paramref name="src"/>中元素数。</param>
         /// <returns></returns>
-        public static IEnumerable<T> GetRandom<T>(IList<T> src, Random random, int count)
+        public static IEnumerable<T> GetRandom<T>(IEnumerable<T> src, Random random, int count)
         {
-            if (count > src.Count)
+            var tmp = src.ToList();
+            if (count > tmp.Count)
                 throw new InvalidOperationException();
-            else if (count == src.Count)
-                return src;
-            var tmp = count;
-            var ary = ArrayPool<int>.Shared.Rent(count);
-            for (int i = 0; i < count; i++)
-            {
-                ary[i] = random.Next(src.Count);
-            }
+            else if (count == tmp.Count)
+                return tmp;
             var result = new T[count];
             for (int i = 0; i < count; i++)
             {
-                result[i] = src[ary[i]];
+                var index = random.Next(tmp.Count);
+                result[i] = tmp[index];
+                tmp.RemoveAt(index);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取指定数量的随机整数，且无重复
+        /// </summary>
+        /// <param name="random"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public static IEnumerable<int> GetDistinctRandomNumber(Random random, int count, int minValue, int maxValue)
+        {
+            if (maxValue - minValue < count)
+                throw new ArgumentException("指定区间没有足够的数量生成无重复的序列。");
+            var result = new int[count];
+            for (int i = 0; i < count; i++)
+            {
+                result[i] = random.Next(minValue, maxValue);
+            }
+            result = result.Distinct().ToArray();
+            while (result.Length < count)
+            {
+
             }
             return result;
         }

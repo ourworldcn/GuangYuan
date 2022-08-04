@@ -779,9 +779,12 @@ namespace OW.Game
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public virtual bool IsAllowZero(GameItem gItem)
         {
-            if (ProjectConstant.CurrencyBagTId==gItem?.Parent?.ExtraGuid  )
+            var ptid = gItem?.Parent?.ExtraGuid;
+            var tid = gItem.ExtraGuid;
+            if (ProjectConstant.CurrencyBagTId == ptid || ProjectConstant.MucaishuTId == tid || ProjectConstant.YumitianTId == tid)
                 return true;
-            return false;
+
+            return gItem.Properties.ContainsKey("IsAllowZero");
         }
 
         #endregion 物品相关

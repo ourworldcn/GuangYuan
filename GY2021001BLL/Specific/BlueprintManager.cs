@@ -615,10 +615,6 @@ namespace GuangYuan.GY001.BLL
                         }
                     }
                 }
-                if (gameItem.ExtraGuid == ProjectConstant.MucaiStoreTId)
-                {
-                    gim.ComputeMucaiStc(gc);
-                }
                 changes.CopyTo(LastChangesItems);
                 LastChangesItems.AddToChanges(gameItem.GetContainerId().Value, gameItem);
                 var worker = gc.GetHomeland().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.WorkerOfHomelandTId);
