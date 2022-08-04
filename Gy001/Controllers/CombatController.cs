@@ -149,7 +149,7 @@ namespace GY2021001WebApi.Controllers
                 result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => mapper.Map(c)));
                 result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => mapper.Map(c)));
                 result.Booty.AddRange(datas.UserDbContext.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Thing.Id)
-                    .AsEnumerable().Select(c => (GameBootyDto)c.GetJsonObject<GameBooty>()));
+                    .AsEnumerable().Select(c => mapper.Map(c.GetJsonObject<GameBooty>())));
                 result.CombatObject = new CombatDto();
                 HttpContext.RequestServices.GetRequiredService<GameMapperManager>().Map(datas.CombatObject, result.CombatObject);
             }

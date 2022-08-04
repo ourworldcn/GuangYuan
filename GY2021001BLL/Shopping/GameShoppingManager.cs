@@ -259,6 +259,7 @@ namespace GuangYuan.GY001.BLL
             {
                 List<GameItem> list = new List<GameItem>();
                 List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
+                
                 World.ItemManager.AddItems(datas.GameChar, items, list, changes);
                 changes.CopyTo(datas.ChangeItems);
                 if (list.Count > 0)    //若需要发送邮件

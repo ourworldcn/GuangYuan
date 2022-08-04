@@ -1215,6 +1215,8 @@ namespace GY2021001WebApi.Models
         ///             Propertyies["tid2"]=new Guid("{3E365BEC-F83D-467D-A58C-9EBA43458682}");   //钻石
         ///             Propertyies["count2"]= 100;   //钻石数量
         ///             Propertyies["ptid2"]= new Guid("{7066A96D-F514-42C7-A30E-5E7567900AD4}");   //父容器模板Id
+        ///             Propertyies["htid2"]= new Guid("{7066A96D-F514-42C7-A30E-5E7567900AD4}");   //生物(动物/坐骑)头模板Id
+        ///             Propertyies["btid2"]= new Guid("{7066A96D-F514-42C7-A30E-5E7567900AD4}");   //生物(动物/坐骑)身模板Id
         /// </code>
         /// </summary>
         [DataMember]

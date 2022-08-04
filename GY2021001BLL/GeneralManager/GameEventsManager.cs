@@ -775,10 +775,12 @@ namespace OW.Game
         /// 是否允许数量为0的物品继续存在。
         /// </summary>
         /// <param name="gItem"></param>
-        /// <returns>立即返回false。</returns>
+        /// <returns>对于货币带下对象返回true,否则返回false。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public virtual bool IsAllowZero(GameItem gItem)
         {
+            if (ProjectConstant.CurrencyBagTId==gItem?.Parent?.ExtraGuid  )
+                return true;
             return false;
         }
 

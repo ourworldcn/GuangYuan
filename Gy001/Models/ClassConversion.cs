@@ -156,22 +156,6 @@ namespace GY2021001WebApi.Models
         }
     }
 
-    public partial class GameBootyDto
-    {
-        public static implicit operator GameBootyDto(GameBooty obj)
-        {
-            var result = new GameBootyDto()
-            {
-                CharId = obj.CharId.ToBase64String(),
-                Count = obj.StringDictionary.GetDecimalOrDefault("count"),
-                ParentId = obj.Thing.ParentId.Value.ToBase64String(),
-                TemplateId = obj.StringDictionary.GetGuidOrDefault("tid").ToBase64String(),
-            };
-            OwHelper.Copy(obj.StringDictionary, result.Properties);
-            return result;
-        }
-    }
-
     public partial class IdAndCountDto
     {
         public static implicit operator ValueTuple<Guid, decimal>(IdAndCountDto obj) =>

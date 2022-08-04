@@ -257,6 +257,22 @@ namespace GuangYuan.GY001.BLL.Specific
             Map(obj, result);
             return result;
         }
+
+        public void Map(GameBooty obj, GameBootyDto result)
+        {
+            result.CharId = obj.CharId.ToBase64String();
+            result.Count = obj.StringDictionary.GetDecimalOrDefault("count");
+            result.ParentId = obj.Thing.ParentId.Value.ToBase64String();
+            result.TemplateId = obj.StringDictionary.GetGuidOrDefault("tid").ToBase64String();
+            OwHelper.Copy(obj.StringDictionary, result.Properties);
+        }
+
+        public GameBootyDto Map(GameBooty obj)
+        {
+            var result = new GameBootyDto();
+            Map(obj, result);
+            return result;
+        }
         #endregion 特定类型映射
 
         //public partial class CombatDto

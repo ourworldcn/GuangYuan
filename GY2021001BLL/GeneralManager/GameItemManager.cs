@@ -225,7 +225,7 @@ namespace OW.Game.Item
         /// <returns>true可堆叠,此时result返回最大可堆叠数;false不可堆叠，此时<paramref name="result"/>返回<see cref="decimal.One"/></returns>
         public virtual bool IsStc(GameItem gameItem, out decimal result)
         {
-            if (World.PropertyManager.IsStc(gameItem, out result))  //若不可堆叠
+            if (!World.PropertyManager.IsStc(gameItem, out result))  //若不可堆叠
                 return false;
             result = GetStcOrOne(gameItem);
             return true;
@@ -938,7 +938,8 @@ namespace OW.Game.Item
                 throw new ArgumentException("不可堆叠物品数量必须是1。", nameof(count));
             if (gItem.Count.Value == count || !propertyManager.IsStc(gItem, out _))    //若全部移动
             {
-                ForcedRemove(gItem, changes); //确保解除原有的拥有关系
+                ForcedSetCount(gItem,0, changes);
+                //ForcedRemove(gItem, changes); //确保解除原有的拥有关系
                 ForcedAdd(gItem, container, changes);
             }
             else if (gItem.Count.Value > count)//若部分移动
@@ -1092,7 +1093,7 @@ namespace OW.Game.Item
             {
                 if (!World.EventsManager.IsAllowZero(gItem))   //若应删除对象
                 {
-                    return ForcedDelete(gItem, null, changes); //若无法删除
+                    return ForcedDelete(gItem, null, changes); //TODO 若无法删除
                 }
                 else //不用删除对象
                 {
@@ -1281,7 +1282,7 @@ namespace OW.Game.Item
         /// <summary>
         /// 尽可能将指定物品放入容器(可合并则合并)，如果有剩余则放入<paramref name="remainder"/>中。
         /// </summary>
-        /// <param name="gItem"></param>
+        /// <param name="gItem">可以是游离对象，或同一个GameChar的对象。//TODO 对不同GameChar对象的移动未定义</param>
         /// <param name="count">移动的数量，不能大于物品已有数量。不可堆叠物品则必须是1。</param>
         /// <param name="container"></param>
         /// <param name="remainder"></param>
@@ -1317,6 +1318,7 @@ namespace OW.Game.Item
                     if (countMove < gItem.Count)    //若部分移动
                         remainder?.Add(gItem);
                     ForcedSetCount(gItem, gi, countMove, changes);
+                    
                 }
             }
             else //若不可堆叠
