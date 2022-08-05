@@ -86,21 +86,6 @@ namespace GuangYuan.GY001.BLL
         public List<(Guid, decimal)> DestroyTIds { get; } = new List<(Guid, decimal)>();
 
         /// <summary>
-        /// 规范化摧毁物数据。
-        /// </summary>
-        public void NormalizeDestroyTIds()
-        {
-            var coll = (from tmp in DestroyTIds
-                        group tmp by tmp.Item1 into g
-                        select (g.Key, g.Sum(c => c.Item2))).ToArray();
-            if (coll.Length != DestroyTIds.Count)   //若有变化
-            {
-                DestroyTIds.Clear();
-                DestroyTIds.AddRange(coll);
-            }
-        }
-
-        /// <summary>
         /// 计算战利品。
         /// </summary>
         /// <param name="attackerBooty"></param>
@@ -152,7 +137,7 @@ namespace GuangYuan.GY001.BLL
             }
             else //若未击溃主控室
             {
-                var dMucaiCount = DestroyTIds.Count(c => World.ItemTemplateManager.GetTemplateFromeId(c.Item1)?.CatalogNumber == 43);   //击溃木材仓库的数量
+                var dMucaiCount = DestroyTIds.Where(c => World.ItemTemplateManager.GetTemplateFromeId(c.Item1)?.CatalogNumber == 43).Sum(c => c.Item2);   //击溃木材仓库的数量
                 //攻击方木材
                 aMucai.StringDictionary["count"] = (Math.Round(attMucaiBase * dMucaiCount * 0.1m, MidpointRounding.AwayFromZero)).ToString();
                 //攻击方获得金币

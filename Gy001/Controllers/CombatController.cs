@@ -114,7 +114,7 @@ namespace GY2021001WebApi.Controllers
                 DungeonId = OwConvert.ToGuid(model.DungeonId),
                 IsWin = model.IsWin,
             };
-            datas.DestroyTIds.AddRange(model.Destroies.Select(c => (ValueTuple<Guid, decimal>)c));
+            datas.DestroyTIds.AddRange(model.Destroies.Select(c => (OwConvert.ToGuid(c.Id), c.Count)));
             World.CombatManager.EndCombatPvp(datas);
             result.HasError = datas.HasError;
             result.DebugMessage = datas.ErrorMessage;
