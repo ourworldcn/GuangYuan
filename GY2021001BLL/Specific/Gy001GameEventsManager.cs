@@ -579,10 +579,8 @@ namespace OW.Game
 
             if (vo.Date != now.Date)    //若今日没有有数据
             {
-                td.Count = 1;
+                World.EventsManager.GameItemCreated(td, td.ExtraGuid);
                 td.Properties["ltlv"] = now.ToString();
-                World.ItemManager.SetLevel(td, 1);
-                td.Properties[World.PropertyManager.LevelPropertyName] = 1m;
             }
         }
         #region Json反序列化

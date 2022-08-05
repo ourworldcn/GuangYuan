@@ -577,7 +577,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 获取一组角色的摘要数据。从数据库直接获取，可能有延迟。
         /// </summary>
-        /// <param name="innerIds">要获得摘要信息的角色Id集合。</param>
+        /// <param name="ids">要获得摘要信息的角色Id集合。</param>
         /// <param name="db">使用的用户数据库上下文。</param>
         /// <returns>指定的角色摘要信息。</returns>
         /// <exception cref="ArgumentException">至少一个指定的Id不是有效角色Id。</exception>
@@ -588,20 +588,23 @@ namespace GuangYuan.GY001.BLL
 
             var collBase = (from gc in db.Set<GameChar>()
                             where innerIds.Contains(gc.Id)
+                            join bag in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.CurrencyBagTId)    //货币袋
+                            on gc.Id equals bag.OwnerId
+
+                            join gold in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.JinbiId) //金币对象
+                            on bag.Id equals gold.ParentId into l2
+                            from goldR in l2.DefaultIfEmpty()
+
+                            join wood in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.MucaiId) //木材
+                            on bag.Id equals wood.ParentId
+
                             join tuiguan in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.TuiGuanTId)   //推关战力对象
                             on gc.Id equals tuiguan.Parent.OwnerId into l1
                             from tuiguanR in l1.DefaultIfEmpty()
 
-                            join gold in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.JinbiId) //金币对象
-                            on gc.Id equals gold.Parent.OwnerId into l2
-                            from goldR in l2.DefaultIfEmpty()
-
                             join goldOfStore in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.YumitianTId) //玉米田
                             on gc.Id equals goldOfStore.Parent.Parent.OwnerId into l3
                             from goldOfStoreR in l3.DefaultIfEmpty()
-
-                            join wood in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.MucaiId) //木材
-                            on gc.Id equals wood.Parent.OwnerId
 
                             join woodOfStore in db.Set<GameItem>().Where(c => c.ExtraGuid == ProjectConstant.MucaishuTId) //树林
                             on gc.Id equals woodOfStore.Parent.Parent.OwnerId into l4

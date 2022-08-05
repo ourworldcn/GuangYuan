@@ -131,7 +131,7 @@ namespace GuangYuan.GY001.BLL
 
             var defYumi = new GameBooty() { CharId = OtherChar.Id };    //防御方玉米田
             defYumi.StringDictionary["tid"] = ProjectConstant.YumitianTId.ToString();
-            
+
             var attJinbiBase = lvAtt * 100 + (dYumi.Count ?? 0) * 0.5m + dMucaiShu.Count.Value * 0.5m;   //进攻方获得金币的基数
             var attMucaiBase = lvAtt * 30 + dMucai.Count.Value * 0.5m;  //进攻方获得木材的基数
 
@@ -143,7 +143,7 @@ namespace GuangYuan.GY001.BLL
                 //攻击方木材
                 aMucai.StringDictionary["count"] = (Math.Round(attMucaiBase, MidpointRounding.AwayFromZero)).ToString();
                 //攻击方获得金币
-                aJinbi.StringDictionary["count"] =( Math.Round(attJinbiBase, MidpointRounding.AwayFromZero)).ToString();
+                aJinbi.StringDictionary["count"] = (Math.Round(attJinbiBase, MidpointRounding.AwayFromZero)).ToString();
                 //防御方玉米田损失
                 defYumi.StringDictionary["count"] = (-Math.Round(defYumiBase, MidpointRounding.AwayFromZero)).ToString();
                 //防御方木材损失
@@ -152,7 +152,7 @@ namespace GuangYuan.GY001.BLL
             }
             else //若未击溃主控室
             {
-                var dMucaiCount = DestroyTIds.Count(c => c.Item1 == ProjectConstant.MucaiStoreTId);   //击溃木材仓库的数量
+                var dMucaiCount = DestroyTIds.Count(c => World.ItemTemplateManager.GetTemplateFromeId(c.Item1)?.CatalogNumber == 43);   //击溃木材仓库的数量
                 //攻击方木材
                 aMucai.StringDictionary["count"] = (Math.Round(attMucaiBase * dMucaiCount * 0.1m, MidpointRounding.AwayFromZero)).ToString();
                 //攻击方获得金币

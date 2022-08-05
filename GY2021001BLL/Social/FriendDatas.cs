@@ -137,6 +137,8 @@ namespace GuangYuan.GY001.BLL.Social
             shows = db.Set<GameSocialRelationship>().Where(c => bodyTIds.Contains(c.Id2) && c.KeyType == SocialConstant.HomelandShowKeyType);  //展示坐骑
             //var allows = db.Set<CharSpecificExpandProperty>().Where(c => c.FrinedMaxCount > c.FrinedCount);   //有空位用户
             var todayList = TodayIds;   //今日已经刷过的用户
+            if (bodyTIds.Any())  //若按展示动物搜寻
+                todayList = new List<Guid>();
             var notAllows = World.SocialManager.GetFriendsOrRequestingOrBlackIds(GameChar.Id, db);  //好友或黑名单
             var tmpStr1 = $"{SocialConstant.ConfirmedFriendPName}=0";
             var frees = db.Set<GameSocialRelationship>().Where(c => c.PropertiesString.Contains(tmpStr1)).GroupBy(c => c.Id).Where(c => c.Count() >= 20).Select(c => c.Key); //未处理好友申请数量>20

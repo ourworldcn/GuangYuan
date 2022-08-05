@@ -1092,6 +1092,8 @@ namespace GuangYuan.GY001.BLL
             }
             else //今日无数据
             {
+                World.EventsManager.GameItemCreated(td, td.ExtraGuid);
+                td.Properties["ltlv"] = now.ToString();
                 datas.PropertyChanges.ModifyAndAddChanged(td, "Count", 1, null);
                 datas.PropertyChanges.ModifyAndAddChanged(td, "ltlv", now.ToString(), null);
             }
