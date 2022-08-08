@@ -3813,6 +3813,24 @@
               使用此强类型资源类的所有资源查找执行重写。
             </summary>
         </member>
+        <member name="P:Gy001.WebApi.Properties.Resources.String1">
+             <summary>
+               查找类似 DECLARE @MyTableVar TABLE (  
+                id uniqueidentifier NOT NULL
+                );  
+            
+            delete from [GameItems] 
+            output deleted.[Id] into @MyTableVar
+            where [OwnerId] in ({0});
+            
+            while (select @@ROWCOUNT)&gt;0
+            begin
+            delete from [GameItems]
+            output deleted.[Id] into @MyTableVar
+            where ParentId in (select id from @MyTableVar)
+            end 的本地化字符串。
+             </summary>
+        </member>
         <member name="T:GuangYuan.GY001.BLL.Specific.GameMapperManager">
             <summary>
             转换服务。

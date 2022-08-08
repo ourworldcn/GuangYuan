@@ -1264,30 +1264,57 @@ namespace GuangYuan.GY001.BLL
             var str = $"DELETE FROM [dbo].[GameUsers] WHERE [Id] in ('{string.Join("','", userIds)}')";
             context.Database.ExecuteSqlRaw(str); //删除用户和角色
 
-            if (0 <= charIds.Length)    //若有要删除的角色
+            if (0 < charIds.Length)    //若有要删除的角色
             {
-                var itemIds = Remove<GameItem>(c => c.OwnerId.HasValue && charIds.Contains(c.OwnerId.Value), context);  //角色直接拥有的对象Id集合
-                while (itemIds.Count > 0)
-                {
-                    ids.AddRange(itemIds);
-                    itemIds = Remove<GameItem>(c => c.ParentId.HasValue && itemIds.Contains(c.ParentId.Value), context);   //需要删除的物品对象id集合
-                }
+                var itemIds = Remove(charIds, context);  //角色直接拥有的对象Id集合
             }
 
             //删除扩展属性
             str = $"DELETE FROM [dbo].[ExtendProperties] WHERE [Id] in ('{string.Join("','", ids)}')";
-            context.Database.ExecuteSqlRaw(str);
+            //context.Database.ExecuteSqlRaw(str);
             return true;
         }
 
-        private List<Guid> Remove<T>(Expression<Func<T, bool>> whereFunc, DbContext context) where T : GuidKeyObjectBase
+        private List<Guid> Remove(IEnumerable<Guid> charIds, DbContext context)
         {
-            var result = context.Set<T>().Where(whereFunc).Select(c => c.Id).ToList();
+            var result = charIds.ToList();
             if (result.Count > 0)
             {
-                var tableName = context.Model.FindEntityType(typeof(T)).GetTableName();
-                var sqlStr = $"DELETE FROM {tableName} WHERE {nameof(GuidKeyObjectBase.Id)} in ('{string.Join("','", result)}')";
+                var entityTyp = context.Model.FindEntityType(typeof(GameItem));
+                string sqlStr;
+
+                sqlStr = $"alter table {entityTyp.GetTableName()} nocheck constraint all";  //关闭外键约束
                 context.Database.ExecuteSqlRaw(sqlStr);
+
+                //sqlStr = $"DELETE FROM {entityTyp.GetTableName()} WHERE {nameof(GuidKeyObjectBase.Id)} in ('{string.Join("','", result)}')";    //删除顶层无效节点
+                //context.Database.ExecuteSqlRaw(sqlStr);
+
+                //sqlStr = $"delete from {entityTyp.GetTableName()} " +
+                //    "where not exists (SELECT 1 FROM {entityTyp.GetTableName()} as t1 where t1.[Id]={entityTyp.GetTableName()}.[ParentId]) and ParentId is not null";
+                //while (context.Database.ExecuteSqlRaw(sqlStr) > 0) ;    //删除所有无效节点
+
+                try
+                {
+                    sqlStr = "DECLARE @MyTableVar TABLE( " +
+                            "id uniqueidentifier NOT NULL" +
+                            ");" +
+                            "delete from [GameItems] " +
+                                "output deleted.[Id] into @MyTableVar " +
+                                "where [OwnerId] in ('{0}');" +
+                            "while (select @@ROWCOUNT) > 0 " +
+                            "begin " +
+                                "delete from [GameItems] " +
+                                "output deleted.[Id] into @MyTableVar " +
+                                "where ParentId in (select id from @MyTableVar) " +
+                            "end";
+                    sqlStr = string.Format(sqlStr, string.Join("','", result));
+                    context.Database.ExecuteSqlRaw(sqlStr);
+                }
+                finally
+                {
+                    sqlStr = $"alter table {entityTyp.GetTableName()} check constraint all";    //打开外键约束
+                    context.Database.ExecuteSqlRaw(sqlStr);
+                }
             }
             return result;
         }

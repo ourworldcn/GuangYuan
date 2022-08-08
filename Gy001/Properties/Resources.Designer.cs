@@ -59,5 +59,27 @@ namespace Gy001.WebApi.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   查找类似 DECLARE @MyTableVar TABLE (  
+        ///    id uniqueidentifier NOT NULL
+        ///    );  
+        ///
+        ///delete from [GameItems] 
+        ///output deleted.[Id] into @MyTableVar
+        ///where [OwnerId] in ({0});
+        ///
+        ///while (select @@ROWCOUNT)&gt;0
+        ///begin
+        ///delete from [GameItems]
+        ///output deleted.[Id] into @MyTableVar
+        ///where ParentId in (select id from @MyTableVar)
+        ///end 的本地化字符串。
+        /// </summary>
+        internal static string String1 {
+            get {
+                return ResourceManager.GetString("String1", resourceCulture);
+            }
+        }
     }
 }
