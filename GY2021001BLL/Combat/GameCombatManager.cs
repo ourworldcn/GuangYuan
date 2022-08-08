@@ -449,7 +449,7 @@ namespace GuangYuan.GY001.BLL
                         gim.MoveItems(gis, shoulan, null, changes);
                     //其他道具
                     var daojuBag = gameChar.GameItems.First(c => c.ExtraGuid == ProjectConstant.DaojuBagSlotId);   //道具背包
-                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid != ProjectConstant.JinbiId && c.ExtraGuid != ProjectConstant.ZuojiZuheRongqi);
+                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid != ProjectConstant.JinbiId && c.ExtraGuid != ProjectConstant.MucaiId && c.ExtraGuid != ProjectConstant.ZuojiZuheRongqi);
                     gim.MoveItems(gis, daojuBag, null, changes);
                     changes.CopyTo(data.ChangesItems);
 
@@ -678,18 +678,24 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             //设置物品实际增减
-            bootyOfAttacker.ForEach(c => c.SetGameItems(World, datas.ChangeItems));
+            List<GameItem> rem = new List<GameItem>();
+            bootyOfAttacker.ForEach(c => c.SetGameItems(World, datas.ChangeItems, rem));
             if (!World.CharManager.IsOnline(datas.OtherCharId))    //若不在线
                 bootyOfDefenser.ForEach(c => c.SetGameItems(World));
 
-            //发送奖励邮件
             var mail = new GameMail()
             {
             };
-            mail.Properties["MailTypeId"] = ProjectConstant.PVP系统奖励.ToString();
-            mail.Properties["CombatId"] = pc.Thing.IdString;
-            bootyOfAttacker.ForEach(c => c.FillToDictionary(World, mail.Properties));
-            World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+            //发送奖励邮件
+            if (rem.Count > 0)
+            {
+                //mail.Properties["MailTypeId"] = ProjectConstant.PVP系统奖励.ToString();
+                //mail.Properties["CombatId"] = pc.Thing.IdString;
+                //bootyOfAttacker.ForEach(c => c.FillToDictionary(World, mail.Properties));
+                //TODO ptid是临时算法，直接假设为货币袋。
+                World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, rem.Select(c => (c, ProjectConstant.CurrencyBagTId))); //被攻击邮件
+            }
+
             //发送反击邮件
             mail = new GameMail()
             {

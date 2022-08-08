@@ -1035,6 +1035,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public partial class ReturnDtoBase
     {
+        public ReturnDtoBase()
+        {
+
+        }
+
         /// <summary>
         /// 返回时指示是否有错误。false表示正常计算完成，true表示规则校验认为有误。
         /// </summary>
@@ -3476,6 +3481,58 @@ namespace GY2021001WebApi.Models
     #endregion 排行相关
 
     #region 管理相关
+
+    [DataContract]
+    public class GetNoticeParamsDto : TokenDtoBase
+    {
+        public GetNoticeParamsDto()
+        {
+        }
+
+        public GetNoticeParamsDto(string token) : base(token)
+        {
+        }
+    }
+
+    [DataContract]
+    public class GetNoticeReturnDto : ReturnDtoBase
+    {
+        public GetNoticeReturnDto()
+        {
+        }
+
+        /// <summary>
+        /// 公告内容。
+        /// </summary>
+        [DataMember]
+        public string Guts { get; set; }
+    }
+
+    [DataContract]
+    public class SetNoticeParamsDto : TokenDtoBase
+    {
+        public SetNoticeParamsDto()
+        {
+        }
+
+        public SetNoticeParamsDto(string token) : base(token)
+        {
+        }
+
+        /// <summary>
+        /// 公告内容。
+        /// </summary>
+        [DataMember]
+        public string Guts { get; set; }
+    }
+
+    [DataContract]
+    public class SetNoticeReturnDto : ReturnDtoBase
+    {
+        public SetNoticeReturnDto()
+        {
+        }
+    }
 
     [DataContract]
     public class SetCombatScoreParamsDto : TokenDtoBase

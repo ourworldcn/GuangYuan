@@ -926,7 +926,7 @@ namespace OW.Game.Item
             if (gItem.Count.Value == count || !propertyManager.IsStc(gItem, out _))    //若全部移动
             {
                 //ForcedSetCount(gItem,0, changes);
-                //ForcedRemove(gItem, changes); //确保解除原有的拥有关系
+                ForcedRemove(gItem, changes); //确保解除原有的拥有关系
                 ForcedAdd(gItem, container, changes);
             }
             else if (gItem.Count.Value > count)//若部分移动

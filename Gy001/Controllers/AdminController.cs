@@ -48,7 +48,7 @@ namespace GY2021001WebApi.Controllers
                 StartIndex = model.StartIndex,
                 EndIndex = model.EndIndex,
                 PveScore = model.PveScore,
-                PvpScore=model.PvpScore,
+                PvpScore = model.PvpScore,
             };
             World.AdminManager.SetCombatScore(datas);
             var result = new SetCombatScoreReturnDto();
@@ -306,6 +306,38 @@ namespace GY2021001WebApi.Controllers
             World.AdminManager.SendThing(datas);
             var result = new SendThingsReturnDto();
             result.FillFrom(datas);
+            return result;
+        }
+
+        /// <summary>
+        /// 设置公告板信息。需要超管或管理员权限。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<SetNoticeReturnDto> SetNotice(SetNoticeParamsDto model)
+        {
+            SetNoticeContext datas = new SetNoticeContext(World, model.Token) { Guts = model.Guts };
+            World.AdminManager.SetNotice(datas);
+            var result = new SetNoticeReturnDto();
+            result.FillFrom(datas);
+            return result;
+        }
+
+        /// <summary>
+        /// 获取公告板信息。任何登录用户都可以获取。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<GetNoticeReturnDto> GetNotice(GetNoticeParamsDto model)
+        {
+            GetNoticeContext datas = new GetNoticeContext(World, model.Token);
+            World.AdminManager.GetNotice(datas);
+            var result = new GetNoticeReturnDto();
+            result.FillFrom(datas);
+            if (!result.HasError)
+                result.Guts = datas.Guts;
             return result;
         }
     }

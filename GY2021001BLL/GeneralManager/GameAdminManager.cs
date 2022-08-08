@@ -14,6 +14,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
@@ -435,6 +436,113 @@ namespace GuangYuan.GY001.BLL
             World.CharManager.NotifyChange(gu);
             return;
         }
+
+        /// <summary>
+        /// 设置公告内容，仅超管和管理员可以使用。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void SetNotice(SetNoticeContext datas)
+        {
+            using var dw = datas.LockUser();
+            var gc = datas.GameChar;
+            if (!IsSuperAdminOrAdmin(gc))    //若没有权限
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
+                return;
+            }
+            var name = string.Intern("Notice");
+            if (!Monitor.TryEnter(name, 2000))
+            {
+                datas.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
+                return;
+            }
+            try
+            {
+                var db = gc.GetDbContext();
+                var setting = db.Set<GameSetting>().FirstOrDefault(c => c.Name == "Notice");
+                if (setting is null)
+                {
+                    setting = new GameSetting() { Name = "Notice" };
+                    db.Add(setting);
+                }
+                setting.Val = datas.Guts;
+                db.SaveChanges();
+            }
+            finally
+            {
+                Monitor.Exit(name);
+            }
+        }
+
+        /// <summary>
+        /// 获取公告板。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void GetNotice(GetNoticeContext datas)
+        {
+            using var dw = datas.LockUser();
+            var gc = datas.GameChar;
+            var name = string.Intern("Notice");
+            if (!Monitor.TryEnter(name, 2000))
+            {
+                datas.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
+                return;
+            }
+            try
+            {
+                var db = gc.GetDbContext();
+                var setting= db.Set<GameSetting>().FirstOrDefault(c => c.Name == "Notice");
+                if (setting is null)
+                    return;
+                var entity = db.Entry(setting);
+                entity.Reload();
+                datas.Guts = entity.Entity.Val;
+            }
+            finally
+            {
+                Monitor.Exit(name);
+            }
+        }
+    }
+
+    public class GetNoticeContext : ComplexWorkGameContext
+    {
+        public GetNoticeContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public GetNoticeContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public GetNoticeContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 公告内容。
+        /// </summary>
+        public string Guts { get; set; }
+    }
+
+    public class SetNoticeContext : ComplexWorkGameContext
+    {
+        public SetNoticeContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
+        {
+        }
+
+        public SetNoticeContext([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
+        {
+        }
+
+        public SetNoticeContext([NotNull] VWorld world, [NotNull] string token) : base(world, token)
+        {
+        }
+
+        /// <summary>
+        /// 公告内容。
+        /// </summary>
+        public string Guts { get; set; }
     }
 
     /// <summary>

@@ -18,7 +18,8 @@ namespace GuangYuan.GY001.BLL
         /// <param name="booty"></param>
         /// <param name="world"></param>
         /// <param name="changes"></param>
-        public static void SetGameItems(this GameBooty booty, VWorld world, ICollection<ChangeItem> changes = null)
+        /// <param name="rem">剩余的物品，无法放入背包的。</param>
+        public static void SetGameItems(this GameBooty booty, VWorld world, ICollection<ChangeItem> changes = null, List<GameItem> rem = null)
         {
             var changes1 = new List<GamePropertyChangeItem<object>>();
             var gc = world.CharManager.GetCharFromId(booty.CharId);
@@ -52,16 +53,16 @@ namespace GuangYuan.GY001.BLL
             }
             else if (tid == ProjectConstant.MucaishuTId)
             {
-                parent = gc.GetMainbase()?.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId)?.Parent;
+                parent = gc.GetHomeland()?.GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId)?.Parent;
             }
             else if (tid == ProjectConstant.YumitianTId)
             {
-                parent = gc.GetMainbase()?.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.Parent;
+                parent = gc.GetHomeland()?.GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.Parent;
             }
             else
                 throw new InvalidOperationException();
             if (parent != null)
-                gim.MoveItem(gi, gi.Count ?? 1, parent, null, changes1);
+                gim.MoveItem(gi, gi.Count ?? 1, parent, rem, changes1);
             if (null != changes)
                 changes1.CopyTo(changes);
         }

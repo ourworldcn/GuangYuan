@@ -149,6 +149,20 @@
             <param name="model">参数封装对象。</param>
             <returns>返回值封装对象。</returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.SetNotice(GY2021001WebApi.Models.SetNoticeParamsDto)">
+            <summary>
+            设置公告板信息。需要超管或管理员权限。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.GetNotice(GY2021001WebApi.Models.GetNoticeParamsDto)">
+            <summary>
+            获取公告板信息。任何登录用户都可以获取。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
             战斗相关的操作。
@@ -2918,6 +2932,16 @@
             自己的战力积分。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetNoticeReturnDto.Guts">
+            <summary>
+            公告内容。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetNoticeParamsDto.Guts">
+            <summary>
+            公告内容。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.Prefix">
             <summary>
             前缀。
@@ -3382,6 +3406,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
