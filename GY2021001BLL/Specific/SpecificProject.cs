@@ -106,6 +106,11 @@ namespace GuangYuan.GY001.BLL
         public static readonly Guid T78PublisherSlotTId = new Guid("{308F90FE-E4F2-4460-8435-7E0C79A15E9B}");
 
         /// <summary>
+        /// T89发行商数据槽模板id。
+        /// </summary>
+        public static readonly Guid T89PublisherSlotTId = new Guid("{CFBAC7E9-FCF8-43B6-8AC2-6D190165DE6B}");
+
+        /// <summary>
         /// 动物图鉴槽模板Id。
         /// </summary>
         public static readonly Guid MountsIllSlotId = new Guid("{62873631-f688-4c81-9ed7-72b7cc22975a}");

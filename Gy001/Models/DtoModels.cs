@@ -1387,6 +1387,56 @@ namespace GY2021001WebApi.Models
 
     }
 
+    [DataContract]
+    public class LoginT89ParamsDto
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        [DataMember]
+        public string AppId { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [DataMember]
+        public string Token { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [DataMember]
+        public string Uid { get; set; }
+
+        /// <summary>
+        /// · 2：ANDROID
+        /// · 3：IOS
+        /// </summary>
+        [DataMember]
+        public long OsType { get; set; }
+    }
+
+    [DataContract]
+    public class LoginT89ReturnDto : LoginReturnDto
+    {
+        /// <summary>
+        /// 登录名。
+        /// </summary>
+        public string LoginName { get; set; }
+
+        /// <summary>
+        /// 密码。若首次登录，创建了账号则这里返回密码。否则返回null。
+        /// </summary>
+        [DataMember]
+        public string Pwd { get; set; }
+
+        /// <summary>
+        /// 光元内部使用的令牌。
+        /// </summary>
+        [DataMember]
+        public string InnerToken { get; internal set; }
+    }
+
     /// <summary>
     /// 登录接口返回类。
     /// </summary>

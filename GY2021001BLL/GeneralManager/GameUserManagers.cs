@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.TemplateDb;
+﻿using GuangYuan.GY001.BLL.Specific;
+using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -1035,6 +1036,46 @@ namespace GuangYuan.GY001.BLL
             result.RuntimeProperties["T78LoginResultString"] = dto.ResultString;
             World.CharManager.NotifyChange(result);
             return result;
+        }
+
+        public void LoginT89(T89LoginData datas)
+        {
+            var t89 = World.Service.GetRequiredService<PublisherT89>();
+            t89.Login(datas);
+            GameUser gu;
+            if (!datas.HasError)
+            {
+                GameItem slot;
+                using (var db = World.CreateNewUserDbContext())
+                    slot = db.Set<GameItem>().AsNoTracking().SingleOrDefault(c => c.ExtraGuid == ProjectConstant.T89PublisherSlotTId && c.ExtraString == datas.Uid);
+                if (slot is null)    //若没有注册用户
+                {
+                    string pwd = null;
+                    gu = QuicklyRegister(ref pwd);
+                    slot = new GameItem() { ExtraString = datas.Uid };
+                    World.EventsManager.GameItemCreated(slot, ProjectConstant.T89PublisherSlotTId);
+                    World.ItemManager.ForcedAdd(slot, gu.CurrentChar);
+                    gu.DbContext.Add(slot);
+                    datas.Pwd = pwd;
+                    World.CharManager.NotifyChange(gu);
+                }
+                else //若已经注册用户
+                {
+                    var charId = slot.OwnerId.Value;
+                    using var dw = LockOrLoad(charId, out gu);  //加载用户
+                    if (dw is null)
+                    {
+                        datas.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
+                        return;
+                    }
+                    if (!IsOnline(charId))   //若没有登录
+                        World.EventsManager.GameCharLogined(gu.CurrentChar);
+                    World.CharManager.NotifyChange(gu);
+                }
+                datas.LoginName = gu.LoginName;
+                datas.InnerToken = gu.CurrentToken;
+                datas.GameChars.AddRange(gu.GameChars);
+            }
         }
 
         /// <summary>

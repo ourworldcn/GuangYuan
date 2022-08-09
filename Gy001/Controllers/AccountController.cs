@@ -144,6 +144,43 @@ namespace GY2021001WebApi.Controllers
         }
 
         /// <summary>
+        /// 特定发行商sdk创建或登录用户。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<LoginT89ReturnDto> LoginT89(LoginT89ParamsDto model)
+        {
+            var gm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
+            if (gm.Id2OnlineChar.Count > 10000 * Environment.ProcessorCount)
+                return StatusCode((int)HttpStatusCode.ServiceUnavailable, "登录人数过多，请稍后登录");
+
+            var datas = new T89LoginData(HttpContext.RequestServices)
+            {
+            };
+            var mapper = HttpContext.RequestServices.GetRequiredService<GameMapperManager>();
+            mapper.Map(model, datas);
+            gm.LoginT89(datas);
+
+            var worldServiceHost = $"{Request.Scheme}://{Request.Host}";
+            var chartServiceHost = $"{Request.Scheme}://{Request.Host}";
+            var result = new LoginT89ReturnDto()
+            {
+                WorldServiceHost = worldServiceHost,
+                ChartServiceHost = chartServiceHost,
+            };
+
+            if (!datas.HasError)
+            {
+                result.LoginName = datas.LoginName;
+                result.InnerToken = datas.InnerToken.ToBase64String();
+                result.Pwd = datas.Pwd;
+                result.GameChars.AddRange(datas.GameChars.Select(c => mapper.Map(c)));
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 发送一个空操作以保证闲置下线重新开始计时。
         /// </summary>
         /// <param name="model">令牌。</param>

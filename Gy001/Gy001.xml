@@ -31,6 +31,13 @@
             <param name="model"></param>
             <returns></returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AccountController.LoginT89(GY2021001WebApi.Models.LoginT89ParamsDto)">
+            <summary>
+            特定发行商sdk创建或登录用户。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:GY2021001WebApi.Controllers.AccountController.Nop(GY2021001WebApi.Models.NopParamsDto)">
             <summary>
             发送一个空操作以保证闲置下线重新开始计时。
@@ -1635,6 +1642,42 @@
         <member name="P:GY2021001WebApi.Models.LoginT78ReturnDto.IsCreated">
             <summary>
             指示是否为初创接口。true是初始创建，false不是初始创建。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT89ParamsDto.AppId">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT89ParamsDto.Token">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT89ParamsDto.Uid">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT89ParamsDto.OsType">
+            <summary>
+            · 2：ANDROID
+            · 3：IOS
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT89ReturnDto.LoginName">
+            <summary>
+            登录名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT89ReturnDto.Pwd">
+            <summary>
+            密码。若首次登录，创建了账号则这里返回密码。否则返回null。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT89ReturnDto.InnerToken">
+            <summary>
+            光元内部使用的令牌。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.LoginReturnDto">

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using GY2021001WebApi.Models;
@@ -11,6 +12,7 @@ namespace Gy01.AutoMapper.Profiles
         {
             CreateMap<GameItem, GameItemDto>();
             CreateMap<CombatReport, CombatDto>();
+            CreateMap<LoginT89ParamsDto, T89LoginData>();
         }
     }
 }

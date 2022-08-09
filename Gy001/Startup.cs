@@ -128,6 +128,7 @@ namespace Gy001
             #endregion 配置游戏专用服务
 
             services.AddPublisherT78();  //加入访问冰鸟sdk的服务
+            services.AddPublisherT89();  //加入访问完美sdk的服务
 
         }
 

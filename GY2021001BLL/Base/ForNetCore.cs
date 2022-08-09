@@ -289,6 +289,7 @@ namespace GuangYuan.GY001.BLL
                 var sglec = new Dictionary<string, object>();
                 var str = JsonSerializer.Serialize(gi);
                 var ver = JsonSerializer.Deserialize(str, gi.GetType());
+                var svc = _Services.GetRequiredService<PublisherT89>();
             }
             catch (Exception)
             {
