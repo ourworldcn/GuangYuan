@@ -282,14 +282,6 @@ namespace GuangYuan.GY001.BLL
             using var dw = DisposeHelper.Create(c => c.Stop(), sw);
             try
             {
-                var gi = new GameItem();
-                world.EventsManager.GameItemCreated(gi, ProjectConstant.MucaiId);
-                gi.PrepareSaving(null);
-                var id = OwConvert.ToGuid("B1//S1ndikmlqvGAaUZTog==");
-                var sglec = new Dictionary<string, object>();
-                var str = JsonSerializer.Serialize(gi);
-                var ver = JsonSerializer.Deserialize(str, gi.GetType());
-                var svc = _Services.GetRequiredService<PublisherT89>();
             }
             catch (Exception)
             {

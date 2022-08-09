@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace GuangYuan.GY001.BLL.Specific
         /// <summary>
         /// 发行方公钥。
         /// </summary>
-        const string PublisherKeyBase64String = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAJnxtvfMDDm13i69RXNTiUd4YCeGyTfCaX5BjnRFhisK0BEiszIdczR59zkSu2I+rUxp0u6/RvVMoWr0HDPaJxZU62rnTEKBPhSCv/5vSnVf2wemO3rBDfhYUtUvXvdsNm0Obm/yc8q+VnYKKMUw2m9w/KHAMv9eRfG+fJu6M0xbAgMBAAECgYEAkA4XyHQh8JMWcahd6BiAuueTGwnPG6WKcEJKWtWAQqDgqVhOVZQnbTDAvqCfxsSeCIZyg0Vs0ji+SEZcac03iwOeu0p/COQdCgC1HiDRiLB7bAiYX6ARpLxNJ0SdBZkO9evepwYf/MQWCosQLJQT0nK1PVpD0sliJPpZzihPUdkCQQDJ6t6K1xqCYcqu8UChvHXIXBJhUBjSZLl4zqG5MSnPB/xaXurLUW3voUZMWgAbVdKq26XxFow2IStFER50GhS9AkEAwy1m6HJ0LTzdkz4UiJd9HlBzFopx7B4pVF14FavJxfQ92zwE4nICbJt4S5cpJn9hN2Nxb440ZQoNxjIAmSQS9wJAWHkdQeC2sOKAmN8E3tlhEoWlWBZsieOwkQqZOjgchaaOIFrurl/jt9gGoXXeDhwwzsSnlVe34A/wkbbKjTzQUQJBAImAANGdYE9GY+sJfznDT3f9wTaODjgD/6XZu3G49osoyDMdE2vcWezdkl/efDUM5BY7Tn0Ct9K+xHluXJGGon0CQA3kHn05D7uQzNiuBQhP8eegOPHEnAOdoYVQwHH/WRA8GUQV/N3fTTs733HYCAzUkxMpJNtmBPNUU/eMe9YAiaQ=";
+        const string PublisherKeyBase64String = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAOXw6MUF1yaIEl8G2JkKOOC4f7l5a/ZBKdbOuYXI4S6pvv90w4HEZM9TH0GNICPL0kncz3LytgN5SiCGj5KS8ioFismpQRFFEZVWIhDuEonu3dLs5446970auUDPMpUK0ciOHEkW/Cs3LTwmy2lumb/osch+gkmmJKAws4wNWa/9AgMBAAECgYEAso33gv89CivB8E61pWmdr0s1y4YxQuFpJugSgoPx8LVZnq9CHiOukJwgelunaISewEKaSM2Wb24hFM7I8G3xYx1N1AMANQQdFUp8+DechShagRXoGZmZevdaCiVMyTG+3bhevB5QmTEuSGKhmkT/hYibSDtjPaNsMOfyu7GHugECQQD4jTJZQePhbuzaPZh5lk/0Pp/vYdPxBzfsJbTRbeoBW5u3s7hKQ7AbMadr9iyhzm2WT6LTMPH2zMg1XYovCc19AkEA7NTwa878gzsGku4hW0EZzjIIfJvCE8wgth/XTyPBJxw5lpsrJ/ADdVMWFLXfq3/UC0e6f8M0XlR/MLHeVSb0gQJAUHhWTrOYdcoWAOpkTSkvJaKI4VXI6oYtwtTKX+u4EUx5c9ZJ2jFj+MnwrHF9Lb3JmRqbWsjD7eWLBEwOiwAfeQJAW7r+hENfutSZ7z8c3GOSwzLN5rXNri1aXjBnDNgkcCmWhKcFSCrGrCLKYqsvPxX744Kc0e+h0QeZXBsIqqK0AQJBAPF+bCrsFs2OZUiWrD+DCvER5EA1Tc7JCRjB/w4PhtoICCvmzElxPmS0sWSm3UFLWrYflFU+twr8hEMAd5Rv+fM=";
 
         const string PublisherPublishKeyBase64String = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCEsbYHbJE7eCeH01L5DKTPguOmt5rWumZwriYyxWQ4ea/T6udkSSkELPLWUXr7zmPJQBsV5GhxwrRNuH3449nfD1yfIepx5tpuhRcOUO4DWHDqBGhv0vwDDt0PSl35KkyZMTDchTp4BC2uxm7gjStUoQpQMv1WjAPUnBoZ6bbAMwIDAQAB";
 
@@ -64,8 +65,8 @@ namespace GuangYuan.GY001.BLL.Specific
         public string GetSignString(IReadOnlyDictionary<string, string> dic)
         {
             var coll = dic.OrderBy(c => c.Key).Select(c => $"{c.Key}={c.Value}");
-            var result = string.Join('&', coll);
-            result = SHA1WithRSA.Sign(result, PublisherKeyBase64String);
+            var signStr = string.Join('&', coll);
+            var result = SHA1WithRSA.Sign(signStr, PublisherKeyBase64String);
             return result;
         }
 
@@ -78,8 +79,20 @@ namespace GuangYuan.GY001.BLL.Specific
             OwHelper.Copy(dic, idic);
             idic["sign"] = GetSignString(dic);
 
-            var content = new FormUrlEncodedContent(new Dictionary<string, string>(idic)) { };
-            return _HttpClient.PostAsync(url, content);
+            var con2 = new FormUrlEncodedContent(idic);
+            var ss = con2.ReadAsStringAsync().Result;
+
+            var str = string.Join('&', idic.Select(c => $"{c.Key}={c.Value}"));
+            //str = Uri.EscapeDataString(str);
+            var content = new StringContent(ss, Encoding.UTF8) { };
+            foreach (var item in _HttpClient.DefaultRequestHeaders)
+            {
+                content.Headers.Add(item.Key, item.Value);
+            }
+            var header = string.Join('\n', content.Headers.Select(c => $"{c.Key}={c.Value.First()}"));
+
+            var str2 = content.ReadAsStringAsync().Result;
+            return _HttpClient.PostAsync(url, con2);
         }
 
         public void Login(T89LoginData datas)
@@ -169,6 +182,9 @@ namespace GuangYuan.GY001.BLL.Specific
 
         public string AppId { get; set; }
 
+        /// <summary>
+        /// 时间戳，默认用utc的毫秒数。
+        /// </summary>
         public long T { get; set; } = DateTime.UtcNow.Millisecond;
 
         public string Token { get; set; }
@@ -177,7 +193,10 @@ namespace GuangYuan.GY001.BLL.Specific
 
         public string Sign { get; set; }
 
-        public string ServerId { get; set; }
+        /// <summary>
+        /// 服务器标识。默认为gy。
+        /// </summary>
+        public string ServerId { get; set; } = "gy";
 
         public long OsType { get; set; }
 
@@ -208,7 +227,9 @@ namespace GuangYuan.GY001.BLL.Specific
         {
             return services.AddHttpClient<PublisherT89, PublisherT89>().SetHandlerLifetime(TimeSpan.FromMinutes(5)).ConfigureHttpClient(c =>
             {
-                c.DefaultRequestHeaders.Add("ContentType", "application/x-www-form-urlencoded");
+                //c.DefaultRequestHeaders.Clear();
+                //c.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded");
+                //c.DefaultRequestHeaders.Add("contenttype", "application/x-www-form-urlencoded");
             });
         }
     }

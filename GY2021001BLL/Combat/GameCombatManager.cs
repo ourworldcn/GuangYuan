@@ -435,27 +435,27 @@ namespace GuangYuan.GY001.BLL
                     var changes = new List<GamePropertyChangeItem<object>>();
                     //移动收益槽数据到各自背包。
                     //金币
-                    var gis = shouyiSlot.Children.Where(c => c.ExtraGuid == ProjectConstant.JinbiId);
+                    var gis = shouyiSlot.Children.Where(c => c.ExtraGuid == ProjectConstant.JinbiId).ToArray();
                     if (gis.Any())
                         gim.MoveItems(gis, gameChar.GetCurrencyBag(), null, changes);
                     //木材
-                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid == ProjectConstant.MucaiId);
+                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid == ProjectConstant.MucaiId).ToArray();
                     if (gis.Any())
                         gim.MoveItems(gis, gameChar.GetCurrencyBag(), null, changes);
                     //野生怪物
-                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid == ProjectConstant.ZuojiZuheRongqi);
+                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid == ProjectConstant.ZuojiZuheRongqi).ToArray();
                     var shoulan = gameChar.GameItems.First(c => c.ExtraGuid == ProjectConstant.ShoulanSlotId);
                     if (gis.Any())
                         gim.MoveItems(gis, shoulan, null, changes);
                     //其他道具
                     var daojuBag = gameChar.GameItems.First(c => c.ExtraGuid == ProjectConstant.DaojuBagSlotId);   //道具背包
-                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid != ProjectConstant.JinbiId && c.ExtraGuid != ProjectConstant.MucaiId && c.ExtraGuid != ProjectConstant.ZuojiZuheRongqi);
+                    gis = shouyiSlot.Children.Where(c => c.ExtraGuid != ProjectConstant.JinbiId && c.ExtraGuid != ProjectConstant.MucaiId && c.ExtraGuid != ProjectConstant.ZuojiZuheRongqi).ToArray();
                     gim.MoveItems(gis, daojuBag, null, changes);
                     changes.CopyTo(data.ChangesItems);
 
                     //将剩余未能获取的收益放置于弃物槽中
                     var qiwu = gameChar.GetQiwuBag();
-                    foreach (var item in shouyiSlot.Children)
+                    foreach (var item in shouyiSlot.Children.ToArray())
                     {
                         data.ChangesItems.AddToRemoves(shouyiSlot.Id, item.Id);
                         gim.ForcedMove(item, item.Count.Value, qiwu);
