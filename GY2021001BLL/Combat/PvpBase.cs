@@ -126,9 +126,9 @@ namespace GuangYuan.GY001.BLL
             if (IsWin)   //若击溃主控室
             {
                 //攻击方木材
-                aMucai.StringDictionary["count"] = (Math.Round(attMucaiBase, MidpointRounding.AwayFromZero)).ToString();
+                aMucai.StringDictionary["count"] = Math.Round(attMucaiBase, MidpointRounding.AwayFromZero).ToString();
                 //攻击方获得金币
-                aJinbi.StringDictionary["count"] = (Math.Round(attJinbiBase, MidpointRounding.AwayFromZero)).ToString();
+                aJinbi.StringDictionary["count"] = Math.Round(attJinbiBase, MidpointRounding.AwayFromZero).ToString();
                 //防御方玉米田损失
                 defYumi.StringDictionary["count"] = (-Math.Round(defYumiBase, MidpointRounding.AwayFromZero)).ToString();
                 //防御方木材损失
@@ -139,9 +139,9 @@ namespace GuangYuan.GY001.BLL
             {
                 var dMucaiCount = DestroyTIds.Where(c => World.ItemTemplateManager.GetTemplateFromeId(c.Item1)?.CatalogNumber == 43).Sum(c => c.Item2);   //击溃木材仓库的数量
                 //攻击方木材
-                aMucai.StringDictionary["count"] = (Math.Round(attMucaiBase * dMucaiCount * 0.1m, MidpointRounding.AwayFromZero)).ToString();
+                aMucai.StringDictionary["count"] = Math.Round(attMucaiBase * dMucaiCount * 0.1m, MidpointRounding.AwayFromZero).ToString();
                 //攻击方获得金币
-                aJinbi.StringDictionary["count"] = (Math.Round(attJinbiBase * dMucaiCount * 0.1m, MidpointRounding.AwayFromZero)).ToString();
+                aJinbi.StringDictionary["count"] = Math.Round(attJinbiBase * dMucaiCount * 0.1m, MidpointRounding.AwayFromZero).ToString();
             }
             if (!World.CharManager.IsOnline(OtherCharId) && !OtherChar.CharType.HasFlag(CharType.Robot))    //若防御方不在线在线且不是机器人
             {

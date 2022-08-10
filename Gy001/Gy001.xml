@@ -1675,11 +1675,6 @@
             密码。若首次登录，创建了账号则这里返回密码。否则返回null。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.LoginT89ReturnDto.InnerToken">
-            <summary>
-            光元内部使用的令牌。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.LoginReturnDto">
             <summary>
             登录接口返回类。

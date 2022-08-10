@@ -778,8 +778,8 @@ namespace OW.Game.Item
             //gc.Properties.GetDecimalOrDefault("charIcon", 0)
             var gChar = datas.GameChar;
             var coll1 = from tmp in coll.AsNoTracking()    //排名在当前角色之前的角色
-                        where (tmp.Value > tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal.Value && string.Compare(tmp.DisplayName, gChar.DisplayName) < 0)
-                        orderby tmp.Value, tmp.DisplayName
+                        where (tmp.Value > tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal.Value && string.Compare(tmp.Id.ToString(), gChar.Id.ToString()) > 0)
+                        orderby tmp.Value descending, tmp.Id
                         select tmp;
             var rank = coll1.Count();
             datas.Rank = rank;

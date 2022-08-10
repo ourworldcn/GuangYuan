@@ -639,69 +639,6 @@ namespace OW.Game
 
         #endregion 错误处理
 
-        #region 锁定字符串
-
-        private static readonly ConcurrentDictionary<string, WeakReference<string>> _StringPool = new ConcurrentDictionary<string, WeakReference<string>>();
-
-        /// <summary>
-        /// 从字符串拘留池中取出实力并试图锁定。
-        /// 按每个字符串平均占用64字节计算，10万个字符串实质占用6.4MB内存,可以接受。
-        /// </summary>
-        /// <param name="str">如果暂存了 str，则返回系统对其的引用；否则返回对值为 str 的字符串的新引用。</param>
-        /// <param name="timeout">用于等待锁的时间。 值为 -1 毫秒表示指定无限期等待。</param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool LockString([NotNull] ref string str, TimeSpan timeout) =>
-            LockString(ref str, (int)timeout.TotalMilliseconds);
-
-        /// <summary>
-        /// 从字符串拘留池中取出实力并试图锁定。
-        /// 按每个字符串平均占用64字节计算，10万个字符串实质占用6.4MB内存,可以接受。
-        /// </summary>
-        /// <param name="str">如果暂存了 str，则返回系统对其的引用；否则返回对值为 str 的字符串的新引用。</param>
-        /// <param name="timeout">等待锁所需的毫秒数。</param>
-        /// <returns>如果当前线程获取该锁，则为 true；否则为 false。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool LockString([NotNull] ref string str, int timeout = -1)
-        {
-            var tmp = string.Intern(str);
-            str = tmp;
-            var result = Monitor.TryEnter(tmp, timeout);
-            if (!result)
-                SetLastError(ErrorCodes.WAIT_TIMEOUT);
-            return result;
-        }
-
-        /// <summary>
-        /// 释放指定对象上的排他锁。
-        /// </summary>
-        /// <param name="str"></param>
-        /// <param name="isPulse">是否通知等待队列中的线程锁定对象状态的更改。</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void UnlockString(string str, bool isPulse = false)
-        {
-            if (isPulse)
-                Monitor.Pulse(str);
-#if DEBUG
-            if (string.IsInterned(str) is null)
-                throw new SynchronizationLockException();
-#endif
-            Monitor.Exit(str);
-        }
-
-        ConcurrentDictionary<(StringComparer, string, string), string> _StringDic = new ConcurrentDictionary<(StringComparer, string, string), string>();
-
-        public string GetUniString(string str, string region, StringComparer comparer)
-        {
-            return _StringDic.GetOrAdd((comparer, region, str), c => c.Item3);
-        }
-
-        public bool UnregUniString(string str, string region, StringComparer comparer)
-        {
-            return _StringDic.TryRemove((comparer, region, str), out _);
-        }
-        #endregion 锁定字符串
-
         #region 功能
 
         /// <summary>
@@ -718,8 +655,9 @@ namespace OW.Game
                        on slot.ParentId equals parent.Id
                        join gc in db.Set<GameChar>()
                        on parent.OwnerId equals gc.Id
+                       //orderby slot.ExtraDecimal.Value descending, gc.Id
                        select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value };
-            var result = coll.AsNoTracking().OrderByDescending(c => c.Value).Take(topN).AsEnumerable().Select(c => (c.Id, c.Value, c.DisplayName));
+            var result = coll.AsNoTracking().OrderByDescending(c => c.Value).ThenBy(c => c.Id).Take(topN).AsEnumerable().Select(c => (c.Id, c.Value, c.DisplayName));
             return result.ToList();
         }
         #endregion 功能
@@ -738,10 +676,10 @@ namespace OW.Game
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IDisposable LockStringAndReturnDisposer(this VWorld world, ref string str, TimeSpan timeout, bool isPulse = false)
         {
-            if (!world.LockString(ref str, timeout))
+            if (!StringLocker.TryEnter(ref str, timeout))
                 return null;
             var tmp = str;
-            return DisposerWrapper.Create(() => world.UnlockString(tmp, isPulse));
+            return DisposerWrapper.Create(() => StringLocker.Exit(tmp));
         }
 
     }

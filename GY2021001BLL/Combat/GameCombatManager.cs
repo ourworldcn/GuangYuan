@@ -3,6 +3,7 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
@@ -745,7 +746,9 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorCode = VWorld.GetLastError();
                 return;
             }
-            var oldWar = datas.UserDbContext.Set<VirtualThing>().AsNoTracking().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
+            var db = datas.UserDbContext;
+
+            var oldWar = datas.UserDbContext.Set<VirtualThing>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
             if (oldWar is null)
             {
                 datas.HasError = true;
@@ -754,7 +757,6 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var oldView = oldWar.GetJsonObject<CombatReport>();
-            oldView.Thing = oldWar;
 
             if (!oldView.DefenserIds.Contains(datas.GameChar.Id))    //若没有复仇权
             {
@@ -770,7 +772,6 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = "已经反击过了。";
                 return;
             }
-            var db = datas.UserDbContext;
             var world = datas.World;
             //更改数据
             //增加战斗记录
@@ -824,6 +825,7 @@ namespace GuangYuan.GY001.BLL
             World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             //保存数据
             oldView.Retaliationed = true;
+
             datas.Save();
         }
 
@@ -840,7 +842,7 @@ namespace GuangYuan.GY001.BLL
             using var dwUsers = datas.LockAll();    //锁定相关角色
             if (dwUsers is null)
             {
-                (datas as IResultWorkData).FillErrorFromWorld();
+                datas.FillErrorFromWorld();
                 return;
             }
             var db = datas.UserDbContext;
@@ -852,6 +854,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = "找不到指定的最初战斗。";
                 return;
             }
+            db.Entry(oldWar).Reload();
             var oldView = oldWar.GetJsonObject<CombatReport>();
 
             var assId = oldView.AssistanceId;
@@ -911,7 +914,7 @@ namespace GuangYuan.GY001.BLL
             //改写进攻权限
             oldView.Assistancing = false;
             oldView.Assistanced = true;
-            oldView.IsCompleted = true && oldView.Retaliationed;
+            oldView.IsCompleted = oldView.Retaliationed || datas.IsWin;
             datas.Save();
             datas.ErrorCode = ErrorCodes.NO_ERROR;
             //计算成就数据
@@ -934,6 +937,12 @@ namespace GuangYuan.GY001.BLL
                 mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
                 mail.Properties["OldCombatId"] = oldWar.IdString;
                 mail.Properties["CombatId"] = pc.Thing.IdString;
+
+                //var mail2 = new GameMail();
+                //mail2.Properties["MailTypeId"] = ProjectConstant.PVP反击_求助_被求助者_胜利.ToString();
+                //mail2.Properties["OldCombatId"] = oldWar.IdString;
+                //mail2.Properties["CombatId"] = pc.Thing.IdString;
+                //World.SocialManager.SendMail(mail2, pc.AttackerIds, SocialConstant.FromSystemId); //协助成功邮件
             }
             else
             {
@@ -1282,9 +1291,13 @@ namespace GuangYuan.GY001.BLL
         {
             using var dwUser = datas.LockUser();
             if (dwUser is null)
+            {
+                datas.FillErrorFromWorld();
                 return;
+            }
+            var db = datas.UserDbContext;
             var idstring = datas.GameChar.IdString;
-            var thing = datas.UserDbContext.Set<VirtualThing>().FirstOrDefault(c => c.Id == datas.CombatId /*&& (c.AttackerIdString.Contains(idstring) || c.DefenserIdString.Contains(idstring))*/);
+            var thing = db.Set<VirtualThing>().FirstOrDefault(c => c.Id == datas.CombatId /*&& (c.AttackerIdString.Contains(idstring) || c.DefenserIdString.Contains(idstring))*/);
             if (thing is null)
             {
                 datas.HasError = true;
@@ -1292,6 +1305,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = "找不到指定战斗对象。";
                 return;
             }
+            db.Entry(thing).Reload();
             datas.CombatObject = thing.GetJsonObject<CombatReport>();
             return;
         }

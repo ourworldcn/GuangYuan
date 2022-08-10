@@ -264,6 +264,7 @@ namespace GuangYuan.GY001.BLL
 
         public static readonly Guid PVP反击_自己_两项全失败 = new Guid("{391c4e23-bc0a-4b75-bab8-60deea1d0a1d}");
 
+        public static readonly Guid PVP反击_求助_被求助者_胜利 = new Guid("{2ba05969-19ce-4b0c-8aed-1f2303342f1b}");
         #endregion 邮件类型Id
         /// <summary>
         /// 角色模板Id。当前只有一个模板。

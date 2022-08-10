@@ -1430,11 +1430,6 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string Pwd { get; set; }
 
-        /// <summary>
-        /// 光元内部使用的令牌。
-        /// </summary>
-        [DataMember]
-        public string InnerToken { get; internal set; }
     }
 
     /// <summary>

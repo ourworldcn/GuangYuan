@@ -173,7 +173,7 @@ namespace GY2021001WebApi.Controllers
             if (!datas.HasError)
             {
                 result.LoginName = datas.LoginName;
-                result.InnerToken = datas.InnerToken.ToBase64String();
+                result.Token = datas.InnerToken.ToBase64String();
                 result.Pwd = datas.Pwd;
                 result.GameChars.AddRange(datas.GameChars.Select(c => mapper.Map(c)));
             }

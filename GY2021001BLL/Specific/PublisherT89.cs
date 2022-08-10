@@ -79,20 +79,15 @@ namespace GuangYuan.GY001.BLL.Specific
             OwHelper.Copy(dic, idic);
             idic["sign"] = GetSignString(dic);
 
-            var con2 = new FormUrlEncodedContent(idic);
-            var ss = con2.ReadAsStringAsync().Result;
+            var content = new FormUrlEncodedContent(idic);
 
             var str = string.Join('&', idic.Select(c => $"{c.Key}={c.Value}"));
-            //str = Uri.EscapeDataString(str);
-            var content = new StringContent(ss, Encoding.UTF8) { };
             foreach (var item in _HttpClient.DefaultRequestHeaders)
             {
                 content.Headers.Add(item.Key, item.Value);
             }
-            var header = string.Join('\n', content.Headers.Select(c => $"{c.Key}={c.Value.First()}"));
 
-            var str2 = content.ReadAsStringAsync().Result;
-            return _HttpClient.PostAsync(url, con2);
+            return _HttpClient.PostAsync(url, content);
         }
 
         public void Login(T89LoginData datas)

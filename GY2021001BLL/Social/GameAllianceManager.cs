@@ -206,7 +206,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 return;
             var lv = (int)guild.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);
             exp += expInc;
-            var index = Array.FindIndex(ary, c => c <= exp);
+            var index = Array.FindLastIndex(ary, c => c <= exp);
             if (index > -1 && index != lv + 1)    //若找到了匹配项
                 World.ItemManager.SetLevel(guild, index + 1, changes);
             guild.SetPropertyAndMarkChanged("exp", exp, changes);

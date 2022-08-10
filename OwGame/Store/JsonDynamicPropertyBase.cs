@@ -169,6 +169,8 @@ namespace OW.Game.Store
                 if (!ReferenceEquals(_JsonObjectString, value))
                 {
                     _JsonObjectString = value;
+                    _JsonObject = null;
+                    JsonObjectType = null;
                 }
             }
         }
@@ -201,7 +203,7 @@ namespace OW.Game.Store
 
         private void Changed_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            
+
         }
 
         private object _JsonObject;
@@ -209,7 +211,14 @@ namespace OW.Game.Store
         /// 用<see cref="GetJsonObject{T}"/>获取。
         /// </summary>
         [JsonIgnore, NotMapped]
-        public object JsonObject { get => _JsonObject; set => _JsonObject = value; }
+        public object JsonObject
+        {
+            get => _JsonObject;
+            set
+            {
+                _JsonObject = value;
+            }
+        }
 
         [JsonIgnore, NotMapped]
         public Type JsonObjectType { get; set; }

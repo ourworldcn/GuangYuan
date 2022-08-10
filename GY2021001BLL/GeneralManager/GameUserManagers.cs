@@ -620,7 +620,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         public bool LockLogin(ref string loginName, TimeSpan? timeout = null)
         {
-            return World.LockString(ref loginName, timeout ?? Options.DefaultLockTimeout);
+            return StringLocker.TryEnter(ref loginName, timeout ?? Options.DefaultLockTimeout);
         }
 
         /// <summary>
@@ -630,7 +630,10 @@ namespace GuangYuan.GY001.BLL
         /// <param name="isPulse">是否通知等待队列中的线程锁定对象状态的更改。false或默认值表示不通知。</param>
         public void UnlockLogin(string loginName, bool isPulse = false)
         {
-            World.UnlockString(loginName, isPulse);
+            //TODO 
+            //if(isPulse)
+            //    Monitor.PulseAll()
+            StringLocker.Exit(loginName);
         }
 
         /// <summary>
