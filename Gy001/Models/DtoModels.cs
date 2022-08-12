@@ -1249,25 +1249,31 @@ namespace GY2021001WebApi.Models
     public class LetOutParamsDto : TokenDtoBase
     {
         /// <summary>
-        /// 要强制下线的用户登录名。
+        /// 封停的角色id集合。
         /// </summary>
         [DataMember]
-        public string LoginName { get; set; }
+        public List<string> CharIds { get; set; } = new List<string>();
     }
 
     [DataContract]
     public class LetOutReturnDto : ReturnDtoBase
     {
+        /// <summary>
+        /// 返回的结果，针对参数中相应的角色id的设置结果。
+        /// 0=正常完成。其它可看作超时忙或没有该角色id。
+        /// </summary>
+        [DataMember]
+        public List<int> Results { get; set; } = new List<int>();
     }
 
     [DataContract]
     public class BlockUserParamsDto : TokenDtoBase
     {
         /// <summary>
-        /// 封停账号的登录名。
+        /// 封停的角色id集合。
         /// </summary>
         [DataMember]
-        public string LoginName { get; set; }
+        public List<string> CharIds { get; set; } = new List<string>();
 
         /// <summary>
         /// 封停的截止时间点，使用Utc时间。
@@ -1279,6 +1285,12 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class BlockUserReturnDto : ReturnDtoBase
     {
+        /// <summary>
+        /// 返回的结果，针对参数中相应的角色id的设置结果。
+        /// 0=正常完成。其它可看作超时忙或没有该角色id。
+        /// </summary>
+        [DataMember]
+        public List<int> Results { get; set; } = new List<int>();
     }
 
     /// <summary>
@@ -3583,25 +3595,13 @@ namespace GY2021001WebApi.Models
     public class SetCombatScoreParamsDto : TokenDtoBase
     {
         /// <summary>
-        /// 前缀。
+        /// 角色id集合。
         /// </summary>
         [DataMember]
-        public string Prefix { get; set; }
+        public List<string> CharIds { get; set; } = new List<string>();
 
         /// <summary>
-        /// 起始索引号。
-        /// </summary>
-        [DataMember]
-        public int StartIndex { get; set; }
-
-        /// <summary>
-        /// 终止索引号。
-        /// </summary>
-        [DataMember]
-        public int EndIndex { get; set; }
-
-        /// <summary>
-        /// 设置或获取pvp等级分。
+        /// 设置或获取pvp等级分。保留未用。
         /// </summary>
         [DataMember]
         public int? PvpScore { get; set; }
@@ -3616,6 +3616,12 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class SetCombatScoreReturnDto : ReturnDtoBase
     {
+        /// <summary>
+        /// 返回的结果，针对参数中相应的角色id的设置结果。
+        /// 1292=未解锁pvp功能，0=正常完成。其它可看作超时忙或没有该角色id。
+        /// </summary>
+        [DataMember]
+        public List<int> Results { get; set; } = new List<int>();
     }
 
     /// <summary>
@@ -3625,22 +3631,11 @@ namespace GY2021001WebApi.Models
     public class AddPowersParamsDto : TokenDtoBase
     {
         /// <summary>
-        /// 前缀。
+        /// 角色id集合。
         /// </summary>
         [DataMember]
-        public string Prefix { get; set; }
+        public List<string> CharIds { get; set; } = new List<string>();
 
-        /// <summary>
-        /// 起始索引号。
-        /// </summary>
-        [DataMember]
-        public int StartIndex { get; set; }
-
-        /// <summary>
-        /// 终止索引号。
-        /// </summary>
-        [DataMember]
-        public int EndIndex { get; set; }
 
         /// <summary>
         /// 权限的按位组合。
@@ -3655,6 +3650,12 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class AddPowersReturnDto : ReturnDtoBase
     {
+        /// <summary>
+        /// 返回的结果，针对参数中相应的角色id的设置结果。
+        /// 0=正常完成。其它可看作超时忙或没有该角色id。
+        /// </summary>
+        [DataMember]
+        public List<int> Results { get; set; } = new List<int>();
     }
 
     /// <summary>

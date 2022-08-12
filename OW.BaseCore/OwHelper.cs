@@ -128,9 +128,9 @@ namespace System
         /// <param name="src"></param>
         /// <param name="dest"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Copy<T>(IEnumerable<T> src, ICollection<T> dest)
+        public static void Copy<TSrc, TDest>(IEnumerable<TSrc> src, ICollection<TDest> dest) where TSrc : TDest
         {
-            if (dest is List<T> list)
+            if (dest is List<TSrc> list)
                 list.AddRange(src);
             else
                 foreach (var item in src)

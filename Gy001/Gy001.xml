@@ -81,7 +81,8 @@
         </member>
         <member name="M:GY2021001WebApi.Controllers.AdminController.AddPowers(GY2021001WebApi.Models.AddPowersParamsDto)">
             <summary>
-            给指定的一组用户追加权限。只有超级管理员账号可以成功调用该函数。当前版本可以给其他用户设置超管权限。
+            给指定的一组用户追加权限。只有超级管理员账号可以成功调用该函数。
+            当前版本可以给其他用户设置超管权限。
             </summary>
             <param name="model"></param>
             <returns></returns>
@@ -1554,19 +1555,31 @@
             要发送的邮件。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.LetOutParamsDto.LoginName">
+        <member name="P:GY2021001WebApi.Models.LetOutParamsDto.CharIds">
             <summary>
-            要强制下线的用户登录名。
+            封停的角色id集合。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.BlockUserParamsDto.LoginName">
+        <member name="P:GY2021001WebApi.Models.LetOutReturnDto.Results">
             <summary>
-            封停账号的登录名。
+            返回的结果，针对参数中相应的角色id的设置结果。
+            0=正常完成。其它可看作超时忙或没有该角色id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.BlockUserParamsDto.CharIds">
+            <summary>
+            封停的角色id集合。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.BlockUserParamsDto.BlockUtc">
             <summary>
             封停的截止时间点，使用Utc时间。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.BlockUserReturnDto.Results">
+            <summary>
+            返回的结果，针对参数中相应的角色id的设置结果。
+            0=正常完成。其它可看作超时忙或没有该角色id。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetInfosResultDto">
@@ -2980,24 +2993,14 @@
             公告内容。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.Prefix">
+        <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.CharIds">
             <summary>
-            前缀。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.StartIndex">
-            <summary>
-            起始索引号。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.EndIndex">
-            <summary>
-            终止索引号。
+            角色id集合。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.PvpScore">
             <summary>
-            设置或获取pvp等级分。
+            设置或获取pvp等级分。保留未用。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.SetCombatScoreParamsDto.PveScore">
@@ -3005,24 +3008,20 @@
             保留未用，设置或获取pve等级分。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.SetCombatScoreReturnDto.Results">
+            <summary>
+            返回的结果，针对参数中相应的角色id的设置结果。
+            1292=未解锁pvp功能，0=正常完成。其它可看作超时忙或没有该角色id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.AddPowersParamsDto">
             <summary>
             
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.AddPowersParamsDto.Prefix">
+        <member name="P:GY2021001WebApi.Models.AddPowersParamsDto.CharIds">
             <summary>
-            前缀。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.AddPowersParamsDto.StartIndex">
-            <summary>
-            起始索引号。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.AddPowersParamsDto.EndIndex">
-            <summary>
-            终止索引号。
+            角色id集合。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.AddPowersParamsDto.CharType">
@@ -3033,6 +3032,12 @@
         <member name="T:GY2021001WebApi.Models.AddPowersReturnDto">
             <summary>
             
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.AddPowersReturnDto.Results">
+            <summary>
+            返回的结果，针对参数中相应的角色id的设置结果。
+            0=正常完成。其它可看作超时忙或没有该角色id。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.AccountSummery">
@@ -3444,12 +3449,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

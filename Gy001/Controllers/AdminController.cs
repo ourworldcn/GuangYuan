@@ -44,20 +44,21 @@ namespace GY2021001WebApi.Controllers
         {
             using var datas = new SetCombatScoreDatas(World, model.Token)
             {
-                Prefix = model.Prefix,
-                StartIndex = model.StartIndex,
-                EndIndex = model.EndIndex,
                 PveScore = model.PveScore,
                 PvpScore = model.PvpScore,
             };
+            OwHelper.Copy(model.CharIds.Select(c => OwConvert.ToGuid(c)), datas.CharIds);
             World.AdminManager.SetCombatScore(datas);
             var result = new SetCombatScoreReturnDto();
             result.FillFrom(datas);
+            if (!result.HasError)
+                OwHelper.Copy(datas.Results, result.Results);
             return result;
         }
 
         /// <summary>
-        /// 给指定的一组用户追加权限。只有超级管理员账号可以成功调用该函数。当前版本可以给其他用户设置超管权限。
+        /// 给指定的一组用户追加权限。只有超级管理员账号可以成功调用该函数。
+        /// 当前版本可以给其他用户设置超管权限。
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -67,13 +68,13 @@ namespace GY2021001WebApi.Controllers
             using var datas = new AddPowersDatas(World, model.Token)
             {
                 CharType = model.CharType,
-                EndIndex = model.EndIndex,
-                StartIndex = model.StartIndex,
-                Prefix = model.Prefix,
             };
+            OwHelper.Copy(model.CharIds.Select(c => OwConvert.ToGuid(c)), datas.CharIds);
             World.AdminManager.AddPowers(datas);
             var result = new AddPowersReturnDto();
             result.FillFrom(datas);
+            if (!result.HasError)
+                OwHelper.Copy(datas.Results, result.Results);
             return result;
         }
 
@@ -263,12 +264,14 @@ namespace GY2021001WebApi.Controllers
         {
             BlockDatas datas = new BlockDatas(World, model.Token)
             {
-                LoginName = model.LoginName,
                 BlockUtc = model.BlockUtc,
             };
+            OwHelper.Copy(model.CharIds.Select(c => OwConvert.ToGuid(c)), datas.CharIds);
             World.AdminManager.Block(datas);
             var result = new BlockUserReturnDto();
             result.FillFrom(datas);
+            if (!result.HasError)
+                OwHelper.Copy(datas.Results, result.Results);
             return result;
         }
 
@@ -281,11 +284,13 @@ namespace GY2021001WebApi.Controllers
         {
             LetOutDatas datas = new LetOutDatas(World, model.Token)
             {
-                LoginName = model.LoginName
             };
+            OwHelper.Copy(model.CharIds.Select(c => OwConvert.ToGuid(c)), datas.CharIds);
             World.AdminManager.LetOut(datas);
             var result = new LetOutReturnDto();
             result.FillFrom(datas);
+            if (!result.HasError)
+                OwHelper.Copy(datas.Results, result.Results);
             return result;
         }
 

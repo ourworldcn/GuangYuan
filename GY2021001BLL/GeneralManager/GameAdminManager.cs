@@ -38,17 +38,11 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 设置战斗积分。
+        /// 设置战斗积分。仅管理员和超管可以使用此功能。
         /// </summary>
         /// <param name="datas"></param>
         public void SetCombatScore(SetCombatScoreDatas datas)
         {
-            if (datas.EndIndex < datas.StartIndex)
-            {
-                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "StartIndex 要小于或等于 EndIndex。";
-                return;
-            }
             if (!datas.GameChar.CharType.HasFlag(CharType.SuperAdmin) && !datas.GameChar.CharType.HasFlag(CharType.Admin))   //若权限不够
             {
                 datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
@@ -56,26 +50,25 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var db = datas.UserDbContext;
-            var loginNames = new List<string>();  //登录名数组
-            for (int i = datas.StartIndex; i <= datas.EndIndex; i++)
+            for (int i = 0; i < datas.CharIds.Count; i++)
             {
-                loginNames.Add($"{datas.Prefix}{i}");
-            }
-            var userIds = db.Set<GameChar>().Where(c => loginNames.Contains(c.GameUser.LoginName)).Select(c => c.Id).ToArray();
-            using var dwUsers = World.CharManager.LockOrLoadWithCharIds(userIds, userIds.Length * World.CharManager.Options.DefaultLockTimeout);    //顺序连锁
-            foreach (var item in loginNames)
-            {
-                var gu = World.CharManager.GetUserFromLoginName(item);
-                if (gu is null)
-                    continue;
-                if (!(datas.PvpScore is null))
+                var id = datas.CharIds[i];  //角色id
+                using var dw = World.CharManager.LockOrLoad(id, out var gu);
+                if (dw is null)  //若无法锁定
                 {
-                    gu.CurrentChar.GetPvpObject().ExtraDecimal = datas.PvpScore;
-                    //gu.CurrentChar.GetPveT().Count = datas.PveScore;
-                    World.CharManager.NotifyChange(gu);
+                    datas.Results[i] = VWorld.GetLastError();
+                    continue;
                 }
+                var pvp = gu.CurrentChar.GetPvpObject();
+                if (pvp is null) //若未解锁pvp
+                {
+                    datas.Results[i] = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                    continue;
+                }
+                pvp.ExtraDecimal = datas.PvpScore;
+                datas.Results[i] = ErrorCodes.NO_ERROR;
+                World.CharManager.NotifyChange(gu);
             }
-
         }
 
         /// <summary>
@@ -93,12 +86,6 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void AddPowers(AddPowersDatas datas)
         {
-            if (datas.EndIndex < datas.StartIndex)
-            {
-                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "StartIndex 要小于或等于 EndIndex。";
-                return;
-            }
             if (!datas.GameChar.CharType.HasFlag(CharType.SuperAdmin))   //若不是超管
             {
                 datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
@@ -106,19 +93,18 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var loginNames = new List<string>();  //登录名数组
-            for (int i = datas.StartIndex; i <= datas.EndIndex; i++)
-            {
-                loginNames.Add($"{datas.Prefix}{i}");
-            }
             var db = datas.UserDbContext;
-            var userIds = db.Set<GameChar>().Where(c => loginNames.Contains(c.GameUser.LoginName)).Select(c => c.Id).ToArray();
-            using var dwUsers = World.CharManager.LockOrLoadWithCharIds(userIds, userIds.Length * World.CharManager.Options.DefaultLockTimeout);    //顺序连锁
-            foreach (var item in loginNames)
+            for (int i = 0; i < datas.CharIds.Count; i++)
             {
-                var gu = World.CharManager.GetUserFromLoginName(item);
-                if (gu is null)
+                var id = datas.CharIds[i];  //角色id
+                using var dw = World.CharManager.LockOrLoad(id, out var gu);
+                if (dw is null)  //若无法锁定
+                {
+                    datas.Results[i] = VWorld.GetLastError();
                     continue;
+                }
                 gu.CurrentChar.CharType |= datas.CharType;
+                datas.Results[i] = ErrorCodes.NO_ERROR;
                 World.CharManager.NotifyChange(gu);
             }
         }
@@ -169,18 +155,22 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
             }
-            var gu = World.CharManager.GetUserFromLoginName(datas.LoginName);
-            if (gu is null)
+            for (int i = 0; i < datas.CharIds.Count; i++)
             {
-                datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_USER;
-                datas.ErrorMessage = "无此用户或不在线";
-                return;
-            }
-            var succ = World.CharManager.Logout(gu, LogoutReason.Force);
-            if (!succ)
-            {
-                datas.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
-                return;
+                var id = datas.CharIds[i];  //角色id
+                var gc = World.CharManager.GetCharFromId(id);
+                if (gc is null)  //若无法锁定
+                {
+                    datas.Results[i] = ErrorCodes.ERROR_NO_SUCH_USER;
+                    continue;
+                }
+                var succ = World.CharManager.Logout(gc.GameUser, LogoutReason.Force);
+                if (!succ)
+                {
+                    datas.Results[i] = ErrorCodes.WAIT_TIMEOUT;
+                    return;
+                }
+
             }
             return;
         }
@@ -426,14 +416,20 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
             }
-            using var dwUser = World.CharManager.LockOrLoad(datas.LoginName, out var gu);
-            if (dwUser is null)
+            var db = datas.UserDbContext;
+            for (int i = 0; i < datas.CharIds.Count; i++)
             {
-                datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_USER;
-                return;
+                var id = datas.CharIds[i];  //角色id
+                using var dw = World.CharManager.LockOrLoad(id, out var gu);
+                if (dw is null)  //若无法锁定
+                {
+                    datas.Results[i] = VWorld.GetLastError();
+                    continue;
+                }
+                gu.BlockUtc = datas.BlockUtc;
+                datas.Results[i] = ErrorCodes.NO_ERROR;
+                World.CharManager.NotifyChange(gu);
             }
-            gu.BlockUtc = datas.BlockUtc;
-            World.CharManager.NotifyChange(gu);
             return;
         }
 
@@ -491,7 +487,7 @@ namespace GuangYuan.GY001.BLL
             try
             {
                 var db = gc.GetDbContext();
-                var setting= db.Set<GameSetting>().FirstOrDefault(c => c.Name == "Notice");
+                var setting = db.Set<GameSetting>().FirstOrDefault(c => c.Name == "Notice");
                 if (setting is null)
                     return;
                 var entity = db.Entry(setting);
@@ -562,20 +558,7 @@ namespace GuangYuan.GY001.BLL
         {
         }
 
-        /// <summary>
-        /// 前缀。
-        /// </summary>
-        public string Prefix { get; set; }
-
-        /// <summary>
-        /// 起始索引号。
-        /// </summary>
-        public int StartIndex { get; set; }
-
-        /// <summary>
-        /// 终止索引号。
-        /// </summary>
-        public int EndIndex { get; set; }
+        public List<Guid> CharIds { get; set; } = new List<Guid>();
 
         /// <summary>
         /// 设置或获取pvp等级分。
@@ -586,6 +569,11 @@ namespace GuangYuan.GY001.BLL
         /// 设置或获取pve等级分。
         /// </summary>
         public int? PveScore { get; set; }
+
+        /// <summary>
+        /// 针对每个角色设置的结果。1292=未解锁pvp功能，0=正常完成，
+        /// </summary>
+        public List<int> Results { get; set; } = new List<int>();
     }
 
     /// <summary>
@@ -606,24 +594,20 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 前缀。
+        /// 角色id集合。
         /// </summary>
-        public string Prefix { get; set; }
+        public List<Guid> CharIds { get; set; } = new List<Guid>();
 
-        /// <summary>
-        /// 起始索引号。
-        /// </summary>
-        public int StartIndex { get; set; }
-
-        /// <summary>
-        /// 终止索引号。
-        /// </summary>
-        public int EndIndex { get; set; }
 
         /// <summary>
         /// 权限的按位组合。
         /// </summary>
         public CharType CharType { get; set; }
+
+        /// <summary>
+        /// 针对每个角色设置的结果。0=正常完成，其它可以理解为超时或角色不存在。
+        /// </summary>
+        public List<int> Results { get; set; } = new List<int>();
     }
 
     /// <summary>
@@ -682,9 +666,14 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 强制下线的用户。
+        /// 角色id集合。
         /// </summary>
-        public string LoginName { get; set; }
+        public List<Guid> CharIds { get; set; } = new List<Guid>();
+
+        /// <summary>
+        /// 针对每个角色设置的结果。0=正常完成，1317无此用户或不在线，其它可以理解为超时或角色不存在。
+        /// </summary>
+        public List<int> Results { get; set; } = new List<int>();
     }
 
     public class BlockDatas : ComplexWorkGameContext
@@ -702,14 +691,20 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 封停账号的登录名。
+        /// 封停的角色id集合。
         /// </summary>
-        public string LoginName { get; set; }
+        public List<Guid> CharIds { get; set; } = new List<Guid>();
 
         /// <summary>
         /// 封停的截止时间点，使用Utc时间。
         /// </summary>
         public DateTime BlockUtc { get; set; }
+
+        /// <summary>
+        /// 返回的结果，针对参数中相应的角色id的设置结果。
+        /// 0=正常完成。其它可看作超时忙或没有该角色id。
+        /// </summary>
+        public List<int> Results { get; set; } = new List<int>();
     }
 
     public class RebootDatas : ComplexWorkGameContext
