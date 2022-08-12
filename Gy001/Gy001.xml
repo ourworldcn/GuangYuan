@@ -1530,6 +1530,12 @@
             要删除的用户的登录名的集合。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.DeleteUsersResultDto.Results">
+            <summary>
+            返回的结果，针对参数中相应的角色id的设置结果。
+            0=正常完成。其它可看作超时忙或没有该角色id。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.SendThingsParamsDto.Propertyies">
             <summary>
             要送的物品，tid&lt;数字后缀&gt;=模板物品Id，count&lt;数字后缀&gt;=数量，如果是生物则用htid,btid分别指出头身模板Id。

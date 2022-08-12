@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Concurrent;
@@ -38,6 +40,11 @@ namespace OW.Game
         void EnsureSaved(object key);
 
         object GetOrLoad(object key, Action<IDataObjectCacheEntry> creator);
+    }
+
+    public class DataObjectCacheOptions : MemoryCacheOptions
+    {
+        public TimeSpan PeriodOfSave { get; set; }
     }
 
     /// <summary>
@@ -140,8 +147,9 @@ namespace OW.Game
         /// <summary>
         /// 逐出所有超期的项。
         /// </summary>
+        /// <param name="percentage"></param>
         /// <returns></returns>
-        int Compact()
+        protected virtual int Compact(double percentage)
         {
             int result = 0;
             DateTime now = DateTime.UtcNow;
@@ -155,7 +163,7 @@ namespace OW.Game
                     var entity = item.Value;
                     if (!entity.IsExpiration(now))  //若未到期
                         continue;
-                    entity.SaveCallback(entity.Value);
+                    entity.SaveCallback?.Invoke(entity.Value);
                     entity.Reason = EvictionReason.Expired;
                     if (_Datas.Remove(key, out entity))
                     {
@@ -165,16 +173,49 @@ namespace OW.Game
                 }
                 catch (Exception)
                 {
-
                 }
                 finally
                 {
                     Monitor.Exit(key);
                 }
+                if (result > 100)
+                    break;
             }
             return result;
         }
 
+        void Save()
+        {
+            List<object> list = new List<object>();
+            lock (_Dirty)
+            {
+                if (_Dirty.Count <= 0)
+                    return;
+                OwHelper.Copy(_Dirty, list);
+                _Dirty.Clear();
+            }
+
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                var key = list[i];
+                if (!Monitor.TryEnter(key)) //若无法锁定键值
+                    continue;
+                try
+                {
+                    if (!_Datas.TryGetValue(key, out var entity))
+                        continue;
+                    entity.SaveCallback?.Invoke(entity.Value);
+                }
+                catch (Exception)
+                { }
+                finally
+                {
+                    Monitor.Exit(key);
+                }
+            }
+            lock (_Dirty)
+                list.ForEach(c => _Dirty.Add(c));   //将未保存对象键值放在队列中以待下次保存
+        }
         #region 构造函数
 
         /// <summary>
@@ -218,6 +259,14 @@ namespace OW.Game
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// 获取指定键的缓存对象。
+        /// 调用此函数前锁定<see cref="Monitor.TryEnter(object)"/> <paramref name="key"/> 对象，可以保证对象在返回后不被并发更改。
+        /// </summary>
+        /// <remarks></remarks>
+        /// <param name="key">对象的键，也是其同步锁。特别的如果是字符串对象，应考虑用池归一化。</param>
+        /// <param name="initializer"></param>
+        /// <returns></returns>
         public object GetOrLoad(object key, Action<IDataObjectCacheEntry> initializer)
         {
             lock (key)
@@ -231,7 +280,6 @@ namespace OW.Game
                 entity.LastDateTimeUtc = DateTime.UtcNow;
                 return entity.Value;
             }
-            throw new NotImplementedException();
         }
 
         #region IMemoryCache接口相关

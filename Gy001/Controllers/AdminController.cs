@@ -86,15 +86,10 @@ namespace GY2021001WebApi.Controllers
         [HttpDelete]
         public ActionResult<DeleteUsersResultDto> DeleteUsers(DeleteUsersParamsDto model)
         {
-            var result = new DeleteUsersResultDto
-            {
-                HasError = !World.CharManager.Delete(model.LoginNames)
-            };
-            if (result.HasError)
-            {
-                result.ErrorCode = VWorld.GetLastError();
-                result.DebugMessage = VWorld.GetLastErrorMessage();
-            }
+            var result = new DeleteUsersResultDto();
+            var datas = World.CharManager.Delete(model.LoginNames);
+            OwHelper.Copy(datas, result.Results);
+
             return result;
         }
 

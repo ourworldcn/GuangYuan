@@ -1262,32 +1262,36 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         /// <param name="loginNames"></param>
         /// <returns>true 成功删除所有用户信息，false至少有一个用户无法删除。</returns>
-        public bool Delete(IEnumerable<string> loginNames)
+        public List<int> Delete(IEnumerable<string> loginNames)
         {
-            var lns = loginNames.OrderBy(c => c);
+            var result = new List<int>();
+           // var lns = loginNames.OrderBy(c => c);
             var list = new List<IDisposable>();
-
-            foreach (var ln in lns) //注销所有用户并锁定其登录进程
+            var lns = loginNames.ToArray();
+            for (int i = 0; i < lns.Length; i++)
             {
+                var ln = lns[i];
                 string tmp = ln;
                 var disper = World.LockStringAndReturnDisposer(ref tmp, Options.DefaultLockTimeout); //锁定登录等相关进程
                 if (disper is null)
                 {
-                    using var dwsTmp = DisposerWrapper.Create(list);
-                    return false;
+                    result[i] = ErrorCodes.WAIT_TIMEOUT;
+                    continue;
                 }
-                list.Add(disper);
                 var gu = GetUserFromLoginName(tmp);
                 if (null != gu)    //若已经加载到内存中
                 {
                     if (!Logout(gu, LogoutReason.SystemShutdown))
-                        throw new InvalidOperationException();
+                    {
+                        result[i] = ErrorCodes.WAIT_TIMEOUT;
+                        continue;
+                    }
                 }
             }
             using var dws = DisposerWrapper.Create(list);   //最终清理
             using var db = World.CreateNewUserDbContext(); db.Database.SetCommandTimeout(TimeSpan.FromMinutes(1));
             DeleteCore(loginNames, db);
-            return true;
+            return result;
         }
 
         /// <summary>

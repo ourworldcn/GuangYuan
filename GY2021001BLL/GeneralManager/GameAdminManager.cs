@@ -218,7 +218,7 @@ namespace GuangYuan.GY001.BLL
                 World.EventsManager.Clone(datas.GameChar.GameUser, gu);
                 users.Add(gu);
             });
-            if (!World.CharManager.Delete(list.Select(c => c.Item1)))
+            if (World.CharManager.Delete(list.Select(c => c.Item1)).Count != list.Count)
             {
                 datas.HasError = true;
                 datas.ErrorMessage = "至少有一个账户无法覆盖信息。";
@@ -343,7 +343,7 @@ namespace GuangYuan.GY001.BLL
             var eve = World.EventsManager;
             Array.ForEach(ary, c => eve.JsonDeserialized(c));
             var lns = ary.Select(c => c.LoginName);
-            if (!World.CharManager.Delete(lns))
+            if (World.CharManager.Delete(lns).Count != lns.Count())
             {
                 datas.HasError = true;
                 datas.ErrorMessage = "至少有一个用户不能正常添加";

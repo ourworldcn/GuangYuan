@@ -1206,6 +1206,12 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class DeleteUsersResultDto : ReturnDtoBase
     {
+        /// <summary>
+        /// 返回的结果，针对参数中相应的角色id的设置结果。
+        /// 0=正常完成。其它可看作超时忙或没有该角色id。
+        /// </summary>
+        [DataMember]
+        public List<int> Results { get; set; } = new List<int>();
     }
 
     [DataContract]
