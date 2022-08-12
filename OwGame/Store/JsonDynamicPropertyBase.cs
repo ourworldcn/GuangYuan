@@ -288,7 +288,7 @@ namespace OW.Game.Store
         public virtual void PrepareSaving(DbContext db)
         {
             if (_JsonObject != null)
-                JsonObjectString = JsonSerializer.Serialize(_JsonObject, JsonObjectType ?? JsonObject.GetType());
+                _JsonObjectString = JsonSerializer.Serialize(_JsonObject, JsonObjectType ?? JsonObject.GetType());
         }
 
         #endregion IBeforeSave接口及相关

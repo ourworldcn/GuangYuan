@@ -706,6 +706,7 @@ namespace GuangYuan.GY001.BLL
             bootyOfDefenser.ForEach(c => c.FillToDictionary(World, mail.Properties));
             World.SocialManager.SendMail(mail, new Guid[] { datas.OtherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             //保存数据
+            pc.IsAttckerWin = datas.IsWin;
             datas.Save();
             datas.HasError = false;
             datas.ErrorCode = 0;
@@ -748,7 +749,7 @@ namespace GuangYuan.GY001.BLL
             }
             var db = datas.UserDbContext;
 
-            var oldWar = datas.UserDbContext.Set<VirtualThing>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
+            var oldWar = db.Set<VirtualThing>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
             if (oldWar is null)
             {
                 datas.HasError = true;
@@ -756,6 +757,7 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = "找不到指定的最初战斗。";
                 return;
             }
+            db.Entry(oldWar).Reload();
             var oldView = oldWar.GetJsonObject<CombatReport>();
 
             if (!oldView.DefenserIds.Contains(datas.GameChar.Id))    //若没有复仇权
@@ -809,14 +811,15 @@ namespace GuangYuan.GY001.BLL
             var mail = new GameMail();
             if (datas.IsWin) //反击得胜
             {
+                oldView.IsCompleted = true; //反击得胜后不可再要求协助
                 //发送邮件
                 mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_自己_胜利.ToString();
                 mail.Properties["OldCombatId"] = oldWar.IdString;
                 mail.Properties["CombatId"] = pc.Thing.IdString;
-                oldView.IsCompleted = true; //反击得胜后不可再要求协助
             }
             else //反击失败
             {
+                oldView.IsCompleted = oldView.Assistanced; //反击得胜后不可再要求协助
                 //发送邮件
                 mail.Properties["MailTypeId"] = oldView.Assistanced ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_自己_失败.ToString();
                 mail.Properties["OldCombatId"] = oldWar.IdString;
@@ -825,7 +828,6 @@ namespace GuangYuan.GY001.BLL
             World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             //保存数据
             oldView.Retaliationed = true;
-
             datas.Save();
         }
 

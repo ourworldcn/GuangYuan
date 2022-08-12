@@ -190,7 +190,7 @@ namespace GuangYuan.GY001.BLL
             if (env.EnvironmentName == "Staging_2")
                  maxCount = 150;
             else if (env.EnvironmentName == "Test0706")
-                 maxCount = 150;
+                 maxCount = 10;
             else
                 return;
 #endif
@@ -277,9 +277,9 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
-            var dic = new Dictionary<string, object>() { { "ExtraString", "1" }, { "d", DateTime.UtcNow } };
+            var dic = new Dictionary<object, object>() { { "ExtraString", "1" }, { 2m, DateTime.UtcNow } };
+            var tmp = dic.TryGetValue(2m, out var val);
             var sw = Stopwatch.StartNew();
-            using var dw = DisposeHelper.Create(c => c.Stop(), sw);
             try
             {
             }
@@ -346,25 +346,25 @@ namespace GuangYuan.GY001.BLL
 
         #region 自动生成数据库迁移文件
 
-//        private void CreateDbTest(DbContext dbContext)
-//        {
-//            dbContext.Database.EnsureCreated();
-//            IModel lastModel = null;
-//            var lastMigration = dbContext.Set<MigrationLog>()
-//                    .OrderByDescending(e => e.Id)
-//                    .FirstOrDefault();
-//            lastModel = lastMigration == null ? null : (CreateModelSnapshot(lastMigration.SnapshotDefine).Result?.Model);
+        //        private void CreateDbTest(DbContext dbContext)
+        //        {
+        //            dbContext.Database.EnsureCreated();
+        //            IModel lastModel = null;
+        //            var lastMigration = dbContext.Set<MigrationLog>()
+        //                    .OrderByDescending(e => e.Id)
+        //                    .FirstOrDefault();
+        //            lastModel = lastMigration == null ? null : (CreateModelSnapshot(lastMigration.SnapshotDefine).Result?.Model);
 
-//            var modelDiffer = dbContext.GetInfrastructure().GetService<IMigrationsModelDiffer>();
-//            var isDiff = modelDiffer.HasDifferences(lastModel, dbContext.Model); //这个方法返回值是true或者false，这个可以比较老版本的model和当前版本的model是否出现更改。
+        //            var modelDiffer = dbContext.GetInfrastructure().GetService<IMigrationsModelDiffer>();
+        //            var isDiff = modelDiffer.HasDifferences(lastModel, dbContext.Model); //这个方法返回值是true或者false，这个可以比较老版本的model和当前版本的model是否出现更改。
 
-//            var upOperations = modelDiffer.GetDifferences(lastModel, dbContext.Model);  //这个方法返回的迁移的操作对象。
+        //            var upOperations = modelDiffer.GetDifferences(lastModel, dbContext.Model);  //这个方法返回的迁移的操作对象。
 
-//#pragma warning disable CA1806 // 不要忽略方法结果
-//            dbContext.GetInfrastructure().GetRequiredService<IMigrationsSqlGenerator>().Generate(upOperations, dbContext.Model).ToList();   //这个方法是根据迁移对象和当前的model生成迁移sql脚本。
-//#pragma warning restore CA1806 // 不要忽略方法结果
+        //#pragma warning disable CA1806 // 不要忽略方法结果
+        //            dbContext.GetInfrastructure().GetRequiredService<IMigrationsSqlGenerator>().Generate(upOperations, dbContext.Model).ToList();   //这个方法是根据迁移对象和当前的model生成迁移sql脚本。
+        //#pragma warning restore CA1806 // 不要忽略方法结果
 
-//        }
+        //        }
 
         public class MigrationLog
         {

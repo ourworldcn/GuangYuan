@@ -78,7 +78,7 @@ namespace GuangYuan.GY001.BLL.Specific
             var mapper = Service.GetRequiredService<IMapper>();
             mapper.Map(src, dest);
             dest.Id = src.Thing.Base64IdString;
-
+            
             //dest.AttackerIds.AddRange(src.AttackerIds.Select(c => c.ToBase64String()));
             //dest.DefenserIds.AddRange(src.DefenserIds.Select(c => c.ToBase64String()));
         }
