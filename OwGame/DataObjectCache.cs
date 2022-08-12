@@ -11,23 +11,17 @@ using System.Threading;
 
 namespace OW.Game
 {
-    public class DataObjectManager
-    {
-        public void Load(Guid id)
-        {
-            //StringLocker.TryEnter(key.ToString())
-        }
-
-        public bool Notify(Guid id)
-        {
-            return true;
-        }
-    }
 
     public interface IDataObjectCacheEntry : ICacheEntry
     {
+        /// <summary>
+        /// 加载数据对象的回调。
+        /// </summary>
         public Func<object, object> LoadCallback { get; set; }
 
+        /// <summary>
+        /// 保存数据对象的回调。
+        /// </summary>
         public Action<object> SaveCallback { get; set; }
 
 
@@ -39,7 +33,15 @@ namespace OW.Game
 
         void EnsureSaved(object key);
 
-        object GetOrLoad(object key, Action<IDataObjectCacheEntry> creator);
+        /// <summary>
+        /// 获取指定键的缓存对象。
+        /// 调用此函数前锁定<see cref="Monitor.TryEnter(object)"/> <paramref name="key"/> 对象，可以保证对象在返回后不被并发更改。
+        /// </summary>
+        /// <remarks></remarks>
+        /// <param name="key">对象的键，也是其同步锁。特别的如果是字符串对象，应考虑用池归一化。</param>
+        /// <param name="initializer"></param>
+        /// <returns></returns>
+        object GetOrLoad(object key, Action<IDataObjectCacheEntry> initializer);
     }
 
     public class DataObjectCacheOptions : MemoryCacheOptions
@@ -80,7 +82,11 @@ namespace OW.Game
             {
                 lock (Key)
                 {
-                    Cache._Datas.AddOrUpdate(Key, this, (key, val) => val);
+                    //加入缓存条目
+                    var entity = Cache._Datas.AddOrUpdate(Key, this, (key, val) => val);
+                    if (entity.LoadCallback != null)
+                        entity.Value = entity.LoadCallback(entity.Key);
+                    entity.LastDateTimeUtc = DateTime.UtcNow;
                 }
             }
             #endregion IDisposable接口相关
@@ -116,8 +122,6 @@ namespace OW.Game
             public Action<object> SaveCallback { get; set; }
 
             #endregion IDataObjectCacheEntry接口相关
-
-            public bool Dirty { get; set; }
 
             public DataObjectCache Cache { get; }
 
@@ -184,7 +188,10 @@ namespace OW.Game
             return result;
         }
 
-        void Save()
+        /// <summary>
+        /// 保存挂起的更改。
+        /// </summary>
+        protected virtual void Save()
         {
             List<object> list = new List<object>();
             lock (_Dirty)

@@ -1264,8 +1264,8 @@ namespace GuangYuan.GY001.BLL
         /// <returns>true 成功删除所有用户信息，false至少有一个用户无法删除。</returns>
         public List<int> Delete(IEnumerable<string> loginNames)
         {
-            var result = new List<int>();
-           // var lns = loginNames.OrderBy(c => c);
+            var result = new List<int>(Enumerable.Repeat(0, loginNames.Count()));
+            // var lns = loginNames.OrderBy(c => c);
             var list = new List<IDisposable>();
             var lns = loginNames.ToArray();
             for (int i = 0; i < lns.Length; i++)

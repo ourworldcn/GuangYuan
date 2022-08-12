@@ -56,17 +56,17 @@ namespace GuangYuan.GY001.BLL
                 using var dw = World.CharManager.LockOrLoad(id, out var gu);
                 if (dw is null)  //若无法锁定
                 {
-                    datas.Results[i] = VWorld.GetLastError();
+                    datas.Results.Add(VWorld.GetLastError());
                     continue;
                 }
                 var pvp = gu.CurrentChar.GetPvpObject();
                 if (pvp is null) //若未解锁pvp
                 {
-                    datas.Results[i] = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                    datas.Results.Add(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
                     continue;
                 }
                 pvp.ExtraDecimal = datas.PvpScore;
-                datas.Results[i] = ErrorCodes.NO_ERROR;
+                datas.Results.Add(ErrorCodes.NO_ERROR);
                 World.CharManager.NotifyChange(gu);
             }
         }
@@ -100,11 +100,11 @@ namespace GuangYuan.GY001.BLL
                 using var dw = World.CharManager.LockOrLoad(id, out var gu);
                 if (dw is null)  //若无法锁定
                 {
-                    datas.Results[i] = VWorld.GetLastError();
+                    datas.Results.Add(VWorld.GetLastError());
                     continue;
                 }
                 gu.CurrentChar.CharType |= datas.CharType;
-                datas.Results[i] = ErrorCodes.NO_ERROR;
+                datas.Results.Add(ErrorCodes.NO_ERROR);
                 World.CharManager.NotifyChange(gu);
             }
         }
@@ -423,11 +423,11 @@ namespace GuangYuan.GY001.BLL
                 using var dw = World.CharManager.LockOrLoad(id, out var gu);
                 if (dw is null)  //若无法锁定
                 {
-                    datas.Results[i] = VWorld.GetLastError();
+                    datas.Results.Add(VWorld.GetLastError());
                     continue;
                 }
                 gu.BlockUtc = datas.BlockUtc;
-                datas.Results[i] = ErrorCodes.NO_ERROR;
+                datas.Results.Add(ErrorCodes.NO_ERROR);
                 World.CharManager.NotifyChange(gu);
             }
             return;
