@@ -13,6 +13,7 @@ WebApi网站
 修正数据库最大内存限制，一般4GB足够，避免长期运行时，其贪婪内存算法导致内存紧张。
 
 超管账号 : 1D22F0CF-1704-412C-AD8D-32CE5FA5A7D5//37A87267-77DC-4AA3-8220-02F9538779AB
+好友机器人登录名//密码：A3B4B3F7-8CAD-4B95-9983-4D5DAFDAA5F0//9D4C2381-F000-43F2-AB75-1A53718D44C0
 
 主网站部署参见 https://docs.microsoft.com/zh-cn/aspnet/core/tutorials/publish-to-iis?view=aspnetcore-3.1&tabs=visual-studio
 yun1.pandaglb.com:44489

@@ -420,6 +420,7 @@ namespace GuangYuan.GY001.BLL
                     try
                     {
                         robotUser.CurrentChar.CharType |= CharType.Robot;
+                        robotUser.CurrentChar.DisplayName = "Forever partner";
                         world.CharManager.NotifyChange(robotUser);
                     }
                     finally
@@ -430,6 +431,7 @@ namespace GuangYuan.GY001.BLL
                 else
                 {
                     robotUser.CurrentChar.CharType |= CharType.Robot;
+                        robotUser.CurrentChar.DisplayName = "Forever partner";
                     world.CharManager.NotifyChange(robotUser);
                 }
             while (true)
