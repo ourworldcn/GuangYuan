@@ -122,7 +122,8 @@ namespace GY2021001WebApi.Controllers
             var gm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
             if (gm.Id2OnlineChar.Count > 10000 * Environment.ProcessorCount)
                 return StatusCode((int)HttpStatusCode.ServiceUnavailable, "登录人数过多，请稍后登录");
-            var gu = gm.LoginT78(model.Sid);
+            string pwd = null;
+            var gu = gm.LoginT78(model.Sid, out pwd);
 
             var worldServiceHost = $"{Request.Scheme}://{Request.Host}";
             var chartServiceHost = $"{Request.Scheme}://{Request.Host}";
@@ -138,7 +139,8 @@ namespace GY2021001WebApi.Controllers
                 var mapper = gm.World.GetMapper();
                 result.GameChars.AddRange(gu.GameChars.Select(c => mapper.Map(c)));
                 result.ResultString = gu.RuntimeProperties.GetStringOrDefault("T78LoginResultString");
-                result.IsCreated = gu.RuntimeProperties.GetBooleanOrDefaut("T78IsCreated");
+                result.LoginName = gu.LoginName;
+                result.Pwd = pwd;
             }
             return result;
         }

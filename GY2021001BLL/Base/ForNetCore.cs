@@ -282,6 +282,22 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
+                var key = "o";
+                var mc = _Services.GetService<IMemoryCache>();
+                using var entity = mc.CreateEntry(key);
+                for (int i = 0; i < 10000; i++)
+                {
+                    Semaphore semaphore = new Semaphore(2, 2, Guid.NewGuid().ToString());
+                }
+                lock (key)
+                {
+                    mc.GetOrCreate(key, c =>
+                    {
+                        c.SetPriority(CacheItemPriority.NeverRemove);
+                        
+                        return db.Set<GameGuild>().First();
+                    });
+                }
             }
             catch (Exception)
             {

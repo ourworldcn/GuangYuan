@@ -1398,10 +1398,16 @@ namespace GY2021001WebApi.Models
         public string ResultString { get; set; }
 
         /// <summary>
-        /// 指示是否为初创接口。true是初始创建，false不是初始创建。
+        /// 登录名。
         /// </summary>
         [DataMember]
-        public bool IsCreated { get; set; }
+        public string LoginName { get; set; }
+
+        /// <summary>
+        /// 密码。若首次登录，创建了账号则这里返回密码。否则返回null。
+        /// </summary>
+        [DataMember]
+        public string Pwd { get; set; }
 
     }
 
@@ -3544,6 +3550,27 @@ namespace GY2021001WebApi.Models
     #endregion 排行相关
 
     #region 管理相关
+
+    [DataContract]
+    public class ForceResetPwdParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 要重置账号的登录名。
+        /// </summary>
+        [DataMember]
+        public string LoginName { get; set; }
+
+        /// <summary>
+        /// 强行设置的新密码。
+        /// </summary>
+        [DataMember]
+        public string Pwd { get; set; }
+    }
+
+    [DataContract]
+    public class ForceResetPwdReturnDto : ReturnDtoBase
+    {
+    }
 
     [DataContract]
     public class GetNoticeParamsDto : TokenDtoBase

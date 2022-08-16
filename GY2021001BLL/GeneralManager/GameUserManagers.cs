@@ -431,7 +431,7 @@ namespace GuangYuan.GY001.BLL
                 else
                 {
                     robotUser.CurrentChar.CharType |= CharType.Robot;
-                        robotUser.CurrentChar.DisplayName = "Forever partner";
+                    robotUser.CurrentChar.DisplayName = "Forever partner";
                     world.CharManager.NotifyChange(robotUser);
                 }
             while (true)
@@ -1003,12 +1003,14 @@ namespace GuangYuan.GY001.BLL
         /// T78发行商登录或创建用户。
         /// </summary>
         /// <param name="sid"></param>
+        /// <param name="pwd">密码，如果是首次成功创建，这个参数返回密码，其它时候总是null。</param>
         /// <returns>登录的用户对象，null出现错误,此时会在VWorld中设置详细错误信息。</returns>
-        public GameUser LoginT78(string sid)
+        public GameUser LoginT78(string sid, out string pwd)
         {
             //验证sid有效性
             var t78 = Service.GetService<PublisherT78>();
             var dto = t78.Login(sid);
+            pwd = null;
             if (dto.Ret != "0")
             {
                 VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
@@ -1021,7 +1023,6 @@ namespace GuangYuan.GY001.BLL
             GameUser result = null;
             if (slot is null)    //若没有注册用户
             {
-                string pwd = null;
                 result = QuicklyRegister(ref pwd);
                 slot = new GameItem() { ExtraString = t78Uid };
                 World.EventsManager.GameItemCreated(slot, ProjectConstant.T78PublisherSlotTId);

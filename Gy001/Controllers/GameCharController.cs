@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -228,7 +229,7 @@ namespace GY2021001WebApi.Controllers
                     result.DebugMessage = datas.ErrorMessage;
                     if (!result.HasError)
                     {
-            var mapper = World.GetMapper();
+                        var mapper = World.GetMapper();
                         result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
                         if (datas.Remainder.Count > 0) //若有剩余物品
                         {
@@ -581,7 +582,15 @@ namespace GY2021001WebApi.Controllers
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
             using var dwUser = world.CharManager.LockAndReturnDisposer(model.Token, out var gu);
             if (dwUser is null)
-                return Unauthorized("令牌错误");
+            {
+                if (world.CharManager.GetUserFromToken(model.Token) is null)
+                    return Unauthorized("令牌错误");
+                else
+                {
+                    result.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
+                    return result;
+                }
+            }
             var data = world.CharManager.GetChangeData(gu.CurrentChar);
             if (data is null)
             {

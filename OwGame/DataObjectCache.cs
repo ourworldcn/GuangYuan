@@ -15,33 +15,30 @@ namespace OW.Game
     public interface IDataObjectCacheEntry : ICacheEntry
     {
         /// <summary>
-        /// 加载数据对象的回调。
-        /// </summary>
-        public Func<object, object> LoadCallback { get; set; }
-
-        /// <summary>
         /// 保存数据对象的回调。
         /// </summary>
         public Action<object> SaveCallback { get; set; }
-
 
     }
 
     public interface IDataObjectCache : IMemoryCache
     {
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        ICacheEntry IMemoryCache.CreateEntry(object key)
+        {
+            return CreateEntry(key);
+        }
+
+        new IDataObjectCacheEntry CreateEntry(object key);
+
         bool SetDirty(object key);
 
         void EnsureSaved(object key);
 
-        /// <summary>
-        /// 获取指定键的缓存对象。
-        /// 调用此函数前锁定<see cref="Monitor.TryEnter(object)"/> <paramref name="key"/> 对象，可以保证对象在返回后不被并发更改。
-        /// </summary>
-        /// <remarks></remarks>
-        /// <param name="key">对象的键，也是其同步锁。特别的如果是字符串对象，应考虑用池归一化。</param>
-        /// <param name="initializer"></param>
-        /// <returns></returns>
-        object GetOrLoad(object key, Action<IDataObjectCacheEntry> initializer);
     }
 
     public class DataObjectCacheOptions : MemoryCacheOptions
@@ -84,8 +81,6 @@ namespace OW.Game
                 {
                     //加入缓存条目
                     var entity = Cache._Datas.AddOrUpdate(Key, this, (key, val) => val);
-                    if (entity.LoadCallback != null)
-                        entity.Value = entity.LoadCallback(entity.Key);
                     entity.LastDateTimeUtc = DateTime.UtcNow;
                 }
             }
@@ -116,8 +111,6 @@ namespace OW.Game
             public long? Size { get; set; }
 
             #endregion ICacheEntry接口相关
-
-            public Func<object, object> LoadCallback { get; set; }
 
             public Action<object> SaveCallback { get; set; }
 
@@ -263,30 +256,8 @@ namespace OW.Game
 
         public void EnsureSaved(object key)
         {
+            //TODO 
             throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 获取指定键的缓存对象。
-        /// 调用此函数前锁定<see cref="Monitor.TryEnter(object)"/> <paramref name="key"/> 对象，可以保证对象在返回后不被并发更改。
-        /// </summary>
-        /// <remarks></remarks>
-        /// <param name="key">对象的键，也是其同步锁。特别的如果是字符串对象，应考虑用池归一化。</param>
-        /// <param name="initializer"></param>
-        /// <returns></returns>
-        public object GetOrLoad(object key, Action<IDataObjectCacheEntry> initializer)
-        {
-            lock (key)
-            {
-                if (_Datas.TryGetValue(key, out var entity))
-                    return entity.Value;
-                entity = new DataObjectCacheEntry(key, this);
-                initializer(entity);
-                entity.Value = entity.LoadCallback(key);
-                entity = _Datas.GetOrAdd(key, entity);
-                entity.LastDateTimeUtc = DateTime.UtcNow;
-                return entity.Value;
-            }
         }
 
         #region IMemoryCache接口相关
@@ -296,7 +267,7 @@ namespace OW.Game
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        ICacheEntry IMemoryCache.CreateEntry(object key)
+        public IDataObjectCacheEntry CreateEntry(object key)
         {
             return new DataObjectCacheEntry(key, this);
         }
@@ -395,4 +366,5 @@ namespace OW.Game
 
 
     }
+
 }

@@ -340,6 +340,40 @@ namespace GY2021001WebApi.Controllers
                 result.Guts = datas.Guts;
             return result;
         }
+
+        /// <summary>
+        /// 根据指定的登录名设置其账号的密码，仅超管可用此功能。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult<ForceResetPwdReturnDto> ForceResetPwd(ForceResetPwdParamsDto model)
+        {
+            var result = new ForceResetPwdReturnDto();
+            using var dwUser = World.CharManager.LockAndReturnDisposer(model.Token, out var gu);
+            if (dwUser is null)
+            {
+                result.FillFromWorld();
+                return result;
+            }
+            if (!gu.CurrentChar.CharType.HasFlag(CharType.SuperAdmin))
+            {
+                result.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                result.DebugMessage = "仅超管可执行此功能";
+            }
+            using var dw = World.CharManager.LockOrLoad(model.LoginName, out var user);
+            if (dw is null)
+            {
+                result.FillFromWorld();
+                return result;
+            }
+            if (!World.CharManager.SetPwd(user, model.Pwd))
+            {
+                result.FillFromWorld();
+                return result;
+            }
+            return result;
+        }
     }
 
 }

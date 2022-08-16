@@ -171,6 +171,13 @@
             <param name="model"></param>
             <returns></returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.ForceResetPwd(GY2021001WebApi.Models.ForceResetPwdParamsDto)">
+            <summary>
+            根据指定的登录名设置其账号的密码，仅超管可用此功能。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
             战斗相关的操作。
@@ -1658,9 +1665,14 @@
             T78服务器返回的值完整的放在此处。仅当成功登录时才有。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.LoginT78ReturnDto.IsCreated">
+        <member name="P:GY2021001WebApi.Models.LoginT78ReturnDto.LoginName">
             <summary>
-            指示是否为初创接口。true是初始创建，false不是初始创建。
+            登录名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.LoginT78ReturnDto.Pwd">
+            <summary>
+            密码。若首次登录，创建了账号则这里返回密码。否则返回null。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.LoginT89ParamsDto.AppId">
@@ -2989,6 +3001,16 @@
             自己的战力积分。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.ForceResetPwdParamsDto.LoginName">
+            <summary>
+            要重置账号的登录名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.ForceResetPwdParamsDto.Pwd">
+            <summary>
+            强行设置的新密码。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.GetNoticeReturnDto.Guts">
             <summary>
             公告内容。
@@ -3455,6 +3477,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>
