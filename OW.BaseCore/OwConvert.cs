@@ -3,6 +3,7 @@
  */
 using Microsoft.Extensions.ObjectPool;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -349,7 +350,8 @@ namespace System
         public static string ToBase64String(this Guid guid)
         {
             Span<byte> span = stackalloc byte[/*Marshal.SizeOf<Guid>()*/16];
-            guid.TryWriteBytes(span);
+            var b = guid.TryWriteBytes(span);
+            Trace.Assert(b);
             return Convert.ToBase64String(span);
         }
 

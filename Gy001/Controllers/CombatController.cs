@@ -83,7 +83,7 @@ namespace GY2021001WebApi.Controllers
                 if (null != result)
                 {
                     result.HasError = true;
-                    result.DebugMessage = err.Message;
+                    result.DebugMessage = err.Message + " @ " + err.StackTrace;
                 }
             }
             var mapper = World.GetMapper();

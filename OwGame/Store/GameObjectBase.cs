@@ -87,47 +87,6 @@ namespace OW.Game.Store
 
         #endregion Json通用扩展属性相关
 
-        #region 减低内存分配速率
-
-        private string _IdString;
-
-        /// <summary>
-        /// 获取或设置Id的字符串表现形式。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public string IdString
-        {
-            get
-            {
-                return _IdString ??= Id.ToString();
-            }
-            set
-            {
-                Id = Guid.Parse(value);
-                _IdString = null;
-            }
-        }
-
-        private string _Base64IdString;
-
-        /// <summary>
-        /// 获取或设置Id的Base64字符串表现形式。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public string Base64IdString
-        {
-            get { return _Base64IdString ??= Id.ToBase64String(); }
-            set
-            {
-                Id = OwConvert.ToGuid(value);
-                _Base64IdString = value;
-            }
-        }
-
-        #endregion 减低内存分配速率
-
         #region RuntimeProperties属性相关
 
         private ConcurrentDictionary<string, object> _RuntimeProperties;
@@ -172,8 +131,6 @@ namespace OW.Game.Store
 
                 // 释放未托管的资源(未托管的对象)并重写终结器
                 // 将大型字段设置为 null
-                _Base64IdString = null;
-                _IdString = null;
                 _RuntimeProperties = null;
                 _JsonObjectString = null;
                 base.Dispose(disposing);

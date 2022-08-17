@@ -308,10 +308,11 @@ namespace GuangYuan.GY001.BLL
                     //var tmpChar = db.GameChars.Find(sendId);
                     //if (tmpChar is null)
                     //    throw new ArgumentException("找不到指定Id的角色。", nameof(sendId));
+                    var dn = db.Set<GameChar>().AsNoTracking().FirstOrDefault(c => c.Id == sendId)?.DisplayName;
                     sender = new GameMailAddress()
                     {
                         ThingId = sendId,
-                        //DisplayName = tmpChar.DisplayName,
+                        DisplayName = dn,
                         Kind = MailAddressKind.From,
                         IsDeleted = false,
                         Mail = mail,

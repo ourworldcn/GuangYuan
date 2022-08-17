@@ -135,7 +135,7 @@ namespace GuangYuan.GY001.BLL
                 CreateUtc = datas.Mail.CreateUtc,
             };
             OwHelper.Copy(datas.Mail.Properties, mail.Properties);
-            World.SocialManager.SendMail(mail, datas.Tos.Select(c => OwConvert.ToGuid(c)), SocialConstant.FromSystemId, coll);
+            World.SocialManager.SendMail(mail, datas.Tos.Select(c => OwConvert.ToGuid(c)), datas.GameChar.Id, coll);
         }
 
         /// <summary>

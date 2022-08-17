@@ -26,6 +26,8 @@ namespace OW.Game.Store
     /// </summary>
     public abstract class GuidKeyObjectBase : IEntityWithSingleKey<Guid>
     {
+        #region 构造函数
+
         /// <summary>
         /// 构造函数。
         /// 会自动用<see cref="Guid.NewGuid"/>生成<see cref="Id"/>属性值。
@@ -43,6 +45,8 @@ namespace OW.Game.Store
         {
             Id = id;
         }
+
+        #endregion 构造函数
 
         /// <summary>
         /// 主键。
@@ -62,6 +66,49 @@ namespace OW.Game.Store
             Id = Guid.NewGuid();
             return true;
         }
+
+        #region 减低内存分配速率
+
+        private string _IdString;
+
+        /// <summary>
+        /// 获取或设置Id的字符串表现形式。Id的字符串形式"00000000-0000-0000-0000-000000000000"从 a 到 f 的十六进制数字是小写的。
+        /// 该属性第一次读取时才初始化。有利于id的池化处理。
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public string IdString
+        {
+            get
+            {
+                return _IdString ??= Id.ToString();
+            }
+            internal set
+            {
+                Id = Guid.Parse(value);
+                _IdString = null;
+            }
+        }
+
+        private string _Base64IdString;
+
+        /// <summary>
+        /// 获取或设置Id的Base64字符串表现形式。
+        /// 该属性第一次读取时才初始化。并有利于id的池化处理。
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public string Base64IdString
+        {
+            get { return _Base64IdString ??= Id.ToBase64String(); }
+            internal set
+            {
+                Id = OwConvert.ToGuid(value);
+                _Base64IdString = value;
+            }
+        }
+
+        #endregion 减低内存分配速率
     }
 
     public class DynamicPropertyChangedEventArgs

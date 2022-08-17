@@ -5,6 +5,7 @@ using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -366,5 +367,252 @@ namespace OW.Game
 
 
     }
+
+    public class DataObjectManagerOptions : IOptions<DataObjectManagerOptions>
+    {
+        public DataObjectManagerOptions Value => this;
+
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(3);
+        public TimeSpan Scan { get; internal set; } = TimeSpan.FromMinutes(1);
+    }
+
+    public class DataObjectManager
+    {
+        public class DataObjectCacheEntry : IDataObjectCacheEntry
+        {
+            #region 构造函数
+
+            /// <summary>
+            /// 构造函数。
+            /// </summary>
+            /// <param name="key"></param>
+            public DataObjectCacheEntry(object key, DataObjectCache cache)
+            {
+                Key = key;
+                Cache = cache;
+            }
+
+            #endregion 构造函数
+
+            #region IDataObjectCacheEntry接口相关
+
+            #region ICacheEntry接口相关
+
+            #region IDisposable接口相关
+
+            public void Dispose()
+            {
+                lock (Key)
+                {
+                    //加入缓存条目
+                    //var entity = Cache._Datas.AddOrUpdate(Key, this, (key, val) => val);
+                    //entity.LastDateTimeUtc = DateTime.UtcNow;
+                }
+            }
+            #endregion IDisposable接口相关
+
+            /// <summary>
+            /// <inheritdoc/>
+            /// </summary>
+            public object Key { get; internal set; }
+
+            /// <summary>
+            /// <inheritdoc/>
+            /// </summary>
+            public object Value { get; set; }
+
+            public DateTimeOffset? AbsoluteExpiration { get; set; }
+
+            public TimeSpan? AbsoluteExpirationRelativeToNow { get; set; }
+
+            public TimeSpan? SlidingExpiration { get; set; }
+
+            public IList<IChangeToken> ExpirationTokens { get; } = new List<IChangeToken>();
+
+            public IList<PostEvictionCallbackRegistration> PostEvictionCallbacks { get; } = new List<PostEvictionCallbackRegistration>();
+
+            public CacheItemPriority Priority { get; set; }
+
+            public long? Size { get; set; }
+
+            #endregion ICacheEntry接口相关
+
+            public Action<object> SaveCallback { get; set; }
+
+            #endregion IDataObjectCacheEntry接口相关
+
+            public DataObjectCache Cache { get; }
+
+            /// <summary>
+            /// 最后一次访问的时间点。
+            /// </summary>
+            public DateTime LastDateTimeUtc { get; internal set; } = DateTime.UtcNow;
+
+            /// <summary>
+            /// 驱逐的原因。
+            /// </summary>
+            public EvictionReason Reason { get; internal set; }
+
+            /// <summary>
+            /// 默认的超时时间。
+            /// </summary>
+            public TimeSpan Timeout { get; internal set; } = TimeSpan.FromMinutes(1);
+
+            /// <summary>
+            /// 该项是否超期需要逐出。
+            /// </summary>
+            /// <param name="now"></param>
+            /// <returns></returns>
+            internal bool IsExpiration(DateTime now)
+            {
+                if (SlidingExpiration.HasValue && now - LastDateTimeUtc > SlidingExpiration)
+                    return true;
+                return false;
+            }
+        }
+
+        public DataObjectManager()
+        {
+            Options = new DataObjectManagerOptions();
+            Initialize();
+        }
+
+        /// <summary>
+        /// 初始化。
+        /// </summary>
+        void Initialize()
+        {
+            _Timer = new Timer(TimerCallback, null, Options.Scan, Options.Scan);
+        }
+
+        public void TimerCallback(object state)
+        {
+            Save();
+        }
+
+        Timer _Timer;
+
+        public DataObjectManagerOptions Options { get; set; }
+
+        ConcurrentDictionary<string, DataObjectCacheEntry> _Datas = new ConcurrentDictionary<string, DataObjectCacheEntry>();
+
+        HashSet<string> _Dirty = new HashSet<string>();
+
+        protected void Save()
+        {
+            List<string> keys;
+            lock (_Dirty)
+                keys = _Dirty.ToList();
+            for (int i = keys.Count - 1; i >= 0; i--)
+            {
+                var key = keys[i];
+                using (var dw = DisposeHelper.Create(StringLocker.TryEnter, StringLocker.Exit, key, TimeSpan.Zero))
+                {
+                    if (dw.IsEmpty)
+                        continue;
+                    if (!_Datas.TryGetValue(key, out var entity))
+                        continue;
+                    try
+                    {
+                        entity.SaveCallback?.Invoke(entity.Value);
+                        keys.RemoveAt(i);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+            //放入下次再保存
+            if (keys.Count > 0)
+                lock (_Dirty)
+                    OwHelper.Copy(keys, _Dirty);
+        }
+
+        /// <summary>
+        /// 获取或加载对象。
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="loader"></param>
+        /// <returns></returns>
+        public object GetOrLoad(string key, Func<DataObjectCacheEntry, object> loader)
+        {
+            using var dw = DisposeHelper.Create(StringLocker.TryEnter, StringLocker.Exit, key, Options.Timeout);
+            if (dw.IsEmpty)
+                return null;
+            if (_Datas.TryGetValue(key, out var entity))
+            {
+                entity.LastDateTimeUtc = DateTime.UtcNow;
+                return entity.Value;
+            }
+
+            entity = new DataObjectCacheEntry(key, null) { Key = key };
+            entity.Value = loader(entity);
+            entity = _Datas.GetOrAdd(key, entity);
+            entity.LastDateTimeUtc = DateTime.UtcNow;
+            return entity.Value;
+        }
+
+        /// <summary>
+        /// 在本地中获取对象，如果没有则返回null。
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object Find(string key)
+        {
+            using var dw = DisposeHelper.Create(StringLocker.TryEnter, StringLocker.Exit, key, Options.Timeout);
+            if (dw.IsEmpty)
+                return null;
+            if (_Datas.TryGetValue(key, out var entity))
+                return entity.Value;
+            return null;
+        }
+
+        /// <summary>
+        /// 指出对象已经更改，需要保存。
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool SetDirty(string key)
+        {
+            lock (_Dirty)
+                return _Dirty.Add(key);
+        }
+
+        public bool SetTimout(string key, TimeSpan timeout)
+        {
+            using var dw = DisposeHelper.Create(StringLocker.TryEnter, StringLocker.Exit, key, Options.Timeout);
+            if (dw.IsEmpty)
+            {
+                return false;
+            }
+            if (!_Datas.TryGetValue(key, out var entity))
+            {
+                return false;
+            }
+            entity.Timeout = timeout;
+            return true;
+        }
+
+        /// <summary>
+        /// 仅调用所有回调，然后对值调用Dispose如果实现了IDisposable接口。
+        /// </summary>
+        /// <param name="key"></param>
+        private void RemoveCore(DataObjectCacheEntry entity)
+        {
+            foreach (var item in entity.PostEvictionCallbacks.ToArray())
+            {
+                try
+                {
+                    item.EvictionCallback(entity.Key, entity.Value, entity.Reason, item.State);
+                }
+                catch (Exception)
+                {
+                }
+            }
+            (entity.Value as IDisposable)?.Dispose();
+        }
+
+    }
+
 
 }

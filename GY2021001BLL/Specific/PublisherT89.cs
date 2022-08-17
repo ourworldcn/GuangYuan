@@ -275,7 +275,7 @@ namespace GuangYuan.GY001.BLL.Specific
                 rsa.ImportPkcs8PrivateKey(privkey, out _);
                 return rsa;
             }
-            catch (Exception e)
+            catch (Exception )
             {
                 return null;
             }
