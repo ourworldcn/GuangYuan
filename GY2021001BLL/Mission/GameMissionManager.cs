@@ -533,11 +533,10 @@ namespace OW.Game.Mission
                             return (c, id);
                         }));
                         gim.AddItemsOrMail(data);
-                        datas.ErrorCode = data.ErrorCode;
-                        datas.ErrorMessage = data.ErrorMessage;
+                        datas.FillErrorFrom(data);
                         if (!datas.HasError)
                         {
-                            datas.ChangeItems.AddRange(data.ChangeItems);
+                            OwHelper.CopyIfNotNull(data.PropertyChanges, datas.PropertyChanges);
                             datas.MailIds.AddRange(data.MailIds);
                             ScanAsync(datas.GameChar);
                         }
@@ -546,6 +545,10 @@ namespace OW.Game.Mission
                     view.MissionStates[datas.MissionTId.ToString()] = MissionState.Completion;
                     view.Save();
                     World.CharManager.NotifyChange(datas.GameChar.GameUser);
+                    if (template.IdString == "76d2f329-7f44-409f-9107-a87580f47bdb")
+                    {
+                        World.SocialManager.ResetPvpObject(datas.GameChar, DateTime.UtcNow);
+                    }
                 }
                 else //有错误
                 {

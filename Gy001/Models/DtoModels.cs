@@ -1446,6 +1446,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 登录名。
         /// </summary>
+        [DataMember]
         public string LoginName { get; set; }
 
         /// <summary>

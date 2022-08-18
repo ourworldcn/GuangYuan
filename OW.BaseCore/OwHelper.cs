@@ -144,11 +144,12 @@ namespace System
         /// <summary>
         /// 复制集合。任何参数为null，则立即返回。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TSrc"></typeparam>
+        /// <typeparam name="TDest"></typeparam>
         /// <param name="src"></param>
         /// <param name="dest"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SafeCopy<T>(IEnumerable<T> src, ICollection<T> dest)
+        public static void CopyIfNotNull<TSrc, TDest>(IEnumerable<TSrc> src, ICollection<TDest> dest) where TSrc : TDest
         {
             if (dest is null || src is null)
                 return;

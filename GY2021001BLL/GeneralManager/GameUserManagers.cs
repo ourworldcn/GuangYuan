@@ -996,6 +996,8 @@ namespace GuangYuan.GY001.BLL
             gu.CurrentChar.Properties["DayCountOfLogin"] = (decimal)Math.Round((DateTime.UtcNow.Date - gu.CurrentChar.CreateUtc.Date).TotalDays); //最后一次登录距离创建账号的天数
             if (logined)    //若需要通知用户登录
                 World.EventsManager.GameCharLogined(gu.CurrentChar);
+            var coll= gu.CurrentChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShoulanSlotId);
+            var coll1= gu.CurrentChar.AllChildren.GroupBy(c=>c.ExtraGuid).OrderByDescending(c=>c.Count());
             return gu;
         }
 

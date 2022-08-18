@@ -93,7 +93,6 @@ namespace Gy001.Controllers
             if (!result.HasError)
             {
                 var mapper = World.GetMapper();
-                datas.PropertyChanges.CopyTo(datas.ChangeItems);
                 result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
                 result.MailIds.AddRange(datas.MailIds.Select(c => c.ToBase64String()));
             }

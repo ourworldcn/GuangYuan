@@ -188,7 +188,7 @@ namespace GuangYuan.GY001.BLL
 #else
            var env = _Services.GetRequiredService<IHostEnvironment>();
             if (env.EnvironmentName == "Staging_2")
-                 maxCount = 150;
+                return;
             else if (env.EnvironmentName == "Test0706")
                  maxCount = 10;
             else
@@ -282,22 +282,8 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                var key = "o";
-                var mc = _Services.GetService<IMemoryCache>();
-                using var entity = mc.CreateEntry(key);
-                for (int i = 0; i < 10000; i++)
-                {
-                    Semaphore semaphore = new Semaphore(2, 2, Guid.NewGuid().ToString());
-                }
-                lock (key)
-                {
-                    mc.GetOrCreate(key, c =>
-                    {
-                        c.SetPriority(CacheItemPriority.NeverRemove);
-                        
-                        return db.Set<GameGuild>().First();
-                    });
-                }
+                //MemoryCache mc = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.MaxValue });
+                //mc.Compact(1);
             }
             catch (Exception)
             {

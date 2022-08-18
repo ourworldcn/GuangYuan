@@ -1371,8 +1371,8 @@ namespace OW.Game.Item
                 }
                 else
                 {
-                    OwHelper.SafeCopy(bpDatas.Remainder, remainder);
-                    OwHelper.SafeCopy(bpDatas.PropertyChanges.Select(c => c.Clone() as GamePropertyChangeItem<object>), changes);
+                    OwHelper.CopyIfNotNull(bpDatas.Remainder, remainder);
+                    OwHelper.CopyIfNotNull(bpDatas.PropertyChanges.Select(c => c.Clone() as GamePropertyChangeItem<object>), changes);
                     result = true;
                 }
             }

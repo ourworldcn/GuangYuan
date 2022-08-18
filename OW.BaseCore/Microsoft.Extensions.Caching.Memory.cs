@@ -3,6 +3,10 @@ using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
@@ -10,18 +14,32 @@ namespace Microsoft.Extensions.Caching.Memory
     {
         public LeafMemoryCacheOptions()
         {
-
         }
 
-        public Func<object, TimeSpan, bool> LockCallback { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Func<object, TimeSpan, bool> LockCallback { get; set; } = Monitor.TryEnter;
 
-        public Action<object> UnlockCallback { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Action<object> UnlockCallback { get; set; } = Monitor.Exit;
 
-        public TimeSpan DefaultTimeout { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(2);
 
+        /// <summary>
+        /// 
+        /// </summary>
         public LeafMemoryCacheOptions Value => this;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class LeafMemoryCache : IMemoryCache, IDisposable
     {
         /// <summary>
@@ -58,11 +76,32 @@ namespace Microsoft.Extensions.Caching.Memory
 
             public long? Size { get; set; }
 
+            bool _IsDisposed;
+
             public void Dispose()
             {
+                using var dw = DisposeHelper.Create(Cache.Options.LockCallback, Cache.Options.UnlockCallback, Key, Cache.Options.DefaultTimeout);
+                if (dw.IsEmpty)
+                    throw new TimeoutException();
+                if (!_IsDisposed)
+                {
+                    var factEntity = Cache._Datas.AddOrUpdate(Key, this, (key, ov) => this);
+                    factEntity.LastUseUtc = DateTime.UtcNow;
+                    _IsDisposed = true;
+                }
             }
             #endregion ICacheEntry接口相关
 
+            public DateTime LastUseUtc { get; set; } = DateTime.UtcNow;
+
+            public bool CheckExpired(DateTime utcNow)
+            {
+                if (SlidingExpiration.HasValue && utcNow - LastUseUtc >= SlidingExpiration)
+                    return true;
+                if (AbsoluteExpiration.HasValue && utcNow >= AbsoluteExpiration)
+                    return true;
+                return false;
+            }
         }
 
         #region 构造函数相关
@@ -82,6 +121,18 @@ namespace Microsoft.Extensions.Caching.Memory
         #region IMemoryCache接口相关
 
         #region IDisposable接口相关
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ThrowIfDisposed()
+        {
+            if (_Disposed)
+                Throw();
+
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DoesNotReturn]
+        static void Throw() => throw new ObjectDisposedException(typeof(LeafMemoryCache).FullName);
 
         private bool _Disposed;
 
@@ -126,6 +177,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
         public ICacheEntry CreateEntry(object key)
         {
+            ThrowIfDisposed();
             using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
             if (dw.IsEmpty)
                 throw new TimeoutException();
@@ -139,9 +191,14 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
         public void Remove(object key)
         {
+            ThrowIfDisposed();
             using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
             if (dw.IsEmpty)
                 throw new TimeoutException();
+            if (!_Datas.TryRemove(key, out var entity))
+                return;
+            entity.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(key, entity.Value, EvictionReason.Removed, c.State));
+            _Datas.Remove(key, out _);
         }
 
         /// <summary>
@@ -153,6 +210,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
         public bool TryGetValue(object key, out object value)
         {
+            ThrowIfDisposed();
             using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
             if (dw.IsEmpty)
                 throw new TimeoutException();
@@ -162,9 +220,27 @@ namespace Microsoft.Extensions.Caching.Memory
                 return false;
             }
             value = entity.Value;
+            entity.LastUseUtc = DateTime.UtcNow;
             return true;
         }
 
         #endregion IMemoryCache接口相关
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="percentage"></param>
+        public void Compact(double percentage)
+        {
+        }
+
+        private void Compact(long removalSizeTarget, Func<LeafCacheEntry, long> computeEntrySize)
+        {
+            foreach (var item in _Datas)
+            {
+
+            }
+        }
+
     }
 }

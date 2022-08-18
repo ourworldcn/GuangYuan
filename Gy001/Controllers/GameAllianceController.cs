@@ -100,8 +100,8 @@ namespace Gy001.Controllers
             if (!result.HasError && datas.Guild != null)
             {
                 GameGuildDto.FillMembers(datas.Guild, result.Guild, World);
-                OwHelper.SafeCopy(datas.DoneGuildMissionTIds.Select(c => c.ToBase64String()), result.DoneGuildMissionTIds);
-                OwHelper.SafeCopy(datas.GuildMissionTIds.Select(c => c.ToBase64String()), result.DoneGuildMissionTIds);
+                OwHelper.CopyIfNotNull(datas.DoneGuildMissionTIds.Select(c => c.ToBase64String()), result.DoneGuildMissionTIds);
+                OwHelper.CopyIfNotNull(datas.GuildMissionTIds.Select(c => c.ToBase64String()), result.DoneGuildMissionTIds);
             }
             return result;
         }

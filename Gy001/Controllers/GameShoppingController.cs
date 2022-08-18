@@ -48,7 +48,7 @@ namespace Gy001.Controllers
             {
                 UserDbContext = HttpContext.RequestServices.GetService<GY001UserContext>(),
             };
-            OwHelper.SafeCopy(model.Genus, datas.Genus);
+            OwHelper.CopyIfNotNull(model.Genus, datas.Genus);
             World.ShoppingManager.GetList(datas);
             result.FillFrom(datas);
             if (!result.HasError)

@@ -329,11 +329,8 @@ namespace GuangYuan.GY001.BLL
             }
             JsonSerializerOptions options = new JsonSerializerOptions() { };
 #if DEBUG
-            var buff = ArrayPool<byte>.Shared.Rent(16 * 1024 * 1024);
-            var s = datas.Store.Read(buff, 0, buff.Length);
-            var str = Encoding.UTF8.GetString(buff, 0, s);
-            GameUser[] ary = JsonSerializer.Deserialize<GameUser[]>(str);
-            ArrayPool<byte>.Shared.Return(buff);
+
+            GameUser[] ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store).Result;
 #else
             //var buff = ArrayPool<byte>.Shared.Rent(102400);
             //var s = datas.Store.Read(buff, 0, buff.Length);
