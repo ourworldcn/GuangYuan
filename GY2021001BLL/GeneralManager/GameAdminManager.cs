@@ -297,7 +297,6 @@ namespace GuangYuan.GY001.BLL
                      var suffix = c[datas.LoginNamePrefix.Length..];
                      return int.TryParse(suffix, out var index) && index >= datas.StartIndex && index <= datas.EndIndex;
                  });
-            JsonSerializerOptions options = new JsonSerializerOptions();
             using var writer = new Utf8JsonWriter(datas.Store);
             writer.WriteStartArray();
             foreach (var ln in lns)
@@ -305,7 +304,7 @@ namespace GuangYuan.GY001.BLL
                 using var dwu = World.CharManager.LockOrLoad(ln, out var gu);
                 if (dwu is null)    //忽略错误
                     continue;
-                JsonSerializer.Serialize(writer, gu, typeof(GameUser), options);
+                JsonSerializer.Serialize(writer, gu, typeof(GameUser));
             }
             writer.WriteEndArray();
         }
@@ -327,16 +326,8 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
             }
-            JsonSerializerOptions options = new JsonSerializerOptions() { };
-#if DEBUG
-
             GameUser[] ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store).Result;
-#else
-            //var buff = ArrayPool<byte>.Shared.Rent(102400);
-            //var s = datas.Store.Read(buff, 0, buff.Length);
-            //var str = Encoding.UTF8.GetString(buff,0,s);
-            GameUser[] ary = JsonSerializer.DeserializeAsync<GameUser[]>(datas.Store, options).Result;
-#endif
+
             var eve = World.EventsManager;
             Array.ForEach(ary, c => eve.JsonDeserialized(c));
             var lns = ary.Select(c => c.LoginName);

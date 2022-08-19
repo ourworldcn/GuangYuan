@@ -152,13 +152,10 @@ namespace GY2021001WebApi.Controllers
         {
             using var stream = file.OpenReadStream();
             using var datas = new ImportUsersDatas(World, token) { Store = stream };
-#if DEBUG
+
             using var cStream = new BrotliStream(stream, CompressionMode.Decompress);
             datas.Store = cStream;
-#else
-            using var cStream = new BrotliStream(stream, CompressionMode.Decompress);
-            datas.Store = cStream;
-#endif
+
             World.AdminManager.ImportUsers(datas);
             if (datas.HasError)
                 return BadRequest();

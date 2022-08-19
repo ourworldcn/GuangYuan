@@ -178,6 +178,15 @@ namespace System
         public static DisposeHelper<T> Create<T>(Action<T> action, T state) =>
             new DisposeHelper<T>(action, state);
 
+        /// <summary>
+        /// 锁定对象创建一个可以释放的结构，在自动释放。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="lockFunc">锁定的函数。</param>
+        /// <param name="unlockFunc">解锁函数。</param>
+        /// <param name="state">锁定对象。</param>
+        /// <param name="timeout">超时。</param>
+        /// <returns><see cref="DisposeHelper{T}.IsEmpty"/>是true则说明锁定失败。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static DisposeHelper<T> Create<T>(Func<T, TimeSpan, bool> lockFunc, Action<T> unlockFunc, T state, TimeSpan timeout) =>
             lockFunc(state, timeout) ? new DisposeHelper<T>(unlockFunc, state) : new DisposeHelper<T>(null, default);

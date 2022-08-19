@@ -3,6 +3,7 @@ using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -17,14 +18,22 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         /// <summary>
-        /// 
+        /// 设置或获取锁定键的回调。应支持递归与<see cref="UnlockCallback"/>配对使用。
+        /// 默认值是<see cref="Monitor.TryEnter(object, TimeSpan)"/>。
         /// </summary>
         public Func<object, TimeSpan, bool> LockCallback { get; set; } = Monitor.TryEnter;
 
         /// <summary>
-        /// 
+        /// 设置或获取释放键的回调。应支持递归与<see cref="LockCallback"/>配对使用。
+        /// 默认值是<see cref="Monitor.Exit(object)"/>。
         /// </summary>
         public Action<object> UnlockCallback { get; set; } = Monitor.Exit;
+
+        /// <summary>
+        /// 确定当前线程是否保留指定键上的锁。
+        /// 默认值是<see cref="Monitor.IsEntered(object)"/>
+        /// </summary>
+        public Func<object, bool> IsEnteredCallback { get; set; } = Monitor.IsEntered;
 
         /// <summary>
         /// 
@@ -42,10 +51,7 @@ namespace Microsoft.Extensions.Caching.Memory
     /// </summary>
     public class LeafMemoryCache : IMemoryCache, IDisposable
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        private class LeafCacheEntry : ICacheEntry
+        public class LeafCacheEntry : ICacheEntry
         {
             public LeafCacheEntry(LeafMemoryCache cache)
             {
@@ -92,7 +98,7 @@ namespace Microsoft.Extensions.Caching.Memory
             }
             #endregion ICacheEntry接口相关
 
-            public DateTime LastUseUtc { get; set; } = DateTime.UtcNow;
+            public DateTime LastUseUtc { get; internal set; } = DateTime.UtcNow;
 
             public bool CheckExpired(DateTime utcNow)
             {
@@ -102,8 +108,16 @@ namespace Microsoft.Extensions.Caching.Memory
                     return true;
                 return false;
             }
+
+            /// <summary>
+            /// 获取或设置用户的附加配置数据。
+            /// </summary>
+            public object State { get; set; }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         #region 构造函数相关
 
         public LeafMemoryCache(IOptions<LeafMemoryCacheOptions> options)
@@ -175,7 +189,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="key"></param>
         /// <returns></returns>
         /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
-        public ICacheEntry CreateEntry(object key)
+        public virtual ICacheEntry CreateEntry(object key)
         {
             ThrowIfDisposed();
             using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
@@ -184,12 +198,17 @@ namespace Microsoft.Extensions.Caching.Memory
             return new LeafCacheEntry(this);
         }
 
+        public LeafCacheEntry CreateLeafCacheEntry(object key)
+        {
+            return (LeafCacheEntry)CreateEntry(key);
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="key"></param>
         /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
-        public void Remove(object key)
+        public virtual void Remove(object key)
         {
             ThrowIfDisposed();
             using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
@@ -208,7 +227,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="value"></param>
         /// <returns></returns>
         /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
-        public bool TryGetValue(object key, out object value)
+        public virtual bool TryGetValue(object key, out object value)
         {
             ThrowIfDisposed();
             using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
@@ -226,19 +245,56 @@ namespace Microsoft.Extensions.Caching.Memory
 
         #endregion IMemoryCache接口相关
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="percentage"></param>
-        public void Compact(double percentage)
+        [Conditional("DEBUG")]
+        private void ThrowIfNotEntered(object key)
         {
+            if (!_Options.IsEnteredCallback(key))
+                throw new LockRecursionException();
         }
 
-        private void Compact(long removalSizeTarget, Func<LeafCacheEntry, long> computeEntrySize)
+        /// <summary>
+        /// 获取指定键的设置数据。没有找到则返回null。必须锁定键以后再调用此函数，否则可能出现争用。
+        /// 可以更改返回值内部的内容，在解锁键之前不会生效。
+        /// 这个函数不触发计时。
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public LeafCacheEntry GetCacheEntry(object key)
         {
+            ThrowIfDisposed();
+            ThrowIfNotEntered(key);
+            return _Datas.TryGetValue(key, out var result) ? result : default;
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="percentage"></param>
+        public void Compact()
+        {
+            Compact((long)(_Datas.Count * _Options.CompactionPercentage));
+        }
+
+        protected virtual void Compact(long removalSizeTarget)
+        {
+            ThrowIfDisposed();
+            var nowUtc = DateTime.UtcNow;
             foreach (var item in _Datas)
             {
-
+                using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, item.Key, TimeSpan.Zero);
+                if (dw.IsEmpty)
+                    continue;
+                if (!item.Value.CheckExpired(nowUtc))
+                    continue;
+                _Datas.TryRemove(item.Key, out var entity);
+                try
+                {
+                    entity.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(entity.Key, entity.Value, EvictionReason.Expired, c.State));
+                }
+                catch (Exception)
+                {
+                }
             }
         }
 

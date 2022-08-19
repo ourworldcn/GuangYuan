@@ -996,8 +996,8 @@ namespace GuangYuan.GY001.BLL
             gu.CurrentChar.Properties["DayCountOfLogin"] = (decimal)Math.Round((DateTime.UtcNow.Date - gu.CurrentChar.CreateUtc.Date).TotalDays); //最后一次登录距离创建账号的天数
             if (logined)    //若需要通知用户登录
                 World.EventsManager.GameCharLogined(gu.CurrentChar);
-            var coll= gu.CurrentChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShoulanSlotId);
-            var coll1= gu.CurrentChar.AllChildren.GroupBy(c=>c.ExtraGuid).OrderByDescending(c=>c.Count());
+            var coll = gu.CurrentChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShoulanSlotId);
+            var coll1 = gu.CurrentChar.AllChildren.GroupBy(c => c.ExtraGuid).OrderByDescending(c => c.Count());
             return gu;
         }
 
@@ -1272,6 +1272,7 @@ namespace GuangYuan.GY001.BLL
             var result = new List<int>(Enumerable.Repeat(0, loginNames.Count()));
             // var lns = loginNames.OrderBy(c => c);
             var list = new List<IDisposable>();
+            using var dws = DisposerWrapper.Create(list);   //最终清理
             var lns = loginNames.ToArray();
             for (int i = 0; i < lns.Length; i++)
             {
@@ -1283,6 +1284,7 @@ namespace GuangYuan.GY001.BLL
                     result[i] = ErrorCodes.WAIT_TIMEOUT;
                     continue;
                 }
+                list.Add(disper);
                 var gu = GetUserFromLoginName(tmp);
                 if (null != gu)    //若已经加载到内存中
                 {
@@ -1293,7 +1295,6 @@ namespace GuangYuan.GY001.BLL
                     }
                 }
             }
-            using var dws = DisposerWrapper.Create(list);   //最终清理
             using var db = World.CreateNewUserDbContext(); db.Database.SetCommandTimeout(TimeSpan.FromMinutes(1));
             DeleteCore(loginNames, db);
             return result;
@@ -1346,6 +1347,7 @@ namespace GuangYuan.GY001.BLL
                 //sqlStr = $"delete from {entityTyp.GetTableName()} " +
                 //    "where not exists (SELECT 1 FROM {entityTyp.GetTableName()} as t1 where t1.[Id]={entityTyp.GetTableName()}.[ParentId]) and ParentId is not null";
                 //while (context.Database.ExecuteSqlRaw(sqlStr) > 0) ;    //删除所有无效节点
+                var oldTimeout = context.Database.GetCommandTimeout();
 
                 try
                 {
@@ -1362,12 +1364,14 @@ namespace GuangYuan.GY001.BLL
                                 "where ParentId in (select id from @MyTableVar) " +
                             "end";
                     sqlStr = string.Format(sqlStr, string.Join("','", result));
+                    context.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
                     context.Database.ExecuteSqlRaw(sqlStr);
                 }
                 finally
                 {
                     sqlStr = $"alter table {entityTyp.GetTableName()} check constraint all";    //打开外键约束
                     context.Database.ExecuteSqlRaw(sqlStr);
+                   //TODO 应考虑导入账号时也要设置长超时context.Database.SetCommandTimeout(oldTimeout);
                 }
             }
             return result;
