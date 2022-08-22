@@ -258,7 +258,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// 这个函数不触发计时。
         /// </summary>
         /// <param name="key"></param>
-        /// <returns></returns>
+        /// <returns>返回设置数据对象，没有找到键则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public LeafCacheEntry GetCacheEntry(object key)
         {
@@ -287,10 +287,10 @@ namespace Microsoft.Extensions.Caching.Memory
                     continue;
                 if (!item.Value.CheckExpired(nowUtc))
                     continue;
-                _Datas.TryRemove(item.Key, out var entity);
                 try
                 {
-                    entity.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(entity.Key, entity.Value, EvictionReason.Expired, c.State));
+                    if (_Datas.TryRemove(item.Key, out var entity))
+                        entity.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(entity.Key, entity.Value, EvictionReason.Expired, c.State));
                 }
                 catch (Exception)
                 {

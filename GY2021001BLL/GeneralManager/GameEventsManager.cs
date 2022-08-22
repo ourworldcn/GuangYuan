@@ -163,6 +163,12 @@ namespace OW.Game
         /// <param name="gameChar"></param>
         public virtual void GameCharLogined(GameChar gameChar)
         {
+            var loginLog = new GameActionRecord()    //写入登录日志
+            {
+                ActionId = "Login",
+                ParentId = gameChar.Id,
+            };
+            gameChar.GetDbContext().Add(loginLog);
             World.AllianceManager.JoinGuildChatChannel(gameChar);
         }
 

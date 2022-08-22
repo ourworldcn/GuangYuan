@@ -944,7 +944,6 @@ namespace GuangYuan.GY001.BLL
             var loginName = uid;
             using var dwLoginName = World.LockStringAndReturnDisposer(ref loginName, Timeout.InfiniteTimeSpan);   //锁定用户名
             Trace.Assert(null != dwLoginName);  //锁定该登录名不可失败
-            List<GameActionRecord> actionRecords = new List<GameActionRecord>();
             bool logined;   //是否已经登录
             if (_Store._LoginName2Users.TryGetValue(loginName, out var gu))    //若已经登录
             {
@@ -963,6 +962,8 @@ namespace GuangYuan.GY001.BLL
                 gu.NodeNum = World.NodeNumber;
                 World.ItemManager.ResetSlot(gc);
                 Nope(gu.CurrentToken);
+                if (logined)    //若需要通知用户登录
+                    World.EventsManager.GameCharLogined(gu.CurrentChar);
             }
             else //未登录
             {
@@ -980,22 +981,15 @@ namespace GuangYuan.GY001.BLL
                 _Store._Id2OnlineChars.AddOrUpdate(gc.Id, gc, (c1, c2) => gc);  //标记在线
 
                 SetSearchFriendPriority(gc, DateTime.MaxValue);
-                actionRecords.Add(new GameActionRecord()    //写入登录日志
-                {
-                    ActionId = "Login",
-                    ParentId = gc.Id,
-                });
                 gu.Timeout = Options.LogoutTimeout; //置超时时间
                 gu.NodeNum = World.NodeNumber;
                 World.ChatManager.JoinOrCreateChannel(gu.CurrentChar.Id.ToString(), "70EEA684-4E1F-4C1E-B987-765BE2845538", World.ChatManager.Options.LockTimeout, null);
                 NotifyChange(gu);
+                if (logined)    //若需要通知用户登录
+                    World.EventsManager.GameCharLogined(gu.CurrentChar);
             }
-            if (null != actionRecords && actionRecords.Count > 0)
-                World.AddToUserContext(actionRecords);
             //补偿操作
             gu.CurrentChar.Properties["DayCountOfLogin"] = (decimal)Math.Round((DateTime.UtcNow.Date - gu.CurrentChar.CreateUtc.Date).TotalDays); //最后一次登录距离创建账号的天数
-            if (logined)    //若需要通知用户登录
-                World.EventsManager.GameCharLogined(gu.CurrentChar);
             var coll = gu.CurrentChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShoulanSlotId);
             var coll1 = gu.CurrentChar.AllChildren.GroupBy(c => c.ExtraGuid).OrderByDescending(c => c.Count());
             return gu;
@@ -1031,6 +1025,7 @@ namespace GuangYuan.GY001.BLL
                 World.ItemManager.ForcedAdd(slot, result.CurrentChar);
                 result.DbContext.Add(slot);
                 result.RuntimeProperties["T78IsCreated"] = true;
+                World.EventsManager.GameCharLogined(result.CurrentChar);    //视同 注册后接续登录
             }
             else //若已经注册用户
             {
@@ -1067,6 +1062,7 @@ namespace GuangYuan.GY001.BLL
                     gu.DbContext.Add(slot);
                     datas.Pwd = pwd;
                     World.CharManager.NotifyChange(gu);
+                    World.EventsManager.GameCharLogined(gu.CurrentChar);    //视同 注册后接续登录
                 }
                 else //若已经注册用户
                 {
@@ -1371,7 +1367,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     sqlStr = $"alter table {entityTyp.GetTableName()} check constraint all";    //打开外键约束
                     context.Database.ExecuteSqlRaw(sqlStr);
-                   //TODO 应考虑导入账号时也要设置长超时context.Database.SetCommandTimeout(oldTimeout);
+                    //TODO 应考虑导入账号时也要设置长超时context.Database.SetCommandTimeout(oldTimeout);
                 }
             }
             return result;

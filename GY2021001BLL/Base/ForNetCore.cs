@@ -30,6 +30,7 @@ using OW.Game.Validation;
 using OW.Script;
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -282,8 +283,12 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
+                var gc = new GameChar(new Guid("788515A5-1901-4BF4-9316-06E29E6CFB5D"));
+                db.Add(gc);
+                db.SaveChanges();
                 //MemoryCache mc = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.MaxValue });
                 //mc.Compact(1);
+                var s = _Services.GetService<DataObjectManager>();
             }
             catch (Exception)
             {
@@ -431,6 +436,8 @@ namespace GuangYuan.GY001.BLL
                 c.SizeLimit = null;
                 c.ExpirationScanFrequency = TimeSpan.FromSeconds(10);
             });
+
+            services.AddSingleton<DataObjectManager>();
             #endregion 基础服务
 
             #region 游戏专用服务

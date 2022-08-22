@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using OW.Game.Store;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace OW.Game
 {
@@ -55,8 +57,9 @@ namespace OW.Game
         /// <summary>
         /// 需要保存时调用。
         /// 在对键加锁的范围内调用。
+        /// 回调参数是要保存的对象，附加数据，返回true表示成功，否则是没有保存成功
         /// </summary>
-        public Action<object, object> SaveCallback { get; set; }
+        public Func<object, object, bool> SaveCallback { get; set; }
 
         /// <summary>
         /// 从缓存中移除后调用。
@@ -130,9 +133,12 @@ namespace OW.Game
         /// </summary>
         protected void Save()
         {
-            List<string> keys;
+            List<string> keys = new List<string>();
             lock (_Dirty)
-                keys = _Dirty.ToList();
+            {
+                OwHelper.Copy(_Dirty, keys);
+                _Dirty.Clear();
+            }
             for (int i = keys.Count - 1; i >= 0; i--)
             {
                 var key = keys[i];
@@ -141,12 +147,16 @@ namespace OW.Game
                     if (dw.IsEmpty)
                         continue;
                     var entry = _Datas.GetCacheEntry(key);
-                    if (entry is null)
+                    if (entry is null)  //若键下的数据已经销毁
+                    {
+                        keys.RemoveAt(i);
                         continue;
+                    }
                     try
                     {
                         var option = (DataObjectOptions)entry.State;
-                        option.SaveCallback(entry.Value, default);
+                        if (!option.SaveCallback(entry.Value, default))
+                            continue;
                         keys.RemoveAt(i);
                     }
                     catch (Exception)
@@ -218,6 +228,21 @@ namespace OW.Game
             lock (_Dirty)
                 return _Dirty.Add(key);
         }
+
+        #region 后台工作相关
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            //var result = base.StartAsync(cancellationToken);
+            return Task.CompletedTask;
+        }
+
+        protected Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        #endregion 后台工作相关
 
         //public bool SetTimout(string key, TimeSpan timeout)
         //{

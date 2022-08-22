@@ -214,9 +214,8 @@ namespace OW.Game
             DateTime dt = DateTime.UtcNow;
             List<(DbAction, object)> innerWorkdItems = new List<(DbAction, object)>();
             (DbAction, object) workItem;
-            while (!CancellationTokenSource.IsCancellationRequested)
+            for (; !CancellationTokenSource.IsCancellationRequested; innerWorkdItems.Clear())
             {
-                innerWorkdItems.Clear();
                 try
                 {
                     if (_DbWorkQueue.IsCompleted || !_DbWorkQueue.TryTake(out workItem, -1))   //若没能等待获取工作项
