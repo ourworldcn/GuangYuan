@@ -283,12 +283,16 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                var gc = new GameChar(new Guid("788515A5-1901-4BF4-9316-06E29E6CFB5D"));
-                db.Add(gc);
-                db.SaveChanges();
+                JsonSerializerOptions options = new JsonSerializerOptions();
                 //MemoryCache mc = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.MaxValue });
                 //mc.Compact(1);
-                var s = _Services.GetService<DataObjectManager>();
+                var srv = _Services.GetService<DataObjectManager>();
+                var tt = (GameActionRecord)srv.GetOrLoad("9204F9D5-85BC-4939-910C-00A65D703B1E", c =>
+                {
+                    c.LoadCallback = (key, us) => ((DbContext)us).Set<GameActionRecord>().FirstOrDefault(sc => sc.Id == Guid.Parse(key));
+                    c.LoadCallbackState = world.CreateNewUserDbContext();
+                });
+                srv.SetDirty("9204F9D5-85BC-4939-910C-00A65D703B1E");
             }
             catch (Exception)
             {

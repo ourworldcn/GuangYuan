@@ -11,9 +11,9 @@ using System.Threading;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
-    public class LeafMemoryCacheOptions : MemoryCacheOptions, IOptions<LeafMemoryCacheOptions>
+    public class MemoryCacheBaseOptions : MemoryCacheOptions, IOptions<MemoryCacheBaseOptions>
     {
-        public LeafMemoryCacheOptions()
+        public MemoryCacheBaseOptions()
         {
         }
 
@@ -36,29 +36,29 @@ namespace Microsoft.Extensions.Caching.Memory
         public Func<object, bool> IsEnteredCallback { get; set; } = Monitor.IsEntered;
 
         /// <summary>
-        /// 
+        /// 默认的锁定超时时间。
         /// </summary>
         public TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(2);
 
         /// <summary>
         /// 
         /// </summary>
-        public LeafMemoryCacheOptions Value => this;
+        public MemoryCacheBaseOptions Value => this;
     }
 
     /// <summary>
-    /// 
+    /// 内存缓存的基础类。
     /// </summary>
-    public class LeafMemoryCache : IMemoryCache, IDisposable
+    public class MemoryCacheBase : IMemoryCache, IDisposable
     {
-        public class LeafCacheEntry : ICacheEntry
+        public class MemoryCacheBaseEntry : ICacheEntry
         {
-            public LeafCacheEntry(LeafMemoryCache cache)
+            public MemoryCacheBaseEntry(MemoryCacheBase cache)
             {
                 Cache = cache;
             }
 
-            public LeafMemoryCache Cache { get; set; }
+            public MemoryCacheBase Cache { get; set; }
 
             #region ICacheEntry接口相关
 
@@ -76,15 +76,24 @@ namespace Microsoft.Extensions.Caching.Memory
 
             public IList<IChangeToken> ExpirationTokens { get; } = new List<IChangeToken>();
 
+            /// <summary>
+            /// 所有的函数调用完毕才会解锁键对象。
+            /// </summary>
             public IList<PostEvictionCallbackRegistration> PostEvictionCallbacks { get; } = new List<PostEvictionCallbackRegistration>();
 
             public CacheItemPriority Priority { get; set; }
 
             public long? Size { get; set; }
 
-            bool _IsDisposed;
+            #region IDisposable接口相关
 
-            public void Dispose()
+            bool _IsDisposed;
+            /// <summary>
+            /// 对象是否已经被处置，此类型特殊，被处置意味着已经加入到缓存配置表中，而非真的被处置。
+            /// </summary>
+            protected bool IsDisposed => _IsDisposed;
+
+            public virtual void Dispose()
             {
                 using var dw = DisposeHelper.Create(Cache.Options.LockCallback, Cache.Options.UnlockCallback, Key, Cache.Options.DefaultTimeout);
                 if (dw.IsEmpty)
@@ -96,11 +105,16 @@ namespace Microsoft.Extensions.Caching.Memory
                     _IsDisposed = true;
                 }
             }
+            #endregion IDisposable接口相关
+
             #endregion ICacheEntry接口相关
 
+            /// <summary>
+            /// 最后一次使用的Utc时间。
+            /// </summary>
             public DateTime LastUseUtc { get; internal set; } = DateTime.UtcNow;
 
-            public bool CheckExpired(DateTime utcNow)
+            public virtual bool CheckExpired(DateTime utcNow)
             {
                 if (SlidingExpiration.HasValue && utcNow - LastUseUtc >= SlidingExpiration)
                     return true;
@@ -120,33 +134,35 @@ namespace Microsoft.Extensions.Caching.Memory
         /// </summary>
         #region 构造函数相关
 
-        public LeafMemoryCache(IOptions<LeafMemoryCacheOptions> options)
+        public MemoryCacheBase(IOptions<MemoryCacheBaseOptions> options)
         {
             _Options = options.Value;
         }
 
         #endregion 构造函数相关
 
-        LeafMemoryCacheOptions _Options;
-        public LeafMemoryCacheOptions Options => _Options;
+        MemoryCacheBaseOptions _Options;
+        public MemoryCacheBaseOptions Options => _Options;
 
-        ConcurrentDictionary<object, LeafCacheEntry> _Datas = new ConcurrentDictionary<object, LeafCacheEntry>();
+        ConcurrentDictionary<object, MemoryCacheBaseEntry> _Datas = new ConcurrentDictionary<object, MemoryCacheBaseEntry>();
 
         #region IMemoryCache接口相关
 
         #region IDisposable接口相关
 
+        /// <summary>
+        /// 如果对象已经被处置则抛出<see cref="ObjectDisposedException"/>异常。
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThrowIfDisposed()
         {
             if (_Disposed)
-                Throw();
-
+                throw new ObjectDisposedException(typeof(MemoryCacheBase).FullName);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [DoesNotReturn]
-        static void Throw() => throw new ObjectDisposedException(typeof(LeafMemoryCache).FullName);
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //[DoesNotReturn]
+        //static void Throw() => throw new ObjectDisposedException(typeof(LeafMemoryCache).FullName);
 
         private bool _Disposed;
 
@@ -163,6 +179,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
+                _Datas = null;
                 _Disposed = true;
             }
         }
@@ -187,7 +204,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// 
         /// </summary>
         /// <param name="key"></param>
-        /// <returns></returns>
+        /// <returns>返回的是<see cref="MemoryCacheBaseEntry"/>对象。</returns>
         /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
         public virtual ICacheEntry CreateEntry(object key)
         {
@@ -195,12 +212,12 @@ namespace Microsoft.Extensions.Caching.Memory
             using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
             if (dw.IsEmpty)
                 throw new TimeoutException();
-            return new LeafCacheEntry(this);
+            return new MemoryCacheBaseEntry(this) { Key = key };
         }
 
-        public LeafCacheEntry CreateLeafCacheEntry(object key)
+        public MemoryCacheBaseEntry CreateLeafCacheEntry(object key)
         {
-            return (LeafCacheEntry)CreateEntry(key);
+            return (MemoryCacheBaseEntry)CreateEntry(key);
         }
 
         /// <summary>
@@ -260,7 +277,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="key"></param>
         /// <returns>返回设置数据对象，没有找到键则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public LeafCacheEntry GetCacheEntry(object key)
+        public MemoryCacheBaseEntry GetCacheEntry(object key)
         {
             ThrowIfDisposed();
             ThrowIfNotEntered(key);
@@ -283,7 +300,7 @@ namespace Microsoft.Extensions.Caching.Memory
             foreach (var item in _Datas)
             {
                 using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, item.Key, TimeSpan.Zero);
-                if (dw.IsEmpty)
+                if (dw.IsEmpty) //忽略无法锁定的项
                     continue;
                 if (!item.Value.CheckExpired(nowUtc))
                     continue;
@@ -299,4 +316,6 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
     }
+
+
 }

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,20 +53,40 @@ namespace OW.Game
         /// 加载时调用。
         /// 在对键加锁的范围内调用。
         /// </summary>
-        public Func<string, object> LoadCallback { get; set; }
+        [AllowNull]
+        public Func<string, object, object> LoadCallback { get; set; }
+
+        /// <summary>
+        /// <see cref="LoadCallback"/>的用户参数。
+        /// </summary>
+        [AllowNull]
+        public object LoadCallbackState { get; set; }
 
         /// <summary>
         /// 需要保存时调用。
         /// 在对键加锁的范围内调用。
-        /// 回调参数是要保存的对象，附加数据，返回true表示成功，否则是没有保存成功
+        /// 回调参数是要保存的对象，附加数据，返回true表示成功，否则是没有保存成功,若没有设置该回调，则说民无需保存，也就视同保存成功。
         /// </summary>
+        [AllowNull]
         public Func<object, object, bool> SaveCallback { get; set; }
+
+        /// <summary>
+        /// <see cref="SaveCallback"/>的用户参数。
+        /// </summary>
+        [AllowNull]
+        public object SaveCallbackState { get; set; }
 
         /// <summary>
         /// 从缓存中移除后调用。
         /// 在对键加锁的范围内。
         /// </summary>
         public Action<object, object> LeaveCallback { get; set; }
+
+        /// <summary>
+        /// <see cref="LeaveCallback"/>的用户参数。
+        /// </summary>
+        [AllowNull]
+        public object LeaveCallbackState { get; set; }
 
         /// <summary>
         /// 从对象获取字符串类型键的函数，默认<see cref="GuidKeyObjectBase.IdString"/>。如果不是该类型或派生对象，请设置这个成员。
@@ -86,6 +107,8 @@ namespace OW.Game
     /// </summary>
     public class DataObjectManager
     {
+        #region 构造函数
+
         public DataObjectManager()
         {
             Options = new DataObjectManagerOptions();
@@ -103,7 +126,7 @@ namespace OW.Game
         /// </summary>
         void Initialize()
         {
-            _Datas = new LeafMemoryCache(new LeafMemoryCacheOptions()
+            _Datas = new MemoryCacheBase(new MemoryCacheBaseOptions()
             {
                 LockCallback = (obj, timeout) => StringLocker.TryEnter((string)obj, timeout),
                 UnlockCallback = c => StringLocker.Exit((string)c),
@@ -111,6 +134,8 @@ namespace OW.Game
             });
             _Timer = new Timer(TimerCallback, null, Options.ScanFrequency, Options.ScanFrequency);
         }
+
+        #endregion 构造函数
 
         public void TimerCallback(object state)
         {
@@ -124,7 +149,7 @@ namespace OW.Game
 
         public DataObjectManagerOptions Options { get => _Options; set => _Options = value; }
 
-        LeafMemoryCache _Datas;
+        MemoryCacheBase _Datas;
 
         HashSet<string> _Dirty = new HashSet<string>();
 
@@ -155,7 +180,7 @@ namespace OW.Game
                     try
                     {
                         var option = (DataObjectOptions)entry.State;
-                        if (!option.SaveCallback(entry.Value, default))
+                        if (null != option.SaveCallback && !(bool)option.SaveCallback?.Invoke(entry.Value, option.SaveCallbackState))
                             continue;
                         keys.RemoveAt(i);
                     }
@@ -193,12 +218,13 @@ namespace OW.Game
                 };
                 entity.State = options;
                 loader(options);
-                entry.SetSlidingExpiration(_Options.DefaultCachingTimeout);
+                entity.SetSlidingExpiration(_Options.DefaultCachingTimeout);
                 entity.RegisterPostEvictionCallback((object key, object value, EvictionReason reason, object state) =>
                 {
-                    options.LeaveCallback(value, state);
+                    options.LeaveCallback?.Invoke(value, state);
                 });
-                entry.Value = options.LoadCallback(key);
+                if (options.LoadCallback != null)
+                    entity.Value = options.LoadCallback(key, options.LoadCallbackState);
             }
             entry = _Datas.GetCacheEntry(key);
             Debug.Assert(null != entry);
@@ -261,5 +287,19 @@ namespace OW.Game
 
     }
 
+    public static class DataObjectManagerExtensions
+    {
+        public static DataObjectManager GetOrLoad<T>(this DataObjectManager mng, string key, Func<DbContext> dbCreator)
+        {
+            mng.GetOrLoad(key, options =>
+            {
+                var db = dbCreator();
+                options.SaveCallbackState = db;
+                options.SaveCallback = (obj, state) => { ((DbContext)state).SaveChanges(); return true; };
+                options.LeaveCallbackState = db;
 
+            });
+            return mng;
+        }
+    }
 }
