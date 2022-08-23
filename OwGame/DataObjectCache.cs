@@ -15,7 +15,7 @@ using System.Threading;
 namespace OW.Game
 {
 
-    public class DataObjectCacheOptions : MemoryCacheBaseOptions
+    public class DataObjectCacheOptions : MemoryCacheBaseOptions, IOptions<DataObjectCacheOptions>
     {
         /// <summary>
         /// 扫描间隔。
@@ -33,6 +33,8 @@ namespace OW.Game
         /// 创建数据库上下文的回调。
         /// </summary>
         public Func<object, DbContext> CreatDbContextCallback { get; set; }
+
+        public new DataObjectCacheOptions Value => this;
     }
 
     /// <summary>
@@ -119,7 +121,6 @@ namespace OW.Game
 
         }
 
-
         #region 构造函数
 
         /// <summary>
@@ -137,6 +138,7 @@ namespace OW.Game
         {
             _Timer = new Timer(TimerCallback, null, ((DataObjectCacheOptions)Options).ScanFrequency, ((DataObjectCacheOptions)Options).ScanFrequency);
         }
+
         #endregion 构造函数
 
         public void TimerCallback(object state)
