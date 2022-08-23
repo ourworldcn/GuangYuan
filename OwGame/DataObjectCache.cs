@@ -141,6 +141,10 @@ namespace OW.Game
 
         #endregion 构造函数
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="state"></param>
         public void TimerCallback(object state)
         {
             using var dw = DisposeHelper.Create(c => Monitor.TryEnter(c, 0), _Timer);   //防止重入
@@ -150,6 +154,9 @@ namespace OW.Game
             Save();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         Timer _Timer;
 
         /// <summary>
@@ -203,12 +210,13 @@ namespace OW.Game
 
         public bool SetDirty(object key)
         {
+            bool result;
             lock (_Dirty)
             {
-                var result = _Dirty.Add(key);
+                result = _Dirty.Add(key);
                 Monitor.Pulse(_Dirty);
-                return result;
             }
+            return result;
         }
 
         public void EnsureSaved(object key)

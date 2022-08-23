@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Concurrent;
@@ -114,7 +115,7 @@ namespace Microsoft.Extensions.Caching.Memory
             /// </summary>
             public DateTime LastUseUtc { get; internal set; } = DateTime.UtcNow;
 
-            public virtual bool CheckExpired(DateTime utcNow)
+            public virtual bool IsExpired(DateTime utcNow)
             {
                 if (SlidingExpiration.HasValue && utcNow - LastUseUtc >= SlidingExpiration)
                     return true;
@@ -285,32 +286,37 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         /// <summary>
-        /// TODO
+        /// 压缩缓存数据。
         /// </summary>
-        /// <param name="percentage"></param>
+        /// <param name="percentage">回收比例。</param>
         public void Compact()
         {
-            Compact((long)(_Datas.Count * _Options.CompactionPercentage));
+            Compact(Math.Max((long)(_Datas.Count * _Options.CompactionPercentage), 1));
         }
 
         protected virtual void Compact(long removalSizeTarget)
         {
             ThrowIfDisposed();
             var nowUtc = DateTime.UtcNow;
+            long removalCount = 0;
             foreach (var item in _Datas)
             {
                 using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, item.Key, TimeSpan.Zero);
                 if (dw.IsEmpty) //忽略无法锁定的项
                     continue;
-                if (!item.Value.CheckExpired(nowUtc))
+                if (!item.Value.IsExpired(nowUtc))  //若未超期
                     continue;
-                try
+                if (_Datas.TryRemove(item.Key, out var entity)) //若再内存中成功驱逐
                 {
-                    if (_Datas.TryRemove(item.Key, out var entity))
+                    try
+                    {
                         entity.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(entity.Key, entity.Value, EvictionReason.Expired, c.State));
-                }
-                catch (Exception)
-                {
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    if (++removalCount >= removalSizeTarget)    //若已经达成回收目标
+                        break;
                 }
             }
         }
