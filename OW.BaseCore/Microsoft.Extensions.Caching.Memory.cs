@@ -50,15 +50,23 @@ namespace Microsoft.Extensions.Caching.Memory
     /// <summary>
     /// 内存缓存的基础类。
     /// </summary>
-    public class MemoryCacheBase : IMemoryCache, IDisposable
+    public abstract class MemoryCacheBase : IMemoryCache, IDisposable
     {
         public class MemoryCacheBaseEntry : ICacheEntry
         {
-            public MemoryCacheBaseEntry(MemoryCacheBase cache)
+            /// <summary>
+            /// 构造函数。
+            /// </summary>
+            /// <param name="cache">指定所属缓存对象，在调用<see cref="Dispose"/>时可以加入该对象。</param>
+            public MemoryCacheBaseEntry(object key, MemoryCacheBase cache)
             {
+                Key = key;
                 Cache = cache;
             }
 
+            /// <summary>
+            /// 所属的缓存对象。
+            /// </summary>
             public MemoryCacheBase Cache { get; set; }
 
             #region ICacheEntry接口相关
@@ -94,6 +102,10 @@ namespace Microsoft.Extensions.Caching.Memory
             /// </summary>
             protected bool IsDisposed => _IsDisposed;
 
+            /// <summary>
+            /// 使此配置项加入或替换缓存对象。内部会试图锁定键。
+            /// </summary>
+            /// <exception cref="TimeoutException">试图锁定键超时。</exception>
             public virtual void Dispose()
             {
                 using var dw = DisposeHelper.Create(Cache.Options.LockCallback, Cache.Options.UnlockCallback, Key, Cache.Options.DefaultTimeout);
@@ -115,6 +127,11 @@ namespace Microsoft.Extensions.Caching.Memory
             /// </summary>
             public DateTime LastUseUtc { get; internal set; } = DateTime.UtcNow;
 
+            /// <summary>
+            /// 获取此配置项是否超期。
+            /// </summary>
+            /// <param name="utcNow"></param>
+            /// <returns></returns>
             public virtual bool IsExpired(DateTime utcNow)
             {
                 if (SlidingExpiration.HasValue && utcNow - LastUseUtc >= SlidingExpiration)
@@ -149,72 +166,26 @@ namespace Microsoft.Extensions.Caching.Memory
 
         #region IMemoryCache接口相关
 
-        #region IDisposable接口相关
-
         /// <summary>
-        /// 如果对象已经被处置则抛出<see cref="ObjectDisposedException"/>异常。
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ThrowIfDisposed()
-        {
-            if (_Disposed)
-                throw new ObjectDisposedException(typeof(MemoryCacheBase).FullName);
-        }
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //[DoesNotReturn]
-        //static void Throw() => throw new ObjectDisposedException(typeof(LeafMemoryCache).FullName);
-
-        private bool _Disposed;
-
-        protected bool Disposed { get => _Disposed; }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_Disposed)
-            {
-                if (disposing)
-                {
-                    // TODO: 释放托管状态(托管对象)
-                }
-
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
-                _Datas = null;
-                _Disposed = true;
-            }
-        }
-
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~LeafMemoryCache()
-        // {
-        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion IDisposable接口相关
-
-        /// <summary>
-        /// 
+        /// 创建一个键。此函数不考虑锁定键的问题，若需要，调用者自行锁定。
         /// </summary>
         /// <param name="key"></param>
         /// <returns>返回的是<see cref="MemoryCacheBaseEntry"/>对象。</returns>
-        /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
-        public virtual ICacheEntry CreateEntry(object key)
+        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ICacheEntry CreateEntry(object key)
         {
             ThrowIfDisposed();
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
-            if (dw.IsEmpty)
-                throw new TimeoutException();
-            return new MemoryCacheBaseEntry(this) { Key = key };
+            return CreateEntryCore(key);
         }
+
+        /// <summary>
+        /// <see cref="IMemoryCache.CreateEntry(object)"/>实际调用此函数实现，派生类可需要实现此函数。
+        /// 此函数不考虑锁定键的问题，若需要，实现者或调用者自行负责。
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected abstract MemoryCacheBaseEntry CreateEntryCore(object key);
 
         public MemoryCacheBaseEntry CreateLeafCacheEntry(object key)
         {
@@ -245,7 +216,21 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="value"></param>
         /// <returns></returns>
         /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
-        public virtual bool TryGetValue(object key, out object value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetValue(object key, out object value)
+        {
+            return TryGetValueCore(key, out value);
+        }
+
+        /// <summary>
+        /// <see cref="IMemoryCache.TryGetValue(object, out object)"/>实际调用此函数实现，派生类可重载此函数。
+        /// 此函数会重置缓存项的最后使用时间。内部也会对键加锁。
+        /// </summary>
+        /// <param name="key">缓存项的键。</param>
+        /// <param name="value">返回缓存键指定的值。</param>
+        /// <returns></returns>
+        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
+        protected virtual bool TryGetValueCore(object key, out object value)
         {
             ThrowIfDisposed();
             using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
@@ -261,13 +246,66 @@ namespace Microsoft.Extensions.Caching.Memory
             return true;
         }
 
+        #region IDisposable接口相关
+
+        /// <summary>
+        /// 如果对象已经被处置则抛出<see cref="ObjectDisposedException"/>异常。
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void ThrowIfDisposed()
+        {
+            if (_IsDisposed)
+                throw new ObjectDisposedException(GetType().FullName);
+        }
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //[DoesNotReturn]
+        //static void Throw() => throw new ObjectDisposedException(typeof(LeafMemoryCache).FullName);
+
+        private bool _IsDisposed;
+
+        protected bool IsDisposed { get => _IsDisposed; }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_IsDisposed)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                _Datas = null;
+                _IsDisposed = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~LeafMemoryCache()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion IDisposable接口相关
+
         #endregion IMemoryCache接口相关
 
         [Conditional("DEBUG")]
-        private void ThrowIfNotEntered(object key)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void ThrowIfNotEntered(object key)
         {
             if (!_Options.IsEnteredCallback(key))
-                throw new LockRecursionException();
+                throw new InvalidOperationException($"需要对键{key}加锁，但检测到没有锁定。");
         }
 
         /// <summary>

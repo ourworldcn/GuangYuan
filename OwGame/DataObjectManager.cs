@@ -126,7 +126,7 @@ namespace OW.Game
         /// </summary>
         void Initialize()
         {
-            _Datas = new MemoryCacheBase(new MemoryCacheBaseOptions()
+            _Datas = new DataObjectCache(new DataObjectCacheOptions()
             {
                 LockCallback = (obj, timeout) => StringLocker.TryEnter((string)obj, timeout),
                 UnlockCallback = c => StringLocker.Exit((string)c),

@@ -54,10 +54,8 @@ namespace OW.Game
             /// 构造函数。
             /// </summary>
             /// <param name="key"></param>
-            public DataObjectCacheEntry(object key, DataObjectCache cache) : base(cache)
+            public DataObjectCacheEntry(object key, DataObjectCache cache) : base(key, cache)
             {
-                Key = key;
-                Cache = cache;
             }
 
             #endregion 构造函数
@@ -72,6 +70,7 @@ namespace OW.Game
             {
                 base.Dispose();
             }
+
             #endregion IDisposable接口相关
 
 
@@ -119,6 +118,15 @@ namespace OW.Game
             [AllowNull]
             public object SaveCallbackState { get; set; }
 
+            /// <summary>
+            /// 是否已经初始化了<see cref="MemoryCacheBase.MemoryCacheBaseEntry.Value"/>的值。
+            /// </summary>
+            internal bool _IsInitialized;
+
+            /// <summary>
+            /// 是否已经初始化了<see cref="MemoryCacheBase.MemoryCacheBaseEntry.Value"/>的值。
+            /// </summary>
+            public bool IsInitialized => _IsInitialized;
         }
 
         #region 构造函数
@@ -225,13 +233,89 @@ namespace OW.Game
             throw new NotImplementedException();
         }
 
-        #region IMemoryCache接口相关
+        /// <summary>
+        /// 确保初始化了缓存项的加载。
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="result"></param>
+        /// <param name="timeout">锁定超时。省略或为null则使用<see cref="MemoryCacheBaseOptions.DefaultTimeout"/>。</param>
+        /// <returns>0=成功，1=超时无法锁定键，2=没有找到指定键。</returns>
+        public int EnsureInitialized(object key, out DataObjectCacheEntry result, TimeSpan? timeout = null)
+        {
+            ThrowIfDisposed();
+            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, timeout ?? Options.DefaultTimeout);
+            if (dw.IsEmpty)
+            {
+                result = default;
+                return 1;
+            }
+            var entry = (DataObjectCacheEntry)GetCacheEntry(key);
+            if (entry is null)
+            {
+                result = default;
+                return 2;
+            }
+            if (!entry._IsInitialized)   //若尚未初始化
+            {
+                bool hasError = false;
+                if (entry.LoadCallback != null)    //若有加载器
+                {
+                    try
+                    {
+                        entry.Value = entry.LoadCallback(entry.Key, entry.LoadCallbackState);
+                    }
+                    catch (Exception)
+                    {
+                        hasError = true;
+                    }
+                }
+                if ((hasError || entry.LoadCallback is null) && entry.CreateCallback != null)   //若加载器没有或未生效且有初始化器
+                {
+                    try
+                    {
+                        entry.Value = entry.CreateCallback(entry.Key, entry.CreateCallbackState);
+                    }
+                    catch (Exception err)
+                    {
+                        throw new InvalidOperationException($"无法初始化键：{entry.Key} 的缓存项。", err);
+                    }
+                }
+                //若没有加载器也没有初始化器，则视同已经初始化
+                entry._IsInitialized = true;
+            }
+            result = entry;
+            return 0;
+        }
 
-        #region IDisposable相关
+        #region 重载基类函数
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="key"><inheritdoc/></param>
+        /// <param name="value"><inheritdoc/></param>
+        /// <returns></returns>
+        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
+        protected override bool TryGetValueCore(object key, out object value)
+        {
+            if (0 != EnsureInitialized(key, out _))
+            {
+                value = default;
+                return false;
+            }
+            return base.TryGetValueCore(key, out value);
+        }
+
+        protected override MemoryCacheBaseEntry CreateEntryCore(object key)
+        {
+            return new DataObjectCacheEntry(key, this);
+        }
+
+        #region 重载基类函数
 
         protected override void Dispose(bool disposing)
         {
-            if (!Disposed)
+            if (!IsDisposed)
             {
                 if (disposing)
                 {
