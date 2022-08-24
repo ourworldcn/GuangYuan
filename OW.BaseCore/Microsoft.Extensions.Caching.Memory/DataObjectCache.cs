@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System;
@@ -12,27 +10,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace OW.Game
+namespace Microsoft.Extensions.Caching.Memory
 {
 
     public class DataObjectCacheOptions : MemoryCacheBaseOptions, IOptions<DataObjectCacheOptions>
     {
-        /// <summary>
-        /// 扫描间隔。
-        /// </summary>
-        /// <value>默认值:1分钟。</value>
-        public TimeSpan ScanFrequency { get; internal set; } = TimeSpan.FromMinutes(1);
-
-        /// <summary>
-        /// 默认的缓存超时。
-        /// </summary>
-        /// <value>默认值:1分钟。</value>
-        public TimeSpan DefaultCachingTimeout { get; set; } = TimeSpan.FromMinutes(1);
-
-        /// <summary>
-        /// 创建数据库上下文的回调。
-        /// </summary>
-        public Func<object, DbContext> CreatDbContextCallback { get; set; }
+        public DataObjectCacheOptions() : base()
+        {
+        }
 
         public new DataObjectCacheOptions Value => this;
     }
@@ -56,6 +41,7 @@ namespace OW.Game
             /// <param name="key"></param>
             public DataObjectCacheEntry(object key, DataObjectCache cache) : base(key, cache)
             {
+                SlidingExpiration = TimeSpan.FromMinutes(1);
             }
 
             #endregion 构造函数
@@ -119,10 +105,15 @@ namespace OW.Game
             public object SaveCallbackState { get; set; }
 
             /// <summary>
+            /// 当驱逐缓存项之前是否自动调用保存回调。
+            /// </summary>
+            /// <value>默认值false=不自动调用保存回调。</value>
+            public bool SaveWhenLeave { get; set; }
+
+            /// <summary>
             /// 是否已经初始化了<see cref="MemoryCacheBase.MemoryCacheBaseEntry.Value"/>的值。
             /// </summary>
             internal bool _IsInitialized;
-
             /// <summary>
             /// 是否已经初始化了<see cref="MemoryCacheBase.MemoryCacheBaseEntry.Value"/>的值。
             /// </summary>
@@ -144,7 +135,7 @@ namespace OW.Game
         /// </summary>
         void Initialize()
         {
-            _Timer = new Timer(TimerCallback, null, ((DataObjectCacheOptions)Options).ScanFrequency, ((DataObjectCacheOptions)Options).ScanFrequency);
+            _Timer = new Timer(TimerCallback, null, ((DataObjectCacheOptions)Options).ExpirationScanFrequency, ((DataObjectCacheOptions)Options).ExpirationScanFrequency);
         }
 
         #endregion 构造函数
@@ -185,7 +176,7 @@ namespace OW.Game
                 {
                     if (dw.IsEmpty)
                         continue;
-                    var entry = GetCacheEntry(key);
+                    var entry = GetCacheEntry(key) as DataObjectCacheEntry;
                     if (entry is null)  //若键下的数据已经销毁
                     {
                         keys.RemoveAt(i);
@@ -193,10 +184,10 @@ namespace OW.Game
                     }
                     try
                     {
-                        var option = (DataObjectOptions)entry.State;
-                        if (null != option.SaveCallback && !(bool)option.SaveCallback?.Invoke(entry.Value, option.SaveCallbackState))
-                            continue;
-                        keys.RemoveAt(i);
+                        if (entry.SaveWhenLeave)
+                            EnsureSaved(entry.Key);
+                        if (RemoveCore(entry, EvictionReason.Expired))
+                            keys.RemoveAt(i);
                     }
                     catch (Exception)
                     {
@@ -227,10 +218,35 @@ namespace OW.Game
             return result;
         }
 
-        public void EnsureSaved(object key)
+        /// <summary>
+        /// 同步的确保指定键的关联对象被保存。
+        /// </summary>
+        /// <param name="key"></param>
+        public bool EnsureSaved(object key)
         {
-            //TODO 
-            throw new NotImplementedException();
+            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultLockTimeout);
+            if (dw.IsEmpty)
+            {
+                OwHelper.SetLastError(258);
+                return false;
+            }
+            var entry = GetCacheEntry(key) as DataObjectCacheEntry;
+            if (entry is null)
+            {
+                OwHelper.SetLastError(87);
+                return false;
+            }
+            lock (_Dirty)
+                _Dirty.Remove(key);
+            try
+            {
+                entry.SaveCallback?.Invoke(entry.Value, entry.SaveCallbackState);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -238,22 +254,24 @@ namespace OW.Game
         /// </summary>
         /// <param name="key"></param>
         /// <param name="result"></param>
-        /// <param name="timeout">锁定超时。省略或为null则使用<see cref="MemoryCacheBaseOptions.DefaultTimeout"/>。</param>
+        /// <param name="timeout">锁定超时。省略或为null则使用<see cref="MemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
         /// <returns>0=成功，1=超时无法锁定键，2=没有找到指定键。</returns>
-        public int EnsureInitialized(object key, out DataObjectCacheEntry result, TimeSpan? timeout = null)
+        public bool EnsureInitialized(object key, out DataObjectCacheEntry result, TimeSpan? timeout = null)
         {
             ThrowIfDisposed();
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, timeout ?? Options.DefaultTimeout);
+            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, timeout ?? Options.DefaultLockTimeout);
             if (dw.IsEmpty)
             {
                 result = default;
-                return 1;
+                OwHelper.SetLastError(258);
+                return false;
             }
             var entry = (DataObjectCacheEntry)GetCacheEntry(key);
             if (entry is null)
             {
                 result = default;
-                return 2;
+                OwHelper.SetLastError(87);
+                return false;
             }
             if (!entry._IsInitialized)   //若尚未初始化
             {
@@ -269,7 +287,7 @@ namespace OW.Game
                         hasError = true;
                     }
                 }
-                if ((hasError || entry.LoadCallback is null) && entry.CreateCallback != null)   //若加载器没有或未生效且有初始化器
+                if ((hasError || entry.LoadCallback is null || entry.Value is null) && entry.CreateCallback != null)   //若加载器没有或未生效且有初始化器
                 {
                     try
                     {
@@ -284,10 +302,15 @@ namespace OW.Game
                 entry._IsInitialized = true;
             }
             result = entry;
-            return 0;
+            return true;
         }
 
         #region 重载基类函数
+
+        protected override MemoryCacheBaseEntry CreateEntryCore(object key)
+        {
+            return new DataObjectCacheEntry(key, this);
+        }
 
         /// <summary>
         /// <inheritdoc/>
@@ -298,7 +321,7 @@ namespace OW.Game
         /// <exception cref="ObjectDisposedException">对象已处置。</exception>
         protected override bool TryGetValueCore(object key, out object value)
         {
-            if (0 != EnsureInitialized(key, out _))
+            if (!EnsureInitialized(key, out _))
             {
                 value = default;
                 return false;
@@ -306,9 +329,26 @@ namespace OW.Game
             return base.TryGetValueCore(key, out value);
         }
 
-        protected override MemoryCacheBaseEntry CreateEntryCore(object key)
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="reason"></param>
+        /// <returns></returns>
+        protected override bool RemoveCore(MemoryCacheBaseEntry entry, EvictionReason reason)
         {
-            return new DataObjectCacheEntry(key, this);
+            var innerEntry = (DataObjectCacheEntry)entry;
+            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, entry.Key, Options.DefaultLockTimeout);
+            if (dw.IsEmpty)
+            {
+                OwHelper.SetLastError(258);
+                return false;
+            }
+            if (innerEntry.SaveWhenLeave)    //若是需要自动保存
+            {
+                EnsureSaved(entry.Key);
+            }
+            return base.RemoveCore(entry, reason);
         }
 
         #region 重载基类函数

@@ -268,6 +268,19 @@ namespace System
         public static bool TryEnter(string str, TimeSpan timeout) => TryEnter(ref str, timeout);
 
         /// <summary>
+        /// <seealso cref="Monitor.IsEntered(object)"/>
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static bool IsEntered(string str)
+        {
+            str = IsInterned(str);
+            if (str is null)
+                return false;
+            return Monitor.IsEntered(str);
+        }
+
+        /// <summary>
         /// 在字符串在当前应用程序域内的唯一实例上进行解锁。
         /// </summary>
         /// <param name="str"></param>

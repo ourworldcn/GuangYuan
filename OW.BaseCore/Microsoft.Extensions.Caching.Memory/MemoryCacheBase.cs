@@ -8,14 +8,20 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
     public class MemoryCacheBaseOptions : MemoryCacheOptions, IOptions<MemoryCacheBaseOptions>
     {
-        public MemoryCacheBaseOptions()
+        /// <summary>
+        /// 构造函数。
+        /// 设置<see cref="MemoryCacheOptions.ExpirationScanFrequency"/>为1分钟。
+        /// </summary>
+        public MemoryCacheBaseOptions() : base()
         {
+            ExpirationScanFrequency = TimeSpan.FromMinutes(1);
         }
 
         /// <summary>
@@ -39,7 +45,8 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// 默认的锁定超时时间。
         /// </summary>
-        public TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(2);
+        /// <value>默认值:3秒。</value>
+        public TimeSpan DefaultLockTimeout { get; set; } = TimeSpan.FromSeconds(3);
 
         /// <summary>
         /// 
@@ -108,7 +115,7 @@ namespace Microsoft.Extensions.Caching.Memory
             /// <exception cref="TimeoutException">试图锁定键超时。</exception>
             public virtual void Dispose()
             {
-                using var dw = DisposeHelper.Create(Cache.Options.LockCallback, Cache.Options.UnlockCallback, Key, Cache.Options.DefaultTimeout);
+                using var dw = DisposeHelper.Create(Cache.Options.LockCallback, Cache.Options.UnlockCallback, Key, Cache.Options.DefaultLockTimeout);
                 if (dw.IsEmpty)
                     throw new TimeoutException();
                 if (!_IsDisposed)
@@ -145,6 +152,12 @@ namespace Microsoft.Extensions.Caching.Memory
             /// 获取或设置用户的附加配置数据。
             /// </summary>
             public object State { get; set; }
+
+            /// <summary>
+            /// 是否在驱逐之后自动调用<see cref="IDisposable.Dispose"/>(如果支持该接口)。
+            /// </summary>
+            /// <value>true=如果可以则调用，false=不调用，这是默认值。</value>
+            public bool AutoDispose { get; set; }
         }
 
         /// <summary>
@@ -197,16 +210,42 @@ namespace Microsoft.Extensions.Caching.Memory
         /// </summary>
         /// <param name="key"></param>
         /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
-        public virtual void Remove(object key)
+        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Remove(object key)
         {
             ThrowIfDisposed();
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
+            if (_Datas.TryGetValue(key, out var entry)) //TODO 找不到的情况未处理
+                RemoveCore(entry, EvictionReason.Removed);
+        }
+
+        /// <summary>
+        /// 以指定原因移除缓存项。此函数会对键进行加锁，然后调用所有超期回调，最后移除配置项。
+        /// 最后如果要求自动调用Dispose,且支持<see cref="IDisposable"/>接口则调用<see cref="IDisposable.Dispose"/>。
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="reason"></param>
+        /// <returns>0=成功移除，1=锁定键超时，2=没有找到指定键。</returns>
+        protected virtual bool RemoveCore(MemoryCacheBaseEntry entry, EvictionReason reason)
+        {
+            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, entry.Key, Options.DefaultLockTimeout);
             if (dw.IsEmpty)
-                throw new TimeoutException();
-            if (!_Datas.TryRemove(key, out var entity))
-                return;
-            entity.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(key, entity.Value, EvictionReason.Removed, c.State));
-            _Datas.Remove(key, out _);
+            {
+                OwHelper.SetLastError(258);
+                return false;
+            }
+            try
+            {
+                entry.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(entry.Key, entry.Value, EvictionReason.Removed, c.State));
+                _Datas.TryRemove(entry.Key, out _);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            if (entry.AutoDispose)
+                (entry.Value as IDisposable)?.Dispose();
+            return true;
         }
 
         /// <summary>
@@ -233,12 +272,17 @@ namespace Microsoft.Extensions.Caching.Memory
         protected virtual bool TryGetValueCore(object key, out object value)
         {
             ThrowIfDisposed();
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultTimeout);
+            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultLockTimeout);
             if (dw.IsEmpty)
-                throw new TimeoutException();
+            {
+                value = default;
+                OwHelper.SetLastError(258);
+                return false;
+            }
             if (!_Datas.TryGetValue(key, out var entity))
             {
                 value = default;
+                OwHelper.SetLastError(87);
                 return false;
             }
             value = entity.Value;
@@ -329,12 +373,16 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="percentage">回收比例。</param>
         public void Compact()
         {
+            ThrowIfDisposed();
             Compact(Math.Max((long)(_Datas.Count * _Options.CompactionPercentage), 1));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="removalSizeTarget"></param>
         protected virtual void Compact(long removalSizeTarget)
         {
-            ThrowIfDisposed();
             var nowUtc = DateTime.UtcNow;
             long removalCount = 0;
             foreach (var item in _Datas)
@@ -344,18 +392,9 @@ namespace Microsoft.Extensions.Caching.Memory
                     continue;
                 if (!item.Value.IsExpired(nowUtc))  //若未超期
                     continue;
-                if (_Datas.TryRemove(item.Key, out var entity)) //若再内存中成功驱逐
-                {
-                    try
-                    {
-                        entity.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(entity.Key, entity.Value, EvictionReason.Expired, c.State));
-                    }
-                    catch (Exception)
-                    {
-                    }
+                if (RemoveCore(item.Value, EvictionReason.Expired))
                     if (++removalCount >= removalSizeTarget)    //若已经达成回收目标
                         break;
-                }
             }
         }
 

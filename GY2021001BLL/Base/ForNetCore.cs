@@ -19,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
+using OW.Game.Caching;
 using OW.Game.Entity.Log;
 using OW.Game.Item;
 using OW.Game.Log;
@@ -47,6 +48,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+
 
 namespace GuangYuan.GY001.BLL
 {
@@ -278,21 +280,19 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
-            var dic = new Dictionary<object, object>() { { "ExtraString", "1" }, { 2m, DateTime.UtcNow } };
-            var tmp = dic.TryGetValue(2m, out var val);
             var sw = Stopwatch.StartNew();
+            var key = "96AEEF3C-9E95-4A55-9585-1562AFCEC70C";
+
             try
             {
-                JsonSerializerOptions options = new JsonSerializerOptions();
-                //MemoryCache mc = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.MaxValue });
-                //mc.Compact(1);
-                var srv = _Services.GetService<DataObjectManager>();
-                var tt = (GameActionRecord)srv.GetOrLoad("9204F9D5-85BC-4939-910C-00A65D703B1E", c =>
+                var srv = _Services.GetService<GameObjectCache>();
+                using (var entry = (GameObjectCache.GameObjectCacheEntry)srv.CreateEntry(key))
                 {
-                    c.LoadCallback = (key, us) => ((DbContext)us).Set<GameActionRecord>().FirstOrDefault(sc => sc.Id == Guid.Parse(key));
-                    c.LoadCallbackState = world.CreateNewUserDbContext();
-                });
-                srv.SetDirty("9204F9D5-85BC-4939-910C-00A65D703B1E");
+                    entry.ObjectType = typeof(GameActionRecord);
+                }
+                var b = srv.TryGetValue<GameActionRecord>(key, out var val);
+                val.DateTimeUtc = DateTime.MinValue;
+                srv.SetDirty(key);
             }
             catch (Exception)
             {
@@ -441,7 +441,7 @@ namespace GuangYuan.GY001.BLL
                 c.ExpirationScanFrequency = TimeSpan.FromSeconds(10);
             });
 
-            services.AddSingleton<DataObjectManager>();
+            services.AddSingleton<GameObjectCache>();
             #endregion 基础服务
 
             #region 游戏专用服务

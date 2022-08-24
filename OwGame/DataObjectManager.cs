@@ -130,7 +130,7 @@ namespace OW.Game
             {
                 LockCallback = (obj, timeout) => StringLocker.TryEnter((string)obj, timeout),
                 UnlockCallback = c => StringLocker.Exit((string)c),
-                DefaultTimeout = _Options.DefaultLockTimeout,
+                DefaultLockTimeout = _Options.DefaultLockTimeout,
             });
             _Timer = new Timer(TimerCallback, null, Options.ScanFrequency, Options.ScanFrequency);
         }

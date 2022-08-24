@@ -5,6 +5,7 @@ using Microsoft.Extensions.ObjectPool;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -91,9 +92,30 @@ namespace System
         /// </summary>
         public static readonly char[] PathSeparatorChar = new char[] { '\\', '/' };
 
+        [ThreadStatic]
+        static int _LastError;
+
+        /// <summary>
+        /// 获取此线程的错误号。
+        /// </summary>
+        /// <returns></returns>
+        public static int GetLastError() => _LastError;
+
+        /// <summary>
+        /// 设置此线程的错误号。
+        /// </summary>
+        /// <param name="error"></param>
+        public static void SetLastError(int error) => _LastError = error;
+
         static OwHelper()
         {
+            /*
+             * WAIT_TIMEOUT
+             * 258 (0x102)
+             * 等待操作超时。
+            */
         }
+
         #region 属性
 
         #endregion 属性
