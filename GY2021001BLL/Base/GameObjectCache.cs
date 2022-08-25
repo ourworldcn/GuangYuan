@@ -22,22 +22,47 @@ namespace OW.Game.Caching
 
     }
 
+    /// <summary>
+    /// 特定适用于游戏世界内对象的缓存服务对象。
+    /// </summary>
     public class GameObjectCache : EfObjectCache
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public class GameObjectCacheEntry : EfObjectCacheEntry
         {
+            /// <summary>
+            /// 构造函数。
+            /// 会自动设置加载，保存回调，并在驱逐前强制保存，驱逐后处置上下文及对象本身（如果支持IDisposable接口）
+            /// </summary>
+            /// <param name="key"></param>
+            /// <param name="cache"></param>
             public GameObjectCacheEntry(object key, EfObjectCache cache) : base(key, cache)
             {
-                AutoDispose = true;
-                SaveWhenLeave = true;
                 var options = (GameObjectCacheOptions)cache.Options;
                 LoadCallback = (key, state) => Context.Find(ObjectType, options.CacheKey2DbKeyCallback?.Invoke(key) ?? key);
+                BeforeEvictionCallbacks.Add(new BeforeEvictionCallbackRegistration()    //驱逐前自动保存
+                {
+                    BeforeEvictionCallback = (key, val, res, state) =>
+                    {
+                        var entry = (GameObjectCacheEntry)state;
+                        ((GameObjectCache)entry.Cache).EnsureSavedCore(entry);
+                    },
+                    State = this,
+                });
+                this.RegisterPostEvictionCallback((key, val, res, state) =>
+                {
+                    (val as IDisposable)?.Dispose();
+                    ((GameObjectCacheEntry)state).Context?.Dispose();
+                }, this); //驱逐后自动处置相关对象
             }
 
             public override void Dispose()
             {
                 base.Dispose();
             }
+
         }
 
         /// <summary>
@@ -50,7 +75,7 @@ namespace OW.Game.Caching
         {
             _World = world;
             var innerOptions = (GameObjectCacheOptions)Options;
-            innerOptions.CreateDbContextCallback ??= c => _World.CreateNewUserDbContext();
+            innerOptions.CreateDbContextCallback ??= (c, type) => _World.CreateNewUserDbContext();
 
         }
 

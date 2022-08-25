@@ -99,12 +99,14 @@ namespace System
         /// 获取此线程的错误号。
         /// </summary>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetLastError() => _LastError;
 
         /// <summary>
         /// 设置此线程的错误号。
         /// </summary>
         /// <param name="error"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetLastError(int error) => _LastError = error;
 
         static OwHelper()

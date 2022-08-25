@@ -13,7 +13,10 @@ namespace Microsoft.Extensions.Caching.Memory
         {
         }
 
-        public Func<object, DbContext> CreateDbContextCallback { get; set; }
+        /// <summary>
+        /// 创建数据库上下文的回调，参数1是键，参数2是类型。
+        /// </summary>
+        public Func<object, Type, DbContext> CreateDbContextCallback { get; set; }
 
         /// <summary>
         /// 将缓存中的键可转换为数据库中的键的回调。
@@ -65,7 +68,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     throw new InvalidCastException($"需要设置{nameof(ObjectType)}属性。");
                 var options = (EfObjectCacheOptions)Cache.Options;
                 if (Context is null)
-                    Context = options.CreateDbContextCallback(Key);
+                    Context = options.CreateDbContextCallback(Key, ObjectType);
                 if (CreateCallback is null)
                     CreateCallback = (key, state) =>
                     {

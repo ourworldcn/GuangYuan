@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
@@ -55,6 +56,7 @@ namespace Microsoft.Extensions.Caching.Memory
             public override void Dispose()
             {
                 base.Dispose();
+                Task.Run(() => ((DataObjectCache)Cache).EnsureInitialized(Key, out _)); //异步初始化
             }
 
             #endregion IDisposable接口相关
@@ -105,12 +107,6 @@ namespace Microsoft.Extensions.Caching.Memory
             public object SaveCallbackState { get; set; }
 
             /// <summary>
-            /// 当驱逐缓存项之前是否自动调用保存回调。
-            /// </summary>
-            /// <value>默认值false=不自动调用保存回调。</value>
-            public bool SaveWhenLeave { get; set; }
-
-            /// <summary>
             /// 是否已经初始化了<see cref="MemoryCacheBase.MemoryCacheBaseEntry.Value"/>的值。
             /// </summary>
             internal bool _IsInitialized;
@@ -143,23 +139,24 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// 
         /// </summary>
+        Timer _Timer;
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="state"></param>
         public void TimerCallback(object state)
         {
             using var dw = DisposeHelper.Create(c => Monitor.TryEnter(c, 0), _Timer);   //防止重入
             if (dw.IsEmpty)  //若还在重入中
                 return;
-            Compact();
             Save();
+            Compact();
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        Timer _Timer;
-
-        /// <summary>
         /// 对标记为脏的数据进行保存。
+        /// 未能锁定或保存的数据都会再次放到队列中，等待下次保存。
         /// </summary>
         protected void Save()
         {
@@ -172,27 +169,8 @@ namespace Microsoft.Extensions.Caching.Memory
             for (int i = keys.Count - 1; i >= 0; i--)
             {
                 var key = keys[i];
-                using (var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, TimeSpan.Zero))
-                {
-                    if (dw.IsEmpty)
-                        continue;
-                    var entry = GetCacheEntry(key) as DataObjectCacheEntry;
-                    if (entry is null)  //若键下的数据已经销毁
-                    {
-                        keys.RemoveAt(i);
-                        continue;
-                    }
-                    try
-                    {
-                        if (entry.SaveWhenLeave)
-                            EnsureSaved(entry.Key);
-                        if (RemoveCore(entry, EvictionReason.Expired))
-                            keys.RemoveAt(i);
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
+                if (EnsureSaved(key, TimeSpan.Zero) || OwHelper.GetLastError() == 1168)    //若保存成功或已无需保存
+                    keys.RemoveAt(i);
             }
             //放入下次再保存
             if (keys.Count > 0)
@@ -200,15 +178,23 @@ namespace Microsoft.Extensions.Caching.Memory
                     OwHelper.Copy(keys, _Dirty);
         }
 
+        #region IDataObjectCache接口相关
+
         /// <summary>
         /// 脏队列。
         /// </summary>
         HashSet<object> _Dirty = new HashSet<object>();
 
-        #region IDataObjectCache接口相关
-
+        /// <summary>
+        /// 设置一个键关联的数据对象需要保存。
+        /// 该函数仅在一个集合中标记需要保存的对象的键，所以无需考虑锁定问题。
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
         public bool SetDirty(object key)
         {
+            ThrowIfDisposed();
             bool result;
             lock (_Dirty)
             {
@@ -219,11 +205,18 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         /// <summary>
-        /// 同步的确保指定键的关联对象被保存。
+        /// 无论缓存是否需要都强制同步的确保指定键的关联对象被保存。
+        /// 此函数会首先试图对键加锁，成功后才会进行实质工作，并解锁。
         /// </summary>
         /// <param name="key"></param>
-        public bool EnsureSaved(object key)
+        /// <param name="timeout">锁定超时。省略或为null则使用<see cref="MemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
+        /// <returns>true成功保存，false保存时出错。
+        /// 调用<see cref="OwHelper.GetLastError"/>可获取详细信息。258=锁定超时，698=键已存在，1168=键不存在。
+        /// </returns>
+        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
+        public bool EnsureSaved(object key, TimeSpan? timeout = null)
         {
+            ThrowIfDisposed();
             using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultLockTimeout);
             if (dw.IsEmpty)
             {
@@ -233,11 +226,27 @@ namespace Microsoft.Extensions.Caching.Memory
             var entry = GetCacheEntry(key) as DataObjectCacheEntry;
             if (entry is null)
             {
-                OwHelper.SetLastError(87);
+                OwHelper.SetLastError(1168);
                 return false;
             }
-            lock (_Dirty)
-                _Dirty.Remove(key);
+            var result = EnsureSavedCore(entry);
+            if (result)
+            {
+                OwHelper.SetLastError(0);
+                lock (_Dirty)
+                    _Dirty.Remove(entry.Key);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 实际确保缓存项保存的函数。
+        /// 派生类可以重载此函数。非公有函数不会自动对键加锁，若需要调用者需要负责加/解锁。
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <returns>true成功保存，false保存时出错。</returns>
+        protected virtual bool EnsureSavedCore(DataObjectCacheEntry entry)
+        {
             try
             {
                 entry.SaveCallback?.Invoke(entry.Value, entry.SaveCallbackState);
@@ -251,11 +260,14 @@ namespace Microsoft.Extensions.Caching.Memory
 
         /// <summary>
         /// 确保初始化了缓存项的加载。
+        /// 此函数会首先试图对键加锁，成功后才会进行实质工作，并解锁。
         /// </summary>
         /// <param name="key"></param>
         /// <param name="result"></param>
         /// <param name="timeout">锁定超时。省略或为null则使用<see cref="MemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
-        /// <returns>0=成功，1=超时无法锁定键，2=没有找到指定键。</returns>
+        /// <returns>true=成功，false=超时无法锁定键 - 或 - 键不存在。
+        /// 调用<see cref="OwHelper.GetLastError"/>可获取详细信息。258=锁定超时，698=键已存在，1168=键不存在。
+        /// </returns>
         public bool EnsureInitialized(object key, out DataObjectCacheEntry result, TimeSpan? timeout = null)
         {
             ThrowIfDisposed();
@@ -270,9 +282,29 @@ namespace Microsoft.Extensions.Caching.Memory
             if (entry is null)
             {
                 result = default;
-                OwHelper.SetLastError(87);
+                OwHelper.SetLastError(1168);
                 return false;
             }
+            if (!entry.IsInitialized)
+                EnsureInitializedCore(entry, timeout ?? Options.DefaultLockTimeout);
+            result = entry;
+            OwHelper.SetLastError(0);
+            return true;
+        }
+
+        /// <summary>
+        /// 确保初始化了缓存项的加载。
+        /// 派生类可以重载此函数。非公有函数不会自动对键加锁，若需要调用者需要负责加/解锁。
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="timeout">工作超时。实施者自行定义超时后的行为，此实现忽略该参数。</param>
+        /// <returns>true=成功初始化，false=已经初始化。
+        /// 调用<see cref="OwHelper.GetLastError"/>可获取详细信息。
+        /// </returns>
+        /// <exception cref="InvalidOperationException">所有初始化手段均失败。</exception>
+        protected virtual bool EnsureInitializedCore(DataObjectCacheEntry entry, TimeSpan timeout)
+        {
+            bool result;
             if (!entry._IsInitialized)   //若尚未初始化
             {
                 bool hasError = false;
@@ -300,9 +332,11 @@ namespace Microsoft.Extensions.Caching.Memory
                 }
                 //若没有加载器也没有初始化器，则视同已经初始化
                 entry._IsInitialized = true;
+                result = true;
             }
-            result = entry;
-            return true;
+            else
+                result = false;
+            return result;
         }
 
         #region 重载基类函数
@@ -313,42 +347,15 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <param name="key"><inheritdoc/></param>
-        /// <param name="value"><inheritdoc/></param>
-        /// <returns></returns>
-        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
-        protected override bool TryGetValueCore(object key, out object value)
-        {
-            if (!EnsureInitialized(key, out _))
-            {
-                value = default;
-                return false;
-            }
-            return base.TryGetValueCore(key, out value);
-        }
-
-        /// <summary>
-        /// <inheritdoc/>
+        /// 派生类可以重载此函数。非公有函数不会自动对键加锁，若需要调用者需要负责加/解锁。
         /// </summary>
         /// <param name="entry"></param>
-        /// <param name="reason"></param>
-        /// <returns></returns>
-        protected override bool RemoveCore(MemoryCacheBaseEntry entry, EvictionReason reason)
+        /// <returns>该实现会确保初始化成功完成<seealso cref="EnsureInitializedCore(DataObjectCacheEntry, TimeSpan)"/>，然后调用基类实现--<inheritdoc/>。</returns>
+        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
+        protected override bool TryGetValueCore(MemoryCacheBaseEntry entry)
         {
-            var innerEntry = (DataObjectCacheEntry)entry;
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, entry.Key, Options.DefaultLockTimeout);
-            if (dw.IsEmpty)
-            {
-                OwHelper.SetLastError(258);
-                return false;
-            }
-            if (innerEntry.SaveWhenLeave)    //若是需要自动保存
-            {
-                EnsureSaved(entry.Key);
-            }
-            return base.RemoveCore(entry, reason);
+            EnsureInitializedCore((DataObjectCacheEntry)entry, Options.DefaultLockTimeout);
+            return base.TryGetValueCore(entry);
         }
 
         #region 重载基类函数

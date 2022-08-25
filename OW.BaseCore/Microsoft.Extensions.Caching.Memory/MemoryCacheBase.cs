@@ -52,6 +52,24 @@ namespace Microsoft.Extensions.Caching.Memory
         /// 
         /// </summary>
         public MemoryCacheBaseOptions Value => this;
+
+    }
+
+    public class BeforeEvictionCallbackRegistration
+    {
+        public BeforeEvictionCallbackRegistration()
+        {
+
+        }
+
+        /// <summary>
+        /// 在即将被驱逐时调用的回调集合。
+        /// 键，值，驱逐原因，用户对象。
+        /// </summary>
+        public Action<object, object, EvictionReason, object> BeforeEvictionCallback { get; set; }
+
+        public object State { get; set; }
+
     }
 
     /// <summary>
@@ -92,10 +110,11 @@ namespace Microsoft.Extensions.Caching.Memory
 
             public IList<IChangeToken> ExpirationTokens { get; } = new List<IChangeToken>();
 
+            internal Lazy<List<PostEvictionCallbackRegistration>> _PostEvictionCallbacksLazyer = new Lazy<List<PostEvictionCallbackRegistration>>(true);
             /// <summary>
             /// 所有的函数调用完毕才会解锁键对象。
             /// </summary>
-            public IList<PostEvictionCallbackRegistration> PostEvictionCallbacks { get; } = new List<PostEvictionCallbackRegistration>();
+            public IList<PostEvictionCallbackRegistration> PostEvictionCallbacks => _PostEvictionCallbacksLazyer.Value;
 
             public CacheItemPriority Priority { get; set; }
 
@@ -120,7 +139,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     throw new TimeoutException();
                 if (!_IsDisposed)
                 {
-                    var factEntity = Cache._Datas.AddOrUpdate(Key, this, (key, ov) => this);
+                    var factEntity = Cache._Items.AddOrUpdate(Key, this, (key, ov) => this);
                     factEntity.LastUseUtc = DateTime.UtcNow;
                     _IsDisposed = true;
                 }
@@ -128,6 +147,14 @@ namespace Microsoft.Extensions.Caching.Memory
             #endregion IDisposable接口相关
 
             #endregion ICacheEntry接口相关
+
+            internal Lazy<List<BeforeEvictionCallbackRegistration>> _BeforeEvictionCallbacksLazyer = new Lazy<List<BeforeEvictionCallbackRegistration>>(true);
+            /// <summary>
+            /// 获取或设置从缓存中即将逐出缓存项时将触发的回叫。
+            /// 所有的函数调用完毕才会解锁键对象。
+            /// 支持并发初始化，但返回集合本身不能支持并发。
+            /// </summary>
+            public IList<BeforeEvictionCallbackRegistration> BeforeEvictionCallbacks => _BeforeEvictionCallbacksLazyer.Value;
 
             /// <summary>
             /// 最后一次使用的Utc时间。
@@ -153,18 +180,13 @@ namespace Microsoft.Extensions.Caching.Memory
             /// </summary>
             public object State { get; set; }
 
-            /// <summary>
-            /// 是否在驱逐之后自动调用<see cref="IDisposable.Dispose"/>(如果支持该接口)。
-            /// </summary>
-            /// <value>true=如果可以则调用，false=不调用，这是默认值。</value>
-            public bool AutoDispose { get; set; }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         #region 构造函数相关
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
         public MemoryCacheBase(IOptions<MemoryCacheBaseOptions> options)
         {
             _Options = options.Value;
@@ -172,80 +194,151 @@ namespace Microsoft.Extensions.Caching.Memory
 
         #endregion 构造函数相关
 
+        #region 属性及相关
+
         MemoryCacheBaseOptions _Options;
+        /// <summary>
+        /// 获取设置对象。
+        /// </summary>
         public MemoryCacheBaseOptions Options => _Options;
 
-        ConcurrentDictionary<object, MemoryCacheBaseEntry> _Datas = new ConcurrentDictionary<object, MemoryCacheBaseEntry>();
+        ConcurrentDictionary<object, MemoryCacheBaseEntry> _Items = new ConcurrentDictionary<object, MemoryCacheBaseEntry>();
+        /// <summary>
+        /// 所有缓存项的字典，键是缓存项的键，值缓存项的包装数据。该接口可以并发枚举。
+        /// </summary>
+        protected IReadOnlyDictionary<object, MemoryCacheBaseEntry> Items => _Items;
+
+        #endregion 属性及相关
 
         #region IMemoryCache接口相关
 
         /// <summary>
         /// 创建一个键。此函数不考虑锁定键的问题，若需要，调用者自行锁定。
+        /// 公有函数会首先锁定键。
         /// </summary>
         /// <param name="key"></param>
-        /// <returns>返回的是<see cref="MemoryCacheBaseEntry"/>对象。</returns>
+        /// <returns>返回的是<see cref="CreateEntryCore"/>创建的对象。
+        /// null表示锁定键超时 -或- 指定键已经存在。调用<see cref="OwHelper.GetLastError"/>可获取详细信息。258=锁定超时，698=键已存在，1168=键不存在。
+        /// </returns>
         /// <exception cref="ObjectDisposedException">对象已处置。</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ICacheEntry CreateEntry(object key)
         {
             ThrowIfDisposed();
+            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultLockTimeout);
+            if (dw.IsEmpty) //若超时
+            {
+                OwHelper.SetLastError(258);
+                return null;
+            }
+            if (_Items.ContainsKey(key))    //若键已经存在
+            {
+                OwHelper.SetLastError(698); //ERROR_OBJECT_NAME_EXISTS ,1168L Element not found.
+                return null;
+            }
             return CreateEntryCore(key);
         }
 
         /// <summary>
         /// <see cref="IMemoryCache.CreateEntry(object)"/>实际调用此函数实现，派生类可需要实现此函数。
-        /// 此函数不考虑锁定键的问题，若需要，实现者或调用者自行负责。
+        /// 不要考虑是否已经存在指定键的问题。
+        /// 派生类可以重载此函数。非公有函数不会自动对键加锁，若需要调用者需要负责加/解锁。
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
         protected abstract MemoryCacheBaseEntry CreateEntryCore(object key);
 
-        public MemoryCacheBaseEntry CreateLeafCacheEntry(object key)
+        /// <summary>
+        /// 获取指定键的设置数据。没有找到则返回null。
+        /// 可以更改返回值内部的内容，在解锁键之前不会生效。
+        /// 这个函数不触发计时。
+        /// 该函数不会自动对键加锁，若需要调用者需要负责加/解锁。
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns>返回设置数据对象，没有找到键则返回null。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public MemoryCacheBaseEntry GetCacheEntry(object key)
         {
-            return (MemoryCacheBaseEntry)CreateEntry(key);
+            ThrowIfDisposed();
+            return _Items.TryGetValue(key, out var result) ? result : default;
         }
 
         /// <summary>
-        /// 
+        /// 试图移除指定键的缓存项。
         /// </summary>
+        /// <param name="key"></param>
+        /// <param name="timeout">锁定键的最长超时，省略或为null则使用<see cref="MemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
+        /// <returns>
+        /// true成功移除，false锁定键超时或指定键不存在。
+        /// 调用<see cref="OwHelper.GetLastError"/>可获取详细信息。0=成功，258=锁定超时，698=键已存在，1168=键不存在。
+        /// </returns>
+        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
+        public bool TryRemove(object key, TimeSpan? timeout = null)
+        {
+            ThrowIfDisposed();
+            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, timeout ?? Options.DefaultLockTimeout);
+            if (dw.IsEmpty) //若超时
+            {
+                OwHelper.SetLastError(258);
+            }
+            else
+            {
+                var entry = GetCacheEntry(key);
+                if (entry != null)
+                    if (RemoveCore(entry, EvictionReason.Removed))
+                        OwHelper.SetLastError(0);
+                    else
+                        OwHelper.SetLastError(1168);
+                else
+                    OwHelper.SetLastError(1168);
+            }
+            return OwHelper.GetLastError() == 0;
+        }
+
+        /// <summary>
+        /// null表示锁定键超时 -或- 指定键已经存在。
+        /// 调用<see cref="OwHelper.GetLastError"/>可获取详细信息。0=成功，258=锁定超时，698=键已存在，1168=键不存在。
+        /// </summary>
+        /// <remarks>若没有找到指定键，则立即返回。
+        /// </remarks>
         /// <param name="key"></param>
         /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
         /// <exception cref="ObjectDisposedException">对象已处置。</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Remove(object key)
         {
-            ThrowIfDisposed();
-            if (_Datas.TryGetValue(key, out var entry)) //TODO 找不到的情况未处理
-                RemoveCore(entry, EvictionReason.Removed);
+            if (!TryRemove(key))
+                ThrowIfLockKeyTimeout(key);
         }
 
         /// <summary>
-        /// 以指定原因移除缓存项。此函数会对键进行加锁，然后调用所有超期回调，最后移除配置项。
+        /// 以指定原因移除缓存项。
+        /// 此函数会调用<see cref="MemoryCacheBaseEntry.BeforeEvictionCallbacks"/>所有回调，然后移除配置项,最后调用所有<see cref="MemoryCacheBaseEntry.PostEvictionCallbacks"/>回调。
+        /// 回调的异常均被忽略。
         /// 最后如果要求自动调用Dispose,且支持<see cref="IDisposable"/>接口则调用<see cref="IDisposable.Dispose"/>。
+        /// 派生类可以重载此函数。非公有函数不会自动对键加锁，若需要调用者需要负责加/解锁。
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="entry"></param>
         /// <param name="reason"></param>
-        /// <returns>0=成功移除，1=锁定键超时，2=没有找到指定键。</returns>
+        /// <returns>true=成功移除，false=没有找到指定键。</returns>
         protected virtual bool RemoveCore(MemoryCacheBaseEntry entry, EvictionReason reason)
         {
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, entry.Key, Options.DefaultLockTimeout);
-            if (dw.IsEmpty)
-            {
-                OwHelper.SetLastError(258);
-                return false;
-            }
             try
             {
-                entry.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(entry.Key, entry.Value, EvictionReason.Removed, c.State));
-                _Datas.TryRemove(entry.Key, out _);
+                if (entry._BeforeEvictionCallbacksLazyer.IsValueCreated)
+                    entry.BeforeEvictionCallbacks.SafeForEach(c => c.BeforeEvictionCallback?.Invoke(entry.Key, entry.Value, EvictionReason.Removed, c.State));
             }
             catch (Exception)
             {
-                return false;
             }
-            if (entry.AutoDispose)
-                (entry.Value as IDisposable)?.Dispose();
-            return true;
+            var result = _Items.TryRemove(entry.Key, out _);
+            try
+            {
+                if (entry._PostEvictionCallbacksLazyer.IsValueCreated)
+                    entry.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(entry.Key, entry.Value, EvictionReason.Removed, c.State));
+            }
+            catch (Exception)
+            {
+            }
+            return result;
         }
 
         /// <summary>
@@ -253,23 +346,11 @@ namespace Microsoft.Extensions.Caching.Memory
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        /// <returns></returns>
-        /// <exception cref="TimeoutException">锁定键超时 -或- 出现异常。</exception>
+        /// <returns>true成功缓存值，false锁定键超时或指定键不存在。
+        /// 调用<see cref="OwHelper.GetLastError"/>可获取详细信息。0=成功，258=锁定超时，698=键已存在，1168=键不存在。</returns>
+        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetValue(object key, out object value)
-        {
-            return TryGetValueCore(key, out value);
-        }
-
-        /// <summary>
-        /// <see cref="IMemoryCache.TryGetValue(object, out object)"/>实际调用此函数实现，派生类可重载此函数。
-        /// 此函数会重置缓存项的最后使用时间。内部也会对键加锁。
-        /// </summary>
-        /// <param name="key">缓存项的键。</param>
-        /// <param name="value">返回缓存键指定的值。</param>
-        /// <returns></returns>
-        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
-        protected virtual bool TryGetValueCore(object key, out object value)
         {
             ThrowIfDisposed();
             using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultLockTimeout);
@@ -279,14 +360,29 @@ namespace Microsoft.Extensions.Caching.Memory
                 OwHelper.SetLastError(258);
                 return false;
             }
-            if (!_Datas.TryGetValue(key, out var entity))
+            else
             {
-                value = default;
-                OwHelper.SetLastError(87);
-                return false;
+                var entry = GetCacheEntry(key);
+                var b = TryGetValueCore(entry);
+                value = entry?.Value;
+                if (b)
+                    OwHelper.SetLastError(0);
+                else
+                    OwHelper.SetLastError(1168);
+                return b;
             }
-            value = entity.Value;
-            entity.LastUseUtc = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// <see cref="IMemoryCache.TryGetValue(object, out object)"/>实际调用此函数实现，派生类可重载此函数。
+        /// 派生类可以重载此函数。非公有函数不会自动对键加锁，若需要调用者需要负责加/解锁。
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <returns>该实现会重置缓存项的最后使用时间，并立即返回true。</returns>
+        /// <exception cref="ObjectDisposedException">对象已处置。</exception>
+        protected virtual bool TryGetValueCore(MemoryCacheBaseEntry entry)
+        {
+            entry.LastUseUtc = Options.Clock?.UtcNow.UtcDateTime ?? DateTime.UtcNow;
             return true;
         }
 
@@ -301,6 +397,29 @@ namespace Microsoft.Extensions.Caching.Memory
             if (_IsDisposed)
                 throw new ObjectDisposedException(GetType().FullName);
         }
+
+        /// <summary>
+        /// 通过检测<see cref="OwHelper.GetLastError"/>返回值是否为258(WAIT_TIMEOUT)决定是否抛出异常<seealso cref="TimeoutException"/>。
+        /// </summary>
+        /// <param name="msg"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void ThrowIfTimeout(string msg)
+        {
+            if (OwHelper.GetLastError() == 258)
+                throw new TimeoutException(msg);
+        }
+
+        /// <summary>
+        /// 根据<see cref="OwHelper.GetLastError"/>返回值判断是否抛出锁定键超时的异常。
+        /// </summary>
+        /// <param name="key"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ThrowIfLockKeyTimeout(object key)
+        {
+            if (OwHelper.GetLastError() == 258)
+                throw new TimeoutException($"锁定键时超时，键:{key}");
+        }
+
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
         //[DoesNotReturn]
@@ -321,7 +440,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null
-                _Datas = null;
+                _Items = null;
                 _IsDisposed = true;
             }
         }
@@ -352,20 +471,6 @@ namespace Microsoft.Extensions.Caching.Memory
                 throw new InvalidOperationException($"需要对键{key}加锁，但检测到没有锁定。");
         }
 
-        /// <summary>
-        /// 获取指定键的设置数据。没有找到则返回null。必须锁定键以后再调用此函数，否则可能出现争用。
-        /// 可以更改返回值内部的内容，在解锁键之前不会生效。
-        /// 这个函数不触发计时。
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns>返回设置数据对象，没有找到键则返回null。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public MemoryCacheBaseEntry GetCacheEntry(object key)
-        {
-            ThrowIfDisposed();
-            ThrowIfNotEntered(key);
-            return _Datas.TryGetValue(key, out var result) ? result : default;
-        }
 
         /// <summary>
         /// 压缩缓存数据。
@@ -374,18 +479,19 @@ namespace Microsoft.Extensions.Caching.Memory
         public void Compact()
         {
             ThrowIfDisposed();
-            Compact(Math.Max((long)(_Datas.Count * _Options.CompactionPercentage), 1));
+            Compact(Math.Max((long)(_Items.Count * _Options.CompactionPercentage), 1));
         }
 
         /// <summary>
-        /// 
+        /// 实际压缩的函数。
         /// </summary>
+        /// <remarks>在调用<see cref="RemoveCore(MemoryCacheBaseEntry, EvictionReason)"/>之前会锁定键。</remarks>
         /// <param name="removalSizeTarget"></param>
         protected virtual void Compact(long removalSizeTarget)
         {
             var nowUtc = DateTime.UtcNow;
             long removalCount = 0;
-            foreach (var item in _Datas)
+            foreach (var item in _Items)
             {
                 using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, item.Key, TimeSpan.Zero);
                 if (dw.IsEmpty) //忽略无法锁定的项

@@ -211,7 +211,7 @@ namespace OW.Game
             DataObjectOptions options;
             if (entry is null)
             {
-                using var entity = _Datas.CreateLeafCacheEntry(key);
+                using var entity = (MemoryCacheBase.MemoryCacheBaseEntry)_Datas.CreateEntry(key);
                 options = new DataObjectOptions()
                 {
                     Key = key,
