@@ -286,6 +286,13 @@ namespace GuangYuan.GY001.BLL
             try
             {
                 var srv = _Services.GetService<GameObjectCache>();
+                var tt = srv.GetOrCreate(key, c =>
+                   {
+                       var entry = (GameObjectCache.GameObjectCacheEntry)c;
+                       entry.ObjectType = typeof(GameActionRecord);
+                       srv.EnsureInitialized(key, out _);
+                       return 1;
+                   });
                 using (var entry = (GameObjectCache.GameObjectCacheEntry)srv.CreateEntry(key))
                 {
                     entry.ObjectType = typeof(GameActionRecord);

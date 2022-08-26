@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.Caching.Memory
     /// </summary>
     public abstract class MemoryCacheBase : IMemoryCache, IDisposable
     {
-        public class MemoryCacheBaseEntry : ICacheEntry
+        public abstract class MemoryCacheBaseEntry : ICacheEntry
         {
             /// <summary>
             /// 构造函数。
@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             public object Key { get => _Key; set => _Key = value; }
 
-            public object Value { get; set; }
+            public virtual object Value { get; set; }
 
             public DateTimeOffset? AbsoluteExpiration { get; set; }
 
@@ -363,7 +363,7 @@ namespace Microsoft.Extensions.Caching.Memory
             else
             {
                 var entry = GetCacheEntry(key);
-                var b = TryGetValueCore(entry);
+                var b = entry is null ? false : TryGetValueCore(entry);
                 value = entry?.Value;
                 if (b)
                     OwHelper.SetLastError(0);

@@ -178,6 +178,21 @@
             <param name="model"></param>
             <returns></returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.SetServerSetting(GY2021001WebApi.Models.SetServerSettingParamsDto)">
+            <summary>
+            设置服务器配置数据，需要超管权限。
+            服务器使用键值存储设置。固定的键有 f11c8f98-f2f1-49d8-a173-c4127d477874 表示版本号。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GY2021001WebApi.Controllers.AdminController.GetServerSetting">
+            <summary>
+            读取服务器配置数据，可以匿名读取。但不要反复频繁读取，可能被任务DDOS攻击。
+            服务器使用键值存储设置。固定的键有 f11c8f98-f2f1-49d8-a173-c4127d477874 表示版本号。
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:GY2021001WebApi.Controllers.CombatController">
             <summary>
             战斗相关的操作。
@@ -2999,6 +3014,16 @@
         <member name="P:GY2021001WebApi.Models.GetRankOfTuiguanForMeReturnDto.Scope">
             <summary>
             自己的战力积分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetServerSettingReturnDto.Properties">
+            <summary>
+            服务器设置的字典。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.SetServerSettingParamsDto.Properties">
+            <summary>
+            服务器设置的字典。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.ForceResetPwdParamsDto.LoginName">

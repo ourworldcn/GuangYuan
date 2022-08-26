@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.Extensions.Caching.Memory
@@ -15,6 +16,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
         /// <summary>
         /// 创建数据库上下文的回调，参数1是键，参数2是类型。
+        /// key,type,返回的数据库上下文对象。
         /// </summary>
         public Func<object, Type, DbContext> CreateDbContextCallback { get; set; }
 
@@ -85,7 +87,6 @@ namespace Microsoft.Extensions.Caching.Memory
                         Context.SaveChanges();
                         return true;
                     };
-
                 base.Dispose();
             }
 
@@ -99,6 +100,65 @@ namespace Microsoft.Extensions.Caching.Memory
         protected override MemoryCacheBaseEntry CreateEntryCore(object key)
         {
             return new EfObjectCacheEntry(key, this);
+        }
+    }
+
+    public static class EfObjectExtensions
+    {
+        public static EfObjectCache.EfObjectCacheEntry Set(this EfObjectCache.EfObjectCacheEntry entry)
+        {
+            return entry;
+        }
+
+        public static object GetOrCreateSingleObject(this EfObjectCache cache, object key, Type type, Func<object, Type, DbContext> createDbContextCallback = null)
+        {
+            OwHelper.SetLastError(0);
+            if (cache.TryGetValue(key, out var result)) //首先试图取一次
+                return result;
+            var options = (EfObjectCacheOptions)cache.Options;
+            using var dwKey = DisposeHelper.Create(options.LockCallback, options.UnlockCallback, key, options.DefaultLockTimeout);
+            if (dwKey.IsEmpty)   //若超时
+            {
+                OwHelper.SetLastError(258);
+                return null;
+            }
+            if (cache.TryGetValue(key, out result)) //锁定后第二次获取
+                return result;
+            using (var entry = (EfObjectCache.EfObjectCacheEntry)cache.CreateEntry(key))
+            {
+                var db = createDbContextCallback?.Invoke(key, type) ?? options.CreateDbContextCallback?.Invoke(key, type);
+                entry.LoadCallbackState = db;
+                entry.LoadCallback = (key, state) =>
+                {
+                    return ((DbContext)state).Find(type, key);
+                };
+                entry.SaveCallbackState = db;
+                entry.SaveCallback = (value, state) =>
+                {
+                    var db = ((DbContext)state);
+                    db.SaveChanges();
+                    return true;
+                };
+                entry.CreateCallbackState = db;
+                entry.CreateCallback = (key, state) =>
+                  {
+                      var db = ((DbContext)state);
+                      var value = TypeDescriptor.CreateInstance(null, type, null, null);
+                      db.Add(value);
+                      return value;
+                  };
+            }
+            if (cache.TryGetValue(key, out result))
+            {
+                OwHelper.SetLastError(0);
+                return result;
+            }
+            return default;
+        }
+
+        public static IEnumerable<object> GetOrCreateCollection(this EfObjectCache cache, object key)
+        {
+            return Array.Empty<string>();
         }
     }
 }

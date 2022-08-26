@@ -3553,6 +3553,31 @@ namespace GY2021001WebApi.Models
     #region 管理相关
 
     [DataContract]
+    public class GetServerSettingReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 服务器设置的字典。
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+    }
+
+    [DataContract]
+    public class SetServerSettingParamsDto : TokenDtoBase
+    {
+        /// <summary>
+        /// 服务器设置的字典。
+        /// </summary>
+        [DataMember]
+        public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+    }
+
+    [DataContract]
+    public class SetServerSettingReturnDto : ReturnDtoBase
+    {
+    }
+
+    [DataContract]
     public class ForceResetPwdParamsDto : TokenDtoBase
     {
         /// <summary>

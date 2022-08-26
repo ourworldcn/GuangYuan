@@ -1,7 +1,11 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace OW.Game.Caching
@@ -84,6 +88,25 @@ namespace OW.Game.Caching
         protected override MemoryCacheBaseEntry CreateEntryCore(object key)
         {
             return new GameObjectCacheEntry(key, this);
+        }
+    }
+
+    public static class GameObjectCacheExtensions
+    {
+        public static GameObjectCache.GameObjectCacheEntry SetSingleObject<TEntity>(this GameObjectCache.GameObjectCacheEntry entry, string key, object dbKey,
+            Func<string, Type, DbContext> createDbCallback = null)
+        {
+            return entry;
+        }
+
+        public static GameObjectCache.GameObjectCacheEntry SetCollection<TElement>(this GameObjectCache.GameObjectCacheEntry entry, string key,
+            Expression<Func<TElement, bool>> predicate,
+            Func<string, Type, DbContext> createDbCallback = null) where TElement : class
+        {
+            DbContext db = createDbCallback(key, typeof(TElement));
+            ObservableCollection<TElement> oc = new ObservableCollection<TElement>();
+            db.Set<TElement>().SingleOrDefault(predicate);
+            return entry;
         }
     }
 }

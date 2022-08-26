@@ -49,26 +49,10 @@ namespace Microsoft.Extensions.Caching.Memory
 
             #region IDataObjectCacheEntry接口相关
 
-            #region ICacheEntry接口相关
-
-            #region IDisposable接口相关
-
-            public override void Dispose()
-            {
-                base.Dispose();
-                Task.Run(() => ((DataObjectCache)Cache).EnsureInitialized(Key, out _)); //异步初始化
-            }
-
-            #endregion IDisposable接口相关
-
-
-            #endregion ICacheEntry接口相关
-
-            #endregion IDataObjectCacheEntry接口相关
-
             /// <summary>
             /// 加载时调用。
             /// 在对键加锁的范围内调用。
+            /// key,state,返回值。
             /// </summary>
             [AllowNull]
             public Func<object, object, object> LoadCallback { get; set; }
@@ -82,6 +66,7 @@ namespace Microsoft.Extensions.Caching.Memory
             /// <summary>
             /// 创建对象时调用。
             /// 在对键加锁的范围内调用。
+            /// key,state,返回值。
             /// </summary>
             [AllowNull]
             public Func<object, object, object> CreateCallback { get; set; }
@@ -96,6 +81,7 @@ namespace Microsoft.Extensions.Caching.Memory
             /// 需要保存时调用。
             /// 在对键加锁的范围内调用。
             /// 回调参数是要保存的对象，附加数据，返回true表示成功，否则是没有保存成功,若没有设置该回调，则说民无需保存，也就视同保存成功。
+            /// object,state,返回值。
             /// </summary>
             [AllowNull]
             public Func<object, object, bool> SaveCallback { get; set; }
@@ -114,6 +100,23 @@ namespace Microsoft.Extensions.Caching.Memory
             /// 是否已经初始化了<see cref="MemoryCacheBase.MemoryCacheBaseEntry.Value"/>的值。
             /// </summary>
             public bool IsInitialized => _IsInitialized;
+            #region ICacheEntry接口相关
+
+            #region IDisposable接口相关
+
+            public override void Dispose()
+            {
+                base.Dispose();
+                Task.Run(() => ((DataObjectCache)Cache).EnsureInitialized(Key, out _)); //异步初始化
+            }
+
+            #endregion IDisposable接口相关
+
+
+            #endregion ICacheEntry接口相关
+
+            #endregion IDataObjectCacheEntry接口相关
+
         }
 
         #region 构造函数
@@ -136,6 +139,8 @@ namespace Microsoft.Extensions.Caching.Memory
 
         #endregion 构造函数
 
+        #region 定时任务相关
+
         /// <summary>
         /// 
         /// </summary>
@@ -145,7 +150,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// 
         /// </summary>
         /// <param name="state"></param>
-        public void TimerCallback(object state)
+        private void TimerCallback(object state)
         {
             using var dw = DisposeHelper.Create(c => Monitor.TryEnter(c, 0), _Timer);   //防止重入
             if (dw.IsEmpty)  //若还在重入中
@@ -177,6 +182,8 @@ namespace Microsoft.Extensions.Caching.Memory
                 lock (_Dirty)
                     OwHelper.Copy(keys, _Dirty);
         }
+
+        #endregion 定时任务相关
 
         #region IDataObjectCache接口相关
 
@@ -393,5 +400,8 @@ namespace Microsoft.Extensions.Caching.Memory
 
     }
 
+    public static class DataObjectCacheExtensions
+    {
 
+    }
 }

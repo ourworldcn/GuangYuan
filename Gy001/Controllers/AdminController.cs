@@ -4,11 +4,15 @@ using Gy001.Controllers;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
 using OW.Game;
+using OW.Game.Caching;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -371,6 +375,77 @@ namespace GY2021001WebApi.Controllers
             }
             return result;
         }
+
+        const string ServerSettingKeyString = "f11c8f98-f2f1-49d8-a173-c4127d477874";
+        /// <summary>
+        /// 设置服务器配置数据，需要超管权限。
+        /// 服务器使用键值存储设置。固定的键有 f11c8f98-f2f1-49d8-a173-c4127d477874 表示版本号。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpPut]
+        public ActionResult<SetServerSettingReturnDto> SetServerSetting(SetServerSettingParamsDto model)
+        {
+            var gc = World.CharManager.GetGameCharFromToken(model.Token);
+            if (gc is null)
+            {
+                return Unauthorized();
+            }
+            var result = new SetServerSettingReturnDto();
+            if (!gc.CharType.HasFlag(CharType.SuperAdmin))
+            {
+                result.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                result.DebugMessage = "需要超管权限。";
+                return result;
+            }
+            var gCache = World.Service.GetService<GameObjectCache>();
+            using var dwKey = DisposeHelper.Create(StringLocker.TryEnter, StringLocker.Exit, ServerSettingKeyString, TimeSpan.FromSeconds(10));
+            if (dwKey.IsEmpty)
+            {
+                result.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
+                result.DebugMessage = "服务器忙，请稍后重试。";
+                return result;
+            }
+            using var db = World.CreateNewUserDbContext();
+            var setting = db.Set<GameSetting>().Find(ServerSettingKeyString);
+            if(setting is null)
+            {
+                setting = new GameSetting() { Name= ServerSettingKeyString };
+                db.Add(setting);
+            }
+            Dictionary<string, string> dic;
+            if (string.IsNullOrWhiteSpace(setting?.Val))
+                dic = new Dictionary<string, string>() { { ServerSettingKeyString, null } };
+            else
+                dic = (Dictionary<string, string>)JsonSerializer.Deserialize(setting.Val, typeof(Dictionary<string, string>));
+            OwHelper.Copy(model.Properties, dic);
+            setting.Val = JsonSerializer.Serialize(dic);
+            db.SaveChanges();
+            return result;
+        }
+
+        /// <summary>
+        /// 读取服务器配置数据，可以匿名读取。但不要反复频繁读取，可能被任务DDOS攻击。
+        /// 服务器使用键值存储设置。固定的键有 f11c8f98-f2f1-49d8-a173-c4127d477874 表示版本号。
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult<GetServerSettingReturnDto> GetServerSetting()
+        {
+            var result = new GetServerSettingReturnDto();
+            using var db = World.CreateNewUserDbContext();
+            var setting = db.Set<GameSetting>().Find(ServerSettingKeyString);
+            Dictionary<string, string> dic;
+            if (string.IsNullOrWhiteSpace(setting?.Val))
+                dic = new Dictionary<string, string>() { { ServerSettingKeyString, null } };
+            else
+                dic = (Dictionary<string, string>)JsonSerializer.Deserialize(setting.Val, typeof(Dictionary<string, string>));
+            OwHelper.Copy(dic, result.Properties);
+            return result;
+        }
+
+
     }
 
 }
