@@ -1,10 +1,12 @@
 ﻿using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using OW.Game;
 using OW.Game.Store;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,6 +34,14 @@ namespace GuangYuan.GY001.UserDb
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //注册函数
+            modelBuilder.HasDbFunction(() => SqlDbFunctions.JsonValue(default, default)).HasTranslation(
+                args =>
+                {
+                    var result = SqlFunctionExpression.Create("JSON_VALUE", args, args.Last().Type, args.Last().TypeMapping);
+                    return result;
+                });
+
             //用户
             modelBuilder.Entity<GameUser>().HasIndex(c => c.LoginName).IsUnique(true);
             modelBuilder.Entity<GameUser>().HasIndex(c => c.CreateUtc).IsUnique(false);
