@@ -31,6 +31,7 @@ using OW.Game.Validation;
 using OW.Script;
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -286,29 +287,79 @@ namespace GuangYuan.GY001.BLL
             try
             {
                 var srv = _Services.GetService<GameObjectCache>();
-                var tt = srv.GetOrCreate(key, c =>
-                   {
-                       var entry = (GameObjectCache.GameObjectCacheEntry)c;
-                       entry.ObjectType = typeof(GameActionRecord);
-                       srv.EnsureInitialized(key, out _);
-                       return 1;
-                   });
-                using (var entry = (GameObjectCache.GameObjectCacheEntry)srv.CreateEntry(key))
-                {
-                    entry.ObjectType = typeof(GameActionRecord);
-                }
-                var b = srv.TryGetValue<GameActionRecord>(key, out var val);
-                val.DateTimeUtc = DateTime.MinValue;
-                srv.SetDirty(key);
+                //var tt = srv.GetOrCreate(key, c =>
+                //   {
+                //       var entry = (GameObjectCache.GameObjectCacheEntry)c;
+                //       entry.ObjectType = typeof(GameActionRecord);
+                //       srv.EnsureInitialized(key, out _);
+                //       return 1;
+                //   });
+                //using (var entry = (GameObjectCache.GameObjectCacheEntry)srv.CreateEntry(key))
+                //{
+                //    entry.ObjectType = typeof(GameActionRecord);
+                //}
+                //var b = srv.TryGetValue<GameActionRecord>(key, out var val);
+                //val.DateTimeUtc = DateTime.MinValue;
+                //srv.SetDirty(key);
+                var count = db.ChangeTracker.Entries().Count();
+                var coll = GetPvpQuery(db, 1050, 0, new Guid[] { Guid.Parse("6A7AA7B4-4ECD-4620-B638-5004DE8A79C5") });
+                var countAfter = db.ChangeTracker.Entries().Count();
+
+                //var list = coll.Select(c=>c.Item2).ToList();
             }
             catch (Exception)
             {
+
             }
             finally
             {
                 sw.Stop();
                 Debug.WriteLine($"测试代码完成时间{sw.Elapsed}");
             }
+        }
+
+        /// <summary>
+        /// 获取pvp目标列表。
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="pvpScore">当前角色的pvp等级分</param>
+        /// <param name="lv">当前角色的等级。</param>
+        /// <param name="excludeCharIds">当前角色今日已经打过的角色列表。</param>
+        /// <returns></returns>
+        List<Guid> GetPvpQuery(DbContext db, decimal pvpScore, decimal lv, IEnumerable<Guid> excludeCharIds)
+        {
+            var ary = excludeCharIds.ToArray();
+            var charTypes = new CharType[] { CharType.Unknow, CharType.Robot, CharType.Test, CharType.Vip };
+            var coll = from pvp in db.Set<GameItem>()
+                       join gc in db.Set<GameChar>()
+                       on pvp.Parent.OwnerId equals gc.Id
+                       where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
+                        && Math.Abs(pvp.ExtraDecimal.Value - pvpScore) <= 50    //分差在50以内
+                        && charTypes.Contains(gc.CharType) //过滤用户类型
+                        && !ary.Contains(gc.Id)   //排除指定的角色id
+                       orderby Math.Abs(pvp.ExtraDecimal.Value - pvpScore), //按分差
+                       Math.Abs((string.IsNullOrWhiteSpace(SqlDbFunctions.JsonValue(gc.JsonObjectString, "$.Lv")) ? 0 : Convert.ToInt32(SqlDbFunctions.JsonValue(gc.JsonObjectString, "$.Lv"))) - lv) //按等级差升序排序
+                       select gc.Id;
+            var list = coll.Take(1).ToList();
+            if (list.Count <= 0)   //若没找到
+            {
+                coll = from pvp in db.Set<GameItem>()
+                       join gc in db.Set<GameChar>()
+                       on pvp.Parent.OwnerId equals gc.Id
+                       where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
+                        && Math.Abs(pvp.ExtraDecimal.Value - pvpScore) > 50    //分差在50以外
+                        && charTypes.Contains(gc.CharType) //过滤用户类型
+                        && !ary.Contains(gc.Id)   //排除指定的角色id
+                       orderby Math.Abs(pvp.ExtraDecimal.Value - pvpScore) //按分差
+                       select gc.Id;
+                list = coll.Take(1).ToList();
+                if (list.Count <= 0 && ary.Length > 0)   //若没找到
+                {
+                    var item = ary[VWorld.WorldRandom.Next(ary.Length)];    //取已经打过的随机一个人
+                    list.Add(item);
+                }
+            }
+            return list;
         }
 
         /// <summary>
