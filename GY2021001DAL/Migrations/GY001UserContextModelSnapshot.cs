@@ -78,6 +78,10 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<decimal?>("ExtraDecimal")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<Guid>("ExtraGuid")
+                        .HasColumnName("TemplateId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ExtraString")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
@@ -90,9 +94,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("TemplateId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -116,6 +117,10 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<decimal?>("ExtraDecimal")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<Guid>("ExtraGuid")
+                        .HasColumnName("TemplateId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ExtraString")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
@@ -132,19 +137,16 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("TemplateId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
 
                     b.HasIndex("ParentId");
 
-                    b.HasIndex("TemplateId", "ExtraDecimal")
+                    b.HasIndex("ExtraGuid", "ExtraDecimal")
                         .HasAnnotation("SqlServer:Include", new[] { "ParentId" });
 
-                    b.HasIndex("TemplateId", "ExtraString", "ExtraDecimal")
+                    b.HasIndex("ExtraGuid", "ExtraString", "ExtraDecimal")
                         .HasAnnotation("SqlServer:Include", new[] { "ParentId" });
 
                     b.ToTable("GameItems");
@@ -333,6 +335,10 @@ namespace GuangYuan.GY001.UserDb.Migrations
                     b.Property<decimal?>("ExtraDecimal")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<Guid>("ExtraGuid")
+                        .HasColumnName("TemplateId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ExtraString")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
@@ -342,9 +348,6 @@ namespace GuangYuan.GY001.UserDb.Migrations
 
                     b.Property<string>("PropertiesString")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("TemplateId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 

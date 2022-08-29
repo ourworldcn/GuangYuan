@@ -287,29 +287,48 @@ namespace GuangYuan.GY001.BLL
             try
             {
                 var srv = _Services.GetService<GameObjectCache>();
-                var tt = srv.GetOrCreate(key, c =>
-                   {
-                       var entry = (GameObjectCache.GameObjectCacheEntry)c;
-                       entry.ObjectType = typeof(GameActionRecord);
-                       srv.EnsureInitialized(key, out _);
-                       return 1;
-                   });
-                using (var entry = (GameObjectCache.GameObjectCacheEntry)srv.CreateEntry(key))
-                {
-                    entry.ObjectType = typeof(GameActionRecord);
-                }
-                var b = srv.TryGetValue<GameActionRecord>(key, out var val);
-                val.DateTimeUtc = DateTime.MinValue;
-                srv.SetDirty(key);
+                //var tt = srv.GetOrCreate(key, c =>
+                //   {
+                //       var entry = (GameObjectCache.GameObjectCacheEntry)c;
+                //       entry.ObjectType = typeof(GameActionRecord);
+                //       srv.EnsureInitialized(key, out _);
+                //       return 1;
+                //   });
+                //using (var entry = (GameObjectCache.GameObjectCacheEntry)srv.CreateEntry(key))
+                //{
+                //    entry.ObjectType = typeof(GameActionRecord);
+                //}
+                //var b = srv.TryGetValue<GameActionRecord>(key, out var val);
+                //val.DateTimeUtc = DateTime.MinValue;
+                //srv.SetDirty(key);
+                var coll = GetQuery(db, 1000, new Guid[] { Guid.Parse("6A7AA7B4-4ECD-4620-B638-5004DE8A79C5") });
+                //var list = coll.Select(c=>c.Item2).ToList();
             }
             catch (Exception)
             {
+                
             }
             finally
             {
                 sw.Stop();
                 Debug.WriteLine($"测试代码完成时间{sw.Elapsed}");
             }
+        }
+
+        IQueryable<Guid> GetQuery(DbContext db, decimal pvpScore, IEnumerable<Guid> excludeCharIds)
+        {
+            //EF.Functions.
+            var coll = from pvp in db.Set<GameItem>()
+                       join gc in db.Set<GameChar>()
+                       on pvp.Parent.OwnerId equals gc.Id
+                       where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
+                        && Math.Abs(pvp.ExtraDecimal.Value - pvpScore) <= 50 && gc.CharType == 0    //分差在50以内
+                        && !excludeCharIds.Contains(gc.Id)   //排除指定的角色id
+                        && SqlDbFunctions.JsonValue(gc.JsonObjectString,"$.Name")==""
+                       orderby Math.Abs(pvp.ExtraDecimal.Value - 1000), gc.ExtraDecimal //按分差，等级差升序排序
+                       select gc.Id;
+            var list = coll.Take(1).ToList();
+            return coll;
         }
 
         /// <summary>
