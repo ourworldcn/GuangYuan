@@ -2,11 +2,13 @@
 using GuangYuan.GY001.UserDb;
 using OW.Game;
 using OW.Game.Mission;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace OW.Extensions.Game.Store
 {
@@ -138,6 +140,30 @@ namespace OW.Extensions.Game.Store
         /// 老版本持久化的变化数据。
         /// </summary>
         public List<ChangesItemSummary> ChangeItems { get; set; } = new List<ChangesItemSummary>();
+    }
+
+    /// <summary>
+    /// 存储在<see cref="GameChar"/>对象中<see cref="GameObjectBase.JsonObject"/>属性中的对象。
+    /// </summary>
+    public class CharJsonEntity
+    {
+        public CharJsonEntity()
+        {
+            
+        }
+
+        public CharJsonEntity(GameChar gc)
+        {
+            GameChar = gc;
+        }
+
+        [JsonIgnore]
+        public GameChar GameChar { get; set; }
+
+        /// <summary>
+        /// 角色的等级。
+        /// </summary>
+        public int Lv { get; set; }
     }
 
     /// <summary>

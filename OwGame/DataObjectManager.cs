@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -149,7 +150,7 @@ namespace OW.Game
 
         public DataObjectManagerOptions Options { get => _Options; set => _Options = value; }
 
-        MemoryCacheBase _Datas;
+        OwMemoryCacheBase _Datas;
 
         HashSet<string> _Dirty = new HashSet<string>();
 
@@ -211,7 +212,7 @@ namespace OW.Game
             DataObjectOptions options;
             if (entry is null)
             {
-                using var entity = (MemoryCacheBase.MemoryCacheBaseEntry)_Datas.CreateEntry(key);
+                using var entity = (OwMemoryCacheBase.OwMemoryCacheBaseEntry)_Datas.CreateEntry(key);
                 options = new DataObjectOptions()
                 {
                     Key = key,
@@ -301,5 +302,65 @@ namespace OW.Game
             });
             return mng;
         }
+
+        /// <summary>
+        /// 设置加载回调和参数。
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="callback"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DataObjectCache.DataObjectCacheEntry SetLoadCallback(this DataObjectCache.DataObjectCacheEntry entry, Func<object, object, object> callback, object state)
+        {
+            entry.LoadCallbackState = state;
+            entry.LoadCallback = callback;
+            return entry;
+        }
+
+        /// <summary>
+        /// 设置保存回调和参数。
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="callback"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DataObjectCache.DataObjectCacheEntry SetSaveCallback(this DataObjectCache.DataObjectCacheEntry entry, Func<object, object, bool> callback, object state)
+        {
+            entry.SaveCallbackState = state;
+            entry.SaveCallback = callback;
+            return entry;
+        }
+
+        /// <summary>
+        /// 设置创建对象的回调和参数。
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="callback">(键，用户状态对象)，返回是要缓存的对象。</param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DataObjectCache.DataObjectCacheEntry SetCreateCallback(this DataObjectCache.DataObjectCacheEntry entry, Func<object, object, object> callback, object state)
+        {
+            entry.CreateCallbackState = state;
+            entry.CreateCallback = callback;
+            return entry;
+        }
+
+        /// <summary>
+        /// 注册驱逐前回调。
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="callback"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DataObjectCache.DataObjectCacheEntry RegisterBeforeEvictionCallback(this DataObjectCache.DataObjectCacheEntry entry, Action<object, object, EvictionReason, object> callback, object state = null)
+        {
+            entry.BeforeEvictionCallbacks.Add(new BeforeEvictionCallbackRegistration() { BeforeEvictionCallback = callback, State = state });
+            return entry;
+        }
+
     }
 }

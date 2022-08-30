@@ -115,7 +115,7 @@ namespace System
     /// 清理代码帮助器结构。实测比使用对象池要快20%左右。
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public readonly ref struct DisposeHelper<T>
+    readonly public ref struct DisposeHelper<T>
     {
         /// <summary>
         /// 构造函数。
@@ -174,6 +174,13 @@ namespace System
         //    return ref dh;
         //}
 
+        /// <summary>
+        /// 创建一个在using释放时自动调用的补偿操作。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static DisposeHelper<T> Create<T>(Action<T> action, T state) =>
             new DisposeHelper<T>(action, state);

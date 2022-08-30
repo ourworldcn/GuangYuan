@@ -16,9 +16,45 @@ using System.Threading;
 using GuangYuan.GY001.BLL.GeneralManager;
 using OW.Game.Log;
 using System.Collections.ObjectModel;
+using OW.Game.Caching;
+using OW.Game.Store;
+using System.Text.Json.Serialization;
 
 namespace GuangYuan.GY001.UserDb.Social
 {
+    /// <summary>
+    /// 工会对象。
+    /// </summary>
+    public class GameGuildEntity : VirtualThingEntityBase
+    {
+        //createcount1=1,exp=0,maxMemberCount=20,expLimit=10,cap=-1,lv=0,createtid1={42C7F79E-32AA-4822-B0DA-C7878BE985C1},maxManagerCount=2,tname=工会模板,
+        //AutoAccept=True,IconIndex=0
+
+        [JsonPropertyName("exp")]
+        public int Exp { get; set; }
+
+        [JsonPropertyName("maxMemberCount")]
+        public int MaxMemberCount { get; set; }
+
+        [JsonPropertyName("expLimit")]
+        public int ExpLimit { get; set; }
+
+        [JsonPropertyName("cap")]
+        public int Cap { get; set; }
+
+        [JsonPropertyName("lv")]
+        public int Lv { get; set; }
+
+        [JsonPropertyName("maxManagerCount")]
+        public int MaxManagerCount { get; set; }
+
+        public bool AutoAccept { get; set; }
+
+        public int IconIndex { get; set; }
+
+        public string DisplayName { get => Thing.ExtraString; set => Thing.ExtraString = value; }
+    }
+
     public class GameAllianceManagerOptions
     {
         public TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(2);
@@ -49,6 +85,7 @@ namespace GuangYuan.GY001.UserDb.Social
 
         void Initialize()
         {
+            
             using var db = World.CreateNewUserDbContext();
             foreach (var item in db.Set<GameGuild>())
             {
@@ -58,10 +95,10 @@ namespace GuangYuan.GY001.UserDb.Social
         }
 
         #endregion 构造函数
-        IMemoryCache _Cache;
-        public IMemoryCache Cache => _Cache ??= Service.GetRequiredService<IMemoryCache>();
+        GameObjectCache _Cache;
+        public GameObjectCache Cache => _Cache ??= Service.GetRequiredService<GameObjectCache>();
 
-         ConcurrentDictionary<Guid, GameGuild> _Id2Guild = new ConcurrentDictionary<Guid, GameGuild>();
+        ConcurrentDictionary<Guid, GameGuild> _Id2Guild = new ConcurrentDictionary<Guid, GameGuild>();
 
         /// <summary>
         /// 所有工会，键是工会id，值是工会对象。
@@ -670,7 +707,7 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             using var dwGuild = DisposeHelper.Create(Unlock, guild);
             var db = guild.GetDbContext();
-            var qs = GetAllMemberSlotQuery(guidId, db).AsEnumerable().Where(c => c.ExtraDecimal ==decimal.Zero).Select(c => c.OwnerId.Value);  //所有申请者
+            var qs = GetAllMemberSlotQuery(guidId, db).AsEnumerable().Where(c => c.ExtraDecimal == decimal.Zero).Select(c => c.OwnerId.Value);  //所有申请者
             if (!datas.CharIds.All(c => qs.Contains(c)))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;

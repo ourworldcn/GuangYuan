@@ -9,6 +9,9 @@ using System.Threading;
 
 namespace OW.Game.Store
 {
+    /// <summary>
+    /// 存储在<see cref="VirtualThing"/>中实体对象的基类。
+    /// </summary>
     public class VirtualThingEntityBase
     {
         #region 构造函数

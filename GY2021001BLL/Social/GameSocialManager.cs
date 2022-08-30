@@ -1621,41 +1621,50 @@ namespace GuangYuan.GY001.BLL
             }
             var todayData = datas.PvpObject.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();    //当日数据的帮助器类
             var hasData = todayData.GetTodayData(datas.Now).Any();
-            if (!hasData)  //若当日无数据
-            {
-                if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, 0))   //若无法设置级别
-                {
-                    datas.HasError = true;
-                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    return;
-                }
-            }
-            var lv = (int)datas.PvpObject.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);    //级别数据
-            if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel() && datas.IsRefresh)  //若当日已经不可再刷
-            {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;
-                return;
-            }
+            //if (!hasData)  //若当日无数据
+            //{
+            //    if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, 0))   //若无法设置级别
+            //    {
+            //        datas.HasError = true;
+            //        datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+            //        return;
+            //    }
+            //}
+            //var lv = (int)datas.PvpObject.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);    //级别数据
+            //if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel() && datas.IsRefresh)  //若当日已经不可再刷
+            //{
+            //    datas.HasError = true;
+            //    datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;
+            //    return;
+            //}
             if (datas.IsRefresh || !hasData) //若强制刷新或需要刷新
             {
-                using var dataBlueprint = new ApplyBlueprintDatas(World, datas.GameChar)
-                {
-                    Count = 1,
-                };
-                dataBlueprint.GameItems.Add(datas.PvpObject);
-                World.BlueprintManager.LevelUp(dataBlueprint);
-                datas.FillErrorFrom(dataBlueprint);
+                //using var dataBlueprint = new ApplyBlueprintDatas(World, datas.GameChar)
+                //{
+                //    Count = 1,
+                //};
+                //dataBlueprint.GameItems.Add(datas.PvpObject);
+                //World.BlueprintManager.LevelUp(dataBlueprint);
+                //datas.FillErrorFrom(dataBlueprint);
 
-                if (dataBlueprint.HasError) //若出错
-                    return;
-                datas.PropertyChanges.AddRange(dataBlueprint.PropertyChanges);
+                //if (dataBlueprint.HasError) //若出错
+                //    return;
+
+                //datas.PropertyChanges.AddRange(dataBlueprint.PropertyChanges);
                 //修改数据
                 //获取列表
                 todayData.ResetLastData(datas.Now);
-                var ids = RefreshPvpList(datas.GameChar, datas.UserDbContext, todayData.GetTodayData(datas.Now));
+                //var ids = RefreshPvpList(datas.GameChar, datas.UserDbContext, todayData.GetTodayData(datas.Now));
+                var excludeIds = todayData.GetTodayData(datas.Now);
+                //todayData.AddLastDataRange(ids, datas.Now);
+                //datas.CharIds.AddRange(todayData.GetLastData(datas.Now));
+
+                var gc = datas.GameChar;
+                var cj = gc.GetJsonObject<CharJsonEntity>();
+                var ids = GetNewPvpCharIds(datas.GameChar.GetDbContext(), datas.PvpObject.ExtraDecimal.Value, cj.Lv, excludeIds);
                 todayData.AddLastDataRange(ids, datas.Now);
-                datas.CharIds.AddRange(todayData.GetLastData(datas.Now));
+                datas.CharIds.AddRange(ids);
+
                 //变化数据
                 datas.PropertyChanges.CopyTo(datas.ChangeItems);
             }
@@ -1668,66 +1677,48 @@ namespace GuangYuan.GY001.BLL
             datas.ChangeItems.AddToChanges(datas.PvpObject);    //pvp数据对象
             World.CharManager.NotifyChange(datas.GameChar.GameUser);    //修改用户数据
         }
-
         /// <summary>
-        /// 己方角色对象。
+        /// 获取pvp目标列表。
         /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="context"></param>
-        /// <param name="excludes">要排除在外的角色Id集合。省略或为null则不排除。</param>
-        /// <returns>角色Id列表。</returns>
-        public IEnumerable<Guid> RefreshPvpList(GameChar gameChar, DbContext context, IEnumerable<Guid> excludes = null)
+        /// <param name="db"></param>
+        /// <param name="pvpScore">当前角色的pvp等级分</param>
+        /// <param name="lv">当前角色的等级。</param>
+        /// <param name="excludeCharIds">当前角色今日已经打过的角色列表。</param>
+        /// <returns></returns>
+        List<Guid> GetNewPvpCharIds(DbContext db, decimal pvpScore, int lv, IEnumerable<Guid> excludeCharIds)
         {
-            var maxCount = 3;   //总计获取的数量
-            var diff = 100; //分差
-            var gcPvpObject = gameChar.GetPvpObject();  //当前用户pvp数据对象
-            var pvpObjectTId = ProjectConstant.PvpObjectTId;  //PVP对象模板Id
-
-            IEnumerable<Guid> excludeCharIds = excludes is null ? new Guid[] { gameChar.Id } : excludes.Append(gameChar.Id);   //排除的角色Id集合
-
-            //var pvpObjectQuery = context.Set<GameItem>().Where(c => c.ExtraGuid == pvpObjectTId).AsNoTracking();    //查询的基础集合
-            var pvpObjectQuery = context.Set<GameItem>().Where(c => c.ExtraGuid == pvpObjectTId && !excludeCharIds.Contains(c.Parent.OwnerId.Value)).AsNoTracking();    //查询的基础集合
-
-            var hColl = (from tmp in pvpObjectQuery
-                         where tmp.ExtraDecimal > gcPvpObject.ExtraDecimal + diff
-                         orderby tmp.ExtraDecimal
-                         select tmp).Take(maxCount);
-
-            var mColl = (from tmp in pvpObjectQuery
-                         where tmp.ExtraDecimal >= gcPvpObject.ExtraDecimal - diff && tmp.ExtraDecimal <= gcPvpObject.ExtraDecimal + diff
-                         orderby Math.Abs(tmp.ExtraDecimal.Value - gcPvpObject.ExtraDecimal.Value)
-                         select tmp).Take(maxCount);
-
-            var lColl = (from tmp in pvpObjectQuery
-                         where tmp.ExtraDecimal < gcPvpObject.ExtraDecimal - diff
-                         orderby tmp.ExtraDecimal descending
-                         select tmp).Take(maxCount);
-
-            var list = hColl.Concat(mColl).Concat(lColl).Include(c => c.Parent).ToList();
-
-            var listGameItems = new List<GameItem>();
-            //获取下手
-            var addItem = list.FirstOrDefault(c => c.ExtraDecimal < gcPvpObject.ExtraDecimal - diff);    //下手
-            if (null != addItem)
-                listGameItems.Add(addItem);
-            //获取平手
-            var addItems = list.Where(c => c.ExtraDecimal <= gcPvpObject.ExtraDecimal + diff && c.ExtraDecimal >= gcPvpObject.ExtraDecimal - diff).Take(maxCount - listGameItems.Count - 1);
-            listGameItems.AddRange(addItems);
-            //获取上手
-            addItems = list.Where(c => c.ExtraDecimal > gcPvpObject.ExtraDecimal + diff).Take(maxCount - listGameItems.Count);
-            listGameItems.AddRange(addItems);
-            //补偿
-            if (listGameItems.Count < maxCount)    //若没有取到足够的对手
+            var ary = excludeCharIds.ToArray();
+            var charTypes = new CharType[] { CharType.Unknow, CharType.Robot, CharType.Test, CharType.Vip };
+            var coll = from pvp in db.Set<GameItem>()
+                       join gc in db.Set<GameChar>()
+                       on pvp.Parent.OwnerId equals gc.Id
+                       where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
+                        && Math.Abs(pvp.ExtraDecimal.Value - pvpScore) <= 50    //分差在50以内
+                        && charTypes.Contains(gc.CharType) //过滤用户类型
+                        && !ary.Contains(gc.Id)   //排除指定的角色id
+                       orderby Math.Abs(pvp.ExtraDecimal.Value - pvpScore), //按分差
+                       Math.Abs((string.IsNullOrWhiteSpace(SqlDbFunctions.JsonValue(gc.JsonObjectString, "$.Lv")) ? 0 : Convert.ToInt32(SqlDbFunctions.JsonValue(gc.JsonObjectString, "$.Lv"))) - lv) //按等级差升序排序
+                       select gc.Id;
+            var list = coll.Take(1).ToList();
+            if (list.Count <= 0)   //若没找到
             {
-                listGameItems.ForEach(c => list.Remove(c)); //清理已经取得的
-                listGameItems.AddRange(list.Take(maxCount - listGameItems.Count));  //随机取得
+                coll = from pvp in db.Set<GameItem>()
+                       join gc in db.Set<GameChar>()
+                       on pvp.Parent.OwnerId equals gc.Id
+                       where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
+                        && Math.Abs(pvp.ExtraDecimal.Value - pvpScore) > 50    //分差在50以外
+                        && charTypes.Contains(gc.CharType) //过滤用户类型
+                        && !ary.Contains(gc.Id)   //排除指定的角色id
+                       orderby Math.Abs(pvp.ExtraDecimal.Value - pvpScore) //按分差
+                       select gc.Id;
+                list = coll.Take(1).ToList();
+                if (list.Count <= 0 && ary.Length > 0)   //若没找到
+                {
+                    var item = ary[VWorld.WorldRandom.Next(ary.Length)];    //取已经打过的随机一个人
+                    list.Add(item);
+                }
             }
-            //获取对手角色Id
-            var objParentIds = listGameItems.Select(c => c.ParentId.Value).ToArray();
-            var charIds = from tmp in listGameItems
-                          select tmp.Parent.OwnerId.Value;
-            Debug.WriteLineIf(charIds.Count() < maxCount, "RefreshPvpList获得角色过少。");
-            return charIds;
+            return list;
         }
 
         #endregion  项目特定功能

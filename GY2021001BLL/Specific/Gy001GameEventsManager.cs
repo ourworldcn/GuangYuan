@@ -4,6 +4,7 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
+using OW.Extensions.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -290,6 +291,7 @@ namespace OW.Game
                         }
                     }
                     gc.ExtraString = newLv.ToString("D10");
+                    gc.GetJsonObject<CharJsonEntity>().Lv = newLv;
                     //生成通知数据。
                     if (lst != null)
                     {

@@ -13,13 +13,13 @@ using System.Threading;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
-    public class MemoryCacheBaseOptions : MemoryCacheOptions, IOptions<MemoryCacheBaseOptions>
+    public class OwMemoryCacheBaseOptions : MemoryCacheOptions, IOptions<OwMemoryCacheBaseOptions>
     {
         /// <summary>
         /// 构造函数。
         /// 设置<see cref="MemoryCacheOptions.ExpirationScanFrequency"/>为1分钟。
         /// </summary>
-        public MemoryCacheBaseOptions() : base()
+        public OwMemoryCacheBaseOptions() : base()
         {
             ExpirationScanFrequency = TimeSpan.FromMinutes(1);
         }
@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// 
         /// </summary>
-        public MemoryCacheBaseOptions Value => this;
+        public OwMemoryCacheBaseOptions Value => this;
 
     }
 
@@ -75,15 +75,15 @@ namespace Microsoft.Extensions.Caching.Memory
     /// <summary>
     /// 内存缓存的基础类。
     /// </summary>
-    public abstract class MemoryCacheBase : IMemoryCache, IDisposable
+    public abstract class OwMemoryCacheBase : IMemoryCache, IDisposable
     {
-        public abstract class MemoryCacheBaseEntry : ICacheEntry
+        public abstract class OwMemoryCacheBaseEntry : ICacheEntry
         {
             /// <summary>
             /// 构造函数。
             /// </summary>
             /// <param name="cache">指定所属缓存对象，在调用<see cref="Dispose"/>时可以加入该对象。</param>
-            public MemoryCacheBaseEntry(object key, MemoryCacheBase cache)
+            public OwMemoryCacheBaseEntry(object key, OwMemoryCacheBase cache)
             {
                 Key = key;
                 Cache = cache;
@@ -92,7 +92,7 @@ namespace Microsoft.Extensions.Caching.Memory
             /// <summary>
             /// 所属的缓存对象。
             /// </summary>
-            public MemoryCacheBase Cache { get; set; }
+            public OwMemoryCacheBase Cache { get; set; }
 
             #region ICacheEntry接口相关
 
@@ -130,6 +130,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             /// <summary>
             /// 使此配置项加入或替换缓存对象。内部会试图锁定键。
+            /// 在完成时自动调用<see cref="AddItemCore(ICacheEntry)"/>(在锁内)。
             /// </summary>
             /// <exception cref="TimeoutException">试图锁定键超时。</exception>
             public virtual void Dispose()
@@ -143,6 +144,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     factEntity.LastUseUtc = DateTime.UtcNow;
                     _IsDisposed = true;
                 }
+                Cache.AddItemCore(this);
             }
             #endregion IDisposable接口相关
 
@@ -187,7 +189,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// 构造函数。
         /// </summary>
-        public MemoryCacheBase(IOptions<MemoryCacheBaseOptions> options)
+        public OwMemoryCacheBase(IOptions<OwMemoryCacheBaseOptions> options)
         {
             _Options = options.Value;
         }
@@ -196,25 +198,25 @@ namespace Microsoft.Extensions.Caching.Memory
 
         #region 属性及相关
 
-        MemoryCacheBaseOptions _Options;
+        OwMemoryCacheBaseOptions _Options;
         /// <summary>
         /// 获取设置对象。
         /// </summary>
-        public MemoryCacheBaseOptions Options => _Options;
+        public OwMemoryCacheBaseOptions Options => _Options;
 
-        ConcurrentDictionary<object, MemoryCacheBaseEntry> _Items = new ConcurrentDictionary<object, MemoryCacheBaseEntry>();
+        ConcurrentDictionary<object, OwMemoryCacheBaseEntry> _Items = new ConcurrentDictionary<object, OwMemoryCacheBaseEntry>();
         /// <summary>
         /// 所有缓存项的字典，键是缓存项的键，值缓存项的包装数据。该接口可以并发枚举。
         /// </summary>
-        protected IReadOnlyDictionary<object, MemoryCacheBaseEntry> Items => _Items;
+        protected IReadOnlyDictionary<object, OwMemoryCacheBaseEntry> Items => _Items;
 
         #endregion 属性及相关
 
         #region IMemoryCache接口相关
 
         /// <summary>
-        /// 创建一个键。此函数不考虑锁定键的问题，若需要，调用者自行锁定。
-        /// 公有函数会首先锁定键。
+        /// 创建一个键。
+        /// 该公有函数会首先锁定键。
         /// </summary>
         /// <param name="key"></param>
         /// <returns>返回的是<see cref="CreateEntryCore"/>创建的对象。
@@ -245,7 +247,14 @@ namespace Microsoft.Extensions.Caching.Memory
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        protected abstract MemoryCacheBaseEntry CreateEntryCore(object key);
+        protected abstract OwMemoryCacheBaseEntry CreateEntryCore(object key);
+
+        /// <summary>
+        /// 某一项加入缓存时被调用。该实现立即返回。
+        /// 派生类可以重载此函数。非公有函数不会自动对键加锁，若需要调用者需要负责加/解锁。
+        /// </summary>
+        /// <param name="entry"></param>
+        protected virtual void AddItemCore(OwMemoryCacheBaseEntry entry) { }
 
         /// <summary>
         /// 获取指定键的设置数据。没有找到则返回null。
@@ -256,7 +265,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="key"></param>
         /// <returns>返回设置数据对象，没有找到键则返回null。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public MemoryCacheBaseEntry GetCacheEntry(object key)
+        public OwMemoryCacheBaseEntry GetCacheEntry(object key)
         {
             ThrowIfDisposed();
             return _Items.TryGetValue(key, out var result) ? result : default;
@@ -264,9 +273,10 @@ namespace Microsoft.Extensions.Caching.Memory
 
         /// <summary>
         /// 试图移除指定键的缓存项。
+        /// 该公有函数会首先锁定键。
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="timeout">锁定键的最长超时，省略或为null则使用<see cref="MemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
+        /// <param name="timeout">锁定键的最长超时，省略或为null则使用<see cref="OwMemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
         /// <returns>
         /// true成功移除，false锁定键超时或指定键不存在。
         /// 调用<see cref="OwHelper.GetLastError"/>可获取详细信息。0=成功，258=锁定超时，698=键已存在，1168=键不存在。
@@ -297,6 +307,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// null表示锁定键超时 -或- 指定键已经存在。
         /// 调用<see cref="OwHelper.GetLastError"/>可获取详细信息。0=成功，258=锁定超时，698=键已存在，1168=键不存在。
+        /// 该公有函数会首先锁定键。
         /// </summary>
         /// <remarks>若没有找到指定键，则立即返回。
         /// </remarks>
@@ -311,7 +322,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
         /// <summary>
         /// 以指定原因移除缓存项。
-        /// 此函数会调用<see cref="MemoryCacheBaseEntry.BeforeEvictionCallbacks"/>所有回调，然后移除配置项,最后调用所有<see cref="MemoryCacheBaseEntry.PostEvictionCallbacks"/>回调。
+        /// 此函数会调用<see cref="OwMemoryCacheBaseEntry.BeforeEvictionCallbacks"/>所有回调，然后移除配置项,最后调用所有<see cref="OwMemoryCacheBaseEntry.PostEvictionCallbacks"/>回调。
         /// 回调的异常均被忽略。
         /// 最后如果要求自动调用Dispose,且支持<see cref="IDisposable"/>接口则调用<see cref="IDisposable.Dispose"/>。
         /// 派生类可以重载此函数。非公有函数不会自动对键加锁，若需要调用者需要负责加/解锁。
@@ -319,7 +330,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="entry"></param>
         /// <param name="reason"></param>
         /// <returns>true=成功移除，false=没有找到指定键。</returns>
-        protected virtual bool RemoveCore(MemoryCacheBaseEntry entry, EvictionReason reason)
+        protected virtual bool RemoveCore(OwMemoryCacheBaseEntry entry, EvictionReason reason)
         {
             try
             {
@@ -380,7 +391,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="entry"></param>
         /// <returns>该实现会重置缓存项的最后使用时间，并立即返回true。</returns>
         /// <exception cref="ObjectDisposedException">对象已处置。</exception>
-        protected virtual bool TryGetValueCore(MemoryCacheBaseEntry entry)
+        protected virtual bool TryGetValueCore(OwMemoryCacheBaseEntry entry)
         {
             entry.LastUseUtc = Options.Clock?.UtcNow.UtcDateTime ?? DateTime.UtcNow;
             return true;
@@ -485,7 +496,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// 实际压缩的函数。
         /// </summary>
-        /// <remarks>在调用<see cref="RemoveCore(MemoryCacheBaseEntry, EvictionReason)"/>之前会锁定键。</remarks>
+        /// <remarks>在调用<see cref="RemoveCore(OwMemoryCacheBaseEntry, EvictionReason)"/>之前会锁定键。</remarks>
         /// <param name="removalSizeTarget"></param>
         protected virtual void Compact(long removalSizeTarget)
         {
@@ -506,5 +517,22 @@ namespace Microsoft.Extensions.Caching.Memory
 
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class OwMemoryCacheBaseExtensions
+    {
+        /// <summary>
+        /// 用<see cref="OwMemoryCacheBaseOptions.LockCallback"/>锁定指定的键,以进行临界操作。
+        /// 在未来用<see cref="OwMemoryCacheBaseOptions.UnlockCallback"/>解锁。
+        /// </summary>
+        /// <param name="cache"></param>
+        /// <param name="key"></param>
+        /// <param name="timeout">锁定键的最长超时，省略或为null则使用<see cref="OwMemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
+        /// <returns>返回的结构可以用using 语句保证释放。判断<see cref="DisposeHelper{T}.IsEmpty"/>可以知道是否锁定成功。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DisposeHelper<object> Lock(this OwMemoryCacheBase cache, object key, TimeSpan? timeout) =>
+            DisposeHelper.Create(cache.Options.LockCallback, cache.Options.UnlockCallback, key, timeout ?? cache.Options.DefaultLockTimeout);
 
+    }
 }

@@ -97,7 +97,12 @@ namespace Microsoft.Extensions.Caching.Memory
         {
         }
 
-        protected override MemoryCacheBaseEntry CreateEntryCore(object key)
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected override OwMemoryCacheBaseEntry CreateEntryCore(object key)
         {
             return new EfObjectCacheEntry(key, this);
         }

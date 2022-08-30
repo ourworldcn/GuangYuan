@@ -10,16 +10,13 @@ using System.Text;
 
 namespace OW.Game.Caching
 {
-    public class GameObjectCacheOptions : EfObjectCacheOptions, IOptions<GameObjectCacheOptions>
+    public class GameObjectCacheOptions : DataObjectCacheOptions, IOptions<GameObjectCacheOptions>
     {
         public GameObjectCacheOptions() : base()
         {
             LockCallback = (key, timeout) => StringLocker.TryEnter((string)key, timeout);
             UnlockCallback = key => StringLocker.Exit((string)key);
             IsEnteredCallback = key => StringLocker.IsEntered((string)key);
-
-            CacheKey2DbKeyCallback = key => Guid.Parse((string)key);
-
         }
 
         GameObjectCacheOptions IOptions<GameObjectCacheOptions>.Value => this;
@@ -29,12 +26,12 @@ namespace OW.Game.Caching
     /// <summary>
     /// 特定适用于游戏世界内对象的缓存服务对象。
     /// </summary>
-    public class GameObjectCache : EfObjectCache
+    public class GameObjectCache : DataObjectCache
     {
         /// <summary>
         /// 
         /// </summary>
-        public class GameObjectCacheEntry : EfObjectCacheEntry
+        public class GameObjectCacheEntry : DataObjectCacheEntry
         {
             /// <summary>
             /// 构造函数。
@@ -42,24 +39,8 @@ namespace OW.Game.Caching
             /// </summary>
             /// <param name="key"></param>
             /// <param name="cache"></param>
-            public GameObjectCacheEntry(object key, EfObjectCache cache) : base(key, cache)
+            public GameObjectCacheEntry(object key, GameObjectCache cache) : base(key, cache)
             {
-                var options = (GameObjectCacheOptions)cache.Options;
-                LoadCallback = (key, state) => Context.Find(ObjectType, options.CacheKey2DbKeyCallback?.Invoke(key) ?? key);
-                BeforeEvictionCallbacks.Add(new BeforeEvictionCallbackRegistration()    //驱逐前自动保存
-                {
-                    BeforeEvictionCallback = (key, val, res, state) =>
-                    {
-                        var entry = (GameObjectCacheEntry)state;
-                        ((GameObjectCache)entry.Cache).EnsureSavedCore(entry);
-                    },
-                    State = this,
-                });
-                this.RegisterPostEvictionCallback((key, val, res, state) =>
-                {
-                    (val as IDisposable)?.Dispose();
-                    ((GameObjectCacheEntry)state).Context?.Dispose();
-                }, this); //驱逐后自动处置相关对象
             }
 
             public override void Dispose()
@@ -78,14 +59,11 @@ namespace OW.Game.Caching
         public GameObjectCache(VWorld world, IOptions<GameObjectCacheOptions> options) : base(options)
         {
             _World = world;
-            var innerOptions = (GameObjectCacheOptions)Options;
-            innerOptions.CreateDbContextCallback ??= (c, type) => _World.CreateNewUserDbContext();
-
         }
 
         VWorld _World;
 
-        protected override MemoryCacheBaseEntry CreateEntryCore(object key)
+        protected override OwMemoryCacheBaseEntry CreateEntryCore(object key)
         {
             return new GameObjectCacheEntry(key, this);
         }
@@ -93,9 +71,72 @@ namespace OW.Game.Caching
 
     public static class GameObjectCacheExtensions
     {
-        public static GameObjectCache.GameObjectCacheEntry SetSingleObject<TEntity>(this GameObjectCache.GameObjectCacheEntry entry, string key, object dbKey,
-            Func<string, Type, DbContext> createDbCallback = null)
+        public static GameObjectCache.GameObjectCacheEntry SetSingleObject<TEntity>(this GameObjectCache.GameObjectCacheEntry entry,
+            Expression<Func<TEntity, bool>> predicate,
+            Func<Type, DbContext> createDbCallback) where TEntity : class
         {
+            var db = createDbCallback(typeof(TEntity));
+            entry.SetLoadCallback((key, state) =>
+            {
+                var result = ((DbContext)state).Set<TEntity>().FirstOrDefault(predicate);
+                return result;
+            }, db)
+            .SetSaveCallback((obj, state) =>
+            {
+                try
+                {
+                    ((DbContext)state).SaveChanges();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }, db)
+            .RegisterBeforeEvictionCallback((key, value, reason, state) =>
+            {
+                db.SaveChanges();
+            }, db)
+            .RegisterPostEvictionCallback((key, value, reason, state) =>
+            {
+                (value as IDisposable)?.Dispose();
+            }, db);
+            return entry;
+        }
+
+        /// <summary>
+        /// 设置加载，驱逐ef对象。
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="entry"></param>
+        /// <param name="dbKey"></param>
+        /// <param name="createDbCallback">创建数据库上下文的回调。</param>
+        /// <returns></returns>
+        public static GameObjectCache.GameObjectCacheEntry SetSingleObject<TEntity>(this GameObjectCache.GameObjectCacheEntry entry, object dbKey,
+            Func<object, Type, DbContext> createDbCallback) where TEntity : class
+        {
+            var db = createDbCallback(dbKey, typeof(TEntity));
+            entry.SetLoadCallback((key, state) => ((DbContext)state).Set<TEntity>().Find(dbKey), db)
+            .SetSaveCallback((obj, state) =>
+            {
+                try
+                {
+                    ((DbContext)state).SaveChanges();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }, db)
+            .RegisterBeforeEvictionCallback((key, value, reason, state) =>
+            {
+                db.SaveChanges();
+            }, db)
+            .RegisterPostEvictionCallback((key, value, reason, state) =>
+            {
+                (value as IDisposable)?.Dispose();
+            }, db);
             return entry;
         }
 
@@ -103,10 +144,41 @@ namespace OW.Game.Caching
             Expression<Func<TElement, bool>> predicate,
             Func<string, Type, DbContext> createDbCallback = null) where TElement : class
         {
-            DbContext db = createDbCallback(key, typeof(TElement));
-            ObservableCollection<TElement> oc = new ObservableCollection<TElement>();
-            db.Set<TElement>().SingleOrDefault(predicate);
-            return entry;
+            //TODO
+            throw new NotImplementedException();
+
+            //DbContext db = createDbCallback(key, typeof(TElement));
+            //ObservableCollection<TElement> oc = new ObservableCollection<TElement>();
+            //db.Set<TElement>().SingleOrDefault(predicate);
+            //return entry;
         }
+
+        #region GameObjectCache扩展
+
+        /// <summary>
+        /// 获取或加载缓存对象。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cache"></param>
+        /// <param name="key"></param>
+        /// <param name="predicate"></param>
+        /// <param name="createDbCallback"></param>
+        /// <returns></returns>
+        public static T GetOrLoad<T>(this GameObjectCache cache, string key, Expression<Func<T, bool>> predicate, Func<Type, DbContext> createDbCallback,
+            Action<GameObjectCache.GameObjectCacheEntry> setCallback = null) where T : class
+        {
+            if (cache.TryGetValue(key, out object result))
+                return (T)result;
+            using (var entry = (GameObjectCache.GameObjectCacheEntry)cache.CreateEntry(key))
+            {
+                entry.SetSingleObject(predicate, createDbCallback);
+                setCallback?.Invoke(entry);
+            }
+            if (cache.TryGetValue(key, out result))
+                return (T)result;
+            return default;
+        }
+
+        #endregion GameObjectCache扩展
     }
 }

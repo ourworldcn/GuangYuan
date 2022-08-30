@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Extensions.Caching.Memory
 {
 
-    public class DataObjectCacheOptions : MemoryCacheBaseOptions, IOptions<DataObjectCacheOptions>
+    public class DataObjectCacheOptions : OwMemoryCacheBaseOptions, IOptions<DataObjectCacheOptions>
     {
         public DataObjectCacheOptions() : base()
         {
@@ -27,12 +27,12 @@ namespace Microsoft.Extensions.Caching.Memory
     /// 数据对象的缓存类。
     /// 数据对象的加载需要经过IO,且需要保存，并且其有唯一的键值。
     /// </summary>
-    public class DataObjectCache : MemoryCacheBase, IDisposable
+    public class DataObjectCache : OwMemoryCacheBase, IDisposable
     {
         /// <summary>
         /// 
         /// </summary>
-        public class DataObjectCacheEntry : MemoryCacheBaseEntry, IDisposable
+        public class DataObjectCacheEntry : OwMemoryCacheBaseEntry, IDisposable
         {
             #region 构造函数
 
@@ -80,8 +80,7 @@ namespace Microsoft.Extensions.Caching.Memory
             /// <summary>
             /// 需要保存时调用。
             /// 在对键加锁的范围内调用。
-            /// 回调参数是要保存的对象，附加数据，返回true表示成功，否则是没有保存成功,若没有设置该回调，则说民无需保存，也就视同保存成功。
-            /// object,state,返回值。
+            /// 回调参数是要保存的对象，附加数据，返回true表示成功，否则是没有保存成功,若没有设置该回调，则说明无需保存，也就视同保存成功。
             /// </summary>
             [AllowNull]
             public Func<object, object, bool> SaveCallback { get; set; }
@@ -93,13 +92,14 @@ namespace Microsoft.Extensions.Caching.Memory
             public object SaveCallbackState { get; set; }
 
             /// <summary>
-            /// 是否已经初始化了<see cref="MemoryCacheBase.MemoryCacheBaseEntry.Value"/>的值。
+            /// 是否已经初始化了<see cref="OwMemoryCacheBase.OwMemoryCacheBaseEntry.Value"/>的值。
             /// </summary>
             internal bool _IsInitialized;
             /// <summary>
-            /// 是否已经初始化了<see cref="MemoryCacheBase.MemoryCacheBaseEntry.Value"/>的值。
+            /// 是否已经初始化了<see cref="OwMemoryCacheBase.OwMemoryCacheBaseEntry.Value"/>的值。
             /// </summary>
             public bool IsInitialized => _IsInitialized;
+
             #region ICacheEntry接口相关
 
             #region IDisposable接口相关
@@ -107,7 +107,6 @@ namespace Microsoft.Extensions.Caching.Memory
             public override void Dispose()
             {
                 base.Dispose();
-                Task.Run(() => ((DataObjectCache)Cache).EnsureInitialized(Key, out _)); //异步初始化
             }
 
             #endregion IDisposable接口相关
@@ -135,6 +134,7 @@ namespace Microsoft.Extensions.Caching.Memory
         void Initialize()
         {
             _Timer = new Timer(TimerCallback, null, ((DataObjectCacheOptions)Options).ExpirationScanFrequency, ((DataObjectCacheOptions)Options).ExpirationScanFrequency);
+            Task.Factory.StartNew(SaveFunc, TaskCreationOptions.LongRunning);   //创建后台保存任务
         }
 
         #endregion 构造函数
@@ -152,11 +152,39 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="state"></param>
         private void TimerCallback(object state)
         {
-            using var dw = DisposeHelper.Create(c => Monitor.TryEnter(c, 0), _Timer);   //防止重入
-            if (dw.IsEmpty)  //若还在重入中
+            using var dw = DisposeHelper.Create(c => Monitor.TryEnter(c, 1), _Timer);   //防止重入
+            if (dw.IsEmpty)  //若是重入
                 return;
-            Save();
             Compact();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void SaveFunc()
+        {
+            Debug.Assert(!Monitor.IsEntered(_Dirty));   //要确保没有获取锁
+            try
+            {
+                while (true)
+                {
+                    Monitor.Enter(_Dirty);
+                    if (Monitor.Wait(_Dirty, Options.ExpirationScanFrequency))
+                        Monitor.Exit(_Dirty);
+                    try
+                    {
+                        Save();
+                    }
+                    catch (Exception) { }
+                }
+
+            }
+            catch (Exception) { }
+            finally
+            {
+                if (Monitor.IsEntered(_Dirty))
+                    Monitor.Exit(_Dirty);
+            }
         }
 
         /// <summary>
@@ -188,7 +216,7 @@ namespace Microsoft.Extensions.Caching.Memory
         #region IDataObjectCache接口相关
 
         /// <summary>
-        /// 脏队列。
+        /// 脏队列。操作此对象需要锁定此对象。对此对象发脉冲，有概率立即唤醒保存线程开始保存数据。
         /// </summary>
         HashSet<object> _Dirty = new HashSet<object>();
 
@@ -197,16 +225,18 @@ namespace Microsoft.Extensions.Caching.Memory
         /// 该函数仅在一个集合中标记需要保存的对象的键，所以无需考虑锁定问题。
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="start">是否立即唤醒保存线程开始保存。</param>
         /// <returns></returns>
         /// <exception cref="ObjectDisposedException">对象已处置。</exception>
-        public bool SetDirty(object key)
+        public bool SetDirty(object key, bool start = false)
         {
             ThrowIfDisposed();
             bool result;
             lock (_Dirty)
             {
                 result = _Dirty.Add(key);
-                Monitor.Pulse(_Dirty);
+                if (start)
+                    Monitor.PulseAll(_Dirty);
             }
             return result;
         }
@@ -216,7 +246,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// 此函数会首先试图对键加锁，成功后才会进行实质工作，并解锁。
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="timeout">锁定超时。省略或为null则使用<see cref="MemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
+        /// <param name="timeout">锁定超时。省略或为null则使用<see cref="OwMemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
         /// <returns>true成功保存，false保存时出错。
         /// 调用<see cref="OwHelper.GetLastError"/>可获取详细信息。258=锁定超时，698=键已存在，1168=键不存在。
         /// </returns>
@@ -271,7 +301,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// </summary>
         /// <param name="key"></param>
         /// <param name="result"></param>
-        /// <param name="timeout">锁定超时。省略或为null则使用<see cref="MemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
+        /// <param name="timeout">锁定超时。省略或为null则使用<see cref="OwMemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
         /// <returns>true=成功，false=超时无法锁定键 - 或 - 键不存在。
         /// 调用<see cref="OwHelper.GetLastError"/>可获取详细信息。258=锁定超时，698=键已存在，1168=键不存在。
         /// </returns>
@@ -346,9 +376,21 @@ namespace Microsoft.Extensions.Caching.Memory
             return result;
         }
 
-        #region 重载基类函数
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="entry"></param>
+        protected override void AddItemCore(OwMemoryCacheBaseEntry entry)
+        {
+            Task.Run(() => EnsureInitialized(entry.Key, out _)); //异步初始化
+        }
 
-        protected override MemoryCacheBaseEntry CreateEntryCore(object key)
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected override OwMemoryCacheBaseEntry CreateEntryCore(object key)
         {
             return new DataObjectCacheEntry(key, this);
         }
@@ -359,13 +401,15 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="entry"></param>
         /// <returns>该实现会确保初始化成功完成<seealso cref="EnsureInitializedCore(DataObjectCacheEntry, TimeSpan)"/>，然后调用基类实现--<inheritdoc/>。</returns>
         /// <exception cref="ObjectDisposedException">对象已处置。</exception>
-        protected override bool TryGetValueCore(MemoryCacheBaseEntry entry)
+        protected override bool TryGetValueCore(OwMemoryCacheBaseEntry entry)
         {
             EnsureInitializedCore((DataObjectCacheEntry)entry, Options.DefaultLockTimeout);
             return base.TryGetValueCore(entry);
         }
 
-        #region 重载基类函数
+        #region IMemoryCache接口相关
+
+        #region IDisposable相关
 
         protected override void Dispose(bool disposing)
         {
