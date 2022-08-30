@@ -315,22 +315,49 @@ namespace GuangYuan.GY001.BLL
             }
         }
 
-        IQueryable<Guid> GetQuery(DbContext db, decimal pvpScore, IEnumerable<Guid> excludeCharIds)
+        /// <summary>
+        /// 获取pvp目标列表。
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="pvpScore">当前角色的pvp等级分</param>
+        /// <param name="lv">当前角色的等级。</param>
+        /// <param name="excludeCharIds">当前角色今日已经打过的角色列表。</param>
+        /// <returns></returns>
+        List<Guid> GetPvpQuery(DbContext db, decimal pvpScore, decimal lv, IEnumerable<Guid> excludeCharIds)
         {
-            //EF.Functions.
+            var ary = excludeCharIds.ToArray();
+            var charTypes = new CharType[] { CharType.Unknow, CharType.Robot, CharType.Test, CharType.Vip };
             var coll = from pvp in db.Set<GameItem>()
                        join gc in db.Set<GameChar>()
                        on pvp.Parent.OwnerId equals gc.Id
                        where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
-                        && Math.Abs(pvp.ExtraDecimal.Value - pvpScore) <= 50 && gc.CharType == 0    //分差在50以内
-                        && !excludeCharIds.Contains(gc.Id)   //排除指定的角色id
-                        && SqlDbFunctions.JsonValue(gc.JsonObjectString,"$.Name")==""
-                       orderby Math.Abs(pvp.ExtraDecimal.Value - 1000), gc.ExtraDecimal //按分差，等级差升序排序
+                        && Math.Abs(pvp.ExtraDecimal.Value - pvpScore) <= 50    //分差在50以内
+                        && charTypes.Contains(gc.CharType) //过滤用户类型
+                        && !ary.Contains(gc.Id)   //排除指定的角色id
+                       orderby Math.Abs(pvp.ExtraDecimal.Value - pvpScore), //按分差
+                       Math.Abs((string.IsNullOrWhiteSpace(SqlDbFunctions.JsonValue(gc.JsonObjectString, "$.Lv")) ? 0 : Convert.ToInt32(SqlDbFunctions.JsonValue(gc.JsonObjectString, "$.Lv"))) - lv) //按等级差升序排序
                        select gc.Id;
             var list = coll.Take(1).ToList();
-            return coll;
+            if (list.Count <= 0)   //若没找到
+            {
+                coll = from pvp in db.Set<GameItem>()
+                       join gc in db.Set<GameChar>()
+                       on pvp.Parent.OwnerId equals gc.Id
+                       where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
+                        && Math.Abs(pvp.ExtraDecimal.Value - pvpScore) > 50    //分差在50以外
+                        && charTypes.Contains(gc.CharType) //过滤用户类型
+                        && !ary.Contains(gc.Id)   //排除指定的角色id
+                       orderby Math.Abs(pvp.ExtraDecimal.Value - pvpScore) //按分差
+                       select gc.Id;
+                list = coll.Take(1).ToList();
+                if (list.Count <= 0 && ary.Length > 0)   //若没找到
+                {
+                    var item = ary[VWorld.WorldRandom.Next(ary.Length)];    //取已经打过的随机一个人
+                    list.Add(item);
+                }
+            }
+            return list;
         }
-
         /// <summary>
         /// 创建所有<see cref="VWorld"/>链接的游戏管理器以初始化。
         /// </summary>
