@@ -85,7 +85,6 @@ namespace GuangYuan.GY001.UserDb.Social
 
         void Initialize()
         {
-            
             using var db = World.CreateNewUserDbContext();
             foreach (var item in db.Set<GameGuild>())
             {

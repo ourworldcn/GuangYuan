@@ -1081,17 +1081,17 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             var gimt = World.ItemTemplateManager;
-            var aryShenwen = gameItems.Where(c => gimt.GetTemplateFromeId(c.ExtraGuid).GenusCode >= 15 && gimt.GetTemplateFromeId(c.ExtraGuid).GenusCode <= 17).ToArray();
-            if (dungeon.Properties.TryGetDecimal("mt", out var mt)) //若需要限定神纹数量上限
-            {
-                var tmp = aryShenwen.Sum(c => c.Count ?? 1);
-                if (tmp > mt)   //若神纹道具数量超限
-                {
-                    errorString = $"神纹道具只允许{mt}个,但掉落了{tmp}个";
-                    return false;
-                }
-            }
-            var items = gameItems.Where(c => c.ExtraGuid != ProjectConstant.JinbiId && c.ExtraGuid != ProjectConstant.MucaiId && c.ExtraGuid != ProjectConstant.ZuojiZuheRongqi).Except(aryShenwen);  //道具
+            //var aryShenwen = gameItems.Where(c => gimt.GetTemplateFromeId(c.ExtraGuid).GenusCode >= 15 && gimt.GetTemplateFromeId(c.ExtraGuid).GenusCode <= 17).ToArray();
+            //if (dungeon.Properties.TryGetDecimal("mt", out var mt)) //若需要限定神纹数量上限
+            //{
+            //    var tmp = aryShenwen.Sum(c => c.Count ?? 1);
+            //    if (tmp > mt)   //若神纹道具数量超限
+            //    {
+            //        errorString = $"神纹道具只允许{mt}个,但掉落了{tmp}个";
+            //        return false;
+            //    }
+            //}
+            var items = gameItems.Where(c => c.ExtraGuid != ProjectConstant.JinbiId && c.ExtraGuid != ProjectConstant.MucaiId && c.ExtraGuid != ProjectConstant.ZuojiZuheRongqi)/*.Except(aryShenwen)*/;  //道具
             if (dungeon.Properties.TryGetDecimal("idt", out var idt)) //若需要限定其他道具数量上限
             {
                 var tmp = items.Sum(c => c.Count ?? 1);

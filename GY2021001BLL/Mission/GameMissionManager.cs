@@ -127,7 +127,7 @@ namespace OW.Game.Mission
 
         private void Initialize()
         {
-            _MissionTemplates = new Lazy<List<GameItemTemplate>>(() => World.ItemTemplateManager.GetTemplates(c => c.CatalogNumber == 51).ToList(),
+            _MissionTemplates = new Lazy<List<GameItemTemplate>>(() => World.ItemTemplateManager.GetTemplates(c => c.CatalogNumber == (int)ThingGId.任务成就_成就_成就 / 1000).ToList(),
                 LazyThreadSafetyMode.ExecutionAndPublication);
 
         }
@@ -223,11 +223,7 @@ namespace OW.Game.Mission
                             var zuoqiBag = gc.GetZuojiBag();
                             metrics = zuoqiBag.Children.Count(c =>
                             {
-                                var hgid = gim.GetHeadTemplate(c)?.Sequence;
-                                var bgid = gim.GetBodyTemplate(c)?.Sequence;
-                                if (!hgid.HasValue || !bgid.HasValue)
-                                    return false;
-                                return hgid.Value == bgid.Value;
+                                return gim.IsChunzhongMounts(c);
                             });
                         }
                         break;
@@ -279,19 +275,19 @@ namespace OW.Game.Mission
                     case "26c63192-867a-43f4-919b-10a614ee2865": //	炮塔成就	51017
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 40).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
+                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_炮塔 / 1000).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     case "03d80847-f273-413b-a2a2-81545ab03a89": //	陷阱成就	51018
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 41).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
+                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_陷阱 / 1000).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     case "5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d": //	旗帜成就	51019
                         {
                             var homeland = gc.GetHomeland();    //TO DO可能没有子元素
-                            var collTmp = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == 42);
+                            var collTmp = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_水晶 / 1000);
                             if (collTmp.Any())
                                 metrics = collTmp.Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                             else

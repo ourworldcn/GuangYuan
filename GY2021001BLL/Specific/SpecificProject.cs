@@ -469,6 +469,91 @@ namespace GuangYuan.GY001.BLL
 
     }
 
+    /// <summary>
+    /// GId分类枚举。
+    /// </summary>
+    public enum ThingGId
+    {
+        持有物 = 010000_000,
+        货币 = 持有物 + 0100_000,
+        货币_货币 = 货币 + 01_000,
+        货币_其它 = 货币 + 02_000,
+
+        生物 = 持有物 + 0200_000,
+        生物_头 = 生物 + 01_000,
+        生物_身体 = 生物 + 02_000,
+
+        道具 = 持有物 + 0300_000,
+        道具_其它 = 道具 + 01_000,
+        道具_诱饵 = 道具 + 11_000,
+        道具_主动碎片 = 道具 + 21_000,
+        道具_被动碎片 = 道具 + 22_000,
+        道具_跳跃碎片 = 道具 + 23_000,
+
+        生物时装 = 持有物 + 0401_000,
+        基因图谱 = 持有物 + 0501_000,
+        家园风格 = 持有物 + 0601_000,
+        家园地块 = 持有物 + 0700_000,
+
+        家园地块_战斗 = 家园地块 + 02_000,
+
+        家园建筑 = 持有物 + 0800_000,
+        家园建筑_功能建筑 = 家园建筑 + 01_000,
+        家园建筑_炮塔 = 家园建筑 + 11_000,
+        家园建筑_陷阱 = 家园建筑 + 12_000,
+        家园建筑_水晶 = 家园建筑 + 21_000,
+        家园建筑_木材仓 = 家园建筑 + 22_000,
+
+        技能 = 持有物 + 0900_000,
+        技能_主动技能 = 技能 + 21_000,
+        技能_被动技能 = 技能 + 22_000,
+        技能_跳跃技能 = 技能 + 23_000,
+
+        坐骑图鉴 = 持有物 + 1000_000,
+
+        其它 = 020000_000,
+
+        敌人小怪 = 其它 + 0100_000,
+        敌人普通 = 其它 + 0200_000,
+        敌人精英 = 其它 + 0300_000,
+
+        邮件 = 其它 + 1100_000,
+
+        邮件_PVP = 邮件 + 01_000,
+        邮件_奖励 = 邮件 + 02_000,
+
+        礼包 = 其它 + 1200_000,
+        礼包_活动 = 礼包 + 01_000,
+        礼包_抽卡 = 礼包 + 02_000,
+
+        抽卡 = 其它 + 1300_000,
+
+        公会 = 其它 + 1400_000,
+        公会_模板 = 公会 + 01_000,
+        公会_商店 = 公会 + 02_000,
+
+        孵化槽 = 其它 + 1500_000,
+
+        解锁条件 = 其它 + 2100_000,
+
+        占位符 = 其它 + 2200_000,
+
+        副本 = 110000_000,
+
+        推关大关 = 副本 + 0100_000,
+        推关小关 = 副本 + 0200_000,
+        塔防大关 = 副本 + 1100_000,
+        塔防小关 = 副本 + 1200_000,
+        PVP大关 = 副本 + 2100_000,
+        PVP小关 = 副本 + 2200_000,
+
+        任务成就 = 120000_000,
+        任务成就_成就 = 任务成就 + 0100_000,
+
+        任务成就_成就_成就 = 任务成就_成就 + 01_000,
+
+        任务成就_任务 = 任务成就 + 0200_000,
+    }
 
     /// <summary>
     /// 封装项目特定逻辑。
@@ -653,18 +738,18 @@ namespace GuangYuan.GY001.BLL
                 return result;
             });
             shouyiSlot.Children.AddRange(mounts);   //加入坐骑
-                                                    //神纹
-            var shenwen = from tmp in data.GameItems
-                          let template = gitm.GetTemplateFromeId(tmp.ExtraGuid)
-                          where template.GenusCode >= 15 && template.GenusCode <= 17  //神纹碎片
-                          select (template, tmp.Count ?? 1);
-            shouyiSlot.Children.AddRange(shenwen.Select(c =>
-            {
-                var sw = new GameItem();
-                world.EventsManager.GameItemCreated(sw, c.template, null, null, null);
-                sw.Count = c.Item2;
-                return sw;
-            }));
+            //神纹
+            //var shenwen = from tmp in data.GameItems
+            //              let template = gitm.GetTemplateFromeId(tmp.ExtraGuid)
+            //              where template.GenusCode >= 15 && template.GenusCode <= 17  //神纹碎片
+            //              select (template, tmp.Count ?? 1);
+            //shouyiSlot.Children.AddRange(shenwen.Select(c =>
+            //{
+            //    var sw = new GameItem();
+            //    world.EventsManager.GameItemCreated(sw, c.template, null, null, null);
+            //    sw.Count = c.Item2;
+            //    return sw;
+            //}));
             //金币,暂时不用创建新的金币对象。
             var coll = data.GameItems.Where(c => c.ExtraGuid == ProjectConstant.JinbiId).ToList();
             coll.ForEach(c => c.Count ??= 1);
@@ -742,16 +827,16 @@ namespace GuangYuan.GY001.BLL
                     return false;
                 }
             }
-            if (itemTemplate.Properties.TryGetValue("mt", out object mtObj) && mtObj is decimal mt) //若要限制神纹数量
-            {
-                var coll = gitm.Id2Template.Values.Where(c => c.GenusCode <= 17 && c.GenusCode >= 15); //获取所有神纹模板
-                var shenwen = gameItems.Join(coll, c => c.ExtraGuid, c => c.Id, (l, r) => l);    //获取神纹的集合
-                if (shenwen.Sum(c => c.Count) > (int)mt) //若神纹数量超过上限
-                {
-                    msg = "神纹数量超过上限";
-                    return false;
-                }
-            }
+            //if (itemTemplate.Properties.TryGetValue("mt", out object mtObj) && mtObj is decimal mt) //若要限制神纹数量
+            //{
+            //    var coll = gitm.Id2Template.Values.Where(c => c.GenusCode <= 17 && c.GenusCode >= 15); //获取所有神纹模板
+            //    var shenwen = gameItems.Join(coll, c => c.ExtraGuid, c => c.Id, (l, r) => l);    //获取神纹的集合
+            //    if (shenwen.Sum(c => c.Count) > (int)mt) //若神纹数量超过上限
+            //    {
+            //        msg = "神纹数量超过上限";
+            //        return false;
+            //    }
+            //}
             msg = null;
             return true;
         }
@@ -764,13 +849,6 @@ namespace GuangYuan.GY001.BLL
 
     public static class GameItemExtensions
     {
-        /// <summary>
-        /// 类号。除了序列号以外的前6位(十进制)分类号。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <returns>如果不能得到正确的模板对象则返回-1。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetCatalogNumber(this GameItem gameItem) => gameItem.GetTemplate()?.CatalogNumber ?? -1;
     }
 
     /// <summary>

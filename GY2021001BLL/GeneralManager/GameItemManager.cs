@@ -179,7 +179,7 @@ namespace OW.Game.Item
                 {
                     return World.PropertyManager.GetStcOrOne(gameItem);
                 }
-                var ary = coll.Where(c => c.GetTemplate().CatalogNumber==43).ToArray();   //取所有木材仓库对象
+                var ary = coll.Where(c => c.GetTemplate().CatalogNumber== (int)ThingGId.家园建筑_木材仓 / 1000).ToArray();   //取所有木材仓库对象
                 var stc = decimal.Zero;
                 foreach (var item in ary) //计算所有木材仓库的容量
                 {

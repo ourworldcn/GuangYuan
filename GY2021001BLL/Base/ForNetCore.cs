@@ -231,6 +231,9 @@ namespace GuangYuan.GY001.BLL
                 gu.CurrentChar.DisplayName = $"{item.Item1}";
                 world.CharManager.SetExp(gu.CurrentChar, VWorld.WorldRandom.Next(maxExp));
                 gu.Timeout = TimeSpan.FromSeconds(1);
+                GameItem pvp = new GameItem() { Count=1};
+                world.EventsManager.GameItemCreated(pvp, ProjectConstant.PvpObjectTId);
+                world.ItemManager.MoveItem(pvp, pvp.Count.Value, gu.CurrentChar.GetCurrencyBag());
                 world.CharManager.Unlock(gu);
 
                 if (i % 100 == 0 && i > 0)   //每n个账号
@@ -283,7 +286,6 @@ namespace GuangYuan.GY001.BLL
 
             var sw = Stopwatch.StartNew();
             var key = "96AEEF3C-9E95-4A55-9585-1562AFCEC70C";
-
             try
             {
                 var srv = _Services.GetService<GameObjectCache>();
@@ -304,7 +306,7 @@ namespace GuangYuan.GY001.BLL
             }
             catch (Exception)
             {
-                
+
             }
             finally
             {

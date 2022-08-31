@@ -1533,7 +1533,7 @@ namespace GuangYuan.GY001.BLL
             var tt = gi.GetTemplate();
             var index = tt.GId % 10;    //尾号
             var cata = tt.GId / 1000;    //类型号
-            var gid = cata * 1000 + index; //默认水晶类型号
+            var gid = cata * 1000 + 10 + index; //默认水晶类型号
             var result = World.ItemTemplateManager.Id2Template.Values.FirstOrDefault(c => c.GId == gid);
             return result;
         }
@@ -1553,7 +1553,7 @@ namespace GuangYuan.GY001.BLL
                 foreach (var item in tp)
                 {
                     var tt = tp.Key.GetTemplate();
-                    if (string.Compare(item.Item1, "tid", true) == 0 && tp.Key.GetTemplate().CatalogNumber == 42 && OwConvert.TryToGuid(item.Item2, out var id))   //若是水晶更改模板
+                    if (string.Compare(item.Item1, "tid", true) == 0 && tp.Key.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_水晶 / 1000 && OwConvert.TryToGuid(item.Item2, out var id))   //若是水晶更改模板
                         World.ItemManager.ChangeTemplate(tp.Key, World.ItemTemplateManager.GetTemplateFromeId(id));
                     else if (tp.Key.ExtraGuid == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "activeStyle", true) == 0)   //若是家园对象的当前激活风格属性
                     {
@@ -1562,7 +1562,7 @@ namespace GuangYuan.GY001.BLL
                         var b = GetStyleNumber(str, out var sn, out var fn); Debug.Assert(b);
                         foreach (var gi in tp.Key.GetAllChildren()) //遍历变化水晶的模板id
                         {
-                            if (gi.GetTemplate().CatalogNumber != 42)   //若不是水晶
+                            if (gi.GetTemplate().CatalogNumber != (int)ThingGId.家园建筑_水晶 / 1000)   //若不是水晶
                                 continue;
                             var tidfor = gi.Properties.GetGuidOrDefault($"tidfor{sn}{fn:00}");
                             if (tidfor == Guid.Empty)  //若没有指定模板id
@@ -1581,7 +1581,7 @@ namespace GuangYuan.GY001.BLL
                             }
                         }
                     }
-                    else if (tt.CatalogNumber == 42 && item.Item1.StartsWith("tidfor"))   //若设置家园水晶阵容数据
+                    else if (tt.CatalogNumber == (int)ThingGId.家园建筑_水晶 / 1000 && item.Item1.StartsWith("tidfor"))   //若设置家园水晶阵容数据
                     {
                         if (!GetStyleNumber(item.Item1[6..], out var styleNumber, out var fanganNumber))  //若无法获得方案号或风格号
                             continue;

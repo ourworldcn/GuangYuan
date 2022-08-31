@@ -93,7 +93,7 @@ namespace GuangYuan.GY001.BLL
                     lock (ThisLocker)
                         if (_HeadTemplates is null)
                         {
-                            _HeadTemplates = new ConcurrentDictionary<Guid, GameItemTemplate>(Id2Template.Values.Where(c => c.CatalogNumber == 3).ToDictionary(c => c.Id));
+                            _HeadTemplates = new ConcurrentDictionary<Guid, GameItemTemplate>(Id2Template.Values.Where(c => c.CatalogNumber == (int)ThingGId.生物_头 / 1000).ToDictionary(c => c.Id));
                         }
                 return _HeadTemplates;
             }
@@ -111,7 +111,7 @@ namespace GuangYuan.GY001.BLL
                     lock (ThisLocker)
                         if (_BodyTemplates is null)
                         {
-                            _BodyTemplates = new ConcurrentDictionary<Guid, GameItemTemplate>(Id2Template.Values.Where(c => c.CatalogNumber == 4).ToDictionary(c => c.Id));
+                            _BodyTemplates = new ConcurrentDictionary<Guid, GameItemTemplate>(Id2Template.Values.Where(c => c.CatalogNumber == (int)ThingGId.生物_身体 / 1000).ToDictionary(c => c.Id));
                         }
                 return _BodyTemplates;
             }

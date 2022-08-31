@@ -1619,7 +1619,7 @@ namespace GuangYuan.GY001.BLL
                 datas.FillErrorFromWorld();
                 return;
             }
-            var todayData = datas.PvpObject.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();    //当日数据的帮助器类
+            var todayData = datas.PvpObject?.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();    //当日数据的帮助器类
             var hasData = todayData.GetTodayData(datas.Now).Any();
             //if (!hasData)  //若当日无数据
             //{
@@ -1661,7 +1661,7 @@ namespace GuangYuan.GY001.BLL
 
                 var gc = datas.GameChar;
                 var cj = gc.GetJsonObject<CharJsonEntity>();
-                var ids = GetNewPvpCharIds(datas.GameChar.GetDbContext(), datas.PvpObject.ExtraDecimal.Value, cj.Lv, excludeIds);
+                var ids = GetNewPvpCharIds(datas.GameChar.GetDbContext(), gc.Id, datas.PvpObject.ExtraDecimal.Value, cj.Lv, excludeIds);
                 todayData.AddLastDataRange(ids, datas.Now);
                 datas.CharIds.AddRange(ids);
 
@@ -1681,21 +1681,23 @@ namespace GuangYuan.GY001.BLL
         /// 获取pvp目标列表。
         /// </summary>
         /// <param name="db"></param>
+        /// <param name="charId">自己的角色id</param>
         /// <param name="pvpScore">当前角色的pvp等级分</param>
         /// <param name="lv">当前角色的等级。</param>
         /// <param name="excludeCharIds">当前角色今日已经打过的角色列表。</param>
         /// <returns></returns>
-        List<Guid> GetNewPvpCharIds(DbContext db, decimal pvpScore, int lv, IEnumerable<Guid> excludeCharIds)
+        List<Guid> GetNewPvpCharIds(DbContext db, Guid charId, decimal pvpScore, int lv, IEnumerable<Guid> excludeCharIds)
         {
-            var ary = excludeCharIds.ToArray();
+            var ary = excludeCharIds?.Where(c => c != charId).ToArray() ?? Array.Empty<Guid>(); //排除掉自身id,容错
             var charTypes = new CharType[] { CharType.Unknow, CharType.Robot, CharType.Test, CharType.Vip };
             var coll = from pvp in db.Set<GameItem>()
                        join gc in db.Set<GameChar>()
                        on pvp.Parent.OwnerId equals gc.Id
                        where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
-                        && Math.Abs(pvp.ExtraDecimal.Value - pvpScore) <= 50    //分差在50以内
+                        && pvp.ExtraDecimal.Value <= pvpScore + 50 && pvp.ExtraDecimal.Value >= pvpScore - 50   //分差在50以内
                         && charTypes.Contains(gc.CharType) //过滤用户类型
                         && !ary.Contains(gc.Id)   //排除指定的角色id
+                        && gc.Id != charId//排除自己
                        orderby Math.Abs(pvp.ExtraDecimal.Value - pvpScore), //按分差
                        Math.Abs((string.IsNullOrWhiteSpace(SqlDbFunctions.JsonValue(gc.JsonObjectString, "$.Lv")) ? 0 : Convert.ToInt32(SqlDbFunctions.JsonValue(gc.JsonObjectString, "$.Lv"))) - lv) //按等级差升序排序
                        select gc.Id;
@@ -1706,9 +1708,10 @@ namespace GuangYuan.GY001.BLL
                        join gc in db.Set<GameChar>()
                        on pvp.Parent.OwnerId equals gc.Id
                        where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
-                        && Math.Abs(pvp.ExtraDecimal.Value - pvpScore) > 50    //分差在50以外
+                        && (pvp.ExtraDecimal.Value > pvpScore + 50 || pvp.ExtraDecimal.Value < pvpScore - 50)    //分差在50以外
                         && charTypes.Contains(gc.CharType) //过滤用户类型
                         && !ary.Contains(gc.Id)   //排除指定的角色id
+                        && gc.Id != charId//排除自己
                        orderby Math.Abs(pvp.ExtraDecimal.Value - pvpScore) //按分差
                        select gc.Id;
                 list = coll.Take(1).ToList();

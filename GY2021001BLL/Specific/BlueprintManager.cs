@@ -1677,7 +1677,7 @@ namespace GuangYuan.GY001.BLL
                 datas.DebugMessage = $"找不到指定的物品模板，Id={ttTid}";
                 return;
             }
-            if (tt.CatalogNumber == 100)   //若是激活风格
+            if (tt.CatalogNumber == (int)ThingGId.家园风格 / 1000)   //若是激活风格
             {
                 var fengge = datas.GameChar.GetFenggeBag().Children.FirstOrDefault(c => c.ExtraGuid == tt.Id);
                 if (fengge != null)

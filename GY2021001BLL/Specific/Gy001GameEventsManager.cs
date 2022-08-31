@@ -132,7 +132,7 @@ namespace OW.Game
             else if (null != result)    //若已经有指定的默认容器
                 return result;
             var template = World.ItemTemplateManager.GetTemplateFromeId(gameItem.ExtraGuid);
-            switch (template.CatalogNumber)
+            switch (template.CatalogNumber * 1000)
             {
                 case 0:
                     if (gameItem.ExtraGuid == ProjectConstant.ZuojiZuheRongqi) //若是坐骑/野兽
@@ -142,29 +142,29 @@ namespace OW.Game
                     else
                         result = null;
                     break;
-                case 10:
-                    result = gChar.GetShenwenBag();
-                    break;
-                case 15:    //神纹强化道具
-                case 16:    //神纹强化道具
-                case 17:    //神纹强化道具
-                case 18:    //道具
-                    result = gChar.GetItemBag();
-                    break;
-                case 26:    //时装
+                //case 10:
+                //    result = gChar.GetShenwenBag();
+                //    break;
+                //case 15:    //神纹强化道具
+                //case 16:    //神纹强化道具
+                //case 17:    //神纹强化道具
+                //case 18:    //道具
+                //    result = gChar.GetItemBag();
+                //    break;
+                case (int)ThingGId.生物时装:    //时装
                     result = gChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShizhuangBagSlotId);
                     break;
-                case 40:    //炮塔
-                case 41:    //陷阱
-                case 42:    //水晶
-                case 43:    //木材仓库
-                case 31:   //抓捕网，主控室，玉米田，木材田
+                case (int)ThingGId.家园建筑_炮塔:    //炮塔
+                case (int)ThingGId.家园建筑_陷阱:    //陷阱
+                case (int)ThingGId.家园建筑_水晶:    //水晶
+                case (int)ThingGId.家园建筑_木材仓:    //木材仓库
+                case (int)ThingGId.家园建筑_功能建筑:   //抓捕网，主控室，玉米田，木材田
                     result = gChar.GetHomelandBuildingBag();    //建筑背包
                     break;
-                case 99:    //货币
+                case (int)ThingGId.货币_货币:    //货币
                     result = gChar.GetCurrencyBag();
                     break;
-                case 30:
+                case (int)ThingGId.货币_其它:
                     result = gChar.GetTujianBag();
                     break;
                 default:    //不认识物品
@@ -365,7 +365,7 @@ namespace OW.Game
             //}
             //增加坐骑
             var mountsBagSlot = gameChar.GetZuojiBag();   //坐骑背包槽
-            for (int i = 3001; i < 3002; i++)   //仅增加羊坐骑
+            for (int i = (int)ThingGId.生物_头 + 1; i < (int)ThingGId.生物_头 + 2; i++)   //仅增加羊坐骑
             {
                 var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == i);
                 var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 1000 + i);

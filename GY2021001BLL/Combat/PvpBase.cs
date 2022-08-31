@@ -137,7 +137,7 @@ namespace GuangYuan.GY001.BLL
             }
             else //若未击溃主控室
             {
-                var dMucaiCount = DestroyTIds.Where(c => World.ItemTemplateManager.GetTemplateFromeId(c.Item1)?.CatalogNumber == 43).Sum(c => c.Item2);   //击溃木材仓库的数量
+                var dMucaiCount = DestroyTIds.Where(c => World.ItemTemplateManager.GetTemplateFromeId(c.Item1)?.CatalogNumber == (int)ThingGId.家园建筑_木材仓/1000).Sum(c => c.Item2);   //击溃木材仓库的数量
                 //攻击方木材
                 aMucai.StringDictionary["count"] = Math.Round(attMucaiBase * dMucaiCount * 0.1m, MidpointRounding.AwayFromZero).ToString();
                 //攻击方获得金币

@@ -263,7 +263,7 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetHead(this GameItemManager manager, GameItem mounts)
         {
-            var result = mounts.Children.FirstOrDefault(c => manager.GetTemplateFromeId(c.ExtraGuid).CatalogNumber == 3);
+            var result = mounts.Children.FirstOrDefault(c => manager.GetTemplateFromeId(c.ExtraGuid).CatalogNumber == (int)ThingGId.生物_头 / 1000);
 #pragma warning disable CS0618 // 类型或成员已过时
             return result ?? mounts.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ZuojiZuheTou)?.Children?.FirstOrDefault();
 #pragma warning restore CS0618 // 类型或成员已过时
@@ -294,7 +294,7 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetBody(this GameItemManager manager, GameItem mounts)
         {
-            var result = mounts.Children.FirstOrDefault(c => manager.GetTemplateFromeId(c.ExtraGuid).CatalogNumber == 4);
+            var result = mounts.Children.FirstOrDefault(c => manager.GetTemplateFromeId(c.ExtraGuid).CatalogNumber == (int)ThingGId.生物_身体 / 1000);
 #pragma warning disable CS0618 // 类型或成员已过时
             return result ?? mounts.Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ZuojiZuheShenti)?.Children?.FirstOrDefault();
 #pragma warning restore CS0618 // 类型或成员已过时
