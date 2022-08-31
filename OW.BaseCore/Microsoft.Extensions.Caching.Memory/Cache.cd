@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Microsoft.Extensions.Caching.Memory.DataObjectCacheOptions" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="5.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Microsoft.Extensions.Caching.Memory\DataObjectCache.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Microsoft.Extensions.Caching.Memory.DataObjectCache" BaseTypeListCollapsed="true">
+    <Position X="2" Y="6.25" Width="1.5" />
+    <NestedTypes>
+      <Class Name="Microsoft.Extensions.Caching.Memory.DataObjectCache.DataObjectCacheEntry" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Microsoft.Extensions.Caching.Memory\DataObjectCache.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAIBgACAARQAAAAAAIACAAkABAAAAAAACACAAAAg=</HashCode>
+      <FileName>Microsoft.Extensions.Caching.Memory\DataObjectCache.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Microsoft.Extensions.Caching.Memory.DataObjectCacheExtensions" Collapsed="true">
+    <Position X="9.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Microsoft.Extensions.Caching.Memory\DataObjectCache.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Microsoft.Extensions.Caching.Memory.OwMemoryCacheBaseOptions">
+    <Position X="5.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAgIAAgAAA=</HashCode>
+      <FileName>Microsoft.Extensions.Caching.Memory\MemoryCacheBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Microsoft.Extensions.Caching.Memory.BeforeEvictionCallbackRegistration" Collapsed="true">
+    <Position X="8" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>Microsoft.Extensions.Caching.Memory\MemoryCacheBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Microsoft.Extensions.Caching.Memory.OwMemoryCacheBase">
+    <Position X="1.5" Y="1.75" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="Microsoft.Extensions.Caching.Memory.OwMemoryCacheBase.OwMemoryCacheBaseEntry" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Microsoft.Extensions.Caching.Memory\MemoryCacheBase.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>CAAAAACAADAhyAAAAAABJBAAAhAAABAAAEAAAKBgAAA=</HashCode>
+      <FileName>Microsoft.Extensions.Caching.Memory\MemoryCacheBase.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Microsoft.Extensions.Caching.Memory.OwMemoryCacheBaseExtensions" Collapsed="true">
+    <Position X="8" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Microsoft.Extensions.Caching.Memory\MemoryCacheBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

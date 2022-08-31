@@ -231,7 +231,7 @@ namespace GuangYuan.GY001.BLL
                 gu.CurrentChar.DisplayName = $"{item.Item1}";
                 world.CharManager.SetExp(gu.CurrentChar, VWorld.WorldRandom.Next(maxExp));
                 gu.Timeout = TimeSpan.FromSeconds(1);
-                GameItem pvp = new GameItem() { Count=1};
+                GameItem pvp = new GameItem() { Count = 1 };
                 world.EventsManager.GameItemCreated(pvp, ProjectConstant.PvpObjectTId);
                 world.ItemManager.MoveItem(pvp, pvp.Count.Value, gu.CurrentChar.GetCurrencyBag());
                 world.CharManager.Unlock(gu);
@@ -286,8 +286,15 @@ namespace GuangYuan.GY001.BLL
 
             var sw = Stopwatch.StartNew();
             var key = "96AEEF3C-9E95-4A55-9585-1562AFCEC70C";
+            var guild = new GameGuildEntity()
+            {
+                AutoAccept = true,Cap=20,
+            };
+
             try
             {
+                var mapper = world.Service.GetRequiredService<IMapper>();
+                var dic = mapper.Map<Dictionary<string, object>>(guild);
                 var srv = _Services.GetService<GameObjectCache>();
                 var tt = srv.GetOrCreate(key, c =>
                    {

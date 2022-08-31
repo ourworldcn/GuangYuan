@@ -534,5 +534,22 @@ namespace Microsoft.Extensions.Caching.Memory
         public static DisposeHelper<object> Lock(this OwMemoryCacheBase cache, object key, TimeSpan? timeout) =>
             DisposeHelper.Create(cache.Options.LockCallback, cache.Options.UnlockCallback, key, timeout ?? cache.Options.DefaultLockTimeout);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cache"></param>
+        /// <param name="keys"></param>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        public static IDisposable LockKeys(this OwMemoryCacheBase cache, IEnumerable<object> keys, TimeSpan timeout)
+        {
+            return OwHelper.LockWithOrder(keys.OrderBy(c => c), (obj, timeout) =>
+            {
+                if (!cache.Options.LockCallback(obj, timeout))
+                    return null;
+                return DisposerWrapper.Create(c => cache.Options.UnlockCallback(c), obj);
+            }, timeout);
+        }
+
     }
 }

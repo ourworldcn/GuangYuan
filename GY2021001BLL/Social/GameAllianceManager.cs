@@ -52,7 +52,7 @@ namespace GuangYuan.GY001.UserDb.Social
 
         public int IconIndex { get; set; }
 
-        public string DisplayName { get => Thing.ExtraString; set => Thing.ExtraString = value; }
+        public string DisplayName { get => Thing?.ExtraString; set => Thing.ExtraString = value; }
     }
 
     public class GameAllianceManagerOptions
