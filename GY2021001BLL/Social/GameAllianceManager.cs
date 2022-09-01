@@ -19,6 +19,7 @@ using System.Collections.ObjectModel;
 using OW.Game.Caching;
 using OW.Game.Store;
 using System.Text.Json.Serialization;
+using AutoMapper;
 
 namespace GuangYuan.GY001.UserDb.Social
 {
@@ -52,7 +53,8 @@ namespace GuangYuan.GY001.UserDb.Social
 
         public int IconIndex { get; set; }
 
-        public string DisplayName { get => Thing?.ExtraString; set => Thing.ExtraString = value; }
+        public string DisplayName { get => Thing?.ExtraString; set { if (null != Thing) Thing.ExtraString = value; } }
+
     }
 
     public class GameAllianceManagerOptions

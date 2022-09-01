@@ -6,8 +6,10 @@ using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OW.Extensions.Game.Store;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -217,10 +219,16 @@ namespace GY2021001WebApi.Controllers
         [HttpGet]
         public ActionResult<LoginReturnDto> QuicklyRegisterAndLogin()
         {
+
+
 #if DEBUG
             using var db = HttpContext.RequestServices.GetRequiredService<VWorld>().CreateNewUserDbContext();
             GameItem gi = db.Set<GameItem>().First(c => c.Children.Count > 0);
-            //TypeDescriptor.GetConverter(typeof(GameItemDto)).ConvertFrom(new GameMapperTypeDescriptorContext(dto), CultureInfo.InvariantCulture, gi);
+            gi.SetClientString("tname=ds");
+            var mapper1 = HttpContext.RequestServices.GetRequiredService<IMapper>();
+            var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
+            var giDto = mapper1.Map<GameItem,GameItemDto>(gi);
+            
 #endif //DEBUG
             try
             {

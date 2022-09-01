@@ -288,13 +288,18 @@ namespace GuangYuan.GY001.BLL
             var key = "96AEEF3C-9E95-4A55-9585-1562AFCEC70C";
             var guild = new GameGuildEntity()
             {
-                AutoAccept = true,Cap=20,
+                AutoAccept = true,
+                Cap = 20,
             };
 
             try
             {
                 var mapper = world.Service.GetRequiredService<IMapper>();
+                var gi = new GameItem();
+                world.EventsManager.GameItemCreated(gi, ProjectConstant.HomelandSlotId);
+
                 var dic = mapper.Map<Dictionary<string, object>>(guild);
+                var obj = mapper.Map<GameGuildEntity>(dic);
                 var srv = _Services.GetService<GameObjectCache>();
                 var tt = srv.GetOrCreate(key, c =>
                    {

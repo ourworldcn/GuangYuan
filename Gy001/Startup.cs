@@ -123,7 +123,7 @@ namespace Gy001
             services.TryAddSingleton(c => new GameMapperManager(c, new GameMapperManagerOptions()) { });//加入转换管理器。
             services.AddAutoMapper(c =>
             {
-                c.AddProfile<Gy01Profile>();
+                c.AddMaps(System.AppDomain.CurrentDomain.GetAssemblies());
             });
             #endregion 配置游戏专用服务
 
