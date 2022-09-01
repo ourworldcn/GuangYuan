@@ -184,7 +184,6 @@ namespace GY2021001WebApi.Models
         }
     }
 
-    [AutoMap(typeof(GameItem))]
     public partial class GameItemDto
     {
         /// <summary>

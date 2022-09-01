@@ -262,7 +262,24 @@ namespace GuangYuan.GY001.BLL
             Trace.WriteLine("游戏虚拟世界服务开始下线。");
             return Task.CompletedTask;
         }
+        public class MyClass
+        {
+            public MyClass()
+            {
 
+            }
+
+            public MyClass(Tuple<int, int> change)
+            {
+                Old = change.Item1;
+                Nv = change.Item2;
+            }
+
+            public int Old { get; set; }
+
+            public int Nv { get; set; }
+
+        }
         /// <summary>
         /// 测试点。
         /// </summary>
@@ -298,23 +315,9 @@ namespace GuangYuan.GY001.BLL
                 var gi = new GameItem();
                 world.EventsManager.GameItemCreated(gi, ProjectConstant.HomelandSlotId);
 
-                var dic = mapper.Map<Dictionary<string, object>>(guild);
-                var obj = mapper.Map<GameGuildEntity>(dic);
-                var srv = _Services.GetService<GameObjectCache>();
-                var tt = srv.GetOrCreate(key, c =>
-                   {
-                       var entry = (GameObjectCache.GameObjectCacheEntry)c;
-                       srv.EnsureInitialized(key, out _);
-                       return 1;
-                   });
-                //using (var entry = (GameObjectCache.GameObjectCacheEntry)srv.CreateEntry(key))
-                //{
-                //    entry.ObjectType = typeof(GameActionRecord);
-                //}
-                //var b = srv.TryGetValue<GameActionRecord>(key, out var val);
-                //val.DateTimeUtc = DateTime.MinValue;
-                //srv.SetDirty(key);
-                //var list = coll.Select(c=>c.Item2).ToList();
+                var obj = new MyClass(Tuple.Create(2, 1));
+                var str = JsonSerializer.Serialize(obj);
+                var obj2 = (MyClass)JsonSerializer.Deserialize<MyClass>(str);
             }
             catch (Exception)
             {

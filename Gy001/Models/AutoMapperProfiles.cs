@@ -19,13 +19,14 @@ namespace Gy01.AutoMapper.Profiles
         {
             IncludeSourceExtensionMethods(typeof(OW.Extensions.Game.Store.GameThingBaseExtensions));
             IncludeSourceExtensionMethods(typeof(GuangYuan.GY001.UserDb.GameThingBaseExtensions));
-            CreateMap<GameItem, GameItemDto>().IncludeBase<GameThingBase,GameItemDto>()
-                .ForMember(c => c.ClientString, c => c.MapFrom(p => p.GetClientString()));
+            //基础类型映射
+            CreateMap<Guid, string>().ConstructUsing(c => c.ToBase64String());
+
+            //DTO映射
+            CreateMap<GameItem, GameItemDto>();
 
             CreateMap<CombatReport, CombatDto>();
             CreateMap<LoginT89ParamsDto, T89LoginData>();
-            //基础类型
-            CreateMap<Guid, string>().ConstructUsing(c => c.ToBase64String());
             //CreateMap<GameGuildEntity, Dictionary<string, object>>().ConstructUsing((src, context) =>
             //{
             //    //context.Items.Add("Cap", 11);
