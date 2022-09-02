@@ -150,8 +150,7 @@ namespace System
         {
             try
             {
-                if (null != Action)
-                    Action(State);
+                Action?.Invoke(State);
             }
             catch (Exception err)
             {

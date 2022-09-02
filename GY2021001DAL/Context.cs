@@ -35,12 +35,7 @@ namespace GuangYuan.GY001.UserDb
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //注册函数
-            modelBuilder.HasDbFunction(() => SqlDbFunctions.JsonValue(default, default)).HasTranslation(
-                args =>
-                {
-                    var result = SqlFunctionExpression.Create("JSON_VALUE", args, args.Last().Type, args.Last().TypeMapping);
-                    return result;
-                });
+            SqlDbFunctions.Register(modelBuilder);
 
             //用户
             modelBuilder.Entity<GameUser>().HasIndex(c => c.LoginName).IsUnique(true);

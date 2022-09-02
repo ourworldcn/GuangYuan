@@ -264,7 +264,7 @@ namespace GuangYuan.GY001.BLL
         }
         public class MyClass
         {
-            public MyClass()
+            protected MyClass()
             {
 
             }
@@ -275,7 +275,7 @@ namespace GuangYuan.GY001.BLL
                 Nv = change.Item2;
             }
 
-            public int Old { get; set; }
+            public int Old { get;protected set; }
 
             public int Nv { get; set; }
 

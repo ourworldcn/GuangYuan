@@ -254,14 +254,13 @@ namespace Microsoft.Extensions.Caching.Memory
         public bool EnsureSaved(object key, TimeSpan? timeout = null)
         {
             ThrowIfDisposed();
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultLockTimeout);
+            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, timeout ?? Options.DefaultLockTimeout);
             if (dw.IsEmpty)
             {
                 OwHelper.SetLastError(258);
                 return false;
             }
-            var entry = GetCacheEntry(key) as DataObjectCacheEntry;
-            if (entry is null)
+            if (!(GetCacheEntry(key) is DataObjectCacheEntry entry))
             {
                 OwHelper.SetLastError(1168);
                 return false;

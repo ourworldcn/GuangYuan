@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using System.Threading;
 
 namespace OW.Game.PropertyChange
@@ -58,6 +59,7 @@ namespace OW.Game.PropertyChange
         /// <summary>
         /// 指出是什么对象变化了属性。
         /// </summary>
+        [JsonIgnore]
         public object Object { get; set; }
 
         /// <summary>

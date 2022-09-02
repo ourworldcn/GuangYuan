@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using OW.DDD;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace OW.Game.Store
     /// <summary>
     /// 存储在<see cref="VirtualThing"/>中实体对象的基类。
     /// </summary>
-    public class VirtualThingEntityBase
+    public class VirtualThingEntityBase : IEntity, IDisposable
     {
         #region 构造函数
 
@@ -36,6 +37,9 @@ namespace OW.Game.Store
         }
 
         #endregion 构造函数
+
+        [JsonIgnore]
+        public Guid Id => Thing?.Id ?? Guid.Empty;
 
         #region IDisposable接口及相关
 

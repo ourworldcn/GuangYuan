@@ -374,7 +374,7 @@ namespace Microsoft.Extensions.Caching.Memory
             else
             {
                 var entry = GetCacheEntry(key);
-                var b = entry is null ? false : TryGetValueCore(entry);
+                var b = !(entry is null) && TryGetValueCore(entry);
                 value = entry?.Value;
                 if (b)
                     OwHelper.SetLastError(0);
@@ -451,6 +451,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
                 // 释放未托管的资源(未托管的对象)并重写终结器
                 // 将大型字段设置为 null
+                _Options = null;
                 _Items = null;
                 _IsDisposed = true;
             }
@@ -531,7 +532,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="timeout">锁定键的最长超时，省略或为null则使用<see cref="OwMemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
         /// <returns>返回的结构可以用using 语句保证释放。判断<see cref="DisposeHelper{T}.IsEmpty"/>可以知道是否锁定成功。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DisposeHelper<object> Lock(this OwMemoryCacheBase cache, object key, TimeSpan? timeout) =>
+        public static DisposeHelper<object> Lock(this OwMemoryCacheBase cache, object key, TimeSpan? timeout = null) =>
             DisposeHelper.Create(cache.Options.LockCallback, cache.Options.UnlockCallback, key, timeout ?? cache.Options.DefaultLockTimeout);
 
         /// <summary>

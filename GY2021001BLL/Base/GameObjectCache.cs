@@ -67,6 +67,18 @@ namespace OW.Game.Caching
         {
             return new GameObjectCacheEntry(key, this);
         }
+        protected override void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+
+                }
+                _World = null;
+            }
+            base.Dispose(disposing);
+        }
     }
 
     public static class GameObjectCacheExtensions

@@ -168,26 +168,24 @@ namespace OW.Game
             for (int i = keys.Count - 1; i >= 0; i--)
             {
                 var key = keys[i];
-                using (var dw = DisposeHelper.Create(StringLocker.TryEnter, StringLocker.Exit, key, TimeSpan.Zero))
+                using var dw = DisposeHelper.Create(StringLocker.TryEnter, StringLocker.Exit, key, TimeSpan.Zero);
+                if (dw.IsEmpty)
+                    continue;
+                var entry = _Datas.GetCacheEntry(key);
+                if (entry is null)  //若键下的数据已经销毁
                 {
-                    if (dw.IsEmpty)
+                    keys.RemoveAt(i);
+                    continue;
+                }
+                try
+                {
+                    var option = (DataObjectOptions)entry.State;
+                    if (null != option.SaveCallback && !(bool)option.SaveCallback?.Invoke(entry.Value, option.SaveCallbackState))
                         continue;
-                    var entry = _Datas.GetCacheEntry(key);
-                    if (entry is null)  //若键下的数据已经销毁
-                    {
-                        keys.RemoveAt(i);
-                        continue;
-                    }
-                    try
-                    {
-                        var option = (DataObjectOptions)entry.State;
-                        if (null != option.SaveCallback && !(bool)option.SaveCallback?.Invoke(entry.Value, option.SaveCallbackState))
-                            continue;
-                        keys.RemoveAt(i);
-                    }
-                    catch (Exception)
-                    {
-                    }
+                    keys.RemoveAt(i);
+                }
+                catch (Exception)
+                {
                 }
             }
             //放入下次再保存
@@ -257,17 +255,6 @@ namespace OW.Game
         }
 
         #region 后台工作相关
-
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            //var result = base.StartAsync(cancellationToken);
-            return Task.CompletedTask;
-        }
-
-        protected Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            return Task.CompletedTask;
-        }
 
         #endregion 后台工作相关
 
