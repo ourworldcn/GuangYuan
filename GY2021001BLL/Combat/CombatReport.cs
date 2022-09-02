@@ -479,6 +479,7 @@ namespace GuangYuan.GY001.UserDb.Combat
             if (result.MapTId == Guid.Empty)    //若需设置地图模板id
                 result.MapTId = ProjectConstant.PvpDungeonTId;
             _Datas.AddOrUpdate(id, thing, (c1, c2) => thing);
+            result.Thing = thing;
             OwHelper.SetLastError(0);
             return result;
         }
