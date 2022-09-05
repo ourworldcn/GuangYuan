@@ -2289,6 +2289,153 @@ namespace GY2021001WebApi.Models
     #region 战斗相关
 
     /// <summary>
+    /// 战斗的聚合根。
+    /// </summary>
+    public class GameCombatDto
+    {
+        /// <summary>
+        /// TODO 不可直接构造。
+        /// </summary>
+        public GameCombatDto()
+        {
+        }
+
+        #region 进攻方信息
+
+        List<GameSoldier> _Attackers;
+        /// <summary>
+        /// 攻击方角色集合。(当前可能只有一个)
+        /// </summary>
+        public List<GameSoldier> Attackers
+        {
+            get
+            {
+                return _Attackers;
+            }
+            set => _Attackers = value;
+        }
+
+        #endregion 进攻方坐骑信息
+
+        #region 防御方信息
+
+        List<GameSoldier> _Defensers;
+        /// <summary>
+        /// 防御方角色Id集合。(当前可能只有一个)
+        /// </summary>
+        public List<GameSoldier> Defensers
+        {
+            get
+            {
+                return _Defensers;
+            }
+            set => _Defensers = value;
+        }
+
+        #endregion 防御方坐骑信息
+
+        /// <summary>
+        /// 地图Id。就是关卡模板Id。
+        /// 这可以表示该战斗是什么种类。
+        /// </summary>
+        public Guid MapTId { get; set; }
+
+        /// <summary>
+        /// 该战斗开始的Utc时间。
+        /// </summary>
+        public DateTime StartUtc { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// 该战斗结束的Utc时间。
+        /// 空表示未结束。
+        /// </summary>
+        public DateTime? EndUtc { get; set; }
+
+        /// <summary>
+        /// 获取或设置是否正在请求协助。
+        /// </summary>
+        public bool Assistancing { get; set; }
+
+        /// <summary>
+        /// 获取或设置是否已经协助完毕。
+        /// </summary>
+        public bool Assistanced { get; set; }
+
+        /// <summary>
+        /// 是否已经反击。
+        /// </summary>
+        public bool Retaliationed { get; set; }
+
+        /// <summary>
+        /// 设置或获取协助者的角色Id。
+        /// </summary>
+        public Guid? AssistanceId { get; set; }
+
+        /// <summary>
+        /// 获取或设置战斗结果，true进攻方胜利，false进攻方失败。null无胜负。
+        /// </summary>
+        public bool? IsAttckerWin { get; set; }
+
+        /// <summary>
+        /// 获取或设置该流程是否已经结束。
+        /// </summary>
+        public bool IsCompleted { get; set; }
+
+    }
+
+    /// <summary>
+    /// 参与战斗的实体。
+    /// </summary>
+    public class GameSoldierDto
+    {
+        public GameSoldierDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 角色Id（将来可能是其它实体Id。）
+        /// </summary>
+        public Guid CharId { get; set; }
+
+        /// <summary>
+        /// 参与战斗时刻的显示名字。
+        /// </summary>
+        public string DisplayName { get; set; }
+
+        /// <summary>
+        /// 战斗前积分。
+        /// </summary>
+        public int ScoreBefore { get; set; }
+
+        /// <summary>
+        /// 战斗后积分。
+        /// </summary>
+        public int ScoreAfter { get; set; }
+
+        /// <summary>
+        /// 战斗前排名。
+        /// </summary>
+        public int RankBefore { get; set; }
+
+        /// <summary>
+        /// 战斗后排名。
+        /// </summary>
+        public int RankAfter { get; set; }
+
+        /// <summary>
+        /// 携带的出战坐骑。
+        /// </summary>
+        public List<GameItem> Pets { get; set; } = new List<GameItem>();
+
+        /// <summary>
+        /// 战利品。
+        /// </summary>
+        public List<GameItem> Booties { get; set; } = new List<GameItem>();
+
+    }
+
+    /// <summary>
     /// 放弃pvp请求协助接口参数传输类。
     /// </summary>
     [DataContract]

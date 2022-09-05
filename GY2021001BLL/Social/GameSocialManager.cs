@@ -1620,7 +1620,13 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var todayData = datas.PvpObject?.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();    //当日数据的帮助器类
-            var hasData = todayData.GetTodayData(datas.Now).Any();
+            if(todayData is null)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
+                datas.ErrorMessage = "角色没有pvp战斗功能。";
+                return;
+            }
+            var hasData = todayData?.GetTodayData(datas.Now).Any()??false;
             //if (!hasData)  //若当日无数据
             //{
             //    if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, 0))   //若无法设置级别
