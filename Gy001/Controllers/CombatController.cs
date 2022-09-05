@@ -90,13 +90,16 @@ namespace GY2021001WebApi.Controllers
             return mapper.Map(result);
         }
 
-#if DEBUG
+        /// <summary>
+        /// 开始一场pvp战斗。
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
-        public ActionResult<CombatEndReturnDto> Test()
+        public ActionResult<CombatStartPvpReturnDto> CombatStartPvp(CombatStartPvpParamsDto model)
         {
-            return null;
+            return Ok();
         }
-#endif
 
         /// <summary>
         /// PVP战斗结算。
@@ -120,7 +123,7 @@ namespace GY2021001WebApi.Controllers
             result.DebugMessage = datas.ErrorMessage;
             var mapper = World.GetMapper();
             result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
-            result.Combat = new CombatDto();
+            result.Combat = new GameCombatDto();
             HttpContext.RequestServices.GetRequiredService<GameMapperManager>().Map(datas.Combat, result.Combat);
             return result;
         }
@@ -146,11 +149,11 @@ namespace GY2021001WebApi.Controllers
             {
                 var mapper = World.Service.GetRequiredService<GameMapperManager>();
                 var view = datas.CombatObject;
-                result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => mapper.Map(c)));
-                result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => mapper.Map(c)));
-                result.Booty.AddRange(datas.UserDbContext.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Thing.Id)
-                    .AsEnumerable().Select(c => mapper.Map(c.GetJsonObject<GameBooty>())));
-                result.CombatObject = new CombatDto();
+                //result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => mapper.Map(c)));
+                //result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => mapper.Map(c)));
+                //result.Booty.AddRange(datas.UserDbContext.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Thing.Id)
+                //    .AsEnumerable().Select(c => mapper.Map(c.GetJsonObject<GameBooty>())));
+                //result.CombatObject = new CombatDto();
                 HttpContext.RequestServices.GetRequiredService<GameMapperManager>().Map(datas.CombatObject, result.CombatObject);
             }
             return result;

@@ -2302,11 +2302,11 @@ namespace GY2021001WebApi.Models
 
         #region 进攻方信息
 
-        List<GameSoldier> _Attackers;
+        List<GameSoldierDto> _Attackers;
         /// <summary>
         /// 攻击方角色集合。(当前可能只有一个)
         /// </summary>
-        public List<GameSoldier> Attackers
+        public List<GameSoldierDto> Attackers
         {
             get
             {
@@ -2319,11 +2319,11 @@ namespace GY2021001WebApi.Models
 
         #region 防御方信息
 
-        List<GameSoldier> _Defensers;
+        List<GameSoldierDto> _Defensers;
         /// <summary>
         /// 防御方角色Id集合。(当前可能只有一个)
         /// </summary>
-        public List<GameSoldier> Defensers
+        public List<GameSoldierDto> Defensers
         {
             get
             {
@@ -2424,12 +2424,12 @@ namespace GY2021001WebApi.Models
         public int RankAfter { get; set; }
 
         /// <summary>
-        /// 携带的出战坐骑。
+        /// 携带的出战坐骑/或家园的上阵坐骑。即与此战斗相关的坐骑。
         /// </summary>
         public List<GameItem> Pets { get; set; } = new List<GameItem>();
 
         /// <summary>
-        /// 战利品。
+        /// 战利品。得到的战利品数量为正，失去的则Count是负数。
         /// </summary>
         public List<GameItem> Booties { get; set; } = new List<GameItem>();
 
@@ -2454,6 +2454,28 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public class AbortPvpResultDto : ReturnDtoBase
     {
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [DataContract]
+    public class CombatStartPvpParamsDto : TokenDtoBase
+    {
+    }
+
+    /// <summary>
+    /// 
+    /// 如果没有正常开始，则返回HasError=true。
+    /// </summary>
+    [DataContract]
+    public class CombatStartPvpReturnDto : ReturnDtoBase
+    {
+        /// <summary>
+        /// 开始的这场战斗的id。每场战斗有唯一id。
+        /// </summary>
+        [DataMember]
+        public string GameCombatId { get; set; }
     }
 
 
@@ -2663,13 +2685,18 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public string CombatId { get; set; }
+
+        public List<GameItemDto> MyProperty { get; set; }
     }
 
     [DataContract]
     public class CombatEndPvpReturnDto : ChangesAndMailReturnDtoBase
     {
+        /// <summary>
+        /// 返回该场战斗的数据。
+        /// </summary>
         [DataMember]
-        public CombatDto Combat { get; set; }
+        public GameCombatDto Combat { get; set; }
     }
 
     /// <summary>
@@ -2730,19 +2757,7 @@ namespace GY2021001WebApi.Models
         /// 战斗对象的数据，参见其具体说明。
         /// </summary>
         [DataMember]
-        public CombatDto CombatObject { get; set; }
-
-        /// <summary>
-        /// 攻击者的坐骑集合。
-        /// </summary>
-        [DataMember]
-        public List<GameItemDto> AttackerMounts { get; set; } = new List<GameItemDto>();
-
-        /// <summary>
-        /// 防御者的坐骑集合。
-        /// </summary>
-        [DataMember]
-        public List<GameItemDto> DefenserMounts { get; set; } = new List<GameItemDto>();
+        public GameCombatDto CombatObject { get; set; }
 
         /// <summary>
         /// 战利品集合。
