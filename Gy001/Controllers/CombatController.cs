@@ -110,21 +110,21 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<CombatEndPvpReturnDto> CombatEndPvp(CombatEndPvpParamsDto model)
         {
             var result = new CombatEndPvpReturnDto();
-            using var datas = new EndCombatPvpWorkData(World, model.Token, OwConvert.ToGuid(model.OtherGCharId))
-            {
-                CombatId = OwConvert.ToGuid(model.CombatId),
-                Now = DateTime.UtcNow,
-                DungeonId = OwConvert.ToGuid(model.DungeonId),
-                IsWin = model.IsWin,
-            };
-            datas.DestroyTIds.AddRange(model.Destroies.Select(c => (OwConvert.ToGuid(c.Id), c.Count)));
-            World.CombatManager.EndCombatPvp(datas);
-            result.HasError = datas.HasError;
-            result.DebugMessage = datas.ErrorMessage;
-            var mapper = World.GetMapper();
-            result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
-            result.Combat = new GameCombatDto();
-            HttpContext.RequestServices.GetRequiredService<GameMapperManager>().Map(datas.Combat, result.Combat);
+            //using var datas = new EndCombatPvpWorkData(World, model.Token, OwConvert.ToGuid(model.OtherGCharId))
+            //{
+            //    CombatId = OwConvert.ToGuid(model.CombatId),
+            //    Now = DateTime.UtcNow,
+            //    DungeonId = OwConvert.ToGuid(model.DungeonId),
+            //    MainRoomRhp = model.MainRoomRhp,
+            //};
+            //datas.DestroyTIds.AddRange(model.Destroies.Select(c => (ValueTuple<Guid, decimal>)c));
+            //World.CombatManager.EndCombatPvp(datas);
+            //result.HasError = datas.HasError;
+            //result.DebugMessage = datas.ErrorMessage;
+            //var mapper = World.GetMapper();
+            //result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
+            //result.Combat = new GameCombatDto();
+            //HttpContext.RequestServices.GetRequiredService<GameMapperManager>().Map(datas.Combat, result.Combat);
             return result;
         }
 

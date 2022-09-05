@@ -219,6 +219,13 @@
             <param name="model">参见 CombatEndParamsDto</param>
             <returns>参见 CombatEndReturnDto</returns>
         </member>
+        <member name="M:GY2021001WebApi.Controllers.CombatController.CombatStartPvp(GY2021001WebApi.Models.CombatStartPvpParamsDto)">
+            <summary>
+            开始一场pvp战斗。
+            </summary>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
         <member name="M:GY2021001WebApi.Controllers.CombatController.CombatEndPvp(GY2021001WebApi.Models.CombatEndPvpParamsDto)">
             <summary>
             PVP战斗结算。
@@ -2250,6 +2257,123 @@
             客户端记录一些额外信息。服务器不使用。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GameCombatDto">
+            <summary>
+            战斗的聚合根。
+            </summary>
+        </member>
+        <member name="M:GY2021001WebApi.Models.GameCombatDto.#ctor">
+            <summary>
+            TODO 不可直接构造。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.Id">
+            <summary>
+            本战斗对象的唯一Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.Attackers">
+            <summary>
+            攻击方角色集合。(当前可能只有一个)
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.Defensers">
+            <summary>
+            防御方角色Id集合。(当前可能只有一个)
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.MapTId">
+            <summary>
+            地图Id。就是关卡模板Id。
+            这可以表示该战斗是什么种类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.StartUtc">
+            <summary>
+            该战斗开始的Utc时间。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.EndUtc">
+            <summary>
+            该战斗结束的Utc时间。
+            空表示未结束。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.Assistancing">
+            <summary>
+            获取或设置是否正在请求协助。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.Assistanced">
+            <summary>
+            获取或设置是否已经协助完毕。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.Retaliationed">
+            <summary>
+            是否已经反击。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.AssistanceId">
+            <summary>
+            设置或获取协助者的角色Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.IsAttckerWin">
+            <summary>
+            获取或设置战斗结果，true进攻方胜利，false进攻方失败。null无胜负。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.IsCompleted">
+            <summary>
+            获取或设置该流程是否已经结束。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GameSoldierDto">
+            <summary>
+            参与战斗的实体。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.CharId">
+            <summary>
+            角色Id（将来可能是其它实体Id。）
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.DisplayName">
+            <summary>
+            参与战斗时刻的显示名字。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.ScoreBefore">
+            <summary>
+            战斗前积分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.ScoreAfter">
+            <summary>
+            战斗后积分。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.RankBefore">
+            <summary>
+            战斗前排名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.RankAfter">
+            <summary>
+            战斗后排名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.Pets">
+            <summary>
+            携带的出战坐骑/或家园的上阵坐骑。即与此战斗相关的坐骑。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.Booties">
+            <summary>
+            战利品。得到的战利品数量为正，失去的则Count是负数。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.AbortPvpParamsDto">
             <summary>
             放弃pvp请求协助接口参数传输类。
@@ -2388,35 +2512,74 @@
             元素中仅需Id有效即可。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.CombatStartPvpParamsDto">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartPvpParamsDto.DungeonId">
+            <summary>
+            关卡Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartPvpParamsDto.OtherGCharId">
+            <summary>
+            对方角色Id。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.CombatStartPvpReturnDto">
+            <summary>
+            如果没有正常开始，则返回HasError=true。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartPvpReturnDto.GameCombatId">
+            <summary>
+            开始的这场战斗的id。每场战斗有唯一id。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.CombatEndPvpParamsDto">
             <summary>
             
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.DungeonId">
-            <summary>
-            关卡Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.OtherGCharId">
-            <summary>
-            对方角色Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.IsWin">
-            <summary>
-            是否胜利了。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.Destroies">
-            <summary>
-            摧毁建筑的模板Id集合。
-            </summary>
-        </member>
         <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.CombatId">
             <summary>
             战斗对象唯一Id。从邮件的 mail.Properties["CombatId"] 属性中获取。
-            反击和协助才需要填写。直接pvp时可以省略。
+            反击和协助才需要填写。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.MainRoomRhp">
+            <summary>
+            主控室剩余血量的百分比。
+            0表示空血，1表示满血。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.StoreOfWoodRhp">
+            <summary>
+            木材仓剩余血量的百分比。合并多个木材仓的总血量剩余的百分比。
+            0表示空血，1表示满血。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.GoldRhp">
+            <summary>
+            玉米田剩余血量的百分比。
+            0表示空血，1表示满血。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.WoodRhp">
+            <summary>
+            木材林剩余血量的百分比。
+            0表示空血，1表示满血。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.Booty">
+            <summary>
+            其它战利品。进攻方获得的道具等。当前版本暂未支持生物。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpReturnDto.Combat">
+            <summary>
+            返回该场战斗的数据。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.SetLineupReturnDto">
@@ -2463,21 +2626,6 @@
         <member name="P:GY2021001WebApi.Models.GetCombatObjectResultDto.CombatObject">
             <summary>
             战斗对象的数据，参见其具体说明。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetCombatObjectResultDto.AttackerMounts">
-            <summary>
-            攻击者的坐骑集合。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetCombatObjectResultDto.DefenserMounts">
-            <summary>
-            防御者的坐骑集合。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetCombatObjectResultDto.Booty">
-            <summary>
-            战利品集合。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetCombatObjectParamsDto">

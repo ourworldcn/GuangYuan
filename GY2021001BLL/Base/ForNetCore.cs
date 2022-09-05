@@ -275,7 +275,7 @@ namespace GuangYuan.GY001.BLL
                 Nv = change.Item2;
             }
 
-            public int Old { get;protected set; }
+            public int Old { get; protected set; }
 
             public int Nv { get; set; }
 
@@ -301,20 +301,20 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
-            var sw = Stopwatch.StartNew();
             var key = "96AEEF3C-9E95-4A55-9585-1562AFCEC70C";
             var guild = new GameGuildEntity()
             {
                 AutoAccept = true,
                 Cap = 20,
             };
-
+            var cache = world.Service.GetService<GameObjectCache>();
+            var sw = Stopwatch.StartNew();
             try
             {
                 var mapper = world.Service.GetRequiredService<IMapper>();
+                
                 var gi = new GameItem();
                 world.EventsManager.GameItemCreated(gi, ProjectConstant.HomelandSlotId);
-
                 var obj = new MyClass(Tuple.Create(2, 1));
                 var str = JsonSerializer.Serialize(obj);
                 var obj2 = (MyClass)JsonSerializer.Deserialize<MyClass>(str);

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,6 +54,7 @@ namespace Microsoft.Extensions.Caching.Memory
             /// 加载时调用。
             /// 在对键加锁的范围内调用。
             /// key,state,返回值。
+            /// 特别地，返回null表示后备存储中没有该对象，此时会调用<see cref="CreateCallback"/>来创建对象。
             /// </summary>
             [AllowNull]
             public Func<object, object, object> LoadCallback { get; set; }
@@ -254,22 +256,20 @@ namespace Microsoft.Extensions.Caching.Memory
         public bool EnsureSaved(object key, TimeSpan? timeout = null)
         {
             ThrowIfDisposed();
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, timeout ?? Options.DefaultLockTimeout);
+            using var dw = Lock(key, timeout);
             if (dw.IsEmpty)
-            {
-                OwHelper.SetLastError(258);
                 return false;
-            }
-            if (!(GetCacheEntry(key) is DataObjectCacheEntry entry))
+            if (!(GetCacheEntry(key) is DataObjectCacheEntry entry) || entry is null)
             {
                 OwHelper.SetLastError(1168);
                 return false;
             }
             var result = EnsureSavedCore(entry);
-            if (result)
+            if (result) //若成功保存，则试图删除保存队列中的键
             {
                 OwHelper.SetLastError(0);
-                lock (_Dirty)
+                using var dwDirty = DisposeHelper.Create(Monitor.TryEnter, Monitor.Exit, _Dirty, TimeSpan.FromMilliseconds(1));
+                if (!dwDirty.IsEmpty)   //若锁定成功
                     _Dirty.Remove(entry.Key);
             }
             return result;
@@ -280,18 +280,19 @@ namespace Microsoft.Extensions.Caching.Memory
         /// 派生类可以重载此函数。非公有函数不会自动对键加锁，若需要调用者需要负责加/解锁。
         /// </summary>
         /// <param name="entry"></param>
-        /// <returns>true成功保存，false保存时出错。</returns>
+        /// <returns>true成功保存(或未指定保存回调)，false保存时出错。</returns>
         protected virtual bool EnsureSavedCore(DataObjectCacheEntry entry)
         {
+            bool result;
             try
             {
-                entry.SaveCallback?.Invoke(entry.Value, entry.SaveCallbackState);
+                result = entry.SaveCallback?.Invoke(entry.Value, entry.SaveCallbackState) ?? true;
             }
             catch (Exception)
             {
                 return false;
             }
-            return true;
+            return result;
         }
 
         /// <summary>
@@ -307,11 +308,10 @@ namespace Microsoft.Extensions.Caching.Memory
         public bool EnsureInitialized(object key, out DataObjectCacheEntry result, TimeSpan? timeout = null)
         {
             ThrowIfDisposed();
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, timeout ?? Options.DefaultLockTimeout);
+            using var dw = Lock(key, timeout);
             if (dw.IsEmpty)
             {
                 result = default;
-                OwHelper.SetLastError(258);
                 return false;
             }
             var entry = (DataObjectCacheEntry)GetCacheEntry(key);
@@ -445,6 +445,5 @@ namespace Microsoft.Extensions.Caching.Memory
 
     public static class DataObjectCacheExtensions
     {
-
     }
 }

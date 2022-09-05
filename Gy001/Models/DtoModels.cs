@@ -2300,6 +2300,11 @@ namespace GY2021001WebApi.Models
         {
         }
 
+        /// <summary>
+        /// 本战斗对象的唯一Id。
+        /// </summary>
+        public string Id { get; set; }
+
         #region 进攻方信息
 
         List<GameSoldierDto> _Attackers;
@@ -2426,12 +2431,12 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 携带的出战坐骑/或家园的上阵坐骑。即与此战斗相关的坐骑。
         /// </summary>
-        public List<GameItem> Pets { get; set; } = new List<GameItem>();
+        public List<GameItemDto> Pets { get; set; } = new List<GameItemDto>();
 
         /// <summary>
         /// 战利品。得到的战利品数量为正，失去的则Count是负数。
         /// </summary>
-        public List<GameItem> Booties { get; set; } = new List<GameItem>();
+        public List<GameItemDto> Booties { get; set; } = new List<GameItemDto>();
 
     }
 
@@ -2455,29 +2460,6 @@ namespace GY2021001WebApi.Models
     public class AbortPvpResultDto : ReturnDtoBase
     {
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [DataContract]
-    public class CombatStartPvpParamsDto : TokenDtoBase
-    {
-    }
-
-    /// <summary>
-    /// 
-    /// 如果没有正常开始，则返回HasError=true。
-    /// </summary>
-    [DataContract]
-    public class CombatStartPvpReturnDto : ReturnDtoBase
-    {
-        /// <summary>
-        /// 开始的这场战斗的id。每场战斗有唯一id。
-        /// </summary>
-        [DataMember]
-        public string GameCombatId { get; set; }
-    }
-
 
     /// <summary>
     /// 开始战斗的参数传输类。
@@ -2653,7 +2635,7 @@ namespace GY2021001WebApi.Models
     /// 
     /// </summary>
     [DataContract]
-    public class CombatEndPvpParamsDto : TokenDtoBase
+    public class CombatStartPvpParamsDto : TokenDtoBase
     {
         /// <summary>
         /// 关卡Id。
@@ -2667,26 +2649,67 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string OtherGCharId { get; set; }
 
+    }
+
+    /// <summary>
+    /// 如果没有正常开始，则返回HasError=true。
+    /// </summary>
+    [DataContract]
+    public class CombatStartPvpReturnDto : ChangesReturnDtoBaseV2
+    {
         /// <summary>
-        /// 是否胜利了。
+        /// 开始的这场战斗的id。每场战斗有唯一id。
         /// </summary>
         [DataMember]
-        public bool IsWin { get; set; }
+        public string GameCombatId { get; set; }
+    }
 
-        /// <summary>
-        /// 摧毁建筑的模板Id集合。
-        /// </summary>
-        [DataMember]
-        public List<IdAndCountDto> Destroies { get; set; } = new List<IdAndCountDto>();
-
+    /// <summary>
+    /// 
+    /// </summary>
+    [DataContract]
+    public class CombatEndPvpParamsDto : TokenDtoBase
+    {
         /// <summary>
         /// 战斗对象唯一Id。从邮件的 mail.Properties["CombatId"] 属性中获取。
-        /// 反击和协助才需要填写。直接pvp时可以省略。
+        /// 反击和协助才需要填写。
         /// </summary>
         [DataMember]
         public string CombatId { get; set; }
 
-        public List<GameItemDto> MyProperty { get; set; }
+        /// <summary>
+        /// 主控室剩余血量的百分比。
+        /// 0表示空血，1表示满血。
+        /// </summary>
+        [DataMember]
+        public decimal MainRoomRhp { get; set; }
+
+        /// <summary>
+        /// 木材仓剩余血量的百分比。合并多个木材仓的总血量剩余的百分比。
+        /// 0表示空血，1表示满血。
+        /// </summary>
+        [DataMember]
+        public decimal StoreOfWoodRhp { get; set; }
+
+        /// <summary>
+        /// 玉米田剩余血量的百分比。
+        /// 0表示空血，1表示满血。
+        /// </summary>
+        [DataMember]
+        public decimal GoldRhp { get; set; }
+
+        /// <summary>
+        /// 木材林剩余血量的百分比。
+        /// 0表示空血，1表示满血。
+        /// </summary>
+        [DataMember]
+        public decimal WoodRhp { get; set; }
+
+        /// <summary>
+        /// 其它战利品。进攻方获得的道具等。当前版本暂未支持生物。
+        /// </summary>
+        [DataMember]
+        public List<GameItemDto> Booty { get; set; } = new List<GameItemDto>();
     }
 
     [DataContract]
@@ -2758,12 +2781,6 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public GameCombatDto CombatObject { get; set; }
-
-        /// <summary>
-        /// 战利品集合。
-        /// </summary>
-        [DataMember]
-        public List<GameBootyDto> Booty { get; set; } = new List<GameBootyDto>();
     }
 
     /// <summary>

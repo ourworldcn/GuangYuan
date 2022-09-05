@@ -9,7 +9,7 @@
     <Lollipop Position="0.2" Collapsed="true" />
   </Class>
   <Class Name="Microsoft.Extensions.Caching.Memory.DataObjectCache" BaseTypeListCollapsed="true">
-    <Position X="2" Y="6.25" Width="1.5" />
+    <Position X="2" Y="9.25" Width="1.5" />
     <NestedTypes>
       <Class Name="Microsoft.Extensions.Caching.Memory.DataObjectCache.DataObjectCacheEntry" Collapsed="true">
         <TypeIdentifier>

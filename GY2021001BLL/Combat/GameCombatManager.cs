@@ -626,7 +626,7 @@ namespace GuangYuan.GY001.BLL
             var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
             CombatReport pc = thing.GetJsonObject<CombatReport>();
             //计算等级分
-            if (datas.IsWin) //若需要计算等级分
+            if (datas.MainRoomRhp > 0) //若需要计算等级分
             {
                 decimal diff = 0;
                 pvpObj = datas.GameChar.GetPvpObject();
@@ -706,13 +706,13 @@ namespace GuangYuan.GY001.BLL
             bootyOfDefenser.ForEach(c => c.FillToDictionary(World, mail.Properties));
             World.SocialManager.SendMail(mail, new Guid[] { datas.OtherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             //保存数据
-            pc.IsAttckerWin = datas.IsWin;
+            pc.IsAttckerWin = datas.MainRoomRhp <= 0;
             datas.Save();
             datas.HasError = false;
             datas.ErrorCode = 0;
             datas.ErrorMessage = null;
             //计算成就数据
-            if (datas.IsWin)    //若进攻胜利
+            if (datas.MainRoomRhp <= 0)    //若进攻胜利
             {
                 var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.PVP进攻成就);
                 if (null != mission)   //若找到成就对象
@@ -784,7 +784,7 @@ namespace GuangYuan.GY001.BLL
             pc.DefenserIds.Add(datas.OtherCharId);
             datas.Combat = pc;
             //计算战利品
-            if (datas.IsWin) //若反击胜利
+            if (datas.MainRoomRhp <= 0) //若反击胜利
             {
                 List<GameBooty> booties = db.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == oldWar.Id)
                     .AsEnumerable().Select(c => c.GetJsonObject<GameBooty>()).Where(c => oldView.AttackerIds.Contains(c.CharId))
@@ -809,7 +809,7 @@ namespace GuangYuan.GY001.BLL
             }
             //发送邮件
             var mail = new GameMail();
-            if (datas.IsWin) //反击得胜
+            if (datas.MainRoomRhp <= 0) //反击得胜
             {
                 oldView.IsCompleted = true; //反击得胜后不可再要求协助
                 //发送邮件
@@ -874,7 +874,7 @@ namespace GuangYuan.GY001.BLL
             pc.DefenserIds.Add(datas.OtherCharId);
             datas.Combat = pc;
             //获取战利品
-            if (datas.IsWin)    //若赢得战斗
+            if (datas.MainRoomRhp <= 0)    //若赢得战斗
             {
                 var oriBooty = db.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == oldWar.Id)     //原始战斗攻击方战利品
                     .AsEnumerable().Select(c => c.GetJsonObject<GameBooty>()).Where(c => oldView.AttackerIds.Contains(c.CharId))
@@ -916,11 +916,11 @@ namespace GuangYuan.GY001.BLL
             //改写进攻权限
             oldView.Assistancing = false;
             oldView.Assistanced = true;
-            oldView.IsCompleted = oldView.Retaliationed || datas.IsWin;
+            oldView.IsCompleted = oldView.Retaliationed || (datas.MainRoomRhp <= 0);
             datas.Save();
             datas.ErrorCode = ErrorCodes.NO_ERROR;
             //计算成就数据
-            if (datas.IsWin)
+            if (datas.MainRoomRhp <= 0)
             {
                 var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.PVP助战成就);
                 if (null != mission)   //若找到成就对象
@@ -934,7 +934,7 @@ namespace GuangYuan.GY001.BLL
             var mail = new GameMail()
             {
             };
-            if (datas.IsWin) //若协助成功
+            if (datas.MainRoomRhp <= 0) //若协助成功
             {
                 mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
                 mail.Properties["OldCombatId"] = oldWar.IdString;

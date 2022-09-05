@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.Caching.Memory
             /// 构造函数。
             /// </summary>
             /// <param name="cache">指定所属缓存对象，在调用<see cref="Dispose"/>时可以加入该对象。</param>
-            public OwMemoryCacheBaseEntry(object key, OwMemoryCacheBase cache)
+            protected OwMemoryCacheBaseEntry(object key, OwMemoryCacheBase cache)
             {
                 Key = key;
                 Cache = cache;
@@ -285,12 +285,8 @@ namespace Microsoft.Extensions.Caching.Memory
         public bool TryRemove(object key, TimeSpan? timeout = null)
         {
             ThrowIfDisposed();
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, timeout ?? Options.DefaultLockTimeout);
-            if (dw.IsEmpty) //若超时
-            {
-                OwHelper.SetLastError(258);
-            }
-            else
+            using var dw = Lock(key, timeout);
+            if (!dw.IsEmpty) //若未超时
             {
                 var entry = GetCacheEntry(key);
                 if (entry != null)
@@ -324,7 +320,6 @@ namespace Microsoft.Extensions.Caching.Memory
         /// 以指定原因移除缓存项。
         /// 此函数会调用<see cref="OwMemoryCacheBaseEntry.BeforeEvictionCallbacks"/>所有回调，然后移除配置项,最后调用所有<see cref="OwMemoryCacheBaseEntry.PostEvictionCallbacks"/>回调。
         /// 回调的异常均被忽略。
-        /// 最后如果要求自动调用Dispose,且支持<see cref="IDisposable"/>接口则调用<see cref="IDisposable.Dispose"/>。
         /// 派生类可以重载此函数。非公有函数不会自动对键加锁，若需要调用者需要负责加/解锁。
         /// </summary>
         /// <param name="entry"></param>
@@ -335,7 +330,7 @@ namespace Microsoft.Extensions.Caching.Memory
             try
             {
                 if (entry._BeforeEvictionCallbacksLazyer.IsValueCreated)
-                    entry.BeforeEvictionCallbacks.SafeForEach(c => c.BeforeEvictionCallback?.Invoke(entry.Key, entry.Value, EvictionReason.Removed, c.State));
+                    entry.BeforeEvictionCallbacks.SafeForEach(c => c.BeforeEvictionCallback?.Invoke(entry.Key, entry.Value, reason, c.State));
             }
             catch (Exception)
             {
@@ -344,7 +339,7 @@ namespace Microsoft.Extensions.Caching.Memory
             try
             {
                 if (entry._PostEvictionCallbacksLazyer.IsValueCreated)
-                    entry.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(entry.Key, entry.Value, EvictionReason.Removed, c.State));
+                    entry.PostEvictionCallbacks.SafeForEach(c => c.EvictionCallback?.Invoke(entry.Key, entry.Value, reason, c.State));
             }
             catch (Exception)
             {
@@ -364,11 +359,10 @@ namespace Microsoft.Extensions.Caching.Memory
         public bool TryGetValue(object key, out object value)
         {
             ThrowIfDisposed();
-            using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, Options.DefaultLockTimeout);
+            using var dw = Lock(key);
             if (dw.IsEmpty)
             {
                 value = default;
-                OwHelper.SetLastError(258);
                 return false;
             }
             else
@@ -395,6 +389,25 @@ namespace Microsoft.Extensions.Caching.Memory
         {
             entry.LastUseUtc = Options.Clock?.UtcNow.UtcDateTime ?? DateTime.UtcNow;
             return true;
+        }
+
+        /// <summary>
+        /// 用<see cref="OwMemoryCacheBaseOptions.LockCallback"/>锁定指定的键,以进行临界操作。
+        /// 在未来用<see cref="OwMemoryCacheBaseOptions.UnlockCallback"/>解锁。
+        /// 特别地，会用<see cref="OwHelper.SetLastError(int)"/>设置错误码，如果超时则设置258，成功锁定设置0。
+        /// </summary>
+        /// <param name="key">不会校验该key是否在本缓存内有无映射对象。</param>
+        /// <param name="timeout">锁定键的最长超时，省略或为null则使用<see cref="OwMemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
+        /// <returns>返回的结构可以用using 语句保证释放。判断<see cref="DisposeHelper{T}.IsEmpty"/>可以知道是否锁定成功。</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected DisposeHelper<object> Lock(object key, TimeSpan? timeout = null)
+        {
+            var result = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, timeout ?? Options.DefaultLockTimeout);
+            if (result.IsEmpty)
+                OwHelper.SetLastError(258);
+            else
+                OwHelper.SetLastError(0);
+            return result;
         }
 
         #region IDisposable接口相关
@@ -505,7 +518,7 @@ namespace Microsoft.Extensions.Caching.Memory
             long removalCount = 0;
             foreach (var item in _Items)
             {
-                using var dw = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, item.Key, TimeSpan.Zero);
+                using var dw = Lock(item.Key, TimeSpan.Zero);
                 if (dw.IsEmpty) //忽略无法锁定的项
                     continue;
                 if (!item.Value.IsExpired(nowUtc))  //若未超期
@@ -551,6 +564,12 @@ namespace Microsoft.Extensions.Caching.Memory
                 return DisposerWrapper.Create(c => cache.Options.UnlockCallback(c), obj);
             }, timeout);
         }
+
+        public static void Delay(this OwMemoryCacheBase cache, object key, TimeSpan delay)
+        {
+            cache.GetCacheEntry(key);
+        }
+
 
     }
 }

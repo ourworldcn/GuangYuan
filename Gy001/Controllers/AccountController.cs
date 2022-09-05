@@ -31,7 +31,6 @@ namespace GY2021001WebApi.Controllers
     {
         public AccountController()
         {
-
         }
 
         /// <summary>
@@ -219,16 +218,18 @@ namespace GY2021001WebApi.Controllers
         [HttpGet]
         public ActionResult<LoginReturnDto> QuicklyRegisterAndLogin()
         {
-
-
 #if DEBUG
+            var mapper1 = HttpContext.RequestServices.GetRequiredService<IMapper>();
+            var t1 = mapper1.Map<(Guid, decimal)>(new IdAndCountDto { Id = Guid.NewGuid().ToBase64String(), Count = 1.2m }, opt => opt.Items.Add("11", 1));
+            var t2 = mapper1.Map<IdAndCountDto>((Guid.NewGuid(), 2.1m));
+
             using var db = HttpContext.RequestServices.GetRequiredService<VWorld>().CreateNewUserDbContext();
             GameItem gi = db.Set<GameItem>().First(c => c.Children.Count > 0);
             gi.SetClientString("tname=ds");
-            var mapper1 = HttpContext.RequestServices.GetRequiredService<IMapper>();
+
             var world = HttpContext.RequestServices.GetRequiredService<VWorld>();
-            var giDto = mapper1.Map<GameItem,GameItemDto>(gi);
-            
+            var giDto = mapper1.Map<GameItem, GameItemDto>(gi);
+
 #endif //DEBUG
             try
             {

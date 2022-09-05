@@ -76,9 +76,28 @@ namespace GuangYuan.GY001.BLL
         public GameItemTemplate DungeonTemplate => _DungeonTemplate ??= World.ItemTemplateManager.GetTemplateFromeId(DungeonId);
 
         /// <summary>
-        /// 是否胜利了。
+        /// 主控室剩余血量的百分比。
+        /// 0表示空血，1表示满血。
         /// </summary>
-        public bool IsWin { get; set; }
+        public decimal MainRoomRhp { get; set; }
+
+        /// <summary>
+        /// 木材仓剩余血量的百分比。合并多个木材仓的总血量剩余的百分比。
+        /// 0表示空血，1表示满血。
+        /// </summary>
+        public decimal StoreOfWoodRhp { get; set; }
+
+        /// <summary>
+        /// 玉米田剩余血量的百分比。
+        /// 0表示空血，1表示满血。
+        /// </summary>
+        public decimal GoldRhp { get; set; }
+
+        /// <summary>
+        /// 木材林剩余血量的百分比。
+        /// 0表示空血，1表示满血。
+        /// </summary>
+        public decimal WoodRhp { get; set; }
 
         /// <summary>
         /// 摧毁建筑的模板Id集合。
@@ -123,7 +142,7 @@ namespace GuangYuan.GY001.BLL
             var defYumiBase = dYumi.Count.Value * 0.5m; //防御方玉米损失基数
             var defMucaiBase = dMucai.Count.GetValueOrDefault() * 0.2m;   //防御方木材损失基数
             var defMucaiShuBase = dMucaiShu.Count.Value * 0.5m; //防御方木材树损失基数
-            if (IsWin)   //若击溃主控室
+            if (MainRoomRhp<=0)   //若击溃主控室
             {
                 //攻击方木材
                 aMucai.StringDictionary["count"] = Math.Round(attMucaiBase, MidpointRounding.AwayFromZero).ToString();
