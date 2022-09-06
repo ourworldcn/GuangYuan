@@ -172,6 +172,11 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public static readonly Guid CombatReportTId = new Guid("{BB418C7C-FEC4-4EB7-8B8B-550E864934DB}");
         public static readonly Guid CombatBootyTId = new Guid("{6A5CB12E-519A-43B0-9EDC-A7FD2AFDE98F}");
+
+        /// <summary>
+        /// 参战方占位符。
+        /// </summary>
+        public static readonly Guid GameSoldierTId = new Guid("{53B9131E-5116-4A91-9712-2CA5FB64E6BF}");
         #endregion 战报相关
 
         #region 货币类模板Id

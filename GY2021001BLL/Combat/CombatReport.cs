@@ -1,4 +1,6 @@
-﻿using GuangYuan.GY001.BLL;
+﻿using AutoMapper;
+using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Homeland;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -241,6 +243,7 @@ namespace GuangYuan.GY001.UserDb.Combat
         #region 进攻方信息
 
         List<GameSoldier> _Attackers;
+
         /// <summary>
         /// 攻击方角色集合。(当前可能只有一个)
         /// </summary>
@@ -277,6 +280,33 @@ namespace GuangYuan.GY001.UserDb.Combat
             throw new NotImplementedException();
             //_AttackerMounts = JsonSerializer.SerializeToUtf8Bytes(value);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="world"></param>
+        /// <returns></returns>
+        public GameSoldier AddAttacker(GameChar gameChar, VWorld world)
+        {
+            VirtualThing thing = new VirtualThing() { Parent = Thing, ParentId = Id };
+            Thing.Children.Add(thing);
+
+            GameSoldier soldier = thing.GetJsonObject<GameSoldier>();
+            soldier.CharId = gameChar.Id;
+            soldier.DisplayName = gameChar.DisplayName;
+
+            soldier.Pets.AddRange(world.ItemManager.GetLineup(gameChar, 2));    //获取出阵阵容
+            var pvp = gameChar.GetPvpObject();
+            if (pvp is null)    //若未解锁pvp
+                return null;
+            soldier.ScoreBefore = (int)pvp.ExtraDecimal;
+            soldier.RankBefore = world.CombatManager.GetPvpRank(gameChar);
+
+            //world.ItemManager.GetLineup(gameChar, 100000,199999)
+            return soldier;
+        }
+
         #endregion 进攻方坐骑信息
 
         #region 防御方信息
@@ -327,9 +357,9 @@ namespace GuangYuan.GY001.UserDb.Combat
         public Guid MapTId { get; set; }
 
         /// <summary>
-        /// 该战斗开始的Utc时间。
+        /// 该战斗开始的Utc时间。如果此战斗并未开始过，则是空。
         /// </summary>
-        public DateTime StartUtc { get; set; } = DateTime.UtcNow;
+        public DateTime? StartUtc { get; set; }
 
         /// <summary>
         /// 该战斗结束的Utc时间。
@@ -385,6 +415,58 @@ namespace GuangYuan.GY001.UserDb.Combat
             }
         }
 
+        /// <summary>
+        /// 创建一个新的战斗对象。
+        /// </summary>
+        /// <param name="world"></param>
+        /// <param name="id">对象的Id。省略或为null则自己生成一个新Id。</param>
+        /// <returns></returns>
+        public static GameCombat CreateNew(VWorld world, Guid? id = null)
+        {
+            var cache = world.GameCache;
+            var innerId = id ?? Guid.NewGuid();
+            var key = innerId.ToString();
+            using var dw = cache.Lock(key);
+            if (dw.IsEmpty)
+                return null;
+            var db = world.CreateNewUserDbContext();
+            var thing = new VirtualThing(innerId) { ExtraGuid = ProjectConstant.CombatReportTId };
+            thing.RuntimeProperties["DbContext"] = db;
+            db.Add(thing);
+            using (var entry = (GameObjectCache.GameObjectCacheEntry)cache.CreateEntry(key))
+            {
+                entry.Value = thing;
+                entry.SetSaveAndEviction(db)
+                    .RegisterPostEvictionCallback((key, value, reason, state) => (state as IDisposable)?.Dispose(), db)
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(15));
+            }
+            var result = thing.GetJsonObject<GameCombat>();
+            return result;
+        }
+
+        public static GameSoldier Create(VWorld world, GameChar gameChar)
+        {
+            var thing = new VirtualThing() { ExtraGuid = ProjectConstant.GameSoldierTId };
+            var result = thing.GetJsonObject<GameSoldier>();
+
+            return result;
+        }
+
+        /// <summary>
+        /// 记录所有资源。
+        /// </summary>
+        /// <param name="soldier"></param>
+        /// <param name="gameChar"></param>
+        public static void RecordResource(GameSoldier soldier, GameChar gameChar)
+        {
+            soldier.Resource.AddRange(gameChar.GetCurrencyBag().Children);  //记录所有货币
+            //记录玉米田
+            var gi = gameChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId);
+            soldier.Resource.Add(gi);
+            //记录木材树
+            gi = gameChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId);
+            soldier.Resource.Add(gi);
+        }
     }
 
     /// <summary>
@@ -442,6 +524,19 @@ namespace GuangYuan.GY001.UserDb.Combat
         /// </summary>
         public List<GameItem> Booties { get; set; } = new List<GameItem>();
 
+        /// <summary>
+        /// 战斗开始时，相关资源的时点副本。为以后计算使用。
+        /// </summary>
+        public List<GameItem> Resource { get; set; } = new List<GameItem>();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="soldier"></param>
+        public static void FillSoldier(GameChar gameChar, GameSoldier soldier)
+        {
+        }
     }
 
     /// <summary>
@@ -449,13 +544,11 @@ namespace GuangYuan.GY001.UserDb.Combat
     /// </summary>
     public class GameCombatRepository : IRepository<GameCombat>
     {
-        public GameCombatRepository(VWorld world, GameObjectCache cache)
+        public GameCombatRepository(VWorld world)
         {
             _World = world;
-            _Cache = cache;
         }
 
-        GameObjectCache _Cache;
         VWorld _World;
 
         ConcurrentDictionary<Guid, VirtualThing> _Datas = new ConcurrentDictionary<Guid, VirtualThing>();
@@ -468,7 +561,7 @@ namespace GuangYuan.GY001.UserDb.Combat
         {
             var key = id.ToString();
             var re = new { Key = key };
-            var thing = _Cache.GetOrLoad<VirtualThing>(key, c => c.Id == id, type => _World.CreateNewUserDbContext(),
+            var thing = _World.GameCache.GetOrLoad<VirtualThing>(key, c => c.Id == id, type => _World.CreateNewUserDbContext(),
                 entry => entry.SetCreateCallback((key, state) =>
                 {
                     var result = new VirtualThing(id) { };
@@ -491,5 +584,10 @@ namespace GuangYuan.GY001.UserDb.Combat
         }
     }
 
+    public static class GameCombatExtensions
+    {
+        public static DbContext GetDbContext(this GameCombat combat) => combat.Thing.RuntimeProperties.GetValueOrDefault("DbContext") as DbContext;
 
+        public static void SetDbContext(this GameCombat combat, DbContext context) => combat.Thing.RuntimeProperties["DbContext"] = context;
+    }
 }

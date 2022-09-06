@@ -154,7 +154,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="state"></param>
         private void TimerCallback(object state)
         {
-            using var dw = DisposeHelper.Create(c => Monitor.TryEnter(c, 1), _Timer);   //防止重入
+            using var dw = DisposeHelper.Create(Monitor.TryEnter, Monitor.Exit, _Timer, TimeSpan.FromSeconds(1));   //防止重入
             if (dw.IsEmpty)  //若是重入
                 return;
             Compact();

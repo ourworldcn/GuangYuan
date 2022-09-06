@@ -180,7 +180,7 @@ namespace OW.Game.Item
                 {
                     return World.PropertyManager.GetStcOrOne(gameItem);
                 }
-                var ary = coll.Where(c => c.GetTemplate().CatalogNumber== (int)ThingGId.家园建筑_木材仓 / 1000).ToArray();   //取所有木材仓库对象
+                var ary = coll.Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_木材仓 / 1000).ToArray();   //取所有木材仓库对象
                 var stc = decimal.Zero;
                 foreach (var item in ary) //计算所有木材仓库的容量
                 {
@@ -558,6 +558,29 @@ namespace OW.Game.Item
                     var index = ProjectConstant.ZhenrongPropertyName.Length;
                     if (!int.TryParse(c1[index..], out var num)) return false;
                     return num == number;
+                });
+            });
+            return coll;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="minNumber"></param>
+        /// <param name="maxNumber">小于或等于该阵容号。</param>
+        /// <returns></returns>
+        public IEnumerable<GameItem> GetLineup(GameChar gameChar, int minNumber, int maxNumber)
+        {
+            var bag = gameChar.GetZuojiBag();
+            var coll = bag.Children.Where(c =>
+            {
+                return c.Properties.Keys.Any(c1 =>
+                {
+                    if (!c1.StartsWith(ProjectConstant.ZhenrongPropertyName) || c1.Length <= ProjectConstant.ZhenrongPropertyName.Length) return false;
+                    var index = ProjectConstant.ZhenrongPropertyName.Length;
+                    if (!int.TryParse(c1[index..], out var num)) return false;
+                    return num >= minNumber && num <= maxNumber;
                 });
             });
             return coll;
@@ -1156,7 +1179,6 @@ namespace OW.Game.Item
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="changes">元素是指定的对象和要消耗的数量。</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void DecrementCount(IEnumerable<(GameItem, decimal)> obj, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             foreach (var item in obj)
@@ -1306,7 +1328,7 @@ namespace OW.Game.Item
                     if (countMove < gItem.Count)    //若部分移动
                         remainder?.Add(gItem);
                     ForcedSetCount(gItem, gi, countMove, changes);
-                    
+
                 }
             }
             else //若不可堆叠

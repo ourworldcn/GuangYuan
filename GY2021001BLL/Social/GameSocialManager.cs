@@ -379,7 +379,6 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameItems">(要发送的物品，父容器模板Id) 要发送的附件，会追加到附加集合中。不会自动销毁这些物品，调用者要自行处理。</param>
         public void SendMail(GameMail mail, IEnumerable<Guid> tos, Guid senderId, IEnumerable<(GameItem, Guid)> gameItems)
         {
-            var gim = World.ItemManager;
             var eveMng = World.EventsManager;
             foreach (var item in gameItems)
             {
@@ -1683,6 +1682,7 @@ namespace GuangYuan.GY001.BLL
             datas.ChangeItems.AddToChanges(datas.PvpObject);    //pvp数据对象
             World.CharManager.NotifyChange(datas.GameChar.GameUser);    //修改用户数据
         }
+
         /// <summary>
         /// 获取pvp目标列表。
         /// </summary>

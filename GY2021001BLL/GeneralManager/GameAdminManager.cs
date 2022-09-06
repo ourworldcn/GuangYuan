@@ -49,7 +49,6 @@ namespace GuangYuan.GY001.BLL
                 datas.ErrorMessage = "权限不够";
                 return;
             }
-            var db = datas.UserDbContext;
             for (int i = 0; i < datas.CharIds.Count; i++)
             {
                 var id = datas.CharIds[i];  //角色id
@@ -93,7 +92,6 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var loginNames = new List<string>();  //登录名数组
-            var db = datas.UserDbContext;
             for (int i = 0; i < datas.CharIds.Count; i++)
             {
                 var id = datas.CharIds[i];  //角色id
@@ -404,7 +402,6 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
             }
-            var db = datas.UserDbContext;
             for (int i = 0; i < datas.CharIds.Count; i++)
             {
                 var id = datas.CharIds[i];  //角色id

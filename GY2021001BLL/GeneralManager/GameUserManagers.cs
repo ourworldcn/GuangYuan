@@ -388,7 +388,7 @@ namespace GuangYuan.GY001.BLL
         {
             var adminLoginName = "1D22F0CF-1704-412C-AD8D-32CE5FA5A7D5";
             var adminPwd = "37A87267-77DC-4AA3-8220-02F9538779AB";
-            var adminCharId = new Guid("38D81816-E81E-4C18-93C9-2168DD77EED1");
+            //var adminCharId = new Guid("38D81816-E81E-4C18-93C9-2168DD77EED1");
             VWorld world = World;
             //复位超管账号
             using (var dwAdmin = world.CharManager.LockOrLoad(adminLoginName, out var adminUser))
@@ -412,7 +412,7 @@ namespace GuangYuan.GY001.BLL
                 }
             //复位加好友机器人
             var friendRobotPwd = "9D4C2381-F000-43F2-AB75-1A53718D44C0";
-            var friendRobotCharId = new Guid("{1D860E58-74C9-4442-A3B4-A2406DA9566A}");
+            //var friendRobotCharId = new Guid("{1D860E58-74C9-4442-A3B4-A2406DA9566A}");
             using (var dwRobot = world.CharManager.LockOrLoad(FriendRobotLoginName, out var robotUser))
                 if (dwRobot is null) //若未建立机器人账号
                 {

@@ -533,6 +533,46 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 标记开始一场新的pvp战斗。
+        /// </summary>
+        /// <param name="datas"></param>
+        public void StartCombatPvp(StartCombatPvpData datas)
+        {
+            using var dw = datas.LockAll();
+            if (dw is null) //若不能锁定
+                return;
+            if (datas.DungeonId == ProjectConstant.PvpDungeonTId) //若是正常pvp
+            {
+            }
+            else if (datas.DungeonId == ProjectConstant.PvpForHelpDungeonTId) //若是协助pvp
+            {
+            }
+            else if (datas.DungeonId == ProjectConstant.PvpForRetaliationDungeonTId)   //若是反击pvp
+            {
+            }
+            else
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.ErrorMessage = $"未知关卡模板Id={datas.DungeonId}";
+                return;
+            }
+            var tili = datas.GameChar.GetTili();
+            if (tili.Count < 4)
+            {
+                datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
+                datas.ErrorMessage = "体力不足";
+                return;
+            }
+            World.ItemManager.DecrementCount(new (GameItem, decimal)[] { (tili, -4) }, datas.PropertyChanges);
+
+            GameCombat combat = GameCombat.CreateNew(World);
+            combat.MapTId = datas.DungeonId;
+            datas.CombatId = combat.Id;
+            World.GameCache.SetDirty(combat.Thing.IdString, true);
+        }
+
+        /// <summary>
         /// pvp战斗结算。
         /// </summary>
         /// <param name="datats"></param>

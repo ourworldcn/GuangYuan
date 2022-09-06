@@ -84,6 +84,9 @@ namespace Gy001
             });
 
             services.AddAutoMapper(Array.Empty<Assembly>());
+
+            OwAutoInjectionExtensions.AutoRegister(services);
+
             #endregion 配置通用服务
 
             #region 配置Swagger

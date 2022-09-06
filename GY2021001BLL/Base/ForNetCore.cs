@@ -301,7 +301,6 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
-            var key = "96AEEF3C-9E95-4A55-9585-1562AFCEC70C";
             var guild = new GameGuildEntity()
             {
                 AutoAccept = true,

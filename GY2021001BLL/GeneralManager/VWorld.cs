@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
+using OW.Game.Caching;
 using OW.Game.Item;
 using OW.Game.Managers;
 using OW.Game.Mission;
@@ -405,6 +406,13 @@ namespace OW.Game
         {
             get => _VirtualThingManager ??= Service.GetService<VirtualThingManager>();
         }
+
+        GameObjectCache _Cache;
+
+        /// <summary>
+        /// 游戏专用缓存服务对象。
+        /// </summary>
+        public GameObjectCache GameCache => _Cache ??= Service.GetService<GameObjectCache>();
 
         #endregion 子管理器
 

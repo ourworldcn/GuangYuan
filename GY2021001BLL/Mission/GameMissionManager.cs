@@ -605,11 +605,9 @@ namespace OW.Game.Mission
         /// <param name="gameChar"></param>
         private void ActiveFriend(GameChar gameChar)
         {
-            using (var dwRobot = World.CharManager.LockOrLoad(GameCharManager.FriendRobotLoginName, out var robotUser))
-            {
-                var datas = new RequestFriendData(World, robotUser.CurrentChar, gameChar.Id);
-                World.SocialManager.RequestFriend(datas);
-            }
+            using var dwRobot = World.CharManager.LockOrLoad(GameCharManager.FriendRobotLoginName, out var robotUser);
+            var datas = new RequestFriendData(World, robotUser.CurrentChar, gameChar.Id);
+            World.SocialManager.RequestFriend(datas);
 
         }
 

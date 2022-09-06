@@ -130,8 +130,29 @@ namespace OW.Game.Caching
             Func<object, Type, DbContext> createDbCallback) where TEntity : class
         {
             var db = createDbCallback(dbKey, typeof(TEntity));
-            entry.SetLoadCallback((key, state) => ((DbContext)state).Set<TEntity>().Find(dbKey), db)
-            .SetSaveCallback((obj, state) =>
+            entry.SetLoadCallback((key, state) => ((DbContext)state).Set<TEntity>().Find(dbKey), db);
+            entry.SetSaveAndEviction(db);
+            return entry;
+        }
+
+        public static GameObjectCache.GameObjectCacheEntry SetCreateNew<TEntity>(this GameObjectCache.GameObjectCacheEntry entry, object dbKey, Func<object, object, object> createCallback,
+            Func<object, Type, DbContext> createDbCallback) where TEntity : class
+        {
+            var db = createDbCallback(dbKey, typeof(TEntity));
+            entry.SetCreateCallback(createCallback, db);
+            entry.SetSaveAndEviction(db);
+            return entry;
+        }
+
+        /// <summary>
+        /// 设置默认的保存和驱逐前后的回调。
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public static GameObjectCache.GameObjectCacheEntry SetSaveAndEviction(this GameObjectCache.GameObjectCacheEntry entry, DbContext db)
+        {
+            entry.SetSaveCallback((obj, state) =>
             {
                 try
                 {

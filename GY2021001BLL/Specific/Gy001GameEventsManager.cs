@@ -435,20 +435,17 @@ namespace OW.Game
 
                 #region  处理随机资质数据
                 bool b = propertyBag.TryGetDecimal("nneatk", out decimal nneatk);
-                var mneatk = 100m;
-                b |= propertyBag.TryGetDecimal("mneatk", out mneatk);
+                b |= propertyBag.TryGetDecimal("mneatk", out decimal mneatk);
                 if (b)   //若需要随机资质值
                     gameItem.Properties["neatk"] = (decimal)VWorld.WorldRandom.Next((int)nneatk, (int)mneatk + 1);
 
                 b = propertyBag.TryGetDecimal("nnemhp", out decimal nnemhp);
-                var mnemhp = 100m;
-                b |= propertyBag.TryGetDecimal("mnemhp", out mnemhp);
+                b |= propertyBag.TryGetDecimal("mnemhp", out decimal mnemhp);
                 if (b)   //若需要随机资质值
                     gameItem.Properties["nemhp"] = (decimal)VWorld.WorldRandom.Next((int)nnemhp, (int)mnemhp + 1);
 
                 b = propertyBag.TryGetDecimal("nneqlt", out decimal nneqlt);
-                var mneqlt = 100m;
-                b |= propertyBag.TryGetDecimal("mneqlt", out mneqlt);
+                b |= propertyBag.TryGetDecimal("mneqlt", out decimal mneqlt);
                 if (b)   //若需要随机资质值
                     gameItem.Properties["neqlt"] = (decimal)VWorld.WorldRandom.Next((int)nneqlt, (int)mneqlt + 1);
                 #endregion 处理随机资质数据

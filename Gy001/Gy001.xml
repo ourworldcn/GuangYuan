@@ -2290,7 +2290,7 @@
         </member>
         <member name="P:GY2021001WebApi.Models.GameCombatDto.StartUtc">
             <summary>
-            该战斗开始的Utc时间。
+            该战斗开始的Utc时间。如果此战斗并未开始过，则是空。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.GameCombatDto.EndUtc">
@@ -2525,6 +2525,11 @@
         <member name="P:GY2021001WebApi.Models.CombatStartPvpParamsDto.OtherGCharId">
             <summary>
             对方角色Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.CombatStartPvpParamsDto.OldCombatId">
+            <summary>
+            原始战斗id,如果没有（本场是主动pvp）则为空。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.CombatStartPvpReturnDto">

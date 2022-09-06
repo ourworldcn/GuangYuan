@@ -123,8 +123,7 @@ namespace GY2021001WebApi.Controllers
             var gm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
             if (gm.Id2OnlineChar.Count > 10000 * Environment.ProcessorCount)
                 return StatusCode((int)HttpStatusCode.ServiceUnavailable, "登录人数过多，请稍后登录");
-            string pwd = null;
-            var gu = gm.LoginT78(model.Sid, out pwd);
+            var gu = gm.LoginT78(model.Sid, out string pwd);
 
             var worldServiceHost = $"{Request.Scheme}://{Request.Host}";
             var chartServiceHost = $"{Request.Scheme}://{Request.Host}";

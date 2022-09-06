@@ -190,11 +190,11 @@ namespace System
         /// <typeparam name="T"></typeparam>
         /// <param name="lockFunc">锁定的函数。</param>
         /// <param name="unlockFunc">解锁函数。</param>
-        /// <param name="state">锁定对象。</param>
+        /// <param name="lockObject">锁定对象。</param>
         /// <param name="timeout">超时。</param>
         /// <returns><see cref="DisposeHelper{T}.IsEmpty"/>是true则说明锁定失败。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static DisposeHelper<T> Create<T>(Func<T, TimeSpan, bool> lockFunc, Action<T> unlockFunc, T state, TimeSpan timeout) =>
-            lockFunc(state, timeout) ? new DisposeHelper<T>(unlockFunc, state) : new DisposeHelper<T>(null, default);
+        public static DisposeHelper<T> Create<T>(Func<T, TimeSpan, bool> lockFunc, Action<T> unlockFunc, T lockObject, TimeSpan timeout) =>
+            lockFunc(lockObject, timeout) ? new DisposeHelper<T>(unlockFunc, lockObject) : new DisposeHelper<T>(null, default);
     }
 }

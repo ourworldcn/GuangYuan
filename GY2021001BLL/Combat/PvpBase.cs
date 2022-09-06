@@ -11,6 +11,34 @@ using System.Linq;
 
 namespace GuangYuan.GY001.BLL
 {
+    public class StartCombatPvpData : BinaryRelationshipGameContext
+    {
+        public StartCombatPvpData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
+        {
+        }
+
+        public StartCombatPvpData([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar, otherGCharId)
+        {
+        }
+
+        public StartCombatPvpData([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token, otherGCharId)
+        {
+        }
+
+        public Guid CombatId { get; set; }
+
+        /// <summary>
+        /// 原始战斗id,如果没有则为空。
+        /// </summary>
+        public Guid? OldCombatId { get; set; }
+
+        /// <summary>
+        /// 关卡Id。
+        /// </summary>
+        public Guid DungeonId { get; set; }
+
+    }
+
     /// <summary>
     /// pvp结束战斗调用接口的数据封装类。
     /// </summary>

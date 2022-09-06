@@ -13,7 +13,6 @@ using System.Runtime.Serialization;
 #pragma warning disable IDE0057 // 使用范围运算符
 #pragma warning disable IDE0074 // 使用复合分配
 #pragma warning disable IDE1006 // 命名样式
-#pragma warning disable IDE0060 // 删除未使用的参数
 
 namespace GY2021001WebApi.Models
 {
@@ -2346,9 +2345,9 @@ namespace GY2021001WebApi.Models
         public Guid MapTId { get; set; }
 
         /// <summary>
-        /// 该战斗开始的Utc时间。
+        /// 该战斗开始的Utc时间。如果此战斗并未开始过，则是空。
         /// </summary>
-        public DateTime StartUtc { get; set; } = DateTime.UtcNow;
+        public DateTime? StartUtc { get; set; }
 
         /// <summary>
         /// 该战斗结束的Utc时间。
@@ -2649,6 +2648,11 @@ namespace GY2021001WebApi.Models
         [DataMember]
         public string OtherGCharId { get; set; }
 
+        /// <summary>
+        /// 原始战斗id,如果没有（本场是主动pvp）则为空。
+        /// </summary>
+        [DataMember]
+        public string OldCombatId { get; set; }
     }
 
     /// <summary>
@@ -4800,7 +4804,6 @@ namespace GY2021001WebApi.Models
     #endregion 行会相关
 }
 
-#pragma warning restore IDE0060 // 删除未使用的参数
 #pragma warning restore IDE1006 // 命名样式
 #pragma warning restore IDE0074 // 使用复合分配
 #pragma warning restore IDE0057 // 使用范围运算符

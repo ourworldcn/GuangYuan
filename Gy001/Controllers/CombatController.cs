@@ -98,7 +98,17 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<CombatStartPvpReturnDto> CombatStartPvp(CombatStartPvpParamsDto model)
         {
-            return Ok();
+            var result = new CombatStartPvpReturnDto();
+            var datas = new StartCombatPvpData(World, model.Token, OwConvert.ToGuid(model.OtherGCharId)) { DungeonId = OwConvert.ToGuid(model.DungeonId) };
+            World.CombatManager.StartCombatPvp(datas);
+            result.FillFrom(datas);
+            if (!result.HasError)
+            {
+                var mapper = World.GetMapper();
+                result.Changes.AddRange(datas.PropertyChanges.Select(c => mapper.Map(c)));
+                result.GameCombatId = datas.CombatId.ToBase64String();
+            }
+            return result;
         }
 
         /// <summary>

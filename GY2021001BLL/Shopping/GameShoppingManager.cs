@@ -382,20 +382,6 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 若最后刷新日期已经变化，则刷新随机刷新商品。
-        /// </summary>
-        /// <param name="view"></param>
-        /// <param name="genus"></param>
-        /// <param name="now"></param>
-        /// <returns></returns>
-        private bool RefreshIfDateChanged(ShoppingSlotView view, string genus, DateTime now)
-        {
-            if (view.RefreshInfos.GetValueOrDefault(genus).RefreshLastDateTime != now.Date)
-                return Refresh(view, genus, now);
-            return false;
-        }
-
-        /// <summary>
         /// 强制复位可刷新商品。
         /// </summary>
         /// <param name="view"></param>

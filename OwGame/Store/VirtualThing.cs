@@ -107,7 +107,6 @@ namespace OW.Game.Store
         /// <summary>
         /// 
         /// </summary>
-        [IgnoreMap]
         [JsonIgnore]
         public VirtualThing Thing { get => _Thing; set => _Thing = value; }
 

@@ -58,16 +58,6 @@ namespace GuangYuan.GY001.BLL.Homeland
         public static GameItem GetHomelandBuildingBag(this GameChar gameChar) => gameChar.GetHomeland().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.HomelandBuildingBagTId);
 
         /// <summary>
-        /// 同步锁。
-        /// </summary>
-        private static readonly object ThisLocker = new object();
-
-        /// <summary>
-        /// 缓存所有地块信息。
-        /// </summary>
-        private static ConcurrentDictionary<ValueTuple<int, int>, GameItemTemplate> _AllDikuai;
-
-        /// <summary>
         /// 获取指定对象是否是地块。
         /// </summary>
         /// <param name="gameItem"></param>
