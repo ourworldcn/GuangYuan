@@ -78,7 +78,7 @@ namespace Gy001.Controllers
             World.ShoppingManager.Buy(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.ErrorMessage;
+            result.DebugMessage = datas.DebugMessage;
             if (!result.HasError)
             {
                 var mapper = World.GetMapper();
@@ -105,7 +105,7 @@ namespace Gy001.Controllers
             World.ShoppingManager.Refresh(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.ErrorMessage;
+            result.DebugMessage = datas.DebugMessage;
             if (!result.HasError)
             {
                 var mapper = World.GetMapper();

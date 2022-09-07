@@ -2,6 +2,7 @@
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.BLL.Social;
 using GuangYuan.GY001.UserDb;
+using GuangYuan.GY001.UserDb.Combat;
 using Microsoft.EntityFrameworkCore;
 using OW.Extensions.Game.Store;
 using OW.Game;
@@ -496,7 +497,7 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = $"找不到指定的战报对象，Id={datas.RootCombatId}";
+                datas.DebugMessage = $"找不到指定的战报对象，Id={datas.RootCombatId}";
                 return;
             }
             var rootView = rootCombat;
@@ -504,7 +505,7 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = $"已经请求了协助者或已经协助结束。";
+                datas.DebugMessage = $"已经请求了协助者或已经协助结束。";
                 return;
             }
             //更改数据
@@ -1195,7 +1196,7 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = VWorld.GetLastError();
-                datas.ErrorMessage = VWorld.GetLastErrorMessage();
+                datas.DebugMessage = VWorld.GetLastErrorMessage();
                 return;
             }
             var db = datas.UserDbContext;
@@ -1215,7 +1216,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     datas.HasError = true;
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "今日已经与该坐骑互动过了。";
+                    datas.DebugMessage = "今日已经与该坐骑互动过了。";
                     return;
                 }
                 var dt = datas.Now;
@@ -1223,7 +1224,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     datas.HasError = true;
                     datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
-                    datas.ErrorMessage = "今日互动次数已经用完。";
+                    datas.DebugMessage = "今日互动次数已经用完。";
                     return;
                 }
                 //修改数据
@@ -1573,6 +1574,13 @@ namespace GuangYuan.GY001.BLL
             /// true，强制刷新，根据设计可能需要消耗资源。
             /// </summary>
             public bool IsRefresh { get; set; }
+
+            /// <summary>
+            /// 建立的战斗对象，里面含有需要结算时用到的资源快照。
+            /// 随后使用该对象的id和指定的角色id启动战斗。
+            /// </summary>
+            public GameCombat Combat { get; set; }
+
         }
 
         /// <summary>
@@ -1622,7 +1630,7 @@ namespace GuangYuan.GY001.BLL
             if(todayData is null)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                datas.ErrorMessage = "角色没有pvp战斗功能。";
+                datas.DebugMessage = "角色没有pvp战斗功能。";
                 return;
             }
             var hasData = todayData?.GetTodayData(datas.Now).Any()??false;

@@ -657,7 +657,7 @@ namespace GuangYuan.GY001.BLL
                 if (fcp.GetCurrentValueWithUtc() < pp)
                 {
                     data.HasError = true;
-                    data.ErrorMessage = $"体力只有{fcp.LastValue},但是需要{pp}";
+                    data.DebugMessage = $"体力只有{fcp.LastValue},但是需要{pp}";
                     return false;
                 }
                 fcp.LastValue -= pp;
@@ -672,7 +672,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         data.HasError = true;
                         data.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
-                        data.ErrorMessage = $"允许的进攻次数只有{0},但是需要至少{tdt}。";
+                        data.DebugMessage = $"允许的进攻次数只有{0},但是需要至少{tdt}。";
                         return false;
                     }
                     data.PropertyChanges.ModifyAndAddChanged(pveT, "Count", pveT.Count - 1);

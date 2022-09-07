@@ -808,7 +808,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
 
         public bool HasError { get; set; }
         public int ErrorCode { get; set; }
-        public string ErrorMessage { get; set; }
+        public string DebugMessage { get; set; }
 
         private bool disposedValue;
 
@@ -870,7 +870,7 @@ namespace GuangYuan.GY001.BLL.GeneralManager
 
         public bool HasError { get; set; }
         public int ErrorCode { get; set; }
-        public string ErrorMessage { get; set; }
+        public string DebugMessage { get; set; }
 
         private bool disposedValue;
 

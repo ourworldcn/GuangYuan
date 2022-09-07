@@ -3468,6 +3468,13 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<CharSummaryDto> CharSummary { get; set; } = new List<CharSummaryDto>();
+
+        /// <summary>
+        /// 建立的战斗对象，里面含有需要结算时用到的资源快照。
+        /// 随后使用该对象的id和指定的角色id启动战斗。
+        /// </summary>
+        [DataMember]
+        public GameCombatDto Combat { get; set; }
     }
 
     public class RemoveBlackParamsDto : TokenDtoBase

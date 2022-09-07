@@ -3056,6 +3056,12 @@
             相关角色的信息。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.Combat">
+            <summary>
+            建立的战斗对象，里面含有需要结算时用到的资源快照。
+            随后使用该对象的id和指定的角色id启动战斗。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.RemoveBlackParamsDto.CharId">
             <summary>
             要移除的黑名单的角色Id。
@@ -3951,7 +3957,7 @@
             申请成为另一个角色的好友。
             </summary>
             <param name="model">参见 RequestFriendParamsDto。</param>
-            <returns>true成功发送请求 -或- 已经发送过请求 -或- 已经成为好友；false出现错误，参见 ErrorMessage 说明。</returns>
+            <returns>true成功发送请求 -或- 已经发送过请求 -或- 已经成为好友；false出现错误，参见 DebugMessage 说明。</returns>
             <response code="401">令牌错误。</response>
         </member>
         <member name="M:Gy001.Controllers.SocialController.GetSocialRelationships(System.String)">

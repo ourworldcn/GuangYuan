@@ -134,7 +134,7 @@ namespace OW.Game
         /// <summary>
         /// 错误信息。
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string DebugMessage { get; set; }
 
     }
 
@@ -147,7 +147,7 @@ namespace OW.Game
         public static void FillErrorFromWorld(this IResultWorkData obj)
         {
             obj.ErrorCode = VWorld.GetLastError();
-            obj.ErrorMessage = VWorld.GetLastErrorMessage();
+            obj.DebugMessage = VWorld.GetLastErrorMessage();
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace OW.Game
         public static void FillErrorFrom(this IResultWorkData obj, IResultWorkData src)
         {
             obj.ErrorCode = src.ErrorCode;
-            obj.ErrorMessage = src.ErrorMessage;
+            obj.DebugMessage = src.DebugMessage;
             obj.HasError = src.HasError;
         }
     }
@@ -194,7 +194,7 @@ namespace OW.Game
         #endregion 出参
 
         [Conditional("DEBUG")]
-        public void SetDebugMessage(string msg) => ErrorMessage = msg;
+        public void SetDebugMessage(string msg) => DebugMessage = msg;
 
     }
 

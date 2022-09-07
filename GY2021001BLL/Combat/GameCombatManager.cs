@@ -307,7 +307,7 @@ namespace GuangYuan.GY001.BLL
             using var dwUser = data.LockUser();
             if (dwUser is null)
             {
-                data.ErrorMessage = "令牌无效。";
+                data.DebugMessage = "令牌无效。";
                 data.HasError = true;
                 return;
             }
@@ -320,7 +320,7 @@ namespace GuangYuan.GY001.BLL
             }
             if (gameChar.CurrentDungeonId.HasValue && gameChar.CurrentDungeonId != data.Template.Id)
             {
-                data.ErrorMessage = "错误的关卡Id";
+                data.DebugMessage = "错误的关卡Id";
                 data.HasError = true;
                 return;
             }
@@ -337,7 +337,7 @@ namespace GuangYuan.GY001.BLL
             }
             gameChar.CurrentDungeonId = data.Template.Id;
             gameChar.CombatStartUtc = DateTime.UtcNow;
-            data.ErrorMessage = null;
+            data.DebugMessage = null;
             data.HasError = false;
             return;
         }
@@ -554,14 +554,14 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = $"未知关卡模板Id={datas.DungeonId}";
+                datas.DebugMessage = $"未知关卡模板Id={datas.DungeonId}";
                 return;
             }
             var tili = datas.GameChar.GetTili();
             if (tili.Count < 4)
             {
                 datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
-                datas.ErrorMessage = "体力不足";
+                datas.DebugMessage = "体力不足";
                 return;
             }
             World.ItemManager.DecrementCount(new (GameItem, decimal)[] { (tili, -4) }, datas.PropertyChanges);
@@ -607,7 +607,7 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = $"未知关卡模板Id={datas.DungeonId}";
+                datas.DebugMessage = $"未知关卡模板Id={datas.DungeonId}";
                 return;
             }
             if (!datas.HasError) //若成功
@@ -653,7 +653,7 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "不可攻击的角色。";
+                datas.DebugMessage = "不可攻击的角色。";
                 return;
             }
             datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpAttack);
@@ -750,7 +750,7 @@ namespace GuangYuan.GY001.BLL
             datas.Save();
             datas.HasError = false;
             datas.ErrorCode = 0;
-            datas.ErrorMessage = null;
+            datas.DebugMessage = null;
             //计算成就数据
             if (datas.MainRoomRhp <= 0)    //若进攻胜利
             {
@@ -794,7 +794,7 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "找不到指定的最初战斗。";
+                datas.DebugMessage = "找不到指定的最初战斗。";
                 return;
             }
             db.Entry(oldWar).Reload();
@@ -804,14 +804,14 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "没有复仇权";
+                datas.DebugMessage = "没有复仇权";
                 return;
             }
             if (oldView.Retaliationed)   //若已经反击过了
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "已经反击过了。";
+                datas.DebugMessage = "已经反击过了。";
                 return;
             }
             var world = datas.World;
@@ -893,7 +893,7 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "找不到指定的最初战斗。";
+                datas.DebugMessage = "找不到指定的最初战斗。";
                 return;
             }
             db.Entry(oldWar).Reload();
@@ -904,7 +904,7 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = $"指定的战报对象没有请求此角色协助攻击或已经攻击过了。";
+                datas.DebugMessage = $"指定的战报对象没有请求此角色协助攻击或已经攻击过了。";
             }
             //更改数据
             var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
@@ -1014,7 +1014,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     datas.HasError = true;
                     datas.ErrorCode = getMails.ErrorCode;
-                    datas.ErrorMessage = getMails.ErrorMessage;
+                    datas.DebugMessage = getMails.DebugMessage;
                     return;
                 }
                 var mail = getMails.Mails.FirstOrDefault(c => c.Properties.GetGuidOrDefault("OldCombatId") == datas.CombatId && c.Properties.GetStringOrDefault("MailTypeId") == ProjectConstant.PVP系统奖励.ToString());
@@ -1034,7 +1034,7 @@ namespace GuangYuan.GY001.BLL
                 World.CombatManager.EndCombatPvp(endPvpDatas);
                 datas.HasError = endPvpDatas.HasError;
                 datas.ErrorCode = endPvpDatas.ErrorCode;
-                datas.ErrorMessage = endPvpDatas.ErrorMessage;
+                datas.DebugMessage = endPvpDatas.DebugMessage;
             }
         }
 
@@ -1344,7 +1344,7 @@ namespace GuangYuan.GY001.BLL
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "找不到指定战斗对象。";
+                datas.DebugMessage = "找不到指定战斗对象。";
                 return;
             }
             db.Entry(thing).Reload();

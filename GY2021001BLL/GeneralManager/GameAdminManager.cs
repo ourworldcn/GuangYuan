@@ -46,7 +46,7 @@ namespace GuangYuan.GY001.BLL
             if (!datas.GameChar.CharType.HasFlag(CharType.SuperAdmin) && !datas.GameChar.CharType.HasFlag(CharType.Admin))   //若权限不够
             {
                 datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
-                datas.ErrorMessage = "权限不够";
+                datas.DebugMessage = "权限不够";
                 return;
             }
             for (int i = 0; i < datas.CharIds.Count; i++)
@@ -88,7 +88,7 @@ namespace GuangYuan.GY001.BLL
             if (!datas.GameChar.CharType.HasFlag(CharType.SuperAdmin))   //若不是超管
             {
                 datas.ErrorCode = ErrorCodes.ERROR_NO_SUCH_PRIVILEGE;
-                datas.ErrorMessage = "需要超管权限";
+                datas.DebugMessage = "需要超管权限";
                 return;
             }
             var loginNames = new List<string>();  //登录名数组
@@ -219,7 +219,7 @@ namespace GuangYuan.GY001.BLL
             if (World.CharManager.Delete(list.Select(c => c.Item1)).Count != list.Count)
             {
                 datas.HasError = true;
-                datas.ErrorMessage = "至少有一个账户无法覆盖信息。";
+                datas.DebugMessage = "至少有一个账户无法覆盖信息。";
                 return;
             }
             users.ForEach(c => c.DbContext.SaveChanges());
@@ -332,7 +332,7 @@ namespace GuangYuan.GY001.BLL
             if (World.CharManager.Delete(lns).Count != lns.Count())
             {
                 datas.HasError = true;
-                datas.ErrorMessage = "至少有一个用户不能正常添加";
+                datas.DebugMessage = "至少有一个用户不能正常添加";
                 return;
             }
             Array.ForEach(ary, c => { c.DbContext.SaveChanges(); });

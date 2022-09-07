@@ -54,7 +54,7 @@ namespace GY2021001WebApi.Models
         {
             HasError = result.HasError;
             ErrorCode = result.ErrorCode;
-            DebugMessage = result.ErrorMessage;
+            DebugMessage = result.DebugMessage;
         }
 
         public void FillFromWorld()

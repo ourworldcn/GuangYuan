@@ -318,7 +318,7 @@ namespace OW.Game.Mission
             using var dwUser = World.CharManager.LockAndReturnDisposer(gu);
             if (dwUser is null)
             {
-                logger?.LogWarning($"无法扫描指定角色的成就变化数据,ErrorCode={VWorld.GetLastError()},ErrorMessage={VWorld.GetLastErrorMessage()}");
+                logger?.LogWarning($"无法扫描指定角色的成就变化数据,ErrorCode={VWorld.GetLastError()},DebugMessage={VWorld.GetLastErrorMessage()}");
                 return false;
             }
             var slot = gChar.GetRenwuSlot();    //任务/成就槽对象
@@ -360,7 +360,7 @@ namespace OW.Game.Mission
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "至少有一个成就找不到对应的对象。";
+                datas.DebugMessage = "至少有一个成就找不到对应的对象。";
                 return;
             }
             var obj_keys = (from tmp in objs    //工作数据，Item1是成就对象，Item2是槽扩展属性的键名，Item3=槽扩展属性的值
@@ -370,7 +370,7 @@ namespace OW.Game.Mission
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "至少有一个成就没有可以领取的奖励。";
+                datas.DebugMessage = "至少有一个成就没有可以领取的奖励。";
                 return;
             }
             var gim = World.ItemManager;
@@ -501,7 +501,7 @@ namespace OW.Game.Mission
             if (!World.ItemTemplateManager.Id2Mission.TryGetValue(datas.MissionTId, out var template))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "找不到指定模板";
+                datas.DebugMessage = "找不到指定模板";
                 return;
             }
             if (template.GroupNumber != "1001") //若非工会任务
@@ -512,7 +512,7 @@ namespace OW.Game.Mission
                     if (view.MissionStates.TryGetValue(datas.MissionTId.ToString(), out var state) && state == MissionState.Completion)  //若已经完成
                     {
                         datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                        datas.ErrorMessage = "指定任务已经完成。";
+                        datas.DebugMessage = "指定任务已经完成。";
                         return;
                     }
                     var gim = World.ItemManager;
@@ -549,7 +549,7 @@ namespace OW.Game.Mission
                 else //有错误
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                    datas.ErrorMessage = "至少一个前置任务没有完成";
+                    datas.DebugMessage = "至少一个前置任务没有完成";
                 }
             }
             else //工会任务
@@ -566,7 +566,7 @@ namespace OW.Game.Mission
                 if (sgc.Count >= 5)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                    datas.ErrorMessage = "当日已经完成最大工会任务数量";
+                    datas.DebugMessage = "当日已经完成最大工会任务数量";
                     return;
                 }
                 //物品增减
@@ -637,7 +637,7 @@ namespace OW.Game.Mission
             if (list.Count != datas.TIds.Count)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "至少一个任务找不到模板";
+                datas.DebugMessage = "至少一个任务找不到模板";
                 return;
             }
             using MissionView view = new MissionView(datas.World, datas.GameChar);

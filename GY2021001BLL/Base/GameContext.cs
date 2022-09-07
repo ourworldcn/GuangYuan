@@ -246,7 +246,7 @@ namespace OW.Game
         /// <summary>
         /// 调试信息，如果发生错误，这里给出简要说明。
         /// </summary>
-        public string ErrorMessage
+        public string DebugMessage
         {
             get => _ErrorMessage ??= new Win32Exception(ErrorCode).Message;
             set => _ErrorMessage = value;

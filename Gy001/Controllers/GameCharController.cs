@@ -196,7 +196,7 @@ namespace GY2021001WebApi.Controllers
             var result = new SellReturnDto()
             {
                 HasError = datas.HasError,
-                DebugMessage = datas.ErrorMessage,
+                DebugMessage = datas.DebugMessage,
             };
             var mapper = World.GetMapper();
             if (!result.HasError)
@@ -226,7 +226,7 @@ namespace GY2021001WebApi.Controllers
                 else
                 {
                     result.HasError = datas.HasError;
-                    result.DebugMessage = datas.ErrorMessage;
+                    result.DebugMessage = datas.DebugMessage;
                     if (!result.HasError)
                     {
                         var mapper = World.GetMapper();
@@ -265,13 +265,13 @@ namespace GY2021001WebApi.Controllers
             SetLineupReturnDto result = new SetLineupReturnDto();
             using var disposer = datas.LockUser();
             if (disposer is null)
-                return StatusCode(datas.ErrorCode, datas.ErrorMessage);
+                return StatusCode(datas.ErrorCode, datas.DebugMessage);
             try
             {
                 var gim = HttpContext.RequestServices.GetRequiredService<GameItemManager>();
                 gim.SetLineup(datas);
                 result.HasError = datas.HasError;
-                result.DebugMessage = datas.ErrorMessage;
+                result.DebugMessage = datas.DebugMessage;
                 var mapper = World.GetMapper();
                 if (!result.HasError)
                 {
@@ -549,7 +549,7 @@ namespace GY2021001WebApi.Controllers
             {
                 HasError = datas.HasError,
                 ErrorCode = datas.ErrorCode,
-                DebugMessage = datas.ErrorMessage
+                DebugMessage = datas.DebugMessage
             };
             if (!datas.HasError)
             {

@@ -130,7 +130,7 @@ namespace GY2021001WebApi.Controllers
             //datas.DestroyTIds.AddRange(model.Destroies.Select(c => (ValueTuple<Guid, decimal>)c));
             //World.CombatManager.EndCombatPvp(datas);
             //result.HasError = datas.HasError;
-            //result.DebugMessage = datas.ErrorMessage;
+            //result.DebugMessage = datas.DebugMessage;
             //var mapper = World.GetMapper();
             //result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
             //result.Combat = new GameCombatDto();
@@ -154,7 +154,7 @@ namespace GY2021001WebApi.Controllers
             World.CombatManager.GetCombat(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.ErrorMessage;
+            result.DebugMessage = datas.DebugMessage;
             if (!datas.HasError)    //若成功返回
             {
                 var mapper = World.Service.GetRequiredService<GameMapperManager>();
@@ -188,7 +188,7 @@ namespace GY2021001WebApi.Controllers
             World.CombatManager.AbortPvp(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.ErrorMessage;
+            result.DebugMessage = datas.DebugMessage;
             return result;
         }
     }

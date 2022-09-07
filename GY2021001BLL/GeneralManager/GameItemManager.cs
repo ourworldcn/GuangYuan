@@ -599,7 +599,7 @@ namespace OW.Game.Item
             if (datas.SellIds.Select(c => c.Item1).Distinct().Count() != datas.SellIds.Count)
             {
                 datas.ErrorCode = (int)HttpStatusCode.BadRequest;
-                datas.ErrorMessage = "物品Id重复。";
+                datas.DebugMessage = "物品Id重复。";
                 datas.HasError = true;
                 return;
             }
@@ -622,7 +622,7 @@ namespace OW.Game.Item
             if (list.Count != datas.SellIds.Count)
             {
                 datas.ErrorCode = (int)HttpStatusCode.BadRequest;
-                datas.ErrorMessage = "至少一个指定的Id不存在或不能出售。";
+                datas.DebugMessage = "至少一个指定的Id不存在或不能出售。";
                 datas.HasError = true;
                 return;
             }
@@ -700,7 +700,7 @@ namespace OW.Game.Item
             var srs = new HashSet<Guid>(gc.GetZuojiBag().Children.Select(c => c.Id));
             if (!srs.IsSupersetOf(datas.Settings.Select(c => c.Item1)))
             {
-                datas.ErrorMessage = "至少一个指定的坐骑Id不存在。";
+                datas.DebugMessage = "至少一个指定的坐骑Id不存在。";
                 datas.HasError = true;
                 datas.ErrorCode = (int)HttpStatusCode.BadRequest;
                 return;
@@ -768,7 +768,7 @@ namespace OW.Game.Item
             if (!UseItem(gi, datas.Item.Item2, datas.Remainder, changes))
             {
                 datas.ErrorCode = VWorld.GetLastError();
-                datas.ErrorMessage = VWorld.GetLastErrorMessage();
+                datas.DebugMessage = VWorld.GetLastErrorMessage();
                 datas.HasError = true;
             }
             else
@@ -1389,7 +1389,7 @@ namespace OW.Game.Item
                 if (bpDatas.HasError)
                 {
                     VWorld.SetLastError(bpDatas.ErrorCode);
-                    VWorld.SetLastErrorMessage(bpDatas.ErrorMessage);
+                    VWorld.SetLastErrorMessage(bpDatas.DebugMessage);
                     result = false;
                 }
                 else

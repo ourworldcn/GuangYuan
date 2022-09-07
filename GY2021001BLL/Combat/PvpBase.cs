@@ -77,7 +77,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         HasError = true;
                         ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                        ErrorMessage = $"找不到指定的战报对象，Id={CombatId}";
+                        DebugMessage = $"找不到指定的战报对象，Id={CombatId}";
                     }
                     _Combat = thing.GetJsonObject<CombatReport>();
                 }

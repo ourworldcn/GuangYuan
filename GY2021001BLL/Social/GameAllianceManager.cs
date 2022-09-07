@@ -190,7 +190,7 @@ namespace GuangYuan.GY001.UserDb.Social
             if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out var guildId) || slot.ExtraDecimal < 20)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                datas.ErrorMessage = "只能由工会会长设置。";
+                datas.DebugMessage = "只能由工会会长设置。";
                 return;
             }
             if (!Lock(guildId, Options.DefaultTimeout, out var guild))
@@ -351,7 +351,7 @@ namespace GuangYuan.GY001.UserDb.Social
             if (slot != null && OwConvert.TryToGuid(slot.ExtraString, out var guildId) && GetGuild(guildId) != null)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                datas.ErrorMessage = "已经在工会中，不可创建工会。";
+                datas.DebugMessage = "已经在工会中，不可创建工会。";
                 return;
             }
             //创建工会对象
@@ -363,7 +363,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 {
                     datas.HasError = true;
                     datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                    datas.ErrorMessage = "重名的工会。";
+                    datas.DebugMessage = "重名的工会。";
                     return;
                 }
                 pg["tid"] = ProjectConstant.GuildTemplateId;
@@ -398,7 +398,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 {
                     datas.HasError = true;
                     datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                    datas.ErrorMessage = "并发创建。";
+                    datas.DebugMessage = "并发创建。";
                     return;
                 }
             }
@@ -431,20 +431,20 @@ namespace GuangYuan.GY001.UserDb.Social
             if (guildSlot is null || guildSlot.ExtraDecimal < (int)GuildDivision.会长)    //若非会长
             {
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                datas.ErrorMessage = "只有会长才能转移工会";
+                datas.DebugMessage = "只有会长才能转移工会";
                 return;
             }
             var otherSlot = datas.OtherChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.GuildSlotId); //对方的工会槽
             if (otherSlot is null || otherSlot.ExtraString != guildSlot.ExtraString)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                datas.ErrorMessage = "只能转移给本工会的人";
+                datas.DebugMessage = "只能转移给本工会的人";
                 return;
             }
             if (!OwConvert.TryToGuid(guildSlot.ExtraString, out var guildId))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;
-                datas.ErrorMessage = "工会数据错误。";
+                datas.DebugMessage = "工会数据错误。";
                 return;
             }
             if (!Lock(guildId, Options.DefaultTimeout, out var guild))
@@ -477,7 +477,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 if (slot is null || slot.ExtraDecimal < (int)GuildDivision.会长 || !OwConvert.TryToGuid(slot.ExtraString, out guildId))
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                    datas.ErrorMessage = "只有会长才能解散工会";
+                    datas.DebugMessage = "只有会长才能解散工会";
                     return;
                 }
                 else
@@ -486,7 +486,7 @@ namespace GuangYuan.GY001.UserDb.Social
                     if (guild is null)
                     {
                         datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                        datas.ErrorMessage = "找不到指定行会。";
+                        datas.DebugMessage = "找不到指定行会。";
                         return;
                     }
                 }
@@ -503,7 +503,7 @@ namespace GuangYuan.GY001.UserDb.Social
             if (dwChars is null)
             {
                 datas.ErrorCode = ErrorCodes.WAIT_TIMEOUT;
-                datas.ErrorMessage = "无法锁定所有成员";
+                datas.DebugMessage = "无法锁定所有成员";
                 return;
             }
             foreach (var charId in charIds) //删除每个成员的所属工会信息
@@ -537,7 +537,7 @@ namespace GuangYuan.GY001.UserDb.Social
             if (datas.Division >= 20 || datas.Division <= 0)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "不能用此函数改变会长或除名。";
+                datas.DebugMessage = "不能用此函数改变会长或除名。";
                 return;
             }
             Guid guildId;
@@ -549,14 +549,14 @@ namespace GuangYuan.GY001.UserDb.Social
                 if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out guildId))
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "用户不在工会内。";
+                    datas.DebugMessage = "用户不在工会内。";
                     return;
                 }
             }
             if (!Lock(guildId, Options.DefaultTimeout, out var guild))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "找不到指定工会。";
+                datas.DebugMessage = "找不到指定工会。";
                 return;
             }
             using var dw = DisposeHelper.Create(Unlock, guild);
@@ -568,7 +568,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 if (countOfExists + datas.CharIds.Count > maxCount)  //若超过
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                    datas.ErrorMessage = "超过最大管理员的数量。";
+                    datas.DebugMessage = "超过最大管理员的数量。";
                     return;
                 }
             }
@@ -585,13 +585,13 @@ namespace GuangYuan.GY001.UserDb.Social
                 if (slot is null || guild.IdString != slot.ExtraString)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "至少一个成员不属于工会。";
+                    datas.DebugMessage = "至少一个成员不属于工会。";
                     return;
                 }
                 if (slot.ExtraDecimal < 10 || slot.ExtraDecimal >= 20)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "不能用此函数改变会长或除名。";
+                    datas.DebugMessage = "不能用此函数改变会长或除名。";
                     return;
                 }
             }
@@ -625,21 +625,21 @@ namespace GuangYuan.GY001.UserDb.Social
             if (slot != null)    //若已经处于一个工会内
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "已经处于一个工会内，不可申请新工会。";
+                datas.DebugMessage = "已经处于一个工会内，不可申请新工会。";
                 return;
             }
             slot = datas.GameChar.GameItems.FirstOrDefault(c => c.ExtraString == guild.IdString);
             if (slot != null)    //若已经在申请了
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "已经申请加入此工会，不可重复申请。";
+                datas.DebugMessage = "已经申请加入此工会，不可重复申请。";
                 return;
             }
             var count = GetAllMemberSlotQuery(guild.Id, guild.GetDbContext()).Where(c => c.ExtraDecimal >= 10).Count();  //当前成员数
             if (guild.GetDecimalWithFcpOrDefault("maxMemberCount") <= count)   //若满员
             {
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;    //
-                datas.ErrorMessage = "行会已满员。";    //
+                datas.DebugMessage = "行会已满员。";    //
                 return;
             }
             //开始申请
@@ -695,7 +695,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 if (slot is null || slot.ExtraDecimal < (int)GuildDivision.执事)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "工会高层才能批准加入申请。";
+                    datas.DebugMessage = "工会高层才能批准加入申请。";
                     return;
                 }
                 guidId = OwConvert.ToGuid(slot.ExtraString);
@@ -711,14 +711,14 @@ namespace GuangYuan.GY001.UserDb.Social
             if (!datas.CharIds.All(c => qs.Contains(c)))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "至少有一个角色没有申请该工会";
+                datas.DebugMessage = "至少有一个角色没有申请该工会";
                 return;
             }
             using var dwChars = World.CharManager.LockOrLoadWithCharIds(datas.CharIds, Options.DefaultTimeout * datas.CharIds.Count);   //锁定这组用户
             if (dwChars is null)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "至少有一个角色id无效。";
+                datas.DebugMessage = "至少有一个角色id无效。";
                 return;
             }
             foreach (var charId in datas.CharIds)
@@ -728,7 +728,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 if (slot is null || guild.IdString != slot.ExtraString || slot.ExtraDecimal != 0)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "至少有一个角色没有申请该工会";
+                    datas.DebugMessage = "至少有一个角色没有申请该工会";
                     return;
                 }
             }
@@ -773,7 +773,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out guildId))
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "找不到工会。";
+                    datas.DebugMessage = "找不到工会。";
                     return;
                 }
             }
@@ -805,7 +805,7 @@ namespace GuangYuan.GY001.UserDb.Social
                 if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out guildId))
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "找不到工会。";
+                    datas.DebugMessage = "找不到工会。";
                     return;
                 }
                 charId = datas.GameChar.Id;
@@ -830,7 +830,7 @@ namespace GuangYuan.GY001.UserDb.Social
             if (slotGc is null || !OwConvert.TryToGuid(slotGc.ExtraString, out var tmpId) || tmpId != guildId)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "至少有一个角色不是该行会成员";
+                datas.DebugMessage = "至少有一个角色不是该行会成员";
                 return;
             }
             foreach (var id in datas.CharIds)   //逐一校验角色
@@ -840,19 +840,19 @@ namespace GuangYuan.GY001.UserDb.Social
                 if (slot is null || guild.IdString != slot.ExtraString)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "至少有一个角色不是该行会成员";
+                    datas.DebugMessage = "至少有一个角色不是该行会成员";
                     return;
                 }
                 if (slot.ExtraDecimal >= slotGc.ExtraDecimal && slot.Id != slotGc.Id)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "没有足够权限删除成员。";
+                    datas.DebugMessage = "没有足够权限删除成员。";
                     return;
                 }
                 if (slot.ExtraDecimal >= (int)GuildDivision.会长)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "会长不能退出工会，应先移交会长权限。";
+                    datas.DebugMessage = "会长不能退出工会，应先移交会长权限。";
                     return;
                 }
             }

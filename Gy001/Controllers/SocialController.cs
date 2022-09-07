@@ -74,9 +74,9 @@ namespace Gy001.Controllers
             {
                 result.HasError = true;
                 result.ErrorCode = datas.ErrorCode;
-                result.DebugMessage = datas.ErrorMessage;
+                result.DebugMessage = datas.DebugMessage;
                 if (datas.ErrorCode == ErrorCodes.ERROR_INVALID_TOKEN)
-                    return Unauthorized(datas.ErrorMessage);
+                    return Unauthorized(datas.DebugMessage);
             }
             return result;
         }
@@ -183,7 +183,7 @@ namespace Gy001.Controllers
                 if (data.HasError)
                 {
                     result.HasError = true;
-                    result.DebugMessage = data.ErrorMessage;
+                    result.DebugMessage = data.DebugMessage;
                     return result;
                 }
                 var coll = _World.SocialManager.GetCharSummary(data.CharIds, data.UserDbContext);
@@ -202,7 +202,7 @@ namespace Gy001.Controllers
         /// 申请成为另一个角色的好友。
         /// </summary>
         /// <param name="model">参见 RequestFriendParamsDto。</param>
-        /// <returns>true成功发送请求 -或- 已经发送过请求 -或- 已经成为好友；false出现错误，参见 ErrorMessage 说明。</returns>
+        /// <returns>true成功发送请求 -或- 已经发送过请求 -或- 已经成为好友；false出现错误，参见 DebugMessage 说明。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPost]
         public ActionResult<RequestFriendReturnDto> RequestFriend(RequestFriendParamsDto model)
@@ -503,7 +503,7 @@ namespace Gy001.Controllers
             result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
             if (result.HasError = datas.HasError)
             {
-                result.DebugMessage = datas.ErrorMessage;
+                result.DebugMessage = datas.DebugMessage;
             }
             return result;
         }
@@ -580,7 +580,7 @@ namespace Gy001.Controllers
                     if (datas.HasError)
                     {
                         result.ErrorCode = datas.ErrorCode;
-                        result.DebugMessage = datas.ErrorMessage;
+                        result.DebugMessage = datas.DebugMessage;
                     }
                     else
                     {
@@ -623,7 +623,7 @@ namespace Gy001.Controllers
             };
             _World.SocialManager.RequestAssistance(datas);
             result.HasError = datas.HasError;
-            result.DebugMessage = datas.ErrorMessage;
+            result.DebugMessage = datas.DebugMessage;
             result.ErrorCode = datas.ErrorCode;
             return result.ErrorCode switch
             {

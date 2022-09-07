@@ -39,7 +39,7 @@ namespace Gy001.Controllers
             World.MissionManager.GetRewarding(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.ErrorMessage;
+            result.DebugMessage = datas.DebugMessage;
             if (!result.HasError)
             {
                 var mapper = World.GetMapper();
@@ -65,7 +65,7 @@ namespace Gy001.Controllers
             World.MissionManager.GetMissionState(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.ErrorMessage;
+            result.DebugMessage = datas.DebugMessage;
             if (!result.HasError)
             {
                 result.TIds.AddRange(datas.TIds.Select(c => c.ToBase64String()));

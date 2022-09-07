@@ -117,7 +117,7 @@ namespace GY2021001WebApi.Controllers
             World.AdminManager.CloneUser(datas);
             result.HasError = datas.HasError;
             result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.ErrorMessage;
+            result.DebugMessage = datas.DebugMessage;
             if (!result.HasError)    //若成功执行任务
             {
                 result.Account.AddRange(datas.Account.Select(c => new AccountSummery()

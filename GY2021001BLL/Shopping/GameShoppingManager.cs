@@ -192,13 +192,13 @@ namespace GuangYuan.GY001.BLL
             if (!World.ItemTemplateManager.Id2Shopping.TryGetValue(datas.ShoppingId, out var template))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "找不到商品Id";
+                datas.DebugMessage = "找不到商品Id";
                 return;
             }
             if (datas.Count < 0)   //若购买数量错误
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "购买数量必须大于0";
+                datas.DebugMessage = "购买数量必须大于0";
                 return;
             }
             var view = new ShoppingSlotView(World, datas.GameChar, datas.Now);
@@ -214,7 +214,7 @@ namespace GuangYuan.GY001.BLL
             if (cost.Any(c => c.Item1.Count + c.Item2 < 0))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "至少有一项货币不足。";
+                datas.DebugMessage = "至少有一项货币不足。";
                 return;
             }
             foreach (var item in cost.Where(c => c.Item2 != 0))
@@ -249,7 +249,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         datas.HasError = useItemsDatas.HasError;
                         datas.ErrorCode = useItemsDatas.ErrorCode;
-                        datas.ErrorMessage = useItemsDatas.ErrorMessage;
+                        datas.DebugMessage = useItemsDatas.DebugMessage;
                         return;
                     }
                     datas.ChangeItems.AddRange(useItemsDatas.ChangeItems);
@@ -346,7 +346,7 @@ namespace GuangYuan.GY001.BLL
             else if (!Genus2GroupNumbers.ContainsKey(datas.Genus))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "找不到指定的商品属。";
+                datas.DebugMessage = "找不到指定的商品属。";
             }
             else
                 genus.Add(datas.Genus);
@@ -486,7 +486,7 @@ namespace GuangYuan.GY001.BLL
             if (templates.Count <= 0)    //若未找到卡池
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.ErrorMessage = "没有找到指定的卡池。";
+                datas.DebugMessage = "没有找到指定的卡池。";
                 return;
             }
             //校验资源
@@ -494,7 +494,7 @@ namespace GuangYuan.GY001.BLL
             if (quan is null || datas.LotteryTypeCount1 + datas.LotteryTypeCount10 * 10 > quan.Count.Value)
             {
                 datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
-                datas.ErrorMessage = "抽奖券不足。";
+                datas.DebugMessage = "抽奖券不足。";
                 return;
             }
             //实际抽奖
@@ -608,7 +608,7 @@ namespace GuangYuan.GY001.BLL
                 if (!templates.TryGetValue(idProb.Key, out var tts) || tts.Length <= 0)
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.ErrorMessage = "没有找到指定的奖池。";
+                    datas.DebugMessage = "没有找到指定的奖池。";
                     return;
                 }
                 var tt = tts[VWorld.WorldRandom.Next(tts.Length)];    //概率命中的模板
@@ -656,7 +656,7 @@ namespace GuangYuan.GY001.BLL
                     if (!templates.TryGetValue(idProb.Key, out var tts) || tts.Length <= 0)
                     {
                         datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                        datas.ErrorMessage = "没有找到指定的奖池。";
+                        datas.DebugMessage = "没有找到指定的奖池。";
                         return;
                     }
                     var tt = tts[VWorld.WorldRandom.Next(tts.Length)];    //概率命中的模板

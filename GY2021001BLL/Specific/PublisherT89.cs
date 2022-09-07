@@ -106,7 +106,7 @@ namespace GuangYuan.GY001.BLL.Specific
             if (!responese.IsSuccessStatusCode)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;
-                datas.ErrorMessage = responese.Content.ReadAsStringAsync().Result;
+                datas.DebugMessage = responese.Content.ReadAsStringAsync().Result;
                 return;
             }
             var responesStr = responese.Content.ReadAsStringAsync().Result;
@@ -114,7 +114,7 @@ namespace GuangYuan.GY001.BLL.Specific
             if (re.Code != 0)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_INVALID_DATA;
-                datas.ErrorMessage = responese.Content.ReadAsStringAsync().Result;
+                datas.DebugMessage = responese.Content.ReadAsStringAsync().Result;
                 return;
             }
         }
@@ -167,7 +167,7 @@ namespace GuangYuan.GY001.BLL.Specific
         /// <summary>
         /// 调试信息，如果发生错误，这里给出简要说明。
         /// </summary>
-        public string ErrorMessage
+        public string DebugMessage
         {
             get => _ErrorMessage ??= new Win32Exception(ErrorCode).Message;
             set => _ErrorMessage = value;
