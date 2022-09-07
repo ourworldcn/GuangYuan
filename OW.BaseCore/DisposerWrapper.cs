@@ -115,7 +115,7 @@ namespace System
     /// 清理代码帮助器结构。实测比使用对象池要快20%左右。
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    readonly public ref struct DisposeHelper<T>
+    public readonly ref struct DisposeHelper<T>
     {
         /// <summary>
         /// 构造函数。
@@ -197,4 +197,5 @@ namespace System
         public static DisposeHelper<T> Create<T>(Func<T, TimeSpan, bool> lockFunc, Action<T> unlockFunc, T lockObject, TimeSpan timeout) =>
             lockFunc(lockObject, timeout) ? new DisposeHelper<T>(unlockFunc, lockObject) : new DisposeHelper<T>(null, default);
     }
+
 }

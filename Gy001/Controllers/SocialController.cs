@@ -1,4 +1,5 @@
-﻿using Game.Social;
+﻿using AutoMapper;
+using Game.Social;
 using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.BLL.Specific;
@@ -564,7 +565,7 @@ namespace Gy001.Controllers
         {
             using var datas = new GetPvpCharsWorkDatas(_World, model.Token)
             {
-                IsRefresh = model.IsRefresh,
+                IsRefresh = true,    //只能强制刷新了 model.IsRefresh,
                 Now = DateTime.UtcNow,
             };
 
@@ -595,6 +596,9 @@ namespace Gy001.Controllers
                     var mapper = _World.GetMapper();
                     var summary = datas.World.SocialManager.GetCharSummary(datas.CharIds, datas.UserDbContext);
                     result.CharSummary.AddRange(summary.Select(c => mapper.Map(c)));
+                    var mp = _World.Service.GetRequiredService<IMapper>();
+                    result.Combat = mp.Map<GameCombatDto>(datas.Combat);
+                    var ss = mp.Map<GameSoldierDto>(datas.Combat.Others.First());
                 }
             }
             catch (Exception err)

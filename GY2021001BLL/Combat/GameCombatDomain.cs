@@ -350,6 +350,21 @@ namespace GuangYuan.GY001.UserDb.Combat
         }
         #endregion 防御方坐骑信息
 
+        List<GameSoldier> _Others;
+        [JsonIgnore]
+        public IReadOnlyList<GameSoldier> Others
+        {
+            get
+            {
+                if (_Others is null)
+                {
+                    _Others = new List<GameSoldier>();
+                    _Others.AddRange(Thing.Children.Where(c => c.ExtraDecimal == -1).Select(c => c.GetJsonObject<GameSoldier>()));
+                }
+                return _Others;
+            }
+        }
+
         /// <summary>
         /// 地图Id。就是关卡模板Id。
         /// 这可以表示该战斗是什么种类。
@@ -425,12 +440,12 @@ namespace GuangYuan.GY001.UserDb.Combat
         {
             var cache = world.GameCache;
             var innerId = id ?? Guid.NewGuid();
-            var key = innerId.ToString();
+            var thing = new VirtualThing(innerId) { ExtraGuid = ProjectConstant.CombatReportTId };
+            var key = thing.IdString;
             using var dw = cache.Lock(key);
             if (dw.IsEmpty)
                 return null;
             var db = world.CreateNewUserDbContext();
-            var thing = new VirtualThing(innerId) { ExtraGuid = ProjectConstant.CombatReportTId };
             thing.RuntimeProperties["DbContext"] = db;
             db.Add(thing);
             using (var entry = (GameObjectCache.GameObjectCacheEntry)cache.CreateEntry(key))
@@ -441,15 +456,53 @@ namespace GuangYuan.GY001.UserDb.Combat
                     .SetSlidingExpiration(TimeSpan.FromMinutes(15));
             }
             var result = thing.GetJsonObject<GameCombat>();
+
             return result;
         }
 
-        public static GameSoldier Create(VWorld world, GameChar gameChar)
+        /// <summary>
+        /// 设置保存即驱逐回调。
+        /// </summary>
+        /// <param name="entry"></param>
+        public void SetEntry(GameObjectCache.GameObjectCacheEntry entry)
         {
-            var thing = new VirtualThing() { ExtraGuid = ProjectConstant.GameSoldierTId };
-            var result = thing.GetJsonObject<GameSoldier>();
-
-            return result;
+            var db = Thing.GetDbContext();
+            entry.SetSaveCallback((value, state) =>
+            {
+                if (value is GameCombat combat)
+                {
+                    if (combat.StartUtc.HasValue)
+                    {
+                        try
+                        {
+                            ((DbContext)state).SaveChanges();
+                        }
+                        catch (Exception)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }, db)
+                .RegisterBeforeEvictionCallback((key, value, reason, state) =>
+                {
+                    if (value is GameCombat combat)
+                    {
+                        if (combat.StartUtc.HasValue)
+                        {
+                            ((DbContext)state).SaveChanges();
+                        }
+                    }
+                    return;
+                }, db)
+                .RegisterPostEvictionCallback((key, value, reason, state) =>
+                {
+                    if (value is GameCombat combat)
+                        combat.Dispose();
+                    (state as DbContext)?.Dispose();
+                }, db)
+                .SetSlidingExpiration(TimeSpan.FromMinutes(15));
         }
 
         /// <summary>
@@ -467,10 +520,71 @@ namespace GuangYuan.GY001.UserDb.Combat
             gi = gameChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId);
             soldier.Resource.Add(gi);
         }
+
+        /// <summary>
+        /// 在指定的战斗下创建一个新的参战方对象。
+        /// </summary>
+        /// <returns></returns>
+        public GameSoldier CreateSoldier()
+        {
+            var thing = new VirtualThing()
+            {
+                ExtraGuid = ProjectConstant.GameSoldierTId,
+                Parent = Thing,
+                ParentId = Id,
+            };
+            Thing.Children.Add(thing);
+
+            var soldier = thing.GetJsonObject<GameSoldier>();
+            return soldier;
+        }
+
+        /// <summary>
+        /// 在战斗开始前初始化参战方的信息。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="soldier"></param>
+        /// <param name="world"></param>
+        public static void FillSoldierBefroeCombat(GameChar gameChar, GameSoldier soldier, VWorld world)
+        {
+            soldier.CharId = gameChar.Id;
+            soldier.DisplayName = gameChar.DisplayName;
+
+            var pvp = gameChar.GetPvpObject();
+            if (pvp != null)    //若已解锁pvp
+            {
+                soldier.ScoreBefore = (int)pvp.ExtraDecimal;
+                soldier.RankBefore = world.CombatManager.GetPvpRank(gameChar);
+            }
+        }
+
+        /// <summary>
+        /// 在战斗开始前填充作为攻击方的信息。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="soldier"></param>
+        /// <param name="world"></param>
+        /// <returns></returns>
+        public void FillAttakerBefroeCombat(GameChar gameChar, GameSoldier soldier, VWorld world)
+        {
+            soldier.Pets.AddRange(world.ItemManager.GetLineup(gameChar, 2));    //获取出阵阵容
+        }
+
+        /// <summary>
+        /// 在战斗开始前填充作为防御方的信息。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="soldier"></param>
+        /// <param name="world"></param>
+        public void FillDefenerBefroeCombat(GameChar gameChar, GameSoldier soldier, VWorld world)
+        {
+            var pets = world.ItemManager.GetLineup(gameChar, 100000, 199999);    //获取守卫阵容
+            soldier.Pets.AddRange(pets);
+        }
     }
 
     /// <summary>
-    /// 参与战斗的实体。
+    /// 参与战斗的实体。或叫参战方，通常是个体，但也可能有个别对象指代阵营。
     /// </summary>
     public class GameSoldier : VirtualThingEntityBase, IEntity
     {
@@ -529,14 +643,6 @@ namespace GuangYuan.GY001.UserDb.Combat
         /// </summary>
         public List<GameItem> Resource { get; set; } = new List<GameItem>();
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="soldier"></param>
-        public static void FillSoldier(GameChar gameChar, GameSoldier soldier)
-        {
-        }
     }
 
     /// <summary>
@@ -586,8 +692,6 @@ namespace GuangYuan.GY001.UserDb.Combat
 
     public static class GameCombatExtensions
     {
-        public static DbContext GetDbContext(this GameCombat combat) => combat.Thing.RuntimeProperties.GetValueOrDefault("DbContext") as DbContext;
-
-        public static void SetDbContext(this GameCombat combat, DbContext context) => combat.Thing.RuntimeProperties["DbContext"] = context;
     }
+
 }

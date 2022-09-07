@@ -2339,6 +2339,11 @@ namespace GY2021001WebApi.Models
         #endregion 防御方坐骑信息
 
         /// <summary>
+        /// 标记资源使用的集合。
+        /// </summary>
+        public List<GameSoldierDto> Others { get; set; } = new List<GameSoldierDto>();
+
+        /// <summary>
         /// 地图Id。就是关卡模板Id。
         /// 这可以表示该战斗是什么种类。
         /// </summary>
@@ -2436,6 +2441,11 @@ namespace GY2021001WebApi.Models
         /// 战利品。得到的战利品数量为正，失去的则Count是负数。
         /// </summary>
         public List<GameItemDto> Booties { get; set; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 保存资源的快照。
+        /// </summary>
+        public List<GameItemDto> Resource { get; set; } = new List<GameItemDto>();
 
     }
 
@@ -3446,6 +3456,7 @@ namespace GY2021001WebApi.Models
         /// 是否强制使用钻石刷新。
         /// false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。
         /// true，强制刷新，根据设计可能需要消耗资源。
+        /// 目前保留为true。
         /// </summary>
         [DataMember]
         public bool IsRefresh { get; set; }

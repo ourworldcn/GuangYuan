@@ -4,8 +4,10 @@ using GuangYuan.GY001.BLL.Social;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using OW.Extensions.Game.Store;
 using OW.Game;
+using OW.Game.Caching;
 using OW.Game.Item;
 using OW.Game.Log;
 using OW.Game.PropertyChange;
@@ -1627,13 +1629,13 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var todayData = datas.PvpObject?.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();    //当日数据的帮助器类
-            if(todayData is null)
+            if (todayData is null)
             {
                 datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
                 datas.DebugMessage = "角色没有pvp战斗功能。";
                 return;
             }
-            var hasData = todayData?.GetTodayData(datas.Now).Any()??false;
+            var hasData = todayData?.GetTodayData(datas.Now).Any() ?? false;
             //if (!hasData)  //若当日无数据
             //{
             //    if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, 0))   //若无法设置级别
@@ -1677,7 +1679,30 @@ namespace GuangYuan.GY001.BLL
                 var ids = GetNewPvpCharIds(datas.GameChar.GetDbContext(), gc.Id, datas.PvpObject.ExtraDecimal.Value, cj.Lv, excludeIds);
                 todayData.AddLastDataRange(ids, datas.Now);
                 datas.CharIds.AddRange(ids);
-
+                if (ids.Any())
+                {
+                    var charId = ids.First();
+                    using var dwUser2 = World.CharManager.LockOrLoad(charId, out var gu);
+                    if (dwUser2 != null)
+                    {
+                        //生成战斗对象
+                        var id = Guid.NewGuid();
+                        var key = id.ToString();
+                        var cache = World.GameCache;
+                        using var dw = cache.Lock(key);
+                        var combat = GameCombat.CreateNew(World, id);
+                        var soldier = combat.CreateSoldier();
+                        soldier.Thing.ExtraDecimal = -1;    //设置阵营号
+                        GameCombat.RecordResource(soldier, gu.CurrentChar);
+                        cache.GetOrCreate(key, (entry) =>
+                        {
+                            combat.SetEntry(entry as GameObjectCache.GameObjectCacheEntry);
+                            return combat.Thing;
+                        });
+                        datas.Combat = combat;
+                        cache.SetDirty(key);
+                    }
+                }
                 //变化数据
                 datas.PropertyChanges.CopyTo(datas.ChangeItems);
             }

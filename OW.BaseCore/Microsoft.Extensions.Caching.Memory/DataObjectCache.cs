@@ -83,6 +83,7 @@ namespace Microsoft.Extensions.Caching.Memory
             /// 需要保存时调用。
             /// 在对键加锁的范围内调用。
             /// 回调参数是要保存的对象，附加数据，返回true表示成功，否则是没有保存成功,若没有设置该回调，则说明无需保存，也就视同保存成功。
+            /// (value,state)
             /// </summary>
             [AllowNull]
             public Func<object, object, bool> SaveCallback { get; set; }

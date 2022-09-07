@@ -2282,6 +2282,11 @@
             防御方角色Id集合。(当前可能只有一个)
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.Others">
+            <summary>
+            标记资源使用的集合。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.GameCombatDto.MapTId">
             <summary>
             地图Id。就是关卡模板Id。
@@ -2372,6 +2377,11 @@
         <member name="P:GY2021001WebApi.Models.GameSoldierDto.Booties">
             <summary>
             战利品。得到的战利品数量为正，失去的则Count是负数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.Resource">
+            <summary>
+            保存资源的快照。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.AbortPvpParamsDto">
@@ -3039,6 +3049,7 @@
             是否强制使用钻石刷新。
             false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。
             true，强制刷新，根据设计可能需要消耗资源。
+            目前保留为true。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetPvpListReturnDto">
@@ -3661,12 +3672,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

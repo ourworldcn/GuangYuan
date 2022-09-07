@@ -1,8 +1,10 @@
 ﻿using GuangYuan.GY001.UserDb;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OW.DDD;
 using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
@@ -16,6 +18,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace OW.Game
 {
@@ -478,4 +481,40 @@ namespace OW.Game
 
     }
 
+    public static class VirtualThingEntityExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DbContext GetDbContext(this VirtualThingEntityBase entry) => entry.Thing.RuntimeProperties.GetValueOrDefault("DbContext") as DbContext;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DbContext GetDbContext(this VirtualThing thing) => thing.RuntimeProperties.GetValueOrDefault("DbContext") as DbContext;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetDbContext(this VirtualThingEntityBase entry, DbContext context) => entry.Thing.RuntimeProperties["DbContext"] = context;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetDbContext(this VirtualThing thing, DbContext context) => thing.RuntimeProperties["DbContext"] = context;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="createDbContextCallback"></param>
+        /// <returns></returns>
+        public static T CreateAggregateRoot<T>(this IRepository<T> repo, Guid id, Func<Guid, Type, DbContext> createDbContextCallback) where T : VirtualThingEntityBase, IAggregateRoot, new()
+        {
+            var thing = new VirtualThing() { };
+            var db = createDbContextCallback(id, typeof(T));
+            thing.RuntimeProperties["DbContext"] = db;
+            var result = thing.GetJsonObject<T>();
+            return result;
+        }
+
+    }
+
+    public class ThingRepositoryBase<T> : IRepository<T> where T : IAggregateRoot
+    {
+
+    }
 }

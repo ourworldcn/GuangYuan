@@ -169,16 +169,6 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public int SuccCount { get; set; }
 
-        private string _DebugMessage;
-        /// <summary>
-        /// 调试信息，如果发生错误，这里给出简要说明。
-        /// </summary>
-        public string DebugMessage
-        {
-            get => _DebugMessage;
-            set => _DebugMessage = value;
-        }
-
         /// <summary>
         /// 返回命中公式的Id集合。
         /// </summary>

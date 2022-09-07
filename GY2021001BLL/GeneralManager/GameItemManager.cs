@@ -543,36 +543,16 @@ namespace OW.Game.Item
         }
 
         /// <summary>
-        /// 获取指定阵容的所有坐骑。
-        /// </summary>
-        /// <param name="number"></param>
-        /// <returns></returns>
-        public IEnumerable<GameItem> GetLineup(GameChar gameChar, int number)
-        {
-            var bag = gameChar.GetZuojiBag();
-            var coll = bag.Children.Where(c =>
-            {
-                return c.Properties.Keys.Any(c1 =>
-                {
-                    if (!c1.StartsWith(ProjectConstant.ZhenrongPropertyName) || c1.Length <= ProjectConstant.ZhenrongPropertyName.Length) return false;
-                    var index = ProjectConstant.ZhenrongPropertyName.Length;
-                    if (!int.TryParse(c1[index..], out var num)) return false;
-                    return num == number;
-                });
-            });
-            return coll;
-        }
-
-        /// <summary>
-        /// 
+        /// 获取指定阵容号区间的所有坐骑。
         /// </summary>
         /// <param name="gameChar"></param>
         /// <param name="minNumber"></param>
-        /// <param name="maxNumber">小于或等于该阵容号。</param>
+        /// <param name="maxNumber">小于或等于该阵容号。省略或为null则视同<paramref name="minNumber"/>相同的值</param>
         /// <returns></returns>
-        public IEnumerable<GameItem> GetLineup(GameChar gameChar, int minNumber, int maxNumber)
+        public IEnumerable<GameItem> GetLineup(GameChar gameChar, int minNumber, int? maxNumber = null)
         {
             var bag = gameChar.GetZuojiBag();
+            maxNumber ??= minNumber;
             var coll = bag.Children.Where(c =>
             {
                 return c.Properties.Keys.Any(c1 =>

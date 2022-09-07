@@ -33,7 +33,7 @@ namespace Gy01.AutoMapper.Profiles
             //    var props = TypeDescriptor.GetProperties(src).OfType<PropertyDescriptor>();
             //    var result = props.Where(p => p.Name != nameof(VirtualThingEntityBase.Thing)).ToDictionary(p => p.Name, p => p.GetValue(src));
             //    return new Dictionary<string, object>();
-            //});//.ForAllMembers(c =>c c.Ignore());
+            //});//.ForAllMembers(c =>c c.Ignore());    
 
             CreateMap<IdAndCountDto, (Guid, decimal)>().ConstructUsing((src, context) => (OwConvert.ToGuid(src.Id), src.Count)).ForAllMembers(c => c.Ignore());
             CreateMap<(Guid, decimal), IdAndCountDto>().ConstructUsing((src, context) => new IdAndCountDto { Id = src.Item1.ToBase64String(), Count = src.Item2 }).ForAllMembers(c => c.Ignore());

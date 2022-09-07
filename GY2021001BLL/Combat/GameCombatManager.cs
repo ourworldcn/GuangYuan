@@ -1,4 +1,5 @@
-﻿using Game.Social;
+﻿using AutoMapper;
+using Game.Social;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
@@ -23,6 +24,14 @@ using System.Text.Json;
 
 namespace GuangYuan.GY001.BLL
 {
+    public class CombatProfile : Profile
+    {
+        public CombatProfile()
+        {
+
+        }
+    }
+
     /// <summary>
     /// 战斗管理器的配置类。
     /// </summary>
