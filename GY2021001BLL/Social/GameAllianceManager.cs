@@ -111,19 +111,19 @@ namespace GuangYuan.GY001.UserDb.Social
         {
             if (!_Id2Guild.TryGetValue(guildId, out guild))
             {
-                VWorld.SetLastError(ErrorCodes.ERROR_INVALID_DATA);
-                VWorld.SetLastErrorMessage($"无此工会，id={guild}");
+                OwHelper.SetLastError(ErrorCodes.ERROR_INVALID_DATA);
+                OwHelper.SetLastErrorMessage($"无此工会，id={guild}");
                 return false;
             }
             if (!Monitor.TryEnter(guild, timeout))  //若锁定超时
             {
-                VWorld.SetLastError(ErrorCodes.WAIT_TIMEOUT);
+                OwHelper.SetLastError(ErrorCodes.WAIT_TIMEOUT);
                 return false;
             }
             if (guild.IsDisposed)   //若已经无效
             {
                 Monitor.Exit(guild);
-                VWorld.SetLastError(ErrorCodes.E_CHANGED_STATE);
+                OwHelper.SetLastError(ErrorCodes.E_CHANGED_STATE);
                 return false;
             }
             return true;
@@ -140,8 +140,8 @@ namespace GuangYuan.GY001.UserDb.Social
             var slot = gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.GuildSlotId);
             if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out var guildId))
             {
-                VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
-                VWorld.SetLastErrorMessage("用户不在工会中。");
+                OwHelper.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                OwHelper.SetLastErrorMessage("用户不在工会中。");
                 guild = default;
                 return false;
             }
@@ -316,8 +316,8 @@ namespace GuangYuan.GY001.UserDb.Social
             var slot = gameChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.GuildSlotId);
             if (slot is null || !OwConvert.TryToGuid(slot.ExtraString, out var guildId) || !_Id2Guild.ContainsKey(guildId))
             {
-                VWorld.SetLastError(ErrorCodes.ERROR_INVALID_DATA);
-                VWorld.SetLastErrorMessage("找不到指定行会。");
+                OwHelper.SetLastError(ErrorCodes.ERROR_INVALID_DATA);
+                OwHelper.SetLastErrorMessage("找不到指定行会。");
                 return null;
             }
             return GetGuildChatChannelId(guildId);
@@ -1055,8 +1055,8 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             else
             {
-                VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
-                VWorld.SetLastErrorMessage("没有聊天服务");
+                OwHelper.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+                OwHelper.SetLastErrorMessage("没有聊天服务");
                 return false;
             }
         }

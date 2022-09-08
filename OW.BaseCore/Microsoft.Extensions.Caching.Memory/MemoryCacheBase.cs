@@ -400,7 +400,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="timeout">锁定键的最长超时，省略或为null则使用<see cref="OwMemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
         /// <returns>返回的结构可以用using 语句保证释放。判断<see cref="DisposeHelper{T}.IsEmpty"/>可以知道是否锁定成功。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected DisposeHelper<object> Lock(object key, TimeSpan? timeout = null)
+        public DisposeHelper<object> Lock(object key, TimeSpan? timeout = null)
         {
             var result = DisposeHelper.Create(Options.LockCallback, Options.UnlockCallback, key, timeout ?? Options.DefaultLockTimeout);
             if (result.IsEmpty)
@@ -537,18 +537,6 @@ namespace Microsoft.Extensions.Caching.Memory
     public static class OwMemoryCacheBaseExtensions
     {
         /// <summary>
-        /// 用<see cref="OwMemoryCacheBaseOptions.LockCallback"/>锁定指定的键,以进行临界操作。
-        /// 在未来用<see cref="OwMemoryCacheBaseOptions.UnlockCallback"/>解锁。
-        /// </summary>
-        /// <param name="cache"></param>
-        /// <param name="key"></param>
-        /// <param name="timeout">锁定键的最长超时，省略或为null则使用<see cref="OwMemoryCacheBaseOptions.DefaultLockTimeout"/>。</param>
-        /// <returns>返回的结构可以用using 语句保证释放。判断<see cref="DisposeHelper{T}.IsEmpty"/>可以知道是否锁定成功。</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DisposeHelper<object> Lock(this OwMemoryCacheBase cache, object key, TimeSpan? timeout = null) =>
-            DisposeHelper.Create(cache.Options.LockCallback, cache.Options.UnlockCallback, key, timeout ?? cache.Options.DefaultLockTimeout);
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="cache"></param>
@@ -564,12 +552,6 @@ namespace Microsoft.Extensions.Caching.Memory
                 return DisposerWrapper.Create(c => cache.Options.UnlockCallback(c), obj);
             }, timeout);
         }
-
-        public static void Delay(this OwMemoryCacheBase cache, object key, TimeSpan delay)
-        {
-            cache.GetCacheEntry(key);
-        }
-
 
     }
 }

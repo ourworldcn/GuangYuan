@@ -2259,17 +2259,21 @@
         </member>
         <member name="T:GY2021001WebApi.Models.GameCombatDto">
             <summary>
-            战斗的聚合根。
+            战斗对象。
             </summary>
         </member>
         <member name="M:GY2021001WebApi.Models.GameCombatDto.#ctor">
             <summary>
-            TODO 不可直接构造。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.GameCombatDto.Id">
             <summary>
             本战斗对象的唯一Id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameCombatDto.OldCombatId">
+            <summary>
+            原始战斗的id,若自身就是原始战斗对象，这里为空。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.GameCombatDto.Attackers">
@@ -3672,6 +3676,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

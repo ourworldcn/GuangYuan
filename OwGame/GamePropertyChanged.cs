@@ -122,26 +122,7 @@ namespace OW.Game.PropertyChange
         /// <returns></returns>
         public object Clone()
         {
-            var result = GamePropertyChangeItemPool<T>.Shared.Get();
-            Copy(this, result);
-            return result;
-        }
-
-        /// <summary>
-        /// 复制成员。
-        /// </summary>
-        /// <param name="src"></param>
-        /// <param name="dest"></param>
-        public static void Copy(GamePropertyChangeItem<T> src, GamePropertyChangeItem<T> dest)
-        {
-            dest.Object = src.Object;
-            dest.PropertyName = src.PropertyName;
-            dest.HasOldValue = src.HasOldValue;
-            dest.OldValue = src.OldValue;
-            dest.HasNewValue = src.HasNewValue;
-            dest.NewValue = src.NewValue;
-            dest.Tag = src.Tag;
-            dest.DateTimeUtc = src.DateTimeUtc;
+            return MemberwiseClone();
         }
 
         #endregion 新值相关

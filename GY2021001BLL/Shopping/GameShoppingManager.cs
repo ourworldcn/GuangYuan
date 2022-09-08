@@ -135,7 +135,7 @@ namespace GuangYuan.GY001.BLL
             var end = template.GetEnd(now);
             var result = now >= start && now <= end;
             if (!result)
-                VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+                OwHelper.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
             return result;
         }
 
@@ -158,7 +158,7 @@ namespace GuangYuan.GY001.BLL
                     continue;
                 if (!(gameChar.Properties.GetDecimalOrDefault(ary[0]) >= dec))
                 {
-                    VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+                    OwHelper.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
                     return false;
                 }
             }
@@ -206,7 +206,7 @@ namespace GuangYuan.GY001.BLL
             //校验可购买性
             if (!view.AllowBuy(template, datas.Count) || !AllowBuyWithConditional(datas.GameChar, template, datas.Now, ref dec))    //若不可购买
             {
-                datas.ErrorCode = VWorld.GetLastError();
+                datas.ErrorCode = OwHelper.GetLastError();
                 return;
             }
             //计算价格，修改资源

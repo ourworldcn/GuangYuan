@@ -39,8 +39,29 @@ namespace Gy01.AutoMapper.Profiles
             CreateMap<(Guid, decimal), IdAndCountDto>().ConstructUsing((src, context) => new IdAndCountDto { Id = src.Item1.ToBase64String(), Count = src.Item2 }).ForAllMembers(c => c.Ignore());
 
             //战斗相关映射
-            CreateMap<GameSoldier, GameSoldierDto>();
-            CreateMap<GameCombat, GameCombatDto>();
+            CreateMap<GameSoldier, GameSoldierDto>().ForMember(src => src.Pets, opt =>
+               {
+                   opt.MapFrom(dest => dest.Pets);
+                   opt.PreCondition((src, dest, context) =>
+                   {
+                       if (context.Items.ContainsKey("IgnorDefenerPets") && src.Pets.Count > 4) //TODO 当前忽略4个以上的坐骑，应忽略所有防御方坐骑
+                           return false;
+                       return true;
+                   });
+               });
+            CreateMap<GameCombat, GameCombatDto>().ForMember(dest => dest.Others, opt =>
+               {
+                   opt.MapFrom(c => c.Others);
+                   opt.PreCondition((src, dest, context) =>
+                   {
+                       if (context.Items.ContainsKey("IgnorOthers"))
+                           return false;
+                       return true;
+                   });
+               }).ForMember(dest => dest.Defensers, opt =>
+                 {
+                     opt.MapFrom(src => src.Defensers);
+                 });
         }
     }
 }

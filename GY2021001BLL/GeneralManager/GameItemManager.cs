@@ -747,8 +747,8 @@ namespace OW.Game.Item
             List<GamePropertyChangeItem<object>> changes = new List<GamePropertyChangeItem<object>>();
             if (!UseItem(gi, datas.Item.Item2, datas.Remainder, changes))
             {
-                datas.ErrorCode = VWorld.GetLastError();
-                datas.DebugMessage = VWorld.GetLastErrorMessage();
+                datas.ErrorCode = OwHelper.GetLastError();
+                datas.DebugMessage = OwHelper.GetLastErrorMessage();
                 datas.HasError = true;
             }
             else
@@ -1172,7 +1172,7 @@ namespace OW.Game.Item
         /// <param name="propertyBag"></param>
         /// <param name="prefix"></param>
         /// <param name="changes"></param>
-        /// <returns>true减少了所有材料，false至少有一种材料缺失。</returns>
+        /// <returns>true减少了所有材料(若字典没有消耗，也立即返回true)，false至少有一种材料缺失。</returns>
         public virtual bool DecrementCount(GameChar gameChar, IReadOnlyDictionary<string, object> propertyBag, string prefix = null,
             ICollection<GamePropertyChangeItem<object>> changes = null)
         {
@@ -1181,8 +1181,8 @@ namespace OW.Game.Item
             var count = cost.Count();
             if (list.Count < count)    //若资源不足
             {
-                VWorld.SetLastErrorMessage($"缺少材料种类不齐。");
-                VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                OwHelper.SetLastErrorMessage($"缺少材料种类不齐。");
+                OwHelper.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
                 return false;
             }
             if (list.Count > 0)
@@ -1190,8 +1190,8 @@ namespace OW.Game.Item
                 var errItem = list.FirstOrDefault(c => c.Item1.Count.Value < c.Item2);
                 if (errItem.Item1 != null)    //若至少有一个材料不够
                 {
-                    VWorld.SetLastErrorMessage($"至少有一个材料不够。{errItem.Item1.GetTemplate().DisplayName}需要{errItem.Item2},但只有{errItem.Item1.Count}");
-                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                    OwHelper.SetLastErrorMessage($"至少有一个材料不够。{errItem.Item1.GetTemplate().DisplayName}需要{errItem.Item2},但只有{errItem.Item1.Count}");
+                    OwHelper.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
                     return false;
                 }
                 DecrementCount(list, changes);
@@ -1292,7 +1292,7 @@ namespace OW.Game.Item
                     var rCap = propMng.GetRemainderCap(container);
                     if (rCap < 1) //若不可容纳
                     {
-                        VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+                        OwHelper.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
                         remainder?.Add(gItem);
                     }
                     else //若可以容纳
@@ -1316,7 +1316,7 @@ namespace OW.Game.Item
                 var rCap = propMng.GetRemainderCap(container);  //还可容纳的数量
                 if (rCap < 1) //若不可容纳
                 {
-                    VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+                    OwHelper.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
                     remainder?.Add(gItem);
                 }
                 else //若可以容纳
@@ -1368,8 +1368,8 @@ namespace OW.Game.Item
                 World.BlueprintManager.ApplyBluprint(bpDatas);
                 if (bpDatas.HasError)
                 {
-                    VWorld.SetLastError(bpDatas.ErrorCode);
-                    VWorld.SetLastErrorMessage(bpDatas.DebugMessage);
+                    OwHelper.SetLastError(bpDatas.ErrorCode);
+                    OwHelper.SetLastErrorMessage(bpDatas.DebugMessage);
                     result = false;
                 }
                 else

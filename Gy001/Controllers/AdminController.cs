@@ -140,7 +140,7 @@ namespace GY2021001WebApi.Controllers
             var result = new SetCharExpReturnDto();
             using var dwUser = World.CharManager.LockAndReturnDisposer(model.Token, out var gu);
             if (dwUser is null)
-                return Unauthorized(VWorld.GetLastErrorMessage());
+                return Unauthorized(OwHelper.GetLastErrorMessage());
             World.CharManager.SetExp(gu.CurrentChar, model.Exp);
             return result;
         }

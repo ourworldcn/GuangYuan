@@ -55,7 +55,7 @@ namespace GuangYuan.GY001.BLL
                 using var dw = World.CharManager.LockOrLoad(id, out var gu);
                 if (dw is null)  //若无法锁定
                 {
-                    datas.Results.Add(VWorld.GetLastError());
+                    datas.Results.Add(OwHelper.GetLastError());
                     continue;
                 }
                 var pvp = gu.CurrentChar.GetPvpObject();
@@ -98,7 +98,7 @@ namespace GuangYuan.GY001.BLL
                 using var dw = World.CharManager.LockOrLoad(id, out var gu);
                 if (dw is null)  //若无法锁定
                 {
-                    datas.Results.Add(VWorld.GetLastError());
+                    datas.Results.Add(OwHelper.GetLastError());
                     continue;
                 }
                 gu.CurrentChar.CharType |= datas.CharType;
@@ -408,7 +408,7 @@ namespace GuangYuan.GY001.BLL
                 using var dw = World.CharManager.LockOrLoad(id, out var gu);
                 if (dw is null)  //若无法锁定
                 {
-                    datas.Results.Add(VWorld.GetLastError());
+                    datas.Results.Add(OwHelper.GetLastError());
                     continue;
                 }
                 gu.BlockUtc = datas.BlockUtc;

@@ -307,16 +307,15 @@ namespace GuangYuan.GY001.BLL
                 Cap = 20,
             };
             var cache = world.Service.GetService<GameObjectCache>();
+            var id = Guid.NewGuid();
             var sw = Stopwatch.StartNew();
             try
             {
-                var mapper = world.Service.GetRequiredService<IMapper>();
-                
-                var gi = new GameItem();
-                world.EventsManager.GameItemCreated(gi, ProjectConstant.HomelandSlotId);
-                var obj = new MyClass(Tuple.Create(2, 1));
-                var str = JsonSerializer.Serialize(obj);
-                var obj2 = (MyClass)JsonSerializer.Deserialize<MyClass>(str);
+                for (int i = 0; i < 1e6; i++)
+                {
+                    var td = TypeDescriptor.GetConverter(typeof(Guid));
+                    var str = td.ConvertToString(id);
+                }
             }
             catch (Exception)
             {

@@ -242,7 +242,7 @@ namespace GuangYuan.GY001.BLL
                 var di = RefreshInfos[template.Genus];
                 if (di.GroupNumber != template.GroupNumber.Value)  //若当前不可购买
                 {
-                    VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+                    OwHelper.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
                     return false;
                 }
             }
@@ -255,7 +255,7 @@ namespace GuangYuan.GY001.BLL
             else //若同周期
                 result = -1 == template.MaxCount || template.MaxCount >= count + info.BuyCount;
             if (!result)
-                VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+                OwHelper.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
             
             return result;
         }
@@ -291,7 +291,7 @@ namespace GuangYuan.GY001.BLL
             var end = template.GetEnd(Now);
             var result = Now >= start && Now <= end;
             if (!result)
-                VWorld.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
+                OwHelper.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
             return result;
         }
 

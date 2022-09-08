@@ -318,7 +318,7 @@ namespace OW.Game.Mission
             using var dwUser = World.CharManager.LockAndReturnDisposer(gu);
             if (dwUser is null)
             {
-                logger?.LogWarning($"无法扫描指定角色的成就变化数据,ErrorCode={VWorld.GetLastError()},DebugMessage={VWorld.GetLastErrorMessage()}");
+                logger?.LogWarning($"无法扫描指定角色的成就变化数据,ErrorCode={OwHelper.GetLastError()},DebugMessage={OwHelper.GetLastErrorMessage()}");
                 return false;
             }
             var slot = gChar.GetRenwuSlot();    //任务/成就槽对象

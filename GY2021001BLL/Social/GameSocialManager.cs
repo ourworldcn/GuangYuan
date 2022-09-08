@@ -420,7 +420,7 @@ namespace GuangYuan.GY001.BLL
 
             if (atts.Count < attachmentesIds.Count())
             {
-                VWorld.SetLastErrorMessage("至少有一个附件不属于指定角色。");
+                OwHelper.SetLastErrorMessage("至少有一个附件不属于指定角色。");
                 return false;
             }
             var changes = new List<GamePropertyChangeItem<object>>();
@@ -476,7 +476,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 catch (Exception err)
                 {
-                    VWorld.SetLastErrorMessage($"发生未知错误——{err.Message}");
+                    OwHelper.SetLastErrorMessage($"发生未知错误——{err.Message}");
                     return false;
                 }
             }
@@ -718,7 +718,7 @@ namespace GuangYuan.GY001.BLL
             using var dwUsers = data.LockAll();
             if (dwUsers is null)
             {
-                VWorld.SetLastErrorMessage($"无法锁定指定角色。");
+                OwHelper.SetLastErrorMessage($"无法锁定指定角色。");
                 return RequestFriendResult.NotFoundThisChar;
             }
             GameUserContext db = data.UserDbContext;
@@ -875,7 +875,7 @@ namespace GuangYuan.GY001.BLL
         {
             if (!World.CharManager.Lock(gameChar.GameUser))
             {
-                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+                OwHelper.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
                 return ConfirmFriendResult.Unknown;
             }
             using var dwChar = DisposerWrapper.Create(() => World.CharManager.Unlock(gameChar.GameUser));
@@ -895,7 +895,7 @@ namespace GuangYuan.GY001.BLL
                 var slot = gameChar.AllChildren.First(c => c.ExtraGuid == SocialConstant.FriendSlotTId);
                 if (World.PropertyManager.GetRemainderStc(slot) <= 0)
                 {
-                    VWorld.SetLastErrorMessage("好友位已满。");
+                    OwHelper.SetLastErrorMessage("好友位已满。");
                     return ConfirmFriendResult.CharFriendFull;
                 }
                 sr.SetFriend();
@@ -936,7 +936,7 @@ namespace GuangYuan.GY001.BLL
         {
             if (!World.CharManager.Lock(gameChar.GameUser))
             {
-                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+                OwHelper.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
                 return false;
             }
             using var dwChar = DisposerWrapper.Create(() => World.CharManager.Unlock(gameChar.GameUser, true));
@@ -966,7 +966,7 @@ namespace GuangYuan.GY001.BLL
         {
             if (!World.CharManager.Lock(gameChar.GameUser))
             {
-                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+                OwHelper.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
                 return false;
             }
             using var dwChar = DisposerWrapper.Create(() => World.CharManager.Unlock(gameChar.GameUser, true));
@@ -984,7 +984,7 @@ namespace GuangYuan.GY001.BLL
             }
             catch (DbUpdateConcurrencyException)
             {
-                VWorld.SetLastErrorMessage("并发冲突，请重试一次。");
+                OwHelper.SetLastErrorMessage("并发冲突，请重试一次。");
                 return false;
             }
             return true;
@@ -1001,7 +1001,7 @@ namespace GuangYuan.GY001.BLL
         {
             if (!World.CharManager.Lock(gameChar.GameUser))
             {
-                VWorld.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
+                OwHelper.SetLastErrorMessage($"无法锁定指定玩家，Id={gameChar.Id}。");
                 return false;
             }
             using var dwChar = DisposerWrapper.Create(() => World.CharManager.Unlock(gameChar.GameUser, true));
@@ -1019,7 +1019,7 @@ namespace GuangYuan.GY001.BLL
             }
             catch (DbUpdateConcurrencyException)
             {
-                VWorld.SetLastErrorMessage("并发冲突，请重试一次。");
+                OwHelper.SetLastErrorMessage("并发冲突，请重试一次。");
                 return false;
             }
             return true;
@@ -1197,8 +1197,8 @@ namespace GuangYuan.GY001.BLL
             if (dwChar is null)
             {
                 datas.HasError = true;
-                datas.ErrorCode = VWorld.GetLastError();
-                datas.DebugMessage = VWorld.GetLastErrorMessage();
+                datas.ErrorCode = OwHelper.GetLastError();
+                datas.DebugMessage = OwHelper.GetLastErrorMessage();
                 return;
             }
             var db = datas.UserDbContext;

@@ -92,22 +92,63 @@ namespace System
         /// </summary>
         public static readonly char[] PathSeparatorChar = new char[] { '\\', '/' };
 
-        [ThreadStatic]
-        static int _LastError;
+        #region 错误处理
 
         /// <summary>
-        /// 获取此线程的错误号。
+        /// 存储当前线程最后的错误信息。
+        /// </summary>
+        [ThreadStatic]
+        private static string _LastErrorMessage;
+
+        /// <summary>
+        /// 获取最后的错误信息。
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string GetLastErrorMessage()
+        {
+            if (_LastErrorMessage is null)
+            {
+                try
+                {
+                    _LastErrorMessage = new Win32Exception(_LastError).Message;
+                }
+                catch (Exception)
+                {
+                }
+            }
+            return _LastErrorMessage;
+        }
+
+        /// <summary>
+        /// 设置最后错误信息。
+        /// </summary>
+        /// <param name="msg"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetLastErrorMessage(string msg) => _LastErrorMessage = msg;
+
+        [ThreadStatic]
+        private static int _LastError;
+
+        /// <summary>
+        /// 获取最后发生错误的错误码。
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetLastError() => _LastError;
 
         /// <summary>
-        /// 设置此线程的错误号。
+        /// 设置最后一次错误的错误码。
         /// </summary>
-        /// <param name="error"></param>
+        /// <param name="errorCode"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetLastError(int error) => _LastError = error;
+        public static void SetLastError(int errorCode)
+        {
+            _LastError = errorCode;
+            _LastErrorMessage = null;
+        }
+
+        #endregion 错误处理
 
         static OwHelper()
         {

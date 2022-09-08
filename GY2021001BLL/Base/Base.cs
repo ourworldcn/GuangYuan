@@ -149,8 +149,8 @@ namespace OW.Game
         /// <param name="obj"></param>
         public static void FillErrorFromWorld(this IResultWorkData obj)
         {
-            obj.ErrorCode = VWorld.GetLastError();
-            obj.DebugMessage = VWorld.GetLastErrorMessage();
+            obj.ErrorCode = OwHelper.GetLastError();
+            obj.DebugMessage = OwHelper.GetLastErrorMessage();
         }
 
         /// <summary>

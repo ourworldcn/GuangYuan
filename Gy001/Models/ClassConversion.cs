@@ -59,8 +59,8 @@ namespace GY2021001WebApi.Models
 
         public void FillFromWorld()
         {
-            ErrorCode = VWorld.GetLastError();
-            DebugMessage = VWorld.GetLastErrorMessage();
+            ErrorCode = OwHelper.GetLastError();
+            DebugMessage = OwHelper.GetLastErrorMessage();
         }
     }
 

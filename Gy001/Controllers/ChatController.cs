@@ -82,8 +82,8 @@ namespace Gy001.Controllers
             if (dwUser is null)
             {
                 result.HasError = true;
-                result.ErrorCode = VWorld.GetLastError();
-                result.DebugMessage = VWorld.GetLastErrorMessage();
+                result.ErrorCode = OwHelper.GetLastError();
+                result.DebugMessage = OwHelper.GetLastErrorMessage();
                 return result;
             }
             using var gContext = new SendMessageContext()

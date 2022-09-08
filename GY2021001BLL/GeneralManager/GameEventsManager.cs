@@ -85,13 +85,16 @@ namespace OW.Game
         /// <param name="thing"></param>
         /// <param name="keyName"></param>
         /// <param name="newValue">无论设置任何值，总会将<see cref="GamePropertyChangedItem{T}.HasNewValue"/>设置为true。</param>
-        public void MarkAndSet(GameThingBase thing, string keyName, object newValue)
+        /// <param name="changes">变化数据的集合。若省略或为null则忽略该参数。</param>
+        public void MarkAndSet(GameThingBase thing, string keyName, object newValue, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.TryGetValue(keyName, out var oldVal);
             var result = new GamePropertyChangeItem<object>(null, name: keyName, oldValue: oldVal, newValue: newValue) { HasOldValue = hasOld, HasNewValue = true, };
             item.Add(result);
             thing.Properties[keyName] = newValue;
+            if (changes != null)
+                changes.Add((GamePropertyChangeItem<object>)result.Clone());
         }
 
         /// <summary>

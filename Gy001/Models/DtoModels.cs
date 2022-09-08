@@ -2288,12 +2288,11 @@ namespace GY2021001WebApi.Models
     #region 战斗相关
 
     /// <summary>
-    /// 战斗的聚合根。
+    /// 战斗对象。
     /// </summary>
     public class GameCombatDto
     {
         /// <summary>
-        /// TODO 不可直接构造。
         /// </summary>
         public GameCombatDto()
         {
@@ -2303,6 +2302,11 @@ namespace GY2021001WebApi.Models
         /// 本战斗对象的唯一Id。
         /// </summary>
         public string Id { get; set; }
+
+        /// <summary>
+        /// 原始战斗的id,若自身就是原始战斗对象，这里为空。
+        /// </summary>
+        public string OldCombatId { get; set; }
 
         #region 进攻方信息
 

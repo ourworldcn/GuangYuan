@@ -101,7 +101,7 @@ namespace Gy001.Controllers
                 var social = _World.SocialManager;
                 result.HasError = !social.RemoveMails(gu.CurrentChar, model.Ids.Select(c => OwConvert.ToGuid(c)));
                 if (result.HasError)
-                    result.DebugMessage = VWorld.GetLastErrorMessage();
+                    result.DebugMessage = OwHelper.GetLastErrorMessage();
                 return result;
 
             }
@@ -226,7 +226,7 @@ namespace Gy001.Controllers
                         break;
                     case RequestFriendResult.Already:
                     case RequestFriendResult.Doing:
-                        result.DebugMessage = VWorld.GetLastErrorMessage();
+                        result.DebugMessage = OwHelper.GetLastErrorMessage();
                         break;
                     case RequestFriendResult.NotFoundThisChar:
                     case RequestFriendResult.NotFoundObjectChar:
@@ -234,7 +234,7 @@ namespace Gy001.Controllers
                     case RequestFriendResult.AlreadyBlack:
                     case RequestFriendResult.UnknowError:
                     default:
-                        result.DebugMessage = VWorld.GetLastErrorMessage();
+                        result.DebugMessage = OwHelper.GetLastErrorMessage();
                         result.HasError = true;
                         break;
                 }
@@ -396,7 +396,7 @@ namespace Gy001.Controllers
             try
             {
                 if (!_World.SocialManager.RemoveFriend(gu.CurrentChar, OwConvert.ToGuid(model.FriendId)))
-                    result.DebugMessage = VWorld.GetLastErrorMessage();
+                    result.DebugMessage = OwHelper.GetLastErrorMessage();
 
             }
             catch (Exception err)
@@ -428,7 +428,7 @@ namespace Gy001.Controllers
             try
             {
                 if (!_World.SocialManager.SetFrindless(gu.CurrentChar, OwConvert.ToGuid(model.FriendId)))
-                    result.DebugMessage = VWorld.GetLastErrorMessage();
+                    result.DebugMessage = OwHelper.GetLastErrorMessage();
             }
             catch (Exception err)
             {
@@ -461,7 +461,7 @@ namespace Gy001.Controllers
                 if (!_World.SocialManager.RemoveBlack(gu.CurrentChar, OwConvert.ToGuid(model.CharId)))
                 {
                     result.HasError = true;
-                    result.DebugMessage = VWorld.GetLastErrorMessage();
+                    result.DebugMessage = OwHelper.GetLastErrorMessage();
                 }
             }
             catch (Exception err)
@@ -496,7 +496,7 @@ namespace Gy001.Controllers
             var r = _World.SocialManager.PatForTili(datas);
             if (PatForTiliResult.Success != r)
             {
-                result.DebugMessage = VWorld.GetLastErrorMessage();
+                result.DebugMessage = OwHelper.GetLastErrorMessage();
                 result.HasError = true;
             }
             result.Code = r;
@@ -597,8 +597,7 @@ namespace Gy001.Controllers
                     var summary = datas.World.SocialManager.GetCharSummary(datas.CharIds, datas.UserDbContext);
                     result.CharSummary.AddRange(summary.Select(c => mapper.Map(c)));
                     var mp = _World.Service.GetRequiredService<IMapper>();
-                    result.Combat = mp.Map<GameCombatDto>(datas.Combat);
-                    var ss = mp.Map<GameSoldierDto>(datas.Combat.Others.First());
+                    result.Combat = mp.Map<GameCombatDto>(datas.Combat, opt => opt.Items["IgnorDefenerPets"] = true);
                 }
             }
             catch (Exception err)

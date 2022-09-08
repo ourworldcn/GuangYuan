@@ -8,6 +8,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
+using OW.Game.Caching;
 using OW.Game.Item;
 using OW.Game.Log;
 using OW.Game.Mission;
@@ -20,7 +21,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Threading;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -542,6 +545,33 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
+        /// 将体力消耗转化为经验增加。
+        /// </summary>
+        /// <param name="changes"></param>
+        /// <returns></returns>
+        bool Tili2Exp(GameChar gameChar, ICollection<GamePropertyChangeItem<object>> changes)
+        {
+            var tiliIncr = changes.FirstOrDefault(c =>
+            {
+                return c.Object is GameItem gi && gi.ExtraGuid == ProjectConstant.TiliId;
+            });
+            //体力变化
+            if (tiliIncr != null)
+            {
+                if (!tiliIncr.HasOldValue || !OwConvert.TryToDecimal(tiliIncr.OldValue, out var ov))
+                    ov = 0;
+                if (!tiliIncr.HasNewValue || !OwConvert.TryToDecimal(tiliIncr.NewValue, out var nv))
+                    nv = 0;
+                if (ov - nv > 0)
+                {
+                    World.CharManager.AddExp(gameChar, ov - nv, changes);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 标记开始一场新的pvp战斗。
         /// </summary>
         /// <param name="datas"></param>
@@ -550,14 +580,80 @@ namespace GuangYuan.GY001.BLL
             using var dw = datas.LockAll();
             if (dw is null) //若不能锁定
                 return;
+            var cache = World.GameCache;
             if (datas.DungeonId == ProjectConstant.PvpDungeonTId) //若是正常pvp
             {
+                var key = datas.CombatId.ToString();
+                using var dwKey = cache.Lock(key);
+                if (dwKey.IsEmpty)  //若锁定超时
+                {
+                    datas.FillErrorFromWorld();
+                    return;
+                }
+                if (!cache.TryGetValue(key, out VirtualThing thing))   //若已不在缓存中
+                {
+                    var db = World.CreateNewUserDbContext();
+                    thing = db.VirtualThings.FirstOrDefault(c => c.Id == datas.CombatId);
+                    if (thing is null)
+                    {
+                        datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                        datas.DebugMessage = "找不到指定id的战斗对象";
+                        return;
+                    }
+                    //加入缓存
+                    thing = cache.GetOrCreate(key, entry =>
+                    {
+                        var innerEntry = (GameObjectCache.GameObjectCacheEntry)entry;
+                        innerEntry.SetSaveAndEviction(db)
+                            .SetSlidingExpiration(TimeSpan.FromMinutes(15));
+                        return thing;
+                    });
+                }
+                var combat = thing.GetJsonObject<GameCombat>();
+                if (combat.Others.All(c => c.CharId != datas.OtherCharId))
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.DebugMessage = "指定战斗与指定的被攻击方不匹配。";
+                    return;
+                }
+                var tt = World.ItemTemplateManager.GetTemplateFromeId(datas.DungeonId); //关卡模板
+                if (!World.ItemManager.DecrementCount(datas.GameChar, tt.Properties, null, datas.PropertyChanges))
+                {
+                    datas.FillErrorFromWorld();
+                    return;
+                }
+                Tili2Exp(datas.GameChar, datas.PropertyChanges);    //体力消耗转换为经验
+
+                //设置信息
+                combat.StartUtc = DateTime.UtcNow;
+
+                var attcker = combat.CreateSoldier();
+                combat.SetAttacker(datas.GameChar, attcker, World);
+
+                var defener = combat.CreateSoldier();
+                combat.SetDefener(datas.OtherChar, defener, World);
             }
             else if (datas.DungeonId == ProjectConstant.PvpForHelpDungeonTId) //若是协助pvp
             {
+                var tt = World.ItemTemplateManager.GetTemplateFromeId(datas.DungeonId); //关卡模板
+                if (!World.ItemManager.DecrementCount(datas.GameChar, tt.Properties, null, datas.PropertyChanges))
+                {
+                    datas.FillErrorFromWorld();
+                    return;
+                }
+                Tili2Exp(datas.GameChar, datas.PropertyChanges);    //体力消耗转换为经验
+
             }
             else if (datas.DungeonId == ProjectConstant.PvpForRetaliationDungeonTId)   //若是反击pvp
             {
+                var tt = World.ItemTemplateManager.GetTemplateFromeId(datas.DungeonId); //关卡模板
+                if (!World.ItemManager.DecrementCount(datas.GameChar, tt.Properties, null, datas.PropertyChanges))
+                {
+                    datas.FillErrorFromWorld();
+                    return;
+                }
+                Tili2Exp(datas.GameChar, datas.PropertyChanges);    //体力消耗转换为经验
+
             }
             else
             {
@@ -566,19 +662,11 @@ namespace GuangYuan.GY001.BLL
                 datas.DebugMessage = $"未知关卡模板Id={datas.DungeonId}";
                 return;
             }
-            var tili = datas.GameChar.GetTili();
-            if (tili.Count < 4)
-            {
-                datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
-                datas.DebugMessage = "体力不足";
-                return;
-            }
-            World.ItemManager.DecrementCount(new (GameItem, decimal)[] { (tili, -4) }, datas.PropertyChanges);
 
-            GameCombat combat = GameCombat.CreateNew(World);
-            combat.MapTId = datas.DungeonId;
-            datas.CombatId = combat.Id;
-            World.GameCache.SetDirty(combat.Thing.IdString, true);
+            //GameCombat combat = GameCombat.CreateNew(World);
+            //combat.MapTId = datas.DungeonId;
+            //datas.CombatId = combat.Id;
+            //World.GameCache.SetDirty(combat.Thing.IdString, true);
         }
 
         /// <summary>
@@ -793,7 +881,7 @@ namespace GuangYuan.GY001.BLL
             if (dwUsers is null) //若无法锁定对象。
             {
                 datas.HasError = true;
-                datas.ErrorCode = VWorld.GetLastError();
+                datas.ErrorCode = OwHelper.GetLastError();
                 return;
             }
             var db = datas.UserDbContext;

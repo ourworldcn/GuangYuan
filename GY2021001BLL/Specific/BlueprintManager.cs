@@ -691,10 +691,10 @@ namespace GuangYuan.GY001.BLL
                 var cost = luDatas.GetCost();
                 if (cost is null)   //若资源不足以升级
                 {
-                    VWorld.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
+                    OwHelper.SetLastError(ErrorCodes.RPC_S_OUT_OF_RESOURCES);
                     datas.HasError = true;
                     datas.ErrorCode = ErrorCodes.RPC_S_OUT_OF_RESOURCES;
-                    datas.DebugMessage = VWorld.GetLastErrorMessage();
+                    datas.DebugMessage = OwHelper.GetLastErrorMessage();
                     return;
                 }
 
@@ -704,8 +704,8 @@ namespace GuangYuan.GY001.BLL
                     if (datas.SuccCount == 0)
                     {
                         datas.HasError = true;
-                        datas.ErrorCode = VWorld.GetLastError();
-                        datas.DebugMessage = VWorld.GetLastErrorMessage();
+                        datas.ErrorCode = OwHelper.GetLastError();
+                        datas.DebugMessage = OwHelper.GetLastErrorMessage();
                     }
                     return;
                 }

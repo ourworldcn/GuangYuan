@@ -366,6 +366,11 @@ namespace GuangYuan.GY001.UserDb.Combat
         }
 
         /// <summary>
+        /// 原始战斗的id,若自身就是原始战斗对象，这里为空。
+        /// </summary>
+        public Guid? OldCombatId { get; set; }
+
+        /// <summary>
         /// 地图Id。就是关卡模板Id。
         /// 这可以表示该战斗是什么种类。
         /// </summary>
@@ -571,6 +576,19 @@ namespace GuangYuan.GY001.UserDb.Combat
         }
 
         /// <summary>
+        /// 将指定参战方设置为进攻方。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="soldier"></param>
+        /// <param name="world"></param>
+        public void SetAttacker(GameChar gameChar, GameSoldier soldier, VWorld world)
+        {
+            FillSoldierBefroeCombat(gameChar, soldier, world);
+            soldier.Thing.ExtraDecimal = 1;
+            FillAttakerBefroeCombat(gameChar, soldier, world);
+        }
+
+        /// <summary>
         /// 在战斗开始前填充作为防御方的信息。
         /// </summary>
         /// <param name="gameChar"></param>
@@ -580,6 +598,19 @@ namespace GuangYuan.GY001.UserDb.Combat
         {
             var pets = world.ItemManager.GetLineup(gameChar, 100000, 199999);    //获取守卫阵容
             soldier.Pets.AddRange(pets);
+        }
+
+        /// <summary>
+        /// 将指定参战方设置为防御方。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="soldier"></param>
+        /// <param name="world"></param>
+        public void SetDefener(GameChar gameChar, GameSoldier soldier, VWorld world)
+        {
+            FillSoldierBefroeCombat(gameChar, soldier, world);
+            soldier.Thing.ExtraDecimal = 2;
+            FillDefenerBefroeCombat(gameChar, soldier, world);
         }
     }
 

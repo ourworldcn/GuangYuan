@@ -525,7 +525,7 @@ namespace GY2021001WebApi.Controllers
             using var dwUser = world.CharManager.LockAndReturnDisposer(model.Token, out var gu);
             if (dwUser is null)
             {
-                return Unauthorized(VWorld.GetLastErrorMessage());
+                return Unauthorized(OwHelper.GetLastErrorMessage());
             }
             var gc = gu.CurrentChar;
             gc.GetOrCreateBinaryObject<CharBinaryExProperties>().ChangeItems.Clear();
@@ -595,7 +595,7 @@ namespace GY2021001WebApi.Controllers
             if (data is null)
             {
                 result.HasError = true;
-                result.ErrorCode = VWorld.GetLastError();
+                result.ErrorCode = OwHelper.GetLastError();
             }
             else
                 result.ChangeDatas.AddRange(data.Select(c => (ChangeDataDto)c));
@@ -620,7 +620,7 @@ namespace GY2021001WebApi.Controllers
             if (data is null)
             {
                 result.HasError = true;
-                result.ErrorCode = VWorld.GetLastError();
+                result.ErrorCode = OwHelper.GetLastError();
             }
             else
                 data.Clear();

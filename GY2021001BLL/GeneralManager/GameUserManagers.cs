@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using OW.Extensions.Game.Store;
 using OW.Game;
+using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Collections;
@@ -537,7 +538,7 @@ namespace GuangYuan.GY001.BLL
         {
             var result = _Store._Token2Users.GetValueOrDefault(token, null);
             if (result is null) //若令牌无效
-                VWorld.SetLastError(ErrorCodes.ERROR_INVALID_TOKEN);
+                OwHelper.SetLastError(ErrorCodes.ERROR_INVALID_TOKEN);
             return result;
         }
 
@@ -661,19 +662,19 @@ namespace GuangYuan.GY001.BLL
         {
             if (user.IsDisposed)    //若已经无效
             {
-                VWorld.SetLastError(ErrorCodes.ObjectDisposed);
+                OwHelper.SetLastError(ErrorCodes.ObjectDisposed);
                 return false;
             }
             timeout ??= Options.DefaultLockTimeout;
             if (!Monitor.TryEnter(user, timeout.Value))   //若锁定超时
             {
-                VWorld.SetLastError(ErrorCodes.WAIT_TIMEOUT);
+                OwHelper.SetLastError(ErrorCodes.WAIT_TIMEOUT);
                 return false;
             }
             if (user.IsDisposed)    //若已经无效
             {
                 Monitor.Exit(user);
-                VWorld.SetLastError(ErrorCodes.ObjectDisposed);
+                OwHelper.SetLastError(ErrorCodes.ObjectDisposed);
                 return false;
             }
 #if DEBUG
@@ -786,7 +787,7 @@ namespace GuangYuan.GY001.BLL
             gc = context.Set<GameChar>().Include(c => c.GameUser).FirstOrDefault(c => c.Id == charId);
             if (gc is null)    //若找不到对象
             {
-                VWorld.SetLastError(ErrorCodes.ERROR_NO_SUCH_USER);  //ERROR_NO_SUCH_USER
+                OwHelper.SetLastError(ErrorCodes.ERROR_NO_SUCH_USER);  //ERROR_NO_SUCH_USER
                 context?.DisposeAsync();
                 user = null;
                 return null;
@@ -833,7 +834,7 @@ namespace GuangYuan.GY001.BLL
             }
             if (null != gu && !gu.IsDisposed) //若超时
             {
-                VWorld.SetLastError(ErrorCodes.WAIT_TIMEOUT);   //WAIT_TIMEOUT
+                OwHelper.SetLastError(ErrorCodes.WAIT_TIMEOUT);   //WAIT_TIMEOUT
                 user = null;
                 return null;
             }
@@ -842,7 +843,7 @@ namespace GuangYuan.GY001.BLL
             gu = context.GameUsers.Include(c => c.GameChars).FirstOrDefault(c => c.LoginName == ln);
             if (gu is null) //若指定的Id无效
             {
-                VWorld.SetLastError(ErrorCodes.ERROR_NO_SUCH_USER);  //ERROR_NO_SUCH_USER
+                OwHelper.SetLastError(ErrorCodes.ERROR_NO_SUCH_USER);  //ERROR_NO_SUCH_USER
                 user = null;
                 return null;
             }
@@ -1009,8 +1010,8 @@ namespace GuangYuan.GY001.BLL
             pwd = null;
             if (dto.Ret != "0")
             {
-                VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
-                VWorld.SetLastErrorMessage(dto.msg);
+                OwHelper.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                OwHelper.SetLastErrorMessage(dto.msg);
                 return null;
             }
             using var db = World.CreateNewUserDbContext();
@@ -1419,7 +1420,8 @@ namespace GuangYuan.GY001.BLL
         /// <remarks>可从<see cref="VWorld.GetLastError"/>中获取详细的信息。</remarks>
         /// <param name="gameChar"></param>
         /// <param name="newExp"></param>
-        public void SetExp(GameChar gameChar, decimal newExp)
+        /// <param name="changes">变化数据的集合。若省略或为null则忽略该参数。</param>
+        public void SetExp(GameChar gameChar, decimal newExp, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             using var dwUser = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
             if (dwUser is null)
@@ -1429,9 +1431,10 @@ namespace GuangYuan.GY001.BLL
             var e = new DynamicPropertyChangedCollection();
             var oldExp = gameChar.Properties.GetDecimalOrDefault("exp");    //当前经验值
             if (newExp != oldExp)
-                e.MarkAndSet(gameChar, "exp", newExp);
+            {
+                e.MarkAndSet(gameChar, "exp", newExp, changes);
+            }
             var oldLv = gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName); //当前等级
-            var limit = gameChar.Properties.GetValueOrDefault("expLimit");
             int newLv;
             if (gameChar.GetTemplate().Properties.GetValueOrDefault("expLimit") is IEnumerable limitSeq && newExp >= oldExp)   //若经验已经变化
             {
@@ -1440,7 +1443,7 @@ namespace GuangYuan.GY001.BLL
                 newLv = newLv == -1 ? lst.Count : newLv;
                 if (newLv != oldLv)    //若等级发生变化
                 {
-                    e.MarkAndSet(gameChar, World.PropertyManager.LevelPropertyName, newLv);
+                    e.MarkAndSet(gameChar, World.PropertyManager.LevelPropertyName, newLv, changes);
                 }
             }
             World.EventsManager.OnDynamicPropertyChanged(e);
@@ -1452,8 +1455,9 @@ namespace GuangYuan.GY001.BLL
         /// <remarks>可从<see cref="VWorld.GetLastError"/>中获取详细的信息。</remarks>
         /// <param name="gameChar"></param>
         /// <param name="incExp"></param>
+        /// <param name="changes">变化数据的集合。若省略或为null则忽略该参数。</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddExp(GameChar gameChar, decimal incExp)
+        public void AddExp(GameChar gameChar, decimal incExp, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             using var dwUser = World.CharManager.LockAndReturnDisposer(gameChar.GameUser);
             if (dwUser is null)
@@ -1461,7 +1465,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var oldExp = gameChar.Properties.GetDecimalOrDefault("exp");    //当前经验值
-            SetExp(gameChar, oldExp + incExp);
+            SetExp(gameChar, oldExp + incExp, changes);
         }
 
         /// <summary>
@@ -1754,7 +1758,7 @@ namespace GuangYuan.GY001.BLL
             gameUser = manager.GetUserFromToken(token);
             if (gameUser is null)
             {
-                VWorld.SetLastError(ErrorCodes.ERROR_INVALID_TOKEN);
+                OwHelper.SetLastError(ErrorCodes.ERROR_INVALID_TOKEN);
                 return false;
             }
             return manager.Lock(gameUser, timeout);
@@ -1807,7 +1811,7 @@ namespace GuangYuan.GY001.BLL
             var gu = user = manager.GetUserFromLoginName(loginName);
             if (user is null)
             {
-                VWorld.SetLastError(ErrorCodes.ERROR_NO_SUCH_USER);
+                OwHelper.SetLastError(ErrorCodes.ERROR_NO_SUCH_USER);
                 return null;
             }
             return manager.LockAndReturnDisposer(gu, timeout);
@@ -1833,7 +1837,7 @@ namespace GuangYuan.GY001.BLL
             }
             catch (Exception)
             {
-                VWorld.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                OwHelper.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
                 return null;
             }
             return manager.GetUserFromToken(t);

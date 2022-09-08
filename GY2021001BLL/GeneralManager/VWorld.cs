@@ -588,64 +588,6 @@ namespace OW.Game
         public bool IsHit(double val, Random random = null) =>
             (random ?? WorldRandom).NextDouble() < val;
 
-        #region 错误处理
-
-        /// <summary>
-        /// 存储当前线程最后的错误信息。
-        /// </summary>
-        [ThreadStatic]
-        private static string _LastErrorMessage;
-
-        /// <summary>
-        /// 获取最后的错误信息。
-        /// </summary>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string GetLastErrorMessage()
-        {
-            if (_LastErrorMessage is null)
-            {
-                try
-                {
-                    _LastErrorMessage = new Win32Exception(_LastError).Message;
-                }
-                catch (Exception)
-                {
-                }
-            }
-            return _LastErrorMessage;
-        }
-
-        /// <summary>
-        /// 设置最后错误信息。
-        /// </summary>
-        /// <param name="msg"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetLastErrorMessage(string msg) => _LastErrorMessage = msg;
-
-        [ThreadStatic]
-        private static int _LastError;
-
-        /// <summary>
-        /// 获取最后发生错误的错误码。
-        /// </summary>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetLastError() => _LastError;
-
-        /// <summary>
-        /// 设置最后一次错误的错误码。
-        /// </summary>
-        /// <param name="errorCode"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetLastError(int errorCode)
-        {
-            _LastError = errorCode;
-            _LastErrorMessage = null;
-        }
-
-        #endregion 错误处理
-
         #region 功能
 
         /// <summary>
