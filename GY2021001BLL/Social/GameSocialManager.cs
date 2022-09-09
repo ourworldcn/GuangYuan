@@ -1728,7 +1728,7 @@ namespace GuangYuan.GY001.BLL
         List<Guid> GetNewPvpCharIds(DbContext db, Guid charId, decimal pvpScore, int lv, IEnumerable<Guid> excludeCharIds)
         {
             var ary = excludeCharIds?.Where(c => c != charId).ToArray() ?? Array.Empty<Guid>(); //排除掉自身id,容错
-            var charTypes = new CharType[] { CharType.Unknow, CharType.Robot, CharType.Test, CharType.Vip };
+            var charTypes = new CharType[] { CharType.Unknow, CharType.Robot, CharType.Test };
             var coll = from pvp in db.Set<GameItem>()
                        join gc in db.Set<GameChar>()
                        on pvp.Parent.OwnerId equals gc.Id

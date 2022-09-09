@@ -2,6 +2,7 @@
  * 包含一些简单的类。
  */
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -300,9 +301,11 @@ namespace System
     /// <typeparam name="TValue"></typeparam>
     public class UniqueObjectLocker<TKey, TValue> where TValue : class
     {
-        readonly ConcurrentDictionary<TKey, TValue> _Data = new ConcurrentDictionary<TKey, TValue>();
+        private readonly ConcurrentDictionary<TKey, TValue> _Data;
 
         Func<TKey, TValue> _Key2Value;
+
+        #region 构造函数
 
         /// <summary>
         /// 构造函数。
@@ -310,20 +313,40 @@ namespace System
         /// </summary>
         protected UniqueObjectLocker()
         {
+            _Data = new ConcurrentDictionary<TKey, TValue>();
             var td = TypeDescriptor.GetConverter(typeof(TKey));
             if (!td.CanConvertTo(typeof(TValue)))
                 throw new InvalidOperationException($"无法自动将{typeof(TKey)}转换为{typeof(TValue)}");
             _Key2Value = c => (TValue)td.ConvertTo(c, typeof(TValue));
         }
 
-        protected UniqueObjectLocker(Func<TKey, TValue> key2Value)
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="key2Value"></param>
+        /// <param name="comparer">比较键(TKey)相等性的接口。</param>
+        protected UniqueObjectLocker(Func<TKey, TValue> key2Value, IEqualityComparer<TKey> comparer)
         {
+            _Data = new ConcurrentDictionary<TKey, TValue>(comparer);
             _Key2Value = key2Value;
         }
 
         /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="key2Value"></param>
+        protected UniqueObjectLocker(Func<TKey, TValue> key2Value)
+        {
+            _Data = new ConcurrentDictionary<TKey, TValue>();
+            _Key2Value = key2Value;
+        }
+
+        #endregion 构造函数
+
+        /// <summary>
         /// 清理字符串拘留池中没有锁定的对象。
         /// </summary>
+        /// <remarks>建议在合适的实际使用后台线程后台清理，函数会逐个锁定项(<see cref="TimeSpan.Zero"/>)，然后驱逐，只要无法锁定项就会略过。</remarks>
         public void TrimExcess()
         {
             TValue value;
@@ -372,9 +395,9 @@ namespace System
         {
             value = Intern(key);
             var start = DateTime.UtcNow;
-            if (!Monitor.TryEnter(key, timeout))
+            if (!Monitor.TryEnter(value, timeout))
                 return false;
-            while (!ReferenceEquals(key, IsInterned(key)))
+            while (!ReferenceEquals(value, IsInterned(key)))    //若因并发问题已经变换过键绑定的对象
             {
                 Monitor.Exit(value);
                 var tmp = OwHelper.ComputeTimeout(start, timeout);
@@ -419,7 +442,6 @@ namespace System
             var value = IsInterned(key);
             Monitor.Exit(value);
         }
-
     }
 
     /// <summary>

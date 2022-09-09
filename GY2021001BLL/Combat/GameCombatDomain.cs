@@ -612,6 +612,7 @@ namespace GuangYuan.GY001.UserDb.Combat
             soldier.Thing.ExtraDecimal = 2;
             FillDefenerBefroeCombat(gameChar, soldier, world);
         }
+
     }
 
     /// <summary>
@@ -698,8 +699,7 @@ namespace GuangYuan.GY001.UserDb.Combat
         {
             var key = id.ToString();
             var re = new { Key = key };
-            var thing = _World.GameCache.GetOrLoad<VirtualThing>(key, c => c.Id == id, type => _World.CreateNewUserDbContext(),
-                entry => entry.SetCreateCallback((key, state) =>
+            var thing = _World.GameCache.GetOrLoad<VirtualThing>(key, c => c.Id == id, entry => entry.SetCreateCallback((key, state) =>
                 {
                     var result = new VirtualThing(id) { };
                     return result;

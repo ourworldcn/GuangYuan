@@ -22,6 +22,11 @@ namespace OW.Game.Caching
 
         GameObjectCacheOptions IOptions<GameObjectCacheOptions>.Value => this;
 
+        /// <summary>
+        /// 创建数据库上下文的回调。
+        /// (数据库实体的类型,数据库内的键)=>访问用的数据库上下文。
+        /// </summary>
+        public Func<Type, object, DbContext> CreateDbCallback { get; set; }
     }
 
     /// <summary>
@@ -51,6 +56,8 @@ namespace OW.Game.Caching
 
         }
 
+        #region 构造函数
+
         /// <summary>
         /// 构造函数。
         /// 若<see cref="EfObjectCacheOptions.CreateDbContextCallback"/>未设置，则自动设置为<see cref="VWorld.CreateNewUserDbContext"/>。
@@ -60,7 +67,13 @@ namespace OW.Game.Caching
         public GameObjectCache(VWorld world, IOptions<GameObjectCacheOptions> options) : base(options)
         {
             _World = world;
+            if (options.Value.CreateDbCallback is null)
+            {
+                options.Value.CreateDbCallback = (type, dbKey) => _World.CreateNewUserDbContext();
+            }
         }
+
+        #endregion 构造函数
 
         VWorld _World;
 
@@ -166,7 +179,7 @@ namespace OW.Game.Caching
             }, db)
             .RegisterBeforeEvictionCallback((key, value, reason, state) =>
             {
-                db.SaveChanges();
+                ((DbContext)state).SaveChanges();
             }, db)
             .RegisterPostEvictionCallback((key, value, reason, state) =>
             {
@@ -197,21 +210,35 @@ namespace OW.Game.Caching
         /// <param name="cache"></param>
         /// <param name="key"></param>
         /// <param name="predicate"></param>
-        /// <param name="createDbCallback"></param>
-        /// <returns></returns>
-        public static T GetOrLoad<T>(this GameObjectCache cache, string key, Expression<Func<T, bool>> predicate, Func<Type, DbContext> createDbCallback,
-            Action<GameObjectCache.GameObjectCacheEntry> setCallback = null) where T : class
+        /// <param name="createDbCallback">创建数据库上下文的回调，省略或为null则使用配置中的回调<see cref="GameObjectCacheOptions.CreateDbCallback"/>。</param>
+        /// <returns>获取或加载的缓存对象，如果为null则说明后被存储和缓存中均无此对象，此时没有缓存项被加入缓存。
+        /// 或锁定超时也可能导致返回null(<see cref="OwHelper.GetLastError"/>返回258)</returns>
+        public static T GetOrLoad<T>(this GameObjectCache cache, string key, Expression<Func<T, bool>> predicate, Action<GameObjectCache.GameObjectCacheEntry> setCallback = null,
+            Func<Type, object, DbContext> createDbCallback = null) where T : class
         {
-            if (cache.TryGetValue(key, out object result))
-                return (T)result;
-            using (var entry = (GameObjectCache.GameObjectCacheEntry)cache.CreateEntry(key))
+            if (cache.TryGetValue(key, out T result))   //若已经在缓存中
+                return result;
+            using var dwKey = cache.Lock(key);
+            if (dwKey.IsEmpty)   //若锁定超时
+                return null;
+            if (cache.TryGetValue(key, out result))   //若已经在缓存中
+                return result;    //二相获取
+            //此时已经确定不在缓存中
+            createDbCallback ??= ((GameObjectCacheOptions)cache.Options).CreateDbCallback;
+            var db = createDbCallback(typeof(T), key);
+            result = db.Set<T>().FirstOrDefault(predicate);
+            if (result is null)  //若后背存储也没有
             {
-                entry.SetSingleObject(predicate, createDbCallback);
-                setCallback?.Invoke(entry);
+                OwHelper.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                OwHelper.SetLastErrorMessage($"找不到Id={key}的对象");
+                return null;
             }
-            if (cache.TryGetValue(key, out result))
-                return (T)result;
-            return default;
+            return cache.GetOrCreate(key, c =>
+            {
+                var entry = (GameObjectCache.GameObjectCacheEntry)c;
+                entry.SetSaveAndEviction(db);
+                return result;
+            });
         }
 
         #endregion GameObjectCache扩展

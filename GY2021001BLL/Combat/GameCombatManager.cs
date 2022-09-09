@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Game.Social;
+using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
@@ -590,25 +591,14 @@ namespace GuangYuan.GY001.BLL
                     datas.FillErrorFromWorld();
                     return;
                 }
-                if (!cache.TryGetValue(key, out VirtualThing thing))   //若已不在缓存中
+                var thing = cache.GetOrLoad<VirtualThing>(key, c => c.Id == datas.CombatId);
+                if (thing is null)
                 {
-                    var db = World.CreateNewUserDbContext();
-                    thing = db.VirtualThings.FirstOrDefault(c => c.Id == datas.CombatId);
-                    if (thing is null)
-                    {
-                        datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                        datas.DebugMessage = "找不到指定id的战斗对象";
-                        return;
-                    }
-                    //加入缓存
-                    thing = cache.GetOrCreate(key, entry =>
-                    {
-                        var innerEntry = (GameObjectCache.GameObjectCacheEntry)entry;
-                        innerEntry.SetSaveAndEviction(db)
-                            .SetSlidingExpiration(TimeSpan.FromMinutes(15));
-                        return thing;
-                    });
+                    datas.FillErrorFromWorld();
+                    return;
                 }
+                cache.GetCacheEntry(key).SetSlidingExpiration(TimeSpan.FromMinutes(15));
+
                 var combat = thing.GetJsonObject<GameCombat>();
                 if (combat.Others.All(c => c.CharId != datas.OtherCharId))
                 {
@@ -679,6 +669,7 @@ namespace GuangYuan.GY001.BLL
             //校验免战
             if (false)   //若免战
             {
+
             }
             using var dwUser = datas.LockAll();
             if (dwUser is null)
@@ -743,7 +734,124 @@ namespace GuangYuan.GY001.BLL
                 datas.HasError = true;
                 return;
             }
+            var cache = World.GameCache;
+            var key = datas.CombatId.ToString();
+            using var dwKey = cache.Lock(key);
+            if (dwKey.IsEmpty)
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            var thing = cache.GetOrLoad<VirtualThing>(key, c => c.Id == datas.CombatId, entry =>
+            {
+                entry.SetSlidingExpiration(TimeSpan.FromMinutes(15));
+            });
+            if (thing is null)
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            var combat = thing.GetJsonObject<GameCombat>(); //获取到当前战斗对象
+            if (combat.Attackers.All(c => c.CharId != datas.GameChar.Id) || combat.Defensers.All(c => c.CharId != datas.OtherCharId))
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = $"指定的战斗id不正确。";
+                return;
+            }
+            if (combat.EndUtc.HasValue)
+            {
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = $"指定的战斗id不正确,已经结算过该场战斗。";
+                return;
+            }
+            combat.EndUtc = DateTime.UtcNow;    //记录结算时间
 
+            #region 计算收益
+
+            /// <summary>
+            /// 计算进攻方收益。
+            /// </summary>
+            List<GameItem> ComputeAttackerBooty()
+            {
+                List<GameItem> result = new List<GameItem>();
+                var xGold = (1 - datas.MainRoomRhp) * 0.5m + (1 - datas.GoldRhp) * 0.5m;   //金币的系数
+                var xWood = (1 - datas.MainRoomRhp) * 0.5m + (1 - datas.WoodRhp) * 0.5m;    //木材的系数
+                var resource = combat.Others.First();   //搜索时点的资源快照
+                var gold = resource.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.Count ?? 0;   //金币基数
+                var wood = resource.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaiId)?.Count ?? 0;  //木材基数
+                var shulin = resource.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId)?.Count ?? 0;  //树林基数
+                var goldGi = new GameItem();    //金币
+                World.EventsManager.GameItemCreated(goldGi, ProjectConstant.JinbiId);
+                goldGi.Count = (100 + gold) * 0.5m * xGold;
+
+                var woodGi = new GameItem();    //木材
+                World.EventsManager.GameItemCreated(woodGi, ProjectConstant.MucaiId);
+                woodGi.Count = (10 + wood * 0.2m + shulin * 0.5m) * xWood;
+                result.Add(goldGi);
+                result.Add(woodGi);
+                return result;
+            }
+
+            /// <summary>
+            /// 计算防御方收益。
+            /// </summary>
+            List<GameItem> ComputeDefenerBooty()
+            {
+                List<GameItem> result = new List<GameItem>();
+                var xGold = (1 - datas.MainRoomRhp);   //金币的系数
+                var xWood = (1 - datas.MainRoomRhp);    //木材的系数
+                var resource = combat.Others.First();   //搜索时点的资源快照
+                var gold = datas.OtherChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.Count ?? 0;   //金币基数
+                var wood = datas.OtherChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaiId)?.Count ?? 0;  //木材基数
+                var shulin = datas.OtherChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId)?.Count ?? 0;  //树林基数
+                var goldGi = new GameItem();    //金币
+                World.EventsManager.GameItemCreated(goldGi, ProjectConstant.JinbiId);
+                goldGi.Count = -gold * 0.5m * xGold;
+
+                var woodGi = new GameItem();    //木材
+                World.EventsManager.GameItemCreated(woodGi, ProjectConstant.MucaiId);
+                woodGi.Count = -(wood * 0.2m + shulin * 0.5m) * xWood;
+                result.Add(goldGi);
+                result.Add(woodGi);
+                return result;
+            }
+
+            /// <summary>
+            /// 计算防分数变化。
+            /// </summary>
+            void ComputeScore()
+            {
+                var attacker = combat.Attackers.First();
+                GameCombat.FillSoldierBefroeCombat(datas.GameChar, attacker, World);
+                var defener = combat.Defensers.First();
+                GameCombat.FillSoldierBefroeCombat(datas.OtherChar, defener, World);
+                if (datas.MainRoomRhp <= 0)    //若进攻方胜利
+                {
+                    var inc = Math.Clamp(1 + Math.Round((decimal)Math.Max(defener.ScoreBefore - attacker.ScoreBefore, 0) / 10, MidpointRounding.ToPositiveInfinity), 0, 6); //分值增量
+
+                }
+                else //若进攻方失败
+                {
+                    var defenerInc = Math.Clamp(1 + Math.Round((decimal)Math.Max(defener.ScoreBefore - attacker.ScoreBefore, 0) / 10, MidpointRounding.ToPositiveInfinity), 0, 6); //分值增量
+                    decimal attackerInc;
+                    if (attacker.ScoreBefore < 400)
+                    {
+                        defenerInc = -Math.Round(defenerInc * 0.5m, MidpointRounding.ToNegativeInfinity);
+                    }
+                    else if (attacker.ScoreBefore >= 400 && attacker.ScoreBefore <= 600)
+                    {
+                        defenerInc = -Math.Round(defenerInc * 0.8m, MidpointRounding.ToNegativeInfinity);
+                    }
+                    else
+                    {
+                        defenerInc = -Math.Round(defenerInc, MidpointRounding.ToNegativeInfinity);
+                    }
+                    var desCount = datas.DestroyTIds.Count(c => c.Item1 == ProjectConstant.MucaiStoreTId);
+                    attackerInc = Math.Min(defenerInc + desCount, 0);
+                }
+            }
+
+            #endregion 计算收益
             var pvpObject = datas.GameChar.GetPvpObject();  //PVP对象
             var todayData = pvpObject.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();
             if (!todayData.GetLastData(datas.Now).Contains(datas.OtherChar.Id))  //若不能攻击
@@ -760,7 +868,7 @@ namespace GuangYuan.GY001.BLL
             todayData.RemoveLastData(datas.OtherCharId, datas.Now);
             GameItem pvpObj, otherPvpObj;
             //增加战报
-            var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
+            thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
             CombatReport pc = thing.GetJsonObject<CombatReport>();
             //计算等级分
             if (datas.MainRoomRhp > 0) //若需要计算等级分

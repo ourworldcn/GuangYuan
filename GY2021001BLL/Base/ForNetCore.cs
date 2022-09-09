@@ -311,11 +311,11 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                for (int i = 0; i < 1e6; i++)
-                {
-                    var td = TypeDescriptor.GetConverter(typeof(Guid));
-                    var str = td.ConvertToString(id);
-                }
+                var dw = GuidLocker.Default.TryEnter(id,TimeSpan.FromSeconds(1));
+                GuidLocker.Default.IsEntered(id);
+                GuidLocker.Default.Exit(id);
+                GuidLocker.Default.IsEntered(id);
+                GuidLocker.Default.TrimExcess();
             }
             catch (Exception)
             {
