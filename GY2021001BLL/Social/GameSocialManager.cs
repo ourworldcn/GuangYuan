@@ -1691,8 +1691,7 @@ namespace GuangYuan.GY001.BLL
                         var cache = World.GameCache;
                         using var dw = cache.Lock(key);
                         var combat = GameCombat.CreateNew(World, id);
-                        var soldier = combat.CreateSoldier();
-                        soldier.Thing.ExtraDecimal = -1;    //设置阵营号
+                        var soldier = combat.CreateSoldier(-1);
                         GameCombat.RecordResource(soldier, gu.CurrentChar);
                         cache.GetOrCreate(key, (entry) =>
                         {

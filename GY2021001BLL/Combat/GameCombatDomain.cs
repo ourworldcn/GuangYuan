@@ -205,6 +205,20 @@ namespace GuangYuan.GY001.UserDb.Combat
 
     }
 
+    public class IdAndNumber
+    {
+        public Guid Id { get; set; }
+
+        public decimal Number { get; set; }
+
+        public void Clear()
+        {
+            Id = default;
+            Number = default;
+        }
+    }
+
+
     /// <summary>
     /// 战利品记录。
     /// <see cref="SimpleDynamicPropertyBase.Properties"/>记录了物品信息，如tid是模板id,count是数量(可能是负数)。
@@ -229,6 +243,8 @@ namespace GuangYuan.GY001.UserDb.Combat
     /// </summary>
     public class GameCombat : VirtualThingEntityBase, IAggregateRoot
     {
+        #region 构造函数
+
         /// <summary>
         /// TODO 不可直接构造。
         /// </summary>
@@ -236,9 +252,15 @@ namespace GuangYuan.GY001.UserDb.Combat
         {
         }
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="thing"></param>
         public GameCombat(VirtualThing thing) : base(thing)
         {
         }
+
+        #endregion 构造函数
 
         #region 进攻方信息
 
@@ -262,27 +284,7 @@ namespace GuangYuan.GY001.UserDb.Combat
         }
 
         /// <summary>
-        /// 进攻方附属信息。
-        /// </summary>
-        public IEnumerable<GameItem> GetAttackerMounts()
-        {
-            throw new NotImplementedException();
-            //if (_AttackerMounts is null || _AttackerMounts.Length == 0)
-            //    return Array.Empty<GameItem>();
-            //return (IEnumerable<GameItem>)JsonSerializer.Deserialize(_AttackerMounts, typeof(GameItem[]));
-        }
-
-        /// <summary>
-        /// 进攻方附属信息。
-        /// </summary>
-        public void SetAttackerMounts(IEnumerable<GameItem> value)
-        {
-            throw new NotImplementedException();
-            //_AttackerMounts = JsonSerializer.SerializeToUtf8Bytes(value);
-        }
-
-        /// <summary>
-        /// 
+        /// 加入一个攻击者。
         /// </summary>
         /// <param name="gameChar"></param>
         /// <param name="world"></param>
@@ -306,7 +308,6 @@ namespace GuangYuan.GY001.UserDb.Combat
             //world.ItemManager.GetLineup(gameChar, 100000,199999)
             return soldier;
         }
-
         #endregion 进攻方坐骑信息
 
         #region 防御方信息
@@ -349,6 +350,10 @@ namespace GuangYuan.GY001.UserDb.Combat
             //_DefenserMounts = JsonSerializer.SerializeToUtf8Bytes(value);
         }
         #endregion 防御方坐骑信息
+
+        #region 战场摘要
+
+        #endregion 战场摘要
 
         List<GameSoldier> _Others;
         [JsonIgnore]
@@ -529,14 +534,16 @@ namespace GuangYuan.GY001.UserDb.Combat
         /// <summary>
         /// 在指定的战斗下创建一个新的参战方对象。
         /// </summary>
+        /// <param name="bloc">阵营号，1=进攻方，2=防御方，0=未设置，-1=资源记录。</param>
         /// <returns></returns>
-        public GameSoldier CreateSoldier()
+        public GameSoldier CreateSoldier(int bloc = 0)
         {
             var thing = new VirtualThing()
             {
                 ExtraGuid = ProjectConstant.GameSoldierTId,
                 Parent = Thing,
                 ParentId = Id,
+                ExtraDecimal = bloc,
             };
             Thing.Children.Add(thing);
 
@@ -622,7 +629,6 @@ namespace GuangYuan.GY001.UserDb.Combat
     {
         public GameSoldier()
         {
-
         }
 
         public GameSoldier(VirtualThing thing) : base(thing)
@@ -661,7 +667,7 @@ namespace GuangYuan.GY001.UserDb.Combat
         public int RankAfter { get; set; }
 
         /// <summary>
-        /// 携带的出战坐骑。
+        /// 携带的出战坐骑/或家园的上阵坐骑。即与此战斗相关的坐骑。
         /// </summary>
         public List<GameItem> Pets { get; set; } = new List<GameItem>();
 

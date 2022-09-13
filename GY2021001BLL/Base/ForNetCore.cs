@@ -301,25 +301,16 @@ namespace GuangYuan.GY001.BLL
             var world = _Services.GetRequiredService<VWorld>();
             using var db = world.CreateNewUserDbContext();
 
-            var guild = new GameGuildEntity()
-            {
-                AutoAccept = true,
-                Cap = 20,
-            };
             var cache = world.Service.GetService<GameObjectCache>();
             var id = Guid.NewGuid();
             var sw = Stopwatch.StartNew();
+
             try
             {
-                var dw = GuidLocker.Default.TryEnter(id,TimeSpan.FromSeconds(1));
-                GuidLocker.Default.IsEntered(id);
-                GuidLocker.Default.Exit(id);
-                GuidLocker.Default.IsEntered(id);
-                GuidLocker.Default.TrimExcess();
+                DictionaryPool<string, object>.Shared.Get();
             }
             catch (Exception)
             {
-
             }
             finally
             {

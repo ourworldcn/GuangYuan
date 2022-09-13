@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="System.Threading.FirstObjectLocker&lt;T&gt;">
+    <Position X="5" Y="5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>System.Threading\StructLocker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="System.Threading.UniqueObjectLocker&lt;TKey, TValue&gt;">
+    <Position X="5.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAAAAAAAAAQAAgAACAAEAICAEAAAAAAA=</HashCode>
+      <FileName>System.Threading\UniqueObjectLocker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

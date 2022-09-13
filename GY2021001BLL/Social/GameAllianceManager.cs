@@ -356,7 +356,7 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             //创建工会对象
             var guild = new GameGuild();
-            var pg = DictionaryPool<string, object>.Shared.Get();
+            var pg = DictionaryPool<string, object>.Shared.Get(); 
             lock (_Id2Guild)
             {
                 if (_Id2Guild.Values.Any(c => c.DisplayName == datas.DisplayName))   //若重名
