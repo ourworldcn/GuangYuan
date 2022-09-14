@@ -293,7 +293,7 @@ namespace OW.Game
         /// 获取指定物剩余的可堆叠量。
         /// </summary>
         /// <param name="thing"></param>
-        /// <returns>不可堆叠或已满堆叠都会返回0，否则返回剩余的可堆叠数。</returns>
+        /// <returns>不可堆叠或已满堆叠都会返回0，否则返回剩余的可堆叠数,无限制堆叠数量会返回<see cref="decimal.MaxValue"/>。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual decimal GetRemainderStc(GameThingBase thing)
         {

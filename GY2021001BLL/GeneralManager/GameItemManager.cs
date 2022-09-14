@@ -977,14 +977,60 @@ namespace OW.Game.Item
         }
 
         /// <summary>
-        /// 获取连个物品是否可以合并。可以合并不考虑堆叠限制因素，仅说明是同类型的可堆叠物品。
+        /// 获取单个物品是否可以合并。可以合并不考虑堆叠限制因素，仅说明是同类型的可堆叠物品。
         /// </summary>
         /// <param name="src"></param>
         /// <param name="dest"></param>
-        /// <returns>true可以合并，false不可以合并。</returns>
+        /// <returns>true可以合并，false不可以合并（通常是品类不可合并，其模板id不同 -或- 不可堆叠物品）。</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public virtual bool IsAllowMerge(GameItem src, GameItem dest) =>
             src.ExtraGuid == dest.ExtraGuid && World.PropertyManager.IsStc(src, out _) && World.PropertyManager.IsStc(dest, out _);
+
+        /// <summary>
+        /// 测试源物品合并到目标物品后的情况。
+        /// 特别地，注意两物品均为负数时的行为，参见 <paramref name="dest"/> 说明。
+        /// </summary>
+        /// <param name="src">被合并的物品，通常是一个生成的游离物品。</param>
+        /// <param name="dest">合并到的目标物品，通常是角色已经拥有的物品。若此物品是负数，且 <paramref name="src"/> 为负数，则直接认为可以完全合并（因为负数物品没有定义下限，未来可能变化）。</param>
+        /// <param name="srcResult">合并后 <paramref name="src"/> 中剩余数量。</param>
+        /// <param name="destResult">合并后目标物品应设置的值，此值可能是负数。</param>
+        /// <returns>true可以合并，false不能合并（通常是品类不可合并，其模板id不同 -或- 不可堆叠物品）。</returns>
+        public virtual bool IsAllowMerge(GameItem src, GameItem dest, out decimal srcResult, out decimal destResult)
+        {
+            if (!IsAllowMerge(src, dest))    //若不可合并
+            {
+                srcResult = destResult = 0;
+                return false;
+            }
+            var srcCount = src.Count.GetValueOrDefault();
+            var destCount = dest.Count.GetValueOrDefault();
+            if (srcCount < 0 && destCount < 0)  //若双负数的特殊情况
+            {
+                destResult = srcCount + destCount;
+                srcResult = 0;
+            }
+            else if (srcCount < 0) //若是减少的情况
+            {
+                var inc = destCount + srcCount >= 0 ? srcCount : -destCount; //实际增量,负数
+                srcResult = srcCount - inc;
+                destResult = destCount + inc;
+            }
+            else if (destCount < 0)    //若是增加的情况
+            {
+                var rCount = World.PropertyManager.GetRemainderStc(dest);   //最大可移入的数量
+                var inc = Math.Min(srcCount, rCount); //实际增量
+                srcResult = srcCount - inc;
+                destResult = destCount + inc;
+            }
+            else //若是双非负数
+            {
+                var rCount = World.PropertyManager.GetRemainderStc(dest);   //最大可移入的数量
+                var inc = Math.Min(srcCount, rCount); //实际增量
+                srcResult = srcCount - inc;
+                destResult = destCount + inc;
+            }
+            return true;
+        }
 
         /// <summary>
         /// 计算可移动的数量。不考虑是否是同类型物品。
@@ -1150,6 +1196,29 @@ namespace OW.Game.Item
                 }
                 if (null != gi)
                     result.Add((gi, count));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 获取指定角色物品的对象及数量增减。
+        /// </summary>
+        /// <param name="gameChar"></param>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public virtual List<(GameItem, decimal)> Lookup(GameChar gameChar, IEnumerable<GameItem> items)
+        {
+            var result = new List<(GameItem, decimal)>();
+            var allItems = gameChar.AllChildren.ToLookup(c => c.ExtraGuid);
+            foreach (var item in items)
+            {
+                GameItem innerItem;
+                var tmp = allItems[item.ExtraGuid]; //如果在集合中找不到该 key 序列，则返回空序列。
+                if (item.Properties.TryGetGuid("ptid", out var ptid))   //若限定容器
+                    innerItem = tmp.FirstOrDefault(c => ptid == c.Parent.ExtraGuid || ptid == gameChar.ExtraGuid);
+                else //若未限定容器
+                    innerItem = tmp.FirstOrDefault();
+                result.Add((innerItem, item.Count.GetValueOrDefault()));
             }
             return result;
         }
@@ -1339,6 +1408,28 @@ namespace OW.Game.Item
             foreach (var gItem in gItems.ToArray()) //TODO 遍历每个物品
             {
                 MoveItem(gItem, gItem.Count.Value, container, remainder, changes);
+            }
+        }
+
+        /// <summary>
+        /// 移动物品到角色所属，物品数量可能有负数，表示减少。
+        /// </summary>
+        /// <param name="gItems"></param>
+        /// <param name="gameChar"></param>
+        /// <param name="remainder"></param>
+        /// <param name="changes"></param>
+        public virtual void MoveItems(IEnumerable<GameItem> gItems, GameChar gameChar, [AllowNull] ICollection<GameItem> remainder = null,
+            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            var decs = gItems.Where(c => c.Count.GetValueOrDefault() < 0).ToArray();  //要减少的物品
+            var incs = gItems.Where(c => c.Count.GetValueOrDefault() > 0).ToArray();  //要增加的物品
+
+            var decItems = Lookup(gameChar, decs);
+            DecrementCount(decItems, changes);
+            foreach (var item in incs)
+            {
+                var container = World.EventsManager.GetDefaultContainer(item, gameChar);
+                MoveItem(item, item.Count.GetValueOrDefault(), container, remainder, changes);
             }
         }
 

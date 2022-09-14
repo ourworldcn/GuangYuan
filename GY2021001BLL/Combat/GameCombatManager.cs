@@ -685,10 +685,14 @@ namespace GuangYuan.GY001.BLL
             }
             else if (pTId == ProjectConstant.PvpForHelpDungeonTId) //若是协助pvp
             {
+                string str = null;
+                var length = str.Length;
                 PvpForHelp(datas);
             }
             else if (pTId == ProjectConstant.PvpForRetaliationDungeonTId)   //若是反击pvp
             {
+                string str = null;
+                var length = str.Length;
                 PvpForRetaliation(datas);
             }
             else
@@ -759,7 +763,21 @@ namespace GuangYuan.GY001.BLL
             var key = combat.Thing.IdString;
             var entry = cache.GetCacheEntry(key);
             entry.SetSlidingExpiration(TimeSpan.FromMinutes(15));
-            ComputeAttackerBooty();
+
+            //设置战利品
+            List<GameItem> bootyOfAttacker = ComputeAttackerBooty();
+            var attacker = combat.Attackers.First();    //攻击方
+            List<GameItem> bootyOfDefenser = ComputeDefenerBooty();
+            var defenser = combat.Defensers.First();    //防御方
+            //设置物品实际增减
+            List<GameItem> rem = new List<GameItem>();  //无法放入物品
+            attacker.Booties.AddRange(bootyOfAttacker); //计入战报
+            World.ItemManager.MoveItems(bootyOfAttacker, datas.GameChar, null, datas.PropertyChanges);
+            
+            defenser.Booties.AddRange(bootyOfDefenser); //计入战报
+            World.ItemManager.MoveItems(bootyOfDefenser,datas.OtherChar,null,datas.PropertyChanges);    //防御方物品变动奖励
+
+            ComputeScore();
             #region 计算收益
 
             /// <summary>
@@ -848,106 +866,21 @@ namespace GuangYuan.GY001.BLL
             #endregion 计算收益
 
             var pvpObject = datas.GameChar.GetPvpObject();  //PVP对象
-            var todayData = pvpObject.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();
-            if (!todayData.GetLastData(datas.Now).Contains(datas.OtherChar.Id))  //若不能攻击
-            {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.DebugMessage = "不可攻击的角色。";
-                return;
-            }
-            datas.KeyTypes.Add((int)SocialKeyTypes.AllowPvpAttack);
             //更改数据
             var db = datas.UserDbContext;
-            //移除攻击权
-            todayData.RemoveLastData(datas.OtherCharId, datas.Now);
             GameItem pvpObj, otherPvpObj;
             //增加战报
-            var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
-            CombatReport pc = thing.GetJsonObject<CombatReport>();
-            //计算等级分
-            if (datas.MainRoomRhp > 0) //若需要计算等级分
-            {
-                decimal diff = 0;
-                pvpObj = datas.GameChar.GetPvpObject();
-                otherPvpObj = datas.OtherChar.GetPvpObject();
-                diff = 1 + Math.Round((otherPvpObj.ExtraDecimal.Value - pvpObj.ExtraDecimal.Value) / 10, MidpointRounding.ToPositiveInfinity);
-                diff = Math.Clamp(diff, 0, 6);
-
-                pvpObj.ExtraDecimal += diff; //排序使用该值
-                otherPvpObj.ExtraDecimal -= diff;    //排序使用该值
-                if (diff != 0)  //若等级分发生变化
-                {
-                    datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
-                    datas.World.CharManager.NotifyChange(datas.OtherChar.GameUser);
-                    datas.ChangeItems.AddToChanges(pvpObj);
-                }
-            }
-            //计算收益
-            pc.AttackerIds.Add(datas.GameChar.Id);
-            pc.DefenserIds.Add(datas.OtherCharId);
-            //设置复仇权力
-            datas.Combat = pc;
-            db.Add(pc.Thing);
-            //移除攻击权
-            todayData.RemoveLastData(datas.OtherCharId, datas.Now);
-            //设置战利品
-            List<GameBooty> bootyOfAttacker = new List<GameBooty>();
-            List<GameBooty> bootyOfDefenser = new List<GameBooty>();
-            datas.GetBooty(bootyOfAttacker, bootyOfDefenser);
-            bootyOfAttacker.Concat(bootyOfDefenser).ForEach(c =>
-            {
-                var thing = new VirtualThing() { ExtraGuid = new Guid("{6A5CB12E-519A-43B0-9EDC-A7FD2AFDE98F}") };
-                thing.JsonObject = c;
-                thing.JsonObjectType = c.GetType();
-                c.Thing = thing;
-                World.VirtualThingManager.Add(thing, pc.Thing);
-            });
-            foreach (var item in bootyOfAttacker) //进攻方战利品
-            {
-                item.SetGameItems(World, datas.ChangeItems);   //设置物品实际增减
-                datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
-            }
-
-            if (!World.CharManager.IsOnline(datas.OtherCharId))    //若不在线
-            {
-                foreach (var item in bootyOfDefenser) //防御方战利品
-                {
-                    //TODO item.ParentId = pc.Id;
-                    item.SetGameItems(World);   //设置物品实际增减
-                    datas.World.CharManager.NotifyChange(datas.OtherChar.GameUser);
-                }
-            }
-            //设置物品实际增减
-            List<GameItem> rem = new List<GameItem>();
-            bootyOfAttacker.ForEach(c => c.SetGameItems(World, datas.ChangeItems, rem));
-            if (!World.CharManager.IsOnline(datas.OtherCharId))    //若不在线
-                bootyOfDefenser.ForEach(c => c.SetGameItems(World));
-
-            #region 邮件补足战利品
-            //var mail = new GameMail()
-            //{
-            //};
-            ////发送奖励邮件
-            //if (rem.Count > 0)
-            //{
-            //    //mail.Properties["MailTypeId"] = ProjectConstant.PVP系统奖励.ToString();
-            //    //mail.Properties["CombatId"] = pc.Thing.IdString;
-            //    //bootyOfAttacker.ForEach(c => c.FillToDictionary(World, mail.Properties));
-            //    //TODO ptid是临时算法，直接假设为货币袋。
-            //    World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId, rem.Select(c => (c, ProjectConstant.CurrencyBagTId))); //被攻击邮件
-            //}
-            #endregion  邮件补足战利品
+            pvpObj = datas.GameChar.GetPvpObject();
+            otherPvpObj = datas.OtherChar.GetPvpObject();
             //发送反击邮件
             var mail = new GameMail()
             {
             };
             mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件.ToString();
-            mail.Properties["CombatId"] = pc.Thing.IdString;
-            bootyOfDefenser.ForEach(c => c.FillToDictionary(World, mail.Properties));
+            mail.Properties["CombatId"] = combat.Thing.IdString;
             World.SocialManager.SendMail(mail, new Guid[] { datas.OtherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
             //保存数据
-            pc.IsAttckerWin = datas.MainRoomRhp <= 0;
+            combat.IsAttckerWin = datas.MainRoomRhp <= 0;
             datas.Save();
             datas.HasError = false;
             datas.ErrorCode = 0;
