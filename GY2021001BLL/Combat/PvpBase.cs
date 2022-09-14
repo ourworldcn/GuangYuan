@@ -3,6 +3,7 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
 using OW.Game;
+using OW.Game.Item;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
@@ -42,66 +43,29 @@ namespace GuangYuan.GY001.BLL
     /// <summary>
     /// pvp结束战斗调用接口的数据封装类。
     /// </summary>
-    public class EndCombatPvpWorkData : BinaryRelationshipGameContext
+    public class EndCombatPvpWorkData : ChangeItemsWorkDatasBase
     {
-        public EndCombatPvpWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
+        public EndCombatPvpWorkData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
         }
 
-        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar, otherGCharId)
+        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
         {
         }
 
-        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token, otherGCharId)
+        public EndCombatPvpWorkData([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
         }
 
         /// <summary>
-        /// 战斗对象唯一Id。从邮件的 mail.Properties["CombatId"] 属性中获取。
-        /// 反击和协助才需要填写。直接pvp时可以省略。
+        /// 战斗对象唯一Id。从邮件的 mail.Properties["CombatId"] 属性中获取。或从获取战斗对手接口中获取。
         /// </summary>
         public Guid CombatId { get; set; }
-
-        CombatReport _Combat;
-        /// <summary>
-        /// 获取战斗对象，如果找不到则设置错误信息。
-        /// </summary>
-        public CombatReport Combat
-        {
-            get
-            {
-                if (_Combat is null)
-                {
-                    var thing = UserDbContext.Set<VirtualThing>().Find(CombatId);
-                    if (thing is null)
-                    {
-                        HasError = true;
-                        ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                        DebugMessage = $"找不到指定的战报对象，Id={CombatId}";
-                    }
-                    _Combat = thing.GetJsonObject<CombatReport>();
-                }
-                return _Combat;
-            }
-            set => _Combat = value;
-        }
 
         /// <summary>
         /// 当前日期。
         /// </summary>
         public DateTime Now { get; set; }
-
-        /// <summary>
-        /// 关卡Id
-        /// </summary>
-        public Guid DungeonId { get; set; }
-
-        private GameItemTemplate _DungeonTemplate;
-
-        /// <summary>
-        /// 关卡模板。
-        /// </summary>
-        public GameItemTemplate DungeonTemplate => _DungeonTemplate ??= World.ItemTemplateManager.GetTemplateFromeId(DungeonId);
 
         /// <summary>
         /// 主控室剩余血量的百分比。
@@ -131,5 +95,10 @@ namespace GuangYuan.GY001.BLL
         /// 摧毁建筑的模板Id集合。
         /// </summary>
         public List<(Guid, decimal)> DestroyTIds { get; } = new List<(Guid, decimal)>();
+
+        /// <summary>
+        /// 返回本次战斗的战斗对象。
+        /// </summary>
+        public GameCombat Combat { get; set; }
     }
 }

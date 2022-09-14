@@ -212,15 +212,6 @@ namespace GuangYuan.GY001.BLL.Specific
             return result;
         }
 
-        public void Map(ChangeItem obj, ChangesItemDto result)
-        {
-            result.ContainerId = obj.ContainerId.ToBase64String();
-            result.DateTimeUtc = obj.DateTimeUtc;
-            result.Adds.AddRange(obj.Adds.Select(c => Map(c)));
-            result.Changes.AddRange(obj.Changes.Select(c => Map(c)));
-            result.Removes.AddRange(obj.Removes.Select(c => c.ToBase64String()));
-        }
-
         public ChangesItemDto Map(ChangeItem obj)
         {
             var result = new ChangesItemDto();

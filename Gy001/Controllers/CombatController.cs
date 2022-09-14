@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.BLL;
+﻿using AutoMapper;
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Combat;
@@ -120,21 +121,23 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<CombatEndPvpReturnDto> CombatEndPvp(CombatEndPvpParamsDto model)
         {
             var result = new CombatEndPvpReturnDto();
-            //using var datas = new EndCombatPvpWorkData(World, model.Token, OwConvert.ToGuid(model.OtherGCharId))
-            //{
-            //    CombatId = OwConvert.ToGuid(model.CombatId),
-            //    Now = DateTime.UtcNow,
-            //    DungeonId = OwConvert.ToGuid(model.DungeonId),
-            //    MainRoomRhp = model.MainRoomRhp,
-            //};
-            //datas.DestroyTIds.AddRange(model.Destroies.Select(c => (ValueTuple<Guid, decimal>)c));
-            //World.CombatManager.EndCombatPvp(datas);
-            //result.HasError = datas.HasError;
-            //result.DebugMessage = datas.DebugMessage;
-            //var mapper = World.GetMapper();
-            //result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
-            //result.Combat = new GameCombatDto();
-            //HttpContext.RequestServices.GetRequiredService<GameMapperManager>().Map(datas.Combat, result.Combat);
+            using var datas = new EndCombatPvpWorkData(World, model.Token)
+            {
+                CombatId = OwConvert.ToGuid(model.CombatId),
+                Now = DateTime.UtcNow,
+                MainRoomRhp = model.MainRoomRhp,
+                WoodRhp = model.WoodRhp,
+                GoldRhp = model.GoldRhp,
+                StoreOfWoodRhp = model.StoreOfWoodRhp,
+            };
+            datas.DestroyTIds.AddRange(model.Destroy.Select(c => (ValueTuple<Guid, decimal>)c));
+
+            World.CombatManager.EndCombatPvp(datas);
+            result.FillFrom(datas);
+
+            var mapper = World.Service.GetRequiredService<IMapper>();
+            result.Combat = mapper.Map<GameCombatDto>(datas.Combat);
+            //result.Changes.AddRange(datas.PropertyChanges.Select());
             return result;
         }
 

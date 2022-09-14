@@ -213,7 +213,7 @@ namespace GY2021001WebApi.Models
     /// 战斗对象的数据传输类。
     /// </summary>
     [DataContract]
-    public partial class CombatDto
+    public class CombatDto
     {
         /// <summary>
         /// Id。
@@ -2724,6 +2724,12 @@ namespace GY2021001WebApi.Models
         public decimal WoodRhp { get; set; }
 
         /// <summary>
+        /// 摧毁建筑物的tid和数量，主要需要木材仓库被摧毁的数量以计算掠夺资源的数量。
+        /// </summary>
+        [DataMember]
+        public List<IdAndCountDto> Destroy { get; set; } = new List<IdAndCountDto>();
+
+        /// <summary>
         /// 其它战利品。进攻方获得的道具等。当前版本暂未支持生物。
         /// </summary>
         [DataMember]
@@ -2731,7 +2737,7 @@ namespace GY2021001WebApi.Models
     }
 
     [DataContract]
-    public class CombatEndPvpReturnDto : ChangesAndMailReturnDtoBase
+    public class CombatEndPvpReturnDto : ChangesReturnDtoBaseV2
     {
         /// <summary>
         /// 返回该场战斗的数据。

@@ -25,7 +25,6 @@ namespace Gy01.AutoMapper.Profiles
             //DTO映射
             CreateMap<GameItem, GameItemDto>();
 
-            CreateMap<CombatReport, CombatDto>();
             CreateMap<LoginT89ParamsDto, T89LoginData>();
             //CreateMap<GameGuildEntity, Dictionary<string, object>>().ConstructUsing((src, context) =>
             //{

@@ -262,6 +262,25 @@ namespace GuangYuan.GY001.UserDb.Combat
 
         #endregion 构造函数
 
+        public IDisposable LockAll(VWorld world)
+        {
+            var AllCharIds = Attackers.Select(c => c.CharId).Union(Others.Select(c => c.CharId)).Union(Defensers.Select(c => c.CharId)).ToArray();
+            var result = world.CharManager.LockOrLoadWithCharIds(AllCharIds, world.CharManager.Options.DefaultLockTimeout * AllCharIds.Length * 0.8);
+            return result;
+        }
+
+        public IDisposable GetOtherChar(VWorld world, out GameChar gc)
+        {
+            var result = world.CharManager.LockOrLoad(Defensers.FirstOrDefault()?.CharId ?? Others.First().CharId, out var user);
+            if (result is null)
+            {
+                gc = null;
+                return null;
+            }
+            gc = user.CurrentChar;
+            return result;
+        }
+
         #region 进攻方信息
 
         List<GameSoldier> _Attackers;

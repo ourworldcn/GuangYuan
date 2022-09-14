@@ -204,7 +204,7 @@ namespace OW.Game
     /// <summary>
     /// 涉及到两个角色的的功能函数使用的工作数据基类。
     /// </summary>
-    public abstract class BinaryRelationshipGameContext : GameCharGameContext
+    public abstract class BinaryRelationshipGameContext :GameCharGameContext
     {
         protected BinaryRelationshipGameContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar)
         {
