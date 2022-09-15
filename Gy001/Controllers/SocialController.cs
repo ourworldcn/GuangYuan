@@ -133,8 +133,8 @@ namespace Gy001.Controllers
                 var social = _World.SocialManager;
                 var changes = new List<ChangeItem>();
                 social.GetAttachmentes(model.Ids.Select(c => OwConvert.ToGuid(c)), gu.CurrentChar, db, changes, results);
-                var mapper = _World.GetMapper();
-                result.ChangesItems.AddRange(changes.Select(c => mapper.Map(c)));
+                var mapper = _World.Service.GetRequiredService<IMapper>();
+                result.ChangesItems.AddRange(changes.Select(c => mapper.Map<ChangesItemDto>(c)));
                 result.Results.AddRange(results.Select(c => new GetAttachmentesResultItemDto
                 {
                     Id = c.Item1.ToBase64String(),
@@ -500,8 +500,8 @@ namespace Gy001.Controllers
                 result.HasError = true;
             }
             result.Code = r;
-            var mapper = _World.GetMapper();
-            result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
+            var mapper = _World.Service.GetRequiredService<IMapper>();
+            result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));
             if (result.HasError = datas.HasError)
             {
                 result.DebugMessage = datas.DebugMessage;
@@ -535,9 +535,9 @@ namespace Gy001.Controllers
                 result.FillFrom(datas);
                 if (!result.HasError)
                 {
-                    var mapper = _World.GetMapper();
-                    result.Changes.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
-                    result.MailItems.AddRange(datas.MailItems.Select(c => mapper.Map(c)));
+                    var mapper = _World.Service.GetRequiredService<IMapper>();
+                    result.Changes.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));
+                    result.MailItems.AddRange(datas.MailItems.Select(c => mapper.Map<ChangesItemDto>(c)));
                     result.Relationship = datas.GetOrAddSr();
                 }
             }
@@ -568,6 +568,8 @@ namespace Gy001.Controllers
                 IsRefresh = true,    //只能强制刷新了 model.IsRefresh,
                 Now = DateTime.UtcNow,
             };
+            if (OwConvert.TryToGuid(model.CharId, out Guid forceCharId))
+                datas.CharId = forceCharId;
 
             GetPvpListReturnDto result = new GetPvpListReturnDto();
             try
@@ -585,8 +587,8 @@ namespace Gy001.Controllers
                     }
                     else
                     {
-                        var mapper = _World.GetMapper();
-                        result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
+                        var mapper = _World.Service.GetRequiredService<IMapper>();
+                        result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));
                         result.CharIds.AddRange(datas.CharIds.Select(c => c.ToBase64String()));
                     }
                 }

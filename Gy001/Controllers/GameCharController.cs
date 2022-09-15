@@ -1,4 +1,5 @@
-﻿using Game.Social;
+﻿using AutoMapper;
+using Game.Social;
 using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.BLL.Specific;
@@ -198,9 +199,9 @@ namespace GY2021001WebApi.Controllers
                 HasError = datas.HasError,
                 DebugMessage = datas.DebugMessage,
             };
-            var mapper = World.GetMapper();
+            var mapper = World.Service.GetRequiredService<IMapper>();
             if (!result.HasError)
-                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));
             return result;
         }
 
@@ -229,8 +230,8 @@ namespace GY2021001WebApi.Controllers
                     result.DebugMessage = datas.DebugMessage;
                     if (!result.HasError)
                     {
-                        var mapper = World.GetMapper();
-                        result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
+                        var mapper = World.Service.GetRequiredService<IMapper>();
+                        result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));
                         if (datas.Remainder.Count > 0) //若有剩余物品
                         {
                             var mail = new GameMail();
@@ -272,10 +273,10 @@ namespace GY2021001WebApi.Controllers
                 gim.SetLineup(datas);
                 result.HasError = datas.HasError;
                 result.DebugMessage = datas.DebugMessage;
-                var mapper = World.GetMapper();
+                var mapper = World.Service.GetRequiredService<IMapper>();
                 if (!result.HasError)
                 {
-                    result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
+                    result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));
                 }
             }
             catch (Exception err)
@@ -328,8 +329,8 @@ namespace GY2021001WebApi.Controllers
                         world.ItemManager.MoveItem(allGi[item.Id], item.Count, allGi[item.PId], null, changes);
                     }
                     changes.CopyTo(changesItems);
-                    var mapper = World.GetMapper();
-                    result.ChangesItems.AddRange(changesItems.Select(c => mapper.Map(c)));
+                    var mapper = World.Service.GetRequiredService<IMapper>();
+                    result.ChangesItems.AddRange(changesItems.Select(c => mapper.Map<ChangesItemDto>(c)));
                 }
                 catch (Exception)
                 {
@@ -501,8 +502,8 @@ namespace GY2021001WebApi.Controllers
                 logger.LogDebug($"[{DateTime.UtcNow}] Call GetChangesItem");
 #endif //DEBUG
                 var collTmp = ChangesItemSummary.ToChangesItem(gc.GetOrCreateBinaryObject<CharBinaryExProperties>().ChangeItems, gc);
-                var mapper = World.GetMapper();
-                result.Changes.AddRange(collTmp.Select(c => mapper.Map(c)));
+                var mapper = World.Service.GetRequiredService<IMapper>();
+                result.Changes.AddRange(collTmp.Select(c => mapper.Map<ChangesItemDto>(c)));
                 //gc.ChangesItems.Clear();
             }
             catch (Exception err)

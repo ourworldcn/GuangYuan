@@ -12,29 +12,29 @@ using System.Linq;
 
 namespace GuangYuan.GY001.BLL
 {
-    public class StartCombatPvpData : BinaryRelationshipGameContext
+    public class StartCombatPvpData : ComplexWorkGameContext
     {
-        public StartCombatPvpData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar, otherGCharId)
+        public StartCombatPvpData([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
         {
         }
 
-        public StartCombatPvpData([NotNull] VWorld world, [NotNull] GameChar gameChar, Guid otherGCharId) : base(world, gameChar, otherGCharId)
+        public StartCombatPvpData([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
         {
         }
 
-        public StartCombatPvpData([NotNull] VWorld world, [NotNull] string token, Guid otherGCharId) : base(world, token, otherGCharId)
+        public StartCombatPvpData([NotNull] VWorld world, [NotNull] string token) : base(world, token)
         {
         }
 
         public Guid CombatId { get; set; }
 
         /// <summary>
-        /// 原始战斗id,如果没有则为空。
+        /// 原始战斗id,如果没有则为空(如主动pvp就没有)。
         /// </summary>
         public Guid? OldCombatId { get; set; }
 
         /// <summary>
-        /// 关卡Id。
+        /// 关卡Id。pvp三类型的关卡大关模板id.
         /// </summary>
         public Guid DungeonId { get; set; }
 

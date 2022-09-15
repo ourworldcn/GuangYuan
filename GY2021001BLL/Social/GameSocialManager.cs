@@ -1549,6 +1549,11 @@ namespace GuangYuan.GY001.BLL
             {
             }
 
+            /// <summary>
+            /// 强制指定一个角色Id。仅调试接口可用。
+            /// </summary>
+            public Guid CharId { get; set; }
+
             private DateTime _Now;
 
             /// <summary>
@@ -1568,8 +1573,17 @@ namespace GuangYuan.GY001.BLL
             /// <summary>
             /// PVP对象。
             /// </summary>
-            public GameItem PvpObject => _PvpObject ??= GameChar.GetPvpObject();
-
+            public GameItem PvpObject
+            {
+                get
+                {
+#if DEBUG
+                    return _PvpObject ??= World.ItemManager.GetOrCreateItem(GameChar, ProjectConstant.CurrencyBagTId, ProjectConstant.PvpObjectTId);
+#else
+                    return _PvpObject ??= GameChar.GetPvpObject();
+#endif
+                }
+            }
             /// <summary>
             /// 是否强制使用钻石刷新。
             /// false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。
@@ -1676,7 +1690,14 @@ namespace GuangYuan.GY001.BLL
 
                 var gc = datas.GameChar;
                 var cj = gc.GetJsonObject<CharJsonEntity>();
-                var ids = GetNewPvpCharIds(datas.GameChar.GetDbContext(), gc.Id, datas.PvpObject.ExtraDecimal.Value, cj.Lv, excludeIds);
+                List<Guid> ids;
+                if (datas.CharId == Guid.Empty)
+                    ids = GetNewPvpCharIds(datas.GameChar.GetDbContext(), gc.Id, datas.PvpObject.ExtraDecimal.Value, cj.Lv, excludeIds);
+                else //TODO 测试代码
+                {
+                    ids = new List<Guid>();
+                    ids.Add(datas.CharId);
+                }
                 todayData.AddLastDataRange(ids, datas.Now);
                 datas.CharIds.AddRange(ids);
                 if (ids.Any())
@@ -1691,6 +1712,7 @@ namespace GuangYuan.GY001.BLL
                         var cache = World.GameCache;
                         using var dw = cache.Lock(key);
                         var combat = GameCombat.CreateNew(World, id);
+                        combat.MapTId = ProjectConstant.PvpDungeonTId;
                         var soldier = combat.CreateSoldier(-1);
                         GameCombat.RecordResource(soldier, gu.CurrentChar);
                         cache.GetOrCreate(key, (entry) =>

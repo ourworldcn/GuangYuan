@@ -100,7 +100,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<CombatStartPvpReturnDto> CombatStartPvp(CombatStartPvpParamsDto model)
         {
             var result = new CombatStartPvpReturnDto();
-            var datas = new StartCombatPvpData(World, model.Token, OwConvert.ToGuid(model.OtherGCharId)) { DungeonId = OwConvert.ToGuid(model.DungeonId) };
+            var datas = new StartCombatPvpData(World, model.Token) { DungeonId = OwConvert.ToGuid(model.DungeonId), CombatId = OwConvert.ToGuid(model.CombatId) };
             World.CombatManager.StartCombatPvp(datas);
             result.FillFrom(datas);
             if (!result.HasError)
@@ -134,10 +134,13 @@ namespace GY2021001WebApi.Controllers
 
             World.CombatManager.EndCombatPvp(datas);
             result.FillFrom(datas);
-
             var mapper = World.Service.GetRequiredService<IMapper>();
-            result.Combat = mapper.Map<GameCombatDto>(datas.Combat);
-            //result.Changes.AddRange(datas.PropertyChanges.Select());
+            if (!result.HasError)
+            {
+                result.Combat = mapper.Map<GameCombatDto>(datas.Combat);
+
+                result.Changes.AddRange(datas.PropertyChanges.Select(c => mapper.Map<GamePropertyChangeItemDto>(c)));
+            }
             return result;
         }
 
@@ -155,19 +158,11 @@ namespace GY2021001WebApi.Controllers
                 CombatId = OwConvert.ToGuid(model.CombatId),
             };
             World.CombatManager.GetCombat(datas);
-            result.HasError = datas.HasError;
-            result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.DebugMessage;
-            if (!datas.HasError)    //若成功返回
+            result.FillFrom(datas);
+            if (!result.HasError)
             {
-                var mapper = World.Service.GetRequiredService<GameMapperManager>();
-                var view = datas.CombatObject;
-                //result.AttackerMounts.AddRange(view.GetAttackerMounts().Select(c => mapper.Map(c)));
-                //result.DefenserMounts.AddRange(view.GetDefenserMounts().Select(c => mapper.Map(c)));
-                //result.Booty.AddRange(datas.UserDbContext.Set<VirtualThing>().AsNoTracking().Where(c => c.ParentId == datas.CombatObject.Thing.Id)
-                //    .AsEnumerable().Select(c => mapper.Map(c.GetJsonObject<GameBooty>())));
-                //result.CombatObject = new CombatDto();
-                HttpContext.RequestServices.GetRequiredService<GameMapperManager>().Map(datas.CombatObject, result.CombatObject);
+                var mapper = World.Service.GetService<IMapper>();
+                result.CombatObject = mapper.Map<GameCombatDto>(datas.Combat);
             }
             return result;
         }

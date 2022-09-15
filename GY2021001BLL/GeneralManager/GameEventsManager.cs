@@ -90,7 +90,7 @@ namespace OW.Game
         {
             var item = GetOrAddItem(thing);
             var hasOld = thing.Properties.TryGetValue(keyName, out var oldVal);
-            var result = new GamePropertyChangeItem<object>(null, name: keyName, oldValue: oldVal, newValue: newValue) { HasOldValue = hasOld, HasNewValue = true, };
+            var result = new GamePropertyChangeItem<object>(thing, name: keyName, oldValue: oldVal, newValue: newValue) { HasOldValue = hasOld, HasNewValue = true, };
             item.Add(result);
             thing.Properties[keyName] = newValue;
             if (changes != null)
@@ -816,6 +816,7 @@ namespace OW.Game
             [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
         {
             var bg = DictionaryPool<string, object>.Shared.Get();
+            OwHelper.Copy(template.Properties, bg);
             if (null != parameters)
                 OwHelper.Copy(parameters, bg);
             if (ownerId.HasValue)

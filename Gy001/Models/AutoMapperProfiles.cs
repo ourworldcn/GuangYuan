@@ -5,6 +5,7 @@ using GuangYuan.GY001.UserDb.Combat;
 using GuangYuan.GY001.UserDb.Social;
 using GY2021001WebApi.Models;
 using OW.Extensions.Game.Store;
+using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,10 @@ namespace Gy01.AutoMapper.Profiles
             IncludeSourceExtensionMethods(typeof(GuangYuan.GY001.UserDb.GameThingBaseExtensions));
             //基础类型映射
             CreateMap<Guid, string>().ConstructUsing(c => c.ToBase64String());
+            CreateMap<ChangeItem, ChangesItemDto>();
 
+            CreateMap<GamePropertyChangeItem<object>, GamePropertyChangeItemDto>();
+                //.ForMember(dest => dest.ObjectId, opt => opt.MapFrom(src => src.Object is GameObjectBase go ? go.Id : Guid.Empty));
             //DTO映射
             CreateMap<GameItem, GameItemDto>();
 
@@ -43,7 +47,9 @@ namespace Gy01.AutoMapper.Profiles
                    opt.MapFrom(dest => dest.Pets);
                    opt.PreCondition((src, dest, context) =>
                    {
-                       if (context.Items.ContainsKey("IgnorDefenerPets") && src.Pets.Count > 4) //TODO 当前忽略4个以上的坐骑，应忽略所有防御方坐骑
+                       dynamic d = context.Options;
+
+                       if (d.Items.ContainsKey("IgnorDefenerPets") ?? false && src.Pets.Count > 4) //TODO 当前忽略4个以上的坐骑，应忽略所有防御方坐骑
                            return false;
                        return true;
                    });
@@ -53,14 +59,13 @@ namespace Gy01.AutoMapper.Profiles
                    opt.MapFrom(c => c.Others);
                    opt.PreCondition((src, dest, context) =>
                    {
-                       if (context.Items.ContainsKey("IgnorOthers"))
+                       dynamic d = context.Options;
+
+                       if (d.Items.ContainsKey("IgnorOthers") ?? false)
                            return false;
                        return true;
                    });
-               }).ForMember(dest => dest.Defensers, opt =>
-                 {
-                     opt.MapFrom(src => src.Defensers);
-                 });
+               });
         }
     }
 }

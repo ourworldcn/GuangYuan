@@ -2536,9 +2536,9 @@
             关卡Id。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.CombatStartPvpParamsDto.OtherGCharId">
+        <member name="P:GY2021001WebApi.Models.CombatStartPvpParamsDto.CombatId">
             <summary>
-            对方角色Id。
+            启动的战斗对象的Id。从其它接口获得，如获取pvp对象的接口。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.CombatStartPvpParamsDto.OldCombatId">
@@ -3059,6 +3059,11 @@
             false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。
             true，强制刷新，根据设计可能需要消耗资源。
             目前保留为true。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetPvpListParamsDto.CharId">
+            <summary>
+            强制指定一个角色Id。仅调试接口可用。省略或为空均按规则搜索。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetPvpListReturnDto">
@@ -3681,12 +3686,6 @@
             <summary>
             外围系统。
             </summary>
-        </member>
-        <member name="M:Gy001.Controllers.BlueprintController.Test">
-            <summary>
-            测试。
-            </summary>
-            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

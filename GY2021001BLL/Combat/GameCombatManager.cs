@@ -18,6 +18,7 @@ using OW.Game.Store;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -578,9 +579,6 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void StartCombatPvp(StartCombatPvpData datas)
         {
-            using var dw = datas.LockAll();
-            if (dw is null) //若不能锁定
-                return;
             var cache = World.GameCache;
             if (datas.DungeonId == ProjectConstant.PvpDungeonTId) //若是正常pvp
             {
@@ -600,14 +598,17 @@ namespace GuangYuan.GY001.BLL
                 cache.GetCacheEntry(key).SetSlidingExpiration(TimeSpan.FromMinutes(15));
 
                 var combat = thing.GetJsonObject<GameCombat>();
-                if (combat.Others.All(c => c.CharId != datas.OtherCharId))
+                var OtherCharId = combat.Defensers.FirstOrDefault()?.CharId ?? combat.Others.First().CharId;
+                using var dwUsers = combat.LockAll(World);
+                if (dwUsers is null)
                 {
-                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                    datas.DebugMessage = "指定战斗与指定的被攻击方不匹配。";
+                    datas.FillErrorFromWorld();
                     return;
                 }
+                var OtherChar = World.CharManager.GetCharFromId(OtherCharId);
+
                 var tt = World.ItemTemplateManager.GetTemplateFromeId(datas.DungeonId); //关卡模板
-                if (!World.ItemManager.DecrementCount(datas.GameChar, tt.Properties, null, datas.PropertyChanges))
+                if (!World.ItemManager.DecrementCount(datas.GameChar, tt.Properties, "cost", datas.PropertyChanges))
                 {
                     datas.FillErrorFromWorld();
                     return;
@@ -621,7 +622,7 @@ namespace GuangYuan.GY001.BLL
                 combat.SetAttacker(datas.GameChar, attcker, World);
 
                 var defener = combat.CreateSoldier();
-                combat.SetDefener(datas.OtherChar, defener, World);
+                combat.SetDefener(OtherChar, defener, World);
             }
             else if (datas.DungeonId == ProjectConstant.PvpForHelpDungeonTId) //若是协助pvp
             {
@@ -1582,19 +1583,12 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             using var dw = World.CombatManager.GetAndLockCombat(datas.CombatId, out var combat);
-
-            var db = datas.UserDbContext;
-            var idstring = datas.GameChar.IdString;
-            var thing = db.Set<VirtualThing>().FirstOrDefault(c => c.Id == datas.CombatId /*&& (c.AttackerIdString.Contains(idstring) || c.DefenserIdString.Contains(idstring))*/);
-            if (thing is null)
+            if (dw.IsEmpty)
             {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.DebugMessage = "找不到指定战斗对象。";
+                datas.FillErrorFromWorld();
                 return;
             }
-            db.Entry(thing).Reload();
-            datas.CombatObject = thing.GetJsonObject<CombatReport>();
+            datas.Combat = combat;
             return;
         }
 
@@ -1654,7 +1648,7 @@ namespace GuangYuan.GY001.BLL
 
         public Guid CombatId { get; set; }
 
-        public CombatReport CombatObject { get; set; }
+        public GameCombat Combat { get; set; }
     }
 
     public static class GameCombatManagerExtensions

@@ -1301,7 +1301,7 @@ namespace GuangYuan.GY001.BLL
             {
             });
             //写入资质
-
+            child.PrepareSaving(child.GetDbContext());
             gim.MoveItem(child, child.Count ?? 1, fuhuaSlot, null, datas.PropertyChanges); //放入孵化槽
             var qiwu = datas.GameChar.GetQiwuBag();
             if (jiyin.Count > 1)    //若尚有剩余基因蛋
@@ -1318,6 +1318,7 @@ namespace GuangYuan.GY001.BLL
                 gim.MoveItem(parent1, 1, qiwu, null, datas.PropertyChanges);
             if (parent2.ExtraGuid == ProjectConstant.HomelandPatCard) //若是卡片
                 gim.MoveItem(parent2, 1, qiwu, null, datas.PropertyChanges);
+
             datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 

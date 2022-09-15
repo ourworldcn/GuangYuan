@@ -29,19 +29,19 @@ namespace GuangYuan.GY001.BLL
         /// </summary>
         public Guid RootCombatId { get; set; }
 
-        private CombatReport _RootCombat;
+        private GameCombat _RootCombat;
 
         /// <summary>
         /// 初始战斗对象。
         /// </summary>
-        public CombatReport RootCombat
+        public GameCombat RootCombat
         {
             get
             {
                 if (_RootCombat is null)
                 {
                     var thing = UserDbContext.Set<VirtualThing>().FirstOrDefault(c => c.Id == RootCombatId);
-                    _RootCombat = thing?.GetJsonObject<CombatReport>();
+                    _RootCombat = thing?.GetJsonObject<GameCombat>();
                 }
                 return _RootCombat;
             }

@@ -2409,7 +2409,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 角色Id（将来可能是其它实体Id。）
         /// </summary>
-        public Guid CharId { get; set; }
+        public string CharId { get; set; }
 
         /// <summary>
         /// 参与战斗时刻的显示名字。
@@ -2657,10 +2657,10 @@ namespace GY2021001WebApi.Models
         public string DungeonId { get; set; }
 
         /// <summary>
-        /// 对方角色Id。
+        /// 启动的战斗对象的Id。从其它接口获得，如获取pvp对象的接口。
         /// </summary>
         [DataMember]
-        public string OtherGCharId { get; set; }
+        public string CombatId { get; set; }
 
         /// <summary>
         /// 原始战斗id,如果没有（本场是主动pvp）则为空。
@@ -3470,6 +3470,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public bool IsRefresh { get; set; }
+
+        /// <summary>
+        /// 强制指定一个角色Id。仅调试接口可用。省略或为空均按规则搜索。
+        /// </summary>
+        [DataMember]
+        public string CharId { get; set; }
     }
 
     /// <summary>

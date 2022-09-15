@@ -1,4 +1,5 @@
-﻿using GuangYuan.GY001.BLL;
+﻿using AutoMapper;
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.UserDb;
 using GY2021001WebApi.Models;
@@ -81,8 +82,8 @@ namespace Gy001.Controllers
             result.DebugMessage = datas.DebugMessage;
             if (!result.HasError)
             {
-                var mapper = World.GetMapper();
-                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
+                var mapper = World.Service.GetRequiredService<IMapper>();
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));
             }
             return result;
         }
@@ -103,13 +104,11 @@ namespace Gy001.Controllers
                 UserDbContext = HttpContext.RequestServices.GetRequiredService<GY001UserContext>()
             };
             World.ShoppingManager.Refresh(datas);
-            result.HasError = datas.HasError;
-            result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.DebugMessage;
+            result.FillFrom(datas);
             if (!result.HasError)
             {
-                var mapper = World.GetMapper();
-                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
+                var mapper = World.Service.GetRequiredService<IMapper>();
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));
             }
             return result;
         }
@@ -148,10 +147,10 @@ namespace Gy001.Controllers
             var result = new LotteryReturnDto();
             if (!datas.HasError)
             {
-                var mapper = World.GetMapper();
-                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map(c)));
+                var mapper = World.Service.GetRequiredService<IMapper>();
+                result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));
                 result.TemplateIds.AddRange(datas.ResultTemplateIds.Select(c => c.ToBase64String()));
-                result.ResultItems.AddRange(datas.ResultItems.Select(c => mapper.Map(c)));
+                result.ResultItems.AddRange(datas.ResultItems.Select(c => mapper.Map<GameItemDto>(c)));
             }
             result.FillFrom(datas);
             return result;

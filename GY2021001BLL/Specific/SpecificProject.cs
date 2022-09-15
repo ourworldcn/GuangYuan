@@ -957,8 +957,10 @@ namespace GuangYuan.GY001.BLL
         /// <param name="gameChar"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GameItem GetPvpObject(this GameChar gameChar) =>
-            gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.PvpObjectTId);
+        public static GameItem GetPvpObject(this GameChar gameChar)
+        {
+            return gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.PvpObjectTId);
+        }
 
         /// <summary>
         /// 获取推关战力对象。

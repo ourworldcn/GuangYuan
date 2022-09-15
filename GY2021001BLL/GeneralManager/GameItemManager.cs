@@ -909,6 +909,39 @@ namespace OW.Game.Item
             }
             return result;
         }
+
+        public virtual GameItem GetOrCreateItem(GameChar gameChar, Guid ptid, Guid tid, [AllowNull] Action<GameItem> creator = null)
+        {
+            GameItem result;
+            if (ptid == ProjectConstant.CharTemplateId)  //若父是角色
+            {
+                result = gameChar.GameItems.FirstOrDefault(child => child.ExtraGuid == tid);
+                if (result is null)
+                {
+                    result = new GameItem();
+                    World.EventsManager.GameItemCreated(result, tid);
+                    result.OwnerId = gameChar.Id;
+                    gameChar.GameItems.Add(result);
+                    gameChar.GetDbContext().Add(result);
+                    creator?.Invoke(result);
+                }
+            }
+            else
+            {
+                result = gameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == tid && c.Parent.ExtraGuid == ptid);
+                if (result is null) //若需要创建
+                {
+                    result = new GameItem();
+                    World.EventsManager.GameItemCreated(result, tid);
+                    var parent = gameChar.AllChildren.First(c => c.ExtraGuid == ptid);
+                    parent.Children.Add(result);
+                    result.Parent ??= parent;
+                    result.ParentId ??= parent.Id;
+                    creator?.Invoke(result);
+                }
+            }
+            return result;
+        }
         #region 基本操作
 
         /// <summary>

@@ -34,6 +34,7 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -304,9 +305,14 @@ namespace GuangYuan.GY001.BLL
             var cache = world.Service.GetService<GameObjectCache>();
             var id = Guid.NewGuid();
             var sw = Stopwatch.StartNew();
-
+            ImmutableDictionary<string, object> dic = ImmutableDictionary.Create<string, object>();
             try
             {
+                var dic2 = dic.Add("1", 1);
+                var dicbak = dic2;
+                Task.Run(() => ImmutableInterlocked.TryUpdate(ref dic2, "1", 12, 1));
+                Thread.Sleep(1);
+                var dic3 = dic2.Add("2", 1);
                 DictionaryPool<string, object>.Shared.Get();
             }
             catch (Exception)

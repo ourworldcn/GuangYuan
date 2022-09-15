@@ -73,16 +73,6 @@ namespace GuangYuan.GY001.BLL.Specific
             dic[$"{prefix}Count"] = node.GetJsonObject<Dictionary<string, string>>().GetValueOrDefault("Count");
         }
 
-        public void Map(CombatReport src, CombatDto dest)
-        {
-            var mapper = Service.GetRequiredService<IMapper>();
-            mapper.Map(src, dest);
-            dest.Id = src.Thing.Base64IdString;
-            
-            //dest.AttackerIds.AddRange(src.AttackerIds.Select(c => c.ToBase64String()));
-            //dest.DefenserIds.AddRange(src.DefenserIds.Select(c => c.ToBase64String()));
-        }
-
         public void Map(GameItem src, GameItemDto dest)
         {
             dest.Id = src.Id.ToBase64String();
@@ -212,13 +202,6 @@ namespace GuangYuan.GY001.BLL.Specific
             return result;
         }
 
-        public ChangesItemDto Map(ChangeItem obj)
-        {
-            var result = new ChangesItemDto();
-            Map(obj, result);
-            return result;
-        }
-
         public void Map(ApplyBlueprintDatas obj, ApplyBlueprintReturnDto result)
         {
             result.HasError = obj.HasError;
@@ -226,7 +209,7 @@ namespace GuangYuan.GY001.BLL.Specific
             result.SuccCount = obj.SuccCount;
             if (!result.HasError)
             {
-                result.ChangesItems.AddRange(obj.ChangeItems.Select(c => Map(c)));
+                result.ChangesItems.AddRange(obj.ChangeItems.Select(c => _Mapper.Map<ChangesItemDto>(c)));
                 result.FormulaIds.AddRange(obj.FormulaIds.Select(c => c.ToBase64String()));
                 result.ErrorTIds.AddRange(obj.ErrorItemTIds.Select(c => c.ToBase64String()));
                 result.MailIds.AddRange(obj.MailIds.Select(c => c.ToBase64String()));
@@ -245,7 +228,7 @@ namespace GuangYuan.GY001.BLL.Specific
             result.NextDungeonId = obj.NextTemplate?.Id.ToBase64String();
             result.HasError = obj.HasError;
             result.DebugMessage = obj.DebugMessage;
-            result.ChangesItems.AddRange(obj.ChangesItems.Select(c => Map(c)));
+            result.ChangesItems.AddRange(obj.ChangesItems.Select(c => _Mapper.Map<ChangesItemDto>(c)));
         }
 
         public CombatEndReturnDto Map(EndCombatData obj)
@@ -255,21 +238,6 @@ namespace GuangYuan.GY001.BLL.Specific
             return result;
         }
 
-        public void Map(GameBooty obj, GameBootyDto result)
-        {
-            result.CharId = obj.CharId.ToBase64String();
-            result.Count = obj.StringDictionary.GetDecimalOrDefault("count");
-            result.ParentId = obj.Thing.ParentId.Value.ToBase64String();
-            result.TemplateId = obj.StringDictionary.GetGuidOrDefault("tid").ToBase64String();
-            OwHelper.Copy(obj.StringDictionary, result.Properties);
-        }
-
-        public GameBootyDto Map(GameBooty obj)
-        {
-            var result = new GameBootyDto();
-            Map(obj, result);
-            return result;
-        }
         #endregion 特定类型映射
 
         //public partial class CombatDto
