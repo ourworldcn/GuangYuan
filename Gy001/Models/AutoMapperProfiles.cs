@@ -24,8 +24,11 @@ namespace Gy01.AutoMapper.Profiles
             CreateMap<Guid, string>().ConstructUsing(c => c.ToBase64String());
             CreateMap<ChangeItem, ChangesItemDto>();
 
-            CreateMap<GamePropertyChangeItem<object>, GamePropertyChangeItemDto>();
-                //.ForMember(dest => dest.ObjectId, opt => opt.MapFrom(src => src.Object is GameObjectBase go ? go.Id : Guid.Empty));
+            CreateMap<GamePropertyChangeItem<object>, GamePropertyChangeItemDto>()
+                .ForMember(dest => dest.ObjectId, opt => opt.MapFrom((src, dest) => (src.Object as GameThingBase)?.Base64IdString ?? Guid.Empty.ToBase64String()))
+                .ForMember(dest => dest.TId, opt => opt.MapFrom((src, dest) => (src.Object as GameThingBase)?.ExtraGuid.ToBase64String() ?? Guid.Empty.ToBase64String()));
+            //.ForMember(dest => dest.ObjectId, opt => opt.MapFrom(src => src.Object is GameObjectBase go ? go.Id : Guid.Empty));
+
             //DTO映射
             CreateMap<GameItem, GameItemDto>();
 

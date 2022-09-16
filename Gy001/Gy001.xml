@@ -2601,6 +2601,11 @@
             其它战利品。进攻方获得的道具等。当前版本暂未支持生物。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CombatEndPvpParamsDto.DestroyCountOfWoodStore">
+            <summary>
+            击毁木材仓的数量。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.CombatEndPvpReturnDto.Combat">
             <summary>
             返回该场战斗的数据。

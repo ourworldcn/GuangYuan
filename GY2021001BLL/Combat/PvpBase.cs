@@ -97,8 +97,14 @@ namespace GuangYuan.GY001.BLL
         public List<(Guid, decimal)> DestroyTIds { get; } = new List<(Guid, decimal)>();
 
         /// <summary>
+        /// 击毁木材仓的数量。
+        /// </summary>
+        public int DestroyCountOfWoodStore { get; set; }
+
+        /// <summary>
         /// 返回本次战斗的战斗对象。
         /// </summary>
         public GameCombat Combat { get; set; }
+        public Guid MailId { get; internal set; }
     }
 }

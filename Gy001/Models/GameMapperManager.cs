@@ -168,40 +168,6 @@ namespace GuangYuan.GY001.BLL.Specific
             return result;
         }
 
-        public void Map(GamePropertyChangeItem<object> obj, GamePropertyChangeItemDto result)
-        {
-            result.DateTimeUtc = obj.DateTimeUtc;
-            result.HasNewValue = obj.HasNewValue;
-            result.HasOldValue = obj.HasOldValue;
-            result.NewValue = obj.NewValue;
-            result.ObjectId = (obj.Object as GameThingBase)?.Base64IdString;
-            result.OldValue = obj.OldValue;
-            result.PropertyName = obj.PropertyName;
-            result.TId = (obj.Object as GameThingBase)?.ExtraGuid.ToBase64String();
-
-            if (obj.IsCollectionRemoved())  //若是集合删除元素
-                if (obj.OldValue is GameThingBase gt)
-                    result.OldValue = gt.Base64IdString;
-            if (obj.IsCollectionAdded()) //若添加了元素
-            {
-                if (obj.NewValue is GameItem gi)
-                    result.NewValue = Map(gi);
-                else if (obj.NewValue is GameChar gc)
-                    result.NewValue = Map(gc);
-                else if (obj.NewValue is GameGuild gg)
-                    result.NewValue = Map(gg);
-                Debug.WriteLine($"不认识的对象类型{obj.NewValue.GetType()}");
-                //TO DO 不认识的对象类型
-            }
-        }
-
-        public GamePropertyChangeItemDto Map(GamePropertyChangeItem<object> obj)
-        {
-            var result = new GamePropertyChangeItemDto();
-            Map(obj, result);
-            return result;
-        }
-
         public void Map(ApplyBlueprintDatas obj, ApplyBlueprintReturnDto result)
         {
             result.HasError = obj.HasError;

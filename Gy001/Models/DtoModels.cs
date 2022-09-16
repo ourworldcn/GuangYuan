@@ -2734,6 +2734,12 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public List<GameItemDto> Booty { get; set; } = new List<GameItemDto>();
+
+        /// <summary>
+        /// 击毁木材仓的数量。
+        /// </summary>
+        [DataMember]
+        public int DestroyCountOfWoodStore { get; set; }
     }
 
     [DataContract]

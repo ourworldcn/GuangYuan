@@ -597,9 +597,18 @@ namespace Gy001.Controllers
                     //增补客户端需要的额外数据
                     var mapper = _World.GetMapper();
                     var summary = datas.World.SocialManager.GetCharSummary(datas.CharIds, datas.UserDbContext);
-                    result.CharSummary.AddRange(summary.Select(c => mapper.Map(c)));
                     var mp = _World.Service.GetRequiredService<IMapper>();
                     result.Combat = mp.Map<GameCombatDto>(datas.Combat, opt => opt.Items["IgnorDefenerPets"] = true);
+                    var sodier = datas.Combat.Others.FirstOrDefault();
+                    var summry = summary.FirstOrDefault();
+                    if (sodier != null && summary != null)    //矫正数据
+                    {
+                        var gold = sodier.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.GetDecimalWithFcpOrDefault("Count") ?? 0;   //金币基数
+
+                        summry.GoldOfStore = gold;
+                        summry.WoodOfStore = sodier.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId).Count ?? 0;
+                    }
+                    result.CharSummary.AddRange(summary.Select(c => mapper.Map(c)));
                 }
             }
             catch (Exception err)

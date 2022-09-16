@@ -1,10 +1,12 @@
-﻿using GuangYuan.GY001.BLL;
+﻿using AutoMapper;
+using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -50,7 +52,8 @@ namespace Gy001.Controllers
                 var guild = World.AllianceManager.GetGuild(datas.Id);
                 result.Guild = mapper.Map(guild);
                 GameGuildDto.FillMembers(guild, result.Guild, World);
-                result.Changes.AddRange(datas.PropertyChanges.Select(c => mapper.Map(c)));
+                var mapper1 = World.Service.GetService<IMapper>();
+                result.Changes.AddRange(datas.PropertyChanges.Select(c => mapper1.Map<GamePropertyChangeItemDto>(c)));
             }
             return result;
         }

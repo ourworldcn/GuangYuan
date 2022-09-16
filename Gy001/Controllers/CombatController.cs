@@ -49,8 +49,8 @@ namespace GY2021001WebApi.Controllers
             if (!result.HasError)
             {
                 result.TemplateId = data.Template?.Id.ToBase64String();
-                var mapper = cbm.World.GetMapper();
-                result.Changes.AddRange(data.PropertyChanges.Select(c => mapper.Map(c)));
+                var mapper = cbm.World.Service.GetRequiredService<IMapper>();
+                result.Changes.AddRange(data.PropertyChanges.Select(c => mapper.Map<GamePropertyChangeItemDto>(c)));
             }
             return result;
         }
@@ -100,13 +100,18 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<CombatStartPvpReturnDto> CombatStartPvp(CombatStartPvpParamsDto model)
         {
             var result = new CombatStartPvpReturnDto();
-            var datas = new StartCombatPvpData(World, model.Token) { DungeonId = OwConvert.ToGuid(model.DungeonId), CombatId = OwConvert.ToGuid(model.CombatId) };
+            var datas = new StartCombatPvpData(World, model.Token)
+            {
+                DungeonId = OwConvert.ToGuid(model.DungeonId),
+                CombatId = OwConvert.ToGuid(model.CombatId),
+                OldCombatId = OwConvert.TryToGuid(model.OldCombatId, out var oldId) ? oldId : Guid.Empty,
+            };
             World.CombatManager.StartCombatPvp(datas);
             result.FillFrom(datas);
             if (!result.HasError)
             {
-                var mapper = World.GetMapper();
-                result.Changes.AddRange(datas.PropertyChanges.Select(c => mapper.Map(c)));
+                var mapper = World.Service.GetRequiredService<IMapper>();
+                result.Changes.AddRange(datas.PropertyChanges.Select(c => mapper.Map<GamePropertyChangeItemDto>(c)));
                 result.GameCombatId = datas.CombatId.ToBase64String();
             }
             return result;
@@ -129,6 +134,7 @@ namespace GY2021001WebApi.Controllers
                 WoodRhp = model.WoodRhp,
                 GoldRhp = model.GoldRhp,
                 StoreOfWoodRhp = model.StoreOfWoodRhp,
+                DestroyCountOfWoodStore = model.DestroyCountOfWoodStore,
             };
             datas.DestroyTIds.AddRange(model.Destroy.Select(c => (ValueTuple<Guid, decimal>)c));
 
