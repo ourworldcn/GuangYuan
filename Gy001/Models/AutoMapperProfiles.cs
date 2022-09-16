@@ -30,7 +30,8 @@ namespace Gy01.AutoMapper.Profiles
             //.ForMember(dest => dest.ObjectId, opt => opt.MapFrom(src => src.Object is GameObjectBase go ? go.Id : Guid.Empty));
 
             //DTO映射
-            CreateMap<GameItem, GameItemDto>();
+            //CreateMap<GameItem, GameItemDto>();
+            CreateMap<GameItem, GameItemDto>().ReverseMap();
 
             CreateMap<LoginT89ParamsDto, T89LoginData>();
             //CreateMap<GameGuildEntity, Dictionary<string, object>>().ConstructUsing((src, context) =>
