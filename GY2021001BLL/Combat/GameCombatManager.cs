@@ -627,13 +627,50 @@ namespace GuangYuan.GY001.BLL
             else if (datas.DungeonId == ProjectConstant.PvpForHelpDungeonTId) //若是协助pvp
             {
                 var tt = World.ItemTemplateManager.GetTemplateFromeId(datas.DungeonId); //关卡模板
-                if (!World.ItemManager.DecrementCount(datas.GameChar, tt.Properties, null, datas.PropertyChanges))
+                if (!World.ItemManager.DecrementCount(datas.GameChar, tt.Properties, "cost", datas.PropertyChanges))
                 {
                     datas.FillErrorFromWorld();
                     return;
                 }
                 Tili2Exp(datas.GameChar, datas.PropertyChanges);    //体力消耗转换为经验
+                //获取旧战斗
+                var oldKey = datas.OldCombatId.Value.ToString();
+                using var dwOld = GetAndLockCombat(datas.OldCombatId.Value, out var oldCombat);
+                if (dwOld.IsEmpty)
+                {
+                    datas.FillErrorFromWorld();
+                    return;
+                }
+                //if (oldCombat.Defensers.All(c => c.CharId != datas.GameChar.Id))
+                //{
+                //    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                //    datas.DebugMessage = "指定角色不可协助。";
+                //    return;
+                //}
+                if (oldCombat.Assistanced)    //若已协助
+                {
+                    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                    datas.DebugMessage = "该战斗已经协助过了。";
+                    return;
+                }
+                var combat = GameCombat.CreateNew(World);
+                //设置超时
+                var key = combat.Thing.IdString;
+                var entry = cache.GetCacheEntry(key);
+                entry.SetSlidingExpiration(TimeSpan.FromMinutes(15));
 
+                //设置信息
+                combat.StartUtc = DateTime.UtcNow;
+                combat.OldCombatId = oldCombat.Id;
+                combat.MapTId = datas.DungeonId;
+
+                var attcker = combat.CreateSoldier();
+                combat.SetAttacker(datas.GameChar, attcker, World);
+
+                var defener = combat.CreateSoldier();
+                var otherId = oldCombat.Attackers.First().CharId;
+                var OtherChar = World.CharManager.GetCharFromId(otherId);
+                combat.SetDefener(OtherChar, defener, World);
             }
             else if (datas.DungeonId == ProjectConstant.PvpForRetaliationDungeonTId)   //若是反击pvp
             {
@@ -681,6 +718,9 @@ namespace GuangYuan.GY001.BLL
                 var otherId = oldCombat.Attackers.First().CharId;
                 var OtherChar = World.CharManager.GetCharFromId(otherId);
                 combat.SetDefener(OtherChar, defener, World);
+
+                combat.MapTId = ProjectConstant.PvpForRetaliationDungeonTId;
+                datas.CombatId = combat.Id;
             }
             else
             {
@@ -710,7 +750,7 @@ namespace GuangYuan.GY001.BLL
             }
 
 
-            var mapTt = World.ItemTemplateManager.GetTemplateFromeId(combat.MapTId);
+            var mapTt = World.ItemTemplateManager.GetTemplateFromeId(combat.MapTId) ?? World.ItemTemplateManager.GetTemplateFromeId(combat.MapTId);
             var pTId = GetParent(mapTt).Id; //大关卡模板Id
 
             //校验免战
@@ -741,8 +781,6 @@ namespace GuangYuan.GY001.BLL
             }
             else if (pTId == ProjectConstant.PvpForHelpDungeonTId) //若是协助pvp
             {
-                string str = null;
-                var length = str.Length;
                 PvpForHelp(datas);
             }
             else if (pTId == ProjectConstant.PvpForRetaliationDungeonTId)   //若是反击pvp
@@ -988,14 +1026,13 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
 
-            if (!combat.Attackers.All(c => c.CharId != datas.GameChar.Id))    //若没有复仇权
+            if (combat.Attackers.All(c => c.CharId != datas.GameChar.Id))    //若没有复仇权
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                 datas.DebugMessage = "没有复仇权";
                 return;
             }
-            combat.MapTId = ProjectConstant.PvpForRetaliationDungeonTId;
             datas.Combat = combat;
             //计算战利品
             if (datas.MainRoomRhp <= 0) //若反击胜利
@@ -1006,9 +1043,11 @@ namespace GuangYuan.GY001.BLL
 
                 var goldGi = new GameItem();
                 World.EventsManager.GameItemCreated(goldGi, ProjectConstant.JinbiId);
+                goldGi.Count = Math.Abs(gold ?? 0);
 
                 var woodGi = new GameItem();
                 World.EventsManager.GameItemCreated(woodGi, ProjectConstant.MucaiId);
+                woodGi.Count = Math.Abs(wood ?? 0);
 
                 List<GameItem> booty = new List<GameItem>();    //战利品
                 booty.Add(goldGi);
@@ -1037,55 +1076,74 @@ namespace GuangYuan.GY001.BLL
                 mail.Properties["CombatId"] = combat.Thing.IdString;
             }
             World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
-            ////保存数据
+            //保存数据
             oldCombat.Retaliationed = true;
             //datas.Save();
         }
 
         /// <summary>
-        /// 协助pvp。
+        /// 结算协助pvp。
         /// </summary>
         /// <param name="datats"></param>
         private void PvpForHelp(EndCombatPvpWorkData datas)
         {
-            //GameCombat combat;
+            using var dwCombat = GetAndLockCombat(datas.CombatId, out var combat);
+            if (dwCombat.IsEmpty)
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            using var dwOldCombat = GetAndLockCombat(combat.OldCombatId.Value, out var oldCombat);  //旧战斗对象
+            if (dwCombat.IsEmpty)
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
 
-            //if (datas.Combat is null || datas.Combat.DefenserIds.Count <= 0)   //若找不到战报对象,或数据异常
-            //return;
-            //var world = datas.World;
-            ////datas.OtherCharIds.AddRange(datas.Combat.DefenserIds);  //将原始战斗的防御方角色ID加入锁定范围
-            //using var dwUsers = datas.LockAll();    //锁定相关角色
-            //if (dwUsers is null)
-            //{
-            //    datas.FillErrorFromWorld();
-            //    return;
-            //}
-            //var db = datas.UserDbContext;
-            //var oldWar = db.Set<VirtualThing>().FirstOrDefault(c => c.Id == datas.CombatId);  //原始战斗
-            //if (oldWar is null)
-            //{
-            //    datas.HasError = true;
-            //    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-            //    datas.DebugMessage = "找不到指定的最初战斗。";
-            //    return;
-            //}
-            //db.Entry(oldWar).Reload();
-            //var oldView = oldWar.GetJsonObject<CombatReport>();
+            if (oldCombat.AssistanceId != datas.GameChar.Id || !oldCombat.Assistancing || oldCombat.IsCompleted) //没有请求当前角色协助或已经结束
+            {
+                datas.HasError = true;
+                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                datas.DebugMessage = $"指定的战报对象没有请求此角色协助攻击或已经攻击过了。";
+                return;
+            }
 
-            //var assId = oldView.AssistanceId;
-            //if (assId != datas.GameChar.Id || !oldView.Assistancing || oldView.IsCompleted) //没有请求当前角色协助或已经结束
-            //{
-            //    datas.HasError = true;
-            //    datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-            //    datas.DebugMessage = $"指定的战报对象没有请求此角色协助攻击或已经攻击过了。";
-            //}
-            ////更改数据
-            //var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatReportTId };
-            //db.Add(thing);
-            //var pc = thing.GetJsonObject<CombatReport>();  //本次战斗数据
-            //pc.AttackerIds.Add(datas.GameChar.Id);
-            //pc.DefenserIds.Add(datas.OtherCharId);
-            ////datas.Combat = pc;
+            //计算战利品
+            if (datas.MainRoomRhp <= 0) //若反击胜利
+            {
+                var oldBooty = oldCombat.Defensers.First().Booties; //失去的物品
+                var gold = oldBooty.Where(c => c.ExtraGuid == ProjectConstant.JinbiId || c.ExtraGuid == ProjectConstant.YumitianTId).Sum(c => c.Count);   //夺回金币
+                var wood = oldBooty.Where(c => c.ExtraGuid == ProjectConstant.MucaiId || c.ExtraGuid == ProjectConstant.MucaishuTId).Sum(c => c.Count);   //夺回木材
+
+                var goldGi = new GameItem();
+                World.EventsManager.GameItemCreated(goldGi, ProjectConstant.JinbiId);
+                goldGi.Count = Math.Round(Math.Abs(gold ?? 0) * .3m, MidpointRounding.ToNegativeInfinity);
+
+                var woodGi = new GameItem();
+                World.EventsManager.GameItemCreated(woodGi, ProjectConstant.MucaiId);
+                woodGi.Count = Math.Round(Math.Abs(wood ?? 0) * .3m, MidpointRounding.ToNegativeInfinity);
+
+                List<GameItem> booty = new List<GameItem>();    //战利品
+                if (gold != 0) booty.Add(goldGi);
+                if (wood != 0) booty.Add(woodGi);
+
+                combat.Attackers.First().Booties.AddRange(booty);
+                //设置物品变化
+                World.ItemManager.MoveItems(booty, datas.GameChar, null, datas.PropertyChanges);
+                //给求助者发还物品
+
+            }
+            //保存数据
+            combat.MapTId = ProjectConstant.PvpForHelpDungeonTId;
+            combat.OldCombatId = oldCombat.Id;
+            datas.Combat = combat;
+            //oldCombat.Retaliationed = true;
+            oldCombat.Assistancing = false;
+            oldCombat.Assistanced = true;
+            oldCombat.IsCompleted = oldCombat.Retaliationed || (datas.MainRoomRhp <= 0);
+
+            //datas.Save();
+
             ////获取战利品
             //if (datas.MainRoomRhp <= 0)    //若赢得战斗
             //{
@@ -1097,77 +1155,51 @@ namespace GuangYuan.GY001.BLL
             //    //var boo = oldView.BootyOfAttacker(datas.UserDbContext);  //原始进攻方的战利品
             //    var boo = oriBooty;  //原始进攻方的战利品
 
-            //    var newBooty = boo.Select(c =>
-            //    {
-            //        var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatBootyTId };
-            //        var r = thing.GetJsonObject<GameBooty>();   //计算进攻方战利品
-            //        r.CharId = datas.GameChar.Id;
-            //        r.StringDictionary["count"] = (Math.Round(c.StringDictionary.GetDecimalOrDefault("count") * 0.3m, MidpointRounding.AwayFromZero)).ToString();
-            //        if (r.StringDictionary.GetDecimalOrDefault("count") == decimal.Zero)
-            //            return null;
-            //        r.StringDictionary["tid"] = c.StringDictionary["tid"];
-            //        World.VirtualThingManager.Add(thing, pc.Thing);
-            //        return r;
-            //    }).ToList();
             //    newBooty.RemoveAll(c => c is null); //去掉空引用
 
             //    newBooty.ForEach(c => c.SetGameItems(World, datas.ChangeItems));
 
-            //    var oldBooties = boo.Select(c =>
-            //    {
-            //        var thing = new VirtualThing() { ExtraGuid = ProjectConstant.CombatBootyTId };
-            //        var r = thing.GetJsonObject<GameBooty>();   //原始被掠夺角色的战利品
-            //        r.CharId = oldView.DefenserIds.First();
-            //        r.StringDictionary["tid"] = c.StringDictionary["tid"];
-            //        r.StringDictionary["count"] = c.StringDictionary["count"];
-            //        World.VirtualThingManager.Add(thing, pc.Thing, datas.PropertyChanges);
-            //        return r;
-            //    }).ToList();
             //    oldBooties.ForEach(c => c.SetGameItems(world));
             //}
             ////保存数据
             ////改写进攻权限
-            //oldView.Assistancing = false;
-            //oldView.Assistanced = true;
-            //oldView.IsCompleted = oldView.Retaliationed || (datas.MainRoomRhp <= 0);
             //datas.Save();
             //datas.ErrorCode = ErrorCodes.NO_ERROR;
-            ////计算成就数据
-            //if (datas.MainRoomRhp <= 0)
-            //{
-            //    var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.PVP助战成就);
-            //    if (null != mission)   //若找到成就对象
-            //    {
-            //        var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
-            //        mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
-            //        World.MissionManager.ScanAsync(datas.GameChar);
-            //    }
-            //}
-            ////发送邮件
-            //var mail = new GameMail()
-            //{
-            //};
-            //if (datas.MainRoomRhp <= 0) //若协助成功
-            //{
-            //    mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
-            //    mail.Properties["OldCombatId"] = oldWar.IdString;
-            //    mail.Properties["CombatId"] = pc.Thing.IdString;
+            //计算成就数据
+            if (datas.MainRoomRhp <= 0)
+            {
+                var mission = datas.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.PVP助战成就);
+                if (null != mission)   //若找到成就对象
+                {
+                    var oldVal = mission.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
+                    mission.Properties[ProjectMissionConstant.指标增量属性名] = oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
+                    World.MissionManager.ScanAsync(datas.GameChar);
+                }
+            }
+            //发送邮件
+            var mail = new GameMail()
+            {
+            };
+            if (datas.MainRoomRhp <= 0) //若协助成功
+            {
+                mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
+                mail.Properties["OldCombatId"] = oldCombat.Thing.IdString;
+                mail.Properties["CombatId"] = combat.Thing.IdString;
 
-            //    //var mail2 = new GameMail();
-            //    //mail2.Properties["MailTypeId"] = ProjectConstant.PVP反击_求助_被求助者_胜利.ToString();
-            //    //mail2.Properties["OldCombatId"] = oldWar.IdString;
-            //    //mail2.Properties["CombatId"] = pc.Thing.IdString;
-            //    //World.SocialManager.SendMail(mail2, pc.AttackerIds, SocialConstant.FromSystemId); //协助成功邮件
-            //}
-            //else
-            //{
-            //    mail.Properties["MailTypeId"] = oldView.Retaliationed ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_求助_失败_求助者.ToString();
-            //    mail.Properties["OldCombatId"] = oldWar.IdString;
-            //    mail.Properties["CombatId"] = pc.Thing.IdString;
-            //}
+                //var mail2 = new GameMail();
+                //mail2.Properties["MailTypeId"] = ProjectConstant.PVP反击_求助_被求助者_胜利.ToString();
+                //mail2.Properties["OldCombatId"] = oldWar.IdString;
+                //mail2.Properties["CombatId"] = pc.Thing.IdString;
+                //World.SocialManager.SendMail(mail2, pc.AttackerIds, SocialConstant.FromSystemId); //协助成功邮件
+            }
+            else
+            {
+                mail.Properties["MailTypeId"] = oldCombat.Retaliationed ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_求助_失败_求助者.ToString();
+                mail.Properties["OldCombatId"] = oldCombat.Thing.IdString;
+                mail.Properties["CombatId"] = combat.Thing.IdString;
+            }
 
-            //World.SocialManager.SendMail(mail, oldView.DefenserIds, SocialConstant.FromSystemId); //被攻击邮件
-
+            World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId); //被攻击邮件
         }
 
         /// <summary>
