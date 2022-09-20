@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
+using OW.DDD;
 using OW.Game;
 using OW.Game.Caching;
 using OW.Game.Item;
@@ -671,6 +672,7 @@ namespace GuangYuan.GY001.BLL
                 var otherId = oldCombat.Attackers.First().CharId;
                 var OtherChar = World.CharManager.GetCharFromId(otherId);
                 combat.SetDefener(OtherChar, defener, World);
+                datas.CombatId = combat.Id;
             }
             else if (datas.DungeonId == ProjectConstant.PvpForRetaliationDungeonTId)   //若是反击pvp
             {
@@ -1056,6 +1058,7 @@ namespace GuangYuan.GY001.BLL
                 combat.Attackers.First().Booties.AddRange(booty);
                 //设置物品变化
                 World.ItemManager.MoveItems(booty, datas.GameChar, null, datas.PropertyChanges);
+
             }
             //发送邮件
             var mail = new GameMail();
@@ -1108,7 +1111,8 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
 
-            //计算战利品
+            var bootyMail = new List<(GameItem, Guid)>();    //战利品
+                                                             //计算战利品
             if (datas.MainRoomRhp <= 0) //若反击胜利
             {
                 var oldBooty = oldCombat.Defensers.First().Booties; //失去的物品
@@ -1130,8 +1134,24 @@ namespace GuangYuan.GY001.BLL
                 combat.Attackers.First().Booties.AddRange(booty);
                 //设置物品变化
                 World.ItemManager.MoveItems(booty, datas.GameChar, null, datas.PropertyChanges);
-                //给求助者发还物品
 
+                //给求助者发还物品
+                goldGi = new GameItem();
+                World.EventsManager.GameItemCreated(goldGi, ProjectConstant.JinbiId);
+                goldGi.Count = Math.Round(Math.Abs(gold ?? 0), MidpointRounding.ToNegativeInfinity);
+
+                woodGi = new GameItem();
+                World.EventsManager.GameItemCreated(woodGi, ProjectConstant.MucaiId);
+                woodGi.Count = Math.Round(Math.Abs(wood ?? 0), MidpointRounding.ToNegativeInfinity);
+
+                bootyMail.Add((goldGi, ProjectConstant.CurrencyBagTId));
+                bootyMail.Add((woodGi, ProjectConstant.CurrencyBagTId));
+
+                var mail2 = new GameMail();
+                mail2.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
+                mail2.Properties["OldCombatId"] = oldCombat.Thing.IdString;
+                mail2.Properties["CombatId"] = combat.Thing.IdString;
+                World.SocialManager.SendMail(mail2, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId, bootyMail); //协助成功邮件
             }
             //保存数据
             combat.MapTId = ProjectConstant.PvpForHelpDungeonTId;
@@ -1185,21 +1205,19 @@ namespace GuangYuan.GY001.BLL
                 mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
                 mail.Properties["OldCombatId"] = oldCombat.Thing.IdString;
                 mail.Properties["CombatId"] = combat.Thing.IdString;
-
-                //var mail2 = new GameMail();
-                //mail2.Properties["MailTypeId"] = ProjectConstant.PVP反击_求助_被求助者_胜利.ToString();
-                //mail2.Properties["OldCombatId"] = oldWar.IdString;
-                //mail2.Properties["CombatId"] = pc.Thing.IdString;
-                //World.SocialManager.SendMail(mail2, pc.AttackerIds, SocialConstant.FromSystemId); //协助成功邮件
+                if (bootyMail.Count > 0)
+                    World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId, bootyMail); //被攻击邮件
+                else
+                    World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId); //被攻击邮件
             }
             else
             {
                 mail.Properties["MailTypeId"] = oldCombat.Retaliationed ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_求助_失败_求助者.ToString();
                 mail.Properties["OldCombatId"] = oldCombat.Thing.IdString;
                 mail.Properties["CombatId"] = combat.Thing.IdString;
+                World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId); //被攻击邮件
             }
 
-            World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId); //被攻击邮件
         }
 
         /// <summary>

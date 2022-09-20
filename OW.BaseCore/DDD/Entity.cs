@@ -84,9 +84,9 @@ namespace OW.DDD
         Guid Id { get; }
     }
 
-    public interface IAggregateRoot: IEntity
+    public interface IAggregateRoot : IEntity
     {
-        
+
     }
 
     public interface IRepository<out T> where T : IAggregateRoot
@@ -136,6 +136,34 @@ namespace OW.DDD
         //}
     }
 
+    public class NotificationBase: INotification
+    {
+        #region 构造函数
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="contextId">上下文id。</param>
+        public NotificationBase(Guid contextId)
+        {
+            ContextId = contextId;
+        }
+
+        #endregion 构造函数
+
+        /// <summary>
+        /// 上下文id,未来应对应处理当前命令的上下文对象id,目前是发送命令的角色id。
+        /// </summary>
+        public Guid ContextId { get; set; }
+
+    }
+
+    public interface INotificationHandler<T>
+    {
+        public void Handle(T data);
+
+    }
+
     public abstract class ValueObject
     {
         //    protected static bool EqualOperator(ValueObject left, ValueObject right)
@@ -174,4 +202,5 @@ namespace OW.DDD
         //    }
         //    // Other utility methods
     }
+
 }

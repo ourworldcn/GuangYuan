@@ -491,19 +491,14 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void RequestAssistance(RequestAssistanceDatas datas)
         {
-            using var dwUser = datas.LockAll();
-            if (dwUser is null)
-                return;
-            var rootCombat = datas.RootCombat;
-            if (rootCombat is null)
+            using var dwCombat = World.CombatManager.GetAndLockCombat(datas.RootCombatId, out var combat);
+            if(dwCombat.IsEmpty)
             {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-                datas.DebugMessage = $"找不到指定的战报对象，Id={datas.RootCombatId}";
+                datas.FillErrorFromWorld();
                 return;
             }
-            var rootView = rootCombat;
-            if (rootView.Assistancing || rootView.Assistanced)   //若已经请求了协助
+            var oldCombat = combat;
+            if (oldCombat.Assistancing || oldCombat.Assistanced)   //若已经请求了协助
             {
                 datas.HasError = true;
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
@@ -511,19 +506,17 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             //更改数据
-            rootView.Assistancing = true;
-            rootView.AssistanceId = datas.OtherCharId; //设置请求协助的对象。
+            oldCombat.Assistancing = true;
+            oldCombat.AssistanceId = datas.OtherCharId; //设置请求协助的对象。
             //发送邮件
             var mail = new GameMail()
             {
             };
             mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_被求助者_求助.ToString();
-            mail.Properties["CombatId"] = rootCombat.Thing.IdString;
+            mail.Properties["CombatId"] = oldCombat.Thing.IdString;
             World.SocialManager.SendMail(mail, new Guid[] { datas.OtherCharId }, datas.GameChar.Id); //被攻击邮件
             //关系数据
             datas.SocialRelationship.Flag++;
-            //保存数据
-            datas.UserDbContext.SaveChanges();
         }
 
         #endregion  邮件及相关

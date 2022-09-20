@@ -1212,36 +1212,6 @@
             进攻者积分。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.GameBootyDto">
-            <summary>
-            战利品数据传输对象。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GameBootyDto.ParentId">
-            <summary>
-            所属战斗对象的Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GameBootyDto.CharId">
-            <summary>
-            所属角色(参与战斗的角色Id)。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GameBootyDto.TemplateId">
-            <summary>
-            模板Id。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GameBootyDto.Count">
-            <summary>
-            数量。可能是负数，表示失去的数量。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GameBootyDto.Properties">
-            <summary>
-            封装额外的参数，目前仅对坐骑/野兽时，这里有htid和btid属性。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.DtoConstant">
             <summary>
             该项目使用的特定常量。

@@ -370,43 +370,6 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// 战利品数据传输对象。
-    /// </summary>
-    [DataContract]
-    public partial class GameBootyDto
-    {
-        /// <summary>
-        /// 所属战斗对象的Id。
-        /// </summary>
-        [DataMember]
-        public string ParentId { get; set; }
-
-        /// <summary>
-        /// 所属角色(参与战斗的角色Id)。
-        /// </summary>
-        [DataMember]
-        public string CharId { get; set; }
-
-        /// <summary>
-        /// 模板Id。
-        /// </summary>
-        [DataMember]
-        public string TemplateId { get; set; }
-
-        /// <summary>
-        /// 数量。可能是负数，表示失去的数量。
-        /// </summary>
-        [DataMember]
-        public decimal Count { get; set; }
-
-        /// <summary>
-        /// 封装额外的参数，目前仅对坐骑/野兽时，这里有htid和btid属性。
-        /// </summary>
-        [DataMember]
-        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
-    }
-
-    /// <summary>
     /// 该项目使用的特定常量。
     /// </summary>
     public static class DtoConstant
