@@ -85,7 +85,7 @@ namespace Gy001
 
             services.AddAutoMapper(Array.Empty<Assembly>());
 
-            OwAutoInjectionExtensions.AutoRegister(services);
+            services.AutoRegister(AppDomain.CurrentDomain.GetAssemblies());
 
             #endregion 配置通用服务
 

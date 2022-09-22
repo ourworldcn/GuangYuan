@@ -1,4 +1,8 @@
-﻿using System;
+﻿/*
+ * Seedwork（适用于域模型的可重用基类和接口）
+ * 这是许多开发者在项目之间共享的复制和粘贴重用类型，不是正式框架。 seedwork 可存在于任何层或库中。 但是，如果类和接口的集足够大，可能需要创建单个类库。
+ */
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -108,7 +112,9 @@ namespace OW.DDD
     //    Task<Order> GetAsync(int orderId);
     //}
 
-
+    /// <summary>
+    /// 实现此接口的类就被认为是发布的事件类。确切的说是事件数据。
+    /// </summary>
     public interface INotification
     {
         //public string UserId { get; }
@@ -136,17 +142,24 @@ namespace OW.DDD
         //}
     }
 
-    public class NotificationBase: INotification
+    public class NotificationBase : INotification
     {
         #region 构造函数
+
+        public NotificationBase()
+        {
+
+        }
 
         /// <summary>
         /// 构造函数。
         /// </summary>
         /// <param name="contextId">上下文id。</param>
-        public NotificationBase(Guid contextId)
+        /// <param name="service">使用的服务。</param>
+        public NotificationBase(Guid contextId, IServiceProvider service)
         {
             ContextId = contextId;
+            Service = service;
         }
 
         #endregion 构造函数
@@ -156,12 +169,35 @@ namespace OW.DDD
         /// </summary>
         public Guid ContextId { get; set; }
 
+        /// <summary>
+        /// 使用的服务容器。
+        /// </summary>
+        public IServiceProvider Service { get; set; }
     }
 
-    public interface INotificationHandler<T>
+    public interface INotificationHandler
     {
-        public void Handle(T data);
+        public abstract void Handle(object data);
 
+    }
+
+    /// <summary>
+    /// 实现此接口的类就被认为是订阅 <typeparamref name="T"/> 事件的类。
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public interface INotificationHandler<T> : INotificationHandler where T : INotification
+    {
+
+    }
+
+    public abstract class NotificationHandlerBase<T> : INotificationHandler<T> where T : INotification
+    {
+        public void Handle(object data)
+        {
+            Handle((T)data);
+        }
+
+        public abstract void Handle(T data);
     }
 
     public abstract class ValueObject

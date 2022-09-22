@@ -264,24 +264,7 @@ namespace GuangYuan.GY001.BLL
             Trace.WriteLine("游戏虚拟世界服务开始下线。");
             return Task.CompletedTask;
         }
-        public class MyClass
-        {
-            protected MyClass()
-            {
 
-            }
-
-            public MyClass(Tuple<int, int> change)
-            {
-                Old = change.Item1;
-                Nv = change.Item2;
-            }
-
-            public int Old { get; protected set; }
-
-            public int Nv { get; set; }
-
-        }
         /// <summary>
         /// 测试点。
         /// </summary>
@@ -309,12 +292,9 @@ namespace GuangYuan.GY001.BLL
             ImmutableDictionary<string, object> dic = ImmutableDictionary.Create<string, object>();
             try
             {
-                var dic2 = dic.Add("1", 1);
-                var dicbak = dic2;
-                Task.Run(() => ImmutableInterlocked.TryUpdate(ref dic2, "1", 12, 1));
-                Thread.Sleep(1);
-                var dic3 = dic2.Add("2", 1);
-                DictionaryPool<string, object>.Shared.Get();
+                var eventBus = _Services.GetRequiredService<OwEventBus>();
+                eventBus.AddData(new GameProp(Guid.NewGuid(),null));
+                eventBus.RaiseEvent();
             }
             catch (Exception)
             {
@@ -464,6 +444,8 @@ namespace GuangYuan.GY001.BLL
             });
 
             services.AddSingleton<GameObjectCache>();
+
+            services.AddOwEventBus().RegisterNotificationHandler(AppDomain.CurrentDomain.GetAssemblies());
             #endregion 基础服务
 
             #region 游戏专用服务

@@ -1113,7 +1113,7 @@ namespace GuangYuan.GY001.BLL
 
             var bootyMail = new List<(GameItem, Guid)>();    //战利品
                                                              //计算战利品
-            if (datas.MainRoomRhp <= 0) //若反击胜利
+            if (datas.MainRoomRhp <= 0) //若协助胜利
             {
                 var oldBooty = oldCombat.Defensers.First().Booties; //失去的物品
                 var gold = oldBooty.Where(c => c.ExtraGuid == ProjectConstant.JinbiId || c.ExtraGuid == ProjectConstant.YumitianTId).Sum(c => c.Count);   //夺回金币
@@ -1151,7 +1151,10 @@ namespace GuangYuan.GY001.BLL
                 mail2.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
                 mail2.Properties["OldCombatId"] = oldCombat.Thing.IdString;
                 mail2.Properties["CombatId"] = combat.Thing.IdString;
-                World.SocialManager.SendMail(mail2, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId, bootyMail); //协助成功邮件
+                if (bootyMail.Count > 0)
+                    World.SocialManager.SendMail(mail2, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId, bootyMail); //被攻击邮件
+                else
+                    World.SocialManager.SendMail(mail2, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId); //被攻击邮件
             }
             //保存数据
             combat.MapTId = ProjectConstant.PvpForHelpDungeonTId;
@@ -1202,13 +1205,13 @@ namespace GuangYuan.GY001.BLL
             };
             if (datas.MainRoomRhp <= 0) //若协助成功
             {
-                mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
-                mail.Properties["OldCombatId"] = oldCombat.Thing.IdString;
-                mail.Properties["CombatId"] = combat.Thing.IdString;
-                if (bootyMail.Count > 0)
-                    World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId, bootyMail); //被攻击邮件
-                else
-                    World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId); //被攻击邮件
+                //mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
+                //mail.Properties["OldCombatId"] = oldCombat.Thing.IdString;
+                //mail.Properties["CombatId"] = combat.Thing.IdString;
+                //if (bootyMail.Count > 0)
+                //    World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId, bootyMail); //被攻击邮件
+                //else
+                //    World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId); //被攻击邮件
             }
             else
             {
