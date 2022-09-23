@@ -291,10 +291,11 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                var tt11 = typeof(IDictionary<string, object>);
-                var tt12 = typeof(IDictionary<string, string>);
-                var tt = tt11.GetGenericTypeDefinition() == tt12.GetGenericTypeDefinition();
-                var d = _Services.GetRequiredService<ICommandHandler<int, bool>>();
+                using var scope = _Services.CreateScope();
+                var s = scope.ServiceProvider.GetRequiredService<OwCommand>();
+                var eb = scope.ServiceProvider.GetRequiredService<OwEventBus>();
+                eb.AddData(new GameProp(default, default));
+                eb.RaiseEvent();
             }
             catch (Exception)
             {

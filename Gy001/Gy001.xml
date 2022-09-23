@@ -3138,14 +3138,9 @@
             获取任务状态接口返回值数据封装类。
             </summary>
         </member>
-        <member name="P:GY2021001WebApi.Models.GetMissionStateReturnDto.TIds">
+        <member name="P:GY2021001WebApi.Models.GetMissionStateReturnDto.Items">
             <summary>
-            任务模板Id的集合。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetMissionStateReturnDto.State">
-            <summary>
-            任务状态，索引与TIds对应。当前=9就是完成，否则就是没完成。
+            返回的任务对象集合。
             </summary>
         </member>
         <member name="T:GY2021001WebApi.Models.GetMissionRewardReturnDto">

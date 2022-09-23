@@ -32,7 +32,7 @@ namespace Gy01.AutoMapper.Profiles
 
             CreateMap<GameMissionItem, GameMissionItemDto>().ConstructUsing((src, context) => new GameMissionItemDto()
             {
-                MaxComplateCount = (int)(src.Template?.Properties.GetDecimalOrDefault("") ?? 0),
+                MaxComplateCount = (int)src.Template?.Properties.GetDecimalOrDefault("MaxComplateCount", decimal.MaxValue),
             }).ForMember(c => c.MaxComplateCount, opt => opt.Ignore());
 
             //DTO映射

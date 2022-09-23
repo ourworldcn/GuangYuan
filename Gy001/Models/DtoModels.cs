@@ -3534,7 +3534,7 @@ namespace GY2021001WebApi.Models
         /// <summary>
         /// 任务的模板id。
         /// </summary>
-        public Guid TId { get; set; }
+        public string TId { get; set; }
 
         /// <summary>
         /// 最后修改日期。最后一次完成任务的Utc时间。
@@ -3640,16 +3640,10 @@ namespace GY2021001WebApi.Models
     public class GetMissionStateReturnDto : ReturnDtoBase
     {
         /// <summary>
-        /// 任务模板Id的集合。
+        /// 返回的任务对象集合。
         /// </summary>
         [DataMember]
-        public List<string> TIds { get; set; } = new List<string>();
-
-        /// <summary>
-        /// 任务状态，索引与TIds对应。当前=9就是完成，否则就是没完成。
-        /// </summary>
-        [DataMember]
-        public List<int> State { get; set; } = new List<int>();
+        public List<GameMissionItemDto> Items { get; set; } = new List<GameMissionItemDto>();
     }
 
     /// <summary>

@@ -10,6 +10,7 @@ using OW.Extensions.Game.Store;
 using OW.Game.Item;
 using OW.Game.Log;
 using OW.Game.PropertyChange;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -617,33 +618,23 @@ namespace OW.Game.Mission
             if (dwUser is null)
                 return;
             var gitm = World.ItemTemplateManager;
-            List<GameMissionTemplate> list;
-            if (datas.TIds.Count == 0) //若获取所有任务状态
+
+            var mission = GameMission.FromChar(datas.GameChar);
+            if (datas.TIds.Count <= 0) //若获取所有任务状态
             {
-                datas.TIds.AddRange(World.ItemTemplateManager.Id2Mission.Keys);
-                list = World.ItemTemplateManager.Id2Mission.Values.ToList();
+                datas.TIds.AddRange(mission.Items.Select(c => c.TId));
             }
-            else
-                list = datas.TIds.Select(c =>
-                {
-                    if (!gitm.Id2Mission.TryGetValue(c, out var tt))
-                        return null;
-                    return tt;
-                }).Where(c => c != null).ToList();
-            if (list.Count != datas.TIds.Count)
+            else if (datas.TIds.Any(c => !gitm.Id2Mission.ContainsKey(c)))
             {
                 datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                 datas.DebugMessage = "至少一个任务找不到模板";
                 return;
             }
-            using MissionView view = new MissionView(datas.World, datas.GameChar);
-            for (int i = 0; i < list.Count; i++)
+            for (int i = 0; i < datas.TIds.Count; i++)
             {
                 var tid = datas.TIds[i];
-                if (view.MissionStates.TryGetValue(tid.ToString(), out var state))
-                    datas.State.Add(state);
-                else
-                    datas.State.Add(MissionState.WaitingForActivation);
+                var item = mission.GetOrCreate(tid);
+                datas.GameMissions.Add(item);
             }
         }
 
@@ -691,11 +682,6 @@ namespace OW.Game.Mission
         /// 任务模板Id的集合。空集合表示所有任务状态，返回时会填写所有任务id。
         /// </summary>
         public List<Guid> TIds { get; } = new List<Guid>();
-
-        /// <summary>
-        /// 任务状态，索引与TIds对应。当前=9就是完成，否则就是没完成。
-        /// </summary>
-        public List<MissionState> State { get; } = new List<MissionState>();
 
         /// <summary>
         /// 各个任务状态的对象集合。
@@ -748,43 +734,6 @@ namespace OW.Game.Mission
         /// 任务失败。
         /// </summary>
         Faulted = CompletionFlag | 4,
-    }
-
-    public class MissionView : GameCharGameContext
-    {
-        public MissionView([NotNull] IServiceProvider service, [NotNull] GameChar gameChar) : base(service, gameChar)
-        {
-        }
-
-        public MissionView([NotNull] VWorld world, [NotNull] GameChar gameChar) : base(world, gameChar)
-        {
-        }
-
-        public MissionView([NotNull] VWorld world, [NotNull] string token) : base(world, token)
-        {
-        }
-
-        Dictionary<string, MissionState> _MissionStates;
-
-        /// <summary>
-        /// 任务状态字典。
-        /// </summary>
-        public Dictionary<string, MissionState> MissionStates
-        {
-            get
-            {
-                if (_MissionStates is null)
-                {
-                    _MissionStates = GameChar.GetOrCreateBinaryObject<CharBinaryExProperties>().MissionStates;
-                }
-                return _MissionStates;
-            }
-        }
-
-        public override void Save()
-        {
-            base.Save();
-        }
     }
 
     public class MissionCompleteDatas : ChangeItemsAndMailWorkDatsBase

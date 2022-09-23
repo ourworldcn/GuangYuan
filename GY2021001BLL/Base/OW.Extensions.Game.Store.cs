@@ -132,11 +132,6 @@ namespace OW.Extensions.Game.Store
         public List<ChangeData> ChangeDatas { get; set; } = new List<ChangeData>();
 
         /// <summary>
-        /// 任务状态字典。
-        /// </summary>
-        public Dictionary<string, MissionState> MissionStates { get; set; } = new Dictionary<string, MissionState>();
-
-        /// <summary>
         /// 老版本持久化的变化数据。
         /// </summary>
         public List<ChangesItemSummary> ChangeItems { get; set; } = new List<ChangesItemSummary>();

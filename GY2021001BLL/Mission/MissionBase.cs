@@ -99,7 +99,7 @@ namespace OW.Game.Mission
 
         private List<GameMissionItem> _Items;
         [JsonIgnore]
-        public IReadOnlyCollection<GameMissionItem> Items => _Items ??= _Slot.Children.Select(c => GameMissionItem.From(c, Manager)).ToList();
+        public IReadOnlyCollection<GameMissionItem> Items => _Items ??= _Slot.Children.Select(c => GameMissionItem.From(c, Manager)).Where(c => c != null).ToList();
 
         /// <summary>
         /// 创建一个新任务记录项。
@@ -155,7 +155,7 @@ namespace OW.Game.Mission
         /// <summary>
         /// 已经完成的次数
         /// </summary>
-        public int ComplateCount { get => (int)_GameItem.ExtraDecimal; set => _GameItem.ExtraDecimal = value; }
+        public int ComplateCount { get => (int)(_GameItem.ExtraDecimal ?? 0); set => _GameItem.ExtraDecimal = value; }
 
         /// <summary>
         /// 任务的模板id。
@@ -167,7 +167,6 @@ namespace OW.Game.Mission
         /// </summary>
         public DateTime LastUtc { get; set; }
 
-        GameMissionTemplate _Template;
         [JsonIgnore]
         public GameMissionTemplate Template { get; set; }
     }

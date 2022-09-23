@@ -70,8 +70,8 @@ namespace Gy001.Controllers
             result.DebugMessage = datas.DebugMessage;
             if (!result.HasError)
             {
-                result.TIds.AddRange(datas.TIds.Select(c => c.ToBase64String()));
-                result.State.AddRange(datas.State.Select(c => (int)c));
+                var mapper = World.Service.GetRequiredService<IMapper>();
+                result.Items.AddRange(datas.GameMissions.Select(c => mapper.Map<GameMissionItemDto>(c)));
             }
             return result;
         }
@@ -84,13 +84,12 @@ namespace Gy001.Controllers
         [HttpPost]
         public ActionResult<CompleteMissionReturnDto> Complete(CompleteMissionParamsDto model)
         {
-            var result = new CompleteMissionReturnDto();
+            var result = new CompleteMissionReturnDto() { MissionTId = model.MissionTId };
             using var datas = new MissionCompleteDatas(World, model.Token)
             {
                 MissionTId = OwConvert.ToGuid(model.MissionTId),
             };
             World.MissionManager.Complete(datas);
-            result.MissionTId = model.MissionTId;
             result.FillFrom(datas);
             if (!result.HasError)
             {
