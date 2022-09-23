@@ -289,12 +289,12 @@ namespace GuangYuan.GY001.BLL
             var cache = world.Service.GetService<GameObjectCache>();
             var id = Guid.NewGuid();
             var sw = Stopwatch.StartNew();
-            ImmutableDictionary<string, object> dic = ImmutableDictionary.Create<string, object>();
             try
             {
-                var eventBus = _Services.GetRequiredService<OwEventBus>();
-                eventBus.AddData(new GameProp(Guid.NewGuid(),null));
-                eventBus.RaiseEvent();
+                var tt11 = typeof(IDictionary<string, object>);
+                var tt12 = typeof(IDictionary<string, string>);
+                var tt = tt11.GetGenericTypeDefinition() == tt12.GetGenericTypeDefinition();
+                var d = _Services.GetRequiredService<ICommandHandler<int, bool>>();
             }
             catch (Exception)
             {

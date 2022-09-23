@@ -3513,6 +3513,40 @@ namespace GY2021001WebApi.Models
     #endregion 社交相关
 
     #region 任务成就相关
+
+    /// <summary>
+    /// 任务完成情况的数据传输对象。
+    /// </summary>
+    public class GameMissionItemDto
+    {
+
+        public GameMissionItemDto()
+        {
+
+        }
+
+
+        /// <summary>
+        /// 已经完成的次数。
+        /// </summary>
+        public int ComplateCount { get; set; }
+
+        /// <summary>
+        /// 任务的模板id。
+        /// </summary>
+        public Guid TId { get; set; }
+
+        /// <summary>
+        /// 最后修改日期。最后一次完成任务的Utc时间。
+        /// </summary>
+        public DateTime LastUtc { get; set; }
+
+        /// <summary>
+        /// 该任务最大可完成数量。
+        /// </summary>
+        public int MaxComplateCount { get; set; }
+    }
+
     [DataContract]
     public partial class GameMissionTemplateDto
     {

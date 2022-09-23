@@ -5,6 +5,7 @@ using GuangYuan.GY001.UserDb.Combat;
 using GuangYuan.GY001.UserDb.Social;
 using GY2021001WebApi.Models;
 using OW.Extensions.Game.Store;
+using OW.Game.Mission;
 using OW.Game.PropertyChange;
 using OW.Game.Store;
 using System;
@@ -28,6 +29,11 @@ namespace Gy01.AutoMapper.Profiles
                 .ForMember(dest => dest.ObjectId, opt => opt.MapFrom((src, dest) => (src.Object as GameThingBase)?.Base64IdString ?? Guid.Empty.ToBase64String()))
                 .ForMember(dest => dest.TId, opt => opt.MapFrom((src, dest) => (src.Object as GameThingBase)?.ExtraGuid.ToBase64String() ?? Guid.Empty.ToBase64String()));
             //.ForMember(dest => dest.ObjectId, opt => opt.MapFrom(src => src.Object is GameObjectBase go ? go.Id : Guid.Empty));
+
+            CreateMap<GameMissionItem, GameMissionItemDto>().ConstructUsing((src, context) => new GameMissionItemDto()
+            {
+                MaxComplateCount = (int)(src.Template?.Properties.GetDecimalOrDefault("") ?? 0),
+            }).ForMember(c => c.MaxComplateCount, opt => opt.Ignore());
 
             //DTO映射
             //CreateMap<GameItem, GameItemDto>();

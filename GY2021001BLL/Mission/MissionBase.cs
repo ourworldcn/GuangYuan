@@ -1,10 +1,12 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using OW.Game.Item;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace OW.Game.Mission
 {
@@ -75,5 +77,98 @@ namespace OW.Game.Mission
         {
             base.Save();
         }
+    }
+
+    public class GameMission
+    {
+        public static GameMission FromChar(GameChar gameChar)
+        {
+            var slot = gameChar.GetRenwuSlot();
+            var result = slot.GetJsonObject<GameMission>();
+            result._Slot = slot;
+            return result;
+        }
+
+        public GameMission()
+        {
+
+        }
+
+        private GameItem _Slot;
+        internal GameItemTemplateManager Manager { get; set; }
+
+        private List<GameMissionItem> _Items;
+        [JsonIgnore]
+        public IReadOnlyCollection<GameMissionItem> Items => _Items ??= _Slot.Children.Select(c => GameMissionItem.From(c, Manager)).ToList();
+
+        /// <summary>
+        /// 创建一个新任务记录项。
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        internal GameMissionItem Create(Guid guid)
+        {
+            var gi = new GameItem() { ExtraGuid = guid, Parent = _Slot, ParentId = _Slot.Id };
+            _Slot.Children.Add(gi);
+            var result = GameMissionItem.From(gi, Manager);
+            if (result != null)
+                _Items?.Add(result);
+            return result;
+        }
+
+        public GameMissionItem GetOrCreate(Guid tId)
+        {
+            var result = Items.FirstOrDefault(c => c.TId == tId);
+            if (result is null)  //若没找到任务项
+            {
+                result = Create(tId);
+            }
+            return result;
+        }
+    }
+
+    public class GameMissionItem
+    {
+
+        public static GameMissionItem From(GameItem gameItem, GameItemTemplateManager manager)
+        {
+            var result = gameItem.GetJsonObject<GameMissionItem>();
+            result._GameItem = gameItem;
+            if (manager.Id2Mission.TryGetValue(gameItem.ExtraGuid, out var tt))
+                result.Template = tt;
+            else
+            {
+                OwHelper.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                OwHelper.SetLastErrorMessage($"找不到指定id的任务模板,id={gameItem.ExtraGuid}");
+                return null;
+            }
+            return result;
+        }
+
+        public GameMissionItem()
+        {
+
+        }
+
+        private GameItem _GameItem;
+
+        /// <summary>
+        /// 已经完成的次数
+        /// </summary>
+        public int ComplateCount { get => (int)_GameItem.ExtraDecimal; set => _GameItem.ExtraDecimal = value; }
+
+        /// <summary>
+        /// 任务的模板id。
+        /// </summary>
+        public Guid TId { get => _GameItem.ExtraGuid; }
+
+        /// <summary>
+        /// 最后修改日期。最后一次完成任务的Utc时间。
+        /// </summary>
+        public DateTime LastUtc { get; set; }
+
+        GameMissionTemplate _Template;
+        [JsonIgnore]
+        public GameMissionTemplate Template { get; set; }
     }
 }

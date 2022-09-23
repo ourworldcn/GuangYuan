@@ -7,10 +7,10 @@ using System.Text;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// 
+    /// 自动将类注册为服务。
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    sealed class OwAutoInjectionAttribute : Attribute
+    public sealed class OwAutoInjectionAttribute : Attribute
     {
         // See the attribute guidelines at 
         //  http://go.microsoft.com/fwlink/?LinkId=85236
@@ -18,26 +18,26 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param name="serviceLifetime">服务的生存期。</param>
-        public OwAutoInjectionAttribute(ServiceLifetime serviceLifetime)
+        /// <param name="lifetime">服务的生存期。</param>
+        public OwAutoInjectionAttribute(ServiceLifetime lifetime)
         {
-            _ServiceLifetime = serviceLifetime;
-
+            _Lifetime = lifetime;
         }
 
-        readonly ServiceLifetime _ServiceLifetime;
+        readonly ServiceLifetime _Lifetime;
         /// <summary>
         /// 获取或设置服务的类型。
         /// </summary>
-        public ServiceLifetime ServiceLifetime
+        public ServiceLifetime Lifetime
         {
-            get { return _ServiceLifetime; }
+            get { return _Lifetime; }
         }
 
         /// <summary>
-        /// 服务的类型。
+        /// 服务的类型。可能返回null,表示使用实现类相同类型的服务类型。
         /// </summary>
         public Type ServiceType { get; set; }
+
     }
 
     public static class OwAutoInjectionExtensions
@@ -48,16 +48,16 @@ namespace Microsoft.Extensions.DependencyInjection
             foreach (var item in coll)
             {
                 var att = item.GetCustomAttribute<OwAutoInjectionAttribute>();
-                switch (att.ServiceLifetime)
+                switch (att.Lifetime)
                 {
                     case ServiceLifetime.Singleton:
-                        services.AddSingleton(att.ServiceType, item);
+                        services.AddSingleton(att.ServiceType ?? item, item);
                         break;
                     case ServiceLifetime.Scoped:
-                        services.AddScoped(att.ServiceType, item);
+                        services.AddScoped(att.ServiceType ?? item, item);
                         break;
                     case ServiceLifetime.Transient:
-                        services.AddTransient(att.ServiceType, item);
+                        services.AddTransient(att.ServiceType ?? item, item);
                         break;
                     default:
                         break;

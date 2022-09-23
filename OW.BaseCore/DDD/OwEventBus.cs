@@ -11,6 +11,49 @@ using System.Text;
 namespace OW.Game
 {
 
+    public class NotificationBase : INotification
+    {
+        #region 构造函数
+
+        public NotificationBase()
+        {
+
+        }
+
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="contextId">上下文id。</param>
+        /// <param name="service">使用的服务。</param>
+        public NotificationBase(Guid contextId, IServiceProvider service)
+        {
+            ContextId = contextId;
+            Service = service;
+        }
+
+        #endregion 构造函数
+
+        /// <summary>
+        /// 上下文id,未来应对应处理当前命令的上下文对象id,目前是发送命令的角色id。
+        /// </summary>
+        public Guid ContextId { get; set; }
+
+        /// <summary>
+        /// 使用的服务容器。
+        /// </summary>
+        public IServiceProvider Service { get; set; }
+    }
+
+    public abstract class NotificationHandlerBase<T> : INotificationHandler<T> where T : INotification
+    {
+        public void Handle(object data)
+        {
+            Handle((T)data);
+        }
+
+        public abstract void Handle(T data);
+    }
+
     public class EventBusManagerOptions : IOptions<EventBusManagerOptions>
     {
         public EventBusManagerOptions Value => this;

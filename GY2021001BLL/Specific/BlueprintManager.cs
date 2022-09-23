@@ -610,6 +610,13 @@ namespace GuangYuan.GY001.BLL
                 var worker = gc.GetHomeland().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.WorkerOfHomelandTId);
                 worker.Count++;
                 LastChangesItems.AddToChanges(worker);
+
+                var ttid = new Guid("{12d52964-ea98-439a-bb07-d0306731afb8}");
+                if (gameItem.ExtraGuid == ttid)  //若要激活好友系统
+                {
+                    World.MissionManager.ActiveFriend(gc);
+                }
+
             }
             catch (Exception)
             {

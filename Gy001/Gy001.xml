@@ -3078,6 +3078,31 @@
             最好使用枚举 SocialKeyTypes 类型的值填充此集合。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GameMissionItemDto">
+            <summary>
+            任务完成情况的数据传输对象。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameMissionItemDto.ComplateCount">
+            <summary>
+            已经完成的次数。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameMissionItemDto.TId">
+            <summary>
+            任务的模板id。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameMissionItemDto.LastUtc">
+            <summary>
+            最后修改日期。最后一次完成任务的Utc时间。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameMissionItemDto.MaxComplateCount">
+            <summary>
+            该任务最大可完成数量。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.CompleteMissionParamsDto">
             <summary>
             完成任务接口的参数数据封装类。

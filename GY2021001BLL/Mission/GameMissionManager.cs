@@ -506,15 +506,17 @@ namespace OW.Game.Mission
             }
             if (template.GroupNumber != "1001") //若非工会任务
             {
-                using MissionView view = new MissionView(datas.World, datas.GameChar);
-                if (template.PreMissionIds.All(c => view.MissionStates.TryGetValue(c.ToString(), out var state) && state == MissionState.Completion))   //若可以完成
+                var mission = GameMission.FromChar(datas.GameChar);
+                mission.Manager = World.ItemTemplateManager;
+
+                var mItem = mission.GetOrCreate(datas.MissionTId);
+                if (mItem is null)
                 {
-                    if (view.MissionStates.TryGetValue(datas.MissionTId.ToString(), out var state) && state == MissionState.Completion)  //若已经完成
-                    {
-                        datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                        datas.DebugMessage = "指定任务已经完成。";
-                        return;
-                    }
+                    datas.FillErrorFromWorld();
+                    return;
+                }
+                if (mItem.ComplateCount < mItem.Template.Properties.GetDecimalOrDefault("MaxComplateCount", decimal.MaxValue))   //若可以完成
+                {
                     var gim = World.ItemManager;
                     //送物品
                     var gis = gim.ToGameItems(template.Properties, "reward");
@@ -538,8 +540,7 @@ namespace OW.Game.Mission
                         }
                     }
                     //保存数据
-                    view.MissionStates[datas.MissionTId.ToString()] = MissionState.Completion;
-                    view.Save();
+                    mItem.ComplateCount++;
                     World.CharManager.NotifyChange(datas.GameChar.GameUser);
                     if (template.IdString == "76d2f329-7f44-409f-9107-a87580f47bdb")
                     {
@@ -549,7 +550,7 @@ namespace OW.Game.Mission
                 else //有错误
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                    datas.DebugMessage = "至少一个前置任务没有完成";
+                    datas.DebugMessage = "指定任务无法完成。";
                 }
             }
             else //工会任务
@@ -592,18 +593,13 @@ namespace OW.Game.Mission
             //扫描坐骑图鉴变化
             World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.PropertyChanges);
             datas.PropertyChanges.CopyTo(datas.ChangeItems);
-            var ttid = new Guid("{55ce0c66-732f-46b9-bd8b-9d49a04bfe10}");
-            if (template.Id == ttid)  //若要激活好友系统
-            {
-                ActiveFriend(datas.GameChar);
-            }
         }
 
         /// <summary>
         /// 激活好友系统。
         /// </summary>
         /// <param name="gameChar"></param>
-        private void ActiveFriend(GameChar gameChar)
+        public void ActiveFriend(GameChar gameChar)
         {
             using var dwRobot = World.CharManager.LockOrLoad(GameCharManager.FriendRobotLoginName, out var robotUser);
             var datas = new RequestFriendData(World, robotUser.CurrentChar, gameChar.Id);
@@ -700,6 +696,11 @@ namespace OW.Game.Mission
         /// 任务状态，索引与TIds对应。当前=9就是完成，否则就是没完成。
         /// </summary>
         public List<MissionState> State { get; } = new List<MissionState>();
+
+        /// <summary>
+        /// 各个任务状态的对象集合。
+        /// </summary>
+        public List<GameMissionItem> GameMissions { get; } = new List<GameMissionItem>();
     }
 
     /// <summary>
