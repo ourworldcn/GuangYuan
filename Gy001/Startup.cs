@@ -21,6 +21,7 @@ using Microsoft.OpenApi.Models;
 using OW.Game;
 using OW.Game.PropertyChange;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -85,7 +86,7 @@ namespace Gy001
 
             services.AddAutoMapper(Array.Empty<Assembly>());
 
-            services.AutoRegister(AppDomain.CurrentDomain.GetAssemblies());
+            services.AutoRegister();
 
             #endregion 配置通用服务
 
@@ -182,8 +183,6 @@ namespace Gy001
             {
                 endpoints.MapControllers();
             });
-
-
         }
 
     }

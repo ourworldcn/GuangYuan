@@ -30,9 +30,13 @@ namespace Gy01.AutoMapper.Profiles
                 .ForMember(dest => dest.TId, opt => opt.MapFrom((src, dest) => (src.Object as GameThingBase)?.ExtraGuid.ToBase64String() ?? Guid.Empty.ToBase64String()));
             //.ForMember(dest => dest.ObjectId, opt => opt.MapFrom(src => src.Object is GameObjectBase go ? go.Id : Guid.Empty));
 
-            CreateMap<GameMissionItem, GameMissionItemDto>().ConstructUsing((src, context) => new GameMissionItemDto()
+            CreateMap<GameMissionItem, GameMissionItemDto>().ConstructUsing((src, context) =>
             {
-                MaxComplateCount = (int)src.Template?.Properties.GetDecimalOrDefault("MaxComplateCount", decimal.MaxValue),
+                var result = new GameMissionItemDto()
+                {
+                    MaxComplateCount = (int)src.Template?.Properties.GetDecimalOrDefault("MaxComplateCount", int.MaxValue),
+                };
+                return result;
             }).ForMember(c => c.MaxComplateCount, opt => opt.Ignore());
 
             //DTO映射

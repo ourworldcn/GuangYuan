@@ -155,7 +155,15 @@ namespace OW.Game.Mission
         /// <summary>
         /// 已经完成的次数
         /// </summary>
-        public int ComplateCount { get => (int)(_GameItem.ExtraDecimal ?? 0); set => _GameItem.ExtraDecimal = value; }
+        public int ComplateCount
+        {
+            get => (int)(_GameItem.ExtraDecimal ?? 0);
+            set
+            {
+                if (_GameItem != null)
+                    _GameItem.ExtraDecimal = value;
+            }
+        }
 
         /// <summary>
         /// 任务的模板id。

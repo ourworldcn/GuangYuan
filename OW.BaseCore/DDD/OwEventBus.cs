@@ -61,9 +61,9 @@ namespace OW.Game
 
     /// <summary>
     /// 事件总线服务的实现。
-    /// 该实现不专注于跨服务器边界的实施，仅考虑单机单进程内的实现，并以此为前提假设提供更多的功能。
+    /// 该实现不专注于跨服务器边界的实施，仅考虑单机单进程单应用程序域(AppDomain)内的实现，并以此为前提假设提供更多的功能。
     /// </summary>
-    public class OwEventBus
+    public class OwEventBus : IDisposable
     {
         #region 构造函数相关
 
@@ -84,12 +84,20 @@ namespace OW.Game
 
         ConcurrentQueue<INotification> _Datas = new ConcurrentQueue<INotification>();
 
-        public void AddData(INotification eventData)
+        /// <summary>
+        /// 增加一个事件数据。
+        /// </summary>
+        /// <param name="eventData"></param>
+        /// <param name="notificationType"></param>
+        public void Add(INotification eventData, Type notificationType = null)
         {
             _Datas.Enqueue(eventData);
         }
 
-        public void RaiseEvent()
+        /// <summary>
+        /// 引发队列中所有事件。
+        /// </summary>
+        public void Raise()
         {
             while (_Datas.TryDequeue(out var item))
             {
@@ -104,23 +112,62 @@ namespace OW.Game
                 }
             }
         }
+
+        #region IDisposable接口及相关
+
+        private bool disposedValue;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~OwEventBus()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion IDisposable接口及相关
     }
 
     public static class EventBusManagerExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public static IServiceCollection AddOwEventBus(this IServiceCollection services)
         {
-            return services.AddSingleton<OwEventBus>();
+            return services.AddScoped<OwEventBus>();
         }
 
         public static IServiceCollection RegisterNotificationHandler(this IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
-            var types = assemblies.SelectMany(c => c.GetExportedTypes()).Where(c => c.IsClass && !c.IsAbstract && typeof(INotificationHandler).IsAssignableFrom(c));
+            var types = assemblies.SelectMany(c => c.GetTypes()).Where(c => c.IsClass && !c.IsAbstract && typeof(INotificationHandler).IsAssignableFrom(c));
             foreach (var type in types)
             {
                 var inter = type.FindInterfaces((type, obj) => type.GenericTypeArguments?.Length == 1 ? typeof(INotificationHandler<>).MakeGenericType(type.GenericTypeArguments[0]).IsAssignableFrom(type) : false, null).FirstOrDefault();
                 if (null != inter)
-                    services.AddSingleton(inter, type);
+                    services.AddScoped(inter, type);
             }
             return services;
         }

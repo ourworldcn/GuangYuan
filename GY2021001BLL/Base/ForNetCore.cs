@@ -294,8 +294,8 @@ namespace GuangYuan.GY001.BLL
                 using var scope = _Services.CreateScope();
                 var s = scope.ServiceProvider.GetRequiredService<OwCommand>();
                 var eb = scope.ServiceProvider.GetRequiredService<OwEventBus>();
-                eb.AddData(new GameProp(default, default));
-                eb.RaiseEvent();
+                eb.Add(new GameProp(default, default));
+                eb.Raise();
             }
             catch (Exception)
             {

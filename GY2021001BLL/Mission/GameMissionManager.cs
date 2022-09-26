@@ -542,6 +542,7 @@ namespace OW.Game.Mission
                     }
                     //保存数据
                     mItem.ComplateCount++;
+                    mItem.LastUtc = DateTime.UtcNow;
                     World.CharManager.NotifyChange(datas.GameChar.GameUser);
                     if (template.IdString == "76d2f329-7f44-409f-9107-a87580f47bdb")
                     {
@@ -620,6 +621,7 @@ namespace OW.Game.Mission
             var gitm = World.ItemTemplateManager;
 
             var mission = GameMission.FromChar(datas.GameChar);
+            mission.Manager = World.ItemTemplateManager;
             if (datas.TIds.Count <= 0) //若获取所有任务状态
             {
                 datas.TIds.AddRange(mission.Items.Select(c => c.TId));

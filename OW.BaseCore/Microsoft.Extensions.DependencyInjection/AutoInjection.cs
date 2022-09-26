@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
@@ -37,13 +38,19 @@ namespace Microsoft.Extensions.DependencyInjection
         /// 服务的类型。可能返回null,表示使用实现类相同类型的服务类型。
         /// </summary>
         public Type ServiceType { get; set; }
-
     }
 
     public static class OwAutoInjectionExtensions
     {
-        public static IServiceCollection AutoRegister(this IServiceCollection services, IEnumerable<Assembly> assemblies)
+        /// <summary>
+        /// 自动注册指定程序集内的服务类型，这些类型必须是用<see cref="OwAutoInjectionAttribute"/>标记的可实例化类。
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="assemblies"></param>
+        /// <returns></returns>
+        public static IServiceCollection AutoRegister(this IServiceCollection services, IEnumerable<Assembly> assemblies = null)
         {
+            assemblies ??= AppDomain.CurrentDomain.GetAssemblies();
             var coll = assemblies.SelectMany(c => c.GetTypes()).Where(c => c.GetCustomAttribute<OwAutoInjectionAttribute>() != null);
             foreach (var item in coll)
             {

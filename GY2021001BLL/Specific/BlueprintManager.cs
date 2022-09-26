@@ -929,23 +929,27 @@ namespace GuangYuan.GY001.BLL
             GameItemManager gim = World.ItemManager;
             GameItemTemplate template = gim.GetTemplateFromeId(gi.ExtraGuid); //物品的模板对象
             #region 等级校验
-            if (template.Properties.TryGetDecimal("mbnlv", out decimal mbnlv))    //若需要根据主控室等级限定升级
+            var oldLv = (int)gi.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);
+            if (oldLv > 0)
             {
-                GameItem mb = hl.GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.HomelandSlotId);    //主控室
-                decimal mbLv = mb.GetDecimalWithFcpOrDefault(GameThingTemplateBase.LevelPrefix, 0m); //当前主控室等级
-                if (!datas.Verify(mbLv >= mbnlv, "主控室等级过低，不能升级指定物品。", gi.ExtraGuid))
+                if (template.Properties.TryGetDecimal("mbnlv", out decimal mbnlv))    //若需要根据主控室等级限定升级
                 {
+                    GameItem mb = hl.GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.HomelandSlotId);    //主控室
+                    decimal mbLv = mb.GetDecimalWithFcpOrDefault(GameThingTemplateBase.LevelPrefix, 0m); //当前主控室等级
+                    if (!datas.Verify(mbLv >= mbnlv, "主控室等级过低，不能升级指定物品。", gi.ExtraGuid))
+                    {
+                        return;
+                    }
+                }
+                var charLv = datas.GameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);    //角色等级
+                var giLv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName); //升级物品等级
+                var innerCount = (charLv - giLv); //计算实际可以升级的次数
+                if (charLv < 0)   //若角色等级不足（同等级可以升级）
+                {
+                    datas.HasError = true;
+                    datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
                     return;
                 }
-            }
-            var charLv = datas.GameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);    //角色等级
-            var giLv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName); //升级物品等级
-            var innerCount = (charLv - giLv); //计算实际可以升级的次数
-            if (charLv <= 0)   //若橘色等级不足
-            {
-                datas.HasError = true;
-                datas.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
-                return;
             }
             #endregion 等级校验
 

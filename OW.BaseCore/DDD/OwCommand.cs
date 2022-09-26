@@ -11,7 +11,7 @@ namespace OW.DDD
     /// 命令服务。
     /// </summary>
     [OwAutoInjection(ServiceLifetime.Scoped)]
-    public class OwCommand:IDisposable
+    public class OwCommand : IDisposable
     {
         public OwCommand()
         {
@@ -69,5 +69,15 @@ namespace OW.DDD
             var coll = assemblies.SelectMany(c => c.GetTypes()).Where(c => c.GetGenericTypeDefinition() == typeof(ICommandHandler<,>));
             return services;
         }
+    }
+
+    public class CommandBase
+    {
+
+    }
+
+    public abstract class CommandHandlerBase<TRequest, TResponse> : ICommandHandler<TRequest, TResponse>
+    {
+        public abstract TResponse Handle(TRequest datas);
     }
 }
