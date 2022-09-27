@@ -9,7 +9,7 @@ namespace OW.Game
     {
     }
 
-    public abstract class GameCommandHandlerBase<TRequest, TResponse> : CommandHandlerBase<TRequest, TResponse>
+    public abstract class GameCommandHandlerBase<TRequest, TResponse> : CommandHandlerBase<TRequest, TResponse> where TRequest : ICommand<TRequest>
     {
 
     }

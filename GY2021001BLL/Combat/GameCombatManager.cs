@@ -931,12 +931,15 @@ namespace GuangYuan.GY001.BLL
                 GameCombat.FillSoldierBefroeCombat(datas.GameChar, attacker, World);
                 var defener = combat.Defensers.First();
                 GameCombat.FillSoldierBefroeCombat(otherChar, defener, World);
+
                 var pvpAttacker = datas.GameChar.GetPvpObject();
                 var pvpDefenser = otherChar.GetPvpObject();
                 if (datas.MainRoomRhp <= 0)    //若进攻方胜利
                 {
                     var inc = Math.Clamp(1 + Math.Round((decimal)Math.Max(defener.ScoreBefore - attacker.ScoreBefore, 0) / 10, MidpointRounding.ToPositiveInfinity), 0, 6); //分值增量
+                    attacker.ScoreAfter = (int)(pvpAttacker.ExtraDecimal + inc);
                     datas.PropertyChanges.ModifyAndAddChanged(pvpAttacker, nameof(pvpAttacker.ExtraDecimal), pvpAttacker.ExtraDecimal + inc);
+                    defener.ScoreAfter = (int)(pvpDefenser.ExtraDecimal - inc);
                     datas.PropertyChanges.ModifyAndAddChanged(pvpDefenser, nameof(pvpDefenser.ExtraDecimal), pvpDefenser.ExtraDecimal - inc);
                 }
                 else //若进攻方失败

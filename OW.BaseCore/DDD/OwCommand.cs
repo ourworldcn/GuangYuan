@@ -26,7 +26,7 @@ namespace OW.DDD
         IServiceProvider _Service;
         private bool disposedValue;
 
-        public TR Handle<TI, TR>(TI command)
+        public TR Handle<TI, TR>(TI command) where TI : ICommand<TI>
         {
             var svc = _Service.GetService<ICommandHandler<TI, TR>>();
             return svc.Handle(command);
@@ -76,7 +76,7 @@ namespace OW.DDD
 
     }
 
-    public abstract class CommandHandlerBase<TRequest, TResponse> : ICommandHandler<TRequest, TResponse>
+    public abstract class CommandHandlerBase<TRequest, TResponse> : ICommandHandler<TRequest, TResponse> where TRequest : ICommand<TRequest>
     {
         public abstract TResponse Handle(TRequest datas);
     }

@@ -173,23 +173,4 @@ namespace OW.Game
         }
     }
 
-    public class GameProp : NotificationBase
-    {
-
-        public GameProp(Guid contextId, IServiceProvider service) : base(contextId, service)
-        {
-        }
-    }
-
-    public class MyClass : INotificationHandler<GameProp>
-    {
-        public MyClass(OwEventBus eventBus)
-        {
-
-        }
-
-        public void Handle(object data)
-        {
-        }
-    }
 }

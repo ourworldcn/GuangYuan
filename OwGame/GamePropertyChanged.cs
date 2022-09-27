@@ -229,7 +229,24 @@ namespace OW.Game.PropertyChange
                 arg.OldValue = old;
                 arg.HasOldValue = true;
             }
-            obj.Properties[name] = newValue;
+            switch (name)
+            {
+                case nameof(IDbQuickFind.ExtraDecimal):
+                    if (obj is IDbQuickFind dbFinder && OwConvert.TryToDecimal(newValue, out var dec))
+                        dbFinder.ExtraDecimal = dec;
+                    else
+                        obj.Properties[name] = newValue;
+                    break;
+                case nameof(IDbQuickFind.ExtraString):
+                    if (obj is IDbQuickFind dbFinder1)
+                        dbFinder1.ExtraString = newValue.ToString();
+                    else
+                        obj.Properties[name] = newValue;
+                    break;
+                default:
+                    obj.Properties[name] = newValue;
+                    break;
+            }
             arg.NewValue = newValue;
             arg.HasNewValue = true;
             collection.Add(arg);

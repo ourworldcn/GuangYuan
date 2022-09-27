@@ -83,21 +83,6 @@
       <FileName>DDD\OwEventBus.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.GameProp" Collapsed="true">
-    <Position X="0.5" Y="2.25" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>DDD\OwEventBus.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="OW.Game.MyClass" Collapsed="true" BaseTypeListCollapsed="true">
-    <Position X="7.75" Y="2" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAA=</HashCode>
-      <FileName>DDD\OwEventBus.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" Collapsed="true" />
-  </Class>
   <Interface Name="OW.DDD.IEntity" Collapsed="true">
     <Position X="3.5" Y="1" Width="1.5" />
     <TypeIdentifier>
@@ -112,21 +97,7 @@
       <FileName>DDD\Seedwork\Base.cs</FileName>
     </TypeIdentifier>
   </Interface>
-  <Interface Name="OW.DDD.INotificationHandler" Collapsed="true">
-    <Position X="0.5" Y="4" Width="2.75" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAA=</HashCode>
-      <FileName>DDD\Seedwork\Base.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="OW.DDD.INotificationHandler&lt;T&gt;">
-    <Position X="0.5" Y="5.25" Width="2.75" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>DDD\Seedwork\Base.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="OW.DDD.IRequest&lt;T&gt;" Collapsed="true">
+  <Interface Name="OW.DDD.ICommand&lt;T&gt;" Collapsed="true">
     <Position X="11.25" Y="4.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
