@@ -96,9 +96,6 @@ namespace GuangYuan.GY001.UserDb.Social
         }
 
         #endregion 构造函数
-        GameObjectCache _Cache;
-        public GameObjectCache Cache => _Cache ??= Service.GetRequiredService<GameObjectCache>();
-
         ConcurrentDictionary<Guid, GameGuild> _Id2Guild = new ConcurrentDictionary<Guid, GameGuild>();
 
         /// <summary>
@@ -237,6 +234,13 @@ namespace GuangYuan.GY001.UserDb.Social
         /// <param name="expInc"></param>
         public void Upgrade(GameGuild guild, decimal expInc, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
+            if(!Lock(guild.Id,Options.DefaultTimeout,out guild))    //若没有能够锁定工会
+            {
+                OwHelper.SetLastError(ErrorCodes.WAIT_TIMEOUT);
+                return;
+            }
+            using var dw = DisposeHelper.Create(c => Unlock(c), guild);
+
             var exp = guild.GetDecimalWithFcpOrDefault("exp");  //经验
             var tt = guild.GetTemplate();
             if (!(tt.Properties.GetValueOrDefault("expLimit", Array.Empty<decimal>()) is decimal[] ary) || ary.Length < 1) //若没有升级要求
@@ -247,6 +251,8 @@ namespace GuangYuan.GY001.UserDb.Social
             if (index > -1 && index != lv + 1)    //若找到了匹配项
                 World.ItemManager.SetLevel(guild, index + 1, changes);
             guild.SetPropertyAndMarkChanged("exp", exp, changes);
+            guild.GetDbContext().SaveChanges();
+
         }
         #endregion 基础操作
 

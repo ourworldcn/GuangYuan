@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="OW.Game.GameCommandBase&lt;T&gt;">
+    <Position X="1" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DDD\GameCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.GameCommandResultBase&lt;T&gt;">
+    <Position X="1.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DDD\GameCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.Game.GameCommandHandlerBase&lt;TRequest, TResponse&gt;">
+    <Position X="3" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DDD\GameCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OW.DDD.CommandHandlerBase&lt;TRequest, TResponse&gt;" Collapsed="true">
+    <Position X="3" Y="0.75" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Font Name="Microsoft YaHei UI" Size="9" />
+</ClassDiagram>

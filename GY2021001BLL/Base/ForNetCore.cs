@@ -291,6 +291,7 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
+                var hr = new NotImplementedException().HResult;
             }
             catch (Exception)
             {

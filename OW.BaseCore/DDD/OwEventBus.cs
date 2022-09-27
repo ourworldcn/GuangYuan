@@ -11,7 +11,7 @@ using System.Text;
 namespace OW.Game
 {
 
-    public class NotificationBase : INotification
+    public abstract class NotificationBase : INotification
     {
         #region 构造函数
 
@@ -20,28 +20,8 @@ namespace OW.Game
 
         }
 
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        /// <param name="contextId">上下文id。</param>
-        /// <param name="service">使用的服务。</param>
-        public NotificationBase(Guid contextId, IServiceProvider service)
-        {
-            ContextId = contextId;
-            Service = service;
-        }
-
         #endregion 构造函数
 
-        /// <summary>
-        /// 上下文id,未来应对应处理当前命令的上下文对象id,目前是发送命令的角色id。
-        /// </summary>
-        public Guid ContextId { get; set; }
-
-        /// <summary>
-        /// 使用的服务容器。
-        /// </summary>
-        public IServiceProvider Service { get; set; }
     }
 
     public abstract class NotificationHandlerBase<T> : INotificationHandler<T> where T : INotification
@@ -67,6 +47,10 @@ namespace OW.Game
     {
         #region 构造函数相关
 
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        /// <param name="service">范围服务，需要此接口，以获取其它事件处理接口。</param>
         public OwEventBus(IServiceProvider service)
         {
             _Service = service;
@@ -88,7 +72,7 @@ namespace OW.Game
         /// 增加一个事件数据。
         /// </summary>
         /// <param name="eventData"></param>
-        /// <param name="notificationType"></param>
+        /// <param name="notificationType">保留未用。</param>
         public void Add(INotification eventData, Type notificationType = null)
         {
             _Datas.Enqueue(eventData);
@@ -115,19 +99,20 @@ namespace OW.Game
 
         #region IDisposable接口及相关
 
-        private bool disposedValue;
+        private bool _IsDisposed;
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_IsDisposed)
             {
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
-                disposedValue = true;
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
+                _Datas = null;
+                _IsDisposed = true;
             }
         }
 

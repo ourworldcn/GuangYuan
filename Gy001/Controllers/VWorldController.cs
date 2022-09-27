@@ -1,10 +1,12 @@
 ﻿using GuangYuan.GY001.BLL;
+using GuangYuan.GY001.BLL.Social;
 using GuangYuan.GY001.TemplateDb;
 using GY2021001WebApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OW.DDD;
 using OW.Game;
 using System;
 using System.Collections.Generic;
@@ -106,13 +108,17 @@ namespace GY2021001WebApi.Controllers
         [HttpGet]
         public ActionResult<GetRankOfTuiguanQueryReturnDto> GetRankOfTuiguanQuery()
         {
-            var coll = _World.GetRankOfTuiguanQuery(50);
+            var command = new GetTotalPowerTopRankCommand() { Top = 50 };
+
+            var svc = HttpContext.RequestServices.GetRequiredService<OwCommandManager>();
+            var commandResult = svc.Handle<GetTotalPowerTopRankCommand, GetTotalPowerTopRankCommandResult>(command);
+
             var result = new GetRankOfTuiguanQueryReturnDto();
-            result.Datas.AddRange(coll.Select(c => new RankDataItemDto
+            result.Datas.AddRange(commandResult.ResultCollction.Select(c => new RankDataItemDto
             {
                 CharId = c.Item1.ToBase64String(),
-                DisplayName=c.Item3,
-                Metrics=c.Item2,
+                DisplayName = c.Item3,
+                Metrics = c.Item2,
             }));
             for (int i = 0; i < result.Datas.Count; i++)
             {

@@ -588,28 +588,6 @@ namespace OW.Game
         public bool IsHit(double val, Random random = null) =>
             (random ?? WorldRandom).NextDouble() < val;
 
-        #region 功能
-
-        /// <summary>
-        /// 获取全服推关战力排名前n位成员。
-        /// </summary>
-        /// <param name="topN">前多少位的排名。过大的值将导致缓慢，设计时考虑100左右。</param>
-        /// <returns></returns>
-        public IList<(Guid, decimal, string)> GetRankOfTuiguanQuery(int topN)
-        {
-            using var db = CreateNewUserDbContext();
-            var coll = from slot in db.Set<GameItem>()
-                       where slot.ExtraGuid == ProjectConstant.TuiGuanTId
-                       join parent in db.Set<GameItem>()
-                       on slot.ParentId equals parent.Id
-                       join gc in db.Set<GameChar>()
-                       on parent.OwnerId equals gc.Id
-                       //orderby slot.ExtraDecimal.Value descending, gc.Id
-                       select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value };
-            var result = coll.AsNoTracking().OrderByDescending(c => c.Value).ThenBy(c => c.Id).Take(topN).AsEnumerable().Select(c => (c.Id, c.Value, c.DisplayName));
-            return result.ToList();
-        }
-        #endregion 功能
     }
 
     public static class VWorldExtensions

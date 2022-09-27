@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -11,14 +12,14 @@ namespace OW.DDD
     /// 命令服务。
     /// </summary>
     [OwAutoInjection(ServiceLifetime.Scoped)]
-    public class OwCommand : IDisposable
+    public class OwCommandManager : IDisposable
     {
-        public OwCommand()
+        public OwCommandManager()
         {
 
         }
 
-        public OwCommand(IServiceProvider service)
+        public OwCommandManager(IServiceProvider service)
         {
             _Service = service;
         }
@@ -26,10 +27,16 @@ namespace OW.DDD
         IServiceProvider _Service;
         private bool disposedValue;
 
-        public TR Handle<TI, TR>(TI command) where TI : ICommand<TI>
+        public TResult Handle<TCommand, TResult>(TCommand command) where TCommand : ICommand<TCommand>
         {
-            var svc = _Service.GetService<ICommandHandler<TI, TR>>();
-            return svc.Handle(command);
+            var svc = _Service.GetService<ICommandHandler<TCommand, TResult>>();
+            if (svc is null)
+            {
+                OwHelper.SetLastError(120);
+                return default(TResult);
+            }
+            else
+                return svc.Handle(command);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -71,13 +78,44 @@ namespace OW.DDD
         }
     }
 
-    public class CommandBase
+    public abstract class CommandBase<T> : ICommand<T>
     {
+    }
+
+    public abstract class CommandResultBase<T> : ICommandResult<T>
+    {
+        private bool? _HasError;
+
+        /// <summary>
+        /// 是否有错误。不设置则使用<see cref="ErrorCode"/>来判定。
+        /// </summary>
+        /// <value>0没有错误，其它数值含义由应用定义。</value>
+        public bool HasError { get => _HasError ??= ErrorCode != 0; set => _HasError = value; }
+
+
+        /// <summary>
+        /// 错误码。
+        /// </summary>
+        public int ErrorCode { get; set; }
+
+        /// <summary>
+        /// 调试用的提示性信息。
+        /// </summary>
+        private string _ErrorMessage;
+
+        /// <summary>
+        /// 调试信息，如果发生错误，这里给出简要说明。
+        /// </summary>
+        public string DebugMessage
+        {
+            get => _ErrorMessage ??= new Win32Exception(ErrorCode).Message;
+            set => _ErrorMessage = value;
+        }
 
     }
 
     public abstract class CommandHandlerBase<TRequest, TResponse> : ICommandHandler<TRequest, TResponse> where TRequest : ICommand<TRequest>
     {
-        public abstract TResponse Handle(TRequest datas);
+        public abstract TResponse Handle(TRequest command);
     }
 }

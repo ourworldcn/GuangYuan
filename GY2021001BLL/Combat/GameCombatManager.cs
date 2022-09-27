@@ -886,7 +886,7 @@ namespace GuangYuan.GY001.BLL
 
                 var woodGi = new GameItem();    //木材
                 World.EventsManager.GameItemCreated(woodGi, ProjectConstant.MucaiId);
-                woodGi.Count = (10 + wood * 0.2m + shulin * 0.5m) * (1 - datas.MainRoomRhp);
+                woodGi.Count = (50 + wood * 0.2m + shulin * 0.5m) * (1 - datas.MainRoomRhp);
                 result.Add(goldGi);
                 result.Add(woodGi);
                 return result;

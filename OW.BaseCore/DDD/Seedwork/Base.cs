@@ -68,13 +68,4 @@ namespace OW.DDD
 
     }
 
-    public interface ICommand<T>
-    {
-
-    }
-
-    public interface ICommandHandler<in TRequest, out TResponse> where TRequest : ICommand<TRequest>
-    {
-        public TResponse Handle(TRequest datas);
-    }
 }

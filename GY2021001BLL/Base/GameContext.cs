@@ -231,7 +231,8 @@ namespace OW.Game
         /// <summary>
         /// 是否有错误。不设置则使用<see cref="ErrorCode"/>来判定。
         /// </summary>
-        public bool HasError { get => _HasError ??= ErrorCode != ErrorCodes.NO_ERROR; set => _HasError = value; }
+        /// <value>0没有错误，其它数值含义由应用定义。</value>
+        public bool HasError { get => _HasError ??= ErrorCode != 0; set => _HasError = value; }
 
         /// <summary>
         /// 错误码，参见 ErrorCodes。

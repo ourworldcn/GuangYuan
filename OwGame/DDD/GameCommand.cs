@@ -5,7 +5,11 @@ using System.Text;
 
 namespace OW.Game
 {
-    public class GameCommandBase : CommandBase
+    public abstract class GameCommandBase<T> : CommandBase<T>
+    {
+    }
+
+    public abstract class GameCommandResultBase<T> : CommandResultBase<T>
     {
     }
 

@@ -776,7 +776,7 @@ namespace OW.Game.Item
                        where slot.ExtraGuid == ProjectConstant.TuiGuanTId
                        join parent in db.Set<GameItem>()
                        on slot.ParentId equals parent.Id
-                       join gc in db.Set<GameChar>()
+                       join gc in db.Set<GameChar>().Where(gc => !gc.CharType.HasFlag(CharType.SuperAdmin) && !gc.CharType.HasFlag(CharType.Admin) && !gc.CharType.HasFlag(CharType.Npc) && !gc.CharType.HasFlag(CharType.Robot))
                        on parent.OwnerId equals gc.Id
                        select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value, gc.PropertiesString };
             //gc.Properties.GetDecimalOrDefault("charIcon", 0)
