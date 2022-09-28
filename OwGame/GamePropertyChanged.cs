@@ -17,6 +17,56 @@ namespace OW.Game.PropertyChange
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class GamePropertyChangeItem<T> : ICloneable
     {
+        #region 静态函数
+
+        /// <summary>
+        /// 修改一个对象的属性，并正确填写变化数据。
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        /// <param name="newValue"></param>
+        /// <param name="tag"></param>
+        public static void ChangeAndMake(ICollection<GamePropertyChangeItem<T>> collection, SimpleDynamicPropertyBase obj, string name, T newValue, object tag = null)
+        {
+            Debug.Assert(name != "Children");
+            if (collection is null)
+            {
+
+            }
+            //TODO 需要修改
+            var arg = GamePropertyChangeItemPool<T>.Shared.Get();
+            arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
+            if (obj.Properties.TryGetValue(name, out var oldValue) && oldValue is T old)
+            {
+                arg.OldValue = old;
+                arg.HasOldValue = true;
+            }
+            switch (name)
+            {
+                case nameof(IDbQuickFind.ExtraDecimal):
+                    if (obj is IDbQuickFind dbFinder && OwConvert.TryToDecimal(newValue, out var dec))
+                        dbFinder.ExtraDecimal = dec;
+                    else
+                        obj.Properties[name] = newValue;
+                    break;
+                case nameof(IDbQuickFind.ExtraString):
+                    if (obj is IDbQuickFind dbFinder1)
+                        dbFinder1.ExtraString = newValue.ToString();
+                    else
+                        obj.Properties[name] = newValue;
+                    break;
+                default:
+                    obj.Properties[name] = newValue;
+                    break;
+            }
+            arg.NewValue = newValue;
+            arg.HasNewValue = true;
+            collection.Add(arg);
+        }
+
+        #endregion 静态函数
+
         #region 构造函数及相关
 
         public GamePropertyChangeItem()
@@ -182,10 +232,12 @@ namespace OW.Game.PropertyChange
             {
                 obj.Object = default;
                 obj.PropertyName = default;
+
                 obj.HasOldValue = default;
                 obj.OldValue = default;
                 obj.HasNewValue = default;
                 obj.NewValue = default;
+
                 obj.DateTimeUtc = default;
                 obj.Tag = default;
                 return true;

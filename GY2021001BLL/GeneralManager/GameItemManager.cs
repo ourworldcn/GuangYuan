@@ -6,6 +6,7 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OW.Extensions.Game.Store;
 using OW.Game.PropertyChange;
 using OW.Game.Store;
@@ -928,7 +929,7 @@ namespace OW.Game.Item
             }
             else
             {
-                result = gameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == tid && c.Parent.ExtraGuid == ptid);
+                result = gameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == tid && c.Parent?.ExtraGuid == ptid);
                 if (result is null) //若需要创建
                 {
                     result = new GameItem();

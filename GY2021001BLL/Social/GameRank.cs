@@ -29,7 +29,7 @@ namespace GuangYuan.GY001.BLL.Social
     /// <summary>
     /// 获取全服推关战力排名前n位成员命令的返回值。
     /// </summary>
-    public class GetTotalPowerTopRankCommandResult : GameCommandResultBase<GetTotalPowerTopRankCommandResult>
+    public class GetTotalPowerTopRankCommandResult : GameCommandResult<GetTotalPowerTopRankCommandResult>
     {
         public GetTotalPowerTopRankCommandResult()
         {
@@ -45,8 +45,7 @@ namespace GuangYuan.GY001.BLL.Social
     /// <summary>
     /// 获取全服推关战力排名前n位成员命令处理程序。
     /// </summary>
-    [OwAutoInjection(ServiceLifetime.Scoped, ServiceType = typeof(ICommandHandler<GetTotalPowerTopRankCommand, GetTotalPowerTopRankCommandResult>))]
-    public class GetTotalPowerTopRankCommandHandler : GameCommandHandlerBase<GetTotalPowerTopRankCommand, GetTotalPowerTopRankCommandResult>
+    public class GetTotalPowerTopRankCommandHandler : GameCommandHandler<GetTotalPowerTopRankCommand, GetTotalPowerTopRankCommandResult>
     {
         public GetTotalPowerTopRankCommandHandler()
         {

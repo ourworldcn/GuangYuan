@@ -11,7 +11,6 @@ namespace OW.DDD
     /// <summary>
     /// 命令服务。
     /// </summary>
-    [OwAutoInjection(ServiceLifetime.Scoped)]
     public class OwCommandManager : IDisposable
     {
         public OwCommandManager()
@@ -71,10 +70,21 @@ namespace OW.DDD
 
     public static class OwCommandExtensions
     {
-        public static IServiceCollection Register(this IServiceCollection services, IEnumerable<Assembly> assemblies)
+        public static IServiceCollection RegisterCommandHandler(this IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
-            var coll = assemblies.SelectMany(c => c.GetTypes()).Where(c => c.GetGenericTypeDefinition() == typeof(ICommandHandler<,>));
+            var coll = from tmp in assemblies.SelectMany(c => c.GetTypes())
+                       let i = tmp.FindInterfaces((c1, c2) => c1.IsGenericType && c1.GetGenericTypeDefinition() == typeof(ICommandHandler<,>), null).FirstOrDefault()
+                       where i != null && tmp.IsClass && !tmp.IsAbstract
+                       select (Type: tmp, @interface: i);
+            foreach (var item in coll)
+            {
+                services.AddSingleton(item.@interface, item.Type);
+            }
             return services;
+        }
+        public static IServiceCollection AddCommandManager(this IServiceCollection services)
+        {
+            return services.AddScoped(typeof(OwCommandManager));
         }
     }
 

@@ -5,12 +5,12 @@
 
 namespace OW.DDD
 {
-    public interface ICommand<T>
+    public interface ICommand<out T>
     {
-
+        
     }
 
-    public interface ICommandResult<T>
+    public interface ICommandResult<out T>
     {
         /// <summary>
         /// 错误码。

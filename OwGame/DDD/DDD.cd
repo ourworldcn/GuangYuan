@@ -7,19 +7,20 @@
       <FileName>DDD\GameCommand.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.GameCommandResultBase&lt;T&gt;">
+  <Class Name="OW.Game.GameCommandResult&lt;T&gt;">
     <Position X="1.75" Y="4.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>DDD\GameCommand.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OW.Game.GameCommandHandlerBase&lt;TRequest, TResponse&gt;">
+  <Class Name="OW.Game.GameCommandHandler&lt;TRequest, TResponse&gt;">
     <Position X="3" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAACAACAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>DDD\GameCommand.cs</FileName>
     </TypeIdentifier>
+    <Lollipop Position="0.2" />
   </Class>
   <Class Name="OW.DDD.CommandHandlerBase&lt;TRequest, TResponse&gt;" Collapsed="true">
     <Position X="3" Y="0.75" Width="1.5" />

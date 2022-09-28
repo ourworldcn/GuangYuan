@@ -291,7 +291,8 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                var hr = new NotImplementedException().HResult;
+                var noti = new WithChangesNotification(new List<GamePropertyChangeItem<object>>());
+
             }
             catch (Exception)
             {
@@ -442,7 +443,9 @@ namespace GuangYuan.GY001.BLL
 
             services.AddSingleton<GameObjectCache>();
 
+            services.AddCommandManager().RegisterCommandHandler(AppDomain.CurrentDomain.GetAssemblies());
             services.AddOwEventBus().RegisterNotificationHandler(AppDomain.CurrentDomain.GetAssemblies());
+
             #endregion 基础服务
 
             #region 游戏专用服务

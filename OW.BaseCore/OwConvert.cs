@@ -310,15 +310,9 @@ namespace System
         public static string ToString(IReadOnlyDictionary<string, object> dic)
         {
             StringBuilder sb = StringBuilderPool.Shared.Get();
-            try
-            {
-                Copy(dic, sb);
-                return sb.ToString();
-            }
-            finally
-            {
-                StringBuilderPool.Shared.Return(sb);
-            }
+            using var dw = DisposeHelper.Create(c => StringBuilderPool.Shared.Return(c), sb);
+            Copy(dic, sb);
+            return sb.ToString();
         }
 
         #endregion 字典相关转换
