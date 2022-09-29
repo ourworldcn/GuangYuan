@@ -428,7 +428,7 @@ namespace Microsoft.Extensions.Caching.Memory
             }
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
         // ~DataObjectCache()
         // {
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中

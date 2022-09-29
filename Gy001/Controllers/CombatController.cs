@@ -137,10 +137,27 @@ namespace GY2021001WebApi.Controllers
                 DestroyCountOfWoodStore = model.DestroyCountOfWoodStore,
             };
             datas.DestroyTIds.AddRange(model.Destroy.Select(c => (ValueTuple<Guid, decimal>)c));
+            var mapper = World.Service.GetRequiredService<IMapper>();
+#if DEBUG
+            if (model.Booty.Count <= 0)
+            {
+                model.Booty.Add(new GameItemDto()
+                {
+                    Id = Guid.NewGuid().ToBase64String(),
+                    ExtraGuid = ProjectConstant.JinbiId.ToBase64String(),
+                    Count = 100,
+                });
+            }
+#endif
+            datas.Booty.AddRange(model.Booty.Select(c =>
+            {
+                var result = mapper.Map<GameItem>(c);
+                result.Count = c.Count;
+                return result;
+            }));
 
             World.CombatManager.EndCombatPvp(datas);
             result.FillFrom(datas);
-            var mapper = World.Service.GetRequiredService<IMapper>();
             if (!result.HasError)
             {
                 result.Combat = mapper.Map<GameCombatDto>(datas.Combat);

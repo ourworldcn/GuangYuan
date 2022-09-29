@@ -2703,6 +2703,7 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public int DestroyCountOfWoodStore { get; set; }
+
     }
 
     [DataContract]

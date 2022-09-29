@@ -22,47 +22,47 @@ namespace OW.Game.PropertyChange
         /// <summary>
         /// 修改一个对象的属性，并正确填写变化数据。
         /// </summary>
-        /// <param name="collection"></param>
+        /// <param name="collection">可以是空引用，若null则忽略。</param>
         /// <param name="obj"></param>
         /// <param name="name"></param>
         /// <param name="newValue"></param>
         /// <param name="tag"></param>
-        public static void ChangeAndMake(ICollection<GamePropertyChangeItem<T>> collection, SimpleDynamicPropertyBase obj, string name, T newValue, object tag = null)
+        public static void ModifyAndAddChanged([AllowNull] ICollection<GamePropertyChangeItem<T>> collection, ISimpleDynamicExtensionProperty<T> obj, string name, T newValue, object tag = null)
         {
             Debug.Assert(name != "Children");
             if (collection is null)
             {
+                obj.SetSdep(name, newValue);
+            }
+            else
+            {
+                var arg = Create(obj, name, newValue, tag);
+                obj.SetSdep(name, newValue);
+                collection.Add(arg);
+            }
+        }
 
-            }
-            //TODO 需要修改
-            var arg = GamePropertyChangeItemPool<T>.Shared.Get();
-            arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
-            if (obj.Properties.TryGetValue(name, out var oldValue) && oldValue is T old)
+        /// <summary>
+        /// 创建并返回一个标识指定变换的对象。
+        /// </summary>
+        /// <param name="sdep"></param>
+        /// <param name="name"></param>
+        /// <param name="newValue"></param>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static GamePropertyChangeItem<T> Create(ISimpleDynamicExtensionProperty<T> sdep, string name, T newValue, object tag = null)
+        {
+            var result = GamePropertyChangeItemPool<T>.Shared.Get();
+            result.Object = sdep; result.PropertyName = name; result.Tag = tag;
+            if (sdep.TryGetSdep(name, out var oldValue) && oldValue is T old)
             {
-                arg.OldValue = old;
-                arg.HasOldValue = true;
+                result.OldValue = old;
+                result.HasOldValue = true;
             }
-            switch (name)
-            {
-                case nameof(IDbQuickFind.ExtraDecimal):
-                    if (obj is IDbQuickFind dbFinder && OwConvert.TryToDecimal(newValue, out var dec))
-                        dbFinder.ExtraDecimal = dec;
-                    else
-                        obj.Properties[name] = newValue;
-                    break;
-                case nameof(IDbQuickFind.ExtraString):
-                    if (obj is IDbQuickFind dbFinder1)
-                        dbFinder1.ExtraString = newValue.ToString();
-                    else
-                        obj.Properties[name] = newValue;
-                    break;
-                default:
-                    obj.Properties[name] = newValue;
-                    break;
-            }
-            arg.NewValue = newValue;
-            arg.HasNewValue = true;
-            collection.Add(arg);
+            result.NewValue = newValue;
+            result.HasNewValue = true;
+            return result;
         }
 
         #endregion 静态函数

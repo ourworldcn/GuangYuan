@@ -23,7 +23,10 @@ namespace Gy01.AutoMapper.Profiles
             IncludeSourceExtensionMethods(typeof(GuangYuan.GY001.UserDb.GameThingBaseExtensions));
             //基础类型映射
             CreateMap<Guid, string>().ConstructUsing(c => c.ToBase64String());
+            CreateMap<string, Guid>().ConstructUsing(c => OwConvert.ToGuid(c));
+
             CreateMap<ChangeItem, ChangesItemDto>();
+            CreateMap<ChangesItemDto, ChangeItem>();
 
             CreateMap<GamePropertyChangeItem<object>, GamePropertyChangeItemDto>()
                 .ForMember(dest => dest.ObjectId, opt => opt.MapFrom((src, dest) => (src.Object as GameThingBase)?.Base64IdString ?? Guid.Empty.ToBase64String()))
@@ -40,8 +43,8 @@ namespace Gy01.AutoMapper.Profiles
             }).ForMember(c => c.MaxComplateCount, opt => opt.Ignore());
 
             //DTO映射
-            //CreateMap<GameItem, GameItemDto>();
-            CreateMap<GameItem, GameItemDto>().ReverseMap();
+            CreateMap<GameItem, GameItemDto>();
+            CreateMap<GameItemDto, GameItem>().ConstructUsing(src => new GameItem() { Count = src.Count }).ForMember(dest => dest.Count, opt => opt.Ignore());
 
             CreateMap<LoginT89ParamsDto, T89LoginData>();
             //CreateMap<GameGuildEntity, Dictionary<string, object>>().ConstructUsing((src, context) =>

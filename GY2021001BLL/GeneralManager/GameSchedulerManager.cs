@@ -266,34 +266,34 @@ namespace GuangYuan.GY001.BLL
             method?.Invoke(service, new object[] { data });
         }
 
-        private void Upgraded(SchedulerDescriptor data)
-        {
-            var dic = data.Properties;
-            var charId = dic.GetGuidOrDefault("charId");    //角色Id
-            var itemId = dic.GetGuidOrDefault("itemId");    //物品Id
-            using var dwUser = World.CharManager.LockOrLoad(charId, out var gu);
-            if (dwUser is null)
-            {
-                //TO DO
-                return;
-            }
-            GameChar gc = null;
-            if (charId != Guid.Empty)
-                gc = gu.GameChars.FirstOrDefault(c => c.Id == charId);
-            var gi = gc?.AllChildren?.FirstOrDefault(c => c.Id == itemId);
-            if (gi is null)
-            {
-                //TO DO
-                return;
-            }
-            var fcp = gi.RemoveFastChangingProperty(World.PropertyManager.LevelPropertyName);
-            if (null != fcp)  //若存在升级冷却
-            {
-                var lv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);  //当前级别
-                World.ItemManager.SetPropertyValue(gi, World.PropertyManager.LevelPropertyName, lv + 1);
-                gi.Properties.Remove("UpgradedSchedulerId");    //删除定时任务Id
-            }
-        }
+        //private void Upgraded(SchedulerDescriptor data)
+        //{
+        //    var dic = data.Properties;
+        //    var charId = dic.GetGuidOrDefault("charId");    //角色Id
+        //    var itemId = dic.GetGuidOrDefault("itemId");    //物品Id
+        //    using var dwUser = World.CharManager.LockOrLoad(charId, out var gu);
+        //    if (dwUser is null)
+        //    {
+        //        //TO DO
+        //        return;
+        //    }
+        //    GameChar gc = null;
+        //    if (charId != Guid.Empty)
+        //        gc = gu.GameChars.FirstOrDefault(c => c.Id == charId);
+        //    var gi = gc?.AllChildren?.FirstOrDefault(c => c.Id == itemId);
+        //    if (gi is null)
+        //    {
+        //        //TO DO
+        //        return;
+        //    }
+        //    var fcp = gi.RemoveFastChangingProperty(World.PropertyManager.LevelPropertyName);
+        //    if (null != fcp)  //若存在升级冷却
+        //    {
+        //        var lv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);  //当前级别
+        //        World.ItemManager.SetPropertyValue(gi, World.PropertyManager.LevelPropertyName, lv + 1);
+        //        gi.Properties.Remove("UpgradedSchedulerId");    //删除定时任务Id
+        //    }
+        //}
 
 
     }

@@ -199,6 +199,46 @@ namespace GuangYuan.GY001.UserDb
             return $"{{{result},{Count}}}";
         }
 
+        #region ISimpleDynamicExtensionProperty相关
+
+        public override void SetSdep(string name, object value)
+        {
+            switch (name)
+            {
+                case "Count":
+                case "count":
+                    Count = Convert.ToDecimal(value);
+                    break;
+                default:
+                    SetSdep(name, value);
+                    break;
+            }
+        }
+
+        public override bool TryGetSdep(string name, out object value)
+        {
+            switch (name)
+            {
+                case "Count":
+                case "count":
+                    value = Count;
+                    return true;
+                default:
+                    return base.TryGetSdep(name, out value);
+            }
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <returns><inheritdoc/></returns>
+        public override IEnumerable<(string, object)> GetAllSdep()
+        {
+            return base.GetAllSdep().Concat(new (string, object)[] { (nameof(Count), Count) });
+        }
+
+        #endregion ISimpleDynamicExtensionProperty相关
+
         #region IDisposable接口相关
 
         /// <summary>
@@ -224,7 +264,7 @@ namespace GuangYuan.GY001.UserDb
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            return Array.Empty<ValidationResult>(); 
+            return Array.Empty<ValidationResult>();
         }
 
         // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器

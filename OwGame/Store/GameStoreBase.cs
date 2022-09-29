@@ -138,7 +138,11 @@ namespace OW.Game.Store
 
     }
 
-    public interface ISimpleDynamicProperty
+    /// <summary>
+    /// 简单动态扩展属性（Simple dynamic extension properties，Sdep）接口。
+    /// </summary>
+    /// <typeparam name="T">动态属性值的类型。</typeparam>
+    public interface ISimpleDynamicExtensionProperty<T>
     {
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
@@ -147,17 +151,39 @@ namespace OW.Game.Store
         /// </summary>
         [NotMapped]
         [JsonIgnore]
-        public abstract Dictionary<string, object> Properties
+        public abstract Dictionary<string, T> Properties
         {
             get;
         }
 
+        /// <summary>
+        /// 设置动态属性。
+        /// 虽然一般动态属性存在于<see cref="Properties"/>中，但派生类可能需要存储在其它位置，可重载此成员以控制读写位置。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public abstract void SetSdep(string name, T value);
+
+        /// <summary>
+        /// 获取动态属性。
+        /// 虽然一般动态属性存在于<see cref="Properties"/>中，但派生类可能需要存储在其它位置，可重载此成员以控制读写位置。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns>true找到属性并返回，false没有找到指定名称的属性。</returns>
+        public abstract bool TryGetSdep(string name, out T value);
+
+        /// <summary>
+        /// 获取所有动态属性。
+        /// </summary>
+        /// <returns>注意在遍历返回集合时一般不可以更改集合，除非实现类有特别说明。</returns>
+        public IEnumerable<(string, T)> GetAllSdep();
     }
 
     /// <summary>
     /// 提供一个基类，包含一个编码为字符串的压缩属性。且该字符串可以理解为一个字典的内容。
     /// </summary>
-    public abstract class SimpleDynamicPropertyBase : GuidKeyObjectBase, IBeforeSave, IDisposable, INotifyDynamicPropertyChanged
+    public abstract class SimpleDynamicPropertyBase : GuidKeyObjectBase, IBeforeSave, IDisposable, INotifyDynamicPropertyChanged, ISimpleDynamicExtensionProperty<object>
     {
         /// <summary>
         /// <inheritdoc/>
@@ -174,6 +200,52 @@ namespace OW.Game.Store
         {
         }
 
+        #region ISimpleDynamicExtensionProperties接口相关
+
+        private Dictionary<string, object> _Properties;
+        /// <summary>
+        /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
+        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，拆箱问题不大，且非核心战斗才会较多的使用该属性。
+        /// 频繁发生变化的战斗属性，请另行生成对象。
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public Dictionary<string, object> Properties
+        {
+            get
+            {
+                if (_Properties is null)
+                    lock (this)
+                        if (_Properties is null)
+                        {
+                            var tmp = new Dictionary<string, object>();
+                            OwConvert.Copy(PropertiesString, tmp);
+                            _Properties = tmp;
+                        }
+                return _Properties;
+            }
+        }
+
+        public virtual void SetSdep(string name, object value)
+        {
+            Properties[name] = value;
+        }
+
+        public virtual bool TryGetSdep(string name, out object value)
+        {
+            return Properties.TryGetValue(name, out value);
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <returns><inheritdoc/></returns>
+        public virtual IEnumerable<(string, object)> GetAllSdep()
+        {
+            return Properties.Select(c => (c.Key, c.Value));
+        }
+
+        #endregion ISimpleDynamicExtensionProperties接口相关
         private string _PropertiesString;
 
         /// <summary>
@@ -203,30 +275,6 @@ namespace OW.Game.Store
             OnDynamicPropertyChanged(e);
         }
         #endregion  事件及其相关
-
-        private Dictionary<string, object> _Properties;
-        /// <summary>
-        /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
-        /// 特别注意，如果需要频繁计算，则应把用于战斗的属性单独放在其他字典中。该字典因大量操作皆为读取，拆箱问题不大，且非核心战斗才会较多的使用该属性。
-        /// 频繁发生变化的战斗属性，请另行生成对象。
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public Dictionary<string, object> Properties
-        {
-            get
-            {
-                if (_Properties is null)
-                    lock (this)
-                        if (_Properties is null)
-                        {
-                            var tmp = new Dictionary<string, object>();
-                            OwConvert.Copy(PropertiesString, tmp);
-                            _Properties = tmp;
-                        }
-                return _Properties;
-            }
-        }
 
         /// <summary>
         /// <inheritdoc/>

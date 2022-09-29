@@ -291,8 +291,6 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                var noti = new WithChangesNotification(new List<GamePropertyChangeItem<object>>());
-
             }
             catch (Exception)
             {

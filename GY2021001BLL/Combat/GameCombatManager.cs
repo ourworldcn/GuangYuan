@@ -853,14 +853,21 @@ namespace GuangYuan.GY001.BLL
             var otherChar = World.CharManager.GetCharFromId(combat.Defensers.FirstOrDefault()?.CharId ?? combat.Others.First().CharId);
 
             //设置战利品
-            List<GameItem> bootyOfAttacker = ComputeAttackerBooty();
             var attacker = combat.Attackers.First();    //攻击方
+            List<GameItem> bootyOfAttacker = ComputeAttackerBooty();
+            var gim = World.ItemManager;
+            gim.Normalize(datas.Booty);
+            datas.Booty.ForEach(c => gim.MergeProperty(c));
+            attacker.Booties.AddRange(datas.Booty.Select(c=>gim.Clone(c)));
+            gim.MoveItems(datas.Booty, datas.GameChar, null, datas.PropertyChanges);
+
             List<GameItem> bootyOfDefenser = ComputeDefenerBooty();
             var defenser = combat.Defensers.First();    //防御方
             //设置物品实际增减
             List<GameItem> rem = new List<GameItem>();  //无法放入物品
             attacker.Booties.AddRange(bootyOfAttacker); //计入战报
             World.ItemManager.MoveItems(bootyOfAttacker, datas.GameChar, null, datas.PropertyChanges);
+
 
             defenser.Booties.AddRange(bootyOfDefenser); //计入战报
             World.ItemManager.MoveItems(bootyOfDefenser, otherChar, null, datas.PropertyChanges);    //防御方物品变动奖励

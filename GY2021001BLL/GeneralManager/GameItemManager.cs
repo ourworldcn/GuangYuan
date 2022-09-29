@@ -481,28 +481,11 @@ namespace OW.Game.Item
                     continue;
 
                 var result = ov - GetOrDefault(ary, olv) + GetOrDefault(ary, newLevel);   //升级后的值
-                thing.Properties[kvp.Key] = result;
-                changes?.Add(new GamePropertyChangeItem<object>()
-                {
-                    HasNewValue = true,
-                    NewValue = result,
-                    HasOldValue = true,
-                    OldValue = ov,
-                    Object = thing,
-                    PropertyName = kvp.Key,
-                });
+                GamePropertyChangeItem<object>.ModifyAndAddChanged(changes, thing, kvp.Key, result);
             }
             //设置等级属性
+            GamePropertyChangeItem<object>.ModifyAndAddChanged(changes, thing, World.PropertyManager.LevelPropertyName, newLevel);
             thing.Properties[World.PropertyManager.LevelPropertyName] = newLevel;
-            changes?.Add(new GamePropertyChangeItem<object>()
-            {
-                HasNewValue = true,
-                NewValue = newLevel,
-                HasOldValue = true,
-                OldValue = olv,
-                Object = thing,
-                PropertyName = World.PropertyManager.LevelPropertyName,
-            });
         }
 
         /// <summary>

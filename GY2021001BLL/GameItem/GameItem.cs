@@ -7,6 +7,8 @@ using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace GuangYuan.GY001.BLL
@@ -44,9 +46,12 @@ namespace GuangYuan.GY001.BLL
         {
         }
 
-        public SetLevelCommandHandler(VWorld world) : base(world)
+        public SetLevelCommandHandler(VWorld world, OwEventBus owEventBus) : base(world)
         {
+            _OwEventBus = owEventBus;
         }
+
+        OwEventBus _OwEventBus;
 
         /// <summary>
         /// 
@@ -60,7 +65,69 @@ namespace GuangYuan.GY001.BLL
         public override SetLevelCommandResult Handle(SetLevelCommand command)
         {
             var result = new SetLevelCommandResult(command.Changes);
+            var notification = new LevelSettedNotification();
+
+            var thing = command.Item;
+            var olv = (int)thing.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName); //当前等级
+            if (olv == command.NewLevel)    //若等级没有变化
+                return result;
+            var tt = thing.GetTemplate();
+            foreach (var item in thing.Name2FastChangingProperty)   //刷新所有fcp属性
+            {
+                var now = DateTime.UtcNow;
+                item.Value.GetCurrentValue(ref now);
+                item.Value.ToDictionary(thing.Properties, item.Key);
+            }
+            foreach (var kvp in thing.Properties.ToArray()) //遍历每个属性
+            {
+                if (!(tt.Properties.GetValueOrDefault(kvp.Key) is decimal[] ary) || ary.Length < 1)  //若没有随级别变化的可能
+                    continue;
+                if (!OwConvert.TryToDecimal(kvp.Value, out var ov)) //若不是数值
+                    continue;
+
+                var newValue = ov - GetOrDefault(ary, olv) + GetOrDefault(ary, command.NewLevel);   //升级后的值
+                GamePropertyChangeItem<object>.ModifyAndAddChanged(result.Changes, thing, kvp.Key, result);
+            }
+            notification.ChangeItem = GamePropertyChangeItem<object>.Create(thing, World.PropertyManager.LevelPropertyName, command.NewLevel);
+            //设置等级属性
+            GamePropertyChangeItem<object>.ModifyAndAddChanged(result.Changes, thing, World.PropertyManager.LevelPropertyName, command.NewLevel);
+            //引发通告
+            _OwEventBus.Add(notification);
+            _OwEventBus.Raise();
             return result;
         }
+
+        /// <summary>
+        /// 获取数组指定索引处的值，若索引超出范围则返回默认值。
+        /// </summary>
+        /// <param name="ary"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        T GetOrDefault<T>(T[] ary, int index, T defaultValue = default) =>
+            index < ary.GetLowerBound(0) || index > ary.GetUpperBound(0) ? defaultValue : ary[index];
+
+    }
+
+    /// <summary>
+    /// 等级变化后的通知事件。
+    /// </summary>
+    public class LevelSettedNotification : WithChangesNotification
+    {
+        public LevelSettedNotification()
+        {
+        }
+
+        public LevelSettedNotification(GamePropertyChangeItem<object> changeItem)
+        {
+            ChangeItem = changeItem;
+        }
+
+        public LevelSettedNotification([NotNull] List<GamePropertyChangeItem<object>> changes) : base(changes)
+        {
+        }
+
+        public GamePropertyChangeItem<object> ChangeItem { get; set; }
+
     }
 }

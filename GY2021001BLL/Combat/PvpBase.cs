@@ -102,9 +102,17 @@ namespace GuangYuan.GY001.BLL
         public int DestroyCountOfWoodStore { get; set; }
 
         /// <summary>
+        /// 战利品。
+        /// </summary>
+        public List<GameItem> Booty { get; set; } = new List<GameItem>();
+
+        /// <summary>
         /// 返回本次战斗的战斗对象。
         /// </summary>
         public GameCombat Combat { get; set; }
+
         public Guid MailId { get; internal set; }
+
+
     }
 }

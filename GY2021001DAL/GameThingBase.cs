@@ -309,6 +309,60 @@ namespace GuangYuan.GY001.UserDb
 
         public abstract DbContext GetDbContext();
 
+        #region ISimpleDynamicExtensionProperty相关
+
+        public override void SetSdep(string name, object value)
+        {
+            switch (name)
+            {
+                case "tid":
+                case "TemplateId":
+                case nameof(ExtraGuid):
+                    ExtraGuid = value is Guid g ? g : OwConvert.ToGuid(value as string);
+                    break;
+                case nameof(ExtraString):
+                    ExtraString = Convert.ToString(value);
+                    break;
+                case nameof(ExtraDecimal):
+                    ExtraDecimal = Convert.ToDecimal(value);
+                    break;
+                default:
+                    SetSdep(name, value);
+                    break;
+            }
+        }
+
+        public override bool TryGetSdep(string name, out object value)
+        {
+            switch (name)
+            {
+                case "tid":
+                case "TemplateId":
+                case nameof(ExtraGuid):
+                    value = ExtraGuid;
+                    return true;
+                case nameof(ExtraString):
+                    value = ExtraString;
+                    return true;
+                case nameof(ExtraDecimal):
+                    value = ExtraDecimal;
+                    return true;
+                default:
+                    return base.TryGetSdep(name, out value);
+            }
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <returns><inheritdoc/></returns>
+        public override IEnumerable<(string, object)> GetAllSdep()
+        {
+            return base.GetAllSdep().Concat(new (string, object)[] { (nameof(ExtraGuid), ExtraGuid), (nameof(ExtraString), ExtraString), (nameof(ExtraDecimal), ExtraDecimal) });
+        }
+
+        #endregion ISimpleDynamicExtensionProperty相关
+
         #region IDbQuickFind接口相关
 
         /// <summary>
@@ -457,7 +511,12 @@ namespace GuangYuan.GY001.UserDb
             base.PrepareSaving(db);
         }
 
+
         #endregion 通用扩展属性及相关
+
+        #region ISimpleDynamicProperty 接口相关
+
+        #endregion ISimpleDynamicProperty 接口相关
 
         protected override void Dispose(bool disposing)
         {
