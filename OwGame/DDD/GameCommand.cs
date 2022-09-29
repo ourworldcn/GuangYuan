@@ -66,19 +66,19 @@ namespace OW.Game
         /// 构造函数。
         /// </summary>
         /// <param name="changes">可以设置为空，以指示无需记录属性变化。</param>
-        public WithChangesCommand(List<GamePropertyChangeItem<object>> changes)
+        public WithChangesCommand(ICollection<GamePropertyChangeItem<object>> changes)
         {
             _Changes = changes;
         }
 
         #endregion 构造函数
 
-        private List<GamePropertyChangeItem<object>> _Changes;
+        private ICollection<GamePropertyChangeItem<object>> _Changes;
 
         /// <summary>
         /// 变换数据。事件处理程序可以向此集合添加数据，且应假设该集合存在了0..n条数据。没有极其充分的理由不可删除或更改已存在的数据。
         /// </summary>
-        public List<GamePropertyChangeItem<object>> Changes => _Changes ??= new List<GamePropertyChangeItem<object>>();
+        public ICollection<GamePropertyChangeItem<object>> Changes => _Changes ??= new List<GamePropertyChangeItem<object>>();
 
     }
 
@@ -97,18 +97,18 @@ namespace OW.Game
         /// 构造函数。
         /// </summary>
         /// <param name="changes">指定该对象的<see cref="Changes"/>属性使用此集合。</param>
-        public WithChangesCommandResult(List<GamePropertyChangeItem<object>> changes)
+        public WithChangesCommandResult(ICollection<GamePropertyChangeItem<object>> changes)
         {
             _Changes = changes;
         }
 
         #endregion 构造函数
 
-        private List<GamePropertyChangeItem<object>> _Changes;
+        private ICollection<GamePropertyChangeItem<object>> _Changes;
         /// <summary>
         /// 变换数据。事件处理程序可以向此集合添加数据，且应假设该集合存在了0..n条数据。没有极其充分的理由不可删除或更改已存在的数据。
         /// </summary>
-        public List<GamePropertyChangeItem<object>> Changes => _Changes ??= new List<GamePropertyChangeItem<object>>();
+        public ICollection<GamePropertyChangeItem<object>> Changes => _Changes ??= new List<GamePropertyChangeItem<object>>();
     }
 
 }

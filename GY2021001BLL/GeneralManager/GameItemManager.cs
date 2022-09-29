@@ -273,117 +273,6 @@ namespace OW.Game.Item
 
         #region 动态属性相关
         /// <summary>
-        /// 设置动态属性。
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="propName"></param>
-        /// <param name="val"></param>
-        /// <param name="gameChar"></param>
-        /// <returns>true成功设置,false未能成功设置属性。</returns>
-        public bool SetPropertyValue(GameItem gameItem, string propName, object val, GameChar gameChar = null)
-        {
-            gameItem.Properties.TryGetValue(propName, out var oldValue);
-            //TO DO
-            if (propName.Equals("tid", StringComparison.InvariantCultureIgnoreCase))
-            {
-                gameItem.ExtraGuid = (Guid)val;
-            }
-            else if (propName.Equals("pid", StringComparison.InvariantCultureIgnoreCase))
-            {
-                if (!OwConvert.TryToGuid(val, out var pid))
-                    return false;
-                gameItem.ParentId = pid;
-            }
-            else if (propName.Equals("ptid", StringComparison.InvariantCultureIgnoreCase))  //移动到新的父容器
-            {
-                var coll = OwHelper.GetAllSubItemsOfTree(new GameItem[] { gameItem }, c => c.Children);
-                var tid = (Guid)val;
-                var parent = coll.FirstOrDefault(c => c.ExtraGuid == tid); //获取目标容器
-                var oldParent = World.EventsManager.GetCurrentContainer(gameItem); //现有容器
-                if (null == oldParent) //若不是属于其他物品
-                {
-                    MoveItem(gameItem, gameItem.Count ?? 1, parent);
-                }
-                else
-                {
-                    var gis = World.PropertyManager.GetChildrenCollection(oldParent).Where(c => c.Id == gameItem.Id);
-                    MoveItems(gis, parent);
-                }
-            }
-            else if (propName.Equals("Count", StringComparison.InvariantCultureIgnoreCase))
-            {
-                var count = Convert.ToDecimal(val);
-                if (count != 0)
-                {
-                    gameItem.Count = count;
-                }
-                else
-                {
-                    if (null != gameItem.Parent)
-                        gameItem.Parent.Children.Remove(gameItem);
-                    else if (null != gameItem.OwnerId) //若直属于角色
-                    {
-                        gameChar ??= World.CharManager.GetCharFromId(gameItem.OwnerId.Value);
-                        if (null == gameChar)
-                            return false;
-                        gameChar.GameItems.Remove(gameItem);
-
-                    }
-                    else if (!(gameItem.ParentId is null))  //若是新加入物品
-                    {
-                        if (null == gameChar)
-                            return false;
-                        var tmp = OwHelper.GetAllSubItemsOfTree(gameChar.GameItems, c => c.Children).FirstOrDefault(c => c.Children.Contains(gameItem));
-                        if (null == tmp)
-                            return false;
-                        tmp.Children.Remove(gameItem);
-                    }
-                    gameItem.Count = count;
-                }
-
-            }
-            else if (propName.StartsWith(World.PropertyManager.LevelPropertyName))  //若是一个级别属性
-            {
-                var olv = gameItem.GetDecimalWithFcpOrDefault(propName, 0m);    //当前等级
-                var nlv = Convert.ToDecimal(val);   //新等级
-                if (olv != nlv)    //若需要改变等级
-                {
-                    string seqPName;
-                    seqPName = propName.Length > 2 ? propName[2..] : World.PropertyManager.LevelPropertyName;
-                    if (seqPName == World.PropertyManager.LevelPropertyName)
-                        SetLevel(gameItem, (int)nlv);
-                    else
-                        SetLevel(gameItem, seqPName, (int)nlv);
-                    gameItem.Properties[propName] = nlv;    //设置等级
-                }
-            }
-            else if (propName.StartsWith(ProjectConstant.FastChangingPropertyName))  //若设置一个快速变化属性
-            {
-                if (propName.Length <= ProjectConstant.FastChangingPropertyName.Length)    //若名字太短
-                    return false;
-                string tmp = propName[ProjectConstant.FastChangingPropertyName.Length..];
-                if (tmp.Length < 2)    //若名字太短
-                    return false;
-                var prefix = tmp[0];
-                string innerName = tmp[1..];   //获得实际属性名
-                if (!gameItem.Name2FastChangingProperty.TryGetValue(innerName, out var fcp))    //若不存在该属性
-                {
-                    fcp = new FastChangingProperty(default, default, default, default, DateTime.UtcNow);
-                    gameItem.Name2FastChangingProperty[innerName] = fcp;
-                }
-                fcp.SetPropertyValue(prefix, val);
-            }
-            else
-                gameItem.SetPropertyValue(propName, val);
-            DynamicPropertyChangedCollection args = new DynamicPropertyChangedCollection();
-            var item = new SimplePropertyChangedCollection() { Thing = gameItem };
-            item.Add(new GamePropertyChangeItem<object>(null, name: propName, oldValue: oldValue, newValue: gameItem.Properties[propName]));
-            args.Add(item);
-            World.EventsManager.OnDynamicPropertyChanged(args);
-            return true;
-        }
-
-        /// <summary>
         /// 将模板的属性与对象上的属性合并。添加没有的属性。
         /// </summary>
         /// <param name="gameItem"><see cref="GameObjectBase.TemplateId"/>属性必须正确设置。</param>
@@ -402,22 +291,6 @@ namespace OW.Game.Item
             foreach (var item in keys)  //添加简单属性
                 gameItem.Properties[item] = template.Properties[item];
             return true;
-        }
-
-        /// <summary>
-        /// 仅设置由lv控制的序列属性。
-        /// 特别地，并不更改级别属性，调用者要自己更改。如lv并没有变化
-        /// </summary>
-        /// <param name="gameItem"></param>
-        /// <param name="newLevel"></param>
-        public void SetLevel(GameItem gameItem, int newLevel)
-        {
-            var template = GetTemplate(gameItem);
-            var coll = template.Properties.Where(c => c.Value is decimal[] && World.ItemTemplateManager.GetIndexPropName(template, c.Key) == World.PropertyManager.LevelPropertyName);    //取得序列属性且其索引属性是通用序列的
-            foreach (var item in coll.ToArray())
-            {
-                SetLevel(gameItem, item.Key, newLevel);
-            }
         }
 
         /// <summary>
@@ -458,34 +331,6 @@ namespace OW.Game.Item
                 gameItem.Properties[seqPName] = old + val - oov; //TO DO缺少对快速变化属性的同步
             }
             return true;
-        }
-
-        /// <summary>
-        /// 设置新等级并对动态属性增减。
-        /// </summary>
-        /// <param name="thing">目标对象属性字典。</param>
-        /// <param name="newLevel">新等级。</param>
-        /// <param name="changes">变化数据。省略则不生成。</param>
-        /// 
-        public void SetLevel(GameThingBase thing, int newLevel, ICollection<GamePropertyChangeItem<object>> changes = null)
-        {
-            var olv = (int)thing.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName); //当前等级
-            if (olv == newLevel)    //若等级没有变化
-                return;
-            var tt = thing.GetTemplate();
-            foreach (var kvp in thing.Properties.ToArray())
-            {
-                if (!(tt.Properties.GetValueOrDefault(kvp.Key) is decimal[] ary) || ary.Length < 1)  //若没有随级别变化的可能
-                    continue;
-                if (!OwConvert.TryToDecimal(kvp.Value, out var ov)) //若不是数值
-                    continue;
-
-                var result = ov - GetOrDefault(ary, olv) + GetOrDefault(ary, newLevel);   //升级后的值
-                GamePropertyChangeItem<object>.ModifyAndAddChanged(changes, thing, kvp.Key, result);
-            }
-            //设置等级属性
-            GamePropertyChangeItem<object>.ModifyAndAddChanged(changes, thing, World.PropertyManager.LevelPropertyName, newLevel);
-            thing.Properties[World.PropertyManager.LevelPropertyName] = newLevel;
         }
 
         /// <summary>
@@ -1517,18 +1362,24 @@ namespace OW.Game.Item
         /// <param name="changes">变化数据容器。</param>
         public void ScanMountsIllustrated(GameChar gameChar, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
+            int get(GameItem mounts)
+            {
+                var head = this.GetHeadTemplate(mounts).GId % 1000 * 1000 ?? 0;
+                var body = this.GetBodyTemplate(mounts).GId % 1000 ?? 0;
+                var gidPrefix = 110 * 100 * 1000;
+                return gidPrefix + head + body;
+            }
             var bag = gameChar.GetZuojiBag();
             var gim = World.ItemManager;
-            var mounts = bag.Children.Select(c => (Id: (gim.GetHeadTemplate(c).GId.Value, gim.GetBodyTemplate(c).GId.Value), Mounts: c));  //坐骑
-            var ills = gim.GetOrCreateItem(gameChar, ProjectConstant.MountsIllSlotId).Children.Select(c => (Id: ((int)c.Properties.GetDecimalOrDefault("headtid"),
-                (int)c.Properties.GetDecimalOrDefault("bodytid")), Ill: c));    //动物图鉴
-            var addIds = mounts.Select(c => c.Id).Except(ills.Select(c => c.Id));
-            var items = addIds.Join(mounts, c => c, c => c.Id, (l, r) => r); //尚无图鉴的坐骑
+            var mounts = bag.Children.Select(c => get(c));  //坐骑
 
-            foreach (var (Id, Mounts) in items.ToArray())
+            var ills = gim.GetOrCreateItem(gameChar, ProjectConstant.MountsIllSlotId).Children.Select(c => GetTemplateFromeId(c.ExtraGuid).GId ?? 0).Distinct();    //动物图鉴gid集合
+
+            var items = mounts.Except(ills); //尚无图鉴的坐骑
+
+            foreach (var gid in items.ToArray())
             {
-                var tt = World.ItemTemplateManager.Id2Template.Values.FirstOrDefault(c => c.Properties.GetDecimalOrDefault("headtid") == Id.Item1 &&
-                      c.Properties.GetDecimalOrDefault("bodytid") == Id.Item2);    //要添加的动物图鉴模板
+                var tt = World.ItemTemplateManager.Id2Template.Values.FirstOrDefault(c => c.GId == gid);    //要添加的动物图鉴模板
                 if (tt is null)
                     continue;
                 var gi = new GameItem();

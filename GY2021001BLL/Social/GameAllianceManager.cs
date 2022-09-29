@@ -20,6 +20,7 @@ using OW.Game.Caching;
 using OW.Game.Store;
 using System.Text.Json.Serialization;
 using AutoMapper;
+using OW.DDD;
 
 namespace GuangYuan.GY001.UserDb.Social
 {
@@ -234,7 +235,7 @@ namespace GuangYuan.GY001.UserDb.Social
         /// <param name="expInc"></param>
         public void Upgrade(GameGuild guild, decimal expInc, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
-            if(!Lock(guild.Id,Options.DefaultTimeout,out guild))    //若没有能够锁定工会
+            if (!Lock(guild.Id, Options.DefaultTimeout, out guild))    //若没有能够锁定工会
             {
                 OwHelper.SetLastError(ErrorCodes.WAIT_TIMEOUT);
                 return;
@@ -249,7 +250,12 @@ namespace GuangYuan.GY001.UserDb.Social
             exp += expInc;
             var index = Array.FindLastIndex(ary, c => c <= exp);
             if (index > -1 && index != lv + 1)    //若找到了匹配项
-                World.ItemManager.SetLevel(guild, index + 1, changes);
+            {
+                using var scope = World.Service.CreateScope();
+                var commMng = scope.ServiceProvider.GetRequiredService<OwCommandManager>();
+                SetLevelCommand command = new SetLevelCommand(null, changes) { Item = guild, NewLevel = index + 1 };
+                var result = commMng.Handle<SetLevelCommand, SetLevelCommandResult>(command);
+            }
             guild.SetPropertyAndMarkChanged("exp", exp, changes);
             guild.GetDbContext().SaveChanges();
 
@@ -362,7 +368,7 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             //创建工会对象
             var guild = new GameGuild();
-            var pg = DictionaryPool<string, object>.Shared.Get(); 
+            var pg = DictionaryPool<string, object>.Shared.Get();
             lock (_Id2Guild)
             {
                 if (_Id2Guild.Values.Any(c => c.DisplayName == datas.DisplayName))   //若重名

@@ -581,6 +581,8 @@ namespace OW.Game
                 World.EventsManager.GameItemCreated(td, td.ExtraGuid);
                 td.Properties["ltlv"] = now.ToString();
             }
+            World.ItemManager.ScanMountsIllustrated(gameChar);
+
         }
         #region Json反序列化
         public override void JsonDeserialized(GameUser gameUser)

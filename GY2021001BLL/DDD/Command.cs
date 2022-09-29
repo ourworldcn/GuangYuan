@@ -20,7 +20,7 @@ namespace GuangYuan.GY001.BLL.DDD
         {
         }
 
-        protected GameCharCommand(GameChar gameChar, List<GamePropertyChangeItem<object>> changes) : base(changes)
+        protected GameCharCommand(GameChar gameChar, ICollection<GamePropertyChangeItem<object>> changes) : base(changes)
         {
             GameChar = gameChar;
         }

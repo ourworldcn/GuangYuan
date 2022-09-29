@@ -327,7 +327,7 @@ namespace GuangYuan.GY001.UserDb
                     ExtraDecimal = Convert.ToDecimal(value);
                     break;
                 default:
-                    SetSdep(name, value);
+                    base.SetSdep(name, value);
                     break;
             }
         }

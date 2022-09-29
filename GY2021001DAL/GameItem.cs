@@ -210,7 +210,7 @@ namespace GuangYuan.GY001.UserDb
                     Count = Convert.ToDecimal(value);
                     break;
                 default:
-                    SetSdep(name, value);
+                    base.SetSdep(name, value);
                     break;
             }
         }

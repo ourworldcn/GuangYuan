@@ -78,7 +78,7 @@ namespace OW.DDD
                        select (Type: tmp, @interface: i);
             foreach (var item in coll)
             {
-                services.AddSingleton(item.@interface, item.Type);
+                services.AddScoped(item.@interface, item.Type);
             }
             return services;
         }

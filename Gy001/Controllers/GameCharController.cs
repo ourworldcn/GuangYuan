@@ -502,7 +502,9 @@ namespace GY2021001WebApi.Controllers
                 logger.LogDebug($"[{DateTime.UtcNow}] Call GetChangesItem");
 #endif //DEBUG
                 var collTmp = ChangesItemSummary.ToChangesItem(gc.GetOrCreateBinaryObject<CharBinaryExProperties>().ChangeItems, gc);
+                ChangeItem.Reduce(collTmp);
                 var mapper = World.Service.GetRequiredService<IMapper>();
+                
                 result.Changes.AddRange(collTmp.Select(c => mapper.Map<ChangesItemDto>(c)));
                 //gc.ChangesItems.Clear();
             }

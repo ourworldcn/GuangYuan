@@ -43,7 +43,11 @@ namespace Gy01.AutoMapper.Profiles
             }).ForMember(c => c.MaxComplateCount, opt => opt.Ignore());
 
             //DTO映射
-            CreateMap<GameItem, GameItemDto>();
+            CreateMap<GameItem, GameItemDto>().AfterMap((src,dest) =>
+            {
+                dest.Properties[nameof(src.ExtraDecimal)] = src.ExtraDecimal;
+                dest.Properties[nameof(src.ExtraString)] = src.ExtraString;
+            });
             CreateMap<GameItemDto, GameItem>().ConstructUsing(src => new GameItem() { Count = src.Count }).ForMember(dest => dest.Count, opt => opt.Ignore());
 
             CreateMap<LoginT89ParamsDto, T89LoginData>();

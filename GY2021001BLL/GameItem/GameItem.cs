@@ -19,11 +19,11 @@ namespace GuangYuan.GY001.BLL
         {
         }
 
-        public SetLevelCommand(GameChar gameChar, List<GamePropertyChangeItem<object>> changes = null) : base(gameChar, changes)
+        public SetLevelCommand(GameChar gameChar, ICollection<GamePropertyChangeItem<object>> changes = null) : base(gameChar, changes)
         {
         }
 
-        public GameItem Item { get; set; }
+        public GameThingBase Item { get; set; }
 
         public int NewLevel { get; set; }
 
@@ -35,7 +35,7 @@ namespace GuangYuan.GY001.BLL
         {
         }
 
-        public SetLevelCommandResult([NotNull] List<GamePropertyChangeItem<object>> changes) : base(changes)
+        public SetLevelCommandResult([NotNull] ICollection<GamePropertyChangeItem<object>> changes) : base(changes)
         {
         }
     }
@@ -81,7 +81,7 @@ namespace GuangYuan.GY001.BLL
                     continue;
 
                 var newValue = ov - GetOrDefault(ary, olv) + GetOrDefault(ary, command.NewLevel);   //升级后的值
-                GamePropertyChangeItem<object>.ModifyAndAddChanged(result.Changes, thing, kvp.Key, result);
+                GamePropertyChangeItem<object>.ModifyAndAddChanged(result.Changes, thing, kvp.Key, newValue);
             }
             notification.ChangeItem = GamePropertyChangeItem<object>.Create(thing, World.PropertyManager.LevelPropertyName, command.NewLevel);
             //设置等级属性

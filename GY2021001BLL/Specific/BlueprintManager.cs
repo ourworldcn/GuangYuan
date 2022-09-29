@@ -3,7 +3,9 @@ using GuangYuan.GY001.BLL.Homeland;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
+using OW.DDD;
 using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Item;
@@ -722,18 +724,12 @@ namespace GuangYuan.GY001.BLL
                 {
                     //升级
                     var oldLv = luDatas.GameItem.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
-                    gim.SetPropertyValue(luDatas.GameItem, World.PropertyManager.LevelPropertyName, oldLv + 1);
+                    using var scope = World.Service.CreateScope();
+                    var commMng = scope.ServiceProvider.GetRequiredService<OwCommandManager>();
+                    SetLevelCommand command = new SetLevelCommand(null, datas.PropertyChanges) { Item = luDatas.GameItem, NewLevel = (int)oldLv + 1 };
+                    var result = commMng.Handle<SetLevelCommand, SetLevelCommandResult>(command);
                     //记录变化信息
                     datas.SuccCount = i + 1;
-                    datas.PropertyChanges.Add(new GamePropertyChangeItem<object>()
-                    {
-                        Object = luDatas.GameItem,
-                        PropertyName = World.PropertyManager.LevelPropertyName,
-                        HasOldValue = true,
-                        OldValue = oldLv,
-                        HasNewValue = true,
-                        NewValue = oldLv + 1,
-                    });
                 }
                 else //若有升级延时
                 {
@@ -816,7 +812,12 @@ namespace GuangYuan.GY001.BLL
                 return;
             //升级
             var oldLv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
-            World.ItemManager.SetPropertyValue(gi, World.PropertyManager.LevelPropertyName, oldLv + 1);
+
+            using var scope = World.Service.CreateScope();
+            var commMng = scope.ServiceProvider.GetRequiredService<OwCommandManager>();
+            SetLevelCommand command = new SetLevelCommand(null, null) { Item = gi, NewLevel = (int)oldLv + 1 };
+            var result = commMng.Handle<SetLevelCommand, SetLevelCommandResult>(command);
+
             //通知属性发生变化
             try
             {
@@ -894,8 +895,11 @@ namespace GuangYuan.GY001.BLL
             }
             decimal stc = World.ItemManager.GetRemainderStc(destItem);  //剩余可堆叠数
             count = Math.Min(count, stc);   //实际移走数量
+            count = Math.Min(count, src.Count??0);
             World.ItemManager.ForcedAddCount(destItem, count, datas.PropertyChanges);
             World.ItemManager.ForcedAddCount(src, -count, datas.PropertyChanges);
+            src.FcpToProperties();
+            destItem.FcpToProperties();
             datas.PropertyChanges.CopyTo(datas.ChangeItems);
         }
 
