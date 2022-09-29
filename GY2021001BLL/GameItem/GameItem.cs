@@ -72,12 +72,7 @@ namespace GuangYuan.GY001.BLL
             if (olv == command.NewLevel)    //若等级没有变化
                 return result;
             var tt = thing.GetTemplate();
-            foreach (var item in thing.Name2FastChangingProperty)   //刷新所有fcp属性
-            {
-                var now = DateTime.UtcNow;
-                item.Value.GetCurrentValue(ref now);
-                item.Value.ToDictionary(thing.Properties, item.Key);
-            }
+            thing.FcpToProperties();    //刷新所有fcp属性
             foreach (var kvp in thing.Properties.ToArray()) //遍历每个属性
             {
                 if (!(tt.Properties.GetValueOrDefault(kvp.Key) is decimal[] ary) || ary.Length < 1)  //若没有随级别变化的可能
@@ -91,6 +86,8 @@ namespace GuangYuan.GY001.BLL
             notification.ChangeItem = GamePropertyChangeItem<object>.Create(thing, World.PropertyManager.LevelPropertyName, command.NewLevel);
             //设置等级属性
             GamePropertyChangeItem<object>.ModifyAndAddChanged(result.Changes, thing, World.PropertyManager.LevelPropertyName, command.NewLevel);
+            //刷新fcp属性
+            thing.RefreshFcp();
             //引发通告
             _OwEventBus.Add(notification);
             _OwEventBus.Raise();

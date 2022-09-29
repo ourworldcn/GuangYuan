@@ -481,6 +481,14 @@ namespace GuangYuan.GY001.UserDb
             }
         }
 
+        /// <summary>
+        /// 重新加载fcp属性。
+        /// 丢弃当前未计入字典的fcp属性。
+        /// </summary>
+        public void RefreshFcp()
+        {
+            _Name2FastChangingProperty = null;
+        }
         #endregion 快速变化属性相关
 
         #region 通用扩展属性及相关
