@@ -423,7 +423,7 @@ namespace OW.Game.Mission
             {
                 return false;   //可能被数据删除，此处容错
             }
-            var oldMetrics = view.Metrics.Where(c => oldVal >= c.Item1).Select(c => c.Item1); //级别完成且未领取的指标值。
+            var oldMetrics = view.Metrics.Where(c => oldVal >= c.Item1).Select(c => c.Item1).ToArray(); //级别完成且未领取的指标值。
             var newMetrics = view.Metrics.Where(c => newValue >= c.Item1).Select(c => c.Item1).Except(oldMetrics).Except(unpickMetrics).ToList(); //应加入的新值
             mObj.Count = newValue;  //设置指标值
             //通知数据

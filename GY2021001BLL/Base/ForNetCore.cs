@@ -233,9 +233,9 @@ namespace GuangYuan.GY001.BLL
                 gu.CurrentChar.DisplayName = $"{item.Item1}";
                 world.CharManager.SetExp(gu.CurrentChar, VWorld.WorldRandom.Next(maxExp));
                 gu.Timeout = TimeSpan.FromSeconds(1);
-                GameItem pvp = new GameItem() { Count = 1 };
-                world.EventsManager.GameItemCreated(pvp, ProjectConstant.PvpObjectTId);
-                world.ItemManager.MoveItem(pvp, pvp.Count.Value, gu.CurrentChar.GetCurrencyBag());
+                //GameItem pvp = new GameItem() { Count = 1 };
+                //world.EventsManager.GameItemCreated(pvp, ProjectConstant.PvpObjectTId);
+                //world.ItemManager.MoveItem(pvp, pvp.Count.Value, gu.CurrentChar.GetCurrencyBag());
                 world.CharManager.Unlock(gu);
 
                 if (i % 100 == 0 && i > 0)   //每n个账号

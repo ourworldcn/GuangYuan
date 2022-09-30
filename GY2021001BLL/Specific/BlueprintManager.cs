@@ -610,7 +610,8 @@ namespace GuangYuan.GY001.BLL
                 changes.CopyTo(LastChangesItems);
                 LastChangesItems.AddToChanges(gameItem.GetContainerId().Value, gameItem);
                 var worker = gc.GetHomeland().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.WorkerOfHomelandTId);
-                worker.Count++;
+                if (World.PropertyManager.GetRemainderStc(worker) > worker.Count)   //容错
+                    worker.Count++;
                 LastChangesItems.AddToChanges(worker);
 
                 var ttid = new Guid("{12d52964-ea98-439a-bb07-d0306731afb8}");
@@ -895,7 +896,7 @@ namespace GuangYuan.GY001.BLL
             }
             decimal stc = World.ItemManager.GetRemainderStc(destItem);  //剩余可堆叠数
             count = Math.Min(count, stc);   //实际移走数量
-            count = Math.Min(count, src.Count??0);
+            count = Math.Min(count, src.Count ?? 0);
             World.ItemManager.ForcedAddCount(destItem, count, datas.PropertyChanges);
             World.ItemManager.ForcedAddCount(src, -count, datas.PropertyChanges);
             src.FcpToProperties();

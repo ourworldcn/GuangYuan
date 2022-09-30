@@ -959,13 +959,7 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameItem GetPvpObject(this GameChar gameChar)
         {
-#if DEBUG
-            var gim = gameChar.GameUser.Services.GetRequiredService<GameItemManager>();
-            var result = gim.GetOrCreateItem(gameChar.GetCurrencyBag(), ProjectConstant.PvpObjectTId, c => c.ExtraDecimal = 100);
-            return result;
-#else
             return gameChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.PvpObjectTId);
-#endif
         }
 
         /// <summary>

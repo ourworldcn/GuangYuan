@@ -13,7 +13,7 @@ namespace GuangYuan.GY001.BLL.Social
     /// <summary>
     /// 获取全服推关战力排名前n位成员命令。
     /// </summary>
-    public class GetTotalPowerTopRankCommand : GameCommandBase<GetTotalPowerTopRankCommand>
+    public class GetTotalPowerTopRankCommand : GameCommand<GetTotalPowerTopRankCommand>
     {
         public GetTotalPowerTopRankCommand()
         {

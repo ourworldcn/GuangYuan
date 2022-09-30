@@ -144,7 +144,7 @@ namespace GY2021001WebApi.Controllers
                 model.Booty.Add(new GameItemDto()
                 {
                     Id = Guid.NewGuid().ToBase64String(),
-                    ExtraGuid = ProjectConstant.JinbiId.ToBase64String(),
+                    ExtraGuid = new Guid("{ac7d593c-ce82-4642-97a3-14025da633e4}").ToBase64String(),    //基因蛋
                     Count = 100,
                 });
             }

@@ -30,7 +30,14 @@ namespace Gy01.AutoMapper.Profiles
 
             CreateMap<GamePropertyChangeItem<object>, GamePropertyChangeItemDto>()
                 .ForMember(dest => dest.ObjectId, opt => opt.MapFrom((src, dest) => (src.Object as GameThingBase)?.Base64IdString ?? Guid.Empty.ToBase64String()))
-                .ForMember(dest => dest.TId, opt => opt.MapFrom((src, dest) => (src.Object as GameThingBase)?.ExtraGuid.ToBase64String() ?? Guid.Empty.ToBase64String()));
+                .ForMember(dest => dest.TId, opt => opt.MapFrom((src, dest) => (src.Object as GameThingBase)?.ExtraGuid.ToBase64String() ?? Guid.Empty.ToBase64String()))
+                .AfterMap((src, dest, context) =>
+                {
+                    if (src.NewValue is GameItem && src.PropertyName == "Children")
+                        dest.NewValue = context.Mapper.Map<GameItemDto>(src.NewValue);
+                    if (src.OldValue is GameItem && src.PropertyName == "Children")
+                        dest.OldValue = context.Mapper.Map<GameItemDto>(src.OldValue);
+                });
             //.ForMember(dest => dest.ObjectId, opt => opt.MapFrom(src => src.Object is GameObjectBase go ? go.Id : Guid.Empty));
 
             CreateMap<GameMissionItem, GameMissionItemDto>().ConstructUsing((src, context) =>
@@ -43,7 +50,7 @@ namespace Gy01.AutoMapper.Profiles
             }).ForMember(c => c.MaxComplateCount, opt => opt.Ignore());
 
             //DTO映射
-            CreateMap<GameItem, GameItemDto>().AfterMap((src,dest) =>
+            CreateMap<GameItem, GameItemDto>().AfterMap((src, dest) =>
             {
                 dest.Properties[nameof(src.ExtraDecimal)] = src.ExtraDecimal;
                 dest.Properties[nameof(src.ExtraString)] = src.ExtraString;

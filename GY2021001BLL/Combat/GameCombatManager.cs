@@ -868,7 +868,6 @@ namespace GuangYuan.GY001.BLL
             attacker.Booties.AddRange(bootyOfAttacker); //计入战报
             World.ItemManager.MoveItems(bootyOfAttacker, datas.GameChar, null, datas.PropertyChanges);
 
-
             defenser.Booties.AddRange(bootyOfDefenser); //计入战报
             World.ItemManager.MoveItems(bootyOfDefenser, otherChar, null, datas.PropertyChanges);    //防御方物品变动奖励
 
@@ -882,18 +881,18 @@ namespace GuangYuan.GY001.BLL
             {
                 List<GameItem> result = new List<GameItem>();
                 var xGold = (1 - datas.MainRoomRhp) * 0.5m + (1 - datas.GoldRhp) * 0.5m;   //金币的系数
-                var xWood = (1 - datas.MainRoomRhp) * 0.5m + (1 - datas.WoodRhp) * 0.5m;    //木材的系数
+                var xWood = (1 - datas.MainRoomRhp) * 0.5m + (1 - datas.StoreOfWoodRhp) * 0.5m;    //木材的系数
                 var resource = combat.Others.First();   //搜索时点的资源快照
                 var gold = resource.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.Count ?? 0;   //金币基数
                 var wood = resource.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaiId)?.Count ?? 0;  //木材基数
                 var shulin = resource.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId)?.Count ?? 0;  //树林基数
                 var goldGi = new GameItem();    //金币
                 World.EventsManager.GameItemCreated(goldGi, ProjectConstant.JinbiId);
-                goldGi.Count = (100 + gold * 0.5m) * (1 - datas.MainRoomRhp);
+                goldGi.Count = (100 + gold * 0.5m) * xGold;
 
                 var woodGi = new GameItem();    //木材
                 World.EventsManager.GameItemCreated(woodGi, ProjectConstant.MucaiId);
-                woodGi.Count = (50 + wood * 0.2m + shulin * 0.5m) * (1 - datas.MainRoomRhp);
+                woodGi.Count = (50 + wood * 0.2m + shulin * 0.5m) * xWood;
                 result.Add(goldGi);
                 result.Add(woodGi);
                 return result;
@@ -1239,39 +1238,39 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void AbortPvp(AbortPvpDatas datas)
         {
-            //var db = datas.UserDbContext;
-            //var oldWar = db.Set<VirtualThing>().Find(datas.CombatId);   //原始战斗
-            //var oldView = oldWar.GetJsonObject<CombatReport>();
-            //if (oldView.DefenserIds.Contains(datas.GameChar.Id))  //自己被打直接放弃
-            //{
-            //    var getMails = new GameSocialManager.GetMailsDatas(Service, datas.GameChar);
-            //    World.SocialManager.GetMails(getMails);
-            //    if (getMails.HasError)
-            //    {
-            //        datas.HasError = true;
-            //        datas.ErrorCode = getMails.ErrorCode;
-            //        datas.DebugMessage = getMails.DebugMessage;
-            //        return;
-            //    }
-            //    var mail = getMails.Mails.FirstOrDefault(c => c.Properties.GetGuidOrDefault("OldCombatId") == datas.CombatId && c.Properties.GetStringOrDefault("MailTypeId") == ProjectConstant.PVP系统奖励.ToString());
-            //    if (null != mail)
-            //        db.Remove(mail);
-            //    oldView.IsCompleted = true;
-            //    db.SaveChanges();
-            //}
-            //else
-            //{
-            //    using EndCombatPvpWorkData endPvpDatas = new EndCombatPvpWorkData(World, datas.GameChar, oldView.AttackerIds.First())
-            //    {
-            //        UserDbContext = db,
-            //        CombatId = datas.CombatId,
-            //        DungeonId = new Guid("{2453A507-DA62-4B7E-8C07-FAE278B54B12}"),
-            //    };
-            //    World.CombatManager.EndCombatPvp(endPvpDatas);
-            //    datas.HasError = endPvpDatas.HasError;
-            //    datas.ErrorCode = endPvpDatas.ErrorCode;
-            //    datas.DebugMessage = endPvpDatas.DebugMessage;
-            //}
+            using var dwCombat = GetAndLockCombat(datas.CombatId, out var oldView);
+            if (oldView.Defensers.Any(c=>c.CharId==datas.GameChar.Id))  //自己被打直接放弃
+            {
+                var getMails = new GameSocialManager.GetMailsDatas(Service, datas.GameChar);
+                World.SocialManager.GetMails(getMails);
+                if (getMails.HasError)
+                {
+                    datas.HasError = true;
+                    datas.ErrorCode = getMails.ErrorCode;
+                    datas.DebugMessage = getMails.DebugMessage;
+                    return;
+                }
+                var mail = getMails.Mails.FirstOrDefault(c => c.Properties.GetGuidOrDefault("OldCombatId") == datas.CombatId && c.Properties.GetStringOrDefault("MailTypeId") == ProjectConstant.PVP系统奖励.ToString());
+                if (null != mail)
+                    datas.UserDbContext.Remove(mail);
+                oldView.Assistancing = false;
+                oldView.Assistanced = true;
+                oldView.IsCompleted = true;
+            }
+            else
+            {
+                using EndCombatPvpWorkData endPvpDatas = new EndCombatPvpWorkData(World, datas.GameChar) 
+                {
+                    UserDbContext = datas.UserDbContext,
+                    CombatId = datas.CombatId,
+                    MainRoomRhp=1,
+                    GoldRhp=1,
+                    WoodRhp=1,
+                    StoreOfWoodRhp=1,
+                };
+                World.CombatManager.EndCombatPvp(endPvpDatas);
+                datas.FillErrorFrom(endPvpDatas);
+            }
         }
 
         #endregion PVP相关

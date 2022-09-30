@@ -7,7 +7,7 @@ using System.Text;
 
 namespace OW.Game
 {
-    public abstract class GameCommandBase<T> : CommandBase<T>
+    public abstract class GameCommand<T> : CommandBase<T>
     {
     }
 
@@ -54,7 +54,7 @@ namespace OW.Game
         #endregion IDisposable相关
     }
 
-    public abstract class WithChangesCommand<T> : GameCommandBase<T>
+    public abstract class WithChangesCommand<T> : GameCommand<T>
     {
         #region 构造函数
         public WithChangesCommand()

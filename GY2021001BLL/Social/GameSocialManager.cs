@@ -492,7 +492,7 @@ namespace GuangYuan.GY001.BLL
         public void RequestAssistance(RequestAssistanceDatas datas)
         {
             using var dwCombat = World.CombatManager.GetAndLockCombat(datas.RootCombatId, out var combat);
-            if(dwCombat.IsEmpty)
+            if (dwCombat.IsEmpty)
             {
                 datas.FillErrorFromWorld();
                 return;
@@ -616,6 +616,7 @@ namespace GuangYuan.GY001.BLL
 
                             select new { gc, tuiguanR, goldR, goldOfStoreR, wood, woodOfStoreR, mainRoomR, pvpObjectR }).AsNoTracking();   //基准集合
                                                                                                                                            //where pvpObjectR.ExtraGuid == 
+            
             if (collBase.Count() != innerIds.Length)
             {
                 var errColl = innerIds.Except(collBase.Select(c => c.gc.Id).ToArray());
@@ -1570,11 +1571,7 @@ namespace GuangYuan.GY001.BLL
             {
                 get
                 {
-#if DEBUG
-                    return _PvpObject ??= World.ItemManager.GetOrCreateItem(GameChar, ProjectConstant.CurrencyBagTId, ProjectConstant.PvpObjectTId);
-#else
                     return _PvpObject ??= GameChar.GetPvpObject();
-#endif
                 }
             }
             /// <summary>
