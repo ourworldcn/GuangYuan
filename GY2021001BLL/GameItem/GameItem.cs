@@ -91,6 +91,8 @@ namespace GuangYuan.GY001.BLL
             //引发通告
             _OwEventBus.Add(notification);
             _OwEventBus.Raise();
+            var tili = command.GameChar.GetTili();
+            //GamePropertyChangeItem<object>.ModifyAndAddChanged(command.Changes,, "",);
             return result;
         }
 

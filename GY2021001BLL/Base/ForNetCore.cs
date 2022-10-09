@@ -291,6 +291,7 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
+                var list = new List<int>() { 2, 22 };
             }
             catch (Exception)
             {

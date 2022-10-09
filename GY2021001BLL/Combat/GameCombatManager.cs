@@ -858,7 +858,8 @@ namespace GuangYuan.GY001.BLL
             var gim = World.ItemManager;
             gim.Normalize(datas.Booty);
             datas.Booty.ForEach(c => gim.MergeProperty(c));
-            attacker.Booties.AddRange(datas.Booty.Select(c=>gim.Clone(c)));
+            attacker.Booties.AddRange(datas.Booty.Select(c => gim.Clone(c)));
+
             gim.MoveItems(datas.Booty, datas.GameChar, null, datas.PropertyChanges);
 
             List<GameItem> bootyOfDefenser = ComputeDefenerBooty();
@@ -868,8 +869,11 @@ namespace GuangYuan.GY001.BLL
             attacker.Booties.AddRange(bootyOfAttacker); //计入战报
             World.ItemManager.MoveItems(bootyOfAttacker, datas.GameChar, null, datas.PropertyChanges);
 
-            defenser.Booties.AddRange(bootyOfDefenser); //计入战报
-            World.ItemManager.MoveItems(bootyOfDefenser, otherChar, null, datas.PropertyChanges);    //防御方物品变动奖励
+            if (!World.CharManager.IsOnline(otherChar.Id))  //若不在线
+            {
+                defenser.Booties.AddRange(bootyOfDefenser); //计入战报
+                World.ItemManager.MoveItems(bootyOfDefenser, otherChar, null, datas.PropertyChanges);    //防御方物品变动奖励
+            }
 
             ComputeScore();
             #region 计算收益
@@ -945,8 +949,11 @@ namespace GuangYuan.GY001.BLL
                     var inc = Math.Clamp(1 + Math.Round((decimal)Math.Max(defener.ScoreBefore - attacker.ScoreBefore, 0) / 10, MidpointRounding.ToPositiveInfinity), 0, 6); //分值增量
                     attacker.ScoreAfter = (int)(pvpAttacker.ExtraDecimal + inc);
                     datas.PropertyChanges.ModifyAndAddChanged(pvpAttacker, nameof(pvpAttacker.ExtraDecimal), pvpAttacker.ExtraDecimal + inc);
-                    defener.ScoreAfter = (int)(pvpDefenser.ExtraDecimal - inc);
-                    datas.PropertyChanges.ModifyAndAddChanged(pvpDefenser, nameof(pvpDefenser.ExtraDecimal), pvpDefenser.ExtraDecimal - inc);
+                    if (!World.CharManager.IsOnline(otherChar.Id))  //若不在线
+                    {
+                        defener.ScoreAfter = (int)(pvpDefenser.ExtraDecimal - inc);
+                        datas.PropertyChanges.ModifyAndAddChanged(pvpDefenser, nameof(pvpDefenser.ExtraDecimal), pvpDefenser.ExtraDecimal - inc);
+                    }
                 }
                 else //若进攻方失败
                 {
@@ -967,7 +974,8 @@ namespace GuangYuan.GY001.BLL
                     var desCount = datas.DestroyCountOfWoodStore;
                     attackerInc = Math.Min(defenerInc + desCount, 0);
                     datas.PropertyChanges.ModifyAndAddChanged(pvpAttacker, nameof(pvpAttacker.ExtraDecimal), pvpAttacker.ExtraDecimal + attackerInc);
-                    datas.PropertyChanges.ModifyAndAddChanged(pvpDefenser, nameof(pvpDefenser.ExtraDecimal), pvpDefenser.ExtraDecimal - defenerInc);
+                    if (!World.CharManager.IsOnline(otherChar.Id))  //若不在线
+                        datas.PropertyChanges.ModifyAndAddChanged(pvpDefenser, nameof(pvpDefenser.ExtraDecimal), pvpDefenser.ExtraDecimal - defenerInc);
                 }
             }
 
@@ -981,13 +989,20 @@ namespace GuangYuan.GY001.BLL
             pvpObj = datas.GameChar.GetPvpObject();
             otherPvpObj = otherChar.GetPvpObject();
             //发送反击邮件
-            var mail = new GameMail()
+            if (!World.CharManager.IsOnline(otherChar.Id))  //若不在线
             {
-            };
-            mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件.ToString();
-            mail.Properties["CombatId"] = combat.Thing.IdString;
-            World.SocialManager.SendMail(mail, new Guid[] { otherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
-            datas.MailId = mail.Id;
+                var mail = new GameMail()
+                {
+                };
+                mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件.ToString();
+                mail.Properties["CombatId"] = combat.Thing.IdString;
+                World.SocialManager.SendMail(mail, new Guid[] { otherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+                datas.MailId = mail.Id;
+            }
+            else //若在线
+            {
+                combat.IsCompleted = true;
+            }
             //保存数据
             combat.IsAttckerWin = datas.MainRoomRhp <= 0;
             datas.Save();
@@ -1005,7 +1020,7 @@ namespace GuangYuan.GY001.BLL
                     World.MissionManager.ScanAsync(datas.GameChar);
                 }
             }
-            else //若防御剩余
+            else if (!World.CharManager.IsOnline(otherChar.Id)) //若防御胜利且计算成就(不在线)
             {
                 var mission = otherChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.PVP防御成就);
                 if (null != mission)   //若找到成就对象
@@ -1239,7 +1254,7 @@ namespace GuangYuan.GY001.BLL
         public void AbortPvp(AbortPvpDatas datas)
         {
             using var dwCombat = GetAndLockCombat(datas.CombatId, out var oldView);
-            if (oldView.Defensers.Any(c=>c.CharId==datas.GameChar.Id))  //自己被打直接放弃
+            if (oldView.Defensers.Any(c => c.CharId == datas.GameChar.Id))  //自己被打直接放弃
             {
                 var getMails = new GameSocialManager.GetMailsDatas(Service, datas.GameChar);
                 World.SocialManager.GetMails(getMails);
@@ -1259,14 +1274,14 @@ namespace GuangYuan.GY001.BLL
             }
             else
             {
-                using EndCombatPvpWorkData endPvpDatas = new EndCombatPvpWorkData(World, datas.GameChar) 
+                using EndCombatPvpWorkData endPvpDatas = new EndCombatPvpWorkData(World, datas.GameChar)
                 {
                     UserDbContext = datas.UserDbContext,
                     CombatId = datas.CombatId,
-                    MainRoomRhp=1,
-                    GoldRhp=1,
-                    WoodRhp=1,
-                    StoreOfWoodRhp=1,
+                    MainRoomRhp = 1,
+                    GoldRhp = 1,
+                    WoodRhp = 1,
+                    StoreOfWoodRhp = 1,
                 };
                 World.CombatManager.EndCombatPvp(endPvpDatas);
                 datas.FillErrorFrom(endPvpDatas);

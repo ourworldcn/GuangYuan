@@ -46,5 +46,4 @@ namespace OW.Game
         public List<GamePropertyChangeItem<object>> Changes => _Changes ??= new List<GamePropertyChangeItem<object>>();
 
     }
-
 }

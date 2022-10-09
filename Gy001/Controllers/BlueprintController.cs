@@ -58,7 +58,7 @@ namespace Gy001.Controllers
             var bpm = world.BlueprintManager;
             bpm.ApplyBluprint(applyBluprintDatas);
             var mapper = world.GetMapper();
-            return mapper.Map(applyBluprintDatas);
+            return mapper.Map(applyBluprintDatas); 
         }
 
 #endif

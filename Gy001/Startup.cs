@@ -122,7 +122,6 @@ namespace Gy001
 #endif //DEBUG
             }));
             services.Replace(ServiceDescriptor.Singleton<GameEventsManager>(c => new Gy001GameEventsManager(c, new Gy001GameEventsManagerOptions())));
-            services.Replace(ServiceDescriptor.Singleton<GamePropertyChangeManager>(c => new Gy001GamePropertyChangeManager(c, new GamePropertyChangeManagerOptions())));
 
             services.TryAddSingleton(c => new GameMapperManager(c, new GameMapperManagerOptions()) { });//加入转换管理器。
             services.AddAutoMapper(c =>
