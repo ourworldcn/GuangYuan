@@ -433,7 +433,7 @@ namespace GY2021001WebApi.Models
                 {
                     DisplayName = c.gc.DisplayName,
                     Id = c.gc.Base64IdString,
-                    Title = (int)c.slot.ExtraDecimal,
+                    Title = (int)(c.slot.ExtraDecimal ?? 0),
                     Level = (int)c.gc.Properties.GetDecimalOrDefault("lv"),
                     IconIndex = (int)c.gc.Properties.GetDecimalOrDefault("charIcon", 0),
                     Power = c.tuiguan.ExtraDecimal ?? 0,

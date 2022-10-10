@@ -369,7 +369,6 @@ namespace OW.Game
         public virtual void GameGuildLoaded(GameGuild guild)
         {
             GameThingLoaded(guild);
-            guild.RuntimeProperties["DbContext"] = World.CreateNewUserDbContext();
         }
 
         /// <summary>

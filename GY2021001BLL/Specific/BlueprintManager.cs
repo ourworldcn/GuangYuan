@@ -619,7 +619,12 @@ namespace GuangYuan.GY001.BLL
                 {
                     World.MissionManager.ActiveFriend(gc);
                 }
-
+                if (gameItem.Name2FastChangingProperty.TryGetValue("upgradecd", out var fcp))  //若有升级数据
+                {
+                    var exp = Math.Round(fcp.MaxValue / 600, MidpointRounding.ToPositiveInfinity);   //TO DO建筑升级结束时增加玩家经验值,应属性化控制
+                    exp += gc.GetPropertyWithFcpOrDefalut("exp");
+                    World.CharManager.SetExp(gc, exp);
+                }
             }
             catch (Exception)
             {
@@ -816,7 +821,7 @@ namespace GuangYuan.GY001.BLL
 
             using var scope = World.Service.CreateScope();
             var commMng = scope.ServiceProvider.GetRequiredService<OwCommandManager>();
-            SetLevelCommand command = new SetLevelCommand(null, null) { Item = gi, NewLevel = (int)oldLv + 1 };
+            SetLevelCommand command = new SetLevelCommand(gu.CurrentChar, null) { Item = gi, NewLevel = (int)oldLv + 1 };
             var result = commMng.Handle<SetLevelCommand, SetLevelCommandResult>(command);
 
             //通知属性发生变化

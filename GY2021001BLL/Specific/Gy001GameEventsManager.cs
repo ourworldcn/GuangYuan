@@ -5,6 +5,7 @@ using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Extensions.Game.Store;
+using OW.Game.PropertyChange;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -236,7 +237,7 @@ namespace OW.Game
                     //计算经验值增加量
                     var seq = gi.GetTemplate().GetSequenceProperty<decimal>("lut");
                     var time = seq[Convert.ToInt32(item.OldValue ?? 0)];
-                    var exp = Math.Round(time / 600, MidpointRounding.ToPositiveInfinity);   //TO DO建筑升级结束时增加玩家经验值,应属性化控制
+                    var exp = Math.Ceiling(time / 600);   //TO DO建筑升级结束时增加玩家经验值,应属性化控制
                     World.CharManager.AddExp(gc, exp);  //增加经验值
                 }
             }
@@ -248,7 +249,7 @@ namespace OW.Game
         /// <param name="e"></param>
         private void OnCharLevelUp(DynamicPropertyChangedCollection e)
         {
-            foreach (var spcc in e.Where(c => c.Thing is GameChar)) //遍历针对角色的动态属性变化
+            foreach (var spcc in e.Where(c => c.Thing is GameChar gc)) //遍历针对角色的动态属性变化
             {
                 foreach (var item in spcc)
                 {
@@ -292,6 +293,11 @@ namespace OW.Game
                     }
                     gc.ExtraString = newLv.ToString("D10");
                     gc.GetJsonObject<CharJsonEntity>().Lv = newLv;
+
+                    var tili = gc.GetTili();
+                    var oldCount = tili.Count;
+                    tili.Count = oldCount + 20;
+                    //GamePropertyChangeItem<object>.ModifyAndAddChanged(result.Changes, tili, "Count", oldCount + 20);
                     //生成通知数据。
                     if (lst != null)
                     {
