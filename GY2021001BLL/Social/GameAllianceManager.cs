@@ -88,7 +88,7 @@ namespace GuangYuan.GY001.UserDb.Social
 
         void Initialize()
         {
-            using var db = World.CreateNewUserDbContext();
+            var db = World.CreateNewUserDbContext();
             foreach (var item in db.Set<GameGuild>())
             {
                 World.EventsManager.GameGuildLoaded(item);
@@ -98,6 +98,7 @@ namespace GuangYuan.GY001.UserDb.Social
         }
 
         #endregion 构造函数
+
         ConcurrentDictionary<Guid, GameGuild> _Id2Guild = new ConcurrentDictionary<Guid, GameGuild>();
 
         /// <summary>

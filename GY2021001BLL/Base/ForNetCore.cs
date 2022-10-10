@@ -292,6 +292,7 @@ namespace GuangYuan.GY001.BLL
             try
             {
                 var list = new List<int>() { 2, 22 };
+                var _Clear = list.GetType().GetMethod("Clear", Array.Empty<Type>());
             }
             catch (Exception)
             {

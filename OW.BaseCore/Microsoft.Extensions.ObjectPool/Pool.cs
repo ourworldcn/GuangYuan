@@ -70,6 +70,11 @@ namespace Microsoft.Extensions.ObjectPool
         /// </summary>
         public static readonly ObjectPool<T> Shared;
 
+        public AutoClearPool(): base(new CollectionPooledObjectPolicy())
+        {
+
+        }
+
         /// <summary>
         /// 构造函数。
         /// netcore v3.1实测最大容量是是CPU内核数的2倍。12cpu23元素数组。

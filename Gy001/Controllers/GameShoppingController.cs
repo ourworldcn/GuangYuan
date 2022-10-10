@@ -77,9 +77,7 @@ namespace Gy001.Controllers
                 Count = model.Count,
             };
             World.ShoppingManager.Buy(datas);
-            result.HasError = datas.HasError;
-            result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.DebugMessage;
+            result.FillFrom(datas);
             if (!result.HasError)
             {
                 var mapper = World.Service.GetRequiredService<IMapper>();

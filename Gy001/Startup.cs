@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.OpenApi.Models;
 using OW.Game;
 using OW.Game.PropertyChange;
@@ -126,13 +127,14 @@ namespace Gy001
             services.TryAddSingleton(c => new GameMapperManager(c, new GameMapperManagerOptions()) { });//加入转换管理器。
             services.AddAutoMapper(c =>
             {
-                c.AddMaps(System.AppDomain.CurrentDomain.GetAssemblies());
+                c.AddMaps(AppDomain.CurrentDomain.GetAssemblies());
             });
             #endregion 配置游戏专用服务
 
             services.AddPublisherT78();  //加入访问冰鸟sdk的服务
             services.AddPublisherT89();  //加入访问完美sdk的服务
 
+            services.AddSingleton(typeof(AutoClearPool<>), typeof(AutoClearPool<>));
         }
 
         private Task ExceptionHandler(HttpContext context)
