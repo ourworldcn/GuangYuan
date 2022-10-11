@@ -884,7 +884,10 @@ namespace GuangYuan.GY001.BLL
             List<GameItem> ComputeAttackerBooty()
             {
                 List<GameItem> result = new List<GameItem>();
+
                 var xGold = (1 - datas.MainRoomRhp) * 0.5m + (1 - datas.GoldRhp) * 0.5m;   //金币的系数
+                if (xGold <= 0) //若没有金币可获得
+                    xGold = datas.DestroyCountOfWoodStore * 0.1m;
                 var xWood = (1 - datas.MainRoomRhp) * 0.5m + (1 - datas.StoreOfWoodRhp) * 0.5m;    //木材的系数
                 var resource = combat.Others.First();   //搜索时点的资源快照
                 var gold = resource.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.Count ?? 0;   //金币基数
@@ -961,15 +964,15 @@ namespace GuangYuan.GY001.BLL
                     decimal attackerInc;
                     if (attacker.ScoreBefore < 400)
                     {
-                        defenerInc = -Math.Round(defenerInc * 0.5m, MidpointRounding.ToNegativeInfinity);
+                        defenerInc = -Math.Ceiling(defenerInc * 0.5m);
                     }
                     else if (attacker.ScoreBefore >= 400 && attacker.ScoreBefore <= 600)
                     {
-                        defenerInc = -Math.Round(defenerInc * 0.8m, MidpointRounding.ToNegativeInfinity);
+                        defenerInc = -Math.Ceiling(defenerInc * 0.8m);
                     }
                     else
                     {
-                        defenerInc = -Math.Round(defenerInc, MidpointRounding.ToNegativeInfinity);
+                        defenerInc = -Math.Ceiling(defenerInc);
                     }
                     var desCount = datas.DestroyCountOfWoodStore;
                     attackerInc = Math.Min(defenerInc + desCount, 0);
@@ -989,22 +992,34 @@ namespace GuangYuan.GY001.BLL
             pvpObj = datas.GameChar.GetPvpObject();
             otherPvpObj = otherChar.GetPvpObject();
             //发送反击邮件
+            combat.IsAttckerWin = datas.MainRoomRhp <= 0;
             if (!World.CharManager.IsOnline(otherChar.Id))  //若不在线
             {
                 var mail = new GameMail()
                 {
                 };
-                mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件.ToString();
-                mail.Properties["CombatId"] = combat.Thing.IdString;
-                World.SocialManager.SendMail(mail, new Guid[] { otherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
-                datas.MailId = mail.Id;
+                if (combat.IsAttckerWin ?? false)   //若攻击胜利
+                {
+                    mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件.ToString();
+                    mail.Properties["CombatId"] = combat.Thing.IdString;
+                }
+                else //若攻击失败
+                {
+                    //TODO 未实装
+                    //mail.Properties["MailTypeId"] = ProjectConstant.PVP自己_防御_胜利.ToString();
+                    //mail.Properties["CombatId"] = combat.Thing.IdString;
+                }
+                if (mail.Properties.ContainsKey("MailTypeId"))
+                {
+                    World.SocialManager.SendMail(mail, new Guid[] { otherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
+                    datas.MailId = mail.Id;
+                }
             }
             else //若在线
             {
                 combat.IsCompleted = true;
             }
             //保存数据
-            combat.IsAttckerWin = datas.MainRoomRhp <= 0;
             datas.Save();
             datas.HasError = false;
             datas.ErrorCode = 0;

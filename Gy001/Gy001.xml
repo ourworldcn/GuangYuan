@@ -2812,6 +2812,11 @@
             主基地等级。
             </summary>
         </member>
+        <member name="P:GY2021001WebApi.Models.CharSummaryDto.IconIndex">
+            <summary>
+            头像索引号。默认为0。
+            </summary>
+        </member>
         <member name="T:GY2021001WebApi.Models.RequestFriendReturnDto">
             <summary>
             RequestFriend 接口返回值封装类。

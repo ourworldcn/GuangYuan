@@ -293,6 +293,8 @@ namespace GuangYuan.GY001.BLL
             {
                 var list = new List<int>() { 2, 22 };
                 var _Clear = list.GetType().GetMethod("Clear", Array.Empty<Type>());
+                var srv = _Services.GetRequiredService<AutoClearPool<List<int>>>();
+                srv.Return(list);
             }
             catch (Exception)
             {

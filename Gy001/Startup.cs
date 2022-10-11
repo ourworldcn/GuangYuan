@@ -134,7 +134,6 @@ namespace Gy001
             services.AddPublisherT78();  //加入访问冰鸟sdk的服务
             services.AddPublisherT89();  //加入访问完美sdk的服务
 
-            services.AddSingleton(typeof(AutoClearPool<>), typeof(AutoClearPool<>));
         }
 
         private Task ExceptionHandler(HttpContext context)

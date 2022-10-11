@@ -420,7 +420,7 @@ namespace GuangYuan.GY001.BLL
                     robotUser = world.CharManager.CreateNewUserAndLock(FriendRobotLoginName, friendRobotPwd);
                     try
                     {
-                        robotUser.CurrentChar.CharType |= CharType.Robot;
+                        robotUser.CurrentChar.CharType |= CharType.Npc;
                         robotUser.CurrentChar.DisplayName = "Forever partner";
                         world.CharManager.NotifyChange(robotUser);
                     }
@@ -431,7 +431,7 @@ namespace GuangYuan.GY001.BLL
                 }
                 else
                 {
-                    robotUser.CurrentChar.CharType |= CharType.Robot;
+                    robotUser.CurrentChar.CharType |= CharType.Npc;
                     robotUser.CurrentChar.DisplayName = "Forever partner";
                     world.CharManager.NotifyChange(robotUser);
                 }

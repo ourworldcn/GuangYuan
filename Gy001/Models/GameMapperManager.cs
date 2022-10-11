@@ -158,6 +158,7 @@ namespace GuangYuan.GY001.BLL.Specific
             result.PvpScores = obj.PvpScores;
             result.Wood = obj.Wood;
             result.WoodOfStore = obj.WoodOfStore;
+            result.IconIndex = obj.IconIndex;
             result.HomelandShows.AddRange(obj.HomelandShows.Select(c => Map(c)));
         }
 

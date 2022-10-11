@@ -616,7 +616,7 @@ namespace GuangYuan.GY001.BLL
 
                             select new { gc, tuiguanR, goldR, goldOfStoreR, wood, woodOfStoreR, mainRoomR, pvpObjectR }).AsNoTracking();   //基准集合
                                                                                                                                            //where pvpObjectR.ExtraGuid == 
-            
+
             if (collBase.Count() != innerIds.Length)
             {
                 var errColl = innerIds.Except(collBase.Select(c => c.gc.Id).ToArray());
@@ -1751,7 +1751,7 @@ namespace GuangYuan.GY001.BLL
                        orderby Math.Abs(pvp.ExtraDecimal.Value - pvpScore), //按分差
                        Math.Abs((string.IsNullOrWhiteSpace(SqlDbFunctions.JsonValue(gc.JsonObjectString, "$.Lv")) ? 0 : Convert.ToInt32(SqlDbFunctions.JsonValue(gc.JsonObjectString, "$.Lv"))) - lv) //按等级差升序排序
                        select gc.Id;
-            var list = coll.Take(1).ToList();
+            var list = coll.ToList();   //获取所有
             if (list.Count <= 0)   //若没找到
             {
                 coll = from pvp in db.Set<GameItem>()
@@ -1770,6 +1770,12 @@ namespace GuangYuan.GY001.BLL
                     var item = ary[VWorld.WorldRandom.Next(ary.Length)];    //取已经打过的随机一个人
                     list.Add(item);
                 }
+            }
+            else //若找到
+            {
+                var rnd = VWorld.WorldRandom.Next(list.Count);
+                var tmp = list[rnd];
+                list = new List<Guid>() { tmp };
             }
             return list;
         }

@@ -3084,6 +3084,14 @@ namespace GY2021001WebApi.Models
         /// </summary>
         [DataMember]
         public int MainControlRoomLevel { get; set; }
+
+        /// <summary>
+        /// 头像索引号。默认为0。
+        /// </summary>
+        [DataMember]
+        public int IconIndex { get; set; }
+
+
     }
 
     /// <summary>

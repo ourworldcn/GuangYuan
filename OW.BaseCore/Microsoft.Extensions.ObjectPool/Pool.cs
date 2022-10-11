@@ -2,6 +2,7 @@
  * 对象池的一些简单补充。
  * 对象池仅仅为了存储数据的对象不频繁生成回收，不适合单独成为一个服务。
  */
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -40,16 +41,30 @@ namespace Microsoft.Extensions.ObjectPool
     /// 此类有助于避免GC。通常这是服务器编程才会使用到的类。
     /// </remarks>
     /// <typeparam name="T"></typeparam>
+    [OwAutoInjection(ServiceLifetime.Singleton, ServiceType = typeof(AutoClearPool<>))]
     public class AutoClearPool<T> : DefaultObjectPool<T> where T : class, new()
     {
         private class CollectionPooledObjectPolicy : DefaultPooledObjectPolicy<T>
         {
             MethodInfo _Clear;
 
+            /// <summary>
+            /// 构造函数。
+            /// </summary>
+            /// <param name="clear">必须是一个无参数且无返回值的实例方法。</param>
+            public CollectionPooledObjectPolicy(MethodInfo clear)
+            {
+                _Clear = clear;
+            }
+
+            /// <summary>
+            /// 构造函数。
+            /// </summary>
             public CollectionPooledObjectPolicy()
             {
                 _Clear = typeof(T).GetMethod("Clear", Array.Empty<Type>());
             }
+
 
             public override bool Return(T obj)
             {
@@ -70,7 +85,10 @@ namespace Microsoft.Extensions.ObjectPool
         /// </summary>
         public static readonly ObjectPool<T> Shared;
 
-        public AutoClearPool(): base(new CollectionPooledObjectPolicy())
+        /// <summary>
+        /// 构造函数。
+        /// </summary>
+        public AutoClearPool() : base(new CollectionPooledObjectPolicy())
         {
 
         }
