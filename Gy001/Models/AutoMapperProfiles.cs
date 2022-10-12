@@ -23,7 +23,7 @@ namespace Gy01.AutoMapper.Profiles
             IncludeSourceExtensionMethods(typeof(GuangYuan.GY001.UserDb.GameThingBaseExtensions));
             //基础类型映射
             CreateMap<Guid, string>().ConstructUsing(c => c.ToBase64String());
-            CreateMap<string, Guid>().ConstructUsing(c => OwConvert.ToGuid(c));
+            CreateMap<string, Guid>().ConstructUsing(c => OwConvert.ToGuid(c)); //.ForAllMembers(opt=>opt.Ignore());
 
             CreateMap<ChangeItem, ChangesItemDto>();
             CreateMap<ChangesItemDto, ChangeItem>();

@@ -18,32 +18,20 @@ namespace OW.Game
 
         IServiceProvider _Service;
 
-        /// <summary>
-        /// 发送当前命令的角色。
-        /// </summary>
-        public GameChar CurrentChar { get; set; }
-
-        string _Token;
-        /// <summary>
-        /// 设置令牌。
-        /// </summary>
-        /// <param name="token"></param>
-        public void SetToken(string token)
-        {
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                throw new ArgumentException($"“{nameof(token)}”不能为 null 或空白。", nameof(token));
-            }
-
-            _Token = token;
-        }
+        public IDictionary<string, object> Items { get; } = new Dictionary<string, object>();
 
         public void Handle<T>(T command) where T : IGameCommand
         {
             var coll = _Service.GetServices<IGameCommandHandler<T>>();
-            coll.SafeForEach(c => c.Handle(command));
+            coll.SafeForEach(c =>
+            {
+                orderNumber++;
+                c.Handle(command);
+            });
         }
 
+        private int orderNumber;
+        public int OrderNumber { get => orderNumber; set => orderNumber = value; }
     }
 
     public static class GameCommandManagerExtensions
@@ -77,6 +65,9 @@ namespace OW.Game
         public void Handle(T command);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class IdleCommand : IGameCommand
     {
 

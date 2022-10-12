@@ -1005,9 +1005,8 @@ namespace GuangYuan.GY001.BLL
                 }
                 else //若攻击失败
                 {
-                    //TODO 未实装
-                    //mail.Properties["MailTypeId"] = ProjectConstant.PVP自己_防御_胜利.ToString();
-                    //mail.Properties["CombatId"] = combat.Thing.IdString;
+                    mail.Properties["MailTypeId"] = ProjectConstant.PVP自己_防御_胜利.ToString();
+                    mail.Properties["CombatId"] = combat.Thing.IdString;
                 }
                 if (mail.Properties.ContainsKey("MailTypeId"))
                 {

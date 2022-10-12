@@ -43,6 +43,7 @@ namespace Gy001
         public void ConfigureServices(IServiceCollection services)
         {
             #region 配置通用服务
+            var dd = typeof(GameCommandManager);
 
             services.AddResponseCompression(c => c.EnableForHttps = true);
             //日志服务
@@ -86,7 +87,6 @@ namespace Gy001
             });
 
             services.AddAutoMapper(Array.Empty<Assembly>());
-
             services.AutoRegister();
 
             #endregion 配置通用服务

@@ -297,7 +297,7 @@ namespace GuangYuan.GY001.BLL
                 var _Clear = list.GetType().GetMethod("Clear", Array.Empty<Type>());
                 var srv = _Services.GetRequiredService<AutoClearPool<List<int>>>();
                 srv.Return(list);
-                var ss = service.GetRequiredService<IGameCommandHandler<IdleCommand>>();
+                var ss = service.GetRequiredService<GameCommandManager>();
             }
             catch (Exception)
             {
