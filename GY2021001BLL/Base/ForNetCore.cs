@@ -298,6 +298,7 @@ namespace GuangYuan.GY001.BLL
                 var srv = _Services.GetRequiredService<AutoClearPool<List<int>>>();
                 srv.Return(list);
                 var ss = service.GetRequiredService<GameCommandManager>();
+                ss.Items["dslk"] = 1;
             }
             catch (Exception)
             {

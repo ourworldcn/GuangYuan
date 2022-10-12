@@ -581,6 +581,7 @@ namespace GuangYuan.GY001.BLL
         public void StartCombatPvp(StartCombatPvpData datas)
         {
             var cache = World.GameCache;
+            datas.GameChar.GetTili().RefreshFcp();
             if (datas.DungeonId == ProjectConstant.PvpDungeonTId) //若是正常pvp
             {
                 var key = datas.CombatId.ToString();

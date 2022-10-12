@@ -932,7 +932,7 @@ namespace GuangYuan.GY001.BLL
             }
             GameItem gi = hl.GetAllChildren().FirstOrDefault(c => c.Id == datas.GameItems[0].Id);   //要升级的物品
             var lut = gi.Properties.GetDecimalOrDefault("lut"); //冷却的秒数
-            if (lut > 0 && !datas.Verify(worker.Count > 0, "所有建筑工人都在忙", worker.ExtraGuid))
+            if (!datas.Verify(worker.Count > 0, "所有建筑工人都在忙", worker.ExtraGuid))
             {
                 return;
             }

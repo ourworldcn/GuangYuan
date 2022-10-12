@@ -1,37 +1,90 @@
 ﻿using GuangYuan.GY001.UserDb;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OW.Game
 {
     [OwAutoInjection(ServiceLifetime.Scoped)]
-    public class GameCommandManager
+    public class GameCommandManager : IDisposable
     {
+        public GameCommandManager()
+        {
+
+        }
+
         public GameCommandManager(IServiceProvider service)
         {
             _Service = service;
+
         }
 
         IServiceProvider _Service;
 
-        public IDictionary<string, object> Items { get; } = new Dictionary<string, object>();
+        private Dictionary<string, object> items;
+        /// <summary>
+        /// 当前范围内的一些数据。
+        /// </summary>
+        public IDictionary<string, object> Items => items ??= AutoClearPool<Dictionary<string, object>>.Shared.Get();
+
 
         public void Handle<T>(T command) where T : IGameCommand
         {
+            orderNumber = 0;
             var coll = _Service.GetServices<IGameCommandHandler<T>>();
             coll.SafeForEach(c =>
             {
-                orderNumber++;
                 c.Handle(command);
+                orderNumber++;
             });
         }
 
         private int orderNumber;
+
         public int OrderNumber { get => orderNumber; set => orderNumber = value; }
+
+        #region IDisposable接口相关
+
+        private bool disposedValue;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // 释放托管状态(托管对象)
+                }
+
+                // 释放未托管的资源(未托管的对象)并重写终结器
+                // 将大型字段设置为 null
+                if (items != null)
+                {
+                    AutoClearPool<Dictionary<string, object>>.Shared.Return(items);
+                    items = null;
+                }
+                disposedValue = true;
+            }
+        }
+
+        // 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~GameCommandManager()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion IDisposable接口相关
     }
 
     public static class GameCommandManagerExtensions
