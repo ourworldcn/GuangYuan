@@ -287,6 +287,8 @@ namespace GuangYuan.GY001.BLL
             using var db = world.CreateNewUserDbContext();
 
             var cache = world.Service.GetService<GameObjectCache>();
+            using var scope = _Services.CreateScope();
+            var service = scope.ServiceProvider;
             var id = Guid.NewGuid();
             var sw = Stopwatch.StartNew();
             try
@@ -295,6 +297,7 @@ namespace GuangYuan.GY001.BLL
                 var _Clear = list.GetType().GetMethod("Clear", Array.Empty<Type>());
                 var srv = _Services.GetRequiredService<AutoClearPool<List<int>>>();
                 srv.Return(list);
+                var ss = service.GetRequiredService<IGameCommandHandler<IdleCommand>>();
             }
             catch (Exception)
             {
@@ -448,6 +451,9 @@ namespace GuangYuan.GY001.BLL
             services.AddCommandManager().RegisterCommandHandler(AppDomain.CurrentDomain.GetAssemblies());
             services.AddOwEventBus().RegisterNotificationHandler(AppDomain.CurrentDomain.GetAssemblies());
 
+            
+            services.UseGameCommand(AppDomain.CurrentDomain.GetAssemblies());
+
             #endregion 基础服务
 
             #region 游戏专用服务
@@ -519,6 +525,7 @@ namespace GuangYuan.GY001.BLL
 
             //加入联盟/工会管理器
             services.TryAddSingleton(c => new GameAllianceManager(c, new GameAllianceManagerOptions() { }));
+
 
             #endregion  游戏专用服务
 
