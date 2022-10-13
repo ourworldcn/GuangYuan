@@ -1246,9 +1246,9 @@ namespace GuangYuan.GY001.BLL
             };
             if (datas.MainRoomRhp <= 0) //若协助成功
             {
-                //mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
-                //mail.Properties["OldCombatId"] = oldCombat.Thing.IdString;
-                //mail.Properties["CombatId"] = combat.Thing.IdString;
+                //mail.SetSdp("MailTypeId", ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString());
+                //mail.SetSdp("OldCombatId", oldCombat.Thing.IdString);
+                //mail.SetSdp("CombatId", combat.Thing.IdString);
                 //if (bootyMail.Count > 0)
                 //    World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId, bootyMail); //被攻击邮件
                 //else
@@ -1389,7 +1389,7 @@ namespace GuangYuan.GY001.BLL
             }
             var gimt = World.ItemTemplateManager;
             //var aryShenwen = gameItems.Where(c => gimt.GetTemplateFromeId(c.ExtraGuid).GenusCode >= 15 && gimt.GetTemplateFromeId(c.ExtraGuid).GenusCode <= 17).ToArray();
-            //if (dungeon.Properties.TryGetDecimal("mt", out var mt)) //若需要限定神纹数量上限
+            //if (dungeon.TryGetSdpDecimal("mt", out var mt)) //若需要限定神纹数量上限
             //{
             //    var tmp = aryShenwen.Sum(c => c.Count ?? 1);
             //    if (tmp > mt)   //若神纹道具数量超限

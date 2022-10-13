@@ -3996,7 +3996,7 @@
                         }
                         else
                         {
-                            var confirmed = sr.Properties.GetValueOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero);
+                            var confirmed = sr.GetSdpValueOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero);
                             if (confirmed == decimal.Zero) //若在申请好友中
                             {
                             }

@@ -35,7 +35,7 @@ namespace OW.Extensions.Game.Store
         //{
         //    charSummary.Id = gameChar.Id;
         //    charSummary.DisplayName = gameChar.DisplayName;
-        //    charSummary.Level = (int)gameChar.Properties.GetDecimalOrDefault("lv", decimal.Zero);
+        //    charSummary.Level = (int)gameChar.GetSdpDecimalOrDefault("lv", decimal.Zero);
         //    charSummary.CombatCap = 4000;
         //    var ary = records.Where(c => c.ParentId == gameChar.Id && (c.ActionId == "Logout" || c.ActionId == "Login")).
         //         OrderByDescending(c => c.DateTimeUtc).Take(1).ToArray();
@@ -237,7 +237,7 @@ namespace OW.Extensions.Game.Store
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DateTime? GetCreateUtc(this GameThingBase thing) =>
-            thing.Properties.TryGetDateTime("CreateUtc", out var result) ? new DateTime?(result) : null;
+            thing.TryGetSdpDateTime("CreateUtc", out var result) ? new DateTime?(result) : null;
 
         /// <summary>
         /// 设置创建时间。
@@ -249,7 +249,7 @@ namespace OW.Extensions.Game.Store
         {
             if (value.HasValue) //若有指定值
             {
-                thing.Properties["CreateUtc"] = value.Value.ToString();
+                thing.SetSdp("CreateUtc", value.Value.ToString());
             }
             else
             {
@@ -263,7 +263,7 @@ namespace OW.Extensions.Game.Store
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetClientString(this GameThingBase thing)
         {
-            var tmp = thing.Properties.GetStringOrDefault("ClientString");
+            var tmp = thing.GetSdpStringOrDefault("ClientString");
             return tmp is null ? null : Uri.UnescapeDataString(tmp);
         }
 
@@ -276,7 +276,7 @@ namespace OW.Extensions.Game.Store
             if (value is null)
                 thing.Properties.Remove("ClientString");
             else
-                thing.Properties["ClientString"] = Uri.EscapeDataString(value);
+                thing.SetSdp("ClientString", Uri.EscapeDataString(value));
         }
 
     }
@@ -294,7 +294,7 @@ namespace OW.Extensions.Game.Store
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetOrderNumber(this GameItem gameItem)
         {
-            return (int)gameItem.Properties.GetDecimalOrDefault("OrderNumber");
+            return (int)gameItem.GetSdpDecimalOrDefault("OrderNumber");
         }
 
         /// <summary>
@@ -306,7 +306,7 @@ namespace OW.Extensions.Game.Store
         public static void SetOrderNumber(this GameItem gameItem, int? value)
         {
             if (value.HasValue)
-                gameItem.Properties["OrderNumber"] = (decimal)value.Value;
+                gameItem.SetSdp("OrderNumber", (decimal)value.Value);
             else
                 gameItem.Properties.Remove("OrderNumber");
         }

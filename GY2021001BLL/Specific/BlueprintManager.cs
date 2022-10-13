@@ -1428,8 +1428,8 @@ namespace GuangYuan.GY001.BLL
         /// <param name="parent1">双亲2。</param>
         private void SetNe(GameItem child, GameItem parent1, GameItem parent2)
         {
-            //var rank1 = parent1.Properties.GetDecimalOrDefault("nerank");
-            //var rank2 = parent2.Properties.GetDecimalOrDefault("nerank");
+            //var rank1 = parent1.GetSdpDecimalOrDefault("nerank");
+            //var rank2 = parent2.GetSdpDecimalOrDefault("nerank");
 
             var lv1 = parent1.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName);
             var lv2 = parent2.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName);

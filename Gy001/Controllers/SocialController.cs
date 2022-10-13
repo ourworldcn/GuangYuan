@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -255,7 +256,7 @@ namespace Gy001.Controllers
         ///             }
         ///             else
         ///             {
-        ///                 var confirmed = sr.Properties.GetValueOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero);
+        ///                 var confirmed = sr.GetSdpValueOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero);
         ///                 if (confirmed == decimal.Zero) //若在申请好友中
         ///                 {
         ///                 }
@@ -330,7 +331,7 @@ namespace Gy001.Controllers
             }
             var result = new GetSocialRelationshipsReturnDto();
             result.SocialRelationships.AddRange(coll.Select(c => (GameSocialRelationshipDto)c));
-            var ids = coll.Where(c => c.Properties.ContainsKey("charid")).Select(c => c.Properties.GetGuidOrDefault("charid"));
+            var ids = coll.Where(c => c.Properties.ContainsKey("charid")).Select(c => c.GetSdpGuidOrDefault("charid"));
             var mapper = _World.GetMapper();
             if (ids.Any())
             {

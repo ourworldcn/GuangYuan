@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using OW.Game.Item;
 using OW.Game.PropertyChange;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -646,7 +647,7 @@ namespace GuangYuan.GY001.BLL
             var gc = data.GameChar;
             var cm = world.CombatManager;
             var parent = cm.GetParent(data.Template);   //取大关
-            if (parent.Properties.TryGetDecimal("minCE", out var minCE))  //若需要校验战力
+            if (parent.TryGetSdpDecimal("minCE", out var minCE))  //若需要校验战力
             {
                 //TO DO
             }
@@ -655,7 +656,7 @@ namespace GuangYuan.GY001.BLL
                 //扣除体力
                 var tili = gc.GetTili();
                 var fcp = tili.Name2FastChangingProperty.GetValueOrDefault("Count");
-                var pp = parent.Properties.GetDecimalOrDefault("pp", 0m);
+                var pp = parent.GetSdpDecimalOrDefault("pp", 0m);
                 if (fcp.GetCurrentValueWithUtc() < pp)
                 {
                     data.HasError = true;
@@ -665,9 +666,9 @@ namespace GuangYuan.GY001.BLL
                 fcp.LastValue -= pp;
                 data.PropertyChanges.ModifyAndAddChanged(tili, "Count", fcp.LastValue);
                 //扣除次数
-                if (parent.Properties.GetDecimalOrDefault("typ") == 2)    //若是塔防
+                if (parent.GetSdpDecimalOrDefault("typ") == 2)    //若是塔防
                 {
-                    var tdt = parent.Properties.GetDecimalOrDefault("tdt", 0m);
+                    var tdt = parent.GetSdpDecimalOrDefault("tdt", 0m);
                     var pveT = world.ItemManager.GetOrCreateItem(gc.GetCurrencyBag(), ProjectConstant.PveTCounterTId);
 
                     if ((pveT.Count ?? 0) < tdt)
@@ -704,7 +705,7 @@ namespace GuangYuan.GY001.BLL
                                                                                   //校验时间
             DateTime dt = gameChar.CombatStartUtc.GetValueOrDefault(DateTime.UtcNow);
             var dtNow = DateTime.UtcNow;
-            var lt = TimeSpan.FromSeconds(Convert.ToDouble(tm.Properties.GetValueOrDefault("tl", decimal.Zero)));   //最短时间
+            var lt = TimeSpan.FromSeconds(Convert.ToDouble(tm.GetSdpValueOrDefault("tl", decimal.Zero)));   //最短时间
             lt = TimeSpan.FromSeconds(1);   //TO DO为测试临时更改
             if (dtNow - dt < lt) //若时间过短
             {
@@ -736,12 +737,12 @@ namespace GuangYuan.GY001.BLL
                 var bodyTemplate = gitm.GetTemplateFromeId(body.ExtraGuid);
                 var result = gim.CreateMounts(headTemplate, bodyTemplate);
 
-                if (c.Properties.TryGetValue("neatk", out object valObj) && OwConvert.TryToDecimal(valObj, out var dec))
-                    result.Properties["neatk"] = dec;
-                if (c.Properties.TryGetValue("neqlt", out valObj) && OwConvert.TryToDecimal(valObj, out dec))
-                    result.Properties["neqlt"] = dec;
-                if (c.Properties.TryGetValue("nemhp", out valObj) && OwConvert.TryToDecimal(valObj, out dec))
-                    result.Properties["nemhp"] = dec;
+                if (c.TryGetSdp("neatk", out object valObj) && OwConvert.TryToDecimal(valObj, out var dec))
+                    result.SetSdp("neatk", dec);
+                if (c.TryGetSdp("neqlt", out valObj) && OwConvert.TryToDecimal(valObj, out dec))
+                    result.SetSdp("neqlt", dec);
+                if (c.TryGetSdp("nemhp", out valObj) && OwConvert.TryToDecimal(valObj, out dec))
+                    result.SetSdp("nemhp", dec);
                 return result;
             });
             shouyiSlot.Children.AddRange(mounts);   //加入坐骑
@@ -794,7 +795,7 @@ namespace GuangYuan.GY001.BLL
         {
             var gitm = service.GetService<GameItemTemplateManager>();
             //typ关卡类别=1普通管卡 mis大关数 sec=小关gold=数金币掉落上限，aml=获得资质野怪的数量，mne=资质合上限，mt=神纹数量上限，tl=最短通关时间
-            if (itemTemplate.Properties.TryGetValue("gold", out object goldObj)) //若要限制金币数量
+            if (itemTemplate.TryGetSdp("gold", out object goldObj)) //若要限制金币数量
             {
                 if (goldObj is decimal gold)
                 {
@@ -806,7 +807,7 @@ namespace GuangYuan.GY001.BLL
                     }
                 }
             }
-            if (itemTemplate.Properties.TryGetValue("aml", out object monsterCountObj)) //若要限制怪数量
+            if (itemTemplate.TryGetSdp("aml", out object monsterCountObj)) //若要限制怪数量
             {
                 if (monsterCountObj is decimal monsterCount)
                 {
@@ -818,12 +819,12 @@ namespace GuangYuan.GY001.BLL
                     }
                 }
             }
-            if (itemTemplate.Properties.TryGetValue("mne", out object mneObj) && mneObj is decimal mne) //若要限制单个怪资质总和
+            if (itemTemplate.TryGetSdp("mne", out object mneObj) && mneObj is decimal mne) //若要限制单个怪资质总和
             {
                 var coll = from tmp in gameItems
-                           let mneatk = Convert.ToDecimal(tmp.Properties.GetValueOrDefault("neatk", decimal.Zero))
-                           let mneqlt = Convert.ToDecimal(tmp.Properties.GetValueOrDefault("neqlt", decimal.Zero))
-                           let mnemhp = Convert.ToDecimal(tmp.Properties.GetValueOrDefault("nemhp", decimal.Zero))
+                           let mneatk = Convert.ToDecimal(tmp.GetSdpValueOrDefault("neatk", decimal.Zero))
+                           let mneqlt = Convert.ToDecimal(tmp.GetSdpValueOrDefault("neqlt", decimal.Zero))
+                           let mnemhp = Convert.ToDecimal(tmp.GetSdpValueOrDefault("nemhp", decimal.Zero))
                            let mneTotal = mneatk + mneqlt + mnemhp
                            where mneTotal > mne
                            select tmp;
@@ -834,7 +835,7 @@ namespace GuangYuan.GY001.BLL
                     return false;
                 }
             }
-            //if (itemTemplate.Properties.TryGetValue("mt", out object mtObj) && mtObj is decimal mt) //若要限制神纹数量
+            //if (itemTemplate.TryGetSdp("mt", out object mtObj) && mtObj is decimal mt) //若要限制神纹数量
             //{
             //    var coll = gitm.Id2Template.Values.Where(c => c.GenusCode <= 17 && c.GenusCode >= 15); //获取所有神纹模板
             //    var shenwen = gameItems.Join(coll, c => c.ExtraGuid, c => c.Id, (l, r) => l);    //获取神纹的集合

@@ -276,7 +276,7 @@ namespace OW.Game.PropertyChange
             Debug.Assert(name != "Children");
             var arg = GamePropertyChangeItemPool<T>.Shared.Get();
             arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
-            if (obj.Properties.TryGetValue(name, out var oldValue) && oldValue is T old)
+            if (obj.TryGetSdp(name, out var oldValue) && oldValue is T old)
             {
                 arg.OldValue = old;
                 arg.HasOldValue = true;
@@ -287,16 +287,16 @@ namespace OW.Game.PropertyChange
                     if (obj is IDbQuickFind dbFinder && OwConvert.TryToDecimal(newValue, out var dec))
                         dbFinder.ExtraDecimal = dec;
                     else
-                        obj.Properties[name] = newValue;
+                        obj.SetSdp(name, newValue);
                     break;
                 case nameof(IDbQuickFind.ExtraString):
                     if (obj is IDbQuickFind dbFinder1)
                         dbFinder1.ExtraString = newValue.ToString();
                     else
-                        obj.Properties[name] = newValue;
+                        obj.SetSdp(name, newValue);
                     break;
                 default:
-                    obj.Properties[name] = newValue;
+                    obj.SetSdp(name, newValue);
                     break;
             }
             arg.NewValue = newValue;

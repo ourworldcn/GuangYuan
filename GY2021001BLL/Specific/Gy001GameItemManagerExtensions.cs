@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.Item;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,15 +64,15 @@ namespace GuangYuan.GY001.BLL
             var tujianBag = gameChar.GetTujianBag(); //图鉴背包
             var tujian = tujianBag.Children.FirstOrDefault(c => //图鉴
             {
-                var bd1 = c.GetTemplate().Properties.GetDecimalOrDefault("hbab");
-                var bd2 = c.GetTemplate().Properties.GetDecimalOrDefault("hbbb");
+                var bd1 = c.GetTemplate().GetSdpDecimalOrDefault("hbab");
+                var bd2 = c.GetTemplate().GetSdpDecimalOrDefault("hbbb");
                 return bd1 == t1Body.GId && bd2 == t2Body.GId || bd2 == t1Body.GId && bd1 == t2Body.GId;
             });
             if (tujian is null)
                 return null;
-            var hTId = tujian.Properties.GetGuidOrDefault("outheadtid", Guid.Empty);
-            var bTId = tujian.Properties.GetGuidOrDefault("outbodytid", Guid.Empty);
-            var prob = tujian.Properties.GetDecimalOrDefault("hbsr");
+            var hTId = tujian.GetSdpGuidOrDefault("outheadtid", Guid.Empty);
+            var bTId = tujian.GetSdpGuidOrDefault("outbodytid", Guid.Empty);
+            var prob = tujian.GetSdpDecimalOrDefault("hbsr");
             return (hTId, bTId, prob);
         }
 
@@ -88,7 +89,7 @@ namespace GuangYuan.GY001.BLL
             dest.TemplateId = source.ExtraGuid;
             dest.Count = source.Count;
             foreach (var item in source.Properties)
-                dest.Properties[item.Key] = item.Value;
+                dest.SetSdp(item.Key, item.Value);
         }
 
         /// <summary>
@@ -104,7 +105,7 @@ namespace GuangYuan.GY001.BLL
             dest.ExtraGuid = source.TemplateId;
             dest.Count = source.Count;
             foreach (var item in source.Properties)
-                dest.Properties[item.Key] = item.Value;
+                dest.SetSdp(item.Key, item.Value);
         }
 
         #region 获取特定对象的快捷方式
@@ -218,7 +219,7 @@ namespace GuangYuan.GY001.BLL
         {
             var result = manager.CreateMounts(manager.GetHead(gameItem).ExtraGuid, manager.GetBody(gameItem).ExtraGuid, containerTId);
             foreach (var item in gameItem.Properties)   //复制容器的属性
-                result.Properties[item.Key] = item.Value;
+                result.SetSdp(item.Key, item.Value);
             return result;
         }
 
@@ -237,11 +238,11 @@ namespace GuangYuan.GY001.BLL
             //设置头属性
             var head = manager.GetHead(gameItem);
             foreach (var item in head.Properties)
-                destHead.Properties[item.Key] = item.Value;
+                destHead.SetSdp(item.Key, item.Value);
             //设置身体属性
             var body = manager.GetBody(gameItem);
             foreach (var item in body.Properties)
-                destBody.Properties[item.Key] = item.Value;
+                destBody.SetSdp(item.Key, item.Value);
             return result;
         }
 

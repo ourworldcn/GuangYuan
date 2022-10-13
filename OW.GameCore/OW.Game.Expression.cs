@@ -39,13 +39,13 @@ namespace OW.Game.Expression
 
         public object Compute(GameChar gameChar)
         {
-            Expression<Func<GameThingBase, string, decimal>> s = (c1, c2) => gameChar.Properties.GetDecimalOrDefault(c2, default);
+            Expression<Func<GameThingBase, string, decimal>> s = (c1, c2) => gameChar.GetSdpDecimalOrDefault(c2, default);
             var sss = s.Compile().Invoke(gameChar, "");
             object result;
             switch (_Operator)
             {
                 case "gtq":
-                    result = gameChar.Properties.GetDecimalOrDefault(_Operand[0] as string) >= (decimal)_Operand[1];
+                    result = gameChar.GetSdpDecimalOrDefault(_Operand[0] as string) >= (decimal)_Operand[1];
                     break;
                 default:
                     result = null;
@@ -67,7 +67,7 @@ namespace OW.Game.Expression
     /// </summary>
     public class GameCharExpression : GameExpression
     {
-        public static Expression<Func<SimpleDynamicPropertyBase, string, decimal>> _GetDecimalProperty = (gc, key) => gc.Properties.GetDecimalOrDefault(key, default);
+        public static Expression<Func<SimpleDynamicPropertyBase, string, decimal>> _GetDecimalProperty = (gc, key) => gc.GetSdpDecimalOrDefault(key, default);
 
         public static Func<SimpleDynamicPropertyBase, string, decimal> SS;
         static GameCharExpression()

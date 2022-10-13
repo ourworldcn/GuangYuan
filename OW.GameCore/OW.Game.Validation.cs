@@ -190,7 +190,7 @@ namespace OW.Game.Validation
         /// <param name="value"></param>
         public void SetValue(GameChar gameChar, object value)
         {
-            (ItemReference.GetValue(gameChar) as GameThingBase).Properties[PropertyName] = value;
+            (ItemReference.GetValue(gameChar) as GameThingBase).SetSdp(PropertyName, value);
         }
     }
 

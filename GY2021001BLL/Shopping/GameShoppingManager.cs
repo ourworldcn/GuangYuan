@@ -1064,7 +1064,7 @@ namespace GuangYuan.GY001.BLL
         {
             var hit = isHit ? "h" : "uh";
             var name = $"cp{lotteryType ?? string.Empty}{SeparatorOfLottery}{hit}{SeparatorOfLottery}{cardPoolId ?? string.Empty}{SeparatorOfLottery}{subCardPoolId ?? string.Empty}{SeparatorOfLottery}";
-            return (int)gameChar.Properties.GetDecimalOrDefault(name);
+            return (int)gameChar.GetSdpDecimalOrDefault(name);
         }
 
         /// <summary>
@@ -1080,7 +1080,7 @@ namespace GuangYuan.GY001.BLL
         {
             var hit = isHit ? "h" : "uh";
             var name = $"cp{lotteryType ?? string.Empty}{SeparatorOfLottery}{hit}{SeparatorOfLottery}{cardPoolId ?? string.Empty}{SeparatorOfLottery}{subCardPoolId ?? string.Empty}{SeparatorOfLottery}";
-            gameChar.Properties[name] = (decimal)count;
+            gameChar.SetSdp(name, (decimal)count);
         }
 
         /// <summary>

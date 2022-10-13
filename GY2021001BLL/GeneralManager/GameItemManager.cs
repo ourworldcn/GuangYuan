@@ -285,11 +285,11 @@ namespace OW.Game.Item
             var seqKeys = template.Properties.Where(c => c.Value is decimal[]).Select(c => (SeqPn: c.Key, IndexPn: ItemTemplateManager.GetIndexPropName(template, c.Key))).ToArray();    //序列属性的名字
             foreach (var (SeqPn, IndexPn) in seqKeys)   //设置序列属性
             {
-                SetLevel(gameItem, SeqPn, Convert.ToInt32(gameItem.Properties.GetValueOrDefault(IndexPn, 0m)));
+                SetLevel(gameItem, SeqPn, Convert.ToInt32(gameItem.GetSdpValueOrDefault(IndexPn, 0m)));
             }
             var keys = template.Properties.Where(c => !(c.Value is decimal[])).Select(c => c.Key).Except(gameItem.Properties.Keys).ToArray(); //需要增加的简单属性的名字
             foreach (var item in keys)  //添加简单属性
-                gameItem.Properties[item] = template.Properties[item];
+                gameItem.SetSdp(item, template.Properties[item]);
             return true;
         }
 
@@ -522,7 +522,7 @@ namespace OW.Game.Item
                 var key = $"{ProjectConstant.ZhenrongPropertyName}{item.Item2}";
                 if (item.Item3 != -1)  //若设置阵容
                 {
-                    //mounts.Properties[key] = item.Item3;
+                    //mounts.SetSdp(key, item.Item3);
                     pchange.MarkAndSet(mounts, key, item.Item3);
                     if (item.Item2 == 10)  //若是家园展示
                     {
@@ -611,7 +611,7 @@ namespace OW.Game.Item
                        join gc in allowGcs
                        on parent.OwnerId equals gc.Id
                        select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value, gc.PropertiesString };
-            //gc.Properties.GetDecimalOrDefault("charIcon", 0)
+            //gc.GetSdpDecimalOrDefault("charIcon", 0)
             var gChar = datas.GameChar;
             var coll1 = from tmp in coll
                         where (tmp.Value > tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal.Value && string.Compare(tmp.DisplayName, gChar.DisplayName) < 0)    //排名在当前角色之前的角色

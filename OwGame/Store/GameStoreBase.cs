@@ -369,7 +369,7 @@ namespace OW.Game.Store
             [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             bool result;
-            var isExists = obj.Properties.TryGetValue(name, out var oldValue);  //存在旧值
+            var isExists = obj.TryGetSdp(name, out var oldValue);  //存在旧值
             if (!isExists || !Equals(oldValue, newValue)) //若新值和旧值不相等
             {
                 if (null != changes)    //若需要设置变化数据
@@ -383,7 +383,7 @@ namespace OW.Game.Store
                     item.HasNewValue = true;
                     changes.Add(item);
                 }
-                obj.Properties[name] = newValue;
+                obj.SetSdp(name, newValue);
                 result = true;
             }
             else

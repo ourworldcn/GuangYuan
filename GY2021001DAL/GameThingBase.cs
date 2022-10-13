@@ -201,12 +201,12 @@ namespace GuangYuan.GY001.UserDb
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static bool TryGetProperty(this GameThingBase thing, string propertyName, out object result)
         {
-            if (thing.Properties.TryGetValue(propertyName, out result))
+            if (thing.TryGetSdp(propertyName, out result))
                 return true;
             var tt = thing.GetTemplate();
             if (tt is null)
                 return false;
-            return tt.Properties.TryGetValue(propertyName, out result);
+            return tt.TryGetSdp(propertyName, out result);
         }
 
         /// <summary>

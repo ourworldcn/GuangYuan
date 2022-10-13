@@ -165,7 +165,7 @@ namespace GuangYuan.GY001.TemplateDb
         /// <param name="name"></param>
         /// <returns>序列属性（数组表示），null表示不存在指定名称的属性或其不是指定元素类型的序列属性。</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] GetSequenceProperty<T>(this GameThingTemplateBase obj, string name) => obj.Properties.GetValueOrDefault(name) as T[];
+        public static T[] GetSequenceProperty<T>(this GameThingTemplateBase obj, string name) => obj.GetSdpValueOrDefault(name) as T[];
 
         /// <summary>
         /// 获取属性的值，若是序列属性则返回相应索引的值，如果不是序列属性则返回属性的值。
@@ -180,7 +180,7 @@ namespace GuangYuan.GY001.TemplateDb
         {
             var seq = obj.GetSequenceProperty<decimal>(name);
             if (seq is null) //若非序列属性
-                return obj.Properties.TryGetValue(name, out var resultObj) && OwConvert.TryToDecimal(resultObj, out var result) ? result : default;
+                return obj.TryGetSdp(name, out var resultObj) && OwConvert.TryToDecimal(resultObj, out var result) ? result : default;
             else //是序列属性
                 return seq[lv];
         }
@@ -228,7 +228,7 @@ namespace GuangYuan.GY001.TemplateDb
         /// <returns></returns>
         public static string GetIndexPropName(this GameThingTemplateBase template, string seqPropName)
         {
-            if (!template.Properties.TryGetValue(seqPropName, out object obj) || !(obj is decimal[]))
+            if (!template.TryGetSdp(seqPropName, out object obj) || !(obj is decimal[]))
                 return null;
             var pn = $"{GameThingTemplateBase.LevelPrefix}{seqPropName}";
             if (template.Properties.ContainsKey(pn))

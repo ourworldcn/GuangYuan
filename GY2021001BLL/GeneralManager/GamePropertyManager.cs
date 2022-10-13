@@ -221,7 +221,7 @@ namespace OW.Game
             else
             {
                 var oldValue = thing.GetSdpDecimalOrDefault(propertyName, decimal.Zero);
-                thing.Properties[propertyName] = oldValue + diff;
+                thing.SetSdp(propertyName, oldValue + diff);
             }
             return true;
         }
@@ -429,7 +429,7 @@ namespace OW.Game
         //                return false;
         //            }
         //            var ary = coll.Where(c => c.ExtraGuid == GameItem.MucaiStoreTId).ToArray();   //取所有木材仓库对象
-        //            if (!OwConvert.TryToDecimal(gameItem.Properties.GetValueOrDefault(StackUpperLimitPropertyName, 0m), out var myselfStc))
+        //            if (!OwConvert.TryToDecimal(gameItem.GetSdpValueOrDefault(StackUpperLimitPropertyName, 0m), out var myselfStc))
         //                myselfStc = 0;
         //            result = ary.Any(c => c.GetStc() >= decimal.MaxValue) ? -1 : ary.Sum(c => c.GetStc()) + myselfStc;
         //            succ = true;

@@ -58,7 +58,7 @@ namespace Gy001.Controllers
                     //        if (dw != null)
                     //        {
                     //            tmp.DisplayName = gc.DisplayName;
-                    //            tmp.IconIndex = (int)gc.Properties.GetDecimalOrDefault("charIcon", 0);   //客户端要求再没有该键时返回默认值0
+                    //            tmp.IconIndex = (int)gc.GetSdpDecimalOrDefault("charIcon", 0);   //客户端要求再没有该键时返回默认值0
                     //        }
                     //    }
                     //}

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OW.Extensions.Game.Store;
 using OW.Game;
 using OW.Game.PropertyChange;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -204,7 +205,7 @@ namespace GY2021001WebApi.Models
             result.GenerateIdIfEmpty();
             foreach (var item in obj.Properties)
             {
-                result.Properties[item.Key] = item.Value is JsonElement je ? (je.ValueKind switch { JsonValueKind.Number => je.GetDecimal(), _ => throw new InvalidOperationException(), }) : item.Value;
+                result.SetSdp(item.Key, item.Value is JsonElement je ? (je.ValueKind switch { JsonValueKind.Number => je.GetDecimal(), _ => throw new InvalidOperationException(), }) : item.Value);
             }
             result.Children.AddRange(obj.Children.Select(c => (GameItem)c));
             return result;
@@ -254,7 +255,7 @@ namespace GY2021001WebApi.Models
             result.GameItems.AddRange(obj.GameItems.Select(c => (GameItem)c));
             foreach (var item in obj.Properties)
             {
-                result.Properties[item.Key] = item.Value;
+                result.SetSdp(item.Key, item.Value);
             }
             return result;
         }
@@ -274,7 +275,7 @@ namespace GY2021001WebApi.Models
             };
             foreach (var item in obj.Properties)
             {
-                result.Properties[item.Key] = item.Value;
+                result.Properties[item.Key]=item.Value;
             }
             return result;
         }
@@ -290,7 +291,7 @@ namespace GY2021001WebApi.Models
             };
             foreach (var item in obj.Properties)
             {
-                result.Properties[item.Key] = item.Value;
+                result.SetSdp(item.Key, item.Value);
             }
             return result;
         }
@@ -343,7 +344,7 @@ namespace GY2021001WebApi.Models
             };
             foreach (var item in obj.Properties)
             {
-                result.Properties[item.Key] = item.Value;
+                result.Properties[item.Key]= item.Value;
             }
             return result;
         }
@@ -434,8 +435,8 @@ namespace GY2021001WebApi.Models
                     DisplayName = c.gc.DisplayName,
                     Id = c.gc.Base64IdString,
                     Title = (int)(c.slot.ExtraDecimal ?? 0),
-                    Level = (int)c.gc.Properties.GetDecimalOrDefault("lv"),
-                    IconIndex = (int)c.gc.Properties.GetDecimalOrDefault("charIcon", 0),
+                    Level = (int)c.gc.GetSdpDecimalOrDefault("lv"),
+                    IconIndex = (int)c.gc.GetSdpDecimalOrDefault("charIcon", 0),
                     Power = c.tuiguan.ExtraDecimal ?? 0,
                 };
                 return r;

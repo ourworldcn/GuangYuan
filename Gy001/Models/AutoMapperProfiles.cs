@@ -44,7 +44,7 @@ namespace Gy01.AutoMapper.Profiles
             {
                 var result = new GameMissionItemDto()
                 {
-                    MaxComplateCount = (int)src.Template?.Properties.GetDecimalOrDefault("MaxComplateCount", int.MaxValue),
+                    MaxComplateCount = (int)src.Template?.GetSdpDecimalOrDefault("MaxComplateCount", int.MaxValue),
                 };
                 return result;
             }).ForMember(c => c.MaxComplateCount, opt => opt.Ignore());
@@ -52,8 +52,8 @@ namespace Gy01.AutoMapper.Profiles
             //DTO映射
             CreateMap<GameItem, GameItemDto>().AfterMap((src, dest) =>
             {
-                dest.Properties[nameof(src.ExtraDecimal)] = src.ExtraDecimal;
-                dest.Properties[nameof(src.ExtraString)] = src.ExtraString;
+                dest.Properties[nameof(src.ExtraDecimal)]= src.ExtraDecimal;
+                dest.Properties[nameof(src.ExtraString)]= src.ExtraString;
             });
             CreateMap<GameItemDto, GameItem>().ConstructUsing(src => new GameItem() { Count = src.Count }).ForMember(dest => dest.Count, opt => opt.Ignore());
 

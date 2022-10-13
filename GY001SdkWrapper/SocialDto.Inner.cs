@@ -107,7 +107,7 @@ namespace Game.Social
         {
             if (!obj.IsFriendOrRequesting())
                 return false;
-            if (obj.Properties.TryGetValue(SocialConstant.ConfirmedFriendPName, out var confObj) && confObj is decimal deci && deci == 0)
+            if (obj.TryGetSdp(SocialConstant.ConfirmedFriendPName, out var confObj) && confObj is decimal deci && deci == 0)
                 return true;
             return false;
         }
@@ -118,7 +118,7 @@ namespace Game.Social
         /// <param name="obj"></param>
         /// <returns></returns>
         static public bool IsFriend(this GameSocialRelationship obj) =>
-             obj.IsFriendOrRequesting() && obj.Properties.GetDecimalOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero) != decimal.Zero;
+             obj.IsFriendOrRequesting() && obj.GetSdpDecimalOrDefault(SocialConstant.ConfirmedFriendPName, decimal.Zero) != decimal.Zero;
 
         /// <summary>
         /// 设置该对象表示好友关系。但不会设置确定标志。
@@ -133,7 +133,7 @@ namespace Game.Social
         static public void SetNeutrally(this GameSocialRelationship obj)
         {
             obj.Flag = SocialConstant.MiddleFriendliness;
-            obj.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+            obj.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.One);
         }
 
 
@@ -147,13 +147,13 @@ namespace Game.Social
         /// 设置正在申请标志。
         /// </summary>
         /// <param name="obj"></param>
-        static public void SetRequesting(this GameSocialRelationship obj) => obj.Properties[SocialConstant.ConfirmedFriendPName] = decimal.Zero;
+        static public void SetRequesting(this GameSocialRelationship obj) => obj.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.Zero);
 
         /// <summary>
         /// 设置确定标志。
         /// </summary>
         /// <param name="obj"></param>
-        static public void SetConfirmed(this GameSocialRelationship obj) => obj.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+        static public void SetConfirmed(this GameSocialRelationship obj) => obj.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.One);
     }
 
 }

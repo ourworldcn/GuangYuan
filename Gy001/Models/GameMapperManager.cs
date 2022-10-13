@@ -88,12 +88,12 @@ namespace GuangYuan.GY001.BLL.Specific
             }
             OwHelper.Copy(src.Properties, dest.Properties);
 
-            dest.Properties[nameof(GameItem.ExtraString)] = src.ExtraString;
-            dest.Properties[nameof(GameItem.ExtraDecimal)] = src.ExtraDecimal;
+            dest.Properties[nameof(GameItem.ExtraString)]= src.ExtraString;
+            dest.Properties[nameof(GameItem.ExtraDecimal)]= src.ExtraDecimal;
 
             //特殊处理处理木材堆叠数
             if (ProjectConstant.MucaiId == src.ExtraGuid)
-                dest.Properties[World.PropertyManager.StackUpperLimitPropertyName] = World.ItemManager.GetStcOrOne(src);
+                dest.Properties[World.PropertyManager.StackUpperLimitPropertyName]= World.ItemManager.GetStcOrOne(src);
             dest.Children.AddRange(src.Children.Select(c => Map(c)));
         }
 
@@ -118,7 +118,7 @@ namespace GuangYuan.GY001.BLL.Specific
             result.GameItems.AddRange(obj.GameItems.Select(c => Map(c)));
             foreach (var item in obj.Properties)
             {
-                result.Properties[item.Key] = item.Value;
+                result.Properties[item.Key]= item.Value;
             }
             foreach (var item in obj.GetOrCreateBinaryObject<CharBinaryExProperties>().ClientProperties)  //初始化客户端扩展属性
             {

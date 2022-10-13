@@ -213,7 +213,7 @@ namespace GuangYuan.GY001.BLL
             if (dw is null)
                 throw new TimeoutException("无法锁定用户对象");
             var slot = gameChar.GetFriendSlot();
-            var lv = (int)gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+            var lv = (int)gameChar.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName);
             var str = $"{lv:d4}{dateTime:s}";
             if (str != slot.ExtraString)
             {
@@ -990,7 +990,7 @@ namespace GuangYuan.GY001.BLL
                     World.EventsManager.GameCharLogined(gu.CurrentChar);
             }
             //补偿操作
-            gu.CurrentChar.Properties["DayCountOfLogin"] = (decimal)Math.Round((DateTime.UtcNow.Date - gu.CurrentChar.CreateUtc.Date).TotalDays); //最后一次登录距离创建账号的天数
+            gu.CurrentChar.SetSdp("DayCountOfLogin", (decimal)Math.Round((DateTime.UtcNow.Date - gu.CurrentChar.CreateUtc.Date).TotalDays)); //最后一次登录距离创建账号的天数
             var coll = gu.CurrentChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShoulanSlotId);
             var coll1 = gu.CurrentChar.AllChildren.GroupBy(c => c.ExtraGuid).OrderByDescending(c => c.Count());
             return gu;
@@ -1429,14 +1429,14 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var e = new DynamicPropertyChangedCollection();
-            var oldExp = gameChar.Properties.GetDecimalOrDefault("exp");    //当前经验值
+            var oldExp = gameChar.GetSdpDecimalOrDefault("exp");    //当前经验值
             if (newExp != oldExp)
             {
                 e.MarkAndSet(gameChar, "exp", newExp, changes);
             }
-            var oldLv = gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName); //当前等级
+            var oldLv = gameChar.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName); //当前等级
             int newLv;
-            if (gameChar.GetTemplate().Properties.GetValueOrDefault("expLimit") is IEnumerable limitSeq && newExp >= oldExp)   //若经验已经变化
+            if (gameChar.GetTemplate().GetSdpValueOrDefault("expLimit") is IEnumerable limitSeq && newExp >= oldExp)   //若经验已经变化
             {
                 List<decimal> lst = new List<decimal>(limitSeq.OfType<decimal>());
                 newLv = lst.FindIndex(c => c > newExp); //新等级
@@ -1464,7 +1464,7 @@ namespace GuangYuan.GY001.BLL
             {
                 return;
             }
-            var oldExp = gameChar.Properties.GetDecimalOrDefault("exp");    //当前经验值
+            var oldExp = gameChar.GetSdpDecimalOrDefault("exp");    //当前经验值
             SetExp(gameChar, oldExp + incExp, changes);
         }
 
@@ -1562,15 +1562,15 @@ namespace GuangYuan.GY001.BLL
                     else if (tp.Key.ExtraGuid == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "activeStyle", true) == 0)   //若是家园对象的当前激活风格属性
                     {
                         var str = item.Item2 as string; Debug.Assert(str != null);
-                        tp.Key.Properties["activeStyle"] = str;
+                        tp.Key.SetSdp("activeStyle", str);
                         var b = GetStyleNumber(str, out var sn, out var fn); Debug.Assert(b);
                         foreach (var gi in tp.Key.GetAllChildren()) //遍历变化水晶的模板id
                         {
                             if (gi.GetTemplate().CatalogNumber != (int)ThingGId.家园建筑_水晶 / 1000)   //若不是水晶
                                 continue;
-                            var tidfor = gi.Properties.GetGuidOrDefault($"tidfor{sn}{fn:00}");
+                            var tidfor = gi.GetSdpGuidOrDefault($"tidfor{sn}{fn:00}");
                             if (tidfor == Guid.Empty)  //若没有指定模板id
-                                tidfor = gi.Properties.GetGuidOrDefault($"tidfor{sn};{fn}");
+                                tidfor = gi.GetSdpGuidOrDefault($"tidfor{sn};{fn}");
                             if (tidfor == Guid.Empty)  //若没有指定模板id
                             {
                                 //设置默认模板号
@@ -1592,8 +1592,8 @@ namespace GuangYuan.GY001.BLL
                         if (!OwConvert.TryToGuid(item.Item2, out var tidfor)) //若无法获取模板号
                             continue;
                         var hl = datas.GameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.HomelandSlotId);
-                        tp.Key.Properties[item.Item1] = item.Item2;
-                        var aciveStyle = hl.Properties.GetStringOrDefault("activeStyle", "1;1");    //激活号
+                        tp.Key.SetSdp(item.Item1, item.Item2);
+                        var aciveStyle = hl.GetSdpStringOrDefault("activeStyle", "1;1");    //激活号
                         if (GetStyleNumber(aciveStyle, out var sn, out var fn) && sn == styleNumber && fn == fanganNumber) //若设置了当前风格的模板号
                         {
                             var ntt = World.ItemTemplateManager.GetTemplateFromeId(tidfor);
@@ -1601,14 +1601,14 @@ namespace GuangYuan.GY001.BLL
                         }
                     }
                     else
-                        tp.Key.Properties[item.Item1] = item.Item2;
+                        tp.Key.SetSdp(item.Item1, item.Item2);
                 }
             }
             //修改角色自身信息
             var coll1 = datas.Modifies.Where(c => c.Item1 == datas.GameChar.Id);
             foreach (var item in coll1)
             {
-                datas.GameChar.Properties[item.Item2] = item.Item3;
+                datas.GameChar.SetSdp(item.Item2, item.Item3);
             }
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }

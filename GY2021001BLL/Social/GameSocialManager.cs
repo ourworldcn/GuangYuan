@@ -304,7 +304,7 @@ namespace GuangYuan.GY001.BLL
                         Mail = mail,
                         MailId = mail.Id,
                     };
-                    mail.Properties[SocialConstant.FromSystemPNmae] = decimal.One;
+                    mail.SetSdp(SocialConstant.FromSystemPNmae, decimal.One);
                 }
                 else
                 {
@@ -321,7 +321,7 @@ namespace GuangYuan.GY001.BLL
                         Mail = mail,
                         MailId = mail.Id,
                     };
-                    mail.Properties[SocialConstant.FromSystemPNmae] = decimal.Zero;
+                    mail.SetSdp(SocialConstant.FromSystemPNmae, decimal.Zero);
                 }
                 //追加相关人
                 mail.Addresses.AddRange(tos);
@@ -389,8 +389,8 @@ namespace GuangYuan.GY001.BLL
                 var att = new GameMailAttachment();
                 var gi = item.Item1;
                 eveMng.Copy(gi, att.Properties);
-                att.Properties["ptid"] = item.Item2.ToString();
-                att.Properties["count"] = gi.Count ?? 1;
+                att.SetSdp("ptid", item.Item2.ToString());
+                att.SetSdp("count", gi.Count ?? 1);
                 mail.Attachmentes.Add(att);
             }
             SendMail(mail, tos, senderId);
@@ -436,7 +436,7 @@ namespace GuangYuan.GY001.BLL
                         results?.Add((item.Id, GetAttachmenteItemResult.Done));
                         continue;
                     }
-                    var ptid = item.Properties.GetGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty);
+                    var ptid = item.GetSdpGuidOrDefault(SocialConstant.SentDestPTIdPName, Guid.Empty);
                     var gameItem = new GameItem();  //物品
                     World.EventsManager.GameItemCreated(gameItem, item.Properties);
                     GameThingBase parent = gameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == ptid);
@@ -512,8 +512,8 @@ namespace GuangYuan.GY001.BLL
             var mail = new GameMail()
             {
             };
-            mail.Properties["MailTypeId"] = ProjectConstant.PVP反击邮件_被求助者_求助.ToString();
-            mail.Properties["CombatId"] = oldCombat.Thing.IdString;
+            mail.SetSdp("MailTypeId", ProjectConstant.PVP反击邮件_被求助者_求助.ToString());
+            mail.SetSdp("CombatId", oldCombat.Thing.IdString);
             World.SocialManager.SendMail(mail, new Guid[] { datas.OtherCharId }, datas.GameChar.Id); //被攻击邮件
             //关系数据
             datas.SocialRelationship.Flag++;
@@ -640,8 +640,8 @@ namespace GuangYuan.GY001.BLL
                     CombatCap = (int)item.tuiguanR?.ExtraDecimal.GetValueOrDefault(),
                     DisplayName = item.gc.DisplayName,
                     Id = item.gc.Id,
-                    Level = (int)item.gc.Properties.GetDecimalOrDefault("lv", decimal.Zero),
-                    IconIndex = (int)item.gc.Properties.GetDecimalOrDefault("charIcon", decimal.Zero),
+                    Level = (int)item.gc.GetSdpDecimalOrDefault("lv", decimal.Zero),
+                    IconIndex = (int)item.gc.GetSdpDecimalOrDefault("charIcon", decimal.Zero),
                     Gold = item.goldR.Count.GetValueOrDefault(),
                     GoldOfStore = item.goldOfStoreR.Count.GetValueOrDefault(),
                     Wood = item.wood.Count ?? 0,
@@ -726,13 +726,13 @@ namespace GuangYuan.GY001.BLL
                 return RequestFriendResult.AlreadyBlack;
             else
             {
-                if (sr.Properties.TryGetValue(SocialConstant.ConfirmedFriendPName, out var obj) && obj is decimal deci && deci == 0) //若正在申请
+                if (sr.TryGetSdp(SocialConstant.ConfirmedFriendPName, out var obj) && obj is decimal deci && deci == 0) //若正在申请
                     return RequestFriendResult.Doing;
                 else if (sr.IsFriendOrRequesting()) //已经是好友
                     return RequestFriendResult.Already;
             }
             //其他状况
-            sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.Zero;
+            sr.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.Zero);
             sr.SetFriend();    //设置好友关系
             try
             {
@@ -971,9 +971,9 @@ namespace GuangYuan.GY001.BLL
                 var sr = GetSrOrAdd(db, gcId, objId);
                 var nsr = GetNSrOrAdd(db, gcId, objId);
                 sr.SetBlack();
-                sr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                sr.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.One);
                 nsr.SetNeutrally();
-                nsr.Properties[SocialConstant.ConfirmedFriendPName] = decimal.One;
+                nsr.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.One);
                 db.SaveChanges();
             }
             catch (DbUpdateConcurrencyException)
@@ -1229,7 +1229,7 @@ namespace GuangYuan.GY001.BLL
                 datas.SetDateTime(sr, datas.Today);
                 datas.SetOtherCharId(sr, datas.OtherCharId);
                 var gim = World.ItemManager;
-                var max = gim.GetBodyTemplate(datas.Mount).Properties.GetDecimalOrDefault("fht", 7);   //互动次数
+                var max = gim.GetBodyTemplate(datas.Mount).GetSdpDecimalOrDefault("fht", 7);   //互动次数
                 //datas.Counter.LastValue--;
                 if (++sr.Flag >= max)  //若此次互动有了结果
                 {
@@ -1237,7 +1237,7 @@ namespace GuangYuan.GY001.BLL
                     //var gameItem = datas.UserContext.Set<GameItem>().Include(c => c.Children).ThenInclude(c => c.Children).AsNoTracking().Single(c => c.Id == sr.Id2);
                     var gameItem = datas.Mount;
                     GameItem sendGi = World.ItemManager.CloneMounts(gameItem, ProjectConstant.HomelandPatCard); //创建幻影
-                    sendGi.Properties["charDisplayName"] = datas.OtherChar.DisplayName;
+                    sendGi.SetSdp("charDisplayName", datas.OtherChar.DisplayName);
                     World.ItemManager.MoveItem(sendGi, sendGi.Count ?? 1, datas.GameChar.GetItemBag(), null, datas.PropertyChanges); //放入道具背包
                 }
             }
@@ -1500,12 +1500,12 @@ namespace GuangYuan.GY001.BLL
 
             public Guid GetOtherCharId(GameSocialRelationship sr)
             {
-                return sr.Properties.GetGuidOrDefault("charid");
+                return sr.GetSdpGuidOrDefault("charid");
             }
 
             public void SetOtherCharId(GameSocialRelationship sr, Guid charId)
             {
-                sr.Properties["charid"] = charId.ToString();
+                sr.SetSdp("charid", charId.ToString());
             }
 
             private Lazy<GameItem> _LazyMounts;

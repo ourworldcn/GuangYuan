@@ -6,6 +6,7 @@ using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
 using OW.Extensions.Game.Store;
 using OW.Game.PropertyChange;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -207,7 +208,7 @@ namespace OW.Game
                 var gi = item.Thing as GameItem;
                 foreach (var sunItem in item.Where(c => c.PropertyName == World.PropertyManager.LevelPropertyName)) //若主控室升级了
                 {
-                    var newLv = gi.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+                    var newLv = gi.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName);
                     var oldLv = Convert.ToDecimal(sunItem.OldValue);
                     if (newLv == oldLv + 1)
                     {
@@ -267,7 +268,7 @@ namespace OW.Game
                             PropertyName = "exp",
                             TemplateId = ProjectConstant.CharTemplateId,
                         };
-                        np.Properties.Add("exp", gc.Properties.GetDecimalOrDefault("exp"));
+                        np.Properties.Add("exp", gc.GetSdpDecimalOrDefault("exp"));
                         lst.Add(np);
                     }
                     else
@@ -393,9 +394,9 @@ namespace OW.Game
                 };
                 db.Add(gsr);
                 //增加阵容数据 for0, for1, for2, for10 = 0
-                showMount.Properties["for0"] = 0m;
-                showMount.Properties["for1"] = 0m;
-                showMount.Properties["for2"] = 0m;
+                showMount.SetSdp("for0", 0m);
+                showMount.SetSdp("for1", 0m);
+                showMount.SetSdp("for2", 0m);
             }
             //加入日志
             var ar = new GameActionRecord
@@ -428,11 +429,11 @@ namespace OW.Game
 
                 #region 处理资质数值
                 if (propertyBag.TryGetDecimal("neatk", out var neatk))    //若指定了攻击资质
-                    gameItem.Properties["neatk"] = neatk;
+                    gameItem.SetSdp("neatk", neatk);
                 if (propertyBag.TryGetDecimal("nemhp", out var nemhp))    //若指定了血量资质
-                    gameItem.Properties["nemhp"] = nemhp;
+                    gameItem.SetSdp("nemhp", nemhp);
                 if (propertyBag.TryGetDecimal("neqlt", out var neqlt))    //若指定了质量资质
-                    gameItem.Properties["neqlt"] = neqlt;
+                    gameItem.SetSdp("neqlt", neqlt);
 
                 #endregion 处理资质数值
 
@@ -443,17 +444,17 @@ namespace OW.Game
                 bool b = propertyBag.TryGetDecimal("nneatk", out decimal nneatk);
                 b |= propertyBag.TryGetDecimal("mneatk", out decimal mneatk);
                 if (b)   //若需要随机资质值
-                    gameItem.Properties["neatk"] = (decimal)VWorld.WorldRandom.Next((int)nneatk, (int)mneatk + 1);
+                    gameItem.SetSdp("neatk", (decimal)VWorld.WorldRandom.Next((int)nneatk, (int)mneatk + 1));
 
                 b = propertyBag.TryGetDecimal("nnemhp", out decimal nnemhp);
                 b |= propertyBag.TryGetDecimal("mnemhp", out decimal mnemhp);
                 if (b)   //若需要随机资质值
-                    gameItem.Properties["nemhp"] = (decimal)VWorld.WorldRandom.Next((int)nnemhp, (int)mnemhp + 1);
+                    gameItem.SetSdp("nemhp", (decimal)VWorld.WorldRandom.Next((int)nnemhp, (int)mnemhp + 1));
 
                 b = propertyBag.TryGetDecimal("nneqlt", out decimal nneqlt);
                 b |= propertyBag.TryGetDecimal("mneqlt", out decimal mneqlt);
                 if (b)   //若需要随机资质值
-                    gameItem.Properties["neqlt"] = (decimal)VWorld.WorldRandom.Next((int)nneqlt, (int)mneqlt + 1);
+                    gameItem.SetSdp("neqlt", (decimal)VWorld.WorldRandom.Next((int)nneqlt, (int)mneqlt + 1));
                 #endregion 处理随机资质数据
 
                 #region 处理身体和头的数据
@@ -555,7 +556,7 @@ namespace OW.Game
                 var tm = new Timer(World.BlueprintManager.LevelUpCompleted, ValueTuple.Create(gameChar.Id, item.Id), ts, Timeout.InfiniteTimeSpan);
             }
             //复位角色级别缓存字符串
-            var lv = (int)gameChar.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+            var lv = (int)gameChar.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName);
             gameChar.ExtraString = lv.ToString("D10");
         }
 
@@ -585,7 +586,7 @@ namespace OW.Game
             if (vo.Date != now.Date)    //若今日没有有数据
             {
                 World.EventsManager.GameItemCreated(td, td.ExtraGuid);
-                td.Properties["ltlv"] = now.ToString();
+                td.SetSdp("ltlv", now.ToString());
             }
             World.ItemManager.ScanMountsIllustrated(gameChar);
 

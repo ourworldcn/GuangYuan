@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OW.DDD;
 using OW.Game;
 using OW.Game.PropertyChange;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -78,7 +79,7 @@ namespace GuangYuan.GY001.BLL
             thing.FcpToProperties();    //刷新所有fcp属性
             foreach (var kvp in thing.GetAllSdp()) //遍历每个属性
             {
-                if (!(tt.Properties.GetValueOrDefault(kvp.Item1) is decimal[] ary) || ary.Length < 1)  //若没有随级别变化的可能
+                if (!(tt.GetSdpValueOrDefault(kvp.Item1) is decimal[] ary) || ary.Length < 1)  //若没有随级别变化的可能
                     continue;
                 if (!OwConvert.TryToDecimal(kvp.Item2, out var ov)) //若不是数值
                     continue;
