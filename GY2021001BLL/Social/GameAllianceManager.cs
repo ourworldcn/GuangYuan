@@ -200,9 +200,9 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             using var dwGuild = DisposeHelper.Create(Unlock, guild);
             guild.DisplayName = datas.DisplayName;
-            guild.Properties["AutoAccept"] = datas.AutoAccept;
-            guild.Properties["IconIndex"] = datas.IconIndex;
-            guild.Properties["Bulletin"] = datas.Bulletin;
+            guild.SetSdp("AutoAccept", datas.AutoAccept);
+            guild.SetSdp("IconIndex", (decimal)datas.IconIndex);
+            guild.SetSdp("Bulletin", datas.Bulletin);
             guild.GetDbContext().SaveChanges();
         }
 
@@ -247,7 +247,7 @@ namespace GuangYuan.GY001.UserDb.Social
 
             var exp = guild.GetDecimalWithFcpOrDefault("exp");  //经验
             var tt = guild.GetTemplate();
-            if (!(tt.Properties.GetValueOrDefault("expLimit", Array.Empty<decimal>()) is decimal[] ary) || ary.Length < 1) //若没有升级要求
+            if (!(tt.GetSdpValueOrDefault("expLimit", Array.Empty<decimal>()) is decimal[] ary) || ary.Length < 1) //若没有升级要求
                 return;
             var lv = (int)guild.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);
             exp += expInc;
@@ -385,8 +385,8 @@ namespace GuangYuan.GY001.UserDb.Social
                 pg["CreatorId"] = datas.GameChar.Id;
                 pg[nameof(GameGuild.DisplayName)] = datas.DisplayName;
                 World.EventsManager.GameGuildCreated(guild, pg);
-                guild.Properties["AutoAccept"] = datas.AutoAccept;
-                guild.Properties["IconIndex"] = datas.IconIndex;
+                guild.SetSdp("AutoAccept", datas.AutoAccept);
+                guild.SetSdp("IconIndex", (decimal)datas.IconIndex);
             }
             lock (guild)
             {
@@ -667,7 +667,7 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             slot.ExtraString = guild.IdString;
             slot.ExtraDecimal = 0;
-            var autoAccept = guild.Properties.GetBooleanOrDefaut("AutoAccept");
+            var autoAccept = guild.GetSdpBooleanOrDefaut("AutoAccept");
             if (autoAccept) //若自动接受
             {
                 var subData = new AcceptJoinContext(datas.World, datas.GameChar)
@@ -714,7 +714,7 @@ namespace GuangYuan.GY001.UserDb.Social
             {
                 if (dw is null)
                     return;
-                if (!guild.Properties.GetBooleanOrDefaut("AutoAccept") && (slot is null || slot.ExtraDecimal < (int)GuildDivision.执事))
+                if (!guild.GetSdpBooleanOrDefaut("AutoAccept") && (slot is null || slot.ExtraDecimal < (int)GuildDivision.执事))
                 {
                     datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
                     datas.DebugMessage = "工会高层才能批准加入申请。";

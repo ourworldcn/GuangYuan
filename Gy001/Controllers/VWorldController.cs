@@ -119,6 +119,7 @@ namespace GY2021001WebApi.Controllers
                 CharId = c.Item1.ToBase64String(),
                 DisplayName = c.Item3,
                 Metrics = c.Item2,
+                IconIndex=c.Item4
             }));
             for (int i = 0; i < result.Datas.Count; i++)
             {

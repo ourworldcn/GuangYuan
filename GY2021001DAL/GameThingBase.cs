@@ -311,7 +311,7 @@ namespace GuangYuan.GY001.UserDb
 
         #region ISimpleDynamicExtensionProperty相关
 
-        public override void SetSdep(string name, object value)
+        public override void SetSdp(string name, object value)
         {
             switch (name)
             {
@@ -327,12 +327,12 @@ namespace GuangYuan.GY001.UserDb
                     ExtraDecimal = Convert.ToDecimal(value);
                     break;
                 default:
-                    base.SetSdep(name, value);
+                    base.SetSdp(name, value);
                     break;
             }
         }
 
-        public override bool TryGetSdep(string name, out object value)
+        public override bool TryGetSdp(string name, out object value)
         {
             switch (name)
             {
@@ -348,7 +348,7 @@ namespace GuangYuan.GY001.UserDb
                     value = ExtraDecimal;
                     return true;
                 default:
-                    return base.TryGetSdep(name, out value);
+                    return base.TryGetSdp(name, out value);
             }
         }
 
@@ -356,9 +356,9 @@ namespace GuangYuan.GY001.UserDb
         /// <inheritdoc/>
         /// </summary>
         /// <returns><inheritdoc/></returns>
-        public override IEnumerable<(string, object)> GetAllSdep()
+        public override IEnumerable<(string, object)> GetAllSdp()
         {
-            return base.GetAllSdep().Concat(new (string, object)[] { (nameof(ExtraGuid), ExtraGuid), (nameof(ExtraString), ExtraString), (nameof(ExtraDecimal), ExtraDecimal) });
+            return base.GetAllSdp().Concat(new (string, object)[] { (nameof(ExtraGuid), ExtraGuid), (nameof(ExtraString), ExtraString), (nameof(ExtraDecimal), ExtraDecimal) });
         }
 
         #endregion ISimpleDynamicExtensionProperty相关

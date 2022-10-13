@@ -5,6 +5,7 @@
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using OW.Game;
+using OW.Game.Store;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -99,7 +100,7 @@ namespace GuangYuan.GY001.BLL
             {
                 if (_GoodsInfos is null)
                 {
-                    _GoodsInfos = OwConvert.FromUriString<Dictionary<string, GoodsInfoItem>>(ShoppingSlot.Properties.GetStringOrDefault(nameof(GoodsInfos)));
+                    _GoodsInfos = OwConvert.FromUriString<Dictionary<string, GoodsInfoItem>>(ShoppingSlot.GetSdpStringOrDefault(nameof(GoodsInfos)));
                 }
                 return _GoodsInfos;
             }
@@ -116,7 +117,7 @@ namespace GuangYuan.GY001.BLL
             {
                 if (_RefreshInfos is null)
                 {
-                    _RefreshInfos = OwConvert.FromUriString<Dictionary<string, RefreshInfoItem>>(ShoppingSlot.Properties.GetStringOrDefault(nameof(RefreshInfos)));
+                    _RefreshInfos = OwConvert.FromUriString<Dictionary<string, RefreshInfoItem>>(ShoppingSlot.GetSdpStringOrDefault(nameof(RefreshInfos)));
                     var dic = World.ShoppingManager.Genus2GroupNumbers;
                     var addGenus = dic.Keys.Except(_RefreshInfos.Keys);   //需要添加的品类
                     var rnd = VWorld.WorldRandom;
@@ -184,8 +185,8 @@ namespace GuangYuan.GY001.BLL
                 ParentId = GameChar.Id,
                 ActionId = BuyRecordActionId,
             };
-            gar.Properties["ShoppingId"] = template.IdString;
-            gar.Properties["BuyCount"] = count;
+            gar.SetSdp("ShoppingId", template.IdString);
+            gar.SetSdp("BuyCount", count);
             World.AddToUserContext(new object[] { gar });   //异步增加购买记录
             return true;
         }
@@ -256,7 +257,7 @@ namespace GuangYuan.GY001.BLL
                 result = -1 == template.MaxCount || template.MaxCount >= count + info.BuyCount;
             if (!result)
                 OwHelper.SetLastError(ErrorCodes.ERROR_IMPLEMENTATION_LIMIT);
-            
+
             return result;
         }
 
@@ -301,11 +302,11 @@ namespace GuangYuan.GY001.BLL
         {
             if (null != _RefreshInfos)    //若可能发生变化
             {
-                ShoppingSlot.Properties[nameof(RefreshInfos)] = OwConvert.ToUriString(_RefreshInfos);
+                ShoppingSlot.SetSdp(nameof(RefreshInfos), OwConvert.ToUriString(_RefreshInfos));
             }
             if (null != _GoodsInfos)    //若可能发生变化
             {
-                ShoppingSlot.Properties[nameof(GoodsInfos)] = OwConvert.ToUriString(_GoodsInfos);
+                ShoppingSlot.SetSdp(nameof(GoodsInfos), OwConvert.ToUriString(_GoodsInfos));
             }
             base.Save();
         }

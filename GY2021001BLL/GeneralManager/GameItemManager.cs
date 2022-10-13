@@ -307,14 +307,14 @@ namespace OW.Game.Item
             var template = GetTemplate(gameItem);
             if (null == template)   //若无法找到模板
                 throw new ArgumentException($"无法找到指定模板(ExtraGuid={gameItem.ExtraGuid}),对象Id={gameItem.Id}", nameof(gameItem));
-            if (!template.Properties.TryGetValue(seqPName, out object objSeq) || !(objSeq is decimal[] seq))
+            if (!template.TryGetSdp(seqPName, out object objSeq) || !(objSeq is decimal[] seq))
                 throw new ArgumentOutOfRangeException($"模板{template.Id}({template.DisplayName})中没有指定 {seqPName} 属性，或其不是序列属性");
             var indexPN = ItemTemplateManager.GetIndexPropName(template, seqPName); //索引属性的名字
 
-            if (!gameItem.Properties.TryGetValue(indexPN, out object objLv))  //若没有指定当前等级
+            if (!gameItem.TryGetSdp(indexPN, out object objLv))  //若没有指定当前等级
             {
                 //当前视同需要初始化属性
-                gameItem.Properties[seqPName] = seq[newLevel];
+                gameItem.SetSdp(seqPName, seq[newLevel]);
             }
             else
             {
@@ -326,9 +326,9 @@ namespace OW.Game.Item
                 }
                 var oov = seq[lv];  //原级别模板值
 
-                var val = Convert.ToDecimal(gameItem.Properties.GetValueOrDefault(seqPName, oov));  //物品的属性值
+                var val = gameItem.GetSdpDecimalOrDefault(seqPName, oov);  //物品的属性值
                 var old = newLevel < seq.Length ? seq[newLevel] : oov;  //可能缺失最后一级数据
-                gameItem.Properties[seqPName] = old + val - oov; //TO DO缺少对快速变化属性的同步
+                gameItem.SetSdp(seqPName, old + val - oov); //TO DO缺少对快速变化属性的同步
             }
             return true;
         }
@@ -471,10 +471,10 @@ namespace OW.Game.Item
         {
             if (this.IsMounts(item))
             {
-                gold = this.GetBody(item).Properties.GetDecimalOrDefault("sg");
-                var totalNe = item.Properties.GetDecimalOrDefault("neatk", 0m) +   //总资质值
-                    item.Properties.GetDecimalOrDefault("nemhp", 0m) +
-                    item.Properties.GetDecimalOrDefault("neqlt", 0m);
+                gold = this.GetBody(item).GetSdpDecimalOrDefault("sg");
+                var totalNe = item.GetSdpDecimalOrDefault("neatk", 0m) +   //总资质值
+                    item.GetSdpDecimalOrDefault("nemhp", 0m) +
+                    item.GetSdpDecimalOrDefault("neqlt", 0m);
                 totalNe = Math.Round(totalNe, MidpointRounding.AwayFromZero);  //取整，容错
                 decimal mul;
 
@@ -599,25 +599,28 @@ namespace OW.Game.Item
             using var dwUser = datas.LockUser();
             if (dwUser is null)
                 return;
-            var db = datas.UserDbContext;
+            using var db = World.CreateNewUserDbContext();
             var tuiguanObj = datas.GameChar.GetTuiguanObject();
+            var allowGcs = from gc in db.Set<GameChar>()    //允许参与排名的角色集合
+                           where !gc.CharType.HasFlag(CharType.SuperAdmin) && !gc.CharType.HasFlag(CharType.Admin) && !gc.CharType.HasFlag(CharType.Npc) && !gc.CharType.HasFlag(CharType.Robot)
+                           select gc;
             var coll = from slot in db.Set<GameItem>()
                        where slot.ExtraGuid == ProjectConstant.TuiGuanTId
                        join parent in db.Set<GameItem>()
                        on slot.ParentId equals parent.Id
-                       join gc in db.Set<GameChar>().Where(gc => !gc.CharType.HasFlag(CharType.SuperAdmin) && !gc.CharType.HasFlag(CharType.Admin) && !gc.CharType.HasFlag(CharType.Npc) && !gc.CharType.HasFlag(CharType.Robot))
+                       join gc in allowGcs
                        on parent.OwnerId equals gc.Id
                        select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value, gc.PropertiesString };
             //gc.Properties.GetDecimalOrDefault("charIcon", 0)
             var gChar = datas.GameChar;
-            var coll1 = from tmp in coll.AsNoTracking()
-                        where (tmp.Value >= tuiguanObj.ExtraDecimal.Value && string.Compare(tmp.DisplayName, gChar.DisplayName) < 0)    //排名在当前角色之前的角色
+            var coll1 = from tmp in coll
+                        where (tmp.Value > tuiguanObj.ExtraDecimal.Value || tmp.Value == tuiguanObj.ExtraDecimal.Value && string.Compare(tmp.DisplayName, gChar.DisplayName) < 0)    //排名在当前角色之前的角色
                         orderby tmp.Value, tmp.DisplayName
                         select tmp;
-            var rank = coll.Count(c => c.Value >= tuiguanObj.ExtraDecimal.Value && string.Compare(c.DisplayName, gChar.DisplayName) < 0);
+            var rank = coll1.Count();
             datas.Rank = rank;
             datas.Scope = tuiguanObj.ExtraDecimal.Value;
-            var prv = coll1.Take(25).AsEnumerable().OrderByDescending(c => c.Value).ToList();   //排在前面的的紧邻数据
+            var prv = coll1.Take(25).AsEnumerable().OrderByDescending(c => c.Value).ThenBy(c => c.DisplayName).ToList();   //排在前面的的紧邻数据
 
             datas.Prv.AddRange(prv.Select(c =>
             {
@@ -628,7 +631,7 @@ namespace OW.Game.Item
             }));
 
             var collNext = from tmp in coll
-                           where (tmp.Value <= tuiguanObj.ExtraDecimal && string.Compare(tmp.DisplayName, gChar.DisplayName) > 0)    //排在指定角色之后的
+                           where (tmp.Value < tuiguanObj.ExtraDecimal || tmp.Value == tuiguanObj.ExtraDecimal.Value && string.Compare(tmp.DisplayName, gChar.DisplayName) > 0)    //排在指定角色之后的
                            orderby tmp.Value descending, tmp.DisplayName descending
                            select tmp;
             var next = collNext.Take(25).ToList();
@@ -1045,7 +1048,7 @@ namespace OW.Game.Item
             {
                 GameItem innerItem;
                 var tmp = allItems[item.ExtraGuid]; //如果在集合中找不到该 key 序列，则返回空序列。
-                if (item.Properties.TryGetGuid("ptid", out var ptid))   //若限定容器
+                if (item.TryGetSdpGuid("ptid", out var ptid))   //若限定容器
                     innerItem = tmp.FirstOrDefault(c => ptid == c.Parent.ExtraGuid || ptid == gameChar.ExtraGuid);
                 else //若未限定容器
                     innerItem = tmp.FirstOrDefault();
@@ -1374,12 +1377,12 @@ namespace OW.Game.Item
             var keysNew = template.Properties.Keys.Except(keysBoth).ToArray();
             foreach (var key in keysNew)    //新属性
             {
-                var newValue = template.Properties.GetValueOrDefault(key);
+                var newValue = template.GetSdpValueOrDefault(key);
                 if (newValue is decimal[] ary)   //若是一个序列属性
                 {
                     var indexName = template.GetIndexPropertyName(key); //索引属性名
 
-                    if (gameItem.TryGetPropertyWithFcp(indexName, out var index) || template.Properties.TryGetDecimal(indexName, out index))
+                    if (gameItem.TryGetPropertyWithFcp(indexName, out var index) || template.TryGetSdpDecimal(indexName, out index))
                     {
                         index = Math.Round(index, MidpointRounding.AwayFromZero);
                         gameItem.SetPropertyValue(key, ary[(int)index]);
@@ -1393,7 +1396,7 @@ namespace OW.Game.Item
             foreach (var key in keysBoth)   //遍历两者皆有的属性
             {
                 var currentVal = gameItem.GetPropertyOrDefault(key);
-                var oldVal = gameItem.GetTemplate().Properties.GetValueOrDefault(key);    //模板值
+                var oldVal = gameItem.GetTemplate().GetSdpValueOrDefault(key);    //模板值
                 if (oldVal is decimal[] ary && OwConvert.TryToDecimal(currentVal, out var currentDec))   //若是一个序列属性
                 {
                     var lv = World.PropertyManager.GetIndexPropertyValue(gameItem, key);    //当前等级
@@ -1402,14 +1405,14 @@ namespace OW.Game.Item
                 }
                 else if (OwConvert.TryToDecimal(currentVal, out var dec)) //若是一个数值属性
                 {
-                    OwConvert.TryToDecimal(gameItem.GetTemplate().Properties.GetValueOrDefault(key, 0), out var nDec);    //当前模板中该属性
-                    OwConvert.TryToDecimal(template.Properties.GetValueOrDefault(key), out var tDec);
+                    var nDec = gameItem.GetTemplate().GetSdpDecimalOrDefault(key, 0);    //当前模板中该属性
+                    var tDec = template.GetSdpDecimalOrDefault(key);
                     var nVal = dec - nDec + tDec;
                     gameItem.SetPropertyValue(key, nVal);
                 }
                 else //其他类型属性
                 {
-                    gameItem.SetPropertyValue(key, template.Properties.GetValueOrDefault(key));
+                    gameItem.SetPropertyValue(key, template.GetSdpValueOrDefault(key));
                 }
             }
             gameItem.ExtraGuid = template.Id;

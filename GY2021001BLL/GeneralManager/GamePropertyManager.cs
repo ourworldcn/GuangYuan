@@ -4,6 +4,7 @@ using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
 using Microsoft.EntityFrameworkCore;
 using OW.Game.PropertyChange;
+using OW.Game.Store;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -219,7 +220,7 @@ namespace OW.Game
             }
             else
             {
-                var oldValue = thing.Properties.GetDecimalOrDefault(propertyName, decimal.Zero);
+                var oldValue = thing.GetSdpDecimalOrDefault(propertyName, decimal.Zero);
                 thing.Properties[propertyName] = oldValue + diff;
             }
             return true;
@@ -235,9 +236,9 @@ namespace OW.Game
         /// <returns>true有旧属性，此时<paramref name="oldValue"/>中包含旧值。false没有原有属性。</returns>
         public virtual bool SetProperty(GameThingBase thing, string propertyName, object value, out object oldValue)
         {
-            if (thing.Properties.TryGetValue(propertyName, out oldValue))
+            if (thing.TryGetSdp(propertyName, out oldValue))
                 return true;
-            thing.Properties[propertyName] = value;
+            thing.SetSdp(propertyName, value);
             return false;
         }
 
@@ -404,7 +405,7 @@ namespace OW.Game
             else //若是其他属性
             {
                 refreshDatetime = DateTime.MinValue;
-                succ = gameItem.Properties.TryGetValue(name, out result);
+                succ = gameItem.TryGetSdp(name, out result);
             }
             return succ;
         }
@@ -464,11 +465,11 @@ namespace OW.Game
             [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             if (changes is null)    //若无需标记变化数据
-                thing.Properties[propertyName] = value;
+                thing.SetSdp(propertyName, value);
             else //若需要标记变化数据
             {
                 var data = GamePropertyChangeItemPool<object>.Shared.Get();
-                if (thing.Properties.TryGetValue(propertyName, out var oldValue))  //若存在旧值
+                if (thing.TryGetSdp(propertyName, out var oldValue))  //若存在旧值
                 {
                     data.HasOldValue = true;
                     data.OldValue = oldValue;

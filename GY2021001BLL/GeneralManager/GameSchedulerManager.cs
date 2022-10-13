@@ -26,10 +26,10 @@ namespace GuangYuan.GY001.BLL
                 ActionId = ClassId,
                 Remark = "任务计划项。",
             };
-            result.Properties[nameof(Properties)] = Uri.EscapeDataString(OwConvert.ToString(obj.Properties)); //记录参数
-            result.Properties[nameof(ComplatedDatetime)] = obj.ComplatedDatetime.ToString("s"); //记录定时的时间
-            result.Properties[nameof(ServiceTypeName)] = Uri.EscapeDataString(obj.ServiceTypeName); //记录方法名
-            result.Properties[nameof(MethodName)] = obj.MethodName; //记录方法名
+            result.SetSdp(nameof(Properties), Uri.EscapeDataString(OwConvert.ToString(obj.Properties))); //记录参数
+            result.SetSdp(nameof(ComplatedDatetime), obj.ComplatedDatetime.ToString("s")); //记录定时的时间
+            result.SetSdp(nameof(ServiceTypeName), Uri.EscapeDataString(obj.ServiceTypeName)); //记录方法名
+            result.SetSdp(nameof(MethodName), obj.MethodName); //记录方法名
             return result;
         }
 
@@ -38,11 +38,11 @@ namespace GuangYuan.GY001.BLL
             var result = new SchedulerDescriptor()
             {
                 Id = obj.Id,
-                ComplatedDatetime = obj.Properties.GetDateTimeOrDefault(nameof(ComplatedDatetime)),
-                ServiceTypeName = Uri.UnescapeDataString(obj.Properties.GetStringOrDefault(nameof(ServiceTypeName))),   //服务名
-                MethodName = obj.Properties.GetStringOrDefault(nameof(MethodName)), //记录方法名
+                ComplatedDatetime = obj.GetSdpDateTimeOrDefault(nameof(ComplatedDatetime)),
+                ServiceTypeName = Uri.UnescapeDataString(obj.GetSdpStringOrDefault(nameof(ServiceTypeName))),   //服务名
+                MethodName = obj.GetSdpStringOrDefault(nameof(MethodName)), //记录方法名
             };
-            OwConvert.Copy(Uri.UnescapeDataString(obj.Properties.GetStringOrDefault(nameof(Properties))), result.Properties);
+            OwConvert.Copy(Uri.UnescapeDataString(obj.GetSdpStringOrDefault(nameof(Properties))), result.Properties);
             return result;
         }
 

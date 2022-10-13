@@ -142,7 +142,7 @@ namespace OW.Game.Store
     /// 简单动态扩展属性（Simple dynamic extension properties，Sdep）接口。
     /// </summary>
     /// <typeparam name="T">动态属性值的类型。</typeparam>
-    public interface ISimpleDynamicExtensionProperty<T>
+    public interface ISimpleDynamicProperty<T>
     {
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
@@ -162,7 +162,7 @@ namespace OW.Game.Store
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
-        public abstract void SetSdep(string name, T value);
+        public abstract void SetSdp(string name, T value);
 
         /// <summary>
         /// 获取动态属性。
@@ -171,19 +171,19 @@ namespace OW.Game.Store
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns>true找到属性并返回，false没有找到指定名称的属性。</returns>
-        public abstract bool TryGetSdep(string name, out T value);
+        public abstract bool TryGetSdp(string name, out T value);
 
         /// <summary>
         /// 获取所有动态属性。
         /// </summary>
         /// <returns>注意在遍历返回集合时一般不可以更改集合，除非实现类有特别说明。</returns>
-        public IEnumerable<(string, T)> GetAllSdep();
+        public IEnumerable<(string, T)> GetAllSdp();
     }
 
     /// <summary>
     /// 提供一个基类，包含一个编码为字符串的压缩属性。且该字符串可以理解为一个字典的内容。
     /// </summary>
-    public abstract class SimpleDynamicPropertyBase : GuidKeyObjectBase, IBeforeSave, IDisposable, INotifyDynamicPropertyChanged, ISimpleDynamicExtensionProperty<object>
+    public abstract class SimpleDynamicPropertyBase : GuidKeyObjectBase, IBeforeSave, IDisposable, INotifyDynamicPropertyChanged, ISimpleDynamicProperty<object>
     {
         /// <summary>
         /// <inheritdoc/>
@@ -226,12 +226,12 @@ namespace OW.Game.Store
             }
         }
 
-        public virtual void SetSdep(string name, object value)
+        public virtual void SetSdp(string name, object value)
         {
             Properties[name] = value;
         }
 
-        public virtual bool TryGetSdep(string name, out object value)
+        public virtual bool TryGetSdp(string name, out object value)
         {
             return Properties.TryGetValue(name, out value);
         }
@@ -240,7 +240,7 @@ namespace OW.Game.Store
         /// <inheritdoc/>
         /// </summary>
         /// <returns><inheritdoc/></returns>
-        public virtual IEnumerable<(string, object)> GetAllSdep()
+        public virtual IEnumerable<(string, object)> GetAllSdp()
         {
             return Properties.Select(c => (c.Key, c.Value));
         }
@@ -354,8 +354,154 @@ namespace OW.Game.Store
 
     }
 
-    public class SimpleExtendPropertyBaseExtensions
+    public static class SimpleDynamicPropertyBaseExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="name"></param>
+        /// <param name="newValue"></param>
+        /// <param name="tag"></param>
+        /// <param name="changes">变化数据的集合，如果值变化了，将向此集合追加变化数据对象。若省略或为null则不追加。</param>
+        /// <returns>true设置了变化数据，false,新值与旧值没有变化。</returns>
+        public static bool SetPropertyAndAddChangedItem(this SimpleDynamicPropertyBase obj, string name, object newValue, [AllowNull] object tag = null,
+            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
+        {
+            bool result;
+            var isExists = obj.Properties.TryGetValue(name, out var oldValue);  //存在旧值
+            if (!isExists || !Equals(oldValue, newValue)) //若新值和旧值不相等
+            {
+                if (null != changes)    //若需要设置变化数据
+                {
+                    var item = GamePropertyChangeItemPool<object>.Shared.Get();
+                    item.Object = obj; item.PropertyName = name; item.Tag = tag;
+                    if (isExists)
+                        item.OldValue = oldValue;
+                    item.HasOldValue = isExists;
+                    item.NewValue = newValue;
+                    item.HasNewValue = true;
+                    changes.Add(item);
+                }
+                obj.Properties[name] = newValue;
+                result = true;
+            }
+            else
+                result = false;
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sdp"></param>
+        /// <param name="name"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T GetSdpValueOrDefault<T>(this ISimpleDynamicProperty<T> sdp, string name, T defaultValue = default) =>
+            sdp.TryGetSdp(name, out var result) ? result : defaultValue;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sdp"></param>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static bool TryGetSdpDecimal(this ISimpleDynamicProperty<object> sdp, string name, out decimal result)
+        {
+            if (sdp.TryGetSdp(name, out var obj) && OwConvert.TryToDecimal(obj, out result))
+                return true;
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static decimal GetSdpDecimalOrDefault(this ISimpleDynamicProperty<object> sdp, string name, decimal defaultVal = default) =>
+             sdp.TryGetSdpDecimal(name, out var result) ? result : defaultVal;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sdp"></param>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static bool TryGetSdpGuid(this ISimpleDynamicProperty<object> sdp, string name, out Guid result)
+        {
+            if (!sdp.TryGetSdp(name, out var obj))
+            {
+                result = default;
+                return false;
+            }
+            return OwConvert.TryToGuid(obj, out result);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Guid GetSdpGuidOrDefault(this ISimpleDynamicProperty<object> sdp, string name, Guid defaultVal = default)
+        {
+            return sdp.TryGetSdp(name, out var obj) && OwConvert.TryToGuid(obj, out var result) ? result : defaultVal;
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static bool TryGetSdpDateTime(this ISimpleDynamicProperty<object> sdp, string name, out DateTime result)
+        {
+            if (sdp.TryGetSdp(name, out var obj) && OwConvert.TryGetDateTime(obj, out result))
+                return true;
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DateTime GetSdpDateTimeOrDefault(this ISimpleDynamicProperty<object> sdp, string name, DateTime defaultVal = default) =>
+            sdp.TryGetSdpDateTime(name, out var result) ? result : defaultVal;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sdp"></param>
+        /// <param name="name"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static string GetSdpStringOrDefault(this ISimpleDynamicProperty<object> sdp, string name, string defaultVal = default)
+        {
+            if (!sdp.TryGetSdp(name, out var obj))
+            {
+                return defaultVal;
+            }
+            return obj switch
+            {
+                _ when obj is string => (string)obj,
+                _ => obj?.ToString(),
+            };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sdp"></param>
+        /// <param name="key"></param>
+        /// <param name="defaultVal"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool GetSdpBooleanOrDefaut(this ISimpleDynamicProperty<object> sdp, string key, bool defaultVal = default)
+        {
+            if (!sdp.TryGetSdp(key, out var obj))
+                return defaultVal;
+            return OwConvert.TryToBoolean(obj, out var result) ? result : defaultVal;
+        }
 
     }
 
@@ -479,52 +625,4 @@ namespace OW.Game.Store
         }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class SimpleDynamicPropertyBaseExtensions
-    {
-        public static IEnumerable<(string, object)> RemovePrefix(this IReadOnlyDictionary<string, object> dic, string prefix)
-        {
-            var coll = from tmp in dic.Where(c => c.Key.StartsWith(prefix))
-                       let keyName = tmp.Key[prefix.Length..] //键名
-                       select (Key: keyName, tmp.Value);
-            return coll;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="name"></param>
-        /// <param name="newValue"></param>
-        /// <param name="tag"></param>
-        /// <param name="changes">变化数据的集合，如果值变化了，将向此集合追加变化数据对象。若省略或为null则不追加。</param>
-        /// <returns>true设置了变化数据，false,新值与旧值没有变化。</returns>
-        public static bool SetPropertyAndAddChangedItem(this SimpleDynamicPropertyBase obj, string name, object newValue, [AllowNull] object tag = null,
-            [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
-        {
-            bool result;
-            var isExists = obj.Properties.TryGetValue(name, out var oldValue);  //存在旧值
-            if (!isExists || !Equals(oldValue, newValue)) //若新值和旧值不相等
-            {
-                if (null != changes)    //若需要设置变化数据
-                {
-                    var item = GamePropertyChangeItemPool<object>.Shared.Get();
-                    item.Object = obj; item.PropertyName = name; item.Tag = tag;
-                    if (isExists)
-                        item.OldValue = oldValue;
-                    item.HasOldValue = isExists;
-                    item.NewValue = newValue;
-                    item.HasNewValue = true;
-                    changes.Add(item);
-                }
-                obj.Properties[name] = newValue;
-                result = true;
-            }
-            else
-                result = false;
-            return result;
-        }
-    }
 }

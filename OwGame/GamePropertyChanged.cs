@@ -27,17 +27,17 @@ namespace OW.Game.PropertyChange
         /// <param name="name"></param>
         /// <param name="newValue"></param>
         /// <param name="tag"></param>
-        public static void ModifyAndAddChanged([AllowNull] ICollection<GamePropertyChangeItem<T>> collection, ISimpleDynamicExtensionProperty<T> obj, string name, T newValue, object tag = null)
+        public static void ModifyAndAddChanged([AllowNull] ICollection<GamePropertyChangeItem<T>> collection, ISimpleDynamicProperty<T> obj, string name, T newValue, object tag = null)
         {
             Debug.Assert(name != "Children");
             if (collection is null)
             {
-                obj.SetSdep(name, newValue);
+                obj.SetSdp(name, newValue);
             }
             else
             {
                 var arg = Create(obj, name, newValue, tag);
-                obj.SetSdep(name, newValue);
+                obj.SetSdp(name, newValue);
                 collection.Add(arg);
             }
         }
@@ -51,11 +51,11 @@ namespace OW.Game.PropertyChange
         /// <param name="tag"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GamePropertyChangeItem<T> Create(ISimpleDynamicExtensionProperty<T> sdep, string name, T newValue, object tag = null)
+        public static GamePropertyChangeItem<T> Create(ISimpleDynamicProperty<T> sdep, string name, T newValue, object tag = null)
         {
             var result = GamePropertyChangeItemPool<T>.Shared.Get();
             result.Object = sdep; result.PropertyName = name; result.Tag = tag;
-            if (sdep.TryGetSdep(name, out var oldValue) && oldValue is T old)
+            if (sdep.TryGetSdp(name, out var oldValue) && oldValue is T old)
             {
                 result.OldValue = old;
                 result.HasOldValue = true;

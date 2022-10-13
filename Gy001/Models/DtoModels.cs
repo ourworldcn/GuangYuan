@@ -2417,7 +2417,8 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// 放弃pvp请求协助接口参数传输类。
+    /// 放弃
+    /// 请求协助接口参数传输类。
     /// </summary>
     [DataContract]
     public class AbortPvpParamsDto : TokenDtoBase

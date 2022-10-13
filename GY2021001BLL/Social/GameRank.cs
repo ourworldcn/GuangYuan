@@ -37,9 +37,9 @@ namespace GuangYuan.GY001.BLL.Social
         }
 
         /// <summary>
-        /// 返回值的集合，元素结构(角色Id,战力,显示名)
+        /// 返回值的集合，元素结构(角色Id,战力,显示名,头像索引)
         /// </summary>
-        public List<(Guid, decimal, string)> ResultCollction { get; } = new List<(Guid, decimal, string)>();
+        public List<(Guid, decimal, string, int)> ResultCollction { get; } = new List<(Guid, decimal, string, int)>();
     }
 
     /// <summary>
@@ -63,17 +63,30 @@ namespace GuangYuan.GY001.BLL.Social
         {
             var result = new GetTotalPowerTopRankCommandResult();
             using var db = _World.CreateNewUserDbContext();
+            var allowGcs = from gc in db.Set<GameChar>()    //允许参与排名的角色集合
+                           where !gc.CharType.HasFlag(CharType.SuperAdmin) && !gc.CharType.HasFlag(CharType.Admin) && !gc.CharType.HasFlag(CharType.Npc) && !gc.CharType.HasFlag(CharType.Robot)
+                           select gc;
+
             var coll = from slot in db.Set<GameItem>()
                        where slot.ExtraGuid == ProjectConstant.TuiGuanTId
                        join parent in db.Set<GameItem>()
                        on slot.ParentId equals parent.Id
-                       join gc in db.Set<GameChar>().Where(gc => !gc.CharType.HasFlag(CharType.SuperAdmin) && !gc.CharType.HasFlag(CharType.Admin) && !gc.CharType.HasFlag(CharType.Npc) && !gc.CharType.HasFlag(CharType.Robot))
+                       join gc in allowGcs
                        on parent.OwnerId equals gc.Id
                        orderby slot.ExtraDecimal.Value descending, gc.DisplayName
-                       select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value };
+                       select new { gc.Id, gc.DisplayName, slot.ExtraDecimal.Value, gc.PropertiesString };
             var collResult = coll.Take(datas.Top).ToList();
-            result.ResultCollction.AddRange(collResult.Select(c => (c.Id, c.Value, c.DisplayName)));
+            result.ResultCollction.AddRange(collResult.Select(c =>
+            {
+                var tmp = new Dictionary<string, object>();
+                OwConvert.Copy(c.PropertiesString, tmp);
+                var icon = (int)tmp.GetDecimalOrDefault("charIcon", 0);
+                return (c.Id, c.Value, c.DisplayName, icon);
+            }));
+
             return result;
         }
     }
+
+
 }

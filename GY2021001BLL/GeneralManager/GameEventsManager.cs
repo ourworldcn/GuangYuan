@@ -74,7 +74,7 @@ namespace OW.Game
         public void Mark(GameThingBase thing, string keyName)
         {
             var item = GetOrAddItem(thing);
-            var hasOld = thing.Properties.TryGetValue(keyName, out var oldVal);
+            var hasOld = thing.TryGetSdp(keyName, out var oldVal);
             var result = new GamePropertyChangeItem<object>(null, name: keyName, oldValue: oldVal, newValue: default) { HasOldValue = hasOld };
             item.Add(result);
         }
@@ -89,10 +89,10 @@ namespace OW.Game
         public void MarkAndSet(GameThingBase thing, string keyName, object newValue, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var item = GetOrAddItem(thing);
-            var hasOld = thing.Properties.TryGetValue(keyName, out var oldVal);
+            var hasOld = thing.TryGetSdp(keyName, out var oldVal);
             var result = new GamePropertyChangeItem<object>(thing, name: keyName, oldValue: oldVal, newValue: newValue) { HasOldValue = hasOld, HasNewValue = true, };
             item.Add(result);
-            thing.Properties[keyName] = newValue;
+            thing.SetSdp(keyName, newValue);
             if (changes != null)
                 changes.Add((GamePropertyChangeItem<object>)result.Clone());
         }
@@ -258,10 +258,10 @@ namespace OW.Game
                 gameItem.Count = count;
             else if (null != tt)
             {
-                if (tt.Properties.TryGetDecimal("Count", out count) || tt.Properties.TryGetDecimal("count", out count)) //若制定了模板且其中指定了初始数量
+                if (tt.TryGetSdpDecimal("Count", out count) || tt.TryGetSdpDecimal("count", out count)) //若制定了模板且其中指定了初始数量
                     gameItem.Count = count;
                 else
-                    gameItem.Count ??= tt.Properties.ContainsKey(gpm.StackUpperLimitPropertyName) ? 0 : 1;
+                    gameItem.Count ??= tt.TryGetSdp(gpm.StackUpperLimitPropertyName, out _) ? 0 : 1;
             }
             #endregion 设置数量
 
@@ -278,7 +278,7 @@ namespace OW.Game
                 gameItem.Parent = parent;
             }
             else if (propertyBag.TryGetValue("ptid", out var ptid))
-                gameItem.Properties["ptid"] = ptid;
+                gameItem.SetSdp("ptid", ptid);
             #endregion 设置导航关系
 
             #region 追加子对象
@@ -460,7 +460,7 @@ namespace OW.Game
                     if (item.Value is IList seq)   //若是属性序列
                     {
                         var indexPn = tt.GetIndexPropName(item.Key);
-                        var lv = Convert.ToInt32(tt.Properties.GetValueOrDefault(indexPn, 0m));
+                        var lv = (int)tt.GetSdpDecimalOrDefault(indexPn, 0m);
                         dic[item.Key] = seq[Math.Clamp(lv, 0, seq.Count - 1)];
                     }
                     else
@@ -508,7 +508,7 @@ namespace OW.Game
                 propertyBag[$"{prefix}ownerid{suffix}"] = gameItem.OwnerId;
             else if (gameItem.Parent != null)
                 propertyBag[$"{prefix}ptid{suffix}"] = gameItem.Parent.ExtraGuid.ToString();
-            else if (gameItem.Properties.TryGetGuid("ptid", out var ptid))
+            else if (gameItem.TryGetSdpGuid("ptid", out var ptid))
                 propertyBag[$"{prefix}ptid{suffix}"] = ptid.ToString();
         }
 
@@ -792,7 +792,7 @@ namespace OW.Game
             if (ProjectConstant.CurrencyBagTId == ptid || ProjectConstant.MucaishuTId == tid || ProjectConstant.YumitianTId == tid)
                 return true;
 
-            return gItem.Properties.ContainsKey("IsAllowZero");
+            return gItem.TryGetSdp("IsAllowZero", out _);
         }
 
         #endregion 物品相关
@@ -871,29 +871,6 @@ namespace OW.Game
         #endregion 创建对象相关
 
         #region 属性变化事件相关
-
-        /// <summary>
-        /// 设置属性并发送变化事件数据。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="obj"></param>
-        /// <param name="name"></param>
-        /// <param name="newValue"></param>
-        /// <param name="tag">附属信息。</param>
-        public static void PostDynamicPropertyChanged(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object newValue, object tag)
-        {
-            var arg = GamePropertyChangeItemPool<object>.Shared.Get();
-            arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
-            if (obj.Properties.TryGetValue(name, out var oldValue))
-            {
-                arg.OldValue = oldValue;
-                arg.HasOldValue = true;
-            }
-            obj.Properties[name] = newValue;
-            arg.NewValue = newValue;
-            arg.HasNewValue = true;
-            gameChar.GetOrCreatePropertyChangedList().Enqueue(arg);
-        }
 
         /// <summary>
         /// 删除指定属性。

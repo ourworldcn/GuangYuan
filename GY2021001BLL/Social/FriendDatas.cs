@@ -7,6 +7,7 @@ using OW.Game;
 using Game.Social;
 using Microsoft.EntityFrameworkCore;
 using OW.Game.Log;
+using OW.Game.Store;
 
 namespace GuangYuan.GY001.BLL.Social
 {
@@ -61,13 +62,13 @@ namespace GuangYuan.GY001.BLL.Social
         {
             get
             {
-                return GameChar.Properties.GetDateTimeOrDefault(RflDateTimeKey) == Today0;
+                return GameChar.GetSdpDateTimeOrDefault(RflDateTimeKey) == Today0;
             }
             set
             {
                 if (value)
                 {
-                    GameChar.Properties[RflDateTimeKey] = Today0;
+                    GameChar.SetSdp(RflDateTimeKey, Today0.ToString());
                 }
                 else
                 {
@@ -86,10 +87,10 @@ namespace GuangYuan.GY001.BLL.Social
             {
                 if (_LastListIds is null)
                 {
-                    var str = GameChar.Properties.GetStringOrDefault(LastRflKey);
+                    var str = GameChar.GetSdpValueOrDefault(LastRflKey) as string;
                     if (HasData && !string.IsNullOrWhiteSpace(str))    //若有今天刷新数据
                     {
-                        _LastListIds = GameChar.Properties.GetStringOrDefault(LastRflKey).Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
+                        _LastListIds = (GameChar.GetSdpValueOrDefault(LastRflKey) as string).Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
                     }
                     else
                     {
@@ -110,7 +111,7 @@ namespace GuangYuan.GY001.BLL.Social
             {
                 if (_TodayIds is null)
                 {
-                    var str = GameChar.Properties.GetStringOrDefault(TotalRflKey);
+                    var str = GameChar.GetSdpStringOrDefault(TotalRflKey);
                     if (HasData && !string.IsNullOrWhiteSpace(str))    //若有今天刷新数据
                     {
                         _TodayIds = str.Split(Separator, StringSplitOptions.RemoveEmptyEntries).Select(c => Guid.Parse(c)).ToList();
@@ -188,13 +189,13 @@ namespace GuangYuan.GY001.BLL.Social
             var db = GameChar.GameUser.DbContext;
             if (null != _LastListIds)
             {
-                GameChar.Properties[LastRflKey] = string.Join(Separator, _LastListIds.Select(c => c.ToString()));
+                GameChar.SetSdp(LastRflKey, string.Join(Separator, _LastListIds.Select(c => c.ToString())));
                 World.CharManager.NotifyChange(GameChar.GameUser);
             }
             if (null != _TodayIds || null != _LastListIds) //若今日刷新过的列表不空或最后一次刷新的列表不空
             {
                 _TodayIds = TodayIds.Union(LastListIds).ToList(); //合并列表
-                GameChar.Properties[TotalRflKey] = string.Join(Separator, TodayIds.Select(c => c.ToString()));
+                GameChar.SetSdp(TotalRflKey, string.Join(Separator, TodayIds.Select(c => c.ToString())));
                 World.CharManager.NotifyChange(GameChar.GameUser);
             }
         }

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.ObjectPool;
 using OW.Game;
 using OW.Game.Item;
+using OW.Game.Store;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -125,7 +126,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             var gis = World.ItemManager.ToGameItems(datas.Propertyies);
-            var coll = gis.Select(c => (c, c.Properties.GetGuidOrDefault("ptid")));
+            var coll = gis.Select(c => (c, c.GetSdpGuidOrDefault("ptid")));
             var mail = new GameMail()
             {
                 Body = datas.Mail.Body,

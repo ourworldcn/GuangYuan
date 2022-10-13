@@ -2360,7 +2360,8 @@
         </member>
         <member name="T:GY2021001WebApi.Models.AbortPvpParamsDto">
             <summary>
-            放弃pvp请求协助接口参数传输类。
+            放弃
+            请求协助接口参数传输类。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.AbortPvpParamsDto.CombatId">
@@ -3686,6 +3687,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

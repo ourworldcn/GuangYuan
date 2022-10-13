@@ -79,12 +79,12 @@ namespace OW.Game.Mission
                             Dictionary<string, object> dic = new Dictionary<string, object>();
                             foreach (var item in vals)  //对每个指标值给出辅助元组
                             {
-                                dic["tid"] = _Template.Properties[$"mtid{item}"];
-                                dic["count"] = _Template.Properties[$"mcount{item}"];
-                                if (_Template.Properties.TryGetValue($"mhtid{item}", out var mhtid))  //若有头模板id
+                                dic["tid"] = _Template.GetSdpValueOrDefault($"mtid{item}");
+                                dic["count"] = _Template.GetSdpValueOrDefault($"mcount{item}");
+                                if (_Template.TryGetSdp($"mhtid{item}", out var mhtid))  //若有头模板id
                                 {
                                     dic["htid"] = mhtid;
-                                    dic["btid"] = _Template.Properties.GetValueOrDefault($"mbtid{item}");    //必须有身体模板id
+                                    dic["btid"] = _Template.GetSdpValueOrDefault($"mbtid{item}");    //必须有身体模板id
                                 }
                                 var gi = gim.ToGameItems(dic); //创建对象
                                 _Metrics.Add((item, gi.First()));
@@ -188,9 +188,17 @@ namespace OW.Game.Mission
                 var str = tid.ToString();   //其中 GUID 的值表示为一系列小写的十六进制位，这些十六进制位分别以 8 个、4 个、4 个、4 个和 12 个位为一组并由连字符分隔开。 例如，返回值可以是“382c74c3-721d-4f34-80e5-57657b6cbc27”。 
                 switch (str)
                 {
+                    case "8bba8a00-e767-4a6a-aa6b-22ef03a3f527": //	关卡模式总战力成就	51005
+                        {
+                            var slot = gc.GetTuiguanObject();
+                            var ov = slot.ExtraDecimal ?? 0;
+                            slot.ExtraDecimal = World.CombatManager.GetTotalAbility(gc);
+                            var diff = (slot.ExtraDecimal ?? 0) - ov;
+                            metrics = slot.ExtraDecimal ?? 0;
+                        }
+                        break;
                     case "814e47cd-8bdf-4efc-bd26-61af57b7fcf8": //	孵化成就	51007
 
-                    case "8bba8a00-e767-4a6a-aa6b-22ef03a3f527": //	关卡模式总战力成就	51005
                     case "42d3236c-ea7c-4444-898e-469aac1fda07": //	累计访问好友天次成就	51011
 
                     case "6f8f5d48-e4b4-4e37-a48f-f8b6badc6f44": //	pvp进攻成就	51013
@@ -199,24 +207,24 @@ namespace OW.Game.Mission
                     case "5c3d9daf-fe89-43a4-93f8-7abdc85418e5": //	累计塔防模式次数成就	51012
                     case "96a36fbe-f79a-4579-932e-588772436da5": //	关卡成就	51002
                         {
-                            var diff = item.Properties.GetDecimalOrDefault(ProjectMissionConstant.指标增量属性名); //指标增量值
-                            item.Properties[ProjectMissionConstant.指标增量属性名] = decimal.Zero;
+                            var diff = item.GetSdpDecimalOrDefault(ProjectMissionConstant.指标增量属性名); //指标增量值
+                            item.SetSdp(ProjectMissionConstant.指标增量属性名, decimal.Zero);
                             metrics = item.Count.GetValueOrDefault() + diff;
                         }
                         break;
                     case "25ffbee1-f617-49bd-b0de-32b3e3e975cb": //	玩家等级成就	51001
-                        metrics = gc.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+                        metrics = gc.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName);
                         break;
                     case "2f48528e-fd7f-4269-92c9-dbd6f14ffef0": //	坐骑最高等级成就	51003
                         {
                             var zuoqiBag = gc.GetZuojiBag();
-                            metrics = zuoqiBag.Children.Max(c => gim.GetBody(c).Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
+                            metrics = zuoqiBag.Children.Max(c => gim.GetBody(c).GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     case "7d5ad309-2614-434e-b8d3-afe4db93d8b3": //	lv20坐骑数量	51004
                         {
                             var zuoqiBag = gc.GetZuojiBag();
-                            metrics = zuoqiBag.Children.Count(c => gim.GetBody(c)?.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName) >= 19);
+                            metrics = zuoqiBag.Children.Count(c => gim.GetBody(c)?.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName) >= 19);
                         }
                         break;
                     case "49ee3541-3a6e-4d05-85b0-566c6bfecde2": //	纯种坐骑数量成就	51006
@@ -234,9 +242,9 @@ namespace OW.Game.Mission
 
                             metrics = zuoqiBag.Children.Max(c =>
                             {
-                                var neatk = c.Properties.GetDecimalOrDefault("neatk");
-                                var nemhp = c.Properties.GetDecimalOrDefault("nemhp");
-                                var neqlt = c.Properties.GetDecimalOrDefault("neqlt");
+                                var neatk = c.GetSdpDecimalOrDefault("neatk");
+                                var nemhp = c.GetSdpDecimalOrDefault("nemhp");
+                                var neqlt = c.GetSdpDecimalOrDefault("neqlt");
                                 return neatk + nemhp + neqlt;
                             });
                         }
@@ -247,9 +255,9 @@ namespace OW.Game.Mission
 
                             metrics = shenwenBag.Children.Max(c =>
                             {
-                                var lvatk = c.Properties.GetDecimalOrDefault("lvatk");
-                                var lvmhp = c.Properties.GetDecimalOrDefault("lvmhp");
-                                var lvqlt = c.Properties.GetDecimalOrDefault("lvqlt");
+                                var lvatk = c.GetSdpDecimalOrDefault("lvatk");
+                                var lvmhp = c.GetSdpDecimalOrDefault("lvmhp");
+                                var lvqlt = c.GetSdpDecimalOrDefault("lvqlt");
                                 return Math.Max(Math.Max(lvatk, lvmhp), lvqlt);
                             });
                         }
@@ -260,9 +268,9 @@ namespace OW.Game.Mission
 
                             metrics = shenwenBag.Children.Sum(c =>
                             {
-                                var sscatk = c.Properties.GetDecimalOrDefault("sscatk");
-                                var sscmhp = c.Properties.GetDecimalOrDefault("sscmhp");
-                                var sscqlt = c.Properties.GetDecimalOrDefault("sscqlt");
+                                var sscatk = c.GetSdpDecimalOrDefault("sscatk");
+                                var sscmhp = c.GetSdpDecimalOrDefault("sscmhp");
+                                var sscqlt = c.GetSdpDecimalOrDefault("sscqlt");
                                 return sscatk + sscmhp + sscqlt;
                             });
                         }
@@ -270,19 +278,19 @@ namespace OW.Game.Mission
                     case "530efb1e-fc5d-4638-a728-e069431b197a": //	方舟成就	51016
                         {
                             var mainControlRoom = gc.GetMainControlRoom();
-                            metrics = mainControlRoom.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName);
+                            metrics = mainControlRoom.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName);
                         }
                         break;
                     case "26c63192-867a-43f4-919b-10a614ee2865": //	炮塔成就	51017
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_炮塔 / 1000).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
+                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_炮塔 / 1000).Max(c => c.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     case "03d80847-f273-413b-a2a2-81545ab03a89": //	陷阱成就	51018
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_陷阱 / 1000).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
+                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_陷阱 / 1000).Max(c => c.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     case "5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d": //	旗帜成就	51019
@@ -290,7 +298,7 @@ namespace OW.Game.Mission
                             var homeland = gc.GetHomeland();    //TO DO可能没有子元素
                             var collTmp = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_水晶 / 1000);
                             if (collTmp.Any())
-                                metrics = collTmp.Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
+                                metrics = collTmp.Max(c => c.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                             else
                                 metrics = 0;
                         }
@@ -366,7 +374,7 @@ namespace OW.Game.Mission
             }
             var obj_keys = (from tmp in objs    //工作数据，Item1是成就对象，Item2是槽扩展属性的键名，Item3=槽扩展属性的值
                             let keyName = $"mcid{tmp.Id}"
-                            select (tmp, keyName, slot.Properties.GetStringOrDefault(keyName))).ToArray();
+                            select (tmp, keyName, slot.GetSdpStringOrDefault(keyName))).ToArray();
             if (obj_keys.Any(c => string.IsNullOrWhiteSpace(c.Item3)))
             {
                 datas.HasError = true;
@@ -417,7 +425,7 @@ namespace OW.Game.Mission
             var keyName = $"mcid{mObj.Id}"; //键名
             var template = missionSlot.GetTemplate();    //模板数据
             var oldVal = mObj.Count.GetValueOrDefault();   //原值
-            var unpickMetrics = missionSlot.Properties.GetStringOrDefault(keyName, string.Empty).Split(OwHelper.SemicolonArrayWithCN, StringSplitOptions.RemoveEmptyEntries)
+            var unpickMetrics = missionSlot.GetSdpStringOrDefault(keyName, string.Empty).Split(OwHelper.SemicolonArrayWithCN, StringSplitOptions.RemoveEmptyEntries)
                 .Select(c => decimal.Parse(c)).ToArray();   //未领奖励的指标值
             if (!TId2Views.TryGetValue(tid, out var view))  //若找不到指定成就对象
             {
@@ -442,7 +450,7 @@ namespace OW.Game.Mission
             }
             if (newMetrics.Count > 0)   //若确实有新成就
             {
-                missionSlot.Properties[keyName] = string.Join(';', newMetrics.Union(unpickMetrics).Select(c => c.ToString()));
+                missionSlot.SetSdp(keyName, string.Join(';', newMetrics.Union(unpickMetrics).Select(c => c.ToString())));
                 return true;
             }
             else
@@ -516,7 +524,7 @@ namespace OW.Game.Mission
                     datas.FillErrorFromWorld();
                     return;
                 }
-                if (mItem.ComplateCount < mItem.Template.Properties.GetDecimalOrDefault("MaxComplateCount", decimal.MaxValue))   //若可以完成
+                if (mItem.ComplateCount < mItem.Template.GetSdpDecimalOrDefault("MaxComplateCount", decimal.MaxValue))   //若可以完成
                 {
                     var gim = World.ItemManager;
                     //送物品
