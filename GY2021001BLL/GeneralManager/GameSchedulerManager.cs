@@ -291,7 +291,7 @@ namespace GuangYuan.GY001.BLL
         //    {
         //        var lv = gi.GetSdpDecimalOrDefault(World.PropertyManager.LevelPropertyName);  //当前级别
         //        World.ItemManager.SetPropertyValue(gi, World.PropertyManager.LevelPropertyName, lv + 1);
-        //        gi.Properties.Remove("UpgradedSchedulerId");    //删除定时任务Id
+        //        gi.RemoveSdp("UpgradedSchedulerId");    //删除定时任务Id
         //    }
         //}
 

@@ -190,7 +190,7 @@ namespace GuangYuan.GY001.BLL
             //Task.Run(() => SendMail());
             int maxCount = 0;
 #if DEBUG
-            maxCount = 150;
+            maxCount = 20;
 #else
            var env = _Services.GetRequiredService<IHostEnvironment>();
             if (env.EnvironmentName == "Staging_2")

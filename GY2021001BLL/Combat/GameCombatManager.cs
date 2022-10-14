@@ -227,7 +227,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         var gitm = World.ItemTemplateManager;
                         var coll = from tmp in gitm.Id2Template.Values
-                                   where tmp.Properties.ContainsKey("typ") && tmp.Properties.ContainsKey("mis") && tmp.Properties.ContainsKey("sec")
+                                   where tmp.TryGetSdp("typ",out _) && tmp.TryGetSdp("mis",out _) && tmp.TryGetSdp("sec",out _)
                                    select tmp;
                         _Dungeons = coll.ToList();
                     }

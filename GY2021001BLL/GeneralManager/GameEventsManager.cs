@@ -106,7 +106,7 @@ namespace OW.Game
         public bool MarkAndRemove(GameThingBase thing, string keyName)
         {
             var item = GetOrAddItem(thing);
-            var hasOld = thing.Properties.Remove(keyName, out _);
+            var hasOld = thing.RemoveSdp(keyName, out _);
             var result = new GamePropertyChangeItem<object>(null, keyName) { OldValue = hasOld, HasOldValue = hasOld, HasNewValue = false, };
             item.Add(result);
             return hasOld;
@@ -475,12 +475,12 @@ namespace OW.Game
             //处理特殊属性
             if (DictionaryUtil.TryGetDecimal(nameof(thing.ExtraDecimal), out var dec, propertyBag, tt.Properties))
             {
-                thing.Properties.Remove(nameof(thing.ExtraDecimal), out _);
+                thing.RemoveSdp(nameof(thing.ExtraDecimal), out _);
                 thing.ExtraDecimal = dec;
             }
             if (DictionaryUtil.TryGetString(nameof(thing.ExtraString), out var str, propertyBag, tt.Properties))
             {
-                thing.Properties.Remove(nameof(thing.ExtraString), out _);
+                thing.RemoveSdp(nameof(thing.ExtraString), out _);
                 thing.ExtraString = str;
             }
         }
@@ -815,7 +815,8 @@ namespace OW.Game
             [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
         {
             var bg = DictionaryPool<string, object>.Shared.Get();
-            OwHelper.Copy(template.Properties, bg);
+            
+            template.CopyTo(bg);
             if (null != parameters)
                 OwHelper.Copy(parameters, bg);
             if (ownerId.HasValue)
@@ -882,7 +883,7 @@ namespace OW.Game
         public static void PostDynamicPropertyRemoved(this GameChar gameChar, SimpleDynamicPropertyBase obj, string name, object tag)
         {
             var arg = GamePropertyChangeItemPool<object>.Shared.Get();
-            if (obj.Properties.Remove(name, out var oldValue))
+            if (obj.RemoveSdp(name, out var oldValue))
             {
                 arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
                 arg.OldValue = oldValue;

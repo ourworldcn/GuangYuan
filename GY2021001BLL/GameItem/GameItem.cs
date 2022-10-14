@@ -77,7 +77,7 @@ namespace GuangYuan.GY001.BLL
                 return result;
             var tt = thing.GetTemplate();
             thing.FcpToProperties();    //刷新所有fcp属性
-            foreach (var kvp in thing.GetAllSdp()) //遍历每个属性
+            foreach (var kvp in thing.GetAllSdp().ToArray()) //遍历每个属性
             {
                 if (!(tt.GetSdpValueOrDefault(kvp.Item1) is decimal[] ary) || ary.Length < 1)  //若没有随级别变化的可能
                     continue;

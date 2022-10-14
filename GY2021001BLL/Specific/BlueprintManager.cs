@@ -62,7 +62,7 @@ namespace GuangYuan.GY001.BLL
 
             var result = new List<(GameItem, decimal)>();
 
-            var dic = GameItem.Properties;
+            var sdp = GameItem;
             var bag = GameChar.GetCurrencyBag();
 
             #region 计算通用代价
@@ -80,7 +80,7 @@ namespace GuangYuan.GY001.BLL
             #endregion 计算通用代价
 
             #region 计算非通用代价
-            var dia = dic.GetDecimalOrDefault("lud", decimal.Zero); //钻石
+            var dia = sdp.GetSdpDecimalOrDefault("lud", decimal.Zero); //钻石
             if (dia != decimal.Zero)   //若有钻石消耗
             {
                 dia = -Math.Abs(dia);
@@ -88,7 +88,7 @@ namespace GuangYuan.GY001.BLL
                 result.Add((gi, dia));
             }
 
-            var gold = dic.GetDecimalOrDefault("lug");  //金币
+            var gold = sdp.GetSdpDecimalOrDefault("lug");  //金币
             if (gold != decimal.Zero)   //若有金币消耗
             {
                 gold = -Math.Abs(gold);
@@ -96,7 +96,7 @@ namespace GuangYuan.GY001.BLL
                 result.Add((gi, gold));
             }
 
-            var wood = dic.GetDecimalOrDefault("luw");  //木材
+            var wood = sdp.GetSdpDecimalOrDefault("luw");  //木材
             if (wood != decimal.Zero)   //若有金币消耗
             {
                 wood = -Math.Abs(wood);
@@ -506,7 +506,9 @@ namespace GuangYuan.GY001.BLL
                 var coll = gitm.BodyTemplates.Values.Where(c => c.Sequence != head.Sequence);
                 var body = coll.Skip(VWorld.WorldRandom.Next(coll.Count())).First();
                 var propBag = DictionaryPool<string, object>.Shared.Get();
-                OwHelper.Copy(datas.GameItems[0].Properties, propBag);
+
+                datas.GameItems[0].CopyTo(propBag);
+
                 propBag["htid"] = head.Id;
                 propBag["btid"] = body.Id;
                 propBag["tid"] = ProjectConstant.ZuojiZuheRongqi.ToString();
@@ -1945,7 +1947,7 @@ namespace GuangYuan.GY001.BLL
                 set
                 {
                     if (value is null)
-                        GameChar.Properties.Remove("PvpWarFreeCardsExpire");
+                        GameChar.RemoveSdp("PvpWarFreeCardsExpire");
                     else
                         GameChar.SetSdp("PvpWarFreeCardsExpire", value.Value.ToString("s"));
                 }

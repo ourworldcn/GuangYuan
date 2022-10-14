@@ -20,10 +20,7 @@ namespace Game.Social
                 Subject = obj.Subject,
             };
             result.To.AddRange(obj.To.Select(c => (GameMailAddressDto)c));
-            foreach (var item in obj.Properties)
-            {
-                result.Properties[item.Key] = item.Value;
-            }
+            obj.CopyTo(result.Properties);
             result.From = obj.From;
             result.Attachmentes.AddRange(obj.Attachmentes.Select(c => (GameMailAttachmentDto)c));
 
@@ -66,10 +63,7 @@ namespace Game.Social
                 Id = obj.Id.ToBase64String(),
                 IdDeleted = obj.IdDeleted,
             };
-            foreach (var item in obj.Properties)
-            {
-                result.Properties[item.Key] = item.Value;
-            }
+            obj.CopyTo(result.Properties);
             return result;
         }
     }

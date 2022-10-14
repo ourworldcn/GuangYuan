@@ -231,7 +231,7 @@ namespace GuangYuan.GY001.TemplateDb
             if (!template.TryGetSdp(seqPropName, out object obj) || !(obj is decimal[]))
                 return null;
             var pn = $"{GameThingTemplateBase.LevelPrefix}{seqPropName}";
-            if (template.Properties.ContainsKey(pn))
+            if (template.TryGetSdp(pn,out _))
                 return pn;
             return GameThingTemplateBase.LevelPrefix;
         }

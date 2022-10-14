@@ -157,7 +157,7 @@ namespace OW.Game.Store
         }
 
         /// <summary>
-        /// 设置动态属性。
+        /// 追加或设置动态属性。
         /// 虽然一般动态属性存在于<see cref="Properties"/>中，但派生类可能需要存储在其它位置，可重载此成员以控制读写位置。
         /// </summary>
         /// <param name="name"></param>
@@ -172,6 +172,13 @@ namespace OW.Game.Store
         /// <param name="value"></param>
         /// <returns>true找到属性并返回，false没有找到指定名称的属性。</returns>
         public abstract bool TryGetSdp(string name, out T value);
+
+        /// <summary>
+        /// 移除动态属性。
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>true成功移除，false指定属性不存在或是不可移除的属性。</returns>
+        public abstract bool RemoveSdp(string name);
 
         /// <summary>
         /// 获取所有动态属性。
@@ -243,6 +250,16 @@ namespace OW.Game.Store
         public virtual IEnumerable<(string, object)> GetAllSdp()
         {
             return Properties.Select(c => (c.Key, c.Value));
+        }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public virtual bool RemoveSdp(string name)
+        {
+            return Properties.Remove(name);
         }
 
         #endregion ISimpleDynamicExtensionProperties接口相关
@@ -503,6 +520,50 @@ namespace OW.Game.Store
             return OwConvert.TryToBoolean(obj, out var result) ? result : defaultVal;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sdp"></param>
+        /// <param name="key"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool RemoveSdp(this ISimpleDynamicProperty<object> sdp, string key, out object result)
+        {
+            return sdp.TryGetSdp(key, out result) ? true : sdp.RemoveSdp(key);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="sdp"></param>
+        /// <param name="dic"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<T, TValue>(this ISimpleDynamicProperty<T> sdp, IDictionary<string, TValue> dic) where T : TValue
+        {
+            foreach (var item in sdp.GetAllSdp())
+            {
+                dic[item.Item1] = item.Item2;
+            }
+        }
+
+        /// <summary>
+        /// 复制sdp属性。
+        /// </summary>
+        /// <typeparam name="TSrc"></typeparam>
+        /// <typeparam name="TDest"></typeparam>
+        /// <param name="src"></param>
+        /// <param name="dest"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo<TSrc, TDest>(this ISimpleDynamicProperty<TSrc> src, ISimpleDynamicProperty<TDest> dest) where TSrc : TDest
+        {
+            foreach (var item in src.GetAllSdp())
+            {
+                dest.SetSdp(item.Item1, item.Item2);
+            }
+        }
     }
 
     /// <summary>

@@ -331,7 +331,7 @@ namespace Gy001.Controllers
             }
             var result = new GetSocialRelationshipsReturnDto();
             result.SocialRelationships.AddRange(coll.Select(c => (GameSocialRelationshipDto)c));
-            var ids = coll.Where(c => c.Properties.ContainsKey("charid")).Select(c => c.GetSdpGuidOrDefault("charid"));
+            var ids = coll.Where(c => c.TryGetSdp("charid",out _)).Select(c => c.GetSdpGuidOrDefault("charid"));
             var mapper = _World.GetMapper();
             if (ids.Any())
             {
@@ -581,12 +581,12 @@ namespace Gy001.Controllers
                         return Unauthorized("令牌无效");
                     _World.SocialManager.GetPvpChars(datas);
                     result.HasError = datas.HasError;
-                    if (datas.HasError)
+                    if (datas.HasError) //若有错
                     {
                         result.ErrorCode = datas.ErrorCode;
                         result.DebugMessage = datas.DebugMessage;
                     }
-                    else
+                    else //若无错
                     {
                         var mapper = _World.Service.GetRequiredService<IMapper>();
                         result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));

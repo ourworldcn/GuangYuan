@@ -289,7 +289,7 @@ namespace OW.Game.Item
             }
             var keys = template.Properties.Where(c => !(c.Value is decimal[])).Select(c => c.Key).Except(gameItem.Properties.Keys).ToArray(); //需要增加的简单属性的名字
             foreach (var item in keys)  //添加简单属性
-                gameItem.SetSdp(item, template.Properties[item]);
+                gameItem.SetSdp(item, template.GetSdpValueOrDefault(item));
             return true;
         }
 
@@ -321,7 +321,7 @@ namespace OW.Game.Item
                 var lv = Convert.ToInt32(objLv);   //当前等级
                 if (lv >= seq.Length || lv < 0) //若等级超过限制
                 {
-                    //gameItem.Properties.Remove(seqPName);
+                    //gameItem.RemoveSdp(seqPName);
                     return false;
                 }
                 var oov = seq[lv];  //原级别模板值
@@ -542,7 +542,7 @@ namespace OW.Game.Item
                 }
                 else //若取消阵容设置
                 {
-                    //mounts.Properties.Remove(key);
+                    //mounts.RemoveSdp(key);
                     pchange.MarkAndRemove(mounts, key);
                     if (item.Item2 == 10)  //若是家园展示
                     {

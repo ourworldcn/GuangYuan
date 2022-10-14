@@ -253,7 +253,7 @@ namespace OW.Extensions.Game.Store
             }
             else
             {
-                thing.Properties.Remove("CreateUtc");
+                thing.RemoveSdp("CreateUtc");
             }
         }
 
@@ -274,7 +274,7 @@ namespace OW.Extensions.Game.Store
         public static void SetClientString(this GameThingBase thing, string value)
         {
             if (value is null)
-                thing.Properties.Remove("ClientString");
+                thing.RemoveSdp("ClientString");
             else
                 thing.SetSdp("ClientString", Uri.EscapeDataString(value));
         }
@@ -308,7 +308,7 @@ namespace OW.Extensions.Game.Store
             if (value.HasValue)
                 gameItem.SetSdp("OrderNumber", (decimal)value.Value);
             else
-                gameItem.Properties.Remove("OrderNumber");
+                gameItem.RemoveSdp("OrderNumber");
         }
 
     }

@@ -72,7 +72,7 @@ namespace GuangYuan.GY001.BLL.Social
                 }
                 else
                 {
-                    GameChar.Properties.Remove(RflDateTimeKey);
+                    GameChar.RemoveSdp(RflDateTimeKey);
                 }
             }
         }

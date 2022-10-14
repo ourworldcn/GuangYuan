@@ -404,7 +404,7 @@ namespace OW.Game.Mission
                 }
             }
             var keys = objs.Select(c => $"mcid{c.Id}").ToList();
-            keys.ForEach(c => slot.Properties.Remove(c));
+            keys.ForEach(c => slot.RemoveSdp(c));
             datas.PropertyChanges.CopyTo(datas.ChangeItems);
             ChangeItem.Reduce(datas.ChangeItems);
             return;
@@ -535,7 +535,7 @@ namespace OW.Game.Mission
                         AddItemsOrMailDatas data = new AddItemsOrMailDatas(datas.World, datas.GameChar);
                         data.Items.AddRange(gis.Select(c =>
                         {
-                            if (!c.Properties.Remove("ptid", out var tmp) || !OwConvert.TryToGuid(tmp, out var id))
+                            if (!c.RemoveSdp("ptid", out var tmp) || !OwConvert.TryToGuid(tmp, out var id))
                                 id = Guid.Empty;
                             return (c, id);
                         }));
