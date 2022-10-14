@@ -592,7 +592,7 @@ namespace GY2021001WebApi.Controllers
             if (dwUser is null)
             {
                 if (world.CharManager.GetUserFromToken(model.Token) is null)
-                    return Unauthorized("令牌错误");
+                    return Unauthorized($"令牌错误,Token:{model.Token}");
                 else
                 {
                     result.ErrorCode = ErrorCodes.WAIT_TIMEOUT;

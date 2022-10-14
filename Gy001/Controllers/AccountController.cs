@@ -194,7 +194,7 @@ namespace GY2021001WebApi.Controllers
         public ActionResult Nop(NopParamsDto model)
         {
             var gm = HttpContext.RequestServices.GetService(typeof(GameCharManager)) as GameCharManager;
-            return gm.Nope(OwConvert.ToGuid(model.Token)) ? base.Ok() as ActionResult : base.Unauthorized("令牌错误。");
+            return gm.Nope(OwConvert.ToGuid(model.Token)) ? base.Ok() as ActionResult : base.Unauthorized(OwHelper.GetLastError());
         }
 
         /// <summary>

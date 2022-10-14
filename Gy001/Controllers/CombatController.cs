@@ -64,6 +64,9 @@ namespace GY2021001WebApi.Controllers
         [HttpPost]
         public ActionResult<CombatEndReturnDto> End(CombatEndParamsDto model)
         {
+#if DEBUG
+            return new CombatEndReturnDto() { HasError = true, ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS };
+#endif
             EndCombatData result = null;
             try
             {

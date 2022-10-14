@@ -1236,7 +1236,12 @@ namespace GuangYuan.GY001.BLL
         public bool Nope(Guid token)
         {
             var gu = GetUserFromToken(token);
-            return gu != null && Nope(gu);
+            if (gu is null)
+            {
+                OwHelper.SetLastErrorMessage($"无效的令牌，Token={token}");
+                return false;
+            }
+            return Nope(gu);
         }
 
         /// <summary>
@@ -1248,7 +1253,9 @@ namespace GuangYuan.GY001.BLL
         {
             using var dwUser = this.LockAndReturnDisposer(user, Timeout.InfiniteTimeSpan);
             if (dwUser is null)
+            {
                 return false;
+            }
             try
             {
                 user.LastModifyDateTimeUtc = DateTime.UtcNow;
