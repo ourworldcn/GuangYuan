@@ -371,6 +371,7 @@ namespace GuangYuan.GY001.BLL
                 data.HasError = true;
                 return;
             }
+
             try
             {
                 var gameChar = data.GameChar;
