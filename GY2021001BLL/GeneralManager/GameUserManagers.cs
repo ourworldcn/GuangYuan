@@ -1219,7 +1219,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     _Store.Add(result);
                     _Store._Id2OnlineChars.TryAdd(result.CurrentChar.Id, result.CurrentChar);
-                    result.Timeout = TimeSpan.FromSeconds(15);
+                    result.Timeout = TimeSpan.FromMinutes(15);
                     NotifyChange(result);
                 }
                 //db.SaveChanges();
