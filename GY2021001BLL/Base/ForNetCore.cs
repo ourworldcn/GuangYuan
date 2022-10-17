@@ -293,6 +293,8 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
+                var logger = _Services.GetRequiredService<ILogger<GameHostedService>>();
+                logger.LogInformation("【{0}】 Test", DateTime.UtcNow);
                 var list = new List<int>() { 2, 22 };
                 var _Clear = list.GetType().GetMethod("Clear", Array.Empty<Type>());
                 var srv = _Services.GetRequiredService<AutoClearPool<List<int>>>();
@@ -452,7 +454,7 @@ namespace GuangYuan.GY001.BLL
             services.AddCommandManager().RegisterCommandHandler(AppDomain.CurrentDomain.GetAssemblies());
             services.AddOwEventBus().RegisterNotificationHandler(AppDomain.CurrentDomain.GetAssemblies());
 
-            
+
             services.UseGameCommand(AppDomain.CurrentDomain.GetAssemblies());
 
             #endregion 基础服务

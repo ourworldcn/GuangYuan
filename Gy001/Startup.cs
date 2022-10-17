@@ -44,14 +44,14 @@ namespace Gy001
         {
             #region 配置通用服务
             var dd = typeof(GameCommandManager);    //确保加载程序集
-
+            
             services.AddResponseCompression(c => c.EnableForHttps = true);
             //日志服务
             services.AddLogging(builder =>
             {
                 builder.AddEventSourceLogger();
                 builder.AddConfiguration(Configuration.GetSection("Logging"));
-
+                
                 builder.AddConsole(option =>
                 {
                     option.IncludeScopes = true;
@@ -61,6 +61,13 @@ namespace Gy001
                 builder.AddDebug();
                 //builder.AddTraceSource();
 #endif //DEBUG
+                try
+                {
+                    builder.AddEventLog();
+                }
+                catch (Exception)
+                {
+                }
             });
 
             var userDbConnectionString = Configuration.GetConnectionString("DefaultConnection");
