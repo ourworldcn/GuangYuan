@@ -284,7 +284,7 @@ namespace OW.Game
             #region 追加子对象
             if (tt?.ChildrenTemplateIds.Count > 0)   //若存在子对象
             {
-                var subpb = DictionaryPool<string, object>.Shared.Get();    //漏掉返回池中不是大问题
+                var subpb = AutoClearPool<Dictionary<string, object>>.Shared.Get();    //漏掉返回池中不是大问题
                 OwHelper.Copy(propertyBag, subpb, c => !_GameItemCreatedKeyNames.Contains(c));
                 subpb["parent"] = gameItem; //指向自己作为父容器
                 foreach (var item in tt.ChildrenTemplateIds)
@@ -294,7 +294,7 @@ namespace OW.Game
                     subpb["tid"] = item.ToString();  //设置模板Id
                     GameItemCreated(gi, subpb);
                 }
-                DictionaryPool<string, object>.Shared.Return(subpb);
+                AutoClearPool<Dictionary<string, object>>.Shared.Return(subpb);
             }
             #endregion 追加子对象
         }
@@ -314,7 +314,7 @@ namespace OW.Game
                 return child;
             //若没有指定TId的孩子
             child = new GameItem();
-            var pg = DictionaryPool<string, object>.Shared.Get();
+            var pg = AutoClearPool<Dictionary<string, object>>.Shared.Get();
             if (parent is GameItem)
                 pg["parent"] = parent;
             else
@@ -324,7 +324,7 @@ namespace OW.Game
             GameItemCreated(child, pg);
             if (!(parent is GameItem))
                 parent.GetDbContext().Add(child);
-            DictionaryPool<string, object>.Shared.Return(pg);
+            AutoClearPool<Dictionary<string, object>>.Shared.Return(pg);
             return child;
         }
 
@@ -814,7 +814,7 @@ namespace OW.Game
         public static void GameItemCreated(this GameEventsManager mng, GameItem gameItem, [NotNull] GameItemTemplate template, [AllowNull] GameItem parent, Guid? ownerId,
             [AllowNull] IReadOnlyDictionary<string, object> parameters = null)
         {
-            var bg = DictionaryPool<string, object>.Shared.Get();
+            var bg = AutoClearPool<Dictionary<string, object>>.Shared.Get();
             
             template.CopyTo(bg);
             if (null != parameters)
@@ -827,7 +827,7 @@ namespace OW.Game
                 bg["ptid"] = parent?.Id;
             bg["tt"] = template;
             mng.GameItemCreated(gameItem, bg);
-            DictionaryPool<string, object>.Shared.Return(bg);
+            AutoClearPool<Dictionary<string, object>>.Shared.Return(bg);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -861,11 +861,11 @@ namespace OW.Game
             }
             else
             {
-                var bg = DictionaryPool<string, object>.Shared.Get();
+                var bg = AutoClearPool<Dictionary<string, object>>.Shared.Get();
                 OwHelper.Copy(propertyBag, bg);
                 bg["tt"] = template;
                 mng.GameThingCreated(thing, bg);
-                DictionaryPool<string, object>.Shared.Return(bg);
+                AutoClearPool<Dictionary<string, object>>.Shared.Return(bg);
             }
         }
 

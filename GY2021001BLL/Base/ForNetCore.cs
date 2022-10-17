@@ -88,7 +88,7 @@ namespace GuangYuan.GY001.BLL
                 Task.Run(CreateGameManager);    //强制初始化所有服务以加速
                 Task.Run(SetDbConfig);  //设置数据库配置项
                 var logger = _Services.GetService<ILogger<GameHostedService>>();
-                logger.LogInformation("游戏虚拟世界服务成功上线。");
+                logger.LogTrace("游戏虚拟世界服务成功上线。");
             }, _Services, cancellationToken);
 
             #region 版本升级
@@ -256,7 +256,7 @@ namespace GuangYuan.GY001.BLL
 
             }
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
-            logger.LogInformation("完成了测试账号生成。");
+            logger.LogTrace("完成了测试账号生成。");
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
@@ -293,14 +293,6 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                var logger = _Services.GetRequiredService<ILogger<GameHostedService>>();
-                logger.LogInformation("【{0}】 Test", DateTime.UtcNow);
-                var list = new List<int>() { 2, 22 };
-                var _Clear = list.GetType().GetMethod("Clear", Array.Empty<Type>());
-                var srv = _Services.GetRequiredService<AutoClearPool<List<int>>>();
-                srv.Return(list);
-                var ss = service.GetRequiredService<GameCommandManager>();
-                ss.Items["dslk"] = 1;
             }
             catch (Exception)
             {
@@ -337,7 +329,7 @@ namespace GuangYuan.GY001.BLL
             {
                 logger?.LogError($"{DateTime.UtcNow:s}初始化发生异常{err.Message}", err);
             }
-            logger.LogInformation($"[{DateTime.UtcNow:s}]通用加速功能运行完毕。");
+            logger.LogTrace("通用加速功能运行完毕。");
         }
 
         /// <summary>
@@ -351,11 +343,11 @@ namespace GuangYuan.GY001.BLL
             {
                 var tContext = services.GetRequiredService<GY001TemplateContext>();
                 TemplateMigrateDbInitializer.Initialize(tContext);
-                logger.LogInformation($"{DateTime.UtcNow}模板数据库已正常升级。");
+                logger.LogTrace($"模板数据库已正常升级。");
 
                 var context = services.GetRequiredService<GY001UserContext>();
                 MigrateDbInitializer.Initialize(context);
-                logger.LogInformation($"{DateTime.UtcNow}用户数据库已正常升级。");
+                logger.LogTrace("用户数据库已正常升级。");
             }
             catch (Exception err)
             {

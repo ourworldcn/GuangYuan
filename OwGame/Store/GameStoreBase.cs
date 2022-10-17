@@ -225,7 +225,7 @@ namespace OW.Game.Store
                     lock (this)
                         if (_Properties is null)
                         {
-                            var tmp = new Dictionary<string, object>();
+                            var tmp = AutoClearPool<Dictionary<string, object>>.Shared.Get();
                             OwConvert.Copy(PropertiesString, tmp);
                             _Properties = tmp;
                         }
@@ -342,7 +342,7 @@ namespace OW.Game.Store
                 // 将大型字段设置为 null
                 if (null != _Properties)
                 {
-                    DictionaryPool<string, object>.Shared.Return(_Properties);
+                    AutoClearPool<Dictionary<string, object>>.Shared.Return(_Properties);
                     _Properties = null;
                 }
                 _PropertiesString = null;
@@ -530,7 +530,7 @@ namespace OW.Game.Store
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool RemoveSdp(this ISimpleDynamicProperty<object> sdp, string key, out object result)
         {
-            return sdp.TryGetSdp(key, out result) ? true : sdp.RemoveSdp(key);
+            return !sdp.TryGetSdp(key, out result) ? false : sdp.RemoveSdp(key);
         }
 
         /// <summary>

@@ -1552,7 +1552,7 @@ namespace GuangYuan.GY001.BLL
         /// <returns></returns>
         public decimal GetTotalAbility(GameChar gc)
         {
-            var dic = DictionaryPool<string, double>.Shared.Get();
+            var dic = AutoClearPool<Dictionary<string, double>>.Shared.Get();
             var bag = gc.GetZuojiBag();
             var gim = World.ItemManager;
             var gis = bag.Children.Where(c => gim.IsChunzhongMounts(c));
@@ -1563,7 +1563,7 @@ namespace GuangYuan.GY001.BLL
                 result += (decimal)dic.GetValueOrDefault("abi");
                 dic.Clear();
             }
-            DictionaryPool<string, double>.Shared.Return(dic);
+            AutoClearPool<Dictionary<string, double>>.Shared.Return(dic);
             return result;
         }
 

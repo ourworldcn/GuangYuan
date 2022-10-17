@@ -230,7 +230,7 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary<TKey, TValue> DictionaryFrom<TKey, TValue>(IEnumerable<(TKey, TValue)> src)
         {
-            var result = DictionaryPool<TKey, TValue>.Shared.Get();
+            var result = AutoClearPool<Dictionary<TKey, TValue>>.Shared.Get();
             foreach (var item in src)
                 result[item.Item1] = item.Item2;
             return result;

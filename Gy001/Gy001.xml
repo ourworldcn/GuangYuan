@@ -2096,56 +2096,6 @@
             解锁家园风格接口返回值封装类。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.SetHomelandFenggeParamsDto">
-            <summary>
-            SetHomelandStyle 接口使用的参数类。
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.SetHomelandFenggeParamsDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.SetHomelandFenggeParamsDto.Fengges">
-            <summary>
-            家园建设方案的集合。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.SetHomelandFenggeReturnDto">
-            <summary>
-            SetHomelandStyle 接口返回数据的封装类。
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.SetHomelandFenggeReturnDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.GetHomelandFenggeParamsDto">
-            <summary>
-            GetHomelandStyle 接口使用的参数类。
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.GetHomelandFenggeParamsDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.GetHomelandFenggeReturnDto">
-            <summary>
-            GetHomelandStyle 接口返回数据的封装类。
-            </summary>
-        </member>
-        <member name="M:GY2021001WebApi.Models.GetHomelandFenggeReturnDto.#ctor">
-            <summary>
-            构造函数。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetHomelandFenggeReturnDto.Plans">
-            <summary>
-            家园建设方案的集合。
-            </summary>
-        </member>
         <member name="T:GY2021001WebApi.Models.HomelandFenggeDto">
             <summary>
             HomelandFangan。
@@ -2341,6 +2291,31 @@
         <member name="P:GY2021001WebApi.Models.GameSoldierDto.RankAfter">
             <summary>
             战斗后排名。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.MainControlRoomLevel">
+            <summary>
+            主基地等级。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.IconIndex">
+            <summary>
+            头像索引号。默认为0。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.LastLogoutDatetime">
+            <summary>
+            最后一次下线时间。空表示当前在线。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.Level">
+            <summary>
+            角色等级。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GameSoldierDto.CombatCap">
+            <summary>
+            角色战力。
             </summary>
         </member>
         <member name="P:GY2021001WebApi.Models.GameSoldierDto.Pets">
@@ -3687,6 +3662,12 @@
             <summary>
             外围系统。
             </summary>
+        </member>
+        <member name="M:Gy001.Controllers.BlueprintController.Test">
+            <summary>
+            测试。
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Gy001.Controllers.BlueprintController.ApplyBlueprint(GY2021001WebApi.Models.ApplyBlueprintParamsDto)">
             <summary>

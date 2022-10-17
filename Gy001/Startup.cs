@@ -59,15 +59,7 @@ namespace Gy001
                 });
 #if DEBUG
                 builder.AddDebug();
-                //builder.AddTraceSource();
 #endif //DEBUG
-                try
-                {
-                    builder.AddEventLog();
-                }
-                catch (Exception)
-                {
-                }
             });
 
             var userDbConnectionString = Configuration.GetConnectionString("DefaultConnection");

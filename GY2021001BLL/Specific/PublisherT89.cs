@@ -73,8 +73,8 @@ namespace GuangYuan.GY001.BLL.Specific
         Task<HttpResponseMessage> PostAsync(IReadOnlyDictionary<string, string> dic)
         {
             var url = GlobalAddress + "/s/api/game/user/token/check";
-            var idic = DictionaryPool<string, string>.Shared.Get();
-            using var dw = DisposeHelper.Create(c => DictionaryPool<string, string>.Shared.Return(c), idic);
+            var idic = AutoClearPool<Dictionary<string, string>>.Shared.Get();
+            using var dw = DisposeHelper.Create(c => AutoClearPool<Dictionary<string, string>>.Shared.Return(c), idic);
 
             OwHelper.Copy(dic, idic);
             idic["sign"] = GetSignString(dic);
@@ -92,8 +92,8 @@ namespace GuangYuan.GY001.BLL.Specific
 
         public void Login(T89LoginData datas)
         {
-            var dic = DictionaryPool<string, string>.Shared.Get();
-            using var dw = DisposeHelper.Create(c => DictionaryPool<string, string>.Shared.Return(c), dic);
+            var dic = AutoClearPool<Dictionary<string, string>>.Shared.Get();
+            using var dw = DisposeHelper.Create(c => AutoClearPool<Dictionary<string, string>>.Shared.Return(c), dic);
 
             dic["appId"] = datas.AppId;
             dic["osType"] = datas.OsType.ToString();
@@ -275,7 +275,7 @@ namespace GuangYuan.GY001.BLL.Specific
                 rsa.ImportPkcs8PrivateKey(privkey, out _);
                 return rsa;
             }
-            catch (Exception )
+            catch (Exception)
             {
                 return null;
             }

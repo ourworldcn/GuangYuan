@@ -485,6 +485,31 @@ namespace GuangYuan.GY001.UserDb.Combat
         public int RankAfter { get; set; }
 
         /// <summary>
+        /// 主基地等级。
+        /// </summary>
+        public int MainControlRoomLevel { get; set; }
+
+        /// <summary>
+        /// 头像索引号。默认为0。
+        /// </summary>
+        public int IconIndex { get; set; }
+
+        /// <summary>
+        /// 最后一次下线时间。空表示当前在线。
+        /// </summary>
+        public DateTime? LastLogoutDatetime { get; set; }
+
+        /// <summary>
+        /// 角色等级。
+        /// </summary>
+        public int Level { get; set; }
+
+        /// <summary>
+        /// 角色战力。
+        /// </summary>
+        public decimal CombatCap { get; set; }
+
+        /// <summary>
         /// 携带的出战坐骑/或家园的上阵坐骑。即与此战斗相关的坐骑。
         /// </summary>
         public List<GameItem> Pets { get; set; } = new List<GameItem>();

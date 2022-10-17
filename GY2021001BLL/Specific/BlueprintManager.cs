@@ -505,7 +505,7 @@ namespace GuangYuan.GY001.BLL
                 var head = gitm.HeadTemplates.Values.Skip(VWorld.WorldRandom.Next(gitm.HeadTemplates.Count)).First();
                 var coll = gitm.BodyTemplates.Values.Where(c => c.Sequence != head.Sequence);
                 var body = coll.Skip(VWorld.WorldRandom.Next(coll.Count())).First();
-                var propBag = DictionaryPool<string, object>.Shared.Get();
+                var propBag = AutoClearPool<Dictionary<string, object>>.Shared.Get();
 
                 datas.GameItems[0].CopyTo(propBag);
 
@@ -525,7 +525,7 @@ namespace GuangYuan.GY001.BLL
                     gi.SetSdp("neqlt", 0m);
                     World.ItemManager.MoveItem(gi, gi.Count.Value, datas.GameChar.GetZuojiBag(), datas.Remainder, datas.PropertyChanges);
                 }
-                DictionaryPool<string, object>.Shared.Return(propBag);
+                AutoClearPool<Dictionary<string, object>>.Shared.Return(propBag);
                 datas.SuccCount++;
             }
             World.ItemManager.ForcedSetCount(gameItem, gameItem.Count.Value - datas.SuccCount, datas.PropertyChanges);

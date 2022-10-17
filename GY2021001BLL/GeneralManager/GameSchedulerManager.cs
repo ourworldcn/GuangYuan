@@ -178,7 +178,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             var logger = Service.GetService<ILogger<GameSchedulerManager>>();
-            logger.LogInformation("任务计划管理器开始工作。");
+            logger.LogTrace("任务计划管理器开始工作。");
         }
 
         /// <summary>

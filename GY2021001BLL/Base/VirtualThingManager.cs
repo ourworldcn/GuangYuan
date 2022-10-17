@@ -123,8 +123,8 @@ namespace OW.Game.Managers
             }
 
             var coll = TypeDescriptor.GetProperties(obj).OfType<PropertyDescriptor>();
-            var tmpDic = DictionaryPool<string, object>.Shared.Get();
-            using var dw = DisposeHelper.Create(c => DictionaryPool<string, object>.Shared.Return(c), tmpDic);
+            var tmpDic = AutoClearPool<Dictionary<string, object>>.Shared.Get();
+            using var dw = DisposeHelper.Create(c => AutoClearPool<Dictionary<string, object>>.Shared.Return(c), tmpDic);
 
             if (null != tt)
                 OwHelper.Copy(tt.Properties, tmpDic);

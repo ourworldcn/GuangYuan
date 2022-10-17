@@ -371,7 +371,7 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             //创建工会对象
             var guild = new GameGuild();
-            var pg = DictionaryPool<string, object>.Shared.Get();
+            var pg = AutoClearPool<Dictionary<string, object>>.Shared.Get();
             lock (_Id2Guild)
             {
                 if (_Id2Guild.Values.Any(c => c.DisplayName == datas.DisplayName))   //若重名
@@ -428,7 +428,7 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             datas.GameChar.GameUser.DbContext.SaveChanges();
             datas.Id = guild.Id;
-            DictionaryPool<string, object>.Shared.Return(pg);
+            AutoClearPool<Dictionary<string, object>>.Shared.Return(pg);
             //加入行会聊天
             this.JoinGuildChatChannel(datas.GameChar);
         }

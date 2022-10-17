@@ -2040,78 +2040,6 @@ namespace GY2021001WebApi.Models
     }
 
     /// <summary>
-    /// SetHomelandStyle 接口使用的参数类。
-    /// </summary>
-    [DataContract]
-    public class SetHomelandFenggeParamsDto : TokenDtoBase
-    {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public SetHomelandFenggeParamsDto()
-        {
-
-        }
-
-        /// <summary>
-        /// 家园建设方案的集合。
-        /// </summary>
-        [DataMember]
-        public List<HomelandFenggeDto> Fengges { get; set; } = new List<HomelandFenggeDto>();
-    }
-
-    /// <summary>
-    /// SetHomelandStyle 接口返回数据的封装类。
-    /// </summary>
-    [DataContract]
-    public class SetHomelandFenggeReturnDto : ReturnDtoBase
-    {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public SetHomelandFenggeReturnDto()
-        {
-
-        }
-    }
-
-    /// <summary>
-    /// GetHomelandStyle 接口使用的参数类。
-    /// </summary>
-    [DataContract]
-    public class GetHomelandFenggeParamsDto : TokenDtoBase
-    {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public GetHomelandFenggeParamsDto()
-        {
-
-        }
-    }
-
-    /// <summary>
-    /// GetHomelandStyle 接口返回数据的封装类。
-    /// </summary>
-    [DataContract]
-    public class GetHomelandFenggeReturnDto : ReturnDtoBase
-    {
-        /// <summary>
-        /// 构造函数。
-        /// </summary>
-        public GetHomelandFenggeReturnDto()
-        {
-
-        }
-
-        /// <summary>
-        /// 家园建设方案的集合。
-        /// </summary>
-        [DataMember]
-        public List<HomelandFenggeDto> Plans { get; set; } = new List<HomelandFenggeDto>();
-    }
-
-    /// <summary>
     /// HomelandFangan。
     /// </summary>
     [DataContract]
@@ -2398,6 +2326,36 @@ namespace GY2021001WebApi.Models
         /// 战斗后排名。
         /// </summary>
         public int RankAfter { get; set; }
+
+        /// <summary>
+        /// 主基地等级。
+        /// </summary>
+        [DataMember]
+        public int MainControlRoomLevel { get; set; }
+
+        /// <summary>
+        /// 头像索引号。默认为0。
+        /// </summary>
+        [DataMember]
+        public int IconIndex { get; set; }
+
+        /// <summary>
+        /// 最后一次下线时间。空表示当前在线。
+        /// </summary>
+        [DataMember]
+        public DateTime? LastLogoutDatetime { get; set; }
+
+        /// <summary>
+        /// 角色等级。
+        /// </summary>
+        [DataMember]
+        public int Level { get; set; }
+
+        /// <summary>
+        /// 角色战力。
+        /// </summary>
+        [DataMember]
+        public decimal CombatCap { get; set; }
 
         /// <summary>
         /// 携带的出战坐骑/或家园的上阵坐骑。即与此战斗相关的坐骑。
