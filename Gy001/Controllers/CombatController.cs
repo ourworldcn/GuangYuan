@@ -65,14 +65,14 @@ namespace GY2021001WebApi.Controllers
         public ActionResult<CombatEndReturnDto> End(CombatEndParamsDto model)
         {
             //#if DEBUG
-            try
-            {
-                throw new ArgumentException("sdjks");
-            }
-            catch (Exception)
-            {
-                return new CombatEndReturnDto() { HasError = true, ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS };
-            }
+            //try
+            //{
+            //    throw new ArgumentException("sdjks");
+            //}
+            //catch (Exception)
+            //{
+            //    return new CombatEndReturnDto() { HasError = true, ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS };
+            //}
             //#endif
             EndCombatData result = null;
             try
