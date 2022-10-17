@@ -27,6 +27,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -364,6 +365,10 @@ namespace GuangYuan.GY001.BLL
         /// <returns>true正常结束，false发生错误。</returns>
         public void EndCombat(EndCombatData data)
         {
+            //Task.Run(() => throw new ArgumentNullException());
+            //data.DebugMessage = "调测固定错误。";
+            //data.HasError = true;
+            //return;
             var gcm = World.CharManager;
             if (!gcm.Lock(data.GameChar.GameUser))
             {

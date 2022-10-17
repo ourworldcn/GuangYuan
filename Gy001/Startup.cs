@@ -43,7 +43,7 @@ namespace Gy001
         public void ConfigureServices(IServiceCollection services)
         {
             #region 配置通用服务
-            var dd = typeof(GameCommandManager);
+            var dd = typeof(GameCommandManager);    //确保加载程序集
 
             services.AddResponseCompression(c => c.EnableForHttps = true);
             //日志服务
