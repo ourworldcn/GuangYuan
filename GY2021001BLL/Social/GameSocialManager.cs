@@ -1640,36 +1640,8 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var hasData = todayData?.GetTodayData(datas.Now).Any() ?? false;
-            //if (!hasData)  //若当日无数据
-            //{
-            //    if (!World.ItemManager.SetPropertyValue(datas.PvpObject, World.PropertyManager.LevelPropertyName, 0))   //若无法设置级别
-            //    {
-            //        datas.HasError = true;
-            //        datas.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
-            //        return;
-            //    }
-            //}
-            //var lv = (int)datas.PvpObject.GetDecimalWithFcpOrDefault(World.PropertyManager.LevelPropertyName);    //级别数据
-            //if (lv >= datas.PvpObject.GetTemplate().GetMaxLevel() && datas.IsRefresh)  //若当日已经不可再刷
-            //{
-            //    datas.HasError = true;
-            //    datas.ErrorCode = ErrorCodes.ERROR_NOT_ENOUGH_QUOTA;
-            //    return;
-            //}
             if (datas.IsRefresh || !hasData) //若强制刷新或需要刷新
             {
-                //using var dataBlueprint = new ApplyBlueprintDatas(World, datas.GameChar)
-                //{
-                //    Count = 1,
-                //};
-                //dataBlueprint.GameItems.Add(datas.PvpObject);
-                //World.BlueprintManager.LevelUp(dataBlueprint);
-                //datas.FillErrorFrom(dataBlueprint);
-
-                //if (dataBlueprint.HasError) //若出错
-                //    return;
-
-                //datas.PropertyChanges.AddRange(dataBlueprint.PropertyChanges);
                 //修改数据
                 //获取列表
                 todayData.ResetLastData(datas.Now);
@@ -1736,7 +1708,7 @@ namespace GuangYuan.GY001.BLL
         /// <param name="lv">当前角色的等级。</param>
         /// <param name="excludeCharIds">当前角色今日已经打过的角色列表。</param>
         /// <returns></returns>
-        List<Guid> GetNewPvpCharIds(DbContext db, Guid charId, decimal pvpScore, int lv, IEnumerable<Guid> excludeCharIds)
+        public List<Guid> GetNewPvpCharIds(DbContext db, Guid charId, decimal pvpScore, int lv, IEnumerable<Guid> excludeCharIds)
         {
             var ary = excludeCharIds?.Where(c => c != charId).ToArray() ?? Array.Empty<Guid>(); //排除掉自身id,容错
             var charTypes = new CharType[] { CharType.Unknow, CharType.Robot, CharType.Test };

@@ -3392,7 +3392,7 @@ namespace GY2021001WebApi.Models
     /// GetPvpList 接口参数封装类。
     /// </summary>
     [DataContract]
-    public class GetPvpListParamsDto : TokenDtoBase
+    public partial class GetPvpListParamsDto : TokenDtoBase
     {
         public GetPvpListParamsDto()
         {
@@ -3419,19 +3419,13 @@ namespace GY2021001WebApi.Models
     /// GetPvpList 接口返回数据封装类。
     /// </summary>
     [DataContract]
-    public class GetPvpListReturnDto : ChangesReturnDtoBase
+    public partial class GetPvpListReturnDto : ChangesReturnDtoBaseV2
     {
         /// <summary>
-        /// 可pvp角色Id列表。
+        /// 可pvp角色Id列表。目前仅有一个。
         /// </summary>
         [DataMember]
         public List<string> CharIds { get; set; } = new List<string>();
-
-        /// <summary>
-        /// 相关角色的信息。
-        /// </summary>
-        [DataMember]
-        public List<CharSummaryDto> CharSummary { get; set; } = new List<CharSummaryDto>();
 
         /// <summary>
         /// 建立的战斗对象，里面含有需要结算时用到的资源快照。

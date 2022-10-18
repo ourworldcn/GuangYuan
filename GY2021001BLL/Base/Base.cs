@@ -53,7 +53,7 @@ namespace OW.Game
         /// 功能未实现。
         /// </summary>
         public const int ERROR_CALL_NOT_IMPLEMENTED = 120;
-        
+
         /// <summary>
         /// 超时，没有在指定时间内完成操作，通常是锁定超时。
         /// </summary>
@@ -158,6 +158,7 @@ namespace OW.Game
         {
             obj.ErrorCode = OwHelper.GetLastError();
             obj.DebugMessage = OwHelper.GetLastErrorMessage();
+            obj.HasError = ErrorCodes.NO_ERROR != obj.ErrorCode;
         }
 
         /// <summary>
@@ -211,7 +212,7 @@ namespace OW.Game
     /// <summary>
     /// 涉及到两个角色的的功能函数使用的工作数据基类。
     /// </summary>
-    public abstract class BinaryRelationshipGameContext :GameCharGameContext
+    public abstract class BinaryRelationshipGameContext : GameCharGameContext
     {
         protected BinaryRelationshipGameContext([NotNull] IServiceProvider service, [NotNull] GameChar gameChar, Guid otherGCharId) : base(service, gameChar)
         {

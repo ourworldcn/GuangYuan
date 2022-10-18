@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OW.Game;
 using OW.Game.Store;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using static GuangYuan.GY001.BLL.GameSocialManager;
@@ -556,67 +557,21 @@ namespace Gy001.Controllers
         /// 获取可以或已经pvp的角色的列表。
         /// </summary>
         /// <param name="model"><seealso cref="GetPvpListParamsDto"/></param>
+        /// <param name="commandContext">不必关心，使用注入。</param>
+        /// <param name="autoMapper">不必关心，使用注入。</param>
         /// <returns><seealso cref="GetPvpListReturnDto"/>
         /// ErrorCodes.RPC_S_OUT_OF_RESOURCES=1712 钻石不足
         /// ErrorCodes.ERROR_NOT_ENOUGH_QUOTA = 1816 超过刷新次数的上限
         /// </returns>
         /// <response code="401">令牌错误。</response>
         [HttpPost]
-        public ActionResult<GetPvpListReturnDto> GetPvpList(GetPvpListParamsDto model)
+        public ActionResult<GetPvpListReturnDto> GetPvpList(GetPvpListParamsDto model, [FromServices] GameCommandContext commandContext, [FromServices] IMapper autoMapper)
         {
-            using var datas = new GetPvpCharsWorkDatas(_World, model.Token)
-            {
-                IsRefresh = true,    //只能强制刷新了 model.IsRefresh,
-                Now = DateTime.UtcNow,
-            };
-            if (OwConvert.TryToGuid(model.CharId, out Guid forceCharId))
-                datas.CharId = forceCharId;
-
-            GetPvpListReturnDto result = new GetPvpListReturnDto();
-            try
-            {
-                using (var dwUser = datas.LockUser())
-                {
-                    if (dwUser is null)
-                        return Unauthorized("令牌无效");
-                    _World.SocialManager.GetPvpChars(datas);
-                    result.HasError = datas.HasError;
-                    if (datas.HasError) //若有错
-                    {
-                        result.ErrorCode = datas.ErrorCode;
-                        result.DebugMessage = datas.DebugMessage;
-                    }
-                    else //若无错
-                    {
-                        var mapper = _World.Service.GetRequiredService<IMapper>();
-                        result.ChangesItems.AddRange(datas.ChangeItems.Select(c => mapper.Map<ChangesItemDto>(c)));
-                        result.CharIds.AddRange(datas.CharIds.Select(c => c.ToBase64String()));
-                    }
-                }
-                if (!result.HasError)    //若没有错误
-                {
-                    //增补客户端需要的额外数据
-                    var mapper = _World.GetMapper();
-                    var summary = datas.World.SocialManager.GetCharSummary(datas.CharIds, datas.UserDbContext);
-                    var mp = _World.Service.GetRequiredService<IMapper>();
-                    result.Combat = mp.Map<GameCombatDto>(datas.Combat, opt => opt.Items["IgnorDefenerPets"] = true);
-                    var sodier = datas.Combat.Others.FirstOrDefault();
-                    var summry = summary.FirstOrDefault();
-                    if (sodier != null && summary != null)    //矫正数据
-                    {
-                        var gold = sodier.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.GetDecimalWithFcpOrDefault("Count") ?? 0;   //金币基数
-
-                        summry.GoldOfStore = gold;
-                        summry.WoodOfStore = sodier.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId).Count ?? 0;
-                    }
-                    result.CharSummary.AddRange(summary.Select(c => mapper.Map(c)));
-                }
-            }
-            catch (Exception err)
-            {
-                result.HasError = true;
-                result.DebugMessage = err.Message;
-            }
+            commandContext.Token = model.Token;
+            var command = autoMapper.Map<GetPvpListCommand>(model);
+            var gcm = commandContext.Service.GetRequiredService<GameCommandManager>();
+            gcm.Handle(command);
+            var result = autoMapper.Map<GetPvpListReturnDto>(command);
             return result;
         }
 

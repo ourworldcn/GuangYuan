@@ -3,9 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OW.Game
@@ -99,43 +101,102 @@ namespace OW.Game
             {
                 services.AddScoped(item.@interface, item.Type);
             }
-            var b = typeof(IdleCommandHandler).FindInterfaces((c1, c2) => c1.IsGenericType && c1.GetGenericTypeDefinition() == typeof(IGameCommandHandler<>), null);
             return services;
         }
     }
 
+    /// <summary>
+    /// 游戏命令对象的专用标记接口。
+    /// </summary>
     public interface IGameCommand
     {
 
     }
 
     /// <summary>
-    /// 命令处理器的基础接口。
+    /// 游戏命令处理器的基础接口。
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public interface IGameCommandHandler<T> where T : IGameCommand
     {
-        public void Handle(T command);
+        /// <summary>
+        /// 命令处理函数。
+        /// </summary>
+        /// <param name="command"></param>
+        public abstract void Handle(T command);
     }
 
     /// <summary>
     /// 
     /// </summary>
-    public class IdleCommand : IGameCommand
+    public abstract class GameCommandBase : IGameCommand
     {
+        #region IResultWorkData接口相关
+
+        private bool? _HasError;
+
+        /// <summary>
+        /// 是否有错误。不设置则使用<see cref="ErrorCode"/>来判定。
+        /// </summary>
+        /// <value>0没有错误，其它数值含义由应用定义。</value>
+        public bool HasError { get => _HasError ??= ErrorCode != 0; set => _HasError = value; }
+
+        /// <summary>
+        /// 错误码，参见 ErrorCodes。
+        /// </summary>
+        public int ErrorCode { get; set; }
+
+        /// <summary>
+        /// 调试用的提示性信息。
+        /// </summary>
+        private string _ErrorMessage;
+
+        /// <summary>
+        /// 调试信息，如果发生错误，这里给出简要说明。
+        /// </summary>
+        public string DebugMessage
+        {
+            get => _ErrorMessage ??= new Win32Exception(ErrorCode).Message;
+            set => _ErrorMessage = value;
+        }
+
+        #endregion IResultWorkData接口相关
 
     }
 
-    public class IdleCommandHandler : IGameCommandHandler<IdleCommand>
+    public static class GameCommandBaseExtensions
     {
-        public IdleCommandHandler(IServiceProvider service)
+        /// <summary>
+        /// 从<see cref="VWorld"/>对象获取错误信息。
+        /// </summary>
+        /// <param name="obj"></param>
+        public static void FillErrorFromWorld(this GameCommandBase obj)
+        {
+            obj.ErrorCode = OwHelper.GetLastError();
+            obj.DebugMessage = OwHelper.GetLastErrorMessage();
+            obj.HasError = 0 != obj.ErrorCode;
+        }
+
+        /// <summary>
+        /// 从另一个对象填充错误。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="src"></param>
+        public static void FillErrorFrom(this GameCommandBase obj, GameCommandBase src)
+        {
+            obj.ErrorCode = src.ErrorCode;
+            obj.DebugMessage = src.DebugMessage;
+            obj.HasError = src.HasError;
+        }
+    }
+
+    public abstract class GameCommandHandlerBase<T> : IGameCommandHandler<T> where T : IGameCommand
+    {
+        public GameCommandHandlerBase()
         {
 
         }
 
-        public void Handle(IdleCommand command)
-        {
-
-        }
+        public abstract void Handle(T command);
     }
 }

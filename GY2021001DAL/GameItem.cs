@@ -618,7 +618,7 @@ namespace GuangYuan.GY001.UserDb
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddToChanges(this ICollection<ChangeItem> coll, params GameItem[] items)
         {
-            //TO DO以后优化
+            //TODO 以后优化
             //var tuples = from item in items
             //             join change in coll
             //             on item.ContainerId.Value equals change.ContainerId into g

@@ -1031,6 +1031,40 @@
             成员信息集合。
             </summary>
         </member>
+        <member name="T:GY2021001WebApi.Models.GetPvpListParamsDto">
+            <summary>
+            GetPvpList 接口参数封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetPvpListParamsDto.IsRefresh">
+            <summary>
+            是否强制使用钻石刷新。
+            false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。
+            true，强制刷新，根据设计可能需要消耗资源。
+            目前保留为true。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetPvpListParamsDto.CharId">
+            <summary>
+            强制指定一个角色Id。仅调试接口可用。省略或为空均按规则搜索。
+            </summary>
+        </member>
+        <member name="T:GY2021001WebApi.Models.GetPvpListReturnDto">
+            <summary>
+            GetPvpList 接口返回数据封装类。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.CharIds">
+            <summary>
+            可pvp角色Id列表。目前仅有一个。
+            </summary>
+        </member>
+        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.Combat">
+            <summary>
+            建立的战斗对象，里面含有需要结算时用到的资源快照。
+            随后使用该对象的id和指定的角色id启动战斗。
+            </summary>
+        </member>
         <member name="P:GY2021001WebApi.Models.ModifyPropertyItemDto.ObjectId">
             <summary>
             对象的Id.如xxxxxxxxxxxxxxxxxx==形式。
@@ -3004,45 +3038,6 @@
             要获取家园信息的角色Id。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.GetPvpListParamsDto">
-            <summary>
-            GetPvpList 接口参数封装类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetPvpListParamsDto.IsRefresh">
-            <summary>
-            是否强制使用钻石刷新。
-            false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。
-            true，强制刷新，根据设计可能需要消耗资源。
-            目前保留为true。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetPvpListParamsDto.CharId">
-            <summary>
-            强制指定一个角色Id。仅调试接口可用。省略或为空均按规则搜索。
-            </summary>
-        </member>
-        <member name="T:GY2021001WebApi.Models.GetPvpListReturnDto">
-            <summary>
-            GetPvpList 接口返回数据封装类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.CharIds">
-            <summary>
-            可pvp角色Id列表。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.CharSummary">
-            <summary>
-            相关角色的信息。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.GetPvpListReturnDto.Combat">
-            <summary>
-            建立的战斗对象，里面含有需要结算时用到的资源快照。
-            随后使用该对象的id和指定的角色id启动战斗。
-            </summary>
-        </member>
         <member name="P:GY2021001WebApi.Models.RemoveBlackParamsDto.CharId">
             <summary>
             要移除的黑名单的角色Id。
@@ -4053,11 +4048,13 @@
             <response code="401">令牌错误。</response>
             <response code="400">其他异常错误。</response>
         </member>
-        <member name="M:Gy001.Controllers.SocialController.GetPvpList(GY2021001WebApi.Models.GetPvpListParamsDto)">
+        <member name="M:Gy001.Controllers.SocialController.GetPvpList(GY2021001WebApi.Models.GetPvpListParamsDto,OW.Game.GameCommandContext,AutoMapper.IMapper)">
             <summary>
             获取可以或已经pvp的角色的列表。
             </summary>
             <param name="model"><seealso cref="T:GY2021001WebApi.Models.GetPvpListParamsDto"/></param>
+            <param name="commandContext">不必关心，使用注入。</param>
+            <param name="autoMapper">不必关心，使用注入。</param>
             <returns><seealso cref="T:GY2021001WebApi.Models.GetPvpListReturnDto"/>
             ErrorCodes.RPC_S_OUT_OF_RESOURCES=1712 钻石不足
             ErrorCodes.ERROR_NOT_ENOUGH_QUOTA = 1816 超过刷新次数的上限

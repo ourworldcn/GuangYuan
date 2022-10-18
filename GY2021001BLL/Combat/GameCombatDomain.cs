@@ -345,6 +345,11 @@ namespace GuangYuan.GY001.UserDb.Combat
             gi = gameChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId);
             soldier.CharId = gameChar.Id;
             soldier.Resource.Add(gi);
+            //其它
+            soldier.DisplayName = gameChar.DisplayName;
+            soldier.IconIndex = (int)gameChar.GetSdpDecimalOrDefault("charIcon", decimal.Zero);
+            soldier.MainControlRoomLevel = (int)gameChar.GetMainControlRoom().GetSdpDecimalOrDefault("lv");
+            soldier.Level = (int)gameChar.GetSdpDecimalOrDefault("lv");
         }
 
         /// <summary>

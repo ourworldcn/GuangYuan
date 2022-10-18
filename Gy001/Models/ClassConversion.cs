@@ -275,7 +275,7 @@ namespace GY2021001WebApi.Models
             };
             foreach (var item in obj.Properties)
             {
-                result.Properties[item.Key]=item.Value;
+                result.Properties[item.Key] = item.Value;
             }
             return result;
         }
@@ -344,7 +344,7 @@ namespace GY2021001WebApi.Models
             };
             foreach (var item in obj.Properties)
             {
-                result.Properties[item.Key]= item.Value;
+                result.Properties[item.Key] = item.Value;
             }
             return result;
         }
@@ -448,4 +448,19 @@ namespace GY2021001WebApi.Models
     }
 
     #endregion 行会相关
+
+    #region 战斗相关
+    [AutoMap(typeof(GetPvpListCommand), ReverseMap = true)]
+    public partial class GetPvpListParamsDto
+    {
+
+    }
+
+    [AutoMap(typeof(GetPvpListCommand), ReverseMap = true)]
+    public partial class GetPvpListReturnDto : ChangesReturnDtoBaseV2
+    {
+
+    }
+
+    #endregion 战斗相关
 }
