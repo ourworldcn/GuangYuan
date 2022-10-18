@@ -21,6 +21,7 @@ namespace OW.Game
         public GameCommandContext(IServiceProvider service)
         {
             Service = service;
+            // IHttpContextAccessor
         }
 
         /// <summary>
