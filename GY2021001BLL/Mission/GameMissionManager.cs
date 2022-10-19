@@ -276,13 +276,17 @@ namespace OW.Game.Mission
                     case "26c63192-867a-43f4-919b-10a614ee2865": //	炮塔成就	51017
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_炮塔 / 1000).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
+                            var coll = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_炮塔 / 1000);
+                            if (coll.Any())
+                                metrics = coll.Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     case "03d80847-f273-413b-a2a2-81545ab03a89": //	陷阱成就	51018
                         {
                             var homeland = gc.GetHomeland();
-                            metrics = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_陷阱 / 1000).Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
+                            var coll = homeland.GetAllChildren().Where(c => c.GetTemplate().CatalogNumber == (int)ThingGId.家园建筑_陷阱 / 1000);
+                            if (coll.Any())
+                                metrics = coll.Max(c => c.Properties.GetDecimalOrDefault(World.PropertyManager.LevelPropertyName));
                         }
                         break;
                     case "5af7a4f2-9ba9-44e0-b368-1aa1bd9aed6d": //	旗帜成就	51019

@@ -1055,6 +1055,8 @@ namespace GuangYuan.GY001.BLL
                 gameItem.RemoveFastChangingProperty(ProjectConstant.UpgradeTimeName);
                 datas.ChangeItems.AddToChanges(gameItem.GetContainerId().Value, gameItem);
             }
+            if (null != datas.ChangeItems)
+                ChangeItem.Reduce(datas.ChangeItems);
 
             return;
         }
