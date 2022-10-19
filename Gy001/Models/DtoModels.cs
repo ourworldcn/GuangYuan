@@ -3992,20 +3992,6 @@ namespace GY2021001WebApi.Models
     {
     }
 
-    /// <summary>
-    /// 付费回调的返回类。
-    /// </summary>
-    [DataContract]
-    public class PayCallbackFromT78ReturnDto
-    {
-        /// <summary>
-        /// 0=成功，表示游戏服务器成功接收了该次充值结果通知,注意是0为成功
-        /// 1=失败，表示游戏服务器无法接收或识别该次充值结果通知，如：签名检验不正确、游戏服务器接收失败
-        /// </summary>
-        [DataMember(Name = "ret")]
-        public int Ret { get; set; }
-    }
-
     public class GetAllShoppingTemplatesParamsDto : TokenDtoBase
     {
     }

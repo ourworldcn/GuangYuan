@@ -159,7 +159,7 @@ namespace Gy001.Controllers
         #region 付费相关
 
         /// <summary>
-        /// 付费回调。
+        /// 付费回调。由平台调用。
         /// </summary>
         /// <param name="model"></param>
         /// <param name="isSandbox">"1"表示沙箱；其他表示正式。</param>
@@ -168,10 +168,10 @@ namespace Gy001.Controllers
         /// </param>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult<PayCallbackFromT78ReturnDto> PayCallbackFromT78([FromForm] PayCallbackFromT78ParamsDto model, [FromHeader(Name = "X-BNPAY-SANDBOX")] string isSandbox,
+        public ActionResult<PayCallbackT78ReturnDto> PayCallbackFromT78([FromForm] PayCallbackT78ParamsDto model, [FromHeader(Name = "X-BNPAY-SANDBOX")] string isSandbox,
             [FromHeader(Name = "X-BNPAY-PAYTYPE")] string payType)
         {
-            var result = new PayCallbackFromT78ReturnDto();
+            var result = new PayCallbackT78ReturnDto();
             _ = HttpContext.RequestServices.GetRequiredService<PublisherT78>();
             return result;
         }

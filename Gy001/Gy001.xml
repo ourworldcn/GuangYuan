@@ -3318,17 +3318,6 @@
             币种。
             </summary>
         </member>
-        <member name="T:GY2021001WebApi.Models.PayCallbackFromT78ReturnDto">
-            <summary>
-            付费回调的返回类。
-            </summary>
-        </member>
-        <member name="P:GY2021001WebApi.Models.PayCallbackFromT78ReturnDto.Ret">
-            <summary>
-            0=成功，表示游戏服务器成功接收了该次充值结果通知,注意是0为成功
-            1=失败，表示游戏服务器无法接收或识别该次充值结果通知，如：签名检验不正确、游戏服务器接收失败
-            </summary>
-        </member>
         <member name="P:GY2021001WebApi.Models.GetAllShoppingTemplatesResultDto.Templates">
             <summary>
             所有商品模板的信息集合。
@@ -3884,9 +3873,9 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:Gy001.Controllers.GameShoppingController.PayCallbackFromT78(GuangYuan.GY001.BLL.PayCallbackFromT78ParamsDto,System.String,System.String)">
+        <member name="M:Gy001.Controllers.GameShoppingController.PayCallbackFromT78(GuangYuan.GY001.BLL.PayCallbackT78ParamsDto,System.String,System.String)">
             <summary>
-            付费回调。
+            付费回调。由平台调用。
             </summary>
             <param name="model"></param>
             <param name="isSandbox">"1"表示沙箱；其他表示正式。</param>

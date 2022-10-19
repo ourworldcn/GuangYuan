@@ -56,106 +56,6 @@ namespace GuangYuan.GY001.BLL
     }
 
     /// <summary>
-    /// 付费回调的入口参数。
-    /// HTTP POST（application/x-www-form-urlencoded）。
-    /// </summary>
-    public class PayCallbackFromT78ParamsDto
-    {
-        /// <summary>
-        /// 默认构造函数。
-        /// </summary>
-        public PayCallbackFromT78ParamsDto()
-        {
-
-        }
-
-        /// <summary>
-        /// 游戏ID。
-        /// </summary>
-        public string gameId { get; set; }
-
-        /// <summary>
-        /// 渠道ID。
-        /// </summary>
-        public string channelId { get; set; }
-
-        /// <summary>
-        /// 游戏包ID。
-        /// </summary>
-        public string appId { get; set; }
-
-        /// <summary>
-        /// 用户ID。
-        /// </summary>
-        public string userId { get; set; }
-
-        /// <summary>
-        /// 游戏方的订单ID。
-        /// </summary>
-        public string cpOrderId { get; set; }
-
-        /// <summary>
-        /// 订单ID。
-        /// </summary>
-        public string bfOrderId { get; set; }
-
-        /// <summary>
-        /// 渠道的订单ID。
-        /// </summary>
-        public string channelOrderId { get; set; }
-
-        /// <summary>
-        /// 金额。单位:分。
-        /// </summary>
-        public int money { get; set; }
-
-        /// <summary>
-        /// 支付透参。
-        /// </summary>
-        public string callbackInfo { get; set; }
-
-        /// <summary>
-        /// 订单状态。0--支付失败，1—支付成功
-        /// </summary>
-        public int orderStatus { get; set; }
-
-        /// <summary>
-        /// 渠道自定义信息。目前不支持，固定为空字符串。
-        /// </summary>
-        public string channelInfo { get; set; }
-
-        /// <summary>
-        /// 币种。
-        /// </summary>
-        public string currency { get; set; }
-
-        /// <summary>
-        /// 商品id。
-        /// </summary>
-        public string product_id { get; set; }
-
-        /// <summary>
-        /// 区服id。
-        /// </summary>
-        public string server_id { get; set; }
-
-        /// <summary>
-        /// 角色id。
-        /// </summary>
-        public string game_role_id { get; set; }
-
-        /// <summary>
-        /// 时间戳。
-        /// </summary>
-        public string time { get; set; }
-
-        /// <summary>
-        /// 签名。
-        /// </summary>
-        public string sign { get; set; }
-    }
-
-    /// <summary>
     /// 连接特定发行商的客户端服务。
     /// </summary>
     public class PublisherT78
@@ -165,7 +65,7 @@ namespace GuangYuan.GY001.BLL
         private readonly HttpClient _HttpClient;
         readonly string _Url = "https://krm.icebirdgame.com/user/token/v2";
 
-        static readonly ConcurrentDictionary<string, (PayCallbackFromT78ParamsDto, bool)> _Dic = new ConcurrentDictionary<string, (PayCallbackFromT78ParamsDto, bool)>();
+        static readonly ConcurrentDictionary<string, (PayCallbackT78ParamsDto, bool)> _Dic = new ConcurrentDictionary<string, (PayCallbackT78ParamsDto, bool)>();
 
         public PublisherT78(HttpClient httpClient)
         {
@@ -191,7 +91,7 @@ namespace GuangYuan.GY001.BLL
         /// 发行商的付费信息。
         /// </summary>
         /// <param name="dto"></param>
-        public void Pay(PayCallbackFromT78ParamsDto dto)
+        public void Pay(PayCallbackT78ParamsDto dto)
         {
             var item = _Dic.AddOrUpdate(dto.cpOrderId, c => (dto, false), (key, ov) => (dto, ov.Item2));
             if (item.Item1 != null && item.Item2)
@@ -275,6 +175,119 @@ namespace GuangYuan.GY001.BLL
             });
         }
     }
+
+    /// <summary>
+    /// 充值回调接口接收的参数。
+    /// 付费回调的入口参数。
+    /// HTTP POST（application/x-www-form-urlencoded）。
+    /// </summary>
+    public class PayCallbackT78ParamsDto
+    {
+        public PayCallbackT78ParamsDto()
+        {
+
+        }
+
+        /// <summary>
+        /// 游戏ID。
+        /// </summary>
+        public string GameId { get; set; }
+
+        /// <summary>
+        /// 渠道ID。
+        /// </summary>
+        public int ChannelId { get; set; }
+
+        /// <summary>
+        /// 游戏包ID。
+        /// </summary>
+        public string AppId { get; set; }
+
+        /// <summary>
+        /// 用户ID。
+        /// </summary>
+        public string UserId { get; set; }
+
+        /// <summary>
+        /// 游戏方的订单ID。
+        /// </summary>
+        public string cpOrderId { get; set; }
+
+        /// <summary>
+        /// 订单Id。
+        /// </summary>
+        public string bfOrderId { get; set; }
+
+        /// <summary>
+        /// 渠道的订单ID。
+        /// </summary>
+        public string channelOrderId { get; set; }
+
+        /// <summary>
+        /// 金额，单位：分。
+        /// </summary>
+        public int money { get; set; }
+
+        /// <summary>
+        /// 支付透参。
+        /// </summary>
+        public string callbackInfo { get; set; }
+
+        /// <summary>
+        /// 0--支付失败
+        /// 1—支付成功
+        /// </summary>
+        public string orderStatus { get; set; }
+
+        /// <summary>
+        /// 目前不支持，固定为空字符串。
+        /// </summary>
+        public string channelInfo { get; set; }
+
+        /// <summary>
+        /// 币种。
+        /// </summary>
+        public string currency { get; set; }
+
+
+        /// <summary>
+        /// 商品id。
+        /// </summary>
+        public string product_id { get; set; }
+
+        /// <summary>
+        /// 区服id。
+        /// </summary>
+        public string server_id { get; set; }
+
+        /// <summary>
+        /// 角色id。
+        /// </summary>
+        public string game_role_id { get; set; }
+
+        /// <summary>
+        /// 时间戳。
+        /// </summary>
+        public string time { get; set; }
+
+        /// <summary>
+        /// 签名。签名算法见下文。
+        /// </summary>
+        public string sign { get; set; }
+    }
+
+    /// <summary>
+    /// 付费回调的返回类。
+    /// </summary>
+    public class PayCallbackT78ReturnDto
+    {
+        /// <summary>
+        /// 0=成功，表示游戏服务器成功接收了该次充值结果通知,注意是0为成功
+        /// 1=失败，表示游戏服务器无法接收或识别该次充值结果通知，如：签名检验不正确、游戏服务器接收失败
+        /// </summary>
+        public int Ret { get; set; }
+    }
+
 
 #pragma warning restore IDE1006 // 命名样式
 
