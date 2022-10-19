@@ -59,7 +59,7 @@ namespace Gy001
                     option.TimestampFormat = "hh:mm:ss";
                 });
 #if DEBUG
-                builder.AddDebug();
+                //builder.AddDebug();
 #endif //DEBUG
             });
 

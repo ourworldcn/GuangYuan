@@ -11,6 +11,12 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Collections.Concurrent;
 using System.Buffers;
+using OW.Game;
+using System.ComponentModel;
+using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
+using GuangYuan.GY001.UserDb;
+using Microsoft.EntityFrameworkCore;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -87,24 +93,6 @@ namespace GuangYuan.GY001.BLL
             return result;
         }
 
-        /// <summary>
-        /// 发行商的付费信息。
-        /// </summary>
-        /// <param name="dto"></param>
-        public void Pay(PayCallbackT78ParamsDto dto)
-        {
-            var item = _Dic.AddOrUpdate(dto.cpOrderId, c => (dto, false), (key, ov) => (dto, ov.Item2));
-            if (item.Item1 != null && item.Item2)
-                ;
-        }
-
-        public void Pay(string orderId)
-        {
-            var item = _Dic.AddOrUpdate(orderId, c => (null, true), (key, ov) => (ov.Item1, true));
-            if (item.Item1 != null && item.Item2)
-                ;
-        }
-
         #region 基础功能
 
         public Task<HttpResponseMessage> PostAsync(IReadOnlyDictionary<string, string> pairs)
@@ -175,6 +163,8 @@ namespace GuangYuan.GY001.BLL
             });
         }
     }
+
+    #region 付费回调
 
     /// <summary>
     /// 充值回调接口接收的参数。
@@ -285,9 +275,113 @@ namespace GuangYuan.GY001.BLL
         /// 0=成功，表示游戏服务器成功接收了该次充值结果通知,注意是0为成功
         /// 1=失败，表示游戏服务器无法接收或识别该次充值结果通知，如：签名检验不正确、游戏服务器接收失败
         /// </summary>
-        public int Ret { get; set; }
+        public int ret { get; set; }
     }
 
+    public class T78PayCallbackCommand : GameCommandBase
+    {
+        public PayCallbackT78ParamsDto Params { get; set; }
+
+        /// <summary>
+        /// "1"表示沙箱；其他表示正式。
+        /// </summary>
+        public string SandBox { get; set; }
+
+        /// <summary>
+        /// 支付方式：
+        /// "mycard"表示mycard，"google"表示google-play支付，"mol"表示mol支付，"apple"表示苹果支付，“onestore”韩国onestore商店支付，“samsung”三星支付
+        /// </summary>
+        public string PayType { get; set; }
+    }
+
+    public class T78PayCallbackCommandHandler : GameCommandHandlerBase<T78PayCallbackCommand>
+    {
+        public T78PayCallbackCommandHandler(IServiceProvider service)
+        {
+            _Service = service;
+        }
+
+        IServiceProvider _Service;
+
+        /// <summary>
+        /// 获取指定对象的属性字典。
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static Dictionary<string, string> GetDictionary(object obj)
+        {
+            var result = AutoClearPool<Dictionary<string, string>>.Shared.Get();
+            var pis = TypeDescriptor.GetProperties(obj).OfType<PropertyDescriptor>();
+            foreach (var pi in pis)
+            {
+                result[pi.Name] = pi.GetValue(obj).ToString();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 校验签名。
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        bool Verify(T78PayCallbackCommand command)
+        {
+            var t78 = _Service.GetRequiredService<PublisherT78>();
+            var dic = GetDictionary(command.Params);
+            dic.Remove(nameof(PayCallbackT78ParamsDto.sign));
+            var sign = t78.GetSignature(dic);   //取签名
+            AutoClearPool<Dictionary<string, string>>.Shared.Return(dic);
+            var result = sign == command.Params.sign;
+            if (!result)
+            {
+                command.ErrorCode = ErrorCodes.ERROR_BAD_ARGUMENTS;
+                command.DebugMessage = $"签名错误，入参：{command.Params.sign}，计算为：{sign}。";
+            }
+            return result;
+        }
+
+        IDisposable GetUser(string userId, DbContext db, out GameChar gameChar)
+        {
+            var world = _Service.GetRequiredService<VWorld>();
+            var coll = from tmp in db.Set<GameItem>()
+                       where tmp.ExtraGuid == ProjectConstant.T78PublisherSlotTId && tmp.ExtraString == userId
+                       select tmp.OwnerId;
+            var charId = coll.FirstOrDefault();
+            if (!charId.HasValue)
+            {
+                OwHelper.SetLastError(ErrorCodes.ERROR_BAD_ARGUMENTS);
+                OwHelper.SetLastErrorMessage($"找不到指定的角色，T78的角色Id={userId}");
+                gameChar = null;
+                return null;
+            }
+            var gcm = _Service.GetRequiredService<GameCharManager>();
+            var dw = gcm.LockOrLoad(charId.Value, out var gu);
+            if (dw is null)
+            {
+                gameChar = null;
+                return null;
+            }
+            gameChar = gu.CurrentChar;
+            return dw;
+        }
+
+        public override void Handle(T78PayCallbackCommand command)
+        {
+            if (!Verify(command))  //若签名不正确
+                return;
+            var db = _Service.GetRequiredService<GY001UserContext>();
+            using var dw = GetUser(command.Params.UserId, db, out var gc);
+            if (dw is null)
+            {
+                command.FillErrorFromWorld();
+                return;
+            }
+
+            var userId = command.Params.UserId;
+        }
+    }
+
+    #endregion 付费回调
 
 #pragma warning restore IDE1006 // 命名样式
 

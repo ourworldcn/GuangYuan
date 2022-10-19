@@ -293,7 +293,8 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                
+                var logger=_Services.GetRequiredService<ILogger<GameHostedService>>();
+                logger.LogCritical("Test:LogCritical");
             }
             catch (Exception)
             {

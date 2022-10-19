@@ -169,10 +169,15 @@ namespace Gy001.Controllers
         /// <returns></returns>
         [HttpPost]
         public ActionResult<PayCallbackT78ReturnDto> PayCallbackFromT78([FromForm] PayCallbackT78ParamsDto model, [FromHeader(Name = "X-BNPAY-SANDBOX")] string isSandbox,
-            [FromHeader(Name = "X-BNPAY-PAYTYPE")] string payType)
+            [FromHeader(Name = "X-BNPAY-PAYTYPE")] string payType, [FromServices] GameCommandManager gcm)
         {
+            var command = new T78PayCallbackCommand() { Params = model, SandBox = isSandbox, PayType = payType };
+            gcm.Handle(command);
             var result = new PayCallbackT78ReturnDto();
-            _ = HttpContext.RequestServices.GetRequiredService<PublisherT78>();
+            if (command.HasError)
+                result.ret = 1;
+            else
+                result.ret = 0;
             return result;
         }
 

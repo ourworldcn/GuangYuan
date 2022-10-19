@@ -3873,7 +3873,7 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:Gy001.Controllers.GameShoppingController.PayCallbackFromT78(GuangYuan.GY001.BLL.PayCallbackT78ParamsDto,System.String,System.String)">
+        <member name="M:Gy001.Controllers.GameShoppingController.PayCallbackFromT78(GuangYuan.GY001.BLL.PayCallbackT78ParamsDto,System.String,System.String,OW.Game.GameCommandManager)">
             <summary>
             付费回调。由平台调用。
             </summary>
