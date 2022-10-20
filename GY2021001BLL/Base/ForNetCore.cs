@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Game.Logging;
 using Game.Social;
 using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Script;
@@ -293,8 +294,14 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                var logger=_Services.GetRequiredService<ILogger<GameHostedService>>();
+                var logger = _Services.GetRequiredService<ILogger<GameHostedService>>();
                 logger.LogCritical("Test:LogCritical");
+                var loggingDb = service.GetRequiredService<GameLoggingDbContext>();
+                var entity = new PayOrder() { Id = Guid.NewGuid().ToString() };
+                var dto = entity.GetJsonObject<PayCallbackT78ParamsDto>();
+                dto.UserId = Guid.NewGuid().ToString();
+                //loggingDb.Add(entity);
+                loggingDb.SaveChanges();
             }
             catch (Exception)
             {
@@ -350,6 +357,13 @@ namespace GuangYuan.GY001.BLL
                 var context = services.GetRequiredService<GY001UserContext>();
                 MigrateDbInitializer.Initialize(context);
                 logger.LogTrace("用户数据库已正常升级。");
+
+                var loggingDb = services.GetService<GameLoggingDbContext>();
+                if (loggingDb != null)
+                {
+                    GameLoggingMigrateDbInitializer.Initialize(loggingDb);
+                    logger.LogTrace("日志数据库已正常升级。");
+                }
             }
             catch (Exception err)
             {

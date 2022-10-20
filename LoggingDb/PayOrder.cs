@@ -1,4 +1,6 @@
-﻿using OW.Game.Store;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using OW.Game.Store;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,9 +10,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace GuangYuan.GY001.UserDb
+namespace Game.Logging
 {
-    public class PayOrder : IJsonDynamicProperty, IEntityWithSingleKey<string>
+    public class PayOrder : IJsonDynamicProperty, IEntityWithSingleKey<string>, IBeforeSave
     {
         public PayOrder()
         {
@@ -50,8 +52,18 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 冲红账单Id，如果不是冲红则为null。
         /// </summary>
-        [Key, MaxLength(64)]
+        [MaxLength(64)]
         public string OffsetId { get; set; }
+
+        /// <summary>
+        /// 付费渠道。目前仅有78 和 89。
+        /// </summary>
+        public int Bank { get; set; }
+
+        /// <summary>
+        /// 稽核。false未稽核，通常是存在疑问，true已经稽核即对账无疑问。
+        /// </summary>
+        public bool Audit { get; set; }
 
         /// <summary>
         /// 发生时间。
@@ -117,6 +129,14 @@ namespace GuangYuan.GY001.UserDb
         public Type JsonObjectType { get; set; }
 
         #endregion JsonObject相关
+
+        public virtual void PrepareSaving(DbContext db)
+        {
+            if (JsonObject != null)
+                JsonObjectString = JsonSerializer.Serialize(JsonObject, JsonObjectType ?? JsonObject.GetType());
+            //base.PrepareSaving(db);
+        }
+
 
     }
 }

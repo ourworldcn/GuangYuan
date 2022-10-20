@@ -1,3 +1,4 @@
+using Game.Logging;
 using GuangYuan.GY001.BLL;
 using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.TemplateDb;
@@ -45,14 +46,14 @@ namespace Gy001
         {
             #region 配置通用服务
             var dd = typeof(GameCommandManager);    //确保加载程序集
-            
+
             services.AddResponseCompression(c => c.EnableForHttps = true);
             //日志服务
             services.AddLogging(builder =>
             {
                 builder.AddEventSourceLogger();
                 builder.AddConfiguration(Configuration.GetSection("Logging"));
-                
+
                 builder.AddConsole(option =>
                 {
                     option.IncludeScopes = true;
@@ -65,15 +66,17 @@ namespace Gy001
 
             var userDbConnectionString = Configuration.GetConnectionString("DefaultConnection");
             var templateDbConnectionString = Configuration.GetConnectionString("TemplateDbConnection");
+            var loggingDbConnectionString = Configuration.GetConnectionString("LoggingDbConnection");
 #if DEBUG
 
             //LoggerFactory LoggerFactory = new LoggerFactory(new[] { new DebugLoggerProvider() });
-            services.AddDbContext<GY001UserContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.EnableSensitiveDataLogging(), ServiceLifetime.Scoped);
             services.AddDbContext<GY001TemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.EnableSensitiveDataLogging(), ServiceLifetime.Singleton);
+            services.AddDbContext<GY001UserContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString)/*.UseLoggerFactory(LoggerFactory)*/.EnableSensitiveDataLogging(), ServiceLifetime.Singleton);
 #else
             services.AddDbContext<GY001UserContext>(options => options.UseLazyLoadingProxies().UseSqlServer(userDbConnectionString).EnableSensitiveDataLogging(), ServiceLifetime.Scoped);
             services.AddDbContext<GY001TemplateContext>(options => options.UseLazyLoadingProxies().UseSqlServer(templateDbConnectionString).EnableSensitiveDataLogging(), ServiceLifetime.Singleton);
 #endif //DEBUG
+            services.AddDbContext<GameLoggingDbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(loggingDbConnectionString), ServiceLifetime.Scoped);
 
             //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(UserDbOptions =>
             //{
@@ -161,7 +164,7 @@ namespace Gy001
                 app.UseDeveloperExceptionPage();
                 //app.UseExceptionHandler(build => build.Run(ExceptionHandler));
             }
-            
+
             #endregion 启用通用服务
 
             #region 启用中间件服务生成Swagger

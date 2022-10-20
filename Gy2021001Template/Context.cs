@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GuangYuan.GY001.TemplateDb
 {
+
     /// <summary>
     /// 游戏模板数据库上下文。
     /// </summary>
@@ -15,7 +16,7 @@ namespace GuangYuan.GY001.TemplateDb
 
         }
 
-        public GY001TemplateContext(DbContextOptions options) : base(options)
+        public GY001TemplateContext(DbContextOptions<GY001TemplateContext> options) : base(options)
         {
 
         }

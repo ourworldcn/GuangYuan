@@ -1,5 +1,6 @@
 Add-Migration 22082501 -Context GY001TemplateContext
 Add-Migration 22082501 -Context GY001UserContext
+Add-Migration 22102001 -Context GameLoggingDbContext
 
 
 fcpifhcd=1	ÔöÁ¿

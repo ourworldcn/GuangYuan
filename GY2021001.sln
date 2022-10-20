@@ -63,6 +63,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OwGameCore", "OW.GameCore\O
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OwScript", "OwGameScript\OwScript.csproj", "{FBCD9FFD-8556-4A53-95AF-36951A60E84B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoggingDb", "LoggingDb\LoggingDb.csproj", "{DD0B1D43-E833-4F4D-A89C-C59E95221135}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -109,6 +111,10 @@ Global
 		{FBCD9FFD-8556-4A53-95AF-36951A60E84B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBCD9FFD-8556-4A53-95AF-36951A60E84B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBCD9FFD-8556-4A53-95AF-36951A60E84B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD0B1D43-E833-4F4D-A89C-C59E95221135}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD0B1D43-E833-4F4D-A89C-C59E95221135}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD0B1D43-E833-4F4D-A89C-C59E95221135}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD0B1D43-E833-4F4D-A89C-C59E95221135}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -123,6 +129,7 @@ Global
 		{5D81F445-E2AC-4415-9B3F-5C7418227488} = {260D5C05-2F1A-4BC2-852F-7E20AF1E30BF}
 		{BE2F0E07-0452-465C-A4F3-EA5624FB1FA0} = {E4A88252-9E88-4A7B-8F6F-322EBCC014D7}
 		{FBCD9FFD-8556-4A53-95AF-36951A60E84B} = {0A0F3636-AD2E-4799-8B56-0B19DEFDDB4B}
+		{DD0B1D43-E833-4F4D-A89C-C59E95221135} = {CA6CC6F6-6C68-4C3D-ACAC-C0604B899FB1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {91C02B99-9124-4A09-9C66-0C5F2514C0CE}

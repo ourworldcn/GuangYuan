@@ -17,6 +17,7 @@ using Castle.Core.Logging;
 using Microsoft.Extensions.Logging;
 using GuangYuan.GY001.UserDb;
 using Microsoft.EntityFrameworkCore;
+using Game.Logging;
 
 namespace GuangYuan.GY001.BLL
 {
@@ -366,9 +367,27 @@ namespace GuangYuan.GY001.BLL
             return dw;
         }
 
-        public void RecodeAccount()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="db"></param>
+        /// <param name="hasError">标记是否有错。</param>
+        public void RecodeAccount(T78PayCallbackCommand command, GameLoggingDbContext db, bool hasError = false)
         {
-            return;
+            var order = new PayOrder()
+            {
+                Id = command.Params.bfOrderId,
+                Bank = 78,
+                JsonObject = command.Params,
+                PayerId = command.Params.UserId,
+                Audit = !hasError,
+                CreateUtc = DateTime.UtcNow,
+                CurrencyId = command.Params.currency.ToLower(),
+                Amount = (decimal)command.Params.money / 100,
+            };
+            db.Add(order);
+            db.SaveChanges();
         }
 
         public override void Handle(T78PayCallbackCommand command)
@@ -383,7 +402,8 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             //因不可拒绝，直接记录
-
+            var dbLogging = _Service.GetRequiredService<GameLoggingDbContext>();
+            RecodeAccount(command, dbLogging);
             //处理购买，若有错则不增加道具/代币
             var userId = command.Params.UserId;
         }
