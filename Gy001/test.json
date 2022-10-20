@@ -1,191 +1,213 @@
 {
-  "SuccCount": 0,
-  "FormulaIds": [
-  ],
-  "ErrorTIds": [
-  ],
-  "MailIds": [
-  ],
-  "ChangesItems": [
+  "Changes": [
     {
-      "ContainerId": "k6vI2qLq2Uyd8u5c/T+oYw==",
-      "DateTimeUtc": "2022-09-15T09:25:28.3274472Z",
-      "Adds": [
-      ],
-      "Removes": [
-      ],
-      "Changes": [
-        {
-          "Id": "8IzR7ovH/EG98iR0mPcHRg==",
-          "ExtraGuid": "PFl9rILOQkaXoxQCXaYz5A==",
-          "Count": 2.0,
-          "Properties": {
-            "Count": 2.0,
-            "nm": 1639,
-            "stc": 9999,
-            "it": 2,
-            "ulid": 20001,
-            "sg": 2500,
-            "bd": 500,
-            "rank": 3,
-            "dsid": 1739,
-            "tname": "基因蛋"
-          },
-          "OwnerId": null,
-          "Children": [
-          ],
-          "ParentId": "k6vI2qLq2Uyd8u5c/T+oYw==",
-          "ClientString": null
-        }
-      ]
-    },
-    {
-      "ContainerId": "U9zLMCDDfEiUso3QqVVKOg==",
-      "DateTimeUtc": "2022-09-15T09:25:28.3274502Z",
+      "ContainerId": "PRvMeB7ZM0eDeYNfE9aXtQ==",
+      "DateTimeUtc": "2022-10-19T09:01:49.9821675Z",
       "Adds": [
         {
-          "Id": "m6LqejMZxUy5sdSxN9NLhQ==",
-          "ExtraGuid": "VJ0XbjZYC06zDXVr0H/xlg==",
+          "Id": "pyS3lfVq6kq8mb8sO5HM9Q==",
+          "ExtraGuid": "YOOaSWjjD0yeqO+LPgSFgw==",
           "Count": 1,
           "Properties": {
-            "psshuse": 3,
-            "neatk": 12.0,
-            "neqlt": 0.0,
-            "skshuse": 3,
-            "nemhp": 17.0,
-            "cap": -1,
-            "jsshuse": 3,
-            "lv": 0,
-            "tname": "坐骑组合",
-            "Count": 1
+            "areaptid": "{312612a5-30dd-4e0a-a71d-5074397428fb}",
+            "lug": 0,
+            "dsid": 2146,
+            "lut": 300,
+            "mbnlv": 2,
+            "luw": -240,
+            "lv": 1,
+            "rqeq": "{fb9ccb27-05c2-4df1-ae21-345eeaace08f};lv;3",
+            "nm": 2179,
+            "abid": "2162;2163;2165",
+            "ptid": "{312612a5-30dd-4e0a-a71d-5074397428fb}",
+            "labid": "2162;2163;2165",
+            "Count": 1,
+            "ExtraDecimal": null,
+            "ExtraString": null
           },
           "OwnerId": null,
-          "Children": [
-            {
-              "Id": "Zql/B23SrUGNyBOI9FgWAQ==",
-              "ExtraGuid": "yFRXDDQOakOBqVzq/RJqtQ==",
-              "Count": 1,
-              "Properties": {
-                "js": 10923002,
-                "nm": 1502,
-                "ps": 10922002,
-                "tname": "狼头",
-                "Count": 1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "LxeQW78LykO7odLO9/U6rg==",
-                  "ExtraGuid": "PuQTETzPkE27eOkkXnOigA==",
-                  "Count": 1,
-                  "Properties": {
-                    "luc{8610f2c8-e961-4b2a-801f-e25656cf31ee}1": 1,
-                    "lv": 0,
-                    "tname": "狼被动技能",
-                    "Count": 1
-                  },
-                  "OwnerId": null,
-                  "Children": [
-                  ],
-                  "ParentId": "Zql/B23SrUGNyBOI9FgWAQ==",
-                  "ClientString": null
-                },
-                {
-                  "Id": "Ae5hIY+LhU6YtBedHOJ51g==",
-                  "ExtraGuid": "mEeeJcZzU0CvvUaKUpeQnQ==",
-                  "Count": 1,
-                  "Properties": {
-                    "luc{ae13ebc9-7986-4304-bbbd-157bab781e02}1": 1,
-                    "lv": 0,
-                    "tname": "狼跳跃技能",
-                    "Count": 1
-                  },
-                  "OwnerId": null,
-                  "Children": [
-                  ],
-                  "ParentId": "Zql/B23SrUGNyBOI9FgWAQ==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "m6LqejMZxUy5sdSxN9NLhQ==",
-              "ClientString": null
-            },
-            {
-              "Id": "4B8Wnln4y0270b17klt0kA==",
-              "ExtraGuid": "B/7Ju70pbUiK1rmdsL0H1g==",
-              "Count": 1,
-              "Properties": {
-                "rci": 1,
-                "mhp": 1000,
-                "eng": 14,
-                "nerank": 1,
-                "bd": 9800,
-                "SK": 10921001,
-                "crv": 2,
-                "fht": 3,
-                "bt": 0.3,
-                "ms": 6,
-                "lug": -50,
-                "rs": 8,
-                "sg": 500,
-                "ssr": 7,
-                "atk": 100,
-                "nm": 1501,
-                "crp": 0,
-                "at": 1,
-                "alt": 10,
-                "aha": 80,
-                "csr": 10,
-                "qlt": 100,
-                "lv": 0,
-                "tname": "羊身体",
-                "Count": 1
-              },
-              "OwnerId": null,
-              "Children": [
-                {
-                  "Id": "sV0i+0akHUi8zf3BlfHtcw==",
-                  "ExtraGuid": "44DjoCYr1kiyOCdSm5Burw==",
-                  "Count": 1,
-                  "Properties": {
-                    "luc{a8c53b74-37fd-4390-8d25-a6d25e88ba4a}1": 1,
-                    "lv": 0,
-                    "tname": "羊主动技能",
-                    "Count": 1
-                  },
-                  "OwnerId": null,
-                  "Children": [
-                  ],
-                  "ParentId": "4B8Wnln4y0270b17klt0kA==",
-                  "ClientString": null
-                }
-              ],
-              "ParentId": "m6LqejMZxUy5sdSxN9NLhQ==",
-              "ClientString": null
-            }
-          ],
-          "ParentId": "U9zLMCDDfEiUso3QqVVKOg==",
+          "Children": [],
+          "ParentId": "PRvMeB7ZM0eDeYNfE9aXtQ==",
+          "ClientString": null
+        },
+        {
+          "Id": "1DrgbZjIpkiP53R+2SKeRA==",
+          "ExtraGuid": "ejDnmjCd8kORzjpDlXq4ag==",
+          "Count": 1,
+          "Properties": {
+            "areaptid": "{312612a5-30dd-4e0a-a71d-5074397428fb}",
+            "lug": 0,
+            "dsid": 2140,
+            "lut": 300,
+            "mbnlv": 2,
+            "luw": -300,
+            "lv": 1,
+            "rqeq": "{fb9ccb27-05c2-4df1-ae21-345eeaace08f};lv;3",
+            "nm": 2173,
+            "abid": "2161;2162;2163;2164",
+            "ptid": "{312612a5-30dd-4e0a-a71d-5074397428fb}",
+            "labid": "2161;2162",
+            "Count": 1,
+            "ExtraDecimal": null,
+            "ExtraString": null
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "PRvMeB7ZM0eDeYNfE9aXtQ==",
+          "ClientString": null
+        },
+        {
+          "Id": "DmqtssWBnkSujaK0oeLcAw==",
+          "ExtraGuid": "S8AwyYYQmEKs9gWbGA5F1w==",
+          "Count": 1,
+          "Properties": {
+            "areaptid": "{312612a5-30dd-4e0a-a71d-5074397428fb}",
+            "lug": 0,
+            "dsid": 2141,
+            "lut": 600,
+            "mbnlv": 2,
+            "luw": -350,
+            "lv": 1,
+            "rqeq": "{fb9ccb27-05c2-4df1-ae21-345eeaace08f};lv;3",
+            "nm": 2174,
+            "abid": "2161;2162;2163;2164;2165",
+            "ptid": "{312612a5-30dd-4e0a-a71d-5074397428fb}",
+            "labid": "2161;2162;2165",
+            "Count": 1,
+            "ExtraDecimal": null,
+            "ExtraString": null
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "PRvMeB7ZM0eDeYNfE9aXtQ==",
+          "ClientString": null
+        },
+        {
+          "Id": "Vw1UF1jNv0SsjR+lwEZ1Tw==",
+          "ExtraGuid": "J7iTZ4R5tE6mqWE4aXJhng==",
+          "Count": 1,
+          "Properties": {
+            "areaptid": "{312612a5-30dd-4e0a-a71d-5074397428fb}",
+            "lug": 0,
+            "dsid": 2140,
+            "lut": 300,
+            "mbnlv": 2,
+            "luw": -300,
+            "lv": 1,
+            "rqeq": "{fb9ccb27-05c2-4df1-ae21-345eeaace08f};lv;3",
+            "nm": 2173,
+            "abid": "2161;2162;2163;2164",
+            "ptid": "{312612a5-30dd-4e0a-a71d-5074397428fb}",
+            "labid": "2161;2162",
+            "Count": 1,
+            "ExtraDecimal": null,
+            "ExtraString": null
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "PRvMeB7ZM0eDeYNfE9aXtQ==",
+          "ClientString": null
+        },
+        {
+          "Id": "uKvdMix/+U2wXnekepQPXw==",
+          "ExtraGuid": "D+Nnct5oCk6Y9uT4ib9jzA==",
+          "Count": 1,
+          "Properties": {
+            "areaptid": "{312612a5-30dd-4e0a-a71d-5074397428fb}",
+            "lug": 0,
+            "dsid": 2147,
+            "lut": 600,
+            "mbnlv": 2,
+            "luw": -240,
+            "lv": 1,
+            "rqeq": "{fb9ccb27-05c2-4df1-ae21-345eeaace08f};lv;3",
+            "nm": 2180,
+            "abid": "2163;2165",
+            "ptid": "{312612a5-30dd-4e0a-a71d-5074397428fb}",
+            "labid": "2163;2165",
+            "Count": 1,
+            "ExtraDecimal": null,
+            "ExtraString": null
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "PRvMeB7ZM0eDeYNfE9aXtQ==",
           "ClientString": null
         }
       ],
-      "Removes": [
-      ],
+      "Removes": [ "pyS3lfVq6kq8mb8sO5HM9Q==", "1DrgbZjIpkiP53R+2SKeRA==", "DmqtssWBnkSujaK0oeLcAw==", "Vw1UF1jNv0SsjR+lwEZ1Tw==", "uKvdMix/+U2wXnekepQPXw==" ],
       "Changes": [
+        {
+          "Id": "+82mDS+0JUSlUeRBj5RAcA==",
+          "ExtraGuid": "3qpIpWYvYUmHW2PNu7Jsrg==",
+          "Count": 1,
+          "Properties": {
+            "dsid": 2807,
+            "lut": 0,
+            "luw": 0,
+            "lv": 1,
+            "nm": 2757,
+            "Count": 1,
+            "UpgradedSchedulerId": "95aa4c3c-4750-44ac-9177-5b7d6829585d",
+            "ExtraDecimal": null,
+            "ExtraString": null
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "PRvMeB7ZM0eDeYNfE9aXtQ==",
+          "ClientString": null
+        },
+        {
+          "Id": "j69m1uVvzEKMHcAvEQmr2A==",
+          "ExtraGuid": "J8uc+8IF8U2uITRe6qzgjw==",
+          "Count": 1,
+          "Properties": {
+            "lug": 0,
+            "dsid": 2156,
+            "lut": 27600,
+            "mhp": 400,
+            "luw": -1100,
+            "nm": 2189,
+            "abid": 2161,
+            "labid": 2161,
+            "lv": 3,
+            "Count": 1,
+            "UpgradedSchedulerId": "c9199bd6-a0e5-493a-9e33-6dffec0c4c66",
+            "ExtraDecimal": null,
+            "ExtraString": null
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "PRvMeB7ZM0eDeYNfE9aXtQ==",
+          "ClientString": null
+        }
       ]
     },
     {
-      "ContainerId": "mnHKhf9FEEqnrK9RzyTu/A==",
-      "DateTimeUtc": "2022-09-15T09:25:28.3274522Z",
-      "Adds": [
-      ],
-      "Removes": [
-        "t5cdodKENU+zW3VZdUrIWQ=="
-      ],
+      "ContainerId": "GkcL48JC8E2eXhPWuWu7Rw==",
+      "DateTimeUtc": "2022-10-19T09:01:49.9821781Z",
+      "Adds": [],
+      "Removes": [],
       "Changes": [
+        {
+          "Id": "XpLbzJr4bkqzkKwFFXkCLw==",
+          "ExtraGuid": "mNdwO2lJOkSwgbBalmAC5Q==",
+          "Count": 2,
+          "Properties": {
+            "stc": 2,
+            "Count": 2,
+            "ExtraDecimal": null,
+            "ExtraString": null
+          },
+          "OwnerId": null,
+          "Children": [],
+          "ParentId": "GkcL48JC8E2eXhPWuWu7Rw==",
+          "ClientString": null
+        }
       ]
     }
   ],
   "HasError": false,
-  "DebugMessage": "操作成功完成。",
+  "DebugMessage": null,
   "ErrorCode": 0
 }
