@@ -157,6 +157,8 @@ namespace OW.Game.Store
 
         #region 数据库属性
 
+        #region JsonObject相关
+
         private string _JsonObjectString;
         /// <summary>
         /// 属性字符串。格式数Json字符串。
@@ -174,8 +176,6 @@ namespace OW.Game.Store
                 }
             }
         }
-
-        #region JsonObject相关
 
         /// <summary>
         /// 获取或初始化<see cref="JsonObject"/>属性并返回。

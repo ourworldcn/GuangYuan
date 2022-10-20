@@ -166,6 +166,7 @@ namespace Gy001.Controllers
         /// <param name="payType">支付方式：
         /// "mycard"表示mycard，"google"表示google-play支付，"mol"表示mol支付，"apple"表示苹果支付，“onestore”韩国onestore商店支付，“samsung”三星支付
         /// </param>
+        /// <param name="gcm">所需服务。</param>
         /// <returns></returns>
         [HttpPost]
         public ActionResult<PayCallbackT78ReturnDto> PayCallbackFromT78([FromForm] PayCallbackT78ParamsDto model, [FromHeader(Name = "X-BNPAY-SANDBOX")] string isSandbox,

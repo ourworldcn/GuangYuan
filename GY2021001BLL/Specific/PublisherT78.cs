@@ -362,7 +362,13 @@ namespace GuangYuan.GY001.BLL
                 return null;
             }
             gameChar = gu.CurrentChar;
+            OwHelper.SetLastError(ErrorCodes.NO_ERROR);
             return dw;
+        }
+
+        public void RecodeAccount()
+        {
+            return;
         }
 
         public override void Handle(T78PayCallbackCommand command)
@@ -376,7 +382,9 @@ namespace GuangYuan.GY001.BLL
                 command.FillErrorFromWorld();
                 return;
             }
+            //因不可拒绝，直接记录
 
+            //处理购买，若有错则不增加道具/代币
             var userId = command.Params.UserId;
         }
     }
