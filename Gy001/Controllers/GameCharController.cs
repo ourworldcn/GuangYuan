@@ -504,13 +504,12 @@ namespace GY2021001WebApi.Controllers
                 var collTmp = ChangesItemSummary.ToChangesItem(gc.GetOrCreateBinaryObject<CharBinaryExProperties>().ChangeItems, gc);
                 ChangeItem.Reduce(collTmp);
                 var mapper = World.Service.GetRequiredService<IMapper>();
-                foreach (var item in collTmp)   //去掉错误的移除对象id
-                {
-                    var ary = item.Adds.Select(c => c.ExtraGuid).ToArray();
-                    item.Removes.RemoveAll(c => ary.Contains(c));
-                }
                 result.Changes.AddRange(collTmp.Select(c => mapper.Map<ChangesItemDto>(c)));
-                //gc.ChangesItems.Clear();
+                foreach (var item in result.Changes)   //去掉错误的移除对象id
+                {
+                    var ary = item.Adds.Select(c => c.Id).ToArray();
+                    var countRemove = item.Removes.RemoveAll(c => ary.Contains(c));
+                }
             }
             catch (Exception err)
             {
