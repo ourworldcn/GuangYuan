@@ -350,6 +350,7 @@ namespace GuangYuan.GY001.UserDb.Combat
             soldier.IconIndex = (int)gameChar.GetSdpDecimalOrDefault("charIcon", decimal.Zero);
             soldier.MainControlRoomLevel = (int)gameChar.GetMainControlRoom().GetSdpDecimalOrDefault("lv");
             soldier.Level = (int)gameChar.GetSdpDecimalOrDefault("lv");
+            soldier.ScoreBefore = (int)(gameChar.GetPvpObject()?.ExtraDecimal ?? 0);
         }
 
         /// <summary>

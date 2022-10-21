@@ -294,6 +294,9 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
+                Span<string> span = ArrayPool<string>.Shared.Rent(3);
+                var span1 = span[1..3];
+
                 var logger = _Services.GetRequiredService<ILogger<GameHostedService>>();
                 logger.LogCritical("Test:LogCritical");
                 var loggingDb = service.GetRequiredService<GameLoggingDbContext>();

@@ -3421,6 +3421,11 @@ namespace GY2021001WebApi.Models
     [DataContract]
     public partial class GetPvpListReturnDto : ChangesReturnDtoBaseV2
     {
+        public GetPvpListReturnDto()
+        {
+
+        }
+
         /// <summary>
         /// 可pvp角色Id列表。目前仅有一个。
         /// </summary>

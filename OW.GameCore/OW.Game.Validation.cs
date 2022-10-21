@@ -9,17 +9,29 @@ namespace OW.Game.Validation
     /// <summary>
     /// GameItem引用对象。
     /// </summary>
-    public class GameItemReference
+    public class GameThingReference
     {
-        public static bool TryParse(string str, out GameItemReference result)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public static bool TryParse(string str, out GameThingReference result)
         {
             var span = str.Split(OwHelper.SemicolonArrayWithCN).AsSpan();
             return TryParse(span, out result);
         }
 
-        public static bool TryParse(ReadOnlySpan<string> strs, out GameItemReference result)
+        /// <summary>
+        /// 分析获取对象。
+        /// </summary>
+        /// <param name="strs">一个元素则是引用对象的模板id,两个对象，则前一个是父容器模板id,后一个是引用对象的模板id。</param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public static bool TryParse(ReadOnlySpan<string> strs, out GameThingReference result)
         {
-            result = new GameItemReference();
+            result = new GameThingReference();
             switch (strs.Length)
             {
                 case 1:
@@ -51,6 +63,11 @@ namespace OW.Game.Validation
         /// </summary>
         public Guid TemplateId { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <returns></returns>
         public virtual object GetValue(GameThingBase thing)
         {
             GameThingBase result;
@@ -123,7 +140,7 @@ namespace OW.Game.Validation
             switch (strs.Length)
             {
                 case 3:
-                    if (!GameItemReference.TryParse(strs.Slice(0, 2), out var gir))
+                    if (!GameThingReference.TryParse(strs.Slice(0, 2), out var gir))
                         return false;
                     if (string.IsNullOrWhiteSpace(strs[2]))
                         return false;
@@ -131,7 +148,7 @@ namespace OW.Game.Validation
                     result.PropertyName = strs[2];
                     break;
                 case 2:
-                    if (!GameItemReference.TryParse(strs.Slice(0, 1), out gir))
+                    if (!GameThingReference.TryParse(strs.Slice(0, 1), out gir))
                         return false;
                     if (string.IsNullOrWhiteSpace(strs[1]))
                         return false;
@@ -141,7 +158,7 @@ namespace OW.Game.Validation
                 case 1:
                     if (string.IsNullOrWhiteSpace(strs[0]))
                         return false;
-                    result.ItemReference = new GameItemReference();
+                    result.ItemReference = new GameThingReference();
                     result.PropertyName = strs[0];
                     break;
                 default:
@@ -164,7 +181,7 @@ namespace OW.Game.Validation
         /// <summary>
         /// 引用的对象。
         /// </summary>
-        public GameItemReference ItemReference { get; set; }
+        public GameThingReference ItemReference { get; set; }
 
         /// <summary>
         /// 设置或获取限定的属性名。

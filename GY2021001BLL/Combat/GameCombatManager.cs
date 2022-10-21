@@ -1053,6 +1053,7 @@ namespace GuangYuan.GY001.BLL
                 }
             }
             datas.Combat = combat;
+            cache.SetDirty(combat.Thing.IdString);   //尽快保存
         }
 
         /// <summary>
