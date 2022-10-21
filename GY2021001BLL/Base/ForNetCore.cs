@@ -294,17 +294,7 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                Span<string> span = ArrayPool<string>.Shared.Rent(3);
-                var span1 = span[1..3];
-
-                var logger = _Services.GetRequiredService<ILogger<GameHostedService>>();
-                logger.LogCritical("Test:LogCritical");
-                var loggingDb = service.GetRequiredService<GameLoggingDbContext>();
-                var entity = new PayOrder() { Id = Guid.NewGuid().ToString() };
-                var dto = entity.GetJsonObject<PayCallbackT78ParamsDto>();
-                dto.UserId = Guid.NewGuid().ToString();
-                //loggingDb.Add(entity);
-                loggingDb.SaveChanges();
+                var b = GameValidation.TryParse(("eq", $"{Guid.NewGuid()};{Guid.NewGuid()};lv;1"), out var gv);
             }
             catch (Exception)
             {

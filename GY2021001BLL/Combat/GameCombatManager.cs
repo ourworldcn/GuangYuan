@@ -228,7 +228,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         var gitm = World.ItemTemplateManager;
                         var coll = from tmp in gitm.Id2Template.Values
-                                   where tmp.TryGetSdp("typ",out _) && tmp.TryGetSdp("mis",out _) && tmp.TryGetSdp("sec",out _)
+                                   where tmp.TryGetSdp("typ", out _) && tmp.TryGetSdp("mis", out _) && tmp.TryGetSdp("sec", out _)
                                    select tmp;
                         _Dungeons = coll.ToList();
                     }
@@ -1276,8 +1276,13 @@ namespace GuangYuan.GY001.BLL
         /// <param name="datas"></param>
         public void AbortPvp(AbortPvpDatas datas)
         {
-            using var dwCombat = GetAndLockCombat(datas.CombatId, out var oldView);
-            if (oldView.Defensers.Any(c => c.CharId == datas.GameChar.Id))  //自己被打直接放弃
+            using var dwCombat = GetAndLockCombat(datas.CombatId, out var oldCombat);
+            if (dwCombat.IsEmpty)
+            {
+                datas.FillErrorFromWorld();
+                return;
+            }
+            if (oldCombat.Defensers.Any(c => c.CharId == datas.GameChar.Id))  //自己被打直接放弃
             {
                 var getMails = new GameSocialManager.GetMailsDatas(Service, datas.GameChar);
                 World.SocialManager.GetMails(getMails);
@@ -1291,23 +1296,21 @@ namespace GuangYuan.GY001.BLL
                 var mail = getMails.Mails.FirstOrDefault(c => c.GetSdpGuidOrDefault("OldCombatId") == datas.CombatId && c.GetSdpStringOrDefault("MailTypeId") == ProjectConstant.PVP系统奖励.ToString());
                 if (null != mail)
                     datas.UserDbContext.Remove(mail);
-                oldView.Assistancing = false;
-                oldView.Assistanced = true;
-                oldView.IsCompleted = true;
+                oldCombat.Assistancing = false;
+                oldCombat.Assistanced = true;
+                oldCombat.IsCompleted = true;
             }
-            else
+            else //若被邀请协助
             {
-                using EndCombatPvpWorkData endPvpDatas = new EndCombatPvpWorkData(World, datas.GameChar)
-                {
-                    UserDbContext = datas.UserDbContext,
-                    CombatId = datas.CombatId,
-                    MainRoomRhp = 1,
-                    GoldRhp = 1,
-                    WoodRhp = 1,
-                    StoreOfWoodRhp = 1,
-                };
-                World.CombatManager.EndCombatPvp(endPvpDatas);
-                datas.FillErrorFrom(endPvpDatas);
+                oldCombat.Assistancing = false;
+                oldCombat.Assistanced = true;
+                oldCombat.IsCompleted = oldCombat.Retaliationed;
+                var mail = new GameMail();
+                mail.SetSdp("MailTypeId", oldCombat.IsCompleted ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_求助_失败_求助者.ToString());
+                mail.SetSdp("OldCombatId", oldCombat.Thing.IdString);
+                //mail.SetSdp("CombatId", oldCombat.Thing.IdString);
+                World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId);
+                datas.FillErrorFromWorld();
             }
         }
 

@@ -390,6 +390,10 @@ namespace GuangYuan.GY001.UserDb.Combat
                 soldier.ScoreBefore = (int)pvp.ExtraDecimal;
                 soldier.RankBefore = world.CombatManager.GetPvpRank(gameChar);
             }
+            soldier.MainControlRoomLevel = (int)(gameChar.GetMainControlRoom()?.GetSdpDecimalOrDefault(world.PropertyManager.LevelPropertyName) ?? 0);
+            soldier.Level = (int)(gameChar.GetSdpDecimalOrDefault(world.PropertyManager.LevelPropertyName));
+            soldier.IconIndex = (int)gameChar.GetSdpDecimalOrDefault("charIcon", decimal.Zero);
+            
         }
 
         /// <summary>

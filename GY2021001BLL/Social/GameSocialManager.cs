@@ -330,6 +330,7 @@ namespace GuangYuan.GY001.BLL
                 //发送邮件到达通知
                 var ids = tos.Select(c => c.ThingId).ToArray();
                 Task.Run(() => NotifyMail(ids));
+                OwHelper.SetLastError(ErrorCodes.NO_ERROR);
             }
             catch
             {

@@ -1,6 +1,7 @@
 ﻿using GuangYuan.GY001.UserDb;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -9,6 +10,7 @@ namespace OW.Game.Validation
     /// <summary>
     /// GameItem引用对象。
     /// </summary>
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class GameThingReference
     {
         /// <summary>
@@ -107,11 +109,17 @@ namespace OW.Game.Validation
             }
             return result;
         }
+
+        private string GetDebuggerDisplay()
+        {
+            return $"{{{ParentTemplateId.ToString()[0..4]}...{ParentTemplateId.ToString()[^4..^0]}}}.{{{TemplateId.ToString()[0..4]}...{TemplateId.ToString()[^4..^0]}}}";
+        }
     }
 
     /// <summary>
     /// 属性引用对象。
     /// </summary>
+    [DebuggerDisplay("{" + nameof(ThingReference) + ",nq}" + ".{" + nameof(PropertyName) + ",nq}")]
     public class GamePropertyReference
     {
         #region 静态成员
@@ -144,7 +152,7 @@ namespace OW.Game.Validation
                         return false;
                     if (string.IsNullOrWhiteSpace(strs[2]))
                         return false;
-                    result.ItemReference = gir;
+                    result.ThingReference = gir;
                     result.PropertyName = strs[2];
                     break;
                 case 2:
@@ -152,13 +160,13 @@ namespace OW.Game.Validation
                         return false;
                     if (string.IsNullOrWhiteSpace(strs[1]))
                         return false;
-                    result.ItemReference = gir;
+                    result.ThingReference = gir;
                     result.PropertyName = strs[1];
                     break;
                 case 1:
                     if (string.IsNullOrWhiteSpace(strs[0]))
                         return false;
-                    result.ItemReference = new GameThingReference();
+                    result.ThingReference = new GameThingReference();
                     result.PropertyName = strs[0];
                     break;
                 default:
@@ -181,7 +189,7 @@ namespace OW.Game.Validation
         /// <summary>
         /// 引用的对象。
         /// </summary>
-        public GameThingReference ItemReference { get; set; }
+        public GameThingReference ThingReference { get; set; }
 
         /// <summary>
         /// 设置或获取限定的属性名。
@@ -197,7 +205,7 @@ namespace OW.Game.Validation
         /// <returns></returns>
         public object GetValue(GameChar gameChar)
         {
-            return (ItemReference.GetValue(gameChar) as GameThingBase).GetDecimalWithFcpOrDefault(PropertyName);
+            return (ThingReference.GetValue(gameChar) as GameThingBase).GetDecimalWithFcpOrDefault(PropertyName);
         }
 
         /// <summary>
@@ -207,13 +215,19 @@ namespace OW.Game.Validation
         /// <param name="value"></param>
         public void SetValue(GameChar gameChar, object value)
         {
-            (ItemReference.GetValue(gameChar) as GameThingBase).SetSdp(PropertyName, value);
+            (ThingReference.GetValue(gameChar) as GameThingBase).SetSdp(PropertyName, value);
+        }
+
+        private string GetDebuggerDisplay()
+        {
+            return ToString();
         }
     }
 
     /// <summary>
     /// 条件对象。
     /// </summary>
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public class GameValidation
     {
         #region 静态成员
@@ -341,6 +355,11 @@ namespace OW.Game.Validation
                     //throw new ArgumentException($"不认识的比较运算符,{keyValue}", nameof(prefix));
             }
             return result;
+        }
+
+        private string GetDebuggerDisplay()
+        {
+            return ToString();
         }
     }
 }
