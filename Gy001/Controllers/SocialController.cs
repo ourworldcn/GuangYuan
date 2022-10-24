@@ -492,6 +492,7 @@ namespace Gy001.Controllers
             if (gc is null)
                 return Unauthorized("令牌无效");
             PatForTiliReturnDto result = new PatForTiliReturnDto();
+            commandContext.Token = model.Token;
             using var datas = new PatForTiliWorkData(_World, gc, OwConvert.ToGuid(model.ObjectId), DateTime.UtcNow)
             {
                 UserDbContext = _UserContext,
@@ -527,6 +528,7 @@ namespace Gy001.Controllers
             var result = new PatWithMountsReturnDto();
             try
             {
+                commandContext.Token = model.Token;
                 using var datas = new PatWithMountsDatas(_World, model.Token, OwConvert.ToGuid(model.MountsId), DateTime.UtcNow)
                 {
                     UserDbContext = _UserContext,

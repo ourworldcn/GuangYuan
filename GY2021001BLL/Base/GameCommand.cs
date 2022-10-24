@@ -17,7 +17,7 @@ namespace OW.Game
         /// <summary>
         /// 构造函数。
         /// </summary>
-        /// <param name="service"></param>
+        /// <param name="service">范围类型服务容器。</param>
         public GameCommandContext(IServiceProvider service)
         {
             Service = service;
