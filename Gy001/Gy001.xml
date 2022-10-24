@@ -4021,19 +4021,21 @@
             <returns></returns>
             <response code="401">令牌错误。</response>
         </member>
-        <member name="M:Gy001.Controllers.SocialController.PatForTili(GY2021001WebApi.Models.PatForTiliParamsDto)">
+        <member name="M:Gy001.Controllers.SocialController.PatForTili(GY2021001WebApi.Models.PatForTiliParamsDto,OW.Game.GameCommandContext)">
             <summary>
             进行社交互动的通用接口。
             </summary>
             <param name="model">参见 PatForTiliParamsDto 说明。</param>
+            <param name="commandContext"></param>
             <returns>参见 PatForTiliReturnDto 说明。</returns>
             <response code="401">令牌错误。</response>
         </member>
-        <member name="M:Gy001.Controllers.SocialController.PatWithMounts(GY2021001WebApi.Models.PatWithMountsParamsDto)">
+        <member name="M:Gy001.Controllers.SocialController.PatWithMounts(GY2021001WebApi.Models.PatWithMountsParamsDto,OW.Game.GameCommandContext)">
             <summary>
             与好友家园的展示坐骑互动。返回码：160=今日已经与该坐骑互动过了；1721=今日互动次数已经用完。
             </summary>
             <param name="model">参见 "PatWithMountsParamsDto" </param>
+            <param name="commandContext">命令上下文。</param>
             <returns> 返回码：160=今日已经与该坐骑互动过了；1721=今日互动次数已经用完。</returns>
             <response code="401">令牌错误。</response>
             <response code="400">其他异常错误。</response>

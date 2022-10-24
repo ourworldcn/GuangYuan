@@ -129,7 +129,7 @@ namespace GuangYuan.GY001.BLL
                         {
                             RefreshCount = 0,  //已经刷新次数
                             Genus = item,   //属
-                            GroupNumber = rnd.Next(dic[item].Length),   //新的组号
+                            GroupNumber = rnd.Next(1, dic[item].Length),   //新的组号
                             RefreshLastDateTime = Now, //最后刷新时间
                             CostOfGold = template.GetSequenceProperty<decimal>($"{prefix}{item}"),
                         };

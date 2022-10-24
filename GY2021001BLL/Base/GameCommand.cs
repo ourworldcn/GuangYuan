@@ -89,7 +89,7 @@ namespace OW.Game
         #endregion IDisposable接口相关
     }
 
-    public static class GameCommandExtensions
+    public static class GameCommandContextExtensions
     {
         /// <summary>
         /// 使用默认超时试图锁定<see cref="GameChar"/>用户。
@@ -109,7 +109,12 @@ namespace OW.Game
             }
         }
 
-
+        /// <summary>
+        /// 获取命令管理器。
+        /// </summary>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        public static GameCommandManager GetCommandManager(this GameCommandContext service) => service.Service.GetService<GameCommandManager>();
     }
 
     public abstract class WithChangesGameCommandBase : GameCommandBase

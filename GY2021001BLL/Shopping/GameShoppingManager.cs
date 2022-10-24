@@ -108,6 +108,8 @@ namespace GuangYuan.GY001.BLL
             List<GameShoppingTemplate> rg = new List<GameShoppingTemplate>();
             foreach (var item in view.RefreshInfos)  //遍历可刷新商品
             {
+                if (item.Value.GroupNumber == 0)    //若遇到错误的历史数据
+                    item.Value.GroupNumber = 1;
                 var tmp = World.ItemTemplateManager.Id2Shopping.Values.Where(c => c.GroupNumber.HasValue && c.Genus == item.Key && (datas.Genus.Count == 0 || datas.Genus.Contains(c.Genus)) && c.GroupNumber == item.Value.GroupNumber && IsValid(c, datas.Now));
                 rg.AddRange(tmp);
             }

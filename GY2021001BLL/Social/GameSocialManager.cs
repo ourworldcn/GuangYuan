@@ -1047,35 +1047,31 @@ namespace GuangYuan.GY001.BLL
             if (dwUsers is null)
                 return PatForTiliResult.TimesOver;
             DateTime dtNow = DateTime.UtcNow;   //当前时间
-            try
+            var dt = dtNow;
+            if (datas.Fcp.GetCurrentValue(ref dt) <= 0) //若已经用完访问次数
+                return PatForTiliResult.TimesOver;
+            var objectId = datas.OtherChar.Id;
+            if (datas.Visitors.Any(c => c.Id2 == objectId && DateTime.TryParse(c.PropertyString, out var dt) && dt.Date == datas.Now.Date))    //若访问过了
+                return PatForTiliResult.Already;
+            //成功交互
+            var sr = datas.Visitors.FirstOrDefault(c => c.Id2 == objectId);
+            if (sr is null)  //若没有条目
             {
-                var dt = dtNow;
-                if (datas.Fcp.GetCurrentValue(ref dt) <= 0) //若已经用完访问次数
-                    return PatForTiliResult.TimesOver;
-                var objectId = datas.OtherChar.Id;
-                if (datas.Visitors.Any(c => c.Id2 == objectId && DateTime.TryParse(c.PropertyString, out var dt) && dt.Date == datas.Now.Date))    //若访问过了
-                    return PatForTiliResult.Already;
-                //成功交互
-                var sr = datas.Visitors.FirstOrDefault(c => c.Id2 == objectId);
-                if (sr is null)  //若没有条目
+                sr = new GameSocialRelationship(datas.GameChar.Id, objectId, (int)SocialKeyTypes.PatTili, 0)
                 {
-                    sr = new GameSocialRelationship(datas.GameChar.Id, objectId, (int)SocialKeyTypes.PatTili, 0)
-                    {
-                        PropertyString = datas.Now.ToString("s"),
-                    };
-                    datas.Visitors.Add(sr);
-                }
-                datas.FriendCurrency += 5;  //增加友情货币。
-                //扣除次数
-                datas.Fcp.LastValue--;
-                datas.Tili.Name2FastChangingProperty["Count"].LastValue += 5; //增加体力
-                datas.Save();
-                datas.ChangeItems.AddToChanges(datas.Tili);
-                World.CharManager.NotifyChange(datas.GameChar.GameUser);  //通知状态发生了更改
+                    PropertyString = datas.Now.ToString("s"),
+                };
+                datas.Visitors.Add(sr);
             }
-            catch (Exception)
-            {
-            }
+            datas.FriendCurrency += 5;  //增加友情货币。
+                                        //扣除次数
+            datas.Fcp.LastValue--;
+            datas.Tili.Name2FastChangingProperty["Count"].LastValue += 5; //增加体力
+            datas.Save();
+            datas.ChangeItems.AddToChanges(datas.Tili);
+            World.CharManager.NotifyChange(datas.GameChar.GameUser);  //通知状态发生了更改
+            var command = new HomelandInteractionedCommand();
+            datas.CommandContext.GetCommandManager().Handle(command);
             return PatForTiliResult.Success;
         }
 
@@ -1175,6 +1171,8 @@ namespace GuangYuan.GY001.BLL
                 }
             }
 
+            public GameCommandContext CommandContext { get; set; }
+
             public override void Save()
             {
                 base.Save();
@@ -1248,6 +1246,7 @@ namespace GuangYuan.GY001.BLL
             datas.Save();
             datas.World.CharManager.NotifyChange(datas.GameChar.GameUser);
             datas.PropertyChanges.CopyTo(datas.ChangeItems);
+            datas.CommandContext.GetCommandManager().Handle(new HomelandInteractionedCommand());
             return;
         }
 
@@ -1526,6 +1525,8 @@ namespace GuangYuan.GY001.BLL
                     return Visitors.Any(c => GetDateTime(c).Date == Today.Date && GetOtherCharId(c) == OtherCharId);
                 }
             }
+
+            public GameCommandContext CommandContext { get; set; }
             #endregion 工作函数内部使用
 
         }

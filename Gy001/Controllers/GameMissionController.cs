@@ -39,9 +39,7 @@ namespace Gy001.Controllers
             };
             datas.ItemIds.AddRange(model.ItemIds.Select(c => OwConvert.ToGuid(c)));
             World.MissionManager.GetRewarding(datas);
-            result.HasError = datas.HasError;
-            result.ErrorCode = datas.ErrorCode;
-            result.DebugMessage = datas.DebugMessage;
+            result.FillFrom(datas);
             if (!result.HasError)
             {
                 var mapper = World.Service.GetService<IMapper>();

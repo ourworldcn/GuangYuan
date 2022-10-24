@@ -482,10 +482,11 @@ namespace Gy001.Controllers
         /// 进行社交互动的通用接口。
         /// </summary>
         /// <param name="model">参见 PatForTiliParamsDto 说明。</param>
+        /// <param name="commandContext"></param>
         /// <returns>参见 PatForTiliReturnDto 说明。</returns>
         /// <response code="401">令牌错误。</response>
         [HttpPost]
-        public ActionResult<PatForTiliReturnDto> PatForTili(PatForTiliParamsDto model)
+        public ActionResult<PatForTiliReturnDto> PatForTili(PatForTiliParamsDto model, [FromServices] GameCommandContext commandContext)
         {
             var gc = _World.CharManager.GetGameCharFromToken(model.Token);
             if (gc is null)
@@ -493,7 +494,8 @@ namespace Gy001.Controllers
             PatForTiliReturnDto result = new PatForTiliReturnDto();
             using var datas = new PatForTiliWorkData(_World, gc, OwConvert.ToGuid(model.ObjectId), DateTime.UtcNow)
             {
-                UserDbContext = _UserContext
+                UserDbContext = _UserContext,
+                CommandContext = commandContext,
             };
             var r = _World.SocialManager.PatForTili(datas);
             if (PatForTiliResult.Success != r)
@@ -515,11 +517,12 @@ namespace Gy001.Controllers
         /// 与好友家园的展示坐骑互动。返回码：160=今日已经与该坐骑互动过了；1721=今日互动次数已经用完。
         /// </summary>
         /// <param name="model">参见 "PatWithMountsParamsDto" </param>
+        /// <param name="commandContext">命令上下文。</param>
         /// <returns> 返回码：160=今日已经与该坐骑互动过了；1721=今日互动次数已经用完。</returns>
         /// <response code="401">令牌错误。</response>
         /// <response code="400">其他异常错误。</response>
         [HttpPost]
-        public ActionResult<PatWithMountsReturnDto> PatWithMounts(PatWithMountsParamsDto model)
+        public ActionResult<PatWithMountsReturnDto> PatWithMounts(PatWithMountsParamsDto model, [FromServices] GameCommandContext commandContext)
         {
             var result = new PatWithMountsReturnDto();
             try
@@ -528,6 +531,7 @@ namespace Gy001.Controllers
                 {
                     UserDbContext = _UserContext,
                     IsRemove = model.IsRemove,
+                    CommandContext = commandContext,
                 };
                 using var dwChar = datas.LockUser();
                 if (dwChar is null)
@@ -569,7 +573,7 @@ namespace Gy001.Controllers
         {
             commandContext.Token = model.Token;
             var command = autoMapper.Map<GetPvpListCommand>(model);
-            var gcm = commandContext.Service.GetRequiredService<GameCommandManager>();
+            var gcm = commandContext.GetCommandManager();
             gcm.Handle(command);
             var result = autoMapper.Map<GetPvpListReturnDto>(command);
             return result;

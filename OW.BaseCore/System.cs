@@ -8,12 +8,13 @@ namespace System
 {
     /// <summary>
     /// 支持一种文字化显示时间间隔及不确定间隔的类。支持：s秒，d天，w周，m月，y年
-    /// 如1m，1y分别表示一月和一年，这些都是不确定时长度的间间隔，但在实际应用中却常有需求。
+    /// 如1m，1y分别表示一月和一年，其中一些是不确定时长度的间间隔，但在实际应用中却常有需求。
     /// </summary>
     public readonly struct TimeSpanEx
     {
         /// <summary>
         /// 支持的单位符号。
+        /// 秒，日，周，月，年。
         /// </summary>
         public const string UnitChars = "sdwmy";
 
