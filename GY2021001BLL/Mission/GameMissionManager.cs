@@ -397,7 +397,13 @@ namespace OW.Game.Mission
                     remainder.Clear();
                     var tuple = view.Metrics.First(c => c.Item1 == zhibiao);
                     var gi = gim.Clone(tuple.Item2);  //复制新物品
-                    var container = World.EventsManager.GetDefaultContainer(gi, datas.GameChar);
+                    var ptid = gi.GetTemplate()?.GetSdpGuidOrDefault("ptid");
+                    var ptt = datas.GameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == ptid);
+                    GameThingBase container;
+                    if (ptt != null)
+                        container = ptt;
+                    else
+                        container = World.EventsManager.GetDefaultContainer(gi, datas.GameChar);
                     gim.MoveItem(gi, gi.Count ?? 1, container, remainder, datas.PropertyChanges);//自动加入对应容器
                     if (remainder.Count > 0)
                     {

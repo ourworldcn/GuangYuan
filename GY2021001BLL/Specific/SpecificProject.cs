@@ -353,7 +353,7 @@ namespace GuangYuan.GY001.BLL
         #endregion 家园及相关
 
         /// <summary>
-        /// 工会槽模板Id。
+        /// 个人工会槽模板Id。
         /// </summary>
         public static readonly Guid GuildSlotId = new Guid("{FF32FC5E-F656-49B0-B28B-E46BA11D07D0}");
 

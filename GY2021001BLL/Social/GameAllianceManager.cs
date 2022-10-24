@@ -670,6 +670,7 @@ namespace GuangYuan.GY001.UserDb.Social
             var autoAccept = guild.GetSdpBooleanOrDefaut("AutoAccept");
             if (autoAccept) //若自动接受
             {
+                datas.GameChar.GetDbContext().SaveChanges();
                 var subData = new AcceptJoinContext(datas.World, datas.GameChar)
                 {
                     IsAccept = true,
