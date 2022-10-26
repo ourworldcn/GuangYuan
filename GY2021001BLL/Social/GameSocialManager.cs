@@ -675,12 +675,16 @@ namespace GuangYuan.GY001.BLL
             IEnumerable<Guid> result;
             if (!string.IsNullOrWhiteSpace(datas.DisplayName))   //若需要按角色昵稱过滤
             {
-                result = view.RefreshLastList(datas.DisplayName).Take(1).ToArray();
-                if (result.Any())
+                var coll = view.RefreshLastList(datas.DisplayName);
+                var count = coll.Count();
+                if (count > 0)
                 {
+                    result = coll.Skip(VWorld.WorldRandom.Next(count)).Take(1);
                     view.TodayIds.AddRange(result);
                     view.HasData = true;
                 }
+                else
+                    result = Array.Empty<Guid>();
             }
             else //若需要按身体模板Id过滤或不限制
             {

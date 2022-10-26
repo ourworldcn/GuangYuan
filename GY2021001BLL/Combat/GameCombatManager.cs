@@ -858,8 +858,10 @@ namespace GuangYuan.GY001.BLL
 
             var otherChar = World.CharManager.GetCharFromId(combat.Defensers.FirstOrDefault()?.CharId ?? combat.Others.First().CharId);
 
-            //设置战利品
             var attacker = combat.Attackers.First();    //攻击方
+            var defenser = combat.Defensers.First();    //防御方
+
+            //设置战利品
             List<GameItem> bootyOfAttacker = ComputeAttackerBooty();
             var gim = World.ItemManager;
             gim.Normalize(datas.Booty);
@@ -869,7 +871,6 @@ namespace GuangYuan.GY001.BLL
             gim.MoveItems(datas.Booty, datas.GameChar, null, datas.PropertyChanges);
 
             List<GameItem> bootyOfDefenser = ComputeDefenerBooty();
-            var defenser = combat.Defensers.First();    //防御方
             //设置物品实际增减
             List<GameItem> rem = new List<GameItem>();  //无法放入物品
             attacker.Booties.AddRange(bootyOfAttacker); //计入战报
@@ -891,21 +892,22 @@ namespace GuangYuan.GY001.BLL
             {
                 List<GameItem> result = new List<GameItem>();
 
-                var xGold = (1 - datas.MainRoomRhp) * 0.5m + (1 - datas.GoldRhp) * 0.5m;   //金币的系数
-                if (xGold <= 0) //若没有金币可获得
-                    xGold = datas.DestroyCountOfWoodStore * 0.1m;
-                var xWood = (1 - datas.MainRoomRhp) * 0.5m + (1 - datas.StoreOfWoodRhp) * 0.5m;    //木材的系数
-                var resource = combat.Others.First();   //搜索时点的资源快照
+                var xGold = (1 - datas.StoreOfWoodRhp) * 0.5m + (1 - datas.GoldRhp) * 0.5m;   //金币的系数
+                var xWood = (1 - datas.StoreOfWoodRhp) * 0.5m + (1 - datas.WoodRhp) * 0.5m;    //木材的系数
+                var resource = combat.Others.First(c => c.CharId == defenser.CharId);   //搜索时点的防御方资源快照
+
                 var gold = resource.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.Count ?? 0;   //金币基数
                 var wood = resource.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaiId)?.Count ?? 0;  //木材基数
                 var shulin = resource.Resource.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId)?.Count ?? 0;  //树林基数
+
                 var goldGi = new GameItem();    //金币
                 World.EventsManager.GameItemCreated(goldGi, ProjectConstant.JinbiId);
-                goldGi.Count = (100 + gold * 0.5m) * xGold;
+                goldGi.Count = Math.Truncate((100 + gold * 0.5m) * xGold);
 
                 var woodGi = new GameItem();    //木材
                 World.EventsManager.GameItemCreated(woodGi, ProjectConstant.MucaiId);
-                woodGi.Count = (50 + wood * 0.2m + shulin * 0.5m) * xWood;
+                woodGi.Count = Math.Truncate((10 + wood * 0.2m + shulin * 0.5m) * xWood);
+
                 result.Add(goldGi);
                 result.Add(woodGi);
                 return result;
@@ -919,23 +921,27 @@ namespace GuangYuan.GY001.BLL
                 List<GameItem> result = new List<GameItem>();
                 if (otherChar.CharType.HasFlag(CharType.Npc))   //若是npc被攻击则不损失资源
                     return result;
+                if (datas.MainRoomRhp >= 1)    //若没有击溃主控室
+                    return result;
+
                 var xGold = (1 - datas.MainRoomRhp);   //金币的系数
                 var xWood = (1 - datas.MainRoomRhp);    //木材的系数
-                var resource = combat.Others.First();   //搜索时点的资源快照
+
                 var gold = otherChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId)?.Count ?? 0;   //金币基数
                 var wood = otherChar.GetCurrencyBag().Children.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaiId)?.Count ?? 0;  //木材基数
                 var shulin = otherChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId)?.Count ?? 0;  //树林基数
+
                 var goldGi = new GameItem();    //金币
                 World.EventsManager.GameItemCreated(goldGi, ProjectConstant.YumitianTId);
-                goldGi.Count = -gold * 0.5m * xGold;
+                goldGi.Count = Math.Truncate(-gold * 0.5m * xGold);
 
                 var woodGi = new GameItem();    //木材
                 World.EventsManager.GameItemCreated(woodGi, ProjectConstant.MucaiId);
-                woodGi.Count = -wood * 0.2m * xWood;
+                woodGi.Count = Math.Truncate(-wood * 0.2m * xWood);
 
                 var woodShu = new GameItem();   //木材树
                 World.EventsManager.GameItemCreated(woodShu, ProjectConstant.MucaishuTId);
-                woodShu.Count = -shulin * 0.5m * xWood;
+                woodShu.Count = Math.Truncate(-shulin * 0.5m * xWood);
 
                 result.Add(goldGi);
                 result.Add(woodGi);

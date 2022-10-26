@@ -258,7 +258,7 @@ namespace GuangYuan.GY001.BLL
 
         public static readonly Guid PVP反击邮件 = new Guid("{83c52c66-991f-489b-8b49-6c6c8af25fa5}");
 
-        public static readonly Guid PVP自己_防御_胜利 = new Guid("{2ba05969-19ce-4b0c-8aed-1f2303342f1b}");
+        public static readonly Guid PVP自己_防御_胜利 = new Guid("{9dad15ce-a987-424b-bfa5-70666343c060}");
 
         public static readonly Guid PVP反击邮件_自己_胜利 = new Guid("{62e2da38-3212-43db-b314-5e545d8a1cb4}");
 
