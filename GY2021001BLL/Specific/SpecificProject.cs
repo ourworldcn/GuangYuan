@@ -737,12 +737,12 @@ namespace GuangYuan.GY001.BLL
                 var bodyTemplate = gitm.GetTemplateFromeId(body.ExtraGuid);
                 var result = gim.CreateMounts(headTemplate, bodyTemplate);
 
-                if (c.TryGetSdp("neatk", out object valObj) && OwConvert.TryToDecimal(valObj, out var dec))
-                    result.SetSdp("neatk", dec);
-                if (c.TryGetSdp("neqlt", out valObj) && OwConvert.TryToDecimal(valObj, out dec))
-                    result.SetSdp("neqlt", dec);
-                if (c.TryGetSdp("nemhp", out valObj) && OwConvert.TryToDecimal(valObj, out dec))
-                    result.SetSdp("nemhp", dec);
+                if (c.TryGetValue("neatk", out object valObj) && OwConvert.TryToDecimal(valObj, out var dec))
+                    result["neatk"]= dec;
+                if (c.TryGetValue("neqlt", out valObj) && OwConvert.TryToDecimal(valObj, out dec))
+                    result["neqlt"]= dec;
+                if (c.TryGetValue("nemhp", out valObj) && OwConvert.TryToDecimal(valObj, out dec))
+                    result["nemhp"]= dec;
                 return result;
             });
             shouyiSlot.Children.AddRange(mounts);   //加入坐骑
@@ -795,7 +795,7 @@ namespace GuangYuan.GY001.BLL
         {
             var gitm = service.GetService<GameItemTemplateManager>();
             //typ关卡类别=1普通管卡 mis大关数 sec=小关gold=数金币掉落上限，aml=获得资质野怪的数量，mne=资质合上限，mt=神纹数量上限，tl=最短通关时间
-            if (itemTemplate.TryGetSdp("gold", out object goldObj)) //若要限制金币数量
+            if (itemTemplate.TryGetValue("gold", out object goldObj)) //若要限制金币数量
             {
                 if (goldObj is decimal gold)
                 {
@@ -807,7 +807,7 @@ namespace GuangYuan.GY001.BLL
                     }
                 }
             }
-            if (itemTemplate.TryGetSdp("aml", out object monsterCountObj)) //若要限制怪数量
+            if (itemTemplate.TryGetValue("aml", out object monsterCountObj)) //若要限制怪数量
             {
                 if (monsterCountObj is decimal monsterCount)
                 {
@@ -819,7 +819,7 @@ namespace GuangYuan.GY001.BLL
                     }
                 }
             }
-            if (itemTemplate.TryGetSdp("mne", out object mneObj) && mneObj is decimal mne) //若要限制单个怪资质总和
+            if (itemTemplate.TryGetValue("mne", out object mneObj) && mneObj is decimal mne) //若要限制单个怪资质总和
             {
                 var coll = from tmp in gameItems
                            let mneatk = Convert.ToDecimal(tmp.GetSdpValueOrDefault("neatk", decimal.Zero))

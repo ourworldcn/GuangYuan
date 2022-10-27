@@ -249,11 +249,11 @@ namespace OW.Extensions.Game.Store
         {
             if (value.HasValue) //若有指定值
             {
-                thing.SetSdp("CreateUtc", value.Value.ToString());
+                thing["CreateUtc"]= value.Value.ToString();
             }
             else
             {
-                thing.RemoveSdp("CreateUtc");
+                thing.Remove("CreateUtc");
             }
         }
 
@@ -274,9 +274,9 @@ namespace OW.Extensions.Game.Store
         public static void SetClientString(this GameThingBase thing, string value)
         {
             if (value is null)
-                thing.RemoveSdp("ClientString");
+                thing.Remove("ClientString");
             else
-                thing.SetSdp("ClientString", Uri.EscapeDataString(value));
+                thing["ClientString"]= Uri.EscapeDataString(value);
         }
 
     }
@@ -306,9 +306,9 @@ namespace OW.Extensions.Game.Store
         public static void SetOrderNumber(this GameItem gameItem, int? value)
         {
             if (value.HasValue)
-                gameItem.SetSdp("OrderNumber", (decimal)value.Value);
+                gameItem["OrderNumber"]= (decimal)value.Value;
             else
-                gameItem.RemoveSdp("OrderNumber");
+                gameItem.Remove("OrderNumber");
         }
 
     }

@@ -81,7 +81,7 @@ namespace OW.Game.Mission
                             {
                                 dic["tid"] = _Template.GetSdpValueOrDefault($"mtid{item}");
                                 dic["count"] = _Template.GetSdpValueOrDefault($"mcount{item}");
-                                if (_Template.TryGetSdp($"mhtid{item}", out var mhtid))  //若有头模板id
+                                if (_Template.TryGetValue($"mhtid{item}", out var mhtid))  //若有头模板id
                                 {
                                     dic["htid"] = mhtid;
                                     dic["btid"] = _Template.GetSdpValueOrDefault($"mbtid{item}");    //必须有身体模板id
@@ -208,7 +208,7 @@ namespace OW.Game.Mission
                     case "96a36fbe-f79a-4579-932e-588772436da5": //	关卡成就	51002
                         {
                             var diff = item.GetSdpDecimalOrDefault(ProjectMissionConstant.指标增量属性名); //指标增量值
-                            item.SetSdp(ProjectMissionConstant.指标增量属性名, decimal.Zero);
+                            item[ProjectMissionConstant.指标增量属性名]= decimal.Zero;
                             metrics = item.Count.GetValueOrDefault() + diff;
                         }
                         break;
@@ -414,7 +414,7 @@ namespace OW.Game.Mission
                 }
             }
             var keys = objs.Select(c => $"mcid{c.Id}").ToList();
-            keys.ForEach(c => slot.RemoveSdp(c));
+            keys.ForEach(c => slot.Remove(c));
             datas.PropertyChanges.CopyTo(datas.ChangeItems);
             ChangeItem.Reduce(datas.ChangeItems);
             return;
@@ -460,7 +460,7 @@ namespace OW.Game.Mission
             }
             if (newMetrics.Count > 0)   //若确实有新成就
             {
-                missionSlot.SetSdp(keyName, string.Join(';', newMetrics.Union(unpickMetrics).Select(c => c.ToString())));
+                missionSlot[keyName] = string.Join(';', newMetrics.Union(unpickMetrics).Select(c => c.ToString()));
                 return true;
             }
             else

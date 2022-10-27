@@ -185,8 +185,8 @@ namespace GuangYuan.GY001.BLL
                 ParentId = GameChar.Id,
                 ActionId = BuyRecordActionId,
             };
-            gar.SetSdp("ShoppingId", template.IdString);
-            gar.SetSdp("BuyCount", count);
+            gar["ShoppingId"]= template.IdString;
+            gar["BuyCount"]= count;
             World.AddToUserContext(new object[] { gar });   //异步增加购买记录
             return true;
         }
@@ -302,11 +302,11 @@ namespace GuangYuan.GY001.BLL
         {
             if (null != _RefreshInfos)    //若可能发生变化
             {
-                ShoppingSlot.SetSdp(nameof(RefreshInfos), OwConvert.ToUriString(_RefreshInfos));
+                ShoppingSlot[nameof(RefreshInfos)]= OwConvert.ToUriString(_RefreshInfos);
             }
             if (null != _GoodsInfos)    //若可能发生变化
             {
-                ShoppingSlot.SetSdp(nameof(GoodsInfos), OwConvert.ToUriString(_GoodsInfos));
+                ShoppingSlot[nameof(GoodsInfos)]= OwConvert.ToUriString(_GoodsInfos);
             }
             base.Save();
         }

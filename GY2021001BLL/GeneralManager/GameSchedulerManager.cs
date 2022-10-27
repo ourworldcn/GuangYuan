@@ -26,10 +26,10 @@ namespace GuangYuan.GY001.BLL
                 ActionId = ClassId,
                 Remark = "任务计划项。",
             };
-            result.SetSdp(nameof(Properties), Uri.EscapeDataString(OwConvert.ToString(obj.Properties))); //记录参数
-            result.SetSdp(nameof(ComplatedDatetime), obj.ComplatedDatetime.ToString("s")); //记录定时的时间
-            result.SetSdp(nameof(ServiceTypeName), Uri.EscapeDataString(obj.ServiceTypeName)); //记录方法名
-            result.SetSdp(nameof(MethodName), obj.MethodName); //记录方法名
+            result[nameof(Properties)]= Uri.EscapeDataString(OwConvert.ToString(obj.Properties)); //记录参数
+            result[nameof(ComplatedDatetime)]= obj.ComplatedDatetime.ToString("s"); //记录定时的时间
+            result[nameof(ServiceTypeName)]= Uri.EscapeDataString(obj.ServiceTypeName); //记录方法名
+            result[nameof(MethodName)]= obj.MethodName; //记录方法名
             return result;
         }
 

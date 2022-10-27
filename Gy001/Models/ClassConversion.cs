@@ -205,7 +205,7 @@ namespace GY2021001WebApi.Models
             result.GenerateIdIfEmpty();
             foreach (var item in obj.Properties)
             {
-                result.SetSdp(item.Key, item.Value is JsonElement je ? (je.ValueKind switch { JsonValueKind.Number => je.GetDecimal(), _ => throw new InvalidOperationException(), }) : item.Value);
+                result[item.Key] = item.Value is JsonElement je ? (je.ValueKind switch { JsonValueKind.Number => je.GetDecimal(), _ => throw new InvalidOperationException(), }) : item.Value;
             }
             result.Children.AddRange(obj.Children.Select(c => (GameItem)c));
             return result;
@@ -255,7 +255,7 @@ namespace GY2021001WebApi.Models
             result.GameItems.AddRange(obj.GameItems.Select(c => (GameItem)c));
             foreach (var item in obj.Properties)
             {
-                result.SetSdp(item.Key, item.Value);
+                result[item.Key] = item.Value;
             }
             return result;
         }
@@ -291,7 +291,7 @@ namespace GY2021001WebApi.Models
             };
             foreach (var item in obj.Properties)
             {
-                result.SetSdp(item.Key, item.Value);
+                result[item.Key] = item.Value;
             }
             return result;
         }

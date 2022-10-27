@@ -990,7 +990,7 @@ namespace GuangYuan.GY001.BLL
                     World.EventsManager.GameCharLogined(gu.CurrentChar);
             }
             //补偿操作
-            gu.CurrentChar.SetSdp("DayCountOfLogin", (decimal)Math.Round((DateTime.UtcNow.Date - gu.CurrentChar.CreateUtc.Date).TotalDays)); //最后一次登录距离创建账号的天数
+            gu.CurrentChar["DayCountOfLogin"]= (decimal)Math.Round((DateTime.UtcNow.Date - gu.CurrentChar.CreateUtc.Date).TotalDays); //最后一次登录距离创建账号的天数
             var coll = gu.CurrentChar.GameItems.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.ShoulanSlotId);
             var coll1 = gu.CurrentChar.AllChildren.GroupBy(c => c.ExtraGuid).OrderByDescending(c => c.Count());
             return gu;
@@ -1562,7 +1562,7 @@ namespace GuangYuan.GY001.BLL
                     else if (tp.Key.ExtraGuid == ProjectConstant.HomelandSlotId && string.Compare(item.Item1, "activeStyle", true) == 0)   //若是家园对象的当前激活风格属性
                     {
                         var str = item.Item2 as string; Debug.Assert(str != null);
-                        tp.Key.SetSdp("activeStyle", str);
+                        tp.Key["activeStyle"]= str;
                         var b = GetStyleNumber(str, out var sn, out var fn); Debug.Assert(b);
                         foreach (var gi in tp.Key.GetAllChildren()) //遍历变化水晶的模板id
                         {
@@ -1592,7 +1592,7 @@ namespace GuangYuan.GY001.BLL
                         if (!OwConvert.TryToGuid(item.Item2, out var tidfor)) //若无法获取模板号
                             continue;
                         var hl = datas.GameChar.AllChildren.FirstOrDefault(c => c.ExtraGuid == ProjectConstant.HomelandSlotId);
-                        tp.Key.SetSdp(item.Item1, item.Item2);
+                        tp.Key[item.Item1]= item.Item2;
                         var aciveStyle = hl.GetSdpStringOrDefault("activeStyle", "1;1");    //激活号
                         if (GetStyleNumber(aciveStyle, out var sn, out var fn) && sn == styleNumber && fn == fanganNumber) //若设置了当前风格的模板号
                         {
@@ -1601,14 +1601,14 @@ namespace GuangYuan.GY001.BLL
                         }
                     }
                     else
-                        tp.Key.SetSdp(item.Item1, item.Item2);
+                        tp.Key[item.Item1]= item.Item2;
                 }
             }
             //修改角色自身信息
             var coll1 = datas.Modifies.Where(c => c.Item1 == datas.GameChar.Id);
             foreach (var item in coll1)
             {
-                datas.GameChar.SetSdp(item.Item2, item.Item3);
+                datas.GameChar[item.Item2]= item.Item3;
             }
             World.CharManager.NotifyChange(datas.GameChar.GameUser);
         }

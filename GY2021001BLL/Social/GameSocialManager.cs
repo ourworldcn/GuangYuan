@@ -304,7 +304,7 @@ namespace GuangYuan.GY001.BLL
                         Mail = mail,
                         MailId = mail.Id,
                     };
-                    mail.SetSdp(SocialConstant.FromSystemPNmae, decimal.One);
+                    mail[SocialConstant.FromSystemPNmae]= decimal.One;
                 }
                 else
                 {
@@ -321,7 +321,7 @@ namespace GuangYuan.GY001.BLL
                         Mail = mail,
                         MailId = mail.Id,
                     };
-                    mail.SetSdp(SocialConstant.FromSystemPNmae, decimal.Zero);
+                    mail[SocialConstant.FromSystemPNmae]= decimal.Zero;
                 }
                 //追加相关人
                 mail.Addresses.AddRange(tos);
@@ -390,8 +390,8 @@ namespace GuangYuan.GY001.BLL
                 var att = new GameMailAttachment();
                 var gi = item.Item1;
                 eveMng.Copy(gi, att.Properties);
-                att.SetSdp("ptid", item.Item2.ToString());
-                att.SetSdp("count", gi.Count ?? 1);
+                att["ptid"]= item.Item2.ToString();
+                att["count"]= gi.Count ?? 1;
                 mail.Attachmentes.Add(att);
             }
             SendMail(mail, tos, senderId);
@@ -513,8 +513,8 @@ namespace GuangYuan.GY001.BLL
             var mail = new GameMail()
             {
             };
-            mail.SetSdp("MailTypeId", ProjectConstant.PVP反击邮件_被求助者_求助.ToString());
-            mail.SetSdp("CombatId", oldCombat.Thing.IdString);
+            mail["MailTypeId"]= ProjectConstant.PVP反击邮件_被求助者_求助.ToString();
+            mail["CombatId"]= oldCombat.Thing.IdString;
             World.SocialManager.SendMail(mail, new Guid[] { datas.OtherCharId }, datas.GameChar.Id); //被攻击邮件
             //关系数据
             datas.SocialRelationship.Flag++;
@@ -731,13 +731,13 @@ namespace GuangYuan.GY001.BLL
                 return RequestFriendResult.AlreadyBlack;
             else
             {
-                if (sr.TryGetSdp(SocialConstant.ConfirmedFriendPName, out var obj) && obj is decimal deci && deci == 0) //若正在申请
+                if (sr.TryGetValue(SocialConstant.ConfirmedFriendPName, out var obj) && obj is decimal deci && deci == 0) //若正在申请
                     return RequestFriendResult.Doing;
                 else if (sr.IsFriendOrRequesting()) //已经是好友
                     return RequestFriendResult.Already;
             }
             //其他状况
-            sr.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.Zero);
+            sr[SocialConstant.ConfirmedFriendPName]= decimal.Zero;
             sr.SetFriend();    //设置好友关系
             try
             {
@@ -976,9 +976,9 @@ namespace GuangYuan.GY001.BLL
                 var sr = GetSrOrAdd(db, gcId, objId);
                 var nsr = GetNSrOrAdd(db, gcId, objId);
                 sr.SetBlack();
-                sr.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.One);
+                sr[SocialConstant.ConfirmedFriendPName]= decimal.One;
                 nsr.SetNeutrally();
-                nsr.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.One);
+                nsr[SocialConstant.ConfirmedFriendPName]= decimal.One;
                 db.SaveChanges();
             }
             catch (DbUpdateConcurrencyException)
@@ -1240,7 +1240,7 @@ namespace GuangYuan.GY001.BLL
                     //var gameItem = datas.UserContext.Set<GameItem>().Include(c => c.Children).ThenInclude(c => c.Children).AsNoTracking().Single(c => c.Id == sr.Id2);
                     var gameItem = datas.Mount;
                     GameItem sendGi = World.ItemManager.CloneMounts(gameItem, ProjectConstant.HomelandPatCard); //创建幻影
-                    sendGi.SetSdp("charDisplayName", datas.OtherChar.DisplayName);
+                    sendGi["charDisplayName"]= datas.OtherChar.DisplayName;
                     World.ItemManager.MoveItem(sendGi, sendGi.Count ?? 1, datas.GameChar.GetItemBag(), null, datas.PropertyChanges); //放入道具背包
                 }
             }
@@ -1509,7 +1509,7 @@ namespace GuangYuan.GY001.BLL
 
             public void SetOtherCharId(GameSocialRelationship sr, Guid charId)
             {
-                sr.SetSdp("charid", charId.ToString());
+                sr["charid"]= charId.ToString();
             }
 
             private Lazy<GameItem> _LazyMounts;

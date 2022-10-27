@@ -180,7 +180,7 @@ namespace GuangYuan.GY001.TemplateDb
         {
             var seq = obj.GetSequenceProperty<decimal>(name);
             if (seq is null) //若非序列属性
-                return obj.TryGetSdp(name, out var resultObj) && OwConvert.TryToDecimal(resultObj, out var result) ? result : default;
+                return obj.TryGetValue(name, out var resultObj) && OwConvert.TryToDecimal(resultObj, out var result) ? result : default;
             else //是序列属性
                 return seq[lv];
         }
@@ -228,10 +228,10 @@ namespace GuangYuan.GY001.TemplateDb
         /// <returns></returns>
         public static string GetIndexPropName(this GameThingTemplateBase template, string seqPropName)
         {
-            if (!template.TryGetSdp(seqPropName, out object obj) || !(obj is decimal[]))
+            if (!template.TryGetValue(seqPropName, out object obj) || !(obj is decimal[]))
                 return null;
             var pn = $"{GameThingTemplateBase.LevelPrefix}{seqPropName}";
-            if (template.TryGetSdp(pn,out _))
+            if (template.TryGetValue(pn,out _))
                 return pn;
             return GameThingTemplateBase.LevelPrefix;
         }

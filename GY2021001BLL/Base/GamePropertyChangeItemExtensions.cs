@@ -24,16 +24,16 @@ namespace OW.Game.PropertyChange
         public static void SetPropertyAndMarkChanged(this GameThingBase thing, string propertyName, object value, [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             if (changes is null)
-                thing.SetSdp(propertyName, value);
+                thing[propertyName]= value;
             else
             {
                 var data = GamePropertyChangeItemPool<object>.Shared.Get();
-                if (thing.TryGetSdp(propertyName, out var oldValue))  //若存在旧值
+                if (thing.TryGetValue(propertyName, out var oldValue))  //若存在旧值
                 {
                     data.HasOldValue = true;
                     data.OldValue = oldValue;
                 }
-                thing.SetSdp(propertyName, value);
+                thing[propertyName]= value;
                 data.HasNewValue = true;
                 data.NewValue = value;
                 data.Object = thing;

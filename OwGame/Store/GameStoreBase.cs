@@ -4,6 +4,7 @@ using Microsoft.Extensions.ObjectPool;
 using OW.Game.PropertyChange;
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -142,7 +143,7 @@ namespace OW.Game.Store
     /// 简单动态扩展属性（Simple dynamic extension properties，Sdep）接口。
     /// </summary>
     /// <typeparam name="T">动态属性值的类型。</typeparam>
-    public interface ISimpleDynamicProperty<T>
+    public interface ISimpleDynamicProperty<T> : IDictionary<string, T>
     {
         /// <summary>
         /// 对属性字符串的解释。键是属性名，字符串类型。值有三种类型，decimal,string,decimal[]。
@@ -157,34 +158,36 @@ namespace OW.Game.Store
         }
 
         /// <summary>
-        /// 追加或设置动态属性。
-        /// 虽然一般动态属性存在于<see cref="Properties"/>中，但派生类可能需要存储在其它位置，可重载此成员以控制读写位置。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        public abstract void SetSdp(string name, T value);
-
-        /// <summary>
-        /// 获取动态属性。
-        /// 虽然一般动态属性存在于<see cref="Properties"/>中，但派生类可能需要存储在其它位置，可重载此成员以控制读写位置。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        /// <returns>true找到属性并返回，false没有找到指定名称的属性。</returns>
-        public abstract bool TryGetSdp(string name, out T value);
-
-        /// <summary>
-        /// 移除动态属性。
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns>true成功移除，false指定属性不存在或是不可移除的属性。</returns>
-        public abstract bool RemoveSdp(string name);
-
-        /// <summary>
         /// 获取所有动态属性。
         /// </summary>
         /// <returns>注意在遍历返回集合时一般不可以更改集合，除非实现类有特别说明。</returns>
         public IEnumerable<(string, T)> GetAllSdp();
+
+        #region 显式实现成员
+
+        void ICollection<KeyValuePair<string, T>>.Add(KeyValuePair<string, T> item)
+        {
+            Add(item.Key, item.Value);
+        }
+
+        bool ICollection<KeyValuePair<string, T>>.Contains(KeyValuePair<string, T> item) => ContainsKey(item.Key);
+
+        void ICollection<KeyValuePair<string, T>>.CopyTo(KeyValuePair<string, T>[] array, int arrayIndex)
+        {
+            int index = arrayIndex;
+            foreach (var item in this)
+            {
+                array[index++] = new KeyValuePair<string, T>(item.Key, item.Value);
+            }
+        }
+
+        bool ICollection<KeyValuePair<string, T>>.Remove(KeyValuePair<string, T> item) => Remove(item.Key);
+
+        IEnumerator IEnumerable.GetEnumerator() => Properties.GetEnumerator();
+
+        [NotMapped, JsonIgnore]
+        int ICollection<KeyValuePair<string, T>>.Count => Properties.Count;
+        #endregion 显式实现成员
     }
 
     /// <summary>
@@ -233,15 +236,17 @@ namespace OW.Game.Store
             }
         }
 
-        public virtual void SetSdp(string name, object value)
+        [NotMapped, JsonIgnore]
+        public virtual object this[string key]
         {
-            Properties[name] = value;
+            get => Properties[key];
+            set => Properties[key] = value;
         }
 
-        public virtual bool TryGetSdp(string name, out object value)
-        {
-            return Properties.TryGetValue(name, out value);
-        }
+        public virtual bool TryGetValue(string name, out object value) => Properties.TryGetValue(name, out value);
+
+        public bool ContainsKey(string key) => TryGetValue(key, out _);
+
 
         /// <summary>
         /// <inheritdoc/>
@@ -257,12 +262,37 @@ namespace OW.Game.Store
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public virtual bool RemoveSdp(string name)
+        public virtual bool Remove(string name)
         {
             return Properties.Remove(name);
         }
 
+        [NotMapped, JsonIgnore]
+        public virtual ICollection<string> Keys => Properties.Keys;
+
+        [NotMapped, JsonIgnore]
+        public virtual ICollection<object> Values => Properties.Values;
+
+        public virtual void Add(string key, object value) => Properties.Add(key, value);
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        public virtual void Clear()
+        {
+            Properties.Clear();
+        }
+
+        public virtual IEnumerator<KeyValuePair<string, object>> GetEnumerator() => Properties.GetEnumerator();
+
+        [NotMapped, JsonIgnore]
+        public virtual bool IsReadOnly => false;
+
+        [NotMapped, JsonIgnore]
+        int ICollection<KeyValuePair<string, object>>.Count => Properties.Count;
+
         #endregion ISimpleDynamicExtensionProperties接口相关
+
         private string _PropertiesString;
 
         /// <summary>
@@ -307,8 +337,7 @@ namespace OW.Game.Store
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        [NotMapped]
-        [JsonIgnore]
+        [NotMapped, JsonIgnore]
         public bool SuppressSave { get; set; }
 
         #region IDisposable接口及相关
@@ -317,8 +346,7 @@ namespace OW.Game.Store
         /// <summary>
         /// 对象是否已经被处置。
         /// </summary>
-        [NotMapped]
-        [JsonIgnore]
+        [NotMapped, JsonIgnore]
         public bool IsDisposed
         {
             get => _IsDisposed;
@@ -386,7 +414,7 @@ namespace OW.Game.Store
             [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             bool result;
-            var isExists = obj.TryGetSdp(name, out var oldValue);  //存在旧值
+            var isExists = obj.TryGetValue(name, out var oldValue);  //存在旧值
             if (!isExists || !Equals(oldValue, newValue)) //若新值和旧值不相等
             {
                 if (null != changes)    //若需要设置变化数据
@@ -400,7 +428,7 @@ namespace OW.Game.Store
                     item.HasNewValue = true;
                     changes.Add(item);
                 }
-                obj.SetSdp(name, newValue);
+                obj[name] = newValue;
                 result = true;
             }
             else
@@ -418,7 +446,7 @@ namespace OW.Game.Store
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetSdpValueOrDefault<T>(this ISimpleDynamicProperty<T> sdp, string name, T defaultValue = default) =>
-            sdp.TryGetSdp(name, out var result) ? result : defaultValue;
+            sdp.TryGetValue(name, out var result) ? result : defaultValue;
 
         /// <summary>
         /// 
@@ -430,7 +458,7 @@ namespace OW.Game.Store
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static bool TryGetSdpDecimal(this ISimpleDynamicProperty<object> sdp, string name, out decimal result)
         {
-            if (sdp.TryGetSdp(name, out var obj) && OwConvert.TryToDecimal(obj, out result))
+            if (sdp.TryGetValue(name, out var obj) && OwConvert.TryToDecimal(obj, out result))
                 return true;
             else
             {
@@ -453,7 +481,7 @@ namespace OW.Game.Store
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static bool TryGetSdpGuid(this ISimpleDynamicProperty<object> sdp, string name, out Guid result)
         {
-            if (!sdp.TryGetSdp(name, out var obj))
+            if (!sdp.TryGetValue(name, out var obj))
             {
                 result = default;
                 return false;
@@ -464,14 +492,14 @@ namespace OW.Game.Store
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Guid GetSdpGuidOrDefault(this ISimpleDynamicProperty<object> sdp, string name, Guid defaultVal = default)
         {
-            return sdp.TryGetSdp(name, out var obj) && OwConvert.TryToGuid(obj, out var result) ? result : defaultVal;
+            return sdp.TryGetValue(name, out var obj) && OwConvert.TryToGuid(obj, out var result) ? result : defaultVal;
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static bool TryGetSdpDateTime(this ISimpleDynamicProperty<object> sdp, string name, out DateTime result)
         {
-            if (sdp.TryGetSdp(name, out var obj) && OwConvert.TryGetDateTime(obj, out result))
+            if (sdp.TryGetValue(name, out var obj) && OwConvert.TryGetDateTime(obj, out result))
                 return true;
             else
             {
@@ -494,7 +522,7 @@ namespace OW.Game.Store
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static string GetSdpStringOrDefault(this ISimpleDynamicProperty<object> sdp, string name, string defaultVal = default)
         {
-            if (!sdp.TryGetSdp(name, out var obj))
+            if (!sdp.TryGetValue(name, out var obj))
             {
                 return defaultVal;
             }
@@ -515,7 +543,7 @@ namespace OW.Game.Store
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool GetSdpBooleanOrDefaut(this ISimpleDynamicProperty<object> sdp, string key, bool defaultVal = default)
         {
-            if (!sdp.TryGetSdp(key, out var obj))
+            if (!sdp.TryGetValue(key, out var obj))
                 return defaultVal;
             return OwConvert.TryToBoolean(obj, out var result) ? result : defaultVal;
         }
@@ -530,7 +558,7 @@ namespace OW.Game.Store
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool RemoveSdp(this ISimpleDynamicProperty<object> sdp, string key, out object result)
         {
-            return !sdp.TryGetSdp(key, out result) ? false : sdp.RemoveSdp(key);
+            return !sdp.TryGetValue(key, out result) ? false : sdp.Remove(key);
         }
 
         /// <summary>
@@ -561,7 +589,7 @@ namespace OW.Game.Store
         {
             foreach (var item in src.GetAllSdp())
             {
-                dest.SetSdp(item.Item1, item.Item2);
+                dest[item.Item1] = item.Item2;
             }
         }
     }

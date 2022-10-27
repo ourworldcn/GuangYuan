@@ -200,9 +200,9 @@ namespace GuangYuan.GY001.UserDb.Social
             }
             using var dwGuild = DisposeHelper.Create(Unlock, guild);
             guild.DisplayName = datas.DisplayName;
-            guild.SetSdp("AutoAccept", datas.AutoAccept);
-            guild.SetSdp("IconIndex", (decimal)datas.IconIndex);
-            guild.SetSdp("Bulletin", datas.Bulletin);
+            guild["AutoAccept"]= datas.AutoAccept;
+            guild["IconIndex"]= (decimal)datas.IconIndex;
+            guild["Bulletin"]= datas.Bulletin;
             guild.GetDbContext().SaveChanges();
         }
 
@@ -385,8 +385,8 @@ namespace GuangYuan.GY001.UserDb.Social
                 pg["CreatorId"] = datas.GameChar.Id;
                 pg[nameof(GameGuild.DisplayName)] = datas.DisplayName;
                 World.EventsManager.GameGuildCreated(guild, pg);
-                guild.SetSdp("AutoAccept", datas.AutoAccept);
-                guild.SetSdp("IconIndex", (decimal)datas.IconIndex);
+                guild["AutoAccept"]= datas.AutoAccept;
+                guild["IconIndex"]= (decimal)datas.IconIndex;
             }
             lock (guild)
             {

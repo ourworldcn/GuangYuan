@@ -195,10 +195,10 @@ namespace GuangYuan.GY001.BLL
         /// <returns>null如果没有找到指定的<paramref name="seqPropName"/>名称的属性或，该属性不是序列属性。</returns>
         public string GetIndexPropName(GameItemTemplate template, string seqPropName)
         {
-            if (!template.TryGetSdp(seqPropName, out object obj) || !(obj is decimal[]))
+            if (!template.TryGetValue(seqPropName, out object obj) || !(obj is decimal[]))
                 return null;
             var pn = $"{World.PropertyManager.LevelPropertyName}{seqPropName}";
-            if (template.TryGetSdp(pn, out _))
+            if (template.TryGetValue(pn, out _))
                 return pn;
             return World.PropertyManager.LevelPropertyName;
         }

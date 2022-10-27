@@ -228,7 +228,7 @@ namespace GuangYuan.GY001.BLL
                     {
                         var gitm = World.ItemTemplateManager;
                         var coll = from tmp in gitm.Id2Template.Values
-                                   where tmp.TryGetSdp("typ", out _) && tmp.TryGetSdp("mis", out _) && tmp.TryGetSdp("sec", out _)
+                                   where tmp.TryGetValue("typ", out _) && tmp.TryGetValue("mis", out _) && tmp.TryGetValue("sec", out _)
                                    select tmp;
                         _Dungeons = coll.ToList();
                     }
@@ -429,9 +429,9 @@ namespace GuangYuan.GY001.BLL
                         var mounts = new GameItem();
                         World.EventsManager.GameItemCreated(mounts, c.ExtraGuid, shouyiSlot, null,
                             new Dictionary<string, object>() { { "htid", gim.GetHeadTemplate(c).IdString }, { "btid", gim.GetBodyTemplate(c).IdString } });
-                        mounts.SetSdp("neatk", c.GetSdpDecimalOrDefault("neatk", 0));
-                        mounts.SetSdp("nemhp", c.GetSdpDecimalOrDefault("nemhp", 0));
-                        mounts.SetSdp("neqlt", c.GetSdpDecimalOrDefault("neqlt", 0));
+                        mounts["neatk"]= c.GetSdpDecimalOrDefault("neatk", 0);
+                        mounts["nemhp"]= c.GetSdpDecimalOrDefault("nemhp" ,0);
+                        mounts["neqlt"] = c.GetSdpDecimalOrDefault("neqlt", 0);
                         return mounts;
                     }
                     else
@@ -489,7 +489,7 @@ namespace GuangYuan.GY001.BLL
                         if (null != mission)   //若找到成就对象
                         {
                             var oldVal = mission.GetSdpDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
-                            mission.SetSdp(ProjectMissionConstant.指标增量属性名, oldVal + 1m); //设置该成就的指标值的增量，原则上都是正值
+                            mission[ProjectMissionConstant.指标增量属性名]= oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
                             World.MissionManager.ScanAsync(data.GameChar);
                         }
                     }
@@ -499,7 +499,7 @@ namespace GuangYuan.GY001.BLL
                         if (null != mission)   //若找到成就对象
                         {
                             var oldVal = mission.GetSdpDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
-                            mission.SetSdp(ProjectMissionConstant.指标增量属性名, oldVal + 1m); //设置该成就的指标值的增量，原则上都是正值
+                            mission[ProjectMissionConstant.指标增量属性名]= oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
                             World.MissionManager.ScanAsync(data.GameChar);
                         }
                     }
@@ -906,7 +906,7 @@ namespace GuangYuan.GY001.BLL
 
                 var woodGi = new GameItem();    //木材
                 World.EventsManager.GameItemCreated(woodGi, ProjectConstant.MucaiId);
-                woodGi.Count = Math.Truncate((10 + wood * 0.2m + shulin * 0.5m) * xWood);
+                woodGi.Count = Math.Truncate((50 + wood * 0.2m + shulin * 0.5m) * xWood);
 
                 result.Add(goldGi);
                 result.Add(woodGi);
@@ -1014,15 +1014,15 @@ namespace GuangYuan.GY001.BLL
                 };
                 if (combat.IsAttckerWin ?? false)   //若攻击胜利
                 {
-                    mail.SetSdp("MailTypeId", ProjectConstant.PVP反击邮件.ToString());
-                    mail.SetSdp("CombatId", combat.Thing.IdString);
+                    mail["MailTypeId"]= ProjectConstant.PVP反击邮件.ToString();
+                    mail["CombatId"]= combat.Thing.IdString;
                 }
                 else //若攻击失败
                 {
-                    mail.SetSdp("MailTypeId", ProjectConstant.PVP自己_防御_胜利.ToString());
-                    mail.SetSdp("CombatId", combat.Thing.IdString);
+                    mail["MailTypeId"]= ProjectConstant.PVP自己_防御_胜利.ToString();
+                    mail["CombatId"]= combat.Thing.IdString;
                 }
-                if (mail.TryGetSdp("MailTypeId", out _))    //若有标志
+                if (mail.TryGetValue("MailTypeId", out _))    //若有标志
                 {
                     World.SocialManager.SendMail(mail, new Guid[] { otherChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
                     datas.MailId = mail.Id;
@@ -1044,7 +1044,7 @@ namespace GuangYuan.GY001.BLL
                 if (null != mission)   //若找到成就对象
                 {
                     var oldVal = mission.GetSdpDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
-                    mission.SetSdp(ProjectMissionConstant.指标增量属性名, oldVal + 1m); //设置该成就的指标值的增量，原则上都是正值
+                    mission[ProjectMissionConstant.指标增量属性名]= oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
                     World.MissionManager.ScanAsync(datas.GameChar);
                 }
             }
@@ -1054,7 +1054,7 @@ namespace GuangYuan.GY001.BLL
                 if (null != mission)   //若找到成就对象
                 {
                     var oldVal = mission.GetSdpDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
-                    mission.SetSdp(ProjectMissionConstant.指标增量属性名, oldVal + 1m); //设置该成就的指标值的增量，原则上都是正值
+                    mission[ProjectMissionConstant.指标增量属性名]= oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
                     World.MissionManager.ScanAsync(otherChar);
                 }
             }
@@ -1123,17 +1123,17 @@ namespace GuangYuan.GY001.BLL
             {
                 oldCombat.IsCompleted = true; //反击得胜后不可再要求协助
                 //发送邮件
-                mail.SetSdp("MailTypeId", ProjectConstant.PVP反击邮件_自己_胜利.ToString());
-                mail.SetSdp("OldCombatId", oldCombat.Thing.IdString);
-                mail.SetSdp("CombatId", combat.Thing.IdString);
+                mail["MailTypeId"]= ProjectConstant.PVP反击邮件_自己_胜利.ToString();
+                mail["OldCombatId"]= oldCombat.Thing.IdString;
+                mail["CombatId"]= combat.Thing.IdString;
             }
             else //反击失败
             {
                 oldCombat.IsCompleted = oldCombat.Assistanced; //反击得胜后不可再要求协助
                 //发送邮件
-                mail.SetSdp("MailTypeId", oldCombat.Assistanced ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_自己_失败.ToString());
-                mail.SetSdp("OldCombatId", oldCombat.Thing.IdString);
-                mail.SetSdp("CombatId", combat.Thing.IdString);
+                mail["MailTypeId"]= oldCombat.Assistanced ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_自己_失败.ToString();
+                mail["OldCombatId"]= oldCombat.Thing.IdString;
+                mail["CombatId"]= combat.Thing.IdString;
             }
             World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
 
@@ -1211,9 +1211,9 @@ namespace GuangYuan.GY001.BLL
                 bootyMail.Add((woodGi, ProjectConstant.CurrencyBagTId));
 
                 var mail2 = new GameMail();
-                mail2.SetSdp("MailTypeId", ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString());
-                mail2.SetSdp("OldCombatId", oldCombat.Thing.IdString);
-                mail2.SetSdp("CombatId", combat.Thing.IdString);
+                mail2["MailTypeId"]= ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
+                mail2["OldCombatId"]= oldCombat.Thing.IdString;
+                mail2["CombatId"]= combat.Thing.IdString;
                 if (bootyMail.Count > 0)
                     World.SocialManager.SendMail(mail2, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId, bootyMail); //被攻击邮件
                 else
@@ -1258,7 +1258,7 @@ namespace GuangYuan.GY001.BLL
                 if (null != mission)   //若找到成就对象
                 {
                     var oldVal = mission.GetSdpDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
-                    mission.SetSdp(ProjectMissionConstant.指标增量属性名, oldVal + 1m); //设置该成就的指标值的增量，原则上都是正值
+                    mission[ProjectMissionConstant.指标增量属性名]= oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
                     World.MissionManager.ScanAsync(datas.GameChar);
                 }
             }
@@ -1268,9 +1268,9 @@ namespace GuangYuan.GY001.BLL
             };
             if (datas.MainRoomRhp <= 0) //若协助成功
             {
-                //mail.SetSdp("MailTypeId", ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString());
-                //mail.SetSdp("OldCombatId", oldCombat.Thing.IdString);
-                //mail.SetSdp("CombatId", combat.Thing.IdString);
+                //mail["MailTypeId"]= ProjectConstant.PVP反击邮件_求助_胜利_求助者.ToString();
+                //mail["OldCombatId"]= oldCombat.Thing.IdString;
+                //mail["CombatId"]= combat.Thing.IdString;
                 //if (bootyMail.Count > 0)
                 //    World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId, bootyMail); //被攻击邮件
                 //else
@@ -1278,9 +1278,9 @@ namespace GuangYuan.GY001.BLL
             }
             else
             {
-                mail.SetSdp("MailTypeId", oldCombat.Retaliationed ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_求助_失败_求助者.ToString());
-                mail.SetSdp("OldCombatId", oldCombat.Thing.IdString);
-                mail.SetSdp("CombatId", combat.Thing.IdString);
+                mail["MailTypeId"]= oldCombat.Retaliationed ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_求助_失败_求助者.ToString();
+                mail["OldCombatId"]= oldCombat.Thing.IdString;
+                mail["CombatId"]= combat.Thing.IdString;
                 World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId); //被攻击邮件
             }
 
@@ -1322,9 +1322,9 @@ namespace GuangYuan.GY001.BLL
                 oldCombat.Assistanced = true;
                 oldCombat.IsCompleted = oldCombat.Retaliationed;
                 var mail = new GameMail();
-                mail.SetSdp("MailTypeId", oldCombat.IsCompleted ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_求助_失败_求助者.ToString());
-                mail.SetSdp("OldCombatId", oldCombat.Thing.IdString);
-                //mail.SetSdp("CombatId", oldCombat.Thing.IdString);
+                mail["MailTypeId"]= oldCombat.IsCompleted ? ProjectConstant.PVP反击_自己_两项全失败.ToString() : ProjectConstant.PVP反击邮件_求助_失败_求助者.ToString();
+                mail["OldCombatId"]= oldCombat.Thing.IdString;
+                //mail["CombatId"]= oldCombat.Thing.IdString;
                 World.SocialManager.SendMail(mail, new Guid[] { oldCombat.Defensers.First().CharId }, SocialConstant.FromSystemId);
                 datas.FillErrorFromWorld();
             }
@@ -1604,17 +1604,17 @@ namespace GuangYuan.GY001.BLL
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddCombatProperties(GameItemBase thing, IReadOnlyDictionary<string, float> dic)
         {
-            thing.SetSdp("atk", (float)thing.GetSdpDecimalOrDefault("atk") + dic.GetValueOrDefault("atk"));
-            thing.SetSdp("mhp", (float)thing.GetDecimalWithFcpOrDefault("mhp") + dic.GetValueOrDefault("mhp"));
-            thing.SetSdp("qlt", (float)thing.GetDecimalWithFcpOrDefault("qlt") + dic.GetValueOrDefault("qlt"));
+            thing["atk"]= (float)thing.GetSdpDecimalOrDefault("atk") + dic.GetValueOrDefault("atk");
+            thing["mhp"]= (float)thing.GetDecimalWithFcpOrDefault("mhp") + dic.GetValueOrDefault("mhp");
+            thing["qlt"]= (float)thing.GetDecimalWithFcpOrDefault("qlt") + dic.GetValueOrDefault("qlt");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void MultCombatProperties(GameItemBase thing, IReadOnlyDictionary<string, float> dic)
         {
-            thing.SetSdp("atk", (float)thing.GetDecimalWithFcpOrDefault("atk") * dic.GetValueOrDefault("atk"));
-            thing.SetSdp("mhp", (float)thing.GetDecimalWithFcpOrDefault("mhp") * dic.GetValueOrDefault("mhp"));
-            thing.SetSdp("qlt", (float)thing.GetDecimalWithFcpOrDefault("qlt") * dic.GetValueOrDefault("qlt"));
+            thing["atk"]= (float)thing.GetDecimalWithFcpOrDefault("atk") * dic.GetValueOrDefault("atk");
+            thing["mhp"]= (float)thing.GetDecimalWithFcpOrDefault("mhp") * dic.GetValueOrDefault("mhp");
+            thing["qlt"]= (float)thing.GetDecimalWithFcpOrDefault("qlt") * dic.GetValueOrDefault("qlt");
         }
 
         /// <summary>

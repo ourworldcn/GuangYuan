@@ -289,7 +289,7 @@ namespace OW.Game.Item
             }
             var keys = template.Properties.Where(c => !(c.Value is decimal[])).Select(c => c.Key).Except(gameItem.Properties.Keys).ToArray(); //需要增加的简单属性的名字
             foreach (var item in keys)  //添加简单属性
-                gameItem.SetSdp(item, template.GetSdpValueOrDefault(item));
+                gameItem[item]= template.GetSdpValueOrDefault(item);
             return true;
         }
 
@@ -307,14 +307,14 @@ namespace OW.Game.Item
             var template = GetTemplate(gameItem);
             if (null == template)   //若无法找到模板
                 throw new ArgumentException($"无法找到指定模板(ExtraGuid={gameItem.ExtraGuid}),对象Id={gameItem.Id}", nameof(gameItem));
-            if (!template.TryGetSdp(seqPName, out object objSeq) || !(objSeq is decimal[] seq))
+            if (!template.TryGetValue(seqPName, out object objSeq) || !(objSeq is decimal[] seq))
                 throw new ArgumentOutOfRangeException($"模板{template.Id}({template.DisplayName})中没有指定 {seqPName} 属性，或其不是序列属性");
             var indexPN = ItemTemplateManager.GetIndexPropName(template, seqPName); //索引属性的名字
 
-            if (!gameItem.TryGetSdp(indexPN, out object objLv))  //若没有指定当前等级
+            if (!gameItem.TryGetValue(indexPN, out object objLv))  //若没有指定当前等级
             {
                 //当前视同需要初始化属性
-                gameItem.SetSdp(seqPName, seq[newLevel]);
+                gameItem[seqPName]= seq[newLevel];
             }
             else
             {
@@ -328,7 +328,7 @@ namespace OW.Game.Item
 
                 var val = gameItem.GetSdpDecimalOrDefault(seqPName, oov);  //物品的属性值
                 var old = newLevel < seq.Length ? seq[newLevel] : oov;  //可能缺失最后一级数据
-                gameItem.SetSdp(seqPName, old + val - oov); //TO DO缺少对快速变化属性的同步
+                gameItem[seqPName]= old + val - oov; //TO DO缺少对快速变化属性的同步
             }
             return true;
         }
@@ -522,7 +522,7 @@ namespace OW.Game.Item
                 var key = $"{ProjectConstant.ZhenrongPropertyName}{item.Item2}";
                 if (item.Item3 != -1)  //若设置阵容
                 {
-                    //mounts.SetSdp(key, item.Item3);
+                    //mounts[key]= item.Item3;
                     pchange.MarkAndSet(mounts, key, item.Item3);
                     if (item.Item2 == 10)  //若是家园展示
                     {
