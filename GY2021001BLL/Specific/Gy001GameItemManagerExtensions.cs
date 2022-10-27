@@ -89,7 +89,7 @@ namespace GuangYuan.GY001.BLL
             dest.TemplateId = source.ExtraGuid;
             dest.Count = source.Count;
             foreach (var item in source.Properties)
-                dest[item.Key]= item.Value;
+                dest.SetSdp(item.Key, item.Value);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace GuangYuan.GY001.BLL
             dest.ExtraGuid = source.TemplateId;
             dest.Count = source.Count;
             foreach (var item in source.Properties)
-                dest[item.Key]= item.Value;
+                dest.SetSdp(item.Key, item.Value);
         }
 
         #region 获取特定对象的快捷方式
@@ -219,7 +219,7 @@ namespace GuangYuan.GY001.BLL
         {
             var result = manager.CreateMounts(manager.GetHead(gameItem).ExtraGuid, manager.GetBody(gameItem).ExtraGuid, containerTId);
             foreach (var item in gameItem.Properties)   //复制容器的属性
-                result[item.Key]= item.Value;
+                result.SetSdp(item.Key, item.Value);
             return result;
         }
 
@@ -238,11 +238,11 @@ namespace GuangYuan.GY001.BLL
             //设置头属性
             var head = manager.GetHead(gameItem);
             foreach (var item in head.Properties)
-                destHead[item.Key]= item.Value;
+                destHead.SetSdp(item.Key, item.Value);
             //设置身体属性
             var body = manager.GetBody(gameItem);
             foreach (var item in body.Properties)
-                destBody[item.Key]= item.Value;
+                destBody.SetSdp(item.Key, item.Value);
             return result;
         }
 

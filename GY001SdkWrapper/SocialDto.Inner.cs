@@ -101,7 +101,7 @@ namespace Game.Social
         {
             if (!obj.IsFriendOrRequesting())
                 return false;
-            if (obj.TryGetValue(SocialConstant.ConfirmedFriendPName, out var confObj) && confObj is decimal deci && deci == 0)
+            if (obj.TryGetSdp(SocialConstant.ConfirmedFriendPName, out var confObj) && confObj is decimal deci && deci == 0)
                 return true;
             return false;
         }
@@ -127,7 +127,7 @@ namespace Game.Social
         static public void SetNeutrally(this GameSocialRelationship obj)
         {
             obj.Flag = SocialConstant.MiddleFriendliness;
-            obj[SocialConstant.ConfirmedFriendPName]= decimal.One;
+            obj.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.One);
         }
 
 
@@ -141,13 +141,13 @@ namespace Game.Social
         /// 设置正在申请标志。
         /// </summary>
         /// <param name="obj"></param>
-        static public void SetRequesting(this GameSocialRelationship obj) => obj[SocialConstant.ConfirmedFriendPName]= decimal.Zero;
+        static public void SetRequesting(this GameSocialRelationship obj) => obj.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.Zero);
 
         /// <summary>
         /// 设置确定标志。
         /// </summary>
         /// <param name="obj"></param>
-        static public void SetConfirmed(this GameSocialRelationship obj) => obj[SocialConstant.ConfirmedFriendPName]= decimal.One;
+        static public void SetConfirmed(this GameSocialRelationship obj) => obj.SetSdp(SocialConstant.ConfirmedFriendPName, decimal.One);
     }
 
 }

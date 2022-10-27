@@ -332,7 +332,7 @@ namespace Gy001.Controllers
             }
             var result = new GetSocialRelationshipsReturnDto();
             result.SocialRelationships.AddRange(coll.Select(c => (GameSocialRelationshipDto)c));
-            var ids = coll.Where(c => c.TryGetValue("charid", out _)).Select(c => c.GetSdpGuidOrDefault("charid"));
+            var ids = coll.Where(c => c.TryGetSdp("charid", out _)).Select(c => c.GetSdpGuidOrDefault("charid"));
             var mapper = _World.GetMapper();
             if (ids.Any())
             {

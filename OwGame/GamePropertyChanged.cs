@@ -32,12 +32,12 @@ namespace OW.Game.PropertyChange
             Debug.Assert(name != "Children");
             if (collection is null)
             {
-                obj[name]= newValue;
+                obj.SetSdp(name, newValue);
             }
             else
             {
                 var arg = Create(obj, name, newValue, tag);
-                obj[name]= newValue;
+                obj.SetSdp(name, newValue);
                 collection.Add(arg);
             }
         }
@@ -55,7 +55,7 @@ namespace OW.Game.PropertyChange
         {
             var result = GamePropertyChangeItemPool<T>.Shared.Get();
             result.Object = sdep; result.PropertyName = name; result.Tag = tag;
-            if (sdep.TryGetValue(name, out var oldValue) && oldValue is T old)
+            if (sdep.TryGetSdp(name, out var oldValue) && oldValue is T old)
             {
                 result.OldValue = old;
                 result.HasOldValue = true;
@@ -276,7 +276,7 @@ namespace OW.Game.PropertyChange
             Debug.Assert(name != "Children");
             var arg = GamePropertyChangeItemPool<T>.Shared.Get();
             arg.Object = obj; arg.PropertyName = name; arg.Tag = tag;
-            if (obj.TryGetValue(name, out var oldValue) && oldValue is T old)
+            if (obj.TryGetSdp(name, out var oldValue) && oldValue is T old)
             {
                 arg.OldValue = old;
                 arg.HasOldValue = true;
@@ -287,16 +287,16 @@ namespace OW.Game.PropertyChange
                     if (obj is IDbQuickFind dbFinder && OwConvert.TryToDecimal(newValue, out var dec))
                         dbFinder.ExtraDecimal = dec;
                     else
-                        obj[name]= newValue;
+                        obj.SetSdp(name, newValue);
                     break;
                 case nameof(IDbQuickFind.ExtraString):
                     if (obj is IDbQuickFind dbFinder1)
                         dbFinder1.ExtraString = newValue.ToString();
                     else
-                        obj[name]= newValue;
+                        obj.SetSdp(name, newValue);
                     break;
                 default:
-                    obj[name]= newValue;
+                    obj.SetSdp(name, newValue);
                     break;
             }
             arg.NewValue = newValue;

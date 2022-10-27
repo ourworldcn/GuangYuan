@@ -201,12 +201,12 @@ namespace GuangYuan.GY001.UserDb
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static bool TryGetProperty(this GameThingBase thing, string propertyName, out object result)
         {
-            if (thing.TryGetValue(propertyName, out result))
+            if (thing.TryGetSdp(propertyName, out result))
                 return true;
             var tt = thing.GetTemplate();
             if (tt is null)
                 return false;
-            return tt.TryGetValue(propertyName, out result);
+            return tt.TryGetSdp(propertyName, out result);
         }
 
         /// <summary>
@@ -311,118 +311,28 @@ namespace GuangYuan.GY001.UserDb
 
         #region ISimpleDynamicExtensionProperty相关
 
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        public override void Add(string key, object value)
+        public override void SetSdp(string name, object value)
         {
-            switch (key)
+            switch (name)
             {
                 case "tid":
                 case "TemplateId":
                 case nameof(ExtraGuid):
-                case nameof(ExtraString):
-                case nameof(ExtraDecimal):
-                    throw new ArgumentException($"已经存在键值{key}", nameof(key));
-                default:
-                    base.Add(key, value);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public override bool Remove(string key)
-        {
-            bool result;
-            switch (key)
-            {
-                case "tid":
-                case "TemplateId":
-                case nameof(ExtraGuid):
-                    ExtraGuid = default;
-                    result = true;
+                    ExtraGuid = value is Guid g ? g : OwConvert.ToGuid(value as string);
                     break;
                 case nameof(ExtraString):
-                    ExtraString = default;
-                    result = true;
+                    ExtraString = Convert.ToString(value);
                     break;
                 case nameof(ExtraDecimal):
-                    ExtraDecimal = default;
-                    result = true;
+                    ExtraDecimal = Convert.ToDecimal(value);
                     break;
                 default:
-                    result= base.Remove(key);
+                    base.SetSdp(name, value);
                     break;
             }
-            return result;
         }
 
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        [NotMapped, JsonIgnore]
-        public override object this[string key]
-        {
-            get
-            {
-                object result;
-                switch (key)
-                {
-                    case "tid":
-                    case "TemplateId":
-                    case nameof(ExtraGuid):
-                        result = ExtraGuid;
-                        break;
-                    case nameof(ExtraString):
-                        result = ExtraString;
-                        break;
-                    case nameof(ExtraDecimal):
-                        result = ExtraDecimal;
-                        break;
-                    default:
-                        result = base[key];
-                        break;
-                }
-                return result;
-            }
-
-            set
-            {
-                switch (key)
-                {
-                    case "tid":
-                    case "TemplateId":
-                    case nameof(ExtraGuid):
-                        ExtraGuid = value is Guid g ? g : OwConvert.ToGuid(value as string);
-                        break;
-                    case nameof(ExtraString):
-                        ExtraString = Convert.ToString(value);
-                        break;
-                    case nameof(ExtraDecimal):
-                        ExtraDecimal = Convert.ToDecimal(value);
-                        break;
-                    default:
-                        base[key] = value;
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// <inheritdoc/>
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public override bool TryGetValue(string name, out object value)
+        public override bool TryGetSdp(string name, out object value)
         {
             switch (name)
             {
@@ -438,7 +348,7 @@ namespace GuangYuan.GY001.UserDb
                     value = ExtraDecimal;
                     return true;
                 default:
-                    return base.TryGetValue(name, out value);
+                    return base.TryGetSdp(name, out value);
             }
         }
 

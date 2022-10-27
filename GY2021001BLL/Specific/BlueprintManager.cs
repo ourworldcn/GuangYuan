@@ -444,7 +444,7 @@ namespace GuangYuan.GY001.BLL
 
             //gim.AddItem(dest2, parent2, null, datas.ChangeItems);
             gim.MoveItem(dest2, dest2.Count.Value, parent2, datas.Remainder, datas.PropertyChanges);
-            gc[Day30CountKeyName]= totalDay + 1; //设置已经获取的天计数
+            gc.SetSdp(Day30CountKeyName, totalDay + 1); //设置已经获取的天计数
         }
 
         /// <summary>
@@ -520,9 +520,9 @@ namespace GuangYuan.GY001.BLL
                 }
                 else //若没有此种坐骑
                 {
-                    gi["neatk"]= 0m;
-                    gi["nemhp"]= 0m;
-                    gi["neqlt"]= 0m;
+                    gi.SetSdp("neatk", 0m);
+                    gi.SetSdp("nemhp", 0m);
+                    gi.SetSdp("neqlt", 0m);
                     World.ItemManager.MoveItem(gi, gi.Count.Value, datas.GameChar.GetZuojiBag(), datas.Remainder, datas.PropertyChanges);
                 }
                 AutoClearPool<Dictionary<string, object>>.Shared.Return(propBag);
@@ -763,7 +763,7 @@ namespace GuangYuan.GY001.BLL
                         sd.Properties["itemId"] = gi.Id;
                         World.SchedulerManager.Scheduler(sd);
 
-                        gi["UpgradedSchedulerId"]= sd.Id.ToString();
+                        gi.SetSdp("UpgradedSchedulerId", sd.Id.ToString());
                     }
                 }
                 datas.PropertyChanges.CopyTo(datas.ChangeItems);
@@ -1106,7 +1106,7 @@ namespace GuangYuan.GY001.BLL
             else //今日无数据
             {
                 World.EventsManager.GameItemCreated(td, td.ExtraGuid);
-                td["ltlv"]= now.ToString();
+                td.SetSdp("ltlv", now.ToString());
                 datas.PropertyChanges.ModifyAndAddChanged(td, "Count", 1, null);
                 datas.PropertyChanges.ModifyAndAddChanged(td, "ltlv", now.ToString(), null);
             }
@@ -1215,9 +1215,9 @@ namespace GuangYuan.GY001.BLL
             {
                 GameItem slotSl = World.ItemManager.GetOrCreateItem(datas.GameChar, ProjectConstant.ShoulanSlotId);
 
-                gameItem["neatk"] = Math.Round(gameItem.GetDecimalWithFcpOrDefault("neatk"), MidpointRounding.AwayFromZero);
-                gameItem["nemhp"] = Math.Round(gameItem.GetDecimalWithFcpOrDefault("nemhp"), MidpointRounding.AwayFromZero);
-                gameItem["neqlt"] = Math.Round(gameItem.GetDecimalWithFcpOrDefault("neqlt"), MidpointRounding.AwayFromZero);
+                gameItem.SetSdp("neatk", Math.Round(gameItem.GetDecimalWithFcpOrDefault("neatk"), MidpointRounding.AwayFromZero));
+                gameItem.SetSdp("nemhp", Math.Round(gameItem.GetDecimalWithFcpOrDefault("nemhp"), MidpointRounding.AwayFromZero));
+                gameItem.SetSdp("neqlt", Math.Round(gameItem.GetDecimalWithFcpOrDefault("neqlt"), MidpointRounding.AwayFromZero));
                 var oldpid = gameItem.ParentId;
                 List<GameItem> listRe = new List<GameItem>();
                 gim.MoveItem(gameItem, gameItem.Count ?? 1, slotSl, listRe, datas.PropertyChanges);
@@ -1228,7 +1228,7 @@ namespace GuangYuan.GY001.BLL
                     var mail = new GameMail()
                     {
                     };
-                    mail["MailTypeId"]= ProjectConstant.孵化补给动物.ToString();
+                    mail.SetSdp("MailTypeId", ProjectConstant.孵化补给动物.ToString());
                     social.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId,
                         new ValueTuple<GameItem, Guid>[] { (gameItem, ProjectConstant.ShoulanSlotId) });
                     gim.ForcedDelete(gameItem);
@@ -1238,9 +1238,9 @@ namespace GuangYuan.GY001.BLL
             }
             else //若尚无同种坐骑
             {
-                gameItem["neatk"]= 0m;
-                gameItem["nemhp"]= 0m;
-                gameItem["neqlt"]= 0m;
+                gameItem.SetSdp("neatk", 0m);
+                gameItem.SetSdp("nemhp", 0m);
+                gameItem.SetSdp("neqlt", 0m);
                 gim.MoveItem(gameItem, gameItem.Count ?? 1, slotZq, null, datas.PropertyChanges);
                 World.ItemManager.ScanMountsIllustrated(datas.GameChar, datas.PropertyChanges);
             }
@@ -1249,7 +1249,7 @@ namespace GuangYuan.GY001.BLL
             if (null != mission)   //若找到成就对象
             {
                 var oldVal = mission.GetSdpDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
-                mission[ProjectMissionConstant.指标增量属性名]= oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
+                mission.SetSdp(ProjectMissionConstant.指标增量属性名, oldVal + 1m); //设置该成就的指标值的增量，原则上都是正值
                 World.MissionManager.ScanAsync(datas.GameChar);
             }
             datas.PropertyChanges.CopyTo(datas.ChangeItems);
@@ -1382,7 +1382,7 @@ namespace GuangYuan.GY001.BLL
                             {
                                 probChun = 0; //不准出现纯种生物
                             }
-                            gameChar[tidString]= ++suppusCount;
+                            gameChar.SetSdp(tidString, ++suppusCount);
                         }
                     }
                 }
@@ -1447,9 +1447,9 @@ namespace GuangYuan.GY001.BLL
             ne1 = parent1.GetSdpDecimalOrDefault("neqlt");
             ne2 = parent2.GetSdpDecimalOrDefault("neqlt");
             var qlt = Math.Clamp(ne1 * 0.2m + ne2 * 0.2m + lv1 + lv2 + VWorld.WorldRandom.Next(-20, 20), 0, 100);
-            child["neatk"]= atk;
-            child["nemhp"]= mhp;
-            child["neqlt"]= qlt;
+            child.SetSdp("neatk", atk);
+            child.SetSdp("nemhp", mhp);
+            child.SetSdp("neqlt", qlt);
         }
         #endregion 孵化相关
 
@@ -1659,7 +1659,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     datas.ChangeItems.AddToChanges(haocai);
                 }
-                gi[$"{prefix}lv"]= (decimal)lv + 1;
+                gi.SetSdp($"{prefix}lv", (decimal)lv + 1);
                 datas.ChangeItems.AddToChanges(gi);
                 datas.SuccCount++;
             }
@@ -1825,7 +1825,7 @@ namespace GuangYuan.GY001.BLL
                 {
                     World.ItemManager.MoveItem(re, re.Count ?? 1, World.EventsManager.GetDefaultContainer(re, datas.GameChar), null, datas.PropertyChanges);
                 }
-                item["used"]= 1m;
+                item.SetSdp("used", 1m);
                 datas.ChangeItems.AddToChanges(item);
             }
             datas.PropertyChanges.CopyTo(datas.ChangeItems);
@@ -1858,9 +1858,9 @@ namespace GuangYuan.GY001.BLL
                 var mounts = World.ItemManager.CreateMounts(htid, btid, tid);
                 if (World.ItemManager.IsExistsMounts(mounts, datas.GameChar)) //若存在此纯种坐骑
                 {
-                    mounts["neatk"]= 80m + VWorld.WorldRandom.Next(21);
-                    mounts["nemhp"]= 80m + VWorld.WorldRandom.Next(21);
-                    mounts["neqlt"]= 80m + VWorld.WorldRandom.Next(21);
+                    mounts.SetSdp("neatk", 80m + VWorld.WorldRandom.Next(21));
+                    mounts.SetSdp("nemhp", 80m + VWorld.WorldRandom.Next(21));
+                    mounts.SetSdp("neqlt", 80m + VWorld.WorldRandom.Next(21));
                     World.ItemManager.MoveItem(mounts, 1, datas.GameChar.GetShoulanBag(), null, datas.PropertyChanges);
                     //World.ItemManager.AddItem(mounts, datas.GameChar.GetShoulanBag(), null, datas.ChangeItems);
                 }
@@ -1947,9 +1947,9 @@ namespace GuangYuan.GY001.BLL
                 set
                 {
                     if (value is null)
-                        GameChar.Remove("PvpWarFreeCardsExpire");
+                        GameChar.RemoveSdp("PvpWarFreeCardsExpire");
                     else
-                        GameChar["PvpWarFreeCardsExpire"]= value.Value.ToString("s");
+                        GameChar.SetSdp("PvpWarFreeCardsExpire", value.Value.ToString("s"));
                 }
             }
 
@@ -1959,7 +1959,7 @@ namespace GuangYuan.GY001.BLL
             public TimeSpan Uts
             {
                 get => TimeSpan.FromSeconds((double)GameChar.GetSdpDecimalOrDefault("uts"));
-                set => GameChar["uts"]= (decimal)value.TotalSeconds;
+                set => GameChar.SetSdp("uts", (decimal)value.TotalSeconds);
             }
 
             /// <summary>

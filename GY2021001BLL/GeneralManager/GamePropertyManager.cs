@@ -221,7 +221,7 @@ namespace OW.Game
             else
             {
                 var oldValue = thing.GetSdpDecimalOrDefault(propertyName, decimal.Zero);
-                thing[propertyName]= oldValue + diff;
+                thing.SetSdp(propertyName, oldValue + diff);
             }
             return true;
         }
@@ -236,9 +236,9 @@ namespace OW.Game
         /// <returns>true有旧属性，此时<paramref name="oldValue"/>中包含旧值。false没有原有属性。</returns>
         public virtual bool SetProperty(GameThingBase thing, string propertyName, object value, out object oldValue)
         {
-            if (thing.TryGetValue(propertyName, out oldValue))
+            if (thing.TryGetSdp(propertyName, out oldValue))
                 return true;
-            thing[propertyName]= value;
+            thing.SetSdp(propertyName, value);
             return false;
         }
 
@@ -405,7 +405,7 @@ namespace OW.Game
             else //若是其他属性
             {
                 refreshDatetime = DateTime.MinValue;
-                succ = gameItem.TryGetValue(name, out result);
+                succ = gameItem.TryGetSdp(name, out result);
             }
             return succ;
         }
@@ -465,11 +465,11 @@ namespace OW.Game
             [AllowNull] ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             if (changes is null)    //若无需标记变化数据
-                thing[propertyName]= value;
+                thing.SetSdp(propertyName, value);
             else //若需要标记变化数据
             {
                 var data = GamePropertyChangeItemPool<object>.Shared.Get();
-                if (thing.TryGetValue(propertyName, out var oldValue))  //若存在旧值
+                if (thing.TryGetSdp(propertyName, out var oldValue))  //若存在旧值
                 {
                     data.HasOldValue = true;
                     data.OldValue = oldValue;

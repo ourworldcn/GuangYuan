@@ -49,9 +49,9 @@ namespace GuangYuan.GY001.BLL
 
                 var mission = context.GameChar.GetRenwuSlot().Children.FirstOrDefault(c => c.ExtraGuid == ProjectMissionConstant.累计访问好友天次成就);
                 var oldVal = mission.GetSdpDecimalOrDefault(ProjectMissionConstant.指标增量属性名);
-                mission[ProjectMissionConstant.指标增量属性名]= oldVal + 1m; //设置该成就的指标值的增量，原则上都是正值
+                mission.SetSdp(ProjectMissionConstant.指标增量属性名, oldVal + 1m); //设置该成就的指标值的增量，原则上都是正值
                 gmm.ScanAsync(context.GameChar);
-                gc["HomelandInteractioned"]= context.UtcNow;
+                gc.SetSdp("HomelandInteractioned", context.UtcNow);
             }
         }
     }

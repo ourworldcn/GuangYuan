@@ -68,11 +68,11 @@ namespace GuangYuan.GY001.BLL.Social
             {
                 if (value)
                 {
-                    GameChar[RflDateTimeKey]= Today0.ToString();
+                    GameChar.SetSdp(RflDateTimeKey, Today0.ToString());
                 }
                 else
                 {
-                    GameChar.Remove(RflDateTimeKey);
+                    GameChar.RemoveSdp(RflDateTimeKey);
                 }
             }
         }
@@ -189,13 +189,13 @@ namespace GuangYuan.GY001.BLL.Social
             var db = GameChar.GameUser.DbContext;
             if (null != _LastListIds)
             {
-                GameChar[LastRflKey] = string.Join(Separator, _LastListIds.Select(c => c.ToString()));
+                GameChar.SetSdp(LastRflKey, string.Join(Separator, _LastListIds.Select(c => c.ToString())));
                 World.CharManager.NotifyChange(GameChar.GameUser);
             }
             if (null != _TodayIds || null != _LastListIds) //若今日刷新过的列表不空或最后一次刷新的列表不空
             {
                 _TodayIds = TodayIds.Union(LastListIds).ToList(); //合并列表
-                GameChar[TotalRflKey] = string.Join(Separator, TodayIds.Select(c => c.ToString()));
+                GameChar.SetSdp(TotalRflKey, string.Join(Separator, TodayIds.Select(c => c.ToString())));
                 World.CharManager.NotifyChange(GameChar.GameUser);
             }
         }

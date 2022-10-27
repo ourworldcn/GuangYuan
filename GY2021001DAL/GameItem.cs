@@ -202,70 +202,21 @@ namespace GuangYuan.GY001.UserDb
 
         #region ISimpleDynamicExtensionProperty相关
 
-        public override void Add(string key, object value)
+        public override void SetSdp(string name, object value)
         {
-            switch (key)
+            switch (name)
             {
                 case "Count":
                 case "count":
                     Count = Convert.ToDecimal(value);
                     break;
                 default:
-                    base.Add(key, value);
+                    base.SetSdp(name, value);
                     break;
             }
         }
 
-        public override bool Remove(string key)
-        {
-            bool result;
-            switch (key)
-            {
-                case "Count":
-                case "count":
-                    result = !(Count is null);
-                    Count = default;
-                    break;
-                default:
-                    result = base.Remove(key);
-                    break;
-            }
-            return result;
-        }
-
-        public override object this[string key]
-        {
-            get
-            {
-                object result;
-                switch (key)
-                {
-                    case "Count":
-                    case "count":
-                        result = Count;
-                        break;
-                    default:
-                        result = base[key];
-                        break;
-                }
-                return result;
-            }
-            set
-            {
-                switch (key)
-                {
-                    case "Count":
-                    case "count":
-                        Count = Convert.ToDecimal(value);
-                        break;
-                    default:
-                        base[key] = value;
-                        break;
-                }
-            }
-        }
-
-        public override bool TryGetValue(string name, out object value)
+        public override bool TryGetSdp(string name, out object value)
         {
             switch (name)
             {
@@ -274,7 +225,7 @@ namespace GuangYuan.GY001.UserDb
                     value = Count;
                     return true;
                 default:
-                    return base.TryGetValue(name, out value);
+                    return base.TryGetSdp(name, out value);
             }
         }
 

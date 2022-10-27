@@ -74,7 +74,7 @@ namespace OW.Game
         public void Mark(GameThingBase thing, string keyName)
         {
             var item = GetOrAddItem(thing);
-            var hasOld = thing.TryGetValue(keyName, out var oldVal);
+            var hasOld = thing.TryGetSdp(keyName, out var oldVal);
             var result = new GamePropertyChangeItem<object>(null, name: keyName, oldValue: oldVal, newValue: default) { HasOldValue = hasOld };
             item.Add(result);
         }
@@ -89,10 +89,10 @@ namespace OW.Game
         public void MarkAndSet(GameThingBase thing, string keyName, object newValue, ICollection<GamePropertyChangeItem<object>> changes = null)
         {
             var item = GetOrAddItem(thing);
-            var hasOld = thing.TryGetValue(keyName, out var oldVal);
+            var hasOld = thing.TryGetSdp(keyName, out var oldVal);
             var result = new GamePropertyChangeItem<object>(thing, name: keyName, oldValue: oldVal, newValue: newValue) { HasOldValue = hasOld, HasNewValue = true, };
             item.Add(result);
-            thing[keyName]= newValue;
+            thing.SetSdp(keyName, newValue);
             if (changes != null)
                 changes.Add((GamePropertyChangeItem<object>)result.Clone());
         }
@@ -261,7 +261,7 @@ namespace OW.Game
                 if (tt.TryGetSdpDecimal("Count", out count) || tt.TryGetSdpDecimal("count", out count)) //若制定了模板且其中指定了初始数量
                     gameItem.Count = count;
                 else
-                    gameItem.Count ??= tt.TryGetValue(gpm.StackUpperLimitPropertyName, out _) ? 0 : 1;
+                    gameItem.Count ??= tt.TryGetSdp(gpm.StackUpperLimitPropertyName, out _) ? 0 : 1;
             }
             #endregion 设置数量
 
@@ -278,7 +278,7 @@ namespace OW.Game
                 gameItem.Parent = parent;
             }
             else if (propertyBag.TryGetValue("ptid", out var ptid))
-                gameItem["ptid"]= ptid;
+                gameItem.SetSdp("ptid", ptid);
             #endregion 设置导航关系
 
             #region 追加子对象
@@ -792,7 +792,7 @@ namespace OW.Game
             if (ProjectConstant.CurrencyBagTId == ptid || ProjectConstant.MucaishuTId == tid || ProjectConstant.YumitianTId == tid)
                 return true;
 
-            return gItem.TryGetValue("IsAllowZero", out _);
+            return gItem.TryGetSdp("IsAllowZero", out _);
         }
 
         #endregion 物品相关

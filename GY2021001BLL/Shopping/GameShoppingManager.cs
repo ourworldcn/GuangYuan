@@ -291,38 +291,38 @@ namespace GuangYuan.GY001.BLL
         {
             List<(GameItem, decimal)> result = new List<(GameItem, decimal)>();
             var gitm = World.ItemTemplateManager;
-            if (template.TryGetValue("bd", out _))   //若有钻石售价
+            if (template.TryGetSdp("bd", out _))   //若有钻石售价
             {
                 result.Add((gameChar.GetZuanshi(), -Math.Abs(template.GetSdpDecimalOrDefault("bd")) * count));
             }
             else
             {
                 var tt = gitm.GetTemplateFromeId(template.ItemTemplateId ?? Guid.Empty);
-                if (tt != null && tt.TryGetValue("bd", out _))    //若有基础模板钻石售价
+                if (tt != null && tt.TryGetSdp("bd", out _))    //若有基础模板钻石售价
                 {
                     result.Add((gameChar.GetZuanshi(), -Math.Abs(tt.GetSdpDecimalOrDefault("bd")) * count));
                 }
             }
-            if (template.TryGetValue("bg", out _))   //若有金币售价
+            if (template.TryGetSdp("bg", out _))   //若有金币售价
             {
                 result.Add((gameChar.GetJinbi(), -Math.Abs(template.GetSdpDecimalOrDefault("bg")) * count));
             }
             else
             {
                 var tt = gitm.GetTemplateFromeId(template.ItemTemplateId ?? Guid.Empty);
-                if (tt != null && tt.TryGetValue("bg", out _))    //若有基础模板金币售价
+                if (tt != null && tt.TryGetSdp("bg", out _))    //若有基础模板金币售价
                 {
                     result.Add((gameChar.GetJinbi(), -Math.Abs(tt.GetSdpDecimalOrDefault("bg")) * count));
                 }
             }
-            if (template.TryGetValue("bmg", out _))  //若有公会币售价
+            if (template.TryGetSdp("bmg", out _))  //若有公会币售价
             {
                 result.Add((gameChar.GetGuildCurrency(), -Math.Abs(template.GetSdpDecimalOrDefault("bmg")) * count));
             }
             else
             {
                 var tt = gitm.GetTemplateFromeId(template.ItemTemplateId ?? Guid.Empty);
-                if (tt != null && tt.TryGetValue("bmg", out _))    //若有基础模板公会币售价
+                if (tt != null && tt.TryGetSdp("bmg", out _))    //若有基础模板公会币售价
                 {
                     result.Add((gameChar.GetGuildCurrency(), -Math.Abs(tt.GetSdpDecimalOrDefault("bmg")) * count));
                 }
@@ -602,7 +602,7 @@ namespace GuangYuan.GY001.BLL
             var templates = datas.Templates;   //奖池的模板
             var hits = new List<GameCardPoolTemplate>(); //增加的物品列表
             //计算概率
-            var probs = templates.Select(c => (c.Key, c.Value.First(d => d.TryGetValue("prob", out _)).GetSdpDecimalOrDefault("prob")));
+            var probs = templates.Select(c => (c.Key, c.Value.First(d => d.TryGetSdp("prob", out _)).GetSdpDecimalOrDefault("prob")));
             var probDenominator = probs.Sum(c => c.Item2);  //计算分母
             var probDic = probs.Select(c => (c.Key, c.Item2 / probDenominator)).ToDictionary(c => c.Key, c => c.Item2);    //加权后的概率
             for (int i = 0; i < datas.LotteryTypeCount1; i++)
@@ -636,7 +636,7 @@ namespace GuangYuan.GY001.BLL
             //获取适用的模板
             var templates = datas.Templates;   //奖池的模板
             //计算概率
-            var probs = templates.Select(c => (c.Key, c.Value.First(d => d.TryGetValue("prob", out _)).GetSdpDecimalOrDefault("prob")));
+            var probs = templates.Select(c => (c.Key, c.Value.First(d => d.TryGetSdp("prob", out _)).GetSdpDecimalOrDefault("prob")));
             var coll = GameMath.ToSum1(probs, c => c.Item2, (c, p) => (c.Key, p));  //规范化概率序列
 
             var probDic = coll.ToDictionary(c => c.Key, c => c.p);    //加权后的概率
@@ -762,9 +762,9 @@ namespace GuangYuan.GY001.BLL
                             }
                             else //若不存在坐骑
                             {
-                                item["neatk"]= 0m;
-                                item["neqlt"]= 0m;
-                                item["nemhp"]= 0m;
+                                item.SetSdp("neatk", 0m);
+                                item.SetSdp("neqlt", 0m);
+                                item.SetSdp("nemhp", 0m);
                                 World.ItemManager.MoveItem(item, item.Count.Value, gim.GetOrCreateItem(datas.GameChar, ProjectConstant.ZuojiBagSlotId), remainder, changes);
                             }
                         }
@@ -1082,7 +1082,7 @@ namespace GuangYuan.GY001.BLL
         {
             var hit = isHit ? "h" : "uh";
             var name = $"cp{lotteryType ?? string.Empty}{SeparatorOfLottery}{hit}{SeparatorOfLottery}{cardPoolId ?? string.Empty}{SeparatorOfLottery}{subCardPoolId ?? string.Empty}{SeparatorOfLottery}";
-            gameChar[name]= (decimal)count;
+            gameChar.SetSdp(name, (decimal)count);
         }
 
         /// <summary>

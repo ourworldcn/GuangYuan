@@ -215,7 +215,7 @@ namespace OW.Game.Validation
         /// <param name="value"></param>
         public void SetValue(GameChar gameChar, object value)
         {
-            (ThingReference.GetValue(gameChar) as GameThingBase)[PropertyName]= value;
+            (ThingReference.GetValue(gameChar) as GameThingBase).SetSdp(PropertyName, value);
         }
 
         private string GetDebuggerDisplay()
