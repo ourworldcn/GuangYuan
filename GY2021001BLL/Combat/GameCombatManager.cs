@@ -1058,10 +1058,6 @@ namespace GuangYuan.GY001.BLL
                     World.MissionManager.ScanAsync(otherChar);
                 }
             }
-            //计算战斗后信息
-            GameCombat.FillSoldierAfterCombat(datas.GameChar, attacker, World);
-            GameCombat.FillSoldierAfterCombat(otherChar, defenser, World);
-            //设置战斗对象
             datas.Combat = combat;
             cache.SetDirty(combat.Thing.IdString);   //尽快保存
         }
@@ -1136,12 +1132,6 @@ namespace GuangYuan.GY001.BLL
                 mail["CombatId"]= combat.Thing.IdString;
             }
             World.SocialManager.SendMail(mail, new Guid[] { datas.GameChar.Id }, SocialConstant.FromSystemId); //被攻击邮件
-
-            var attacker = combat.Attackers.FirstOrDefault();
-            var defenser = combat.Defensers.FirstOrDefault();
-            //计算战斗后信息
-            //GameCombat.FillSoldierAfterCombat(datas.GameChar, attacker, World);
-            //GameCombat.FillSoldierAfterCombat(otherChar, defenser, World);
             //保存数据
             oldCombat.Retaliationed = true;
             //datas.Save();

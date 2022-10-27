@@ -337,17 +337,13 @@ namespace GuangYuan.GY001.UserDb.Combat
         /// <param name="gameChar"></param>
         public static void RecordResource(GameSoldier soldier, GameChar gameChar)
         {
-            gameChar.GetCurrencyBag().Children.ForEach(c => c.FcpToProperties());
             soldier.Resource.AddRange(gameChar.GetCurrencyBag().Children);  //记录所有货币
             //记录玉米田
             var gi = gameChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.YumitianTId);
-            gi.FcpToProperties();
-            
             soldier.Resource.Add(gi);
             //记录木材树
             gi = gameChar.GetHomeland().GetAllChildren().FirstOrDefault(c => c.ExtraGuid == ProjectConstant.MucaishuTId);
             soldier.CharId = gameChar.Id;
-            gi.FcpToProperties();
             soldier.Resource.Add(gi);
             //其它
             soldier.DisplayName = gameChar.DisplayName;
@@ -410,28 +406,6 @@ namespace GuangYuan.GY001.UserDb.Combat
         public void FillAttakerBefroeCombat(GameChar gameChar, GameSoldier soldier, VWorld world)
         {
             soldier.Pets.AddRange(world.ItemManager.GetLineup(gameChar, 2));    //获取出阵阵容
-        }
-
-        /// <summary>
-        /// 在战斗结算后填充参战方的信息。
-        /// </summary>
-        /// <param name="gameChar"></param>
-        /// <param name="soldier"></param>
-        /// <param name="world"></param>
-        public static void FillSoldierAfterCombat(GameChar gameChar, GameSoldier soldier, VWorld world)
-        {
-            //soldier.CharId = gameChar.Id;
-            //soldier.DisplayName = gameChar.DisplayName;
-
-            var pvp = gameChar.GetPvpObject();
-            if (pvp != null)    //若已解锁pvp
-            {
-                soldier.ScoreAfter = (int)pvp.ExtraDecimal;
-                soldier.RankAfter = world.CombatManager.GetPvpRank(gameChar);
-            }
-            //soldier.MainControlRoomLevel = (int)(gameChar.GetMainControlRoom()?.GetSdpDecimalOrDefault(world.PropertyManager.LevelPropertyName) ?? 0);
-            //soldier.Level = (int)(gameChar.GetSdpDecimalOrDefault(world.PropertyManager.LevelPropertyName));
-            //soldier.IconIndex = (int)gameChar.GetSdpDecimalOrDefault("charIcon", decimal.Zero);
         }
 
         /// <summary>
