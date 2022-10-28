@@ -5,6 +5,7 @@ using OW.Game.Store;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
@@ -29,31 +30,37 @@ namespace GuangYuan.GY001.UserDb
         /// <summary>
         /// 机器人。
         /// </summary>
+        [Description("机器人")]
         Robot = 1,
 
         /// <summary>
         /// Npc有些轻度游戏中没有npc。
         /// </summary>
+        [Description("Npc")]
         Npc = 2,
 
         /// <summary>
         /// 开发时的测试账号。
         /// </summary>
+        [Description("测试账号")]
         Test = 8,
 
         /// <summary>
         /// 特殊的贵宾角色。
         /// </summary>
+        [Description("VIP账号")]
         Vip = 4,
 
         /// <summary>
         /// 有管理员权力的角色。一般是运营人员。
         /// </summary>
+        [Description("运营账号")]
         Admin = 16,
 
         /// <summary>
         /// 超管，一般是开发团队人员。
         /// </summary>
+        [Description("超管账号")]
         SuperAdmin = 32,
     }
 

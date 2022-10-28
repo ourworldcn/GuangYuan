@@ -183,15 +183,30 @@ namespace GuangYuan.GY001.BLL
                 command.FillErrorFromWorld();
                 return;
             }
-            var world = GameContext.Service.GetRequiredService<VWorld>();
             var pvp = GameContext.GameChar.GetPvpObject();
-            var todayData = pvp?.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();    //当日数据的帮助器类
-            if (todayData is null)
+            if(pvp is null)
             {
                 command.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
                 command.DebugMessage = "角色没有pvp战斗功能。";
                 return;
             }
+            var world = GameContext.Service.GetRequiredService<VWorld>();
+            var info = pvp.GetJsonObject<PvpObjectJsonObject>();
+
+            if (info.SearchCount <= 10)    //如果是此角色前10次搜索
+            {
+                var ids = GetListInRobot(Array.Empty<Guid>());
+                if(!ids.Any())  //若未搜索到
+                {
+
+                }
+            }
+            else //若不是前10次
+            {
+            }
+            info.SearchCount++; //增加已搜索的次数
+
+            var todayData = pvp.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();    //当日数据的帮助器类
             var hasData = todayData?.GetTodayData(GameContext.UtcNow).Any() ?? false;
             if (command.IsRefresh || !hasData) //若强制刷新或需要刷新
             {
@@ -207,7 +222,7 @@ namespace GuangYuan.GY001.BLL
                 var cj = gc.GetJsonObject<CharJsonEntity>();
                 List<Guid> ids;
                 if (!command.CharId.HasValue)
-                    ids =world.SocialManager.GetNewPvpCharIds(GameContext.GameChar.GetDbContext(), gc.Id, pvp.ExtraDecimal.Value, cj.Lv, excludeIds);
+                    ids = world.SocialManager.GetNewPvpCharIds(GameContext.GameChar.GetDbContext(), gc.Id, pvp.ExtraDecimal.Value, cj.Lv, excludeIds);
                 else //TODO 测试代码
                 {
                     ids = new List<Guid>();
@@ -250,5 +265,130 @@ namespace GuangYuan.GY001.BLL
         }
 
         #endregion IGameCommandHandler接口及相关
+
+        /// <summary>
+        /// 在机器人中执行最小差值搜索。
+        /// </summary>
+        /// <param name="excludes">排除的角色Id集合。</param>
+        /// <returns></returns>
+        public IEnumerable<Guid> GetListInRobot(IEnumerable<Guid> excludes)
+        {
+            var pvpObject = GameContext.GameChar.GetPvpObject();
+            decimal pvpScore = pvpObject.ExtraDecimal ?? 0;
+            var info = pvpObject.GetJsonObject<PvpObjectJsonObject>();
+            excludes = info.SearchList.Where(c => c.DateTime.Date == GameContext.UtcNow.Date).Select(c => c.Id).Union(excludes). //排除额外需要排除的角色
+                Union(new Guid[] { GameContext.GameChar.Id }).ToArray();   //排除自己
+
+            List<Guid> result = new List<Guid>();
+            var db = GameContext.Service.GetRequiredService<GY001UserContext>();
+            var collBase = from pvp in db.Set<GameItem>()
+                           where pvp.ExtraGuid == ProjectConstant.PvpObjectTId
+                           join slot in db.Set<GameItem>() on pvp.ParentId equals slot.Id   //货币槽
+                           join gc in db.Set<GameChar>().Where(c => !excludes.Contains(c.Id) && c.CharType.HasFlag(CharType.Robot)) //限于特别机器人
+                           on slot.OwnerId equals gc.Id    //角色
+                           select new { pvp, gc };
+            var great = collBase.OrderBy(c => c.pvp.ExtraDecimal).Where(c => c.pvp.ExtraDecimal >= pvpScore).Take(1);   //上手
+            var less = collBase.OrderByDescending(c => c.pvp.ExtraDecimal).Where(c => c.pvp.ExtraDecimal < pvpScore).Take(1);   //下手
+            var coll = great.Concat(less).Select(c => new { c.gc.Id, diff = Math.Abs((c.pvp.ExtraDecimal ?? 0) - pvpScore) }).ToArray();
+            var collResult = coll.OrderBy(c => c.diff).Take(1).Select(c => c.Id);
+            result.AddRange(collResult);
+            return result;
+        }
+
+        public List<Guid> GetNewPvpCharIds(IEnumerable<Guid> excludes)
+        {
+            var db = GameContext.Service.GetRequiredService<GY001UserContext>();
+            Guid charId = GameContext.GameChar.Id;
+            var pvpObject = GameContext.GameChar.GetPvpObject();
+            decimal pvpScore = pvpObject.ExtraDecimal ?? 0; //自身pvp积分
+            var info = pvpObject.GetJsonObject<PvpObjectJsonObject>();
+            var lv = (int)GameContext.GameChar.GetSdpDecimalOrDefault("lv");
+
+            excludes = info.SearchList.Where(c => c.DateTime.Date == GameContext.UtcNow.Date).Select(c => c.Id).Union(excludes). //排除额外需要排除的角色
+                Union(new Guid[] { GameContext.GameChar.Id }).ToArray();   //排除自己
+            var maxDiff = pvpObject.GetSdpDecimalOrDefault("MaxDiff", 50);  //第一等级最大分差
+            var charTypes = new CharType[] { CharType.Unknow, CharType.Robot, CharType.Test };
+
+            var collBase = from pvp in db.Set<GameItem>()
+                           where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
+                           join gc in db.Set<GameChar>()
+                           on pvp.Parent.OwnerId equals gc.Id
+                           where charTypes.Contains(gc.CharType) //过滤用户类型
+                            && !excludes.Contains(gc.Id)  //排除指定角色
+                           select new { gc, pvp };  //基础查询
+
+            var coll = from tmp in collBase
+                       where tmp.pvp.ExtraDecimal.Value <= pvpScore + maxDiff && tmp.pvp.ExtraDecimal.Value >= pvpScore - maxDiff   //在第一等级分差以内
+                       orderby Math.Abs(tmp.pvp.ExtraDecimal.Value - pvpScore), //按分差
+                       Math.Abs((string.IsNullOrWhiteSpace(SqlDbFunctions.JsonValue(tmp.gc.JsonObjectString, "$.Lv")) ? 0 : Convert.ToInt32(SqlDbFunctions.JsonValue(tmp.gc.JsonObjectString, "$.Lv"))) - lv) //按等级差升序排序
+                       select tmp.gc.Id;
+            var list = coll.ToList();   //获取所有
+            if (list.Count <= 0)   //若没找到
+            {
+                coll = from pvp in db.Set<GameItem>()
+                       join gc in db.Set<GameChar>()
+                       on pvp.Parent.OwnerId equals gc.Id
+                       where pvp.ExtraGuid == ProjectConstant.PvpObjectTId  //取pvp对象
+                        && (pvp.ExtraDecimal.Value > pvpScore + maxDiff || pvp.ExtraDecimal.Value < pvpScore - maxDiff)    //分差在50以外
+                        && charTypes.Contains(gc.CharType) //过滤用户类型
+                        && !excludes.Contains(gc.Id)   //排除指定的角色id
+                       orderby Math.Abs(pvp.ExtraDecimal.Value - pvpScore) //按分差
+                       select gc.Id;
+                list = coll.Take(1).ToList();
+                //if (list.Count <= 0 && ary.Length > 0)   //若没找到
+                //{
+                //    var item = ary[VWorld.WorldRandom.Next(ary.Length)];    //取已经打过的随机一个人
+                //    list.Add(item);
+                //}
+            }
+            else //若找到
+            {
+                var rnd = VWorld.WorldRandom.Next(list.Count);
+                var tmp = list[rnd];
+                list = new List<Guid>() { tmp };
+            }
+            return list;
+        }
+
+    }
+
+    public class IdAndDateTime
+    {
+        public IdAndDateTime()
+        {
+
+        }
+
+        public Guid Id { get; set; }
+
+        public DateTime DateTime { get; set; }
+    }
+
+    public class PvpObjectJsonObject
+    {
+        public PvpObjectJsonObject()
+        {
+
+        }
+
+        /// <summary>
+        /// 此用户搜索的总次数。
+        /// </summary>
+        public int SearchCount { get; set; }
+
+        /// <summary>
+        /// 被搜索到的角色Id集合。
+        /// </summary>
+        public List<IdAndDateTime> SearchList { get; set; } = new List<IdAndDateTime>();
+
+        /// <summary>
+        /// Pvp总次数。
+        /// </summary>
+        public int PvpCount { get; set; }
+
+        /// <summary>
+        /// 已经进行pvp行为的人的集合。
+        /// </summary>
+        public List<Guid> PvpList { get; set; } = new List<Guid>();
     }
 }
