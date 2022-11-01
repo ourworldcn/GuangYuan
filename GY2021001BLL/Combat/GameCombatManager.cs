@@ -621,7 +621,7 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
                 Tili2Exp(datas.GameChar, datas.PropertyChanges);    //体力消耗转换为经验
-                var info=datas.GameChar.GetPvpObject()?.GetJsonObject<PvpObjectJsonObject>();
+                var info = datas.GameChar.GetPvpObject()?.GetJsonObject<PvpObjectJsonObject>();
                 info.PvpCount++;
                 World.CharManager.NotifyChange(datas.GameChar.GameUser);
                 //设置信息
@@ -807,7 +807,7 @@ namespace GuangYuan.GY001.BLL
             if (!datas.HasError) //若成功
             {
                 var id = datas.Combat?.Id;
-                if(id.HasValue)
+                if (id.HasValue)
                 {
                     //World.GameCache.SetDirty(id.Value.ToString());
                 }
@@ -874,6 +874,7 @@ namespace GuangYuan.GY001.BLL
             gim.Normalize(datas.Booty);
             datas.Booty.ForEach(c => gim.MergeProperty(c));
             attacker.Booties.AddRange(datas.Booty.Select(c => gim.Clone(c)));
+            attacker.Booties.ForEach(c => c.PrepareSaving(null));
 
             gim.MoveItems(datas.Booty, datas.GameChar, null, datas.PropertyChanges);
 
@@ -885,8 +886,10 @@ namespace GuangYuan.GY001.BLL
 
             if (!World.CharManager.IsOnline(otherChar.Id))  //若不在线
             {
-                defenser.Booties.AddRange(bootyOfDefenser); //计入战报
+                defenser.Booties.AddRange(bootyOfDefenser.Select(c => gim.Clone(c))); //计入战报
+                defenser.Booties.ForEach(c => c.PrepareSaving(null));
                 World.ItemManager.MoveItems(bootyOfDefenser, otherChar, null, datas.PropertyChanges);    //防御方物品变动奖励
+
             }
 
             ComputeScore();
