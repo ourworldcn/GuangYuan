@@ -12,6 +12,7 @@ using OW.Game;
 using OW.Game.Store;
 using System;
 using System.Linq;
+using System.Threading;
 
 namespace GY2021001WebApi.Controllers
 {
@@ -184,6 +185,12 @@ namespace GY2021001WebApi.Controllers
             result.FillFrom(datas);
             if (!result.HasError)
             {
+                using var dwKey = World.GameCache.Lock(datas.Combat.Thing.IdString);
+                if (dwKey.IsEmpty)
+                {
+                    result.FillFromWorld();
+                    return result;
+                }
                 var mapper = World.Service.GetService<IMapper>();
                 result.CombatObject = mapper.Map<GameCombatDto>(datas.Combat);
             }

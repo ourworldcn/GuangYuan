@@ -577,8 +577,6 @@ namespace OW.Game
         {
             var now = DateTime.UtcNow;
             base.GameCharLogined(gameChar);
-            //复位pvp信息
-            World.SocialManager.ResetPvpObject(gameChar, now);
             //复位塔防信息
             var td = World.ItemManager.GetOrCreateItem(gameChar.GetCurrencyBag(), ProjectConstant.PveTCounterTId);
             var vo = td.Properties.GetDateTimeOrDefault("ltlv");

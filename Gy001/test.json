@@ -1,13 +1,661 @@
 {
-  "OldCombatId": null,
-  "MapTId": "4805434e-605e-4479-b426-9a27c083d7d4",
-  "StartUtc": null,
-  "EndUtc": null,
-  "Assistancing": false,
-  "Assistanced": false,
-  "Retaliationed": false,
-  "AssistanceId": null,
-  "IsAttckerWin": null,
-  "IsCompleted": false,
-  "StringDictionary": {}
+  "Combat": {
+    "Id": "yRHlYr0Jmku7Xf7yQe9jSQ==",
+    "OldCombatId": null,
+    "Attackers": [
+      {
+        "CharId": "SQTN8Yk9cUW/lXsnCPnEWw==",
+        "DisplayName": "gy221027000032",
+        "ScoreBefore": 101,
+        "ScoreAfter": 102,
+        "RankBefore": 5,
+        "RankAfter": 1,
+        "MainControlRoomLevel": 1,
+        "IconIndex": 1,
+        "LastLogoutDatetime": null,
+        "Level": 2,
+        "CombatCap": 0,
+        "Pets": [
+          {
+            "Id": "ALG/yGI7+kCaWLjb76RQJA==",
+            "ExtraGuid": "VJ0XbjZYC06zDXVr0H/xlg==",
+            "Count": 1,
+            "Properties": {
+              "skshuse": 3,
+              "jsshuse": 3,
+              "psshuse": 3,
+              "neatk": 0,
+              "cap": -1,
+              "nemhp": 0,
+              "neqlt": 0,
+              "lv": 0,
+              "tname": "坐骑组合",
+              "Count": 1,
+              "for10": 0,
+              "for0": 0,
+              "for1": 0,
+              "for2": 0,
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [
+              {
+                "Id": "E3d6ixRC+kiH2A8Dv/rC0w==",
+                "ExtraGuid": "xGi9H2Q0N0KJXSi2xPl02A==",
+                "Count": 1,
+                "Properties": {
+                  "js": 10923001,
+                  "ps": 10922001,
+                  "nm": 1501,
+                  "tname": "羊头",
+                  "Count": 1,
+                  "ExtraDecimal": null,
+                  "ExtraString": null
+                },
+                "OwnerId": null,
+                "Children": [
+                  {
+                    "Id": "iqz++1MC+06300i+mNJ0Vw==",
+                    "ExtraGuid": "o/tm+6Qe60W/+5Msd67f4A==",
+                    "Count": 1,
+                    "Properties": {
+                      "luc{da0d1e54-5948-474e-9a49-889858f62806}1": 1,
+                      "lv": 0,
+                      "tname": "羊跳跃技能",
+                      "Count": 1,
+                      "ExtraDecimal": null,
+                      "ExtraString": null
+                    },
+                    "OwnerId": null,
+                    "Children": [],
+                    "ParentId": "E3d6ixRC+kiH2A8Dv/rC0w==",
+                    "ClientString": null
+                  },
+                  {
+                    "Id": "K6yVOr4eC0eaHnCqcxX+2g==",
+                    "ExtraGuid": "RtQOMUIRi0+CK/+JSO2AZg==",
+                    "Count": 1,
+                    "Properties": {
+                      "luc{af35ff42-4cf0-4ca0-a162-72bbbdbcbc15}1": 1,
+                      "lv": 0,
+                      "tname": "羊被动技能",
+                      "Count": 1,
+                      "ExtraDecimal": null,
+                      "ExtraString": null
+                    },
+                    "OwnerId": null,
+                    "Children": [],
+                    "ParentId": "E3d6ixRC+kiH2A8Dv/rC0w==",
+                    "ClientString": null
+                  }
+                ],
+                "ParentId": "ALG/yGI7+kCaWLjb76RQJA==",
+                "ClientString": null
+              },
+              {
+                "Id": "HAexHPpSzUOAtb07bkk+dQ==",
+                "ExtraGuid": "B/7Ju70pbUiK1rmdsL0H1g==",
+                "Count": 1,
+                "Properties": {
+                  "lug": -50,
+                  "csr": 10,
+                  "aha": 80,
+                  "crv": 2,
+                  "nerank": 1,
+                  "bd": 9800,
+                  "fht": 3,
+                  "at": 1,
+                  "bt": 0.3,
+                  "eng": 14,
+                  "qlt": 100,
+                  "crp": 0,
+                  "ms": 6,
+                  "mhp": 1000,
+                  "alt": 10,
+                  "rci": 1,
+                  "sg": 500,
+                  "atk": 100,
+                  "ssr": 7,
+                  "rs": 8,
+                  "SK": 10921001,
+                  "nm": 1501,
+                  "lv": 0,
+                  "tname": "羊身体",
+                  "Count": 1,
+                  "ExtraDecimal": null,
+                  "ExtraString": null
+                },
+                "OwnerId": null,
+                "Children": [
+                  {
+                    "Id": "E/KL/dN0FE66LZTJ/nhIHA==",
+                    "ExtraGuid": "44DjoCYr1kiyOCdSm5Burw==",
+                    "Count": 1,
+                    "Properties": {
+                      "luc{a8c53b74-37fd-4390-8d25-a6d25e88ba4a}1": 1,
+                      "lv": 0,
+                      "tname": "羊主动技能",
+                      "Count": 1,
+                      "ExtraDecimal": null,
+                      "ExtraString": null
+                    },
+                    "OwnerId": null,
+                    "Children": [],
+                    "ParentId": "HAexHPpSzUOAtb07bkk+dQ==",
+                    "ClientString": null
+                  }
+                ],
+                "ParentId": "ALG/yGI7+kCaWLjb76RQJA==",
+                "ClientString": null
+              }
+            ],
+            "ParentId": "93wF6iP4P0yPpE8E3T/BUA==",
+            "ClientString": null
+          }
+        ],
+        "Booties": [
+          {
+            "Id": "sGBd2lS7mkGOCCEUdjhdog==",
+            "ExtraGuid": "PFl9rILOQkaXoxQCXaYz5A==",
+            "Count": 100,
+            "Properties": {
+              "ptid": "2BAA3FCD-2BE8-4096-916A-FF2D47E084EF",
+              "rank": 3,
+              "dsid": 1739,
+              "stc": 9999,
+              "nm": 1639,
+              "sg": 2500,
+              "it": 2,
+              "bd": 500,
+              "ulid": 20001,
+              "tname": "基因蛋",
+              "Count": 100,
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": null,
+            "ClientString": null
+          },
+          {
+            "Id": "os3J7ACtPk2HpLO4E31M/w==",
+            "ExtraGuid": "QsmDK5weRUuYFq0svw5HPw==",
+            "Count": 0,
+            "Properties": {
+              "stc": -1,
+              "tname": "金币",
+              "Count": 0,
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": null,
+            "ClientString": null
+          },
+          {
+            "Id": "CuoNeJUvhUGSqJ9/oRx/Qw==",
+            "ExtraGuid": "hJWVAcniVE67t/zFipSE7A==",
+            "Count": 0,
+            "Properties": {
+              "stc": 1000,
+              "isuni": 1,
+              "tname": "木材",
+              "Count": 0,
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": null,
+            "ClientString": null
+          }
+        ],
+        "Resource": []
+      }
+    ],
+    "Defensers": [
+      {
+        "CharId": "R0LF7pnNvE+z3hadOHinPw==",
+        "DisplayName": "gy221027000031",
+        "ScoreBefore": 100,
+        "ScoreAfter": 99,
+        "RankBefore": 14,
+        "RankAfter": 20,
+        "MainControlRoomLevel": 1,
+        "IconIndex": 1,
+        "LastLogoutDatetime": null,
+        "Level": 0,
+        "CombatCap": 0,
+        "Pets": [],
+        "Booties": [
+          {
+            "Id": "zLq6n53piEipBboGRdOPpw==",
+            "ExtraGuid": "DHQAel4DRkimGS0IVfYLVQ==",
+            "Count": -4000,
+            "Properties": {
+              "abid": "2127;2128;2129;2130",
+              "fcpcCount": 0,
+              "lv": 0,
+              "fcpiCount": 0,
+              "lug": 0,
+              "lut": 2,
+              "luw": 0,
+              "dsid": 2157,
+              "stc": 0,
+              "nm": 2190,
+              "Count": -4000,
+              "fcpdCount": 180,
+              "mbnlv": 1,
+              "fcpmCount": 0,
+              "IsAllowZero": 1,
+              "labid": "2127;2129",
+              "tname": "玉米田（玉米）",
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": null,
+            "ClientString": null
+          },
+          {
+            "Id": "zk0DlG2QbUmnYyk30Wg8SQ==",
+            "ExtraGuid": "hJWVAcniVE67t/zFipSE7A==",
+            "Count": 0,
+            "Properties": {
+              "stc": 1000,
+              "isuni": 1,
+              "tname": "木材",
+              "Count": 0,
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": null,
+            "ClientString": null
+          },
+          {
+            "Id": "704CDCjcEEqK16QQgMWPpg==",
+            "ExtraGuid": "bdtenL216Uujpsv3lOa/Ew==",
+            "Count": 0,
+            "Properties": {
+              "abid": "2127;2128;2129;2130",
+              "fcpcCount": 0,
+              "lv": 0,
+              "fcpiCount": 0,
+              "lug": 0,
+              "lut": 2,
+              "luw": 0,
+              "dsid": 2158,
+              "stc": 0,
+              "nm": 2191,
+              "Count": 0,
+              "fcpdCount": 180,
+              "mbnlv": 1,
+              "fcpmCount": 0,
+              "IsAllowZero": 1,
+              "labid": "2127;2129",
+              "tname": "木材树（木材）",
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": null,
+            "ClientString": null
+          }
+        ],
+        "Resource": []
+      }
+    ],
+    "Others": [
+      {
+        "CharId": "R0LF7pnNvE+z3hadOHinPw==",
+        "DisplayName": "gy221027000031",
+        "ScoreBefore": 100,
+        "ScoreAfter": 0,
+        "RankBefore": 0,
+        "RankAfter": 0,
+        "MainControlRoomLevel": 1,
+        "IconIndex": 1,
+        "LastLogoutDatetime": null,
+        "Level": 0,
+        "CombatCap": 0,
+        "Pets": [],
+        "Booties": [],
+        "Resource": [
+          {
+            "Id": "wYnACVIqiUyvYigVTZucUA==",
+            "ExtraGuid": "OOay7luEOEem1LNs9DaSqA==",
+            "Count": 0,
+            "Properties": {
+              "stc": -1,
+              "tname": "公会币",
+              "Count": 0,
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "ItSwWjjMLE+7SDbboB4MwQ==",
+            "ClientString": null
+          },
+          {
+            "Id": "vPYUMMEFbkm6xDQnSp2Bkw==",
+            "ExtraGuid": "yBFu1apIh0eCK85Ou/poTQ==",
+            "Count": 1,
+            "Properties": {
+              "lv": 0,
+              "lud": 20,
+              "stc": 1,
+              "Count": 1,
+              "tname": "塔防次数",
+              "ltlv": "2022/10/27 11:25:44",
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "ItSwWjjMLE+7SDbboB4MwQ==",
+            "ClientString": null
+          },
+          {
+            "Id": "8r+BhZe6vUG6EDw4TcMXMg==",
+            "ExtraGuid": "7Fs2Pj34fUaljJ66Q0WGgg==",
+            "Count": 53,
+            "Properties": {
+              "count": 0,
+              "stc": -1,
+              "tname": "钻石",
+              "Count": 53,
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "ItSwWjjMLE+7SDbboB4MwQ==",
+            "ClientString": null
+          },
+          {
+            "Id": "EAHa0z8KLUOmBUsJh1RWYA==",
+            "ExtraGuid": "C3Wi0QCTV0ykB5QewQJLHA==",
+            "Count": 1,
+            "Properties": {
+              "Count": 1,
+              "lv": 0,
+              "tname": "pvp积分对象",
+              "ExtraDecimal": 99.00,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "ItSwWjjMLE+7SDbboB4MwQ==",
+            "ClientString": null
+          },
+          {
+            "Id": "wAKzZptD4E+iSYqOYECMZA==",
+            "ExtraGuid": "Jv27jUtrAEywuL16ebIcug==",
+            "Count": 0,
+            "Properties": {
+              "stc": -1,
+              "tname": "友情商店货币",
+              "Count": 0,
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "ItSwWjjMLE+7SDbboB4MwQ==",
+            "ClientString": null
+          },
+          {
+            "Id": "arSX4szzokuUBpPSavOJGw==",
+            "ExtraGuid": "Dc20mfrLUUifagA19Ghedw==",
+            "Count": 20,
+            "Properties": {
+              "fcpdCount": 300,
+              "fcpmpatcount": 3,
+              "fcpcCount": 20,
+              "fcpipatcount": 3,
+              "fcpmCount": 20,
+              "fcpdpatcount": 86400,
+              "fcpcpatcount": 3,
+              "stc": -1,
+              "fcpiCount": 1,
+              "Count": 20,
+              "fcptpatcount": "2022-10-31T00:00:00",
+              "tname": "体力",
+              "fcptCount": "2022-10-31T08:20:44",
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "ItSwWjjMLE+7SDbboB4MwQ==",
+            "ClientString": null
+          },
+          {
+            "Id": "0sBO/nHYmUeagNNeVTp1wA==",
+            "ExtraGuid": "LvtgGMuy50GNF7R00RXlMA==",
+            "Count": 1,
+            "Properties": {
+              "stc": -1,
+              "Count": 1,
+              "tname": "推关战力对象",
+              "ExtraDecimal": 24660,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "ItSwWjjMLE+7SDbboB4MwQ==",
+            "ClientString": null
+          },
+          {
+            "Id": "OYjt73E1DESbhtbo2gNG1A==",
+            "ExtraGuid": "QsmDK5weRUuYFq0svw5HPw==",
+            "Count": 50,
+            "Properties": {
+              "stc": -1,
+              "tname": "金币",
+              "Count": 50,
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "ItSwWjjMLE+7SDbboB4MwQ==",
+            "ClientString": null
+          },
+          {
+            "Id": "UIb9hr15ck+W3901ue6m6A==",
+            "ExtraGuid": "hJWVAcniVE67t/zFipSE7A==",
+            "Count": 0,
+            "Properties": {
+              "isuni": 1,
+              "stc": 1000,
+              "tname": "木材",
+              "Count": 0,
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "ItSwWjjMLE+7SDbboB4MwQ==",
+            "ClientString": null
+          },
+          {
+            "Id": "vhRlqITX5UqZllPrmKAk5w==",
+            "ExtraGuid": "DHQAel4DRkimGS0IVfYLVQ==",
+            "Count": 4000,
+            "Properties": {
+              "dsid": 2157,
+              "mbnlv": 2,
+              "lv": 1,
+              "luw": -600,
+              "abid": "2127;2128;2129;2130",
+              "fcpiCount": 50,
+              "fcpdCount": 180,
+              "lug": 0,
+              "fcpmCount": 8000,
+              "lut": 600,
+              "stc": 8000,
+              "Count": 4000,
+              "nm": 2190,
+              "IsAllowZero": 1,
+              "labid": "2127;2129",
+              "tname": "玉米田（玉米）",
+              "fcpcCount": 8000,
+              "fcptCount": "2022-10-31T08:19:44",
+              "UpgradedSchedulerId": "974000cd-8ca3-437e-ac74-f8d81e13a087",
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "Ega1y0/OF0WeiVvnmXOuBw==",
+            "ClientString": null
+          },
+          {
+            "Id": "7RGpvjyDgEakf3BCJqMDtg==",
+            "ExtraGuid": "bdtenL216Uujpsv3lOa/Ew==",
+            "Count": 0,
+            "Properties": {
+              "dsid": 2158,
+              "mbnlv": 1,
+              "lv": 0,
+              "luw": 0,
+              "abid": "2127;2128;2129;2130",
+              "fcpiCount": 0,
+              "fcpdCount": 180,
+              "lug": 0,
+              "fcpmCount": 0,
+              "lut": 2,
+              "stc": 0,
+              "Count": 0,
+              "nm": 2191,
+              "IsAllowZero": 1,
+              "labid": "2127;2129",
+              "tname": "木材树（木材）",
+              "fcpcCount": 0,
+              "fcptCount": "2022-10-31T08:19:44",
+              "ExtraDecimal": null,
+              "ExtraString": null
+            },
+            "OwnerId": null,
+            "Children": [],
+            "ParentId": "Ega1y0/OF0WeiVvnmXOuBw==",
+            "ClientString": null
+          }
+        ]
+      }
+    ],
+    "MapTId": "4805434e-605e-4479-b426-9a27c083d7d4",
+    "StartUtc": "2022-10-31T08:21:13.3415556Z",
+    "EndUtc": "2022-10-31T08:21:43.2937694Z",
+    "Assistancing": false,
+    "Assistanced": false,
+    "Retaliationed": false,
+    "AssistanceId": null,
+    "IsAttckerWin": true,
+    "IsCompleted": false
+  },
+  "Changes": [
+    {
+      "TId": "PFl9rILOQkaXoxQCXaYz5A==",
+      "ObjectId": "JNafyK5RhUqEmhqug5GHLw==",
+      "PropertyName": "count",
+      "HasOldValue": true,
+      "OldValue": 100,
+      "HasNewValue": true,
+      "NewValue": 0,
+      "DateTimeUtc": "2022-10-31T08:21:44.9635756Z"
+    },
+    {
+      "TId": "PFl9rILOQkaXoxQCXaYz5A==",
+      "ObjectId": "TJgNfV1FYEWkw59k8IMCVA==",
+      "PropertyName": "count",
+      "HasOldValue": true,
+      "OldValue": 100,
+      "HasNewValue": true,
+      "NewValue": 200,
+      "DateTimeUtc": "2022-10-31T08:21:44.9635939Z"
+    },
+    {
+      "TId": "QsmDK5weRUuYFq0svw5HPw==",
+      "ObjectId": "os3J7ACtPk2HpLO4E31M/w==",
+      "PropertyName": "count",
+      "HasOldValue": true,
+      "OldValue": 4100,
+      "HasNewValue": true,
+      "NewValue": 0,
+      "DateTimeUtc": "2022-10-31T08:21:44.965454Z"
+    },
+    {
+      "TId": "QsmDK5weRUuYFq0svw5HPw==",
+      "ObjectId": "CeIYzRYxWEGmdQ31NzgMbA==",
+      "PropertyName": "count",
+      "HasOldValue": true,
+      "OldValue": 8000,
+      "HasNewValue": true,
+      "NewValue": 12100,
+      "DateTimeUtc": "2022-10-31T08:21:44.9654569Z"
+    },
+    {
+      "TId": "hJWVAcniVE67t/zFipSE7A==",
+      "ObjectId": "CuoNeJUvhUGSqJ9/oRx/Qw==",
+      "PropertyName": "count",
+      "HasOldValue": true,
+      "OldValue": 25,
+      "HasNewValue": true,
+      "NewValue": 0,
+      "DateTimeUtc": "2022-10-31T08:21:44.9655389Z"
+    },
+    {
+      "TId": "hJWVAcniVE67t/zFipSE7A==",
+      "ObjectId": "Ae021uv3yUaE/lUjHwv4Jg==",
+      "PropertyName": "count",
+      "HasOldValue": true,
+      "OldValue": 400,
+      "HasNewValue": true,
+      "NewValue": 425,
+      "DateTimeUtc": "2022-10-31T08:21:44.9655414Z"
+    },
+    {
+      "TId": "DHQAel4DRkimGS0IVfYLVQ==",
+      "ObjectId": "vhRlqITX5UqZllPrmKAk5w==",
+      "PropertyName": "count",
+      "HasOldValue": true,
+      "OldValue": 8000,
+      "HasNewValue": true,
+      "NewValue": 4000,
+      "DateTimeUtc": "2022-10-31T08:21:44.9663433Z"
+    },
+    {
+      "TId": "C3Wi0QCTV0ykB5QewQJLHA==",
+      "ObjectId": "QuPdQcn6FEOOPDSL1XwlZQ==",
+      "PropertyName": "ExtraDecimal",
+      "HasOldValue": true,
+      "OldValue": 101.00,
+      "HasNewValue": true,
+      "NewValue": 102.00,
+      "DateTimeUtc": "2022-10-31T08:21:44.9711872Z"
+    },
+    {
+      "TId": "C3Wi0QCTV0ykB5QewQJLHA==",
+      "ObjectId": "EAHa0z8KLUOmBUsJh1RWYA==",
+      "PropertyName": "ExtraDecimal",
+      "HasOldValue": true,
+      "OldValue": 100.00,
+      "HasNewValue": true,
+      "NewValue": 99.00,
+      "DateTimeUtc": "2022-10-31T08:21:44.9712116Z"
+    }
+  ],
+  "HasError": false,
+  "DebugMessage": "操作成功完成。",
+  "ErrorCode": 0
 }

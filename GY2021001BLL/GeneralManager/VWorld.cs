@@ -42,6 +42,7 @@ namespace OW.Game
         }
 
         public DbContextOptions<GY001UserContext> UserDbOptions { get; set; }
+
         public DbContextOptions<GY001TemplateContext> TemplateDbOptions { get; set; }
 
         /// <summary>

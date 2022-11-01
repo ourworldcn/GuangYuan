@@ -562,10 +562,6 @@ namespace OW.Game.Mission
                     mItem.ComplateCount++;
                     mItem.LastUtc = DateTime.UtcNow;
                     World.CharManager.NotifyChange(datas.GameChar.GameUser);
-                    if (template.IdString == "76d2f329-7f44-409f-9107-a87580f47bdb")
-                    {
-                        World.SocialManager.ResetPvpObject(datas.GameChar, DateTime.UtcNow);
-                    }
                 }
                 else //有错误
                 {

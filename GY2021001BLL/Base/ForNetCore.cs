@@ -295,8 +295,6 @@ namespace GuangYuan.GY001.BLL
             var sw = Stopwatch.StartNew();
             try
             {
-                var l =TimeSpan.FromTicks( DateTime.UtcNow.Ticks).TotalMilliseconds;
-                //var b = GameValidation.TryParse(("eq", $"{Guid.NewGuid()};{Guid.NewGuid()};lv;1"), out var gv);
             }
             catch (Exception)
             {

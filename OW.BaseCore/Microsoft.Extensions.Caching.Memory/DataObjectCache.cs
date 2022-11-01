@@ -206,7 +206,9 @@ namespace Microsoft.Extensions.Caching.Memory
             {
                 var key = keys[i];
                 if (EnsureSaved(key, TimeSpan.Zero) || OwHelper.GetLastError() == 1168)    //若保存成功或已无需保存
+                {
                     keys.RemoveAt(i);
+                }
             }
             //放入下次再保存
             if (keys.Count > 0)
@@ -240,6 +242,8 @@ namespace Microsoft.Extensions.Caching.Memory
                 result = _Dirty.Add(key);
                 if (start)
                     Monitor.PulseAll(_Dirty);
+                else
+                    Monitor.Pulse(_Dirty);
             }
             return result;
         }

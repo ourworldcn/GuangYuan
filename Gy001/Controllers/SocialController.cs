@@ -57,7 +57,7 @@ namespace Gy001.Controllers
         /// <response code="401">令牌错误。</response>
         [HttpPut]
         public ActionResult<GetMailsReturnDto> GetMails(GetMailsParamsDto model)
-        {
+        {//{bd785ab5-c42d-4e18-8056-397505623b0b}
             var result = new GetMailsReturnDto();
             var social = _World.SocialManager;
             using var datas = new GetMailsDatas(_World, model.Token)

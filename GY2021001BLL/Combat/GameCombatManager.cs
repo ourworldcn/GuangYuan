@@ -621,7 +621,9 @@ namespace GuangYuan.GY001.BLL
                     return;
                 }
                 Tili2Exp(datas.GameChar, datas.PropertyChanges);    //体力消耗转换为经验
-
+                var info=datas.GameChar.GetPvpObject()?.GetJsonObject<PvpObjectJsonObject>();
+                info.PvpCount++;
+                World.CharManager.NotifyChange(datas.GameChar.GameUser);
                 //设置信息
                 combat.StartUtc = DateTime.UtcNow;
 
@@ -804,6 +806,11 @@ namespace GuangYuan.GY001.BLL
             }
             if (!datas.HasError) //若成功
             {
+                var id = datas.Combat?.Id;
+                if(id.HasValue)
+                {
+                    //World.GameCache.SetDirty(id.Value.ToString());
+                }
                 var gim = World.ItemManager;
                 //攻击方信息
                 //var Me = gim.GetLineup(datas.GameChar, 2);

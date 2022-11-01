@@ -126,6 +126,11 @@ namespace GuangYuan.GY001.BLL
     /// </summary>
     public class GetPvpListCommand : WithChangesGameCommandBase
     {
+        public GetPvpListCommand()
+        {
+
+        }
+
         /// <summary>
         /// 是否强制使用钻石刷新。
         /// false,不刷新，获取当日已经刷的最后一次数据,如果今日未刷则自动刷一次。
@@ -184,7 +189,7 @@ namespace GuangYuan.GY001.BLL
                 return;
             }
             var pvp = GameContext.GameChar.GetPvpObject();
-            if(pvp is null)
+            if (pvp is null)
             {
                 command.ErrorCode = ErrorCodes.ERROR_IMPLEMENTATION_LIMIT;
                 command.DebugMessage = "角色没有pvp战斗功能。";
@@ -193,75 +198,40 @@ namespace GuangYuan.GY001.BLL
             var world = GameContext.Service.GetRequiredService<VWorld>();
             var info = pvp.GetJsonObject<PvpObjectJsonObject>();
 
-            if (info.SearchCount <= 10)    //如果是此角色前10次搜索
-            {
-                var ids = GetListInRobot(Array.Empty<Guid>());
-                if(!ids.Any())  //若未搜索到
-                {
+            var gitm = world.ItemTemplateManager;
+            var pvpTT = gitm.GetTemplateFromeId(pvp.ExtraGuid); //模板
 
+            var topN = pvpTT.GetSdpDecimalOrDefault("TopN", 10);
+            IEnumerable<Guid> ids;
+
+            if (command.CharId.HasValue) //若强行指定了对手id
+            {
+                ids = new Guid[] { command.CharId.Value };
+            }
+            else if (info.PvpCount <= topN)    //如果是此角色前N次搜索
+            {
+                ids = GetListInRobot(Array.Empty<Guid>());
+                if (!ids.Any())  //若未搜索到
+                {
+                    info.SearchList.RemoveAll(c => c.DateTime.Date == GameContext.UtcNow.Date);
+                    ids = GetListInRobot(Array.Empty<Guid>());
                 }
             }
-            else //若不是前10次
+            else //若不是前N次
             {
+                ids = GetNewPvpCharIds(Array.Empty<Guid>());
+                if (!ids.Any())  //若没有合适的角色
+                {
+                    info.SearchList.RemoveAll(c => c.DateTime.Date == GameContext.UtcNow.Date); //清空当日列表
+                    ids = GetNewPvpCharIds(Array.Empty<Guid>());
+                }
             }
+            command.CharIds.AddRange(ids);
+            info.SearchList.AddRange(ids.Select(c => new IdAndDateTime() { Id = c, DateTime = GameContext.UtcNow }));
             info.SearchCount++; //增加已搜索的次数
-
-            var todayData = pvp.GetOrCreateBinaryObject<TodayTimeGameLog<Guid>>();    //当日数据的帮助器类
-            var hasData = todayData?.GetTodayData(GameContext.UtcNow).Any() ?? false;
-            if (command.IsRefresh || !hasData) //若强制刷新或需要刷新
-            {
-                //修改数据
-                //获取列表
-                todayData.ResetLastData(GameContext.UtcNow);
-                //var ids = RefreshPvpList(datas.GameChar, datas.UserDbContext, todayData.GetTodayData(datas.Now));
-                var excludeIds = todayData.GetTodayData(GameContext.UtcNow);
-                //todayData.AddLastDataRange(ids, datas.Now);
-                //datas.CharIds.AddRange(todayData.GetLastData(datas.Now));
-
-                var gc = GameContext.GameChar;
-                var cj = gc.GetJsonObject<CharJsonEntity>();
-                List<Guid> ids;
-                if (!command.CharId.HasValue)
-                    ids = world.SocialManager.GetNewPvpCharIds(GameContext.GameChar.GetDbContext(), gc.Id, pvp.ExtraDecimal.Value, cj.Lv, excludeIds);
-                else //TODO 测试代码
-                {
-                    ids = new List<Guid>();
-                    ids.Add(command.CharId.Value);
-                }
-                todayData.AddLastDataRange(ids, GameContext.UtcNow);
-                command.CharIds.AddRange(ids);
-                if (ids.Any())
-                {
-                    var charId = ids.First();
-                    using var dwUser2 = world.CharManager.LockOrLoad(charId, out var gu);
-                    if (dwUser2 != null)
-                    {
-                        //生成战斗对象
-                        var id = Guid.NewGuid();
-                        var key = id.ToString();
-                        var cache = world.GameCache;
-                        using var dw = cache.Lock(key);
-                        var combat = GameCombat.CreateNew(world, id);
-                        combat.MapTId = ProjectConstant.PvpDungeonTId;
-                        var soldier = combat.CreateSoldier(-1);
-                        GameCombat.RecordResource(soldier, gu.CurrentChar);
-                        cache.GetOrCreate(key, (entry) =>
-                        {
-                            combat.SetEntry(entry as GameObjectCache.GameObjectCacheEntry);
-                            return combat.Thing;
-                        });
-                        command.Combat = combat;
-                        cache.SetDirty(key);
-                    }
-                }
-            }
-            else //不刷新
-            {
-                command.CharIds.AddRange(todayData.GetLastData(GameContext.UtcNow));
-            }
-            //两种情况都要修改的数据
-            //todayData.Save();   //保存当日当次数据
+            var commandPost = new PvpListGotCommand() { Command = command };
             world.CharManager.NotifyChange(GameContext.GameChar.GameUser);    //修改用户数据
+            GameContext.GetCommandManager().Handle(commandPost);
         }
 
         #endregion IGameCommandHandler接口及相关
@@ -284,7 +254,7 @@ namespace GuangYuan.GY001.BLL
             var collBase = from pvp in db.Set<GameItem>()
                            where pvp.ExtraGuid == ProjectConstant.PvpObjectTId
                            join slot in db.Set<GameItem>() on pvp.ParentId equals slot.Id   //货币槽
-                           join gc in db.Set<GameChar>().Where(c => !excludes.Contains(c.Id) && c.CharType.HasFlag(CharType.Robot)) //限于特别机器人
+                           join gc in db.Set<GameChar>().Where(c => !excludes.Contains(c.Id) && (c.CharType == CharType.Unknow || c.CharType.HasFlag(CharType.Robot))) //限于特别机器人
                            on slot.OwnerId equals gc.Id    //角色
                            select new { pvp, gc };
             var great = collBase.OrderBy(c => c.pvp.ExtraDecimal).Where(c => c.pvp.ExtraDecimal >= pvpScore).Take(1);   //上手
@@ -372,7 +342,7 @@ namespace GuangYuan.GY001.BLL
         }
 
         /// <summary>
-        /// 此用户搜索的总次数。
+        /// 此用户在整个生命周期内，搜索PVP的总次数。
         /// </summary>
         public int SearchCount { get; set; }
 
@@ -382,7 +352,7 @@ namespace GuangYuan.GY001.BLL
         public List<IdAndDateTime> SearchList { get; set; } = new List<IdAndDateTime>();
 
         /// <summary>
-        /// Pvp总次数。
+        /// 已经进行的主动Pvp的总次数。
         /// </summary>
         public int PvpCount { get; set; }
 
@@ -390,5 +360,61 @@ namespace GuangYuan.GY001.BLL
         /// 已经进行pvp行为的人的集合。
         /// </summary>
         public List<Guid> PvpList { get; set; } = new List<Guid>();
+    }
+
+    /// <summary>
+    /// 已经获取了一个pvp列表的后置事件。
+    /// </summary>
+    public class PvpListGotCommand : GameCommandBase
+    {
+        /// <summary>
+        /// 获取pvp列表的命令。
+        /// </summary>
+        public GetPvpListCommand Command { get; set; }
+
+    }
+
+    public class PvpListGotCommandHandler : GameCommandHandlerBase<PvpListGotCommand>
+    {
+
+        public PvpListGotCommandHandler(GameCommandContext gameContext)
+        {
+            GameContext = gameContext;
+        }
+
+        public GameCommandContext GameContext { get; set; }
+
+        public override void Handle(PvpListGotCommand command)
+        {
+            var world = GameContext.Service.GetRequiredService<VWorld>();
+            var pvp = GameContext.GameChar.GetPvpObject();
+
+            var ids = command.Command.CharIds;
+            var info = pvp.GetJsonObject<PvpObjectJsonObject>();
+            if (ids.Any())
+            {
+                var charId = ids.First();
+                using var dwUser2 = world.CharManager.LockOrLoad(charId, out var gu);
+                if (dwUser2 != null)
+                {
+                    //生成战斗对象
+                    var id = Guid.NewGuid();
+                    var key = id.ToString();
+                    var cache = world.GameCache;
+                    using var dw = cache.Lock(key);
+                    var combat = GameCombat.CreateNew(world, id);
+                    combat.MapTId = ProjectConstant.PvpDungeonTId;
+                    var soldier = combat.CreateSoldier(-1);
+                    GameCombat.RecordResource(soldier, gu.CurrentChar);
+                    cache.GetOrCreate(key, (entry) =>
+                    {
+                        combat.SetEntry(entry as GameObjectCache.GameObjectCacheEntry);
+                        return combat.Thing;
+                    });
+                    command.Command.Combat = combat;
+                    cache.SetDirty(key);
+                }
+            }
+        }
     }
 }
