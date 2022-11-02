@@ -291,7 +291,6 @@ namespace GuangYuan.GY001.BLL
             var cache = world.Service.GetService<GameObjectCache>();
             using var scope = _Services.CreateScope();
             var service = scope.ServiceProvider;
-            var span = new Span<char>();
             var sw = Stopwatch.StartNew();
             try
             {

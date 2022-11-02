@@ -39,24 +39,24 @@ namespace OW.Game.Store
         /// </summary>
         [JsonIgnore]
         [MaybeNull]
-        public TNode Parent { get; set; }
+        public abstract TNode Parent { get; set; }
 
         /// <summary>
         /// 所属槽Id。
         /// </summary>
         [ForeignKey(nameof(Parent))]
-        public Guid? ParentId { get; set; }
+        public abstract Guid? ParentId { get; set; }
 
         /// <summary>
         /// 拥有的子物品或槽。
         /// </summary>
-        public List<TNode> Children { get; set; }
+        public abstract List<TNode> Children { get; set; }
     }
 
     /// <summary>
     /// 
     /// </summary>
-    public class DbTreeNodeBase<T> : JsonDynamicPropertyBase, IDisposable, IDbQuickFind, IDbTreeNode<T> where T : GuidKeyObjectBase
+    public class DbTreeNodeBase<T> : JsonDynamicPropertyBase, IDisposable, IDbQuickFind, IDbTreeNode<T> where T : IEntityWithSingleKey<Guid>
     {
         #region 构造函数
 
@@ -95,7 +95,7 @@ namespace OW.Game.Store
                 // 释放未托管的资源(未托管的对象)并重写终结器
                 // 将大型字段设置为 null
                 _ExtraString = null;
-                _Parent = null;
+                _Parent = default;
                 _Children = null;
                 base.Dispose(disposing);
             }

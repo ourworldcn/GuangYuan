@@ -1,7 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System;
+using System.Buffers;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -162,7 +165,7 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         /// <summary>
-        /// 
+        /// 此函数需要运行在独立线程中。
         /// </summary>
         void SaveFunc()
         {
@@ -196,7 +199,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// </summary>
         protected void Save()
         {
-            List<object> keys = new List<object>();
+            List<object> keys = AutoClearPool<List<object>>.Shared.Get();
             lock (_Dirty)
             {
                 OwHelper.Copy(_Dirty, keys);
@@ -214,6 +217,7 @@ namespace Microsoft.Extensions.Caching.Memory
             if (keys.Count > 0)
                 lock (_Dirty)
                     OwHelper.Copy(keys, _Dirty);
+            AutoClearPool<List<object>>.Shared.Return(keys);
         }
 
         #endregion 定时任务相关

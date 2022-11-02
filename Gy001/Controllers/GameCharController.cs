@@ -451,18 +451,9 @@ namespace GY2021001WebApi.Controllers
                 if (null != datas.ResultGameChar)
                 {
                     var gc = datas.ResultGameChar;
-                    var gcDto = new GameCharDto()
-                    {
-                        Id = gc.Id.ToBase64String(),
-                        ClientGutsString = gc.GetClientString(),
-                        CreateUtc = gc.CreateUtc,
-                        DisplayName = gc.DisplayName,
-                        GameUserId = gc.GameUserId.ToBase64String(),
-                        TemplateId = gc.ExtraGuid.ToBase64String(),
-                        CurrentDungeonId = gc.CurrentDungeonId?.ToBase64String(),
-                        CombatStartUtc = gc.CombatStartUtc,
-                    };
-                    OwHelper.Copy(gc.Properties, gcDto.Properties);
+                    var mapper = World.GetMapper();
+                    var gcDto = mapper.Map(gc);
+
                     result.GameChar = gcDto;
                 }
                 datas.GameItems.ForEach(c => c.FcpToProperties());
