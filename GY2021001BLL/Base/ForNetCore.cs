@@ -1,19 +1,14 @@
-﻿using AutoMapper;
-using Game.Logging;
+﻿using Game.Logging;
 using Game.Social;
+using GuangYuan.GY001.BLL.Base;
 using GuangYuan.GY001.BLL.GeneralManager;
 using GuangYuan.GY001.BLL.Script;
-using GuangYuan.GY001.BLL.Specific;
 using GuangYuan.GY001.TemplateDb;
 using GuangYuan.GY001.UserDb;
 using GuangYuan.GY001.UserDb.Social;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -22,35 +17,20 @@ using Microsoft.Extensions.ObjectPool;
 using OW.DDD;
 using OW.Game;
 using OW.Game.Caching;
-using OW.Game.Entity.Log;
 using OW.Game.Item;
-using OW.Game.Log;
 using OW.Game.Managers;
 using OW.Game.Mission;
 using OW.Game.PropertyChange;
 using OW.Game.Store;
-using OW.Game.Validation;
-using OW.Script;
 using System;
 using System.Buffers;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
-using System.Dynamic;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -106,7 +86,7 @@ namespace GuangYuan.GY001.BLL
         /// <summary>
         /// 设置数据库选项。
         /// </summary>
-        void SetDbConfig()
+        private void SetDbConfig()
         {
             #region 设置sql server使用内存，避免sql server 贪婪使用内存导致内存过大
 
@@ -292,6 +272,7 @@ namespace GuangYuan.GY001.BLL
             using var scope = _Services.CreateScope();
             var service = scope.ServiceProvider;
             var sw = Stopwatch.StartNew();
+
             try
             {
             }
