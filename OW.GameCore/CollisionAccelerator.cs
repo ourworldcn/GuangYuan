@@ -37,6 +37,21 @@ namespace OW.Game
         public float Radius { get; set; }
     }
 
+    public class SquareItem<T>
+    {
+
+        public SquareItem<T> Top { get; set; }
+
+        public SquareItem<T> Bottom { get; set; }
+
+        public SquareItem<T> Left { get; set; }
+
+        public SquareItem<T> Right { get; set; }
+
+        private List<T> _Datas;
+        public List<T> Datas { get => _Datas ??= new List<T>(); }
+    }
+
     /// <summary>
     /// 碰撞运算加速器。
     /// </summary>
@@ -51,6 +66,16 @@ namespace OW.Game
         {
             _NodeCount = nodeCount;
             _Nodes = new ConcurrentDictionary<int, Dictionary<int, IGameObject<TKey>>>(Environment.ProcessorCount, nodeCount);
+        }
+
+        ConcurrentDictionary<(int, int), SquareItem<T>> _Grid = new ConcurrentDictionary<(int, int), SquareItem<T>>();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        protected (int, int) GetIndex(IGameObject<TKey> obj)
+        {
+            var x = (int)MathF.Floor(obj.X / 2);
+            var y = (int)MathF.Floor(obj.Y / 2);
+            return (x, y);
         }
 
         int _NodeCount;

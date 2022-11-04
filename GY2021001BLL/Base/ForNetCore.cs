@@ -272,9 +272,11 @@ namespace GuangYuan.GY001.BLL
             using var scope = _Services.CreateScope();
             var service = scope.ServiceProvider;
             var sw = Stopwatch.StartNew();
-
+            float f1 = -0.1f;
             try
             {
+                var i1 = (int)MathF.Round(f1, MidpointRounding.ToNegativeInfinity);
+                var i2 = i1 >>1;
             }
             catch (Exception)
             {

@@ -21,3 +21,5 @@ yun1.pandaglb.com:44489
 国内外网服务器：101.201.209.138 账号密码：Gy210115 资源服务器密码：guangyuan.123
 43.133.232.4:20081 资源服务器 ResourceAdmin,密码:guangyuan.123
 43.133.232.4 Administrator//uE$,AKda.74+Y=%
+
+5599F108-E0DF-43C3-BE06
