@@ -31,6 +31,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -275,8 +276,10 @@ namespace GuangYuan.GY001.BLL
             float f1 = -0.1f;
             try
             {
-                var i1 = (int)MathF.Round(f1, MidpointRounding.ToNegativeInfinity);
-                var i2 = i1 >>1;
+                byte[] buff = new byte[4096];
+                //using Utf8JsonWriter utf8JsonWriter = new Utf8JsonWriter();
+                UdpClient udp = new UdpClient();
+                udp.Send(buff, buff.Length, "192.168.0.104", 10000);
             }
             catch (Exception)
             {
