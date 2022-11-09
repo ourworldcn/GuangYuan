@@ -254,7 +254,7 @@ namespace GuangYuan.GY001.BLL
             var collBase = from pvp in db.Set<GameItem>()
                            where pvp.ExtraGuid == ProjectConstant.PvpObjectTId
                            join slot in db.Set<GameItem>() on pvp.ParentId equals slot.Id   //货币槽
-                           join gc in db.Set<GameChar>().Where(c => !excludes.Contains(c.Id) && (c.CharType == CharType.Unknow || c.CharType.HasFlag(CharType.Robot))) //限于特别机器人
+                           join gc in db.Set<GameChar>().Where(c => !excludes.Contains(c.Id) && (c.CharType.HasFlag(CharType.Robot))) //限于特别机器人
                            on slot.OwnerId equals gc.Id    //角色
                            select new { pvp, gc };
             var great = collBase.OrderBy(c => c.pvp.ExtraDecimal).Where(c => c.pvp.ExtraDecimal >= pvpScore).Take(1);   //上手
@@ -289,8 +289,8 @@ namespace GuangYuan.GY001.BLL
 
             var coll = from tmp in collBase
                        where tmp.pvp.ExtraDecimal.Value <= pvpScore + maxDiff && tmp.pvp.ExtraDecimal.Value >= pvpScore - maxDiff   //在第一等级分差以内
-                       orderby Math.Abs(tmp.pvp.ExtraDecimal.Value - pvpScore), //按分差
-                       Math.Abs((string.IsNullOrWhiteSpace(SqlDbFunctions.JsonValue(tmp.gc.JsonObjectString, "$.Lv")) ? 0 : Convert.ToInt32(SqlDbFunctions.JsonValue(tmp.gc.JsonObjectString, "$.Lv"))) - lv) //按等级差升序排序
+                       orderby Math.Abs(tmp.pvp.ExtraDecimal.Value - pvpScore) //按分差
+                       , Math.Abs((string.IsNullOrWhiteSpace(SqlDbFunctions.JsonValue(tmp.gc.JsonObjectString, "$.Lv")) ? 0 : Convert.ToInt32(SqlDbFunctions.JsonValue(tmp.gc.JsonObjectString, "$.Lv"))) - lv) //按等级差升序排序
                        select tmp.gc.Id;
             var list = coll.ToList();   //获取所有
             if (list.Count <= 0)   //若没找到
