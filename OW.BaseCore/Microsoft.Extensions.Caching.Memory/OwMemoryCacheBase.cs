@@ -52,7 +52,6 @@ namespace Microsoft.Extensions.Caching.Memory
         /// 
         /// </summary>
         public OwMemoryCacheBaseOptions Value => this;
-
     }
 
     public class BeforeEvictionCallbackRegistration
