@@ -372,12 +372,19 @@ namespace OW.Game
             //}
             //增加坐骑
             var mountsBagSlot = gameChar.GetZuojiBag();   //坐骑背包槽
-            for (int i = (int)ThingGId.生物_头 + 1; i < (int)ThingGId.生物_头 + 2; i++)   //仅增加羊坐骑
+            Guid[] htids = new Guid[] { new Guid("01013AA9-39FF-41B7-9D43-15A818DFA057"), new Guid("{78f6e3a1-7c60-42ef-9d77-fa4a877c5df8}"),
+                new Guid("{4e699e89-0b7a-4b15-a63d-a0c047a13bcf}"), new Guid("{857d566e-cd1e-4261-ac62-9585ac2646e8}") };
+            for (int i = (int)ThingGId.生物_头 + 1; i < (int)ThingGId.生物_头 + 16; i++)   //增加非神话动物
             {
                 var headTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == i);
                 var bodyTemplate = gitm.Id2Template.Values.FirstOrDefault(c => c.GId.GetValueOrDefault() == 1000 + i);
-                var mounts = gim.CreateMounts(headTemplate, bodyTemplate);
-                gim.ForcedAdd(mounts, mountsBagSlot);
+                if (htids.Contains(headTemplate.Id))
+                    continue;
+                if (headTemplate != null && bodyTemplate != null)
+                {
+                    var mounts = gim.CreateMounts(headTemplate, bodyTemplate);
+                    gim.ForcedAdd(mounts, mountsBagSlot);
+                }
             }
             //将第一个坐骑放入家园展示
             var showMount = mountsBagSlot.Children.FirstOrDefault();

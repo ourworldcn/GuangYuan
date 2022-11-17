@@ -26,6 +26,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -276,21 +277,6 @@ namespace GuangYuan.GY001.BLL
             float f1 = -0.1f;
             try
             {
-                var buff1 = Enumerable.Range(1, 1024*8).ToArray();
-                var buff = new byte[Buffer.ByteLength(buff1)];
-                Buffer.BlockCopy(buff1, 0, buff, 0, buff.Length);
-                UdpClient listener = new UdpClient(20123);
-                Task.Run(() =>
-                {
-                    IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 0);
-                    var ss = listener.Receive(ref endPoint);
-                    var i = ss.Length;
-                });
-                Socket socket = new Socket(SocketType.Dgram, ProtocolType.Udp);
-                //socket.Connect("192.168.0.104", 20123);
-                IPAddress ip = new IPAddress(new byte[] { 192, 168, 0, 104 });
-                var end = new IPEndPoint(ip, 20123);
-                socket.SendTo(buff, end);
             }
             catch (Exception)
             {

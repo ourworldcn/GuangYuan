@@ -86,6 +86,9 @@ namespace GY2021001WebApi.Controllers
             if (null == gu) //若令牌无效
                 return Unauthorized();
             var displayName = model.DisplayName;
+            var svc = HttpContext.RequestServices.GetRequiredService<CensorshipManager>();
+            if (svc.HasKey(displayName))
+                return false;
             using var dw = World.LockStringAndReturnDisposer(ref displayName, TimeSpan.FromSeconds(2));
             using var dwUser = World.CharManager.LockAndReturnDisposer(gu);
             if (dw is null || dwUser is null)

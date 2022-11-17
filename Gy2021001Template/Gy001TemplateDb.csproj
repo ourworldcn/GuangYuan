@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="敏感词库.txt">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 
